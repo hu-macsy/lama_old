@@ -659,7 +659,7 @@ void GenLogger::setFormat( const std::string& format )
         {
             for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
             {
-                *p = toupper( *p );
+                *p = static_cast<string::value_type>( toupper( *p) );
             }
         }
     }

@@ -1,10 +1,10 @@
 include ../make.inc
 
-INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include
+INCLUDE_FLAGS = -I${SCAI_BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include
 
 LD_FLAGS = ${SCAI_LD_FLAGS} -Wl,-rpath=${SCAI_ROOT}/lib 
 
-EXECUTABLE: matmul.exe matadd.exe conversion.exe
+EXECUTABLE: ${EXECUTABLES_BENCH}
 
 .SUFFIXES:
 

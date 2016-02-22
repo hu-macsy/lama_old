@@ -34,7 +34,10 @@
 #include <scai/tasking/SyncToken.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+
+#include <scai/common/Thread.hpp>
+#include <scai/common/macros/throw.hpp>
+#include <scai/common/macros/assert.hpp>
 
 namespace scai
 {
@@ -155,6 +158,46 @@ void SyncToken::setSynchronized()
         mSynchronizedFunctions[i]();
     }
 }
+
+/* ----------------------------------------------------------------------- */
+
+void SyncToken::setCurrent()
+{
+    SyncToken* current = currentSyncToken.get();
+
+    if ( current != NULL )
+    {
+        SCAI_LOG_ERROR( logger, "setCurrent: " << *this << ", but current is: " << *current )
+    }
+
+    currentSyncToken.set( this );
+}
+
+void SyncToken::unsetCurrent()
+{
+    SyncToken* current = currentSyncToken.get();
+
+    if ( current == NULL )
+    {
+        SCAI_LOG_WARN( logger, "unset current sync token, not available" )
+    } 
+    else 
+    {
+        SCAI_LOG_INFO( logger, "no more current sync token " << *current )
+        currentSyncToken.set( NULL );
+    }
+}
+
+SyncToken* SyncToken::getCurrentSyncToken()
+{
+    return currentSyncToken.get();
+}
+
+// we can rely on the fact that thread-private variable is initialized with NULL 
+
+common::ThreadPrivatePtr<SyncToken> SyncToken::currentSyncToken;
+
+/* ----------------------------------------------------------------------- */
 
 } /* end namespace tasking */
 

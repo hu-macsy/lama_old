@@ -35,14 +35,16 @@
 
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Thread.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/unique_ptr.hpp>
+#include <scai/common/macros/throw.hpp>
 
 #include <scai/common/bind.hpp>
 
 using namespace std;
+using namespace scai;
 using namespace scai::tasking;
 
-static const int WORKLOAD = 10;
+static const int WORKLOAD = 200;
 
 /* ----------------------------------------------------------------------- */
 
@@ -74,18 +76,20 @@ void work( int& out )
 
 void doTasking( int N )
 {
-    ThreadPool pool( 1 );
+    common::scoped_array<int> arg( new int[N] );
+    common::scoped_array<Task*> tasks( new Task*[N] );
 
     for ( int i = 0; i < N; ++i )
     {
-        int arg = 1;
+        arg[i] = 1;
         int omp_threads = 1;
 
-        Task task( scai::common::bind( &work, scai::common::ref( arg )), omp_threads );
- 
-        // Note: synchronization is expensive
+        tasks[i] = new Task( common::bind( &work, common::ref( arg[i] )), omp_threads );
+    }
 
-        task.synchronize();
+    for ( int i = 0; i < N; ++i )
+    {
+        delete tasks[i];
     }
 }
 
@@ -93,11 +97,40 @@ void doTasking( int N )
 
 void doThreading( int N )
 {
+    static int MAX_THREADS = 256;
+
+    using common::Thread;
+
+    common::scoped_array<int> arg( new int[N] );
+    common::scoped_array<Thread*> threads( new Thread*[N] );
+
     for ( int i = 0; i < N; ++i )
     {
-        int arg = 1;
+        arg[i] = 1;
+        threads[i] = new Thread( &work, arg[i] );
 
-        scai::common::Thread thread( &work, arg );
+        if ( i > MAX_THREADS )
+        {
+            threads[i - MAX_THREADS]->join();
+        }
+    }
+
+    for ( int i = 0; i < N; ++i )
+    {
+        delete threads[i];
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+void doSelf( int N )
+{
+    common::scoped_array<int> arg( new int[N] );
+
+    for ( int i = 0; i < N; ++i )
+    {
+        arg[i] = 1;
+        work( arg[i] );
     }
 }
 
@@ -105,20 +138,29 @@ void doThreading( int N )
 
 int main()
 {
+    // static int N = 100000;
     static int N = 100000;
 
-    double time1 = scai::common::Walltime::get();
+    double time0 = common::Walltime::get();
+    
+    doSelf( N );
+
+    time0 = common::Walltime::get() - time0;
+
+    double time1 = common::Walltime::get();
 
     doThreading( N );
  
-    time1 = scai::common::Walltime::get() - time1;
+    time1 = common::Walltime::get() - time1;
 
-    double time2 = scai::common::Walltime::get();
+    double time2 = common::Walltime::get();
 
     doTasking( N );
  
-    time2 = scai::common::Walltime::get() - time2;
+    time2 = common::Walltime::get() - time2;
 
-    cout << "Execution of " << N << " threads, time for threads = " << time1 
-         << ", time for tasks = " << time2 << endl;
+    cout << "Execution of " << N << " work routines." << endl;
+    cout << "Time for self    = " << time0 << endl;
+    cout << "Time for threads = " << time1 << endl;
+    cout << "Time for tasks   = " << time2 << endl;
 }

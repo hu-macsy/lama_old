@@ -42,21 +42,8 @@ scai_project (
         LAMAArrayTest
 )
 
-find_package ( Boost COMPONENTS unit_test_framework )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+cuda_add_executable ( CUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
 
-    include_directories ( ${Boost_INCLUDE_DIR} )
-
-    cuda_add_executable ( CUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
-
-    target_link_libraries ( CUDATest 
-        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        scai_hmemo
-        )
-
-else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-
-    message ( STATUS "memory/test/cuda/CUDATest not built, no Boost UnitTest Framework found" )
-
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+target_link_libraries ( CUDATest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_hmemo )

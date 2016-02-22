@@ -47,9 +47,8 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/SparseMatrixHelper.hpp>
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/SameMatrixHelper.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 
@@ -57,6 +56,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 BOOST_AUTO_TEST_SUITE( MatrixTest )
 
@@ -116,9 +116,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
 // Test filename constructor and writing to file for each matrx type
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 {
-    CommunicatorPtr comm = Communicator::get(); // get default, MPI or serial
+    CommunicatorPtr comm = Communicator::getCommunicator(); // get default, MPI or serial
     SCAI_LOG_INFO( logger, "ReadWriteTest for MatrixType = " << typeid( MatrixType ).name() );
-    std::string prefix = Configuration::getInstance().getPath();
+    std::string prefix = scai::test::Configuration::getPath();
     SCAI_LOG_INFO( logger, "prefix = " << prefix );
     SCAI_LOG_INFO( logger, "readWriteTest: check loading float matrix" );
 // load an available testfile matrix.
@@ -126,6 +126,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     MatrixType formattedMatrix( formattedInputFile );
     SCAI_LOG_INFO( logger, "formatted input matrix = " << formattedMatrix );
 
+    /*
+     * Its not sure why we need to test with these big matrices here
     if ( formattedMatrix.getMatrixKind() == Matrix::SPARSE )
     {
         // just some additional test, be careful, is too large for dense matrices
@@ -135,26 +137,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
         MatrixType xdrPoisson( formattedInputFile );
         testSameMatrix( formattedPoisson, xdrPoisson );
     }
+    */
 
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
     std::string formattedFileName = prefix + "/test_matrix_formatted.tmp.frm";
-    formattedMatrix.writeToFile( formattedFileName, File::FORMATTED, File::FLOAT, File::INT, File::INT );
+    formattedMatrix.writeToFile( formattedFileName, File::FORMATTED, scai::common::scalar::FLOAT, File::INT, File::INT );
     MatrixType readFormattedMatrix( formattedFileName );
     testSameMatrix( formattedMatrix, readFormattedMatrix );
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading XDR matrix" );
     std::string xdrFileName = prefix + "/test_matrix_xdr.tmp.frm";
-    formattedMatrix.writeToFile( xdrFileName, File::XDR, File::DOUBLE, File::LONG, File::LONG );
+    formattedMatrix.writeToFile( xdrFileName, File::XDR, scai::common::scalar::DOUBLE, File::LONG, File::LONG );
     MatrixType readXDRMatrix( xdrFileName );
     testSameMatrix( readXDRMatrix, formattedMatrix );
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading binary matrix" );
     std::string binaryFileName = prefix + "/test_matrix_bin.tmp.frm";
 // Be careful: binary read must fit to the format that has been used for the write
-    formattedMatrix.writeToFile( binaryFileName, File::BINARY, File::INTERNAL, File::INT, File::INT );
+    formattedMatrix.writeToFile( binaryFileName, File::BINARY, scai::common::scalar::INTERNAL, File::INT, File::INT );
     MatrixType readBinaryMatrix( binaryFileName );
     testSameMatrix( formattedMatrix, readBinaryMatrix );
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading Matrix Market matrix" );
     std::string matrixMarketFileName = prefix + "/test_matrix_mm.tmp.mtx";
-    formattedMatrix.writeToFile( matrixMarketFileName, File::MATRIX_MARKET, File::DOUBLE );
+    formattedMatrix.writeToFile( matrixMarketFileName, File::MATRIX_MARKET, scai::common::scalar::DOUBLE );
     MatrixType readMarketMatrix( matrixMarketFileName );
     testSameMatrix( formattedMatrix, readMarketMatrix );
 }

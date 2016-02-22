@@ -42,7 +42,7 @@
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // CUDA
 #include <cublas_v2.h>
@@ -78,7 +78,7 @@ int CUDAContext::numUsedDevices = 0;
 
 CUDAContext::CUDAContext( int deviceNr ) : 
 
-    Context( context::CUDA ), 
+    Context( common::context::CUDA ), 
     mDeviceNr( deviceNr )
 
 {
@@ -112,8 +112,13 @@ CUDAContext::CUDAContext( int deviceNr ) :
                         "cuCtxCreate for " << *this )
     SCAI_CUSPARSE_CALL( cusparseCreate( &CUDAContext_cusparseHandle ),
                         "Initialization of CUSparse library: cusparseCreate" );
+
+    SCAI_LOG_INFO( logger, "Initialized: cuSparse " << CUDAContext_cusparseHandle )
+
     SCAI_CUBLAS_CALL( cublasCreate( &CUDAContext_cublasHandle ), "Initialization of CUBlas library: cublasCreate" );
-    SCAI_LOG_INFO( logger, "Initialized: CUBLAS, CuSparse" )
+
+    SCAI_LOG_INFO( logger, "Initialized: cuBLAS " << CUDAContext_cublasHandle )
+
     int flags = 0; // must be 0 by specification of CUDA driver API
     SCAI_CUDA_DRV_CALL( cuStreamCreate( &mTransferStream, flags ), "cuStreamCreate for transfer failed" )
     SCAI_CUDA_DRV_CALL( cuStreamCreate( &mComputeStream, flags ), "cuStreamCreate for compute failed" );
@@ -199,7 +204,7 @@ CUDAContext::~CUDAContext()
 
 /* ----------------------------------------------------------------------------- */
 
-MemoryPtr CUDAContext::getMemoryPtr() const
+MemoryPtr CUDAContext::getLocalMemoryPtr() const
 {
     MemoryPtr memory;
 

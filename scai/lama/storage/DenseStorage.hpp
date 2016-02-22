@@ -39,9 +39,6 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
-// local library
-#include <scai/lama/Scalar.hpp>
-
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
@@ -59,7 +56,8 @@ template<typename ValueType> class DenseStorage;
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DenseStorageView: public CRTPMatrixStorage<DenseStorageView<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT DenseStorageView:
+    public CRTPMatrixStorage<DenseStorageView<ValueType>,ValueType>
 {
 public:
 
@@ -78,7 +76,7 @@ public:
      * @param[in] initializedData should be true for existing data to verify good sizes
      */
     DenseStorageView(
-        LAMAArray<ValueType>& data,
+        hmemo::HArray<ValueType>& data,
         const IndexType numRows,
         const IndexType numColumns,
         bool initializedData = true );
@@ -87,13 +85,13 @@ public:
 
     virtual ~DenseStorageView();
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual DenseStorageView<ValueType>* newMatrixStorage() const;
+
     /** Implementation of MatrixStorage::copy for derived class. */
 
     virtual DenseStorageView<ValueType>* copy() const;
-
-    /** Implementation of MatrixStorage::create for derived class. */
-
-    virtual DenseStorageView<ValueType>* clone() const;
 
     /** Test the storage data for inconsistencies.
      *
@@ -149,10 +147,10 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const LAMAArray<OtherValueType>& values,
-        const ContextPtr loc );
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc );
 
     /* Print relevant information about matrix storage format. */
 
@@ -170,7 +168,7 @@ public:
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
-    void prefetch( const ContextPtr location ) const;
+    void prefetch( const hmemo::ContextPtr location ) const;
 
     /** Will wait for all outstanding asynchronous data transfers. */
 
@@ -178,11 +176,11 @@ public:
 
     /** Getter routine for the matrix data array (write). */
 
-    LAMAArray<ValueType>& getData();
+    hmemo::HArray<ValueType>& getData();
 
     /** Getter routine for the matrix data array (read-only). */
 
-    const LAMAArray<ValueType>& getData() const;
+    const hmemo::HArray<ValueType>& getData() const;
 
     /** Getter routine for the number of stored values. */
 
@@ -220,10 +218,10 @@ public:
      */
     template<typename OtherValueType>
     void buildCSR(
-        LAMAArray<IndexType>& csrIA,
-        LAMAArray<IndexType>* csrJA,
-        LAMAArray<OtherValueType>* csrValues,
-        const ContextPtr loc ) const;
+        hmemo::HArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>* csrJA,
+        hmemo::HArray<OtherValueType>* csrValues,
+        const hmemo::ContextPtr loc ) const;
 
     /******************************************************************
      *   invert                                                        *
@@ -238,21 +236,21 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVector for Dense */
 
     virtual void matrixTimesVector(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrix for Dense */
     /** since 1.0.1 */
 
     virtual void vectorTimesMatrix(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::matrixTimesTimes for Dense */
 
@@ -286,12 +284,12 @@ public:
     /** Template method for getting row. */
 
     template<typename OtherType>
-    void getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const;
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
 
     /** Template method for getting diagonal. */
 
     template<typename OtherType>
-    void getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const;
+    void getDiagonalImpl( hmemo::HArray<OtherType>& diagonal ) const;
 
     /** This method replaces the diagonal
      *
@@ -300,11 +298,11 @@ public:
      * Calculations are dependent to the diagonal property
      */
     template<typename OtherType>
-    void setDiagonalImpl( const LAMAArray<OtherType>& diagonal );
+    void setDiagonalImpl( const hmemo::HArray<OtherType>& diagonal );
 
     /** Implementation of pure method. */
 
-    void setDiagonalImpl( const Scalar scalar );
+    void setDiagonalImpl( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -313,11 +311,15 @@ public:
     /** Template version used for virtual routine scale with known value type. */
 
     template<typename OtherType>
-    void scaleImpl( const LAMAArray<OtherType>& values );
+    void scaleImpl( const hmemo::HArray<OtherType>& values );
 
     /** Implementation of pure method.  */
 
-    virtual void scaleImpl( const Scalar value );
+    virtual void scaleImpl( const ValueType value );
+
+    /** Implementation of pure method.  */
+
+    virtual void conj();
 
     virtual size_t getMemoryUsageImpl() const;
 
@@ -340,7 +342,7 @@ protected:
     using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mContext;
 
-    LAMAArray<ValueType>& mData; //!<  Reference to the matrix value array
+    hmemo::HArray<ValueType>& mData; //!<  Reference to the matrix value array
 
     /** Logger just for this class / matrix format. */
 
@@ -370,6 +372,16 @@ private:
     /** @brief invert only for DenseStorage. */
 
     void invertDense( const DenseStorageView<ValueType>& other );
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 };
 
 /* --------------------------------------------------------------------------- */
@@ -379,7 +391,9 @@ private:
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DenseStorage: public DenseStorageView<ValueType>
+class COMMON_DLL_IMPORTEXPORT DenseStorage:
+        public DenseStorageView<ValueType>,
+        public _MatrixStorage::Register<DenseStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -406,7 +420,7 @@ public:
      * @param[in] numRows       the number of rows of the matrix
      * @param[in] numColumns    the number of columns of the matrix
      */
-    DenseStorage( const LAMAArray<ValueType>& data, const IndexType numRows, const IndexType numColumns );
+    DenseStorage( const hmemo::HArray<ValueType>& data, const IndexType numRows, const IndexType numColumns );
 
     /** Default copy constructor is overridden */
 
@@ -418,7 +432,7 @@ public:
 
     /** Copy constructor can take any matrix storage or context. */
 
-    DenseStorage( const _MatrixStorage& other, const ContextPtr context );
+    DenseStorage( const _MatrixStorage& other, const hmemo::ContextPtr context );
 
     /** Override MatrixStorage::getTypeName() */
 
@@ -432,6 +446,10 @@ public:
 
     virtual ~DenseStorage();
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual DenseStorage<ValueType>* newMatrixStorage() const;
+
     using MatrixStorage<ValueType>::mNumRows;
     using MatrixStorage<ValueType>::mNumColumns;
     using MatrixStorage<ValueType>::assign;
@@ -440,7 +458,17 @@ public:
 
 private:
 
-    LAMAArray<ValueType> mDataArray; //!<  matrix values, size is mNumRows x mNumColumns
+    hmemo::HArray<ValueType> mDataArray; //!<  matrix values, size is mNumRows x mNumColumns
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 
 };
 

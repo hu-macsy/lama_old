@@ -34,8 +34,11 @@
 #pragma once
 
 // internal scai libraries
+
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -68,27 +71,40 @@ enum FileType
      * @brief the Matrix Market Format
      *        (see http://math.nist.gov/matrixMarket for details).
      */
-    MATRIX_MARKET
+    MATRIX_MARKET, 
+    /**
+     * @brief unspecified, used internally 
+     */
+    DEFAULT
 };
 
-/**
- * @brief Defines the supported data types of the external files
- *
- * For convenience: values and order should be the same as Scalar::ScalarType
+/*
+ * Output of ScalarType in stream by writing strings instead of numbers
  */
-enum DataType
+
+static inline std::ostream& operator<<( std::ostream& stream, const FileType& object )
 {
-    INTEGER, //!< synonymous for IndexType
-    FLOAT,
-    DOUBLE,
-    LONG_DOUBLE,
-    COMPLEX,
-    DOUBLE_COMPLEX,
-    LONG_DOUBLE_COMPLEX,
-    PATTERN, //!< file for matrix does not contain values
-    INTERNAL, //!< takes the internal data type currently used
-    UNKNOWN //!< not specified or identified
-};
+    switch ( object ) 
+    {
+        case BINARY:
+            stream << "BINARY";
+            break;
+        case FORMATTED:
+            stream << "FORMATTED";
+            break;
+        case XDR:
+            stream << "XDR";
+            break;
+        case MATRIX_MARKET:
+            stream << "MATRIX_MARKET";
+            break;
+        default:
+            stream << "<unknown_file_type>";
+     }
+     return stream;
+}
+
+// typedef ScalarType DataType;
 
 /**
  * @brief Defines the supported index data types of the external files
@@ -98,9 +114,7 @@ enum IndexDataType
     LONG, INT
 };
 
-}
-;
-// namespace File
+}  // namespace File
 
 /** @brief Help routine to determine the size (in bytes) for the values in a file.
  *
@@ -110,26 +124,23 @@ enum IndexDataType
  */
 
 template<typename ValueType>
-long getDataTypeSize( const File::DataType dataType )
+long getDataTypeSize( const common::scalar::ScalarType dataType )
 {
     switch( dataType )
-    {
-        case File::DOUBLE:
-            return common::TypeTraits<double>::size;
+    { 
 
-        case File::FLOAT:
-            return common::TypeTraits<float>::size;
+#define LAMA_FILE_CASE( z, I, _ )                                        \
+        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :       \
+            return sizeof( ARITHMETIC_HOST_TYPE_##I );                  \
 
-        case File::COMPLEX:
-            return common::TypeTraits<ComplexFloat>::size;
+        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_FILE_CASE, _ )
 
-        case File::DOUBLE_COMPLEX:
-            return common::TypeTraits<ComplexDouble>::size;
+#undef LAMA_FILE_CASE
 
-        case File::INTERNAL:
-            return common::TypeTraits<ValueType>::size;
+        case common::scalar::INTERNAL:
+            return sizeof( ValueType );
 
-        case File::PATTERN:
+        case common::scalar::PATTERN:
             return 0;
 
         default:
@@ -144,43 +155,33 @@ long getDataTypeSize( const File::DataType dataType )
  */
 
 template<typename ValueType>
-File::DataType getDataType( const long dataTypeSize )
+common::scalar::ScalarType getDataType( const long dataTypeSize )
 {
-    if( dataTypeSize == common::TypeTraits<ValueType>::size )
+    if( dataTypeSize == sizeof( ValueType ) )
     {
-        return File::INTERNAL;
+        return common::scalar::INTERNAL;
     }
     else if( dataTypeSize == 0 )
     {
-        return File::PATTERN;
+        return common::scalar::PATTERN;
     }
-    else if( dataTypeSize == common::TypeTraits<float>::size )
-    {
-        return File::FLOAT;
-    }
-    else if( dataTypeSize == common::TypeTraits<double>::size )
-    {
-        return File::DOUBLE;
-    }
-    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
-    {
-        // never be here as: TypeTraits<double>::size == TypeTraits<ComplexFloat>::size
-        // Complex files are only used by INTERNAL
-        return File::COMPLEX;
-    }
-    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
-    {
-        return File::DOUBLE_COMPLEX;
-    }
-    else if( dataTypeSize == common::TypeTraits<LongDouble>::size )
-    {
-        // never be here as: TypeTraits<ComplexDouble>::size == TypeTraits<LongDouble>::size
-        // LongDouble files are only used by INTERNAL
-        return File::LONG_DOUBLE;
-    }
+
+#define LAMA_DATA_CASE( z, I, _ )                                       \
+    else if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )      \
+    {                                                                   \
+        return common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype;     \
+    }                                                                   \
+
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DATA_CASE, _ )
+
+#undef LAMA_DATA_CASE
+
+    // Note: some branches are never called as 
+    //       sizeof( ARITHMTIC_HOST_TYPE_k ) == sizeof( ARITHMETIC_HOST_TYPE_j) is possible
+
     else
     {
-        return File::UNKNOWN;
+        return common::scalar::UNKNOWN;
     }
 }
 
@@ -190,10 +191,10 @@ long getIndexDataTypeSize( const File::IndexDataType indexDataType )
     switch( indexDataType )
     {
         case File::LONG:
-            return common::TypeTraits<long>::size;
+            return sizeof( long );
 
         case File::INT:
-            return common::TypeTraits<int>::size;
+            return sizeof( int );
 
         default:
             return 0;

@@ -35,11 +35,12 @@
 
 // local library
 #include <scai/lama/io/FileType.hpp>
-#include <scai/lama/Communicator.hpp>
-#include <scai/lama/Scalar.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
+
+#include <scai/common/Factory.hpp>
 
 // std
 #include <ostream>
@@ -47,23 +48,22 @@
 namespace scai
 {
 
-using hmemo::Context;
-using hmemo::ContextPtr;
-using hmemo::ContextArray;
-using hmemo::LAMAArray;
-using hmemo::LAMAArrayRef;
+// Forward declarations
 
 namespace tasking
 {
 	class SyncToken;
 }
 
+namespace dmemo
+{
+    class Distribution;
+    class Halo;
+    class Redistributor;
+}
+
 namespace lama
 {
-
-// Forward declaration
-
-class Distribution;
 
 template<typename ValueType> class CSRStorage;
 
@@ -96,6 +96,43 @@ COMMON_DLL_IMPORTEXPORT const char* format2Str( const MatrixStorageFormat storag
 
 COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
 
+/** Key type used for the Matrix factory.
+ *
+ *  Note: own struct instead of std::pair to allow definition of operator <<
+ */
+
+struct MatrixStorageCreateKeyType
+{
+    Format::MatrixStorageFormat first;
+    common::scalar::ScalarType second;
+
+    MatrixStorageCreateKeyType( Format::MatrixStorageFormat arg1, common::scalar::ScalarType arg2 )
+    {
+        first = arg1;
+        second = arg2;
+    }
+
+    bool operator< ( const MatrixStorageCreateKeyType& other ) const
+    {
+        if ( first < other.first )
+        {
+            return true;
+        }
+        else if ( first == other.first )
+        {
+            return second < other.second;
+        }
+
+        return false;
+    }
+};
+
+inline std::ostream& operator<<( std::ostream& stream, const MatrixStorageCreateKeyType& object )
+{
+    stream << object.first << object.second;
+    return stream;
+}
+
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.
 
@@ -112,7 +149,9 @@ COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
  storage should take place.
  */
 
-class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public common::Printable
+class COMMON_DLL_IMPORTEXPORT _MatrixStorage:
+    public common::Factory<MatrixStorageCreateKeyType, _MatrixStorage*>,
+    public common::Printable
 {
 public:
 
@@ -173,18 +212,18 @@ public:
      *  @param[in] context specifies where the storage should be allocated and where operations should be done
      */
 
-    void setContextPtr( ContextPtr context );
+    void setContextPtr( hmemo::ContextPtr context );
 
     /** @brief Getter for the preferred context of the storage data, returns pointer. */
 
-    inline ContextPtr getContextPtr() const;
+    inline hmemo::ContextPtr getContextPtr() const;
 
     /** @brief Pure method that prefetches storage data into a given context.
      *
      *  @param context specifies location where data will resize
      */
 
-    virtual void prefetch( const ContextPtr context ) const = 0;
+    virtual void prefetch( const hmemo::ContextPtr context ) const = 0;
 
     /** @brief Method that prefetches storage data to its preferred location. */
 
@@ -231,7 +270,7 @@ public:
      *
      */
 
-    virtual void getRow( ContextArray& row, const IndexType i ) const = 0;
+    virtual void getRow( hmemo::_HArray& row, const IndexType i ) const = 0;
 
     /** This method returns the diagonal of the matrix.
      *
@@ -241,25 +280,17 @@ public:
      * for which implicit conversion is available.
      */
 
-    virtual void getDiagonal( ContextArray& diagonal ) const = 0;
+    virtual void getDiagonal( hmemo::_HArray& diagonal ) const = 0;
 
     /** This method sets the diagonal of a matrix storage.
      *
      * Implementation of this routine must be provided by all derived classes.
      */
-    virtual void setDiagonal( const ContextArray& diagonal ) = 0;
-
-    virtual void setDiagonal( const Scalar value ) = 0;
+    virtual void setDiagonalV( const hmemo::_HArray& diagonal ) = 0;
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
      ******************************************************************/
-
-    /** This method scales all matrix values with a scalar
-     *
-     * @param[in] value is the source value
-     */
-    virtual void scale( const Scalar value ) = 0;
 
     /** This method scales each row of a matrix with a separate value.
      *
@@ -267,7 +298,7 @@ public:
      *
      * Each row of the matrix is scaled with the corresponding value.
      */
-    virtual void scale( const ContextArray& values ) = 0;
+    virtual void scaleRows( const hmemo::_HArray& values ) = 0;
 
     /******************************************************************
      *  General operations on a matrix                                 *
@@ -283,7 +314,7 @@ public:
      *    * this routine is the same as an assign in case of a replicated distribution
      */
 
-    virtual void localize( const _MatrixStorage& global, const Distribution& rowDist );
+    virtual void localize( const _MatrixStorage& global, const dmemo::Distribution& rowDist );
 
     /** Get the total number of non-zero values in the matrix.
      *
@@ -305,7 +336,7 @@ public:
 
     virtual IndexType getNumValues() const;
 
-    inline const LAMAArray<IndexType>& getRowIndexes() const;
+    inline const hmemo::HArray<IndexType>& getRowIndexes() const;
 
     /**
      * @brief Get the number of entries in each row.
@@ -316,14 +347,14 @@ public:
      *
      * \code
      *     DenseStorage<double> dense( ... )
-     *     LAMAArray<IndexType> ia;
+     *     HArray<IndexType> ia;
      *     dense.buildCSRSizes( ia );
      * \endcode
      *
      * This routine must be provided by each matrix storage format.
      */
 
-    virtual void buildCSRSizes( LAMAArray<IndexType>& csrIA ) const = 0;
+    virtual void buildCSRSizes( hmemo::HArray<IndexType>& csrIA ) const = 0;
 
     /**
      * @brief Get the matrix data of the storage in CSR format.
@@ -338,8 +369,8 @@ public:
      *
      * \code
      *     DenseStorage<double> dense( ... )
-     *     LAMAArray<IndexType> ia, ja;
-     *     LAMAArray<float> values;
+     *     HArray<IndexType> ia, ja;
+     *     HArray<float> values;
      *     // get non-zero values of dense matrix as float values
      *     dense.buildCSRData( ia, ja, values );
      * \endcode
@@ -348,9 +379,9 @@ public:
      */
 
     virtual void buildCSRData(
-        LAMAArray<IndexType>& csrIA,
-        LAMAArray<IndexType>& csrJA,
-        ContextArray& csrValues ) const = 0;
+        hmemo::HArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::_HArray& csrValues ) const = 0;
 
     /** Each storage class must provide a routine to set CSR storage data.
      *
@@ -366,9 +397,9 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const LAMAArray<IndexType>& csrIA,
-        const LAMAArray<IndexType>& csrJA,
-        const ContextArray& csrValues ) = 0;
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::_HArray& csrValues ) = 0;
 
     /** Assign of matrix storage with any format or value type.
      *
@@ -389,18 +420,18 @@ public:
     _MatrixStorage& operator=( const _MatrixStorage& other );
 
     /******************************************************************
-     *   Help routines (ToDo: -> LAMAArrayUtils ?? )                   *
+     *   Help routines (ToDo: -> HArrayUtils ?? )                   *
      ******************************************************************/
 
     /** Help routines to convert arrays with sizes to offsets and vice versa */
 
-    static void offsets2sizes( LAMAArray<IndexType>& offsets );
+    static void offsets2sizes( hmemo::HArray<IndexType>& offsets );
 
-    static void offsets2sizes( LAMAArray<IndexType>& sizes, const LAMAArray<IndexType>& offsets );
+    static void offsets2sizes( hmemo::HArray<IndexType>& sizes, const hmemo::HArray<IndexType>& offsets );
 
     /** Utitily to compute the offset array from a sizes array. */
 
-    static IndexType sizes2offsets( LAMAArray<IndexType>& sizes );
+    static IndexType sizes2offsets( hmemo::HArray<IndexType>& sizes );
 
     /** Returns the number of bytes needed for the current matrix.
      *
@@ -417,19 +448,6 @@ public:
 
     virtual void check( const char* msg ) const = 0;
 
-    /** Each matrix storage must provide a routine that creates a new object
-     *  of the same matrix type (same format and same value type).
-     *
-     *  The implementations in derived classes should use covariant
-     *  return types to allow polymorphic creation of objects.
-     *
-     *  Note: as shared_ptr cannot be used for for covariant return types
-     *        this routine returns directly a new created object that should
-     *        be wrapped as a shared pointer at calling site.
-     */
-
-    virtual _MatrixStorage* clone() const = 0;
-
     /** Each matrix storage must provide a routine that makes a new copy
      *  of the input matrix (same format and same value type).
      *
@@ -443,6 +461,18 @@ public:
 
     virtual _MatrixStorage* copy() const = 0;
 
+    /**  Each matrix storage must provide a routine that creates a new matrix storage
+      *  of the same type (same format, same value type, same context)
+      */
+
+    virtual _MatrixStorage* newMatrixStorage() const = 0;
+
+    /**  Returning a pair of storage format and value type for using with
+      *  the factory
+      */
+
+    virtual MatrixStorageCreateKeyType getCreateValue() const = 0;
+
     /**
      * @brief transformation from matrix type to a csr graph
      *
@@ -452,18 +482,25 @@ public:
      * @param[out]  adjIA   the ia array of the csr graph
      * @param[out]  adjJA   the ja array of the csr graph
      * @param[out]  vwgt    ToDo
-     * @param[in]   comm    Communicator is used to determine number of partitions
-     * @param[in]   globalRowIndexes ToDo
-     * @param[out]  vtxdist ToDo
+     * @param[in]   globalRowIndexes are the global indexes of the local rows ( can be NULL for identity )
      * @since 1.1.0
      */
     virtual void buildCSRGraph(
-        IndexType* adjIA,
-        IndexType* adjJA,
-        IndexType* vwgt,
-        CommunicatorPtr comm,
-        const IndexType* globalRowIndexes = NULL,
-        IndexType* vtxdist = NULL ) const;
+        IndexType adjIA[],
+        IndexType adjJA[],
+        IndexType vwgt[],
+        const IndexType* globalRowIndexes ) const;
+
+    /******************************************************************
+     *   File I/O for MatrixStorage                                    *
+     ******************************************************************/
+
+    virtual void writeToFile(
+        const std::string& fileName,
+        const File::FileType fileType = File::BINARY,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
+        const File::IndexDataType indexDataTypeIA = File::INT,
+        const File::IndexDataType indexDataTypeJA = File::INT ) const = 0;
 
 protected:
 
@@ -496,15 +533,15 @@ protected:
 
     IndexType mNumColumns; //!< number of matrix columns
 
-    LAMAArray<IndexType> mRowIndexes; //!< used in case of sparse representation of ia
+    hmemo::HArray<IndexType> mRowIndexes; //!< used in case of sparse representation of ia
 
     float mCompressThreshold; //!< ratio at which compression is done, 0 for never, 1 for always
 
     bool mDiagonalProperty; //!< if true, diagonal elements are always stored at first position in each row
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+    hmemo::ContextPtr mContext;//!< preferred context for the storage
 
-    ContextPtr    mContext;//!< preferred context for the storage
+    SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
 protected:
 
@@ -515,8 +552,6 @@ protected:
 
     virtual bool checkDiagonalProperty() const = 0;
 };
-
-class Distribution;
 
 /** The template class MatrixStorage<ValueType> is the base
  *  class for all matrix storage classes of a given ValueType.
@@ -542,13 +577,13 @@ public:
 
     virtual ~MatrixStorage();
 
-    /** Override _MatrixStorage::create with routine that uses covariant return type. */
-
-    virtual MatrixStorage* clone() const = 0;
-
     /** Override _MatrixStorage::copy with routine that uses covariant return type. */
 
     virtual MatrixStorage* copy() const = 0;
+
+    /** Override _MatrixStorage::newMatrixStorage with routine that uses covariant return type. */
+
+    virtual MatrixStorage* newMatrixStorage() const = 0;
 
     /** Implementation of pure method. */
 
@@ -575,8 +610,16 @@ public:
     void setDenseData(
         const IndexType numRows,
         const IndexType numColumns,
-        const ContextArray& values,
+        const hmemo::_HArray& values,
         const ValueType eps = 0.0 );
+
+    /** This method scales all matrix values with a scalar
+     *
+     * @param[in] value is the source value
+     */
+    virtual void scale( const ValueType value ) = 0;
+    virtual void conj() = 0;
+    virtual void setDiagonal( const ValueType value ) = 0;
 
     /**
      * @brief fills matrix storage by csr sparse data.
@@ -618,8 +661,8 @@ public:
     virtual void joinHalo(
         const _MatrixStorage& localData,
         const _MatrixStorage& haloData,
-        const class Halo& halo,
-        const class Distribution& colDist,
+        const dmemo:: Halo& halo,
+        const dmemo::Distribution& colDist,
         const bool keepDiagonalProperty );
 
     /** Splitting of matrix storage for halo
@@ -634,9 +677,9 @@ public:
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        class Halo& halo,
-        const class Distribution& colDist,
-        const class Distribution* rowDist ) const;
+        dmemo::Halo& halo,
+        const dmemo::Distribution& colDist,
+        const dmemo::Distribution* rowDist ) const;
 
     /** Special version of splitHalo where this matrix contains no local
      *  data and where haloData is aliased to this matrix.
@@ -646,7 +689,7 @@ public:
      *  exchange schedule.
      */
 
-    virtual void buildHalo( class Halo& halo, const class Distribution& colDist );
+    virtual void buildHalo( dmemo::Halo& halo, const dmemo::Distribution& colDist );
 
     /** This method build for this matrix the local part of a global matrix.
      *
@@ -656,7 +699,7 @@ public:
      *  Attention: globalMatrix might be aliased to this storage.
      */
 
-    virtual void localize( const _MatrixStorage& globalData, const class Distribution& rowDist );
+    virtual void localize( const _MatrixStorage& globalData, const dmemo::Distribution& rowDist );
 
     /** This routine builds the full matrix storage for a distributed matrix.
      *
@@ -665,7 +708,7 @@ public:
      *  the global matrix data.
      */
 
-    virtual void replicate( const _MatrixStorage& localData, const class Distribution& rowDist );
+    virtual void replicate( const _MatrixStorage& localData, const dmemo::Distribution& rowDist );
 
     /** Get a value of the matrix.
      *
@@ -682,9 +725,9 @@ public:
      *  For efficiency a derived class might override this method, e.g. for CSR storage.
      */
     virtual void buildCSCData(
-        LAMAArray<IndexType>& cscIA,
-        LAMAArray<IndexType>& cscJA,
-        LAMAArray<ValueType>& cscValues ) const;
+        hmemo::HArray<IndexType>& cscIA,
+        hmemo::HArray<IndexType>& cscJA,
+        hmemo::HArray<ValueType>& cscValues ) const;
 
     /** Format conversion of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.
@@ -710,44 +753,44 @@ public:
      *
      */
 
-    virtual void redistribute( const _MatrixStorage& other, const class Redistributor& redistributor );
+    virtual void redistribute( const _MatrixStorage& other, const dmemo::Redistributor& redistributor );
 
     /** Special case where other storage is CSR of same type avoids temporary CSR conversion. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const class Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
 
     /** Build a halo matrix with all rows of required indexes */
 
     virtual void exchangeHalo(
-        const class Halo& halo,
+        const dmemo::Halo& halo,
         const MatrixStorage<ValueType>& matrix,
-        const class Communicator& comm );
+        const dmemo::Communicator& comm );
 
     /** Conversion routine of Compressed Sparse Row data to Compressed Sparse Column.  */
 
     static void convertCSR2CSC(
-        LAMAArray<IndexType>& colIA,
-        LAMAArray<IndexType>& colJA,
-        LAMAArray<ValueType>& colValues,
+        hmemo::HArray<IndexType>& colIA,
+        hmemo::HArray<IndexType>& colJA,
+        hmemo::HArray<ValueType>& colValues,
         const IndexType numColumns,
-        const LAMAArray<IndexType>& rowIA,
-        const LAMAArray<IndexType>& rowJA,
-        const LAMAArray<ValueType>& rowValues,
-        const ContextPtr loc );
+        const hmemo::HArray<IndexType>& rowIA,
+        const hmemo::HArray<IndexType>& rowJA,
+        const hmemo::HArray<ValueType>& rowValues,
+        const hmemo::ContextPtr loc );
     /**
      *  Method that joins rows of another matrix storage
      *
      *   row(i) of out contains all elements of in(k) with rowIndexes[k] == i
      */
     static void joinRows(
-        LAMAArray<IndexType>& outIA,
-        LAMAArray<IndexType>& outJA,
-        LAMAArray<ValueType>& outValues,
+        hmemo::HArray<IndexType>& outIA,
+        hmemo::HArray<IndexType>& outJA,
+        hmemo::HArray<ValueType>& outValues,
         const IndexType numRows,
-        const LAMAArray<IndexType>& rowIndexes,
-        const LAMAArray<IndexType>& inIA,
-        const LAMAArray<IndexType>& inJA,
-        const LAMAArray<ValueType>& inValues );
+        const hmemo::HArray<IndexType>& rowIndexes,
+        const hmemo::HArray<IndexType>& inIA,
+        const hmemo::HArray<IndexType>& inJA,
+        const hmemo::HArray<ValueType>& inValues );
 
     /**
      * Assignment operator for matrix storage. Using 'assign'
@@ -764,7 +807,7 @@ public:
     virtual void writeToFile(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
-        const File::DataType dataType = File::INTERNAL,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
 
@@ -773,7 +816,7 @@ public:
         const PartitionId rank,
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
-        const File::DataType dataType = File::INTERNAL,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
 
@@ -802,26 +845,26 @@ public:
      */
 
     virtual void matrixTimesVector(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     virtual void vectorTimesMatrix(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     virtual void matrixTimesVectorN(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const IndexType n,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** This method implements result = alpha * thisMatrix * x + beta * y
      *  that is executed asynchronously.
@@ -833,18 +876,18 @@ public:
      */
 
     virtual tasking::SyncToken* matrixTimesVectorAsync(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     virtual tasking::SyncToken* vectorTimesMatrixAsync(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Assign this = alpha * a
      *
@@ -942,17 +985,17 @@ public:
      */
 
     virtual void jacobiIterate(
-        LAMAArray<ValueType>& solution,
-        const LAMAArray<ValueType>& oldSolution,
-        const LAMAArray<ValueType>& rhs,
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /** Asynchrounous version of jacobiIterate */
 
     virtual tasking::SyncToken* jacobiIterateAsync(
-        LAMAArray<ValueType>& solution,
-        const LAMAArray<ValueType>& oldSolution,
-        const LAMAArray<ValueType>& rhs,
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /** Jacobi iteration step on a halo storage.
@@ -969,9 +1012,9 @@ public:
      */
 
     virtual void jacobiIterateHalo(
-        LAMAArray<ValueType>& localSolution,
+        hmemo::HArray<ValueType>& localSolution,
         const MatrixStorage<ValueType>& localStorage,
-        const LAMAArray<ValueType>& haloOldSolution,
+        const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /** Jacobi iteration step on a halo storage.
@@ -987,14 +1030,16 @@ public:
      */
 
     virtual void jacobiIterateHalo(
-        LAMAArray<ValueType>& localSolution,
-        const LAMAArray<ValueType>& localDiagonal,
-        const LAMAArray<ValueType>& haloOldSolution,
+        hmemo::HArray<ValueType>& localSolution,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     // Note: Asynchronous version of jacobiIterateHalo not supported
 
     using _MatrixStorage::getContextPtr;
+    using _MatrixStorage::scaleRows;
+    using _MatrixStorage::setDiagonalV;
 
     // Use this method to change epsiolon temporarily
 
@@ -1037,13 +1082,16 @@ protected:
      */
 
     void swap( MatrixStorage<ValueType>& other );
+
+public:
+    static MatrixStorage<ValueType>* create( const MatrixStorageCreateKeyType key );
 };
 
 /* ------------------------------------------------------------------------- */
 /* ------------------------------------------------------------------------- */
 /* ------------------------------------------------------------------------- */
 
-ContextPtr _MatrixStorage::getContextPtr() const
+hmemo::ContextPtr _MatrixStorage::getContextPtr() const
 {
     return mContext;
 }
@@ -1063,7 +1111,7 @@ bool _MatrixStorage::hasDiagonalProperty() const
     return mDiagonalProperty;
 }
 
-const LAMAArray<IndexType>& _MatrixStorage::getRowIndexes() const
+const hmemo::HArray<IndexType>& _MatrixStorage::getRowIndexes() const
 {
     return mRowIndexes;
 }
@@ -1082,13 +1130,19 @@ void MatrixStorage<ValueType>::setRawCSRData(
 {
     // wrap the pointer data into LAMA arrays ( without copies )
 
-    LAMAArrayRef<IndexType> csrIA( numRows + 1, ia );
-    LAMAArrayRef<IndexType> csrJA( numValues, ja );
-    LAMAArrayRef<OtherValueType> csrValues( numValues, values );
+    hmemo::HArrayRef<IndexType> csrIA( numRows + 1, ia );
+    hmemo::HArrayRef<IndexType> csrJA( numValues, ja );
+    hmemo::HArrayRef<OtherValueType> csrValues( numValues, values );
 
     // now set the data on the context of this storage via virtual method
 
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+template<typename ValueType>
+MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixStorageCreateKeyType key )
+{
+    return reinterpret_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
 }
 
 } /* end namespace lama */

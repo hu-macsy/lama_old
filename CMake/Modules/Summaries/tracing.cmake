@@ -34,10 +34,6 @@
 include ( Functions/scaiStatusMessage )
 include ( Functions/scaiSummaryMessage )
 
-include ( VersionDefinition )
-include ( CompilerVersion )
-include ( CheckC++11 )
-
 message ( STATUS "" )
 message ( STATUS "Summary of SCAI tracing Configuration:" )
 message ( STATUS "=====================================" )
@@ -64,46 +60,56 @@ scai_summary_message ( "STATIC"
                        "Needs compiler supporting C++11 or Boost" )
 
 scai_summary_message ( "FOUND"
-					   "CXX_SUPPORTS_C11"
-					   "C++11 support"
-					   "" )
+					             "CXX_SUPPORTS_C11"
+					             "C++11 support"
+					             "" )
 				
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
-                           "BOOST_INCLUDE_DIR"
+                           "SCAI_BOOST_INCLUDE_DIR"
                            "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 # LAMA (core)
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
-# LAMA CUDA
-message ( STATUS "" )
-scai_summary_message ( "FOUND"
-                       "SCAI_COMMON_FOUND"
-                       "SCAI common"
-                       "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_LOGGING_FOUND"
-                       "SCAI logging"
-                       "" )
-                       
-scai_status_message ( HEADLINE "Tool:" )
+set ( REQUIRED_FOUND FALSE )
+if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND )
+  set ( REQUIRED_FOUND TRUE )
+endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND )
 
-if    ( NOT CMAKE_VERSION VERSION_GREATER 2.8.7 )
-	message( STATUS "GUI will not be build, CMake Version too old (${CMAKE_VERSION} < 2.8.7)" )
-endif ( NOT CMAKE_VERSION VERSION_GREATER 2.8.7 )
+message ( STATUS "" )
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "Internal Libraries (core)"
+                       "" )
+
+    scai_summary_message ( "FOUND"
+                           "SCAI_COMMON_FOUND"
+                           "SCAI common"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_LOGGING_FOUND"
+                           "SCAI logging"
+                           "" )
+                       
+message ( STATUS "" )
+scai_status_message ( HEADLINE "GUI:" )
+scai_summary_message ( "FOUND"
+                       "Java_FOUND"
+                       "Java"
+                       "" )
 
 message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
-message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
+message ( STATUS "Tracing Version : ${SCAI_TRACING_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
 message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )

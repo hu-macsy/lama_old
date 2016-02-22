@@ -35,13 +35,14 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/lama/test/EquationHelper.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -53,7 +54,7 @@ struct P_NormTestConfig
 {
     P_NormTestConfig()
     {
-        comm = Communicator::get();
+        comm = Communicator::getCommunicator();
     }
 
     ~P_NormTestConfig()

@@ -9,10 +9,11 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/hmemo/Context.hpp>
-#include <scai/common/Printable.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Communicator.hpp>
+
+#include <scai/hmemo/Context.hpp>
+#include <scai/dmemo/Communicator.hpp>
+#include <scai/common/Printable.hpp>
 
 #include <cstring>
 
@@ -28,8 +29,8 @@ public:
         // overlap communication with local computation
 
         mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
-        mComm              = scai::lama::Communicator::get();
-        mContext           = scai::hmemo::Context::getContextPtr( scai::hmemo::context::Host );
+        mComm              = scai::dmemo::Communicator::getCommunicator();
+        mContext           = scai::hmemo::Context::getContextPtr( scai::common::context::Host );
         mMaxIters          = 1000;
     }
 
@@ -60,13 +61,13 @@ public:
         }
         else if ( "HOST" == val )
         { 
-            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::context::Host );
+            mContext = scai::hmemo::Context::getContextPtr( scai::common::context::Host );
         }
         else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
         { 
             // int device = mComm->getNodeRank();
             int device = 0;
-            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::context::CUDA, device );
+            mContext = scai::hmemo::Context::getContextPtr( scai::common::context::CUDA, device );
         }
         else if ( "SYNC" == val )
         {
@@ -92,7 +93,7 @@ public:
         {
             // choose default format by context: Host -> CSR, CUDA -> ELL
 
-            if ( mContext->getType() == scai::hmemo::context::CUDA )
+            if ( mContext->getType() == scai::common::context::CUDA )
             {
                 return "ELL";
             }
@@ -117,12 +118,12 @@ public:
         return *mContext;
     }
 
-    scai::lama::CommunicatorPtr getCommunicatorPtr() const
+    scai::dmemo::CommunicatorPtr getCommunicatorPtr() const
     {
         return mComm;
     }
 
-    const scai::lama::Communicator& getCommunicator() const
+    const scai::dmemo::Communicator& getCommunicator() const
     {
         return *mComm;
     }
@@ -144,7 +145,7 @@ public:
 
 private:
 
-    scai::lama::CommunicatorPtr  mComm;
+    scai::dmemo::CommunicatorPtr  mComm;
 
     inline bool isNumber( const char* arg )
     {

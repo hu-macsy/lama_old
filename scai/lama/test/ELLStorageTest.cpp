@@ -35,12 +35,13 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/lama/storage/ELLStorage.hpp>
 
 using namespace scai::lama;
+using namespace scai::utilskernel;
 using namespace scai::hmemo;
 using scai::common::Exception;
 
@@ -113,9 +114,9 @@ void constructorTest1( ContextPtr loc )
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
-    LAMAArray<IndexType> ellIA( numRows, ia );
-    LAMAArray<IndexType> ellJA( numValues, ja );
-    LAMAArray<ValueType> ellValues( numValues, values );
+    LArray<IndexType> ellIA( numRows, ia );
+    LArray<IndexType> ellJA( numValues, ja );
+    LArray<ValueType> ellValues( numValues, values );
     ELLStorage<ValueType> ellStorage( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
     BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
@@ -202,9 +203,9 @@ void checkTest( ContextPtr loc )
         // just make sure that ia and ja have correct sizes
         BOOST_REQUIRE_EQUAL( numRows, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
         BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
-        LAMAArrayRef<IndexType> ellIA( ia, numRows );
-        LAMAArrayRef<IndexType> ellJA( ja, numValues );
-        LAMAArray<ValueType> ellValues( numValues, 1.0 ); // values needed, but do not matter here
+        HArrayRef<IndexType> ellIA( ia, numRows );
+        HArrayRef<IndexType> ellJA( ja, numValues );
+        HArray<ValueType> ellValues( numValues, 1.0 ); // values needed, but do not matter here
         ELLStorage<ValueType> ellStorage;
         ellStorage.setContextPtr( loc );
         ellStorage.setELLData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
@@ -216,15 +217,15 @@ void checkTest( ContextPtr loc )
         else if ( icase == 1 )
         {
             //  -> invalid ia     { 1, 1, 3 }
-            LAMAArray<IndexType>& ellIA = const_cast<LAMAArray<IndexType>&>( ellStorage.getIA() );
-            LAMAArrayUtils::setVal( ellIA, 2, 3 );
+            HArray<IndexType>& ellIA = const_cast<HArray<IndexType>&>( ellStorage.getIA() );
+            HArrayUtils::setVal( ellIA, 2, 3 );
             BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
         else if ( icase == 2 )
         {
             //  -> invalid ja     { 0, 1, 2, 0, 0, 2 }
-            LAMAArray<IndexType>& ellJA = const_cast<LAMAArray<IndexType>&>( ellStorage.getJA() );
-            LAMAArrayUtils::setVal( ellJA, 5, 15 );
+            HArray<IndexType>& ellJA = const_cast<HArray<IndexType>&>( ellStorage.getJA() );
+            HArrayUtils::setVal( ellJA, 5, 15 );
             BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
     }

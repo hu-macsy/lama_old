@@ -63,11 +63,13 @@ namespace lama
  * @tparam ValueType is the value type of the matrix values.
  *
  * Note: Copy constructor and operator= are supported by default implementations,
- *       copies of LAMAArray will be deep copies.
+ *       copies of HArray will be deep copies.
  */
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT COOStorage: public CRTPMatrixStorage<COOStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT COOStorage:
+    public CRTPMatrixStorage<COOStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<COOStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -91,9 +93,9 @@ public:
     COOStorage(
         const IndexType numRows,
         const IndexType numColumns,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const LAMAArray<ValueType>& values );
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<ValueType>& values );
 
     /** Default constructor, same as COOStorage(0, 0). */
 
@@ -112,7 +114,7 @@ public:
 
     /** Copy constructor can take any matrix storage or context. */
 
-    COOStorage( const _MatrixStorage& other, const ContextPtr context )
+    COOStorage( const _MatrixStorage& other, const hmemo::ContextPtr context )
     {
         setContextPtr( context );
         assign( other );
@@ -170,10 +172,10 @@ public:
 
     template<typename OtherValueType>
     void buildCSR(
-        LAMAArray<IndexType>& ia,
-        LAMAArray<IndexType>* ja,
-        LAMAArray<OtherValueType>* values,
-        const ContextPtr /* loc */) const;
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>* ja,
+        hmemo::HArray<OtherValueType>* values,
+        const hmemo::ContextPtr context ) const;
 
     /**
      * @brief fills COO sparse matrix by coo sparse data.
@@ -189,9 +191,9 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const ContextArray& values );
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::_HArray& values );
 
     /**
      * @brief fills COO sparse matrix by csr sparse data.
@@ -209,10 +211,10 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const LAMAArray<OtherValueType>& values,
-        const ContextPtr loc ) __attribute__( ( noinline ) );
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
 
     /* Print relevant information about matrix storage format. */
 
@@ -220,15 +222,15 @@ public:
 
     /** Getter for member variable IA, only const reference. */
 
-    const LAMAArray<IndexType>& getIA() const;
+    const hmemo::HArray<IndexType>& getIA() const;
 
     /** Getter for member variable JA, only const reference. */
 
-    const LAMAArray<IndexType>& getJA() const;
+    const hmemo::HArray<IndexType>& getJA() const;
 
     /** Getter for member variable values, only const reference. */
 
-    const LAMAArray<ValueType>& getValues() const;
+    const hmemo::HArray<ValueType>& getValues() const;
 
     /** Getter for the number of stored values. */
 
@@ -237,7 +239,7 @@ public:
     /** Template method for getting row. */
 
     template<typename OtherType>
-    void getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
 
     /** This method returns the diagonal
      *
@@ -246,24 +248,24 @@ public:
      * Calculations are dependent to the diagonal property
      */
     template<typename OtherType>
-    void getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const __attribute( ( noinline ) );
+    void getDiagonalImpl( hmemo::HArray<OtherType>& diagonal ) const __attribute( ( noinline ) );
 
     /** Template version used for virtual routine setDiagonal with known value type. */
 
     template<typename OtherType>
-    void setDiagonalImpl( const LAMAArray<OtherType>& diagonal ) __attribute( ( noinline ) );
+    void setDiagonalImpl( const hmemo::HArray<OtherType>& diagonal ) __attribute( ( noinline ) );
 
     /** Implementation of pure method. */
 
-    virtual void setDiagonalImpl( const Scalar scalar );
+    virtual void setDiagonalImpl( const ValueType value );
 
     /** Implementation of MatrixStorage::copy for derived class. */
 
     virtual COOStorage* copy() const;
 
-    /** Implementation of MatrixStorage::clone for derived class. */
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
 
-    virtual COOStorage* clone() const;
+    virtual COOStorage* newMatrixStorage() const;
 
     /******************************************************************
      *  Matrix times Vector                                            *
@@ -272,47 +274,47 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVector for COO */
 
     virtual void matrixTimesVector(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrix for COO */
     /** since 1.0.1 */
 
     virtual void vectorTimesMatrix(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for COO */
 
     virtual tasking::SyncToken* matrixTimesVectorAsync(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrixAsync for CSR */
     /** since 1.0.1 */
 
     virtual tasking::SyncToken* vectorTimesMatrixAsync(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** solution = xxx */
 
     virtual void jacobiIterate(
-        LAMAArray<ValueType>& solution,
-        const LAMAArray<ValueType>& oldSolution,
-        const LAMAArray<ValueType>& rhs,
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /******************************************************************
@@ -322,11 +324,15 @@ public:
     /** Template version used for virtual routine scale with known value type. */
 
     template<typename OtherType>
-    void scaleImpl( const LAMAArray<OtherType>& values ) __attribute( ( noinline ) );
+    void scaleImpl( const hmemo::HArray<OtherType>& values ) __attribute( ( noinline ) );
 
     /** Implementation of pure method.  */
 
-    void scaleImpl( const Scalar value );
+    void scaleImpl( const ValueType value );
+
+    /** Implementation of pure method.  */
+
+    void conj();
 
     /** Implementation for MatrixStorage::l1Norm */
 
@@ -352,7 +358,7 @@ public:
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
-    void prefetch( const ContextPtr location ) const;
+    void prefetch( const hmemo::ContextPtr location ) const;
 
     /** Will wait for all outstanding asynchronous data transfers. */
 
@@ -380,9 +386,9 @@ protected:
 
     IndexType mNumValues; //!< number of non-zero values (+ optionally zeros in diagonal)
 
-    LAMAArray<IndexType> mIA; //!< row indices, size is mNumValues
-    LAMAArray<IndexType> mJA; //!< column indices, size is mNumValues
-    LAMAArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
+    hmemo::HArray<IndexType> mIA; //!< row indices, size is mNumValues
+    hmemo::HArray<IndexType> mJA; //!< column indices, size is mNumValues
+    hmemo::HArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
 
 private:
 
@@ -398,6 +404,16 @@ private:
     // inline IndexType index(IndexType irow, IndexType icolumn) const { return icolumn * mNumRows + irow; }
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

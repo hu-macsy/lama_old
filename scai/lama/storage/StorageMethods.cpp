@@ -33,28 +33,28 @@
 // hpp
 #include <scai/lama/storage/StorageMethods.hpp>
 
-// local library
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/HaloBuilder.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
-
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
-
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/HaloBuilder.hpp>
+#include <scai/dmemo/Redistributor.hpp>
+
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+
+#include <scai/common/macros/assert.hpp>
 
 #include <scai/tracing.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <algorithm>
 
-using namespace scai::hmemo;
-
 namespace scai
 {
+
+using namespace hmemo;
+using namespace dmemo;
+
+using sparsekernel::OpenMPCSRUtils;
 
 namespace lama
 {
@@ -67,12 +67,12 @@ SCAI_LOG_DEF_LOGGER( _StorageMethods::logger, "Storage.Methods" )
 
 template<typename ValueType>
 void StorageMethods<ValueType>::localizeCSR(
-    LAMAArray<IndexType>& localIA,
-    LAMAArray<IndexType>& localJA,
-    LAMAArray<ValueType>& localValues,
-    const LAMAArray<IndexType>& globalIA,
-    const LAMAArray<IndexType>& globalJA,
-    const LAMAArray<ValueType>& globalValues,
+    HArray<IndexType>& localIA,
+    HArray<IndexType>& localJA,
+    HArray<ValueType>& localValues,
+    const HArray<IndexType>& globalIA,
+    const HArray<IndexType>& globalJA,
+    const HArray<ValueType>& globalValues,
     const Distribution& rowDist )
 {
     SCAI_REGION( "Storage.localizeCSR" )
@@ -144,12 +144,12 @@ void StorageMethods<ValueType>::localizeCSR(
 
 template<typename ValueType>
 void StorageMethods<ValueType>::replicateCSR(
-    LAMAArray<IndexType>& globalIA,
-    LAMAArray<IndexType>& globalJA,
-    LAMAArray<ValueType>& globalValues,
-    const LAMAArray<IndexType>& localIA,
-    const LAMAArray<IndexType>& localJA,
-    const LAMAArray<ValueType>& localValues,
+    HArray<IndexType>& globalIA,
+    HArray<IndexType>& globalJA,
+    HArray<ValueType>& globalValues,
+    const HArray<IndexType>& localIA,
+    const HArray<IndexType>& localJA,
+    const HArray<ValueType>& localValues,
     const Distribution& rowDist )
 {
     SCAI_REGION( "Storage.replicateCSR" )
@@ -171,7 +171,7 @@ void StorageMethods<ValueType>::replicateCSR(
 
     // In a first step we need sizes of all rows, so build it locally before
 
-    LAMAArray<IndexType> localSizes;
+    HArray<IndexType> localSizes;
 
     ReadAccess<IndexType> rLocalIA( localIA );
     WriteOnlyAccess<IndexType> wLocalSizes( localSizes, localNumRows );
@@ -207,12 +207,12 @@ void StorageMethods<ValueType>::replicateCSR(
 
 template<typename ValueType>
 void StorageMethods<ValueType>::redistributeCSR(
-    LAMAArray<IndexType>& targetIA,
-    LAMAArray<IndexType>& targetJA,
-    LAMAArray<ValueType>& targetValues,
-    const LAMAArray<IndexType>& sourceIA,
-    const LAMAArray<IndexType>& sourceJA,
-    const LAMAArray<ValueType>& sourceValues,
+    HArray<IndexType>& targetIA,
+    HArray<IndexType>& targetJA,
+    HArray<ValueType>& targetValues,
+    const HArray<IndexType>& sourceIA,
+    const HArray<IndexType>& sourceJA,
+    const HArray<ValueType>& sourceValues,
     const Redistributor& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )
@@ -226,7 +226,7 @@ void StorageMethods<ValueType>::redistributeCSR(
 
     // Redistribution of row sizes, requires size array
 
-    LAMAArray<IndexType> sourceSizes;
+    HArray<IndexType> sourceSizes;
 
     {
         WriteOnlyAccess<IndexType> wSourceSizes( sourceSizes, sourceNumRows );
@@ -268,12 +268,12 @@ void StorageMethods<ValueType>::redistributeCSR(
 
 template<typename ValueType>
 void StorageMethods<ValueType>::exchangeHaloCSR(
-    LAMAArray<IndexType>& targetIA,
-    LAMAArray<IndexType>& targetJA,
-    LAMAArray<ValueType>& targetValues,
-    const LAMAArray<IndexType>& sourceIA,
-    const LAMAArray<IndexType>& sourceJA,
-    const LAMAArray<ValueType>& sourceValues,
+    HArray<IndexType>& targetIA,
+    HArray<IndexType>& targetJA,
+    HArray<ValueType>& targetValues,
+    const HArray<IndexType>& sourceIA,
+    const HArray<IndexType>& sourceJA,
+    const HArray<ValueType>& sourceValues,
     const Halo& halo,
     const Communicator& comm )
 {
@@ -283,11 +283,11 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
 
     const IndexType numRecvRows = halo.getRequiredPlan().totalQuantity();
 
-    LAMAArray<IndexType> sourceSizes;
+    HArray<IndexType> sourceSizes;
 
     // provides indexes: indirection vector needed for sending
 
-    const LAMAArray<IndexType> providesIndexes = halo.getProvidesIndexes();
+    const HArray<IndexType> providesIndexes = halo.getProvidesIndexes();
     const IndexType numSendRows = providesIndexes.size();
 
     SCAI_LOG_INFO( logger,
@@ -343,8 +343,8 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     // sendJA, sendValues must already be allocated before calling gatherV
     // as its size cannot be determined by arguments
 
-    LAMAArray<IndexType> sendJA( sendVSize );
-    LAMAArray<ValueType> sendValues( sendVSize );
+    HArray<IndexType> sendJA( sendVSize );
+    HArray<ValueType> sendValues( sendVSize );
 
     Redistributor::gatherV( sendJA, sourceJA, sourceIA, providesIndexes );
     comm.exchangeByPlan( targetJA, requiredV, sendJA, provideV );
@@ -359,15 +359,15 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
 
 template<typename ValueType>
 void StorageMethods<ValueType>::splitCSR(
-    LAMAArray<IndexType>& localIA,
-    LAMAArray<IndexType>& localJA,
-    LAMAArray<ValueType>& localValues,
-    LAMAArray<IndexType>& haloIA,
-    LAMAArray<IndexType>& haloJA,
-    LAMAArray<ValueType>& haloValues,
-    const LAMAArray<IndexType>& csrIA,
-    const LAMAArray<IndexType>& csrJA,
-    const LAMAArray<ValueType>& csrValues,
+    HArray<IndexType>& localIA,
+    HArray<IndexType>& localJA,
+    HArray<ValueType>& localValues,
+    HArray<IndexType>& haloIA,
+    HArray<IndexType>& haloJA,
+    HArray<ValueType>& haloValues,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const HArray<ValueType>& csrValues,
     const Distribution& colDist,
     const Distribution* rowDist )
 {
@@ -498,7 +498,7 @@ void StorageMethods<ValueType>::splitCSR(
 
 void _StorageMethods::buildHalo(
     class Halo& halo,
-    LAMAArray<IndexType>& haloJA,
+    HArray<IndexType>& haloJA,
     IndexType& haloSize,
     const Distribution& colDist )
 {
@@ -565,15 +565,15 @@ void _StorageMethods::buildHalo(
 
 template<typename ValueType>
 void StorageMethods<ValueType>::joinCSR(
-    LAMAArray<IndexType>& outIA,
-    LAMAArray<IndexType>& outJA,
-    LAMAArray<ValueType>& outValues,
-    const LAMAArray<IndexType>& localIA,
-    const LAMAArray<IndexType>& localJA,
-    const LAMAArray<ValueType>& localValues,
-    const LAMAArray<IndexType>& haloIA,
-    const LAMAArray<IndexType>& haloJA,
-    const LAMAArray<ValueType>& haloValues,
+    HArray<IndexType>& outIA,
+    HArray<IndexType>& outJA,
+    HArray<ValueType>& outValues,
+    const HArray<IndexType>& localIA,
+    const HArray<IndexType>& localJA,
+    const HArray<ValueType>& localValues,
+    const HArray<IndexType>& haloIA,
+    const HArray<IndexType>& haloJA,
+    const HArray<ValueType>& haloValues,
     const IndexType numKeepDiagonals )
 {
     SCAI_REGION( "Storage.joinCSR" )

@@ -94,9 +94,9 @@ public:
 
     /** This routine is required for Register in Context Factory. */
 
-    static ContextType createValue()
+    static common::context::ContextType createValue()
     {
-        return context::MIC;
+        return common::context::MIC;
     }
 
     /** This routine is required for Register in Context Factory. */
@@ -108,9 +108,9 @@ public:
      */
 
     /**
-     *  @brief Implementation of Context::getMemory for this class.
+     *  @brief Implementation of Context::getLocalMemoryPtr for this class.
      */
-    virtual MemoryPtr getMemoryPtr() const;
+    virtual MemoryPtr getLocalMemoryPtr() const;
 
     /** 
      *  @brief Implementation of Context::canUseMemory for this class. 

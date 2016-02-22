@@ -1,5 +1,5 @@
 /**
- * @file LAMAArrayTest.cpp
+ * @file HArrayTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -34,9 +34,10 @@
 #include <boost/mpl/list.hpp>
 #include <boost/assert.hpp>
 
-#include <scai/hmemo/LAMAArray.hpp>
-#include <scai/hmemo/LAMAArrayRef.hpp>
+#include <scai/hmemo/HArray.hpp>
+#include <scai/hmemo/HArrayRef.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
+#include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
 using namespace boost;
@@ -45,7 +46,7 @@ using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
+BOOST_AUTO_TEST_SUITE( HArrayTest )
 
 /* --------------------------------------------------------------------- */
 
@@ -67,12 +68,12 @@ void readTest( const ValueType values[], const IndexType N, const ValueType sum 
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     const IndexType N = 100;
 
-    LAMAArray<float> array1( N );
-    LAMAArray<float> array2( N, 5.0f );
+    HArray<float> array1( N );
+    HArray<float> array2( N, 5.0f );
    
     BOOST_CHECK_EQUAL( array1.size(), N );
     BOOST_CHECK_EQUAL( array2.size(), N );
@@ -98,9 +99,9 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
-    LAMAArray<IndexType> lamaArray; // default, not allocated at all
+    HArray<IndexType> lamaArray; // default, not allocated at all
     ReadAccess<IndexType> readTestAccess( lamaArray, hostContext );
     readTestAccess.release();
     WriteAccess<IndexType> writeAccess( lamaArray, hostContext );
@@ -121,7 +122,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
     for ( IndexType i = 0; i < 5; i++ )
     {
-        BOOST_CHECK_EQUAL( 3, readData[i] );
+        BOOST_CHECK_EQUAL( static_cast<IndexType>( 3 ), readData[i] );
     }
 
     readAccess.release();
@@ -131,9 +132,9 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
-    LAMAArray<IndexType> lamaArray; // default, not allocated at all
+    HArray<IndexType> lamaArray; // default, not allocated at all
     {
         WriteAccess<IndexType> writeAccess( lamaArray, contextPtr );
         // Possible problem: fetch from any location not possible
@@ -155,20 +156,45 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( capacityTest )
+{
+    ContextPtr contextPtr = Context::getHostPtr();
+
+    static IndexType N = 10;
+
+    HArray<IndexType> lamaArray; // default, not allocated at all
+
+    lamaArray.reserve( contextPtr, N );
+
+    BOOST_CHECK_EQUAL( lamaArray.size(), 0 );
+    BOOST_CHECK_EQUAL( lamaArray.capacity( contextPtr ), N );
+
+    {
+        WriteAccess<IndexType> access( lamaArray, contextPtr );
+        BOOST_CHECK_EQUAL( access.capacity(), N );
+        access.reserve( 2 * N );
+    }
+
+    BOOST_CHECK_EQUAL( lamaArray.size(), 0 );
+    BOOST_CHECK_EQUAL( lamaArray.capacity( contextPtr ), 2 * N );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( swapTest )
 {
     const IndexType n1 = 10;
     const IndexType n2 = 5;
 
-    LAMAArray<double> arr1( n1, 1 ); 
-    LAMAArray<double> arr2( n2, 2 ); 
+    HArray<double> arr1( n1, 1 ); 
+    HArray<double> arr2( n2, 2 ); 
 
     arr1.swap( arr2 );
 
     BOOST_CHECK_EQUAL( arr2.size(), n1 );
     BOOST_CHECK_EQUAL( arr1.size(), n2 );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     {
         ReadAccess<double> read( arr1, contextPtr );
@@ -195,9 +221,9 @@ BOOST_AUTO_TEST_CASE( accessTest )
     const double value = 1.0;
     const double value2 = 2.0;
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
-    LAMAArray<double> lamaArray( n, value );
+    HArray<double> lamaArray( n, value );
     {
         ReadAccess<double> lamaArrayRAccess( lamaArray, contextPtr );
 
@@ -216,9 +242,10 @@ BOOST_AUTO_TEST_CASE( accessTest )
             lamaArrayWAccess.get()[i] = value2;
         }
 
+        lamaArrayWAccess.release();
+
         ReadAccess<double> tmpReadAccess( lamaArray, contextPtr );
 
-        lamaArrayWAccess.release();
         ReadAccess<double> lamaArrayRAccess( lamaArray, contextPtr );
 
         for ( IndexType i = 0; i < n; ++i )
@@ -234,9 +261,9 @@ BOOST_AUTO_TEST_CASE( aliasTest )
 {
     const IndexType N = 10;
     const double value = 1.0;
-    LAMAArray<double> lamaArray( N, value );
+    HArray<double> lamaArray( N, value );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     {
         // read and write access at same time by same thread
@@ -262,10 +289,21 @@ BOOST_AUTO_TEST_CASE( aliasTest )
         write.resize( 2 * N );
     }
     {
+        // read and write access at same time by same thread
+
+        WriteOnlyAccess<double> write( lamaArray, contextPtr, 2 * N );
+        BOOST_CHECK_THROW(
+        { 
+           // read access no more possible as write only did not take care about valid data
+
+           ReadAccess<double> read( lamaArray, contextPtr );
+        }, Exception );
+    }
+    {
         // with read and write at the same time resize throws Exception
 
-        WriteAccess<double> write( lamaArray, contextPtr );
         ReadAccess<double> read( lamaArray, contextPtr );
+        WriteAccess<double> write( lamaArray, contextPtr );
         BOOST_CHECK_THROW(
         { 
             write.resize( 3 * N );
@@ -274,8 +312,8 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     {
         // read and write access at same time by same thread
 
-        WriteAccess<double> write( lamaArray, contextPtr );
         ReadAccess<double> read( lamaArray, contextPtr );
+        WriteAccess<double> write( lamaArray, contextPtr );
 
         // a clear is not possible as it affects the other access
         // Note: clear is the same as resize( 0 )
@@ -291,37 +329,37 @@ BOOST_AUTO_TEST_CASE( aliasTest )
 
 BOOST_AUTO_TEST_CASE( createTest )
 {
-    LAMAArray<float> A( 10, 1.0f );
-    LAMAArray<double> B( 10, 3.1415 );
-    LAMAArray<IndexType> C( 10, 5 );
+    HArray<float> A( 10, 1.0f );
+    HArray<double> B( 10, 3.1415 );
+    HArray<IndexType> C( 10, 5 );
 
     std::vector<scai::common::scalar::ScalarType> values;
 
-    ContextArray::getCreateValues( values );
+    _HArray::getCreateValues( values );
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
+        //std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
     }
 
-    BOOST_CHECK( ContextArray::canCreate( scalar::FLOAT ) );
-    BOOST_CHECK( ContextArray::canCreate( scalar::DOUBLE ) );
-    BOOST_CHECK( ContextArray::canCreate( scalar::INDEX_TYPE ) );
-    BOOST_CHECK( !ContextArray::canCreate( scalar::INTERNAL ) );
+    BOOST_CHECK( _HArray::canCreate( scalar::FLOAT ) );
+    BOOST_CHECK( _HArray::canCreate( scalar::DOUBLE ) );
+    BOOST_CHECK( _HArray::canCreate( scalar::INDEX_TYPE ) );
+    BOOST_CHECK( !_HArray::canCreate( scalar::INTERNAL ) );
 
-    ContextArray* ca1 = ContextArray::create( scalar::FLOAT );
+    _HArray* ca1 = _HArray::create( scalar::FLOAT );
 
     BOOST_REQUIRE( ca1 );
 
-    LAMAArray<double>* da1 = dynamic_cast<LAMAArray<double>*>( ca1 );
-    LAMAArray<float>* fa1 = dynamic_cast<LAMAArray<float>*>( ca1 );
+    HArray<double>* da1 = dynamic_cast<HArray<double>*>( ca1 );
+    HArray<float>* fa1 = dynamic_cast<HArray<float>*>( ca1 );
 
     BOOST_CHECK( da1 == NULL );
     BOOST_CHECK( fa1 != NULL );
 
     BOOST_CHECK_THROW(
     {
-        ContextArray* ca1 = ContextArray::create( scalar::INTERNAL );
+        _HArray* ca1 = _HArray::create( scalar::INTERNAL );
         ca1->clear();
     }, Exception );
 }
@@ -330,9 +368,9 @@ BOOST_AUTO_TEST_CASE( createTest )
 
 BOOST_AUTO_TEST_CASE( validTest )
 {
-    LAMAArray<float> A( 10 );
+    HArray<float> A( 10 );
 
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     // Array not allocated at all, should also give some default for validContext
 
@@ -340,12 +378,12 @@ BOOST_AUTO_TEST_CASE( validTest )
 
     BOOST_CHECK( validContext.get() );
 
-    LAMAArray<float> B;
+    HArray<float> B;
     {
         // read access on zero sized array, should be okay
         ReadAccess<float> read( B, hostContext );
     }
-    LAMAArray<float> C( 10 );
+    HArray<float> C( 10 );
     {
         // read access on undefined array, might give warning
         ReadAccess<float> read( C, hostContext );

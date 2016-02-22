@@ -36,32 +36,23 @@
 
 // local library
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
-
-using namespace scai::common;
+#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {
+
+using namespace common;
+using namespace dmemo;
 
 namespace lama
 {
 
 SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
-
-/* ---------------------------------------------------------------------------------------*/
-/*    Factory to create a matrix                                                          */
-/* ---------------------------------------------------------------------------------------*/
-
-Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::scalar::ScalarType type )
-{
-    MatrixCreateKeyType val( format, type );
-    SCAI_LOG_INFO( logger, "getMatrix uses Factory::create " << val )
-    return create( val );
-}
 
 /* ----------------------------------------------------------------------- */
 
@@ -185,6 +176,26 @@ void Matrix::setDefaultKind()
 
 /* ---------------------------------------------------------------------------------*/
 
+void Matrix::buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalIndexes ) const
+{
+    getLocalStorage().buildCSRGraph( ia, ja, vwgt, globalIndexes );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+IndexType Matrix::getCSRGraphSize() const
+{
+    // Currently only supported if column distribution is replicated
+
+    SCAI_ASSERT_EQ_ERROR( getNumColumns(), getLocalStorage().getNumColumns(), "getCSRGraphSize only for replicated column distribution" )
+
+    // diagonal elements will not be used
+
+    return getLocalNumValues() - getDistribution().getLocalSize();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 void Matrix::setDistributedMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
     SCAI_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowed" )
@@ -213,11 +224,11 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextArray* Matrix::createArray() const
+hmemo::_HArray* Matrix::createArray() const
 {
-    // Static method of ContextArray provides exactly the needed functionality.
+    // _HArray is also a factory so we can use it
 
-    return ContextArray::create( getValueType() );
+    return hmemo::_HArray::create( getValueType() );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -551,6 +562,65 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
     this->matrixPlusMatrix( alpha, A, beta, B );
 
     return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::writeToFile(
+    const std::string& fileName,
+    const File::FileType fileType /* = UNFORMATTED */,
+    const common::scalar::ScalarType dataType /* = INTERNAL */,
+    const File::IndexDataType indexDataTypeIA /* = LONG */,
+    const File::IndexDataType indexDataTypeJA /* = LONG */ ) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
+    {
+        // make sure that only one processor writes to file
+
+        const Communicator& comm = getDistribution().getCommunicator();
+
+        if ( comm.getRank() == 0 )
+        {
+            getLocalStorage().writeToFile( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+        }
+
+        // synchronization to avoid that other processors start with
+        // something that might depend on the finally written file
+
+        comm.synchronize();
+    }
+    else
+    {
+        DistributionPtr rowDist( new NoDistribution( getNumRows() ));
+        DistributionPtr colDist( new NoDistribution( getNumColumns() ));
+
+        common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
+
+        repM->writeToFile( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
+{
+    // simple default implementation that works for each matrix
+   
+    common::unique_ptr<Matrix> rep( copy() );  
+
+    // unique_ptr guarantees that data is freed if redistribute fails for any reason
+
+    rep->redistribute( rowDistribution, colDistribution );
+
+    return rep.release();
+}
+
+MatrixCreateKeyType Matrix::getCreateValue() const
+{
+    return MatrixCreateKeyType( getFormatType(), getValueType() );
 }
 
 } /* end namespace lama */

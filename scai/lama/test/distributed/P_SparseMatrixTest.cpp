@@ -47,17 +47,18 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/GenBlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -69,7 +70,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, P_SparseMatrixTest<
 template<typename MatrixType>
 P_SparseMatrixTest<MatrixType>::P_SparseMatrixTest()
 {
-    comm = Communicator::get( );
+    comm = Communicator::getCommunicator( );
 }
 
 template<typename MatrixType>
@@ -85,7 +86,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, cTorTest )
     SCAI_LOG_INFO( logger, "cTorTest" );
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType n = 4;
-    CommunicatorPtr comm = Communicator::get( "MPI" );
+    CommunicatorPtr comm = Communicator::getCommunicator();
     DistributionPtr dist( new BlockDistribution( n, comm ) );
     CSRSparseMatrix<double> matrix( dist, dist );
     BOOST_CHECK_EQUAL( matrix.getNumRows() , n );

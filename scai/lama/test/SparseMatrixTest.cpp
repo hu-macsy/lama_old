@@ -43,23 +43,21 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/lama/test/TestSparseMatrices.hpp>
-#include <scai/lama/test/Configuration.hpp>
-
-#include <scai/lama/NoCommunicator.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/SparseMatrixHelper.hpp>
 #include <scai/lama/test/SameMatrixHelper.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, SparseMatrixTest<MatrixType>::logger,
                               "Test.SparseMatrixTest" )
@@ -69,7 +67,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, SparseMatrixTest<Ma
 template<typename MatrixType>
 void SparseMatrixTest<MatrixType>::setUp()
 {
-    std::string prefix = Configuration::getInstance().getPath();
+    std::string prefix = scai::test::Configuration::getPath();
     SCAI_LOG_INFO( logger, "prefix = " << prefix );
     m_FormattedInputFile = prefix + "/2D_poisson_256_formatted.frm";
     m_XDRInputFile = prefix + "/2D_poisson_256_xdr.frm";
@@ -115,7 +113,7 @@ SCAI_LOG_INFO( logger, "cTorTest" );
 //TODO: to P_ test?
 const IndexType n = 4;
 
-CommunicatorPtr comm = Communicator::get( "MPI" );
+CommunicatorPtr comm = Communicator::getCommunicator( communicator::MPI );
 
 DistributionPtr bdist( new BlockDistribution( n, comm ) );
 DistributionPtr cdist( new CyclicDistribution( n, 1, comm ) );

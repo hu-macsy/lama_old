@@ -38,21 +38,8 @@ scai_project (
         MICContextTest
 )
 
-find_package ( Boost COMPONENTS unit_test_framework )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+add_executable ( MICTest ${CXX_SOURCES} )
 
-    include_directories ( ${Boost_INCLUDE_DIR} )
-
-    add_executable ( MICTest ${CXX_SOURCES} )
-
-    target_link_libraries ( MICTest 
-        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        scai_hmemo
-        )
-
-else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-
-    message ( STATUS "hmemo/test/mic/MICTest not built, no Boost UnitTest Framework found" )
-
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+target_link_libraries ( MICTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_hmemo )

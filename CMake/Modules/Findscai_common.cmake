@@ -14,6 +14,7 @@ if ( NOT SCAI_COMMON_INCLUDE_DIR )
         $ENV{SCAI_COMMON_INCLUDE_PATH}/scai
         ${SCAI_COMMON_ROOT}/include/scai
     )
+    get_filename_component ( SCAI_COMMON_INCLUDE_DIR ${SCAI_COMMON_INCLUDE_DIR} PATH )
 endif ( NOT SCAI_COMMON_INCLUDE_DIR )
 
 set ( SCAI_COMMON_INCLUDE_DIR ${SCAI_COMMON_INCLUDE_DIR} CACHE PATH "Path to COMMON include dir" FORCE )
@@ -30,16 +31,14 @@ include ( Package/OpenMP )
 
 if ( SCAI_COMMON_INCLUDE_DIR )
 
-	if    ( NOT CXX_SUPPORTS_C11 )
-	    include ( Package/Boost )
-		list ( APPEND SCAI_COMMON_INCLUDE_DIR ${BOOST_INCLUDE_DIR} )
-	endif ( NOT CXX_SUPPORTS_C11 )
+	include ( Package/Boost )
+	list ( APPEND SCAI_COMMON_INCLUDE_DIR ${SCAI_BOOST_INCLUDE_DIR} )
 	
 	if    ( OPENMP_FOUND AND USE_OPENMP )
 		set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${OpenMP_CXX_FLAGS}" )
 	endif ( OPENMP_FOUND AND USE_OPENMP )
 	
-    if    (SCAI_COMMON_LIBRARY)
+    if    ( SCAI_COMMON_LIBRARY )
         set ( SCAI_COMMON_FOUND TRUE )
     endif ( SCAI_COMMON_LIBRARY )
     

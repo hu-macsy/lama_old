@@ -25,19 +25,29 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief SCAITypes.hpp
+ * @brief Define all arithmetic types for which SCAI template classes will be instantiated
  * @author Jiri Kraus
  * @date 23.02.2011
  */
 #pragma once
 
 // local library
+
+// no support of Complex if this file is not included
+
 #include <scai/common/Complex.hpp>
+#include <scai/common/mic/MICCallable.hpp>
 
 // std
 #include <cstring>
 #include <limits>
 #include <stdint.h>
+
+/** Common namespace for all projects of Fraunhofer SCAI. */
+
+namespace scai
+{
+}
 
 /** LAMA uses for all its classes and routines an own namespace.
  *
@@ -64,74 +74,115 @@ typedef int IndexType;
  */
 typedef long double LongDouble;
 
-/** Data type for complex numbers in single precision.
- *  LAMA uses its own data type instead of std::complex.
- */
-typedef scai::common::Complex<float> ComplexFloat;
-
-/** Data type for complex numbers in double precision.
- *  LAMA uses its own data type instead of std::complex.
- */
-typedef scai::common::Complex<double> ComplexDouble;
-
-/** Data type for complex numbers in long double precision.
- *  LAMA uses its own data type instead of std::complex.
- */
-typedef scai::common::Complex<long double> ComplexLongDouble;
-
 /** Definition for a constant value that indicates a non-available index.
  */
-static const IndexType nIndex = std::numeric_limits<IndexType>::max();
+
+MIC_CALLABLE_MEMBER extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
  *
  */
-typedef int PartitionId;
+typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
-
-// Number of supported arithmetic types, maximal number is currently 4
+MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 // List here all arithmetic types for which matrices, storages might be created
 
-#define ARITHMETIC_HOST_EXT_TYPE_CNT 4
-#define ARITHMETIC_HOST_TYPE_CNT 6
-
 #define ARITHMETIC_HOST_TYPE_0 float
-#define ARITHMETIC_HOST_TYPE_1 ComplexFloat
-#define ARITHMETIC_HOST_TYPE_2 double
+#define ARITHMETIC_HOST_TYPE_1 double
+#define ARITHMETIC_HOST_TYPE_2 ComplexFloat
 #define ARITHMETIC_HOST_TYPE_3 ComplexDouble
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
 
-#define ARITHMETIC_CUDA_TYPE_CNT 4
+/** Number of supported types used in REPEAT macros */
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+#define ARITHMETIC_HOST_TYPE_CNT 6
+
+#else
+
+#define ARITHMETIC_HOST_TYPE_CNT 2
+
+#endif
+
+/** Number of supported types in external libraries like BLAS, LAPACK */
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+#define ARITHMETIC_HOST_EXT_TYPE_CNT 4
+
+#else
+
+#define ARITHMETIC_HOST_EXT_TYPE_CNT 2
+
+#endif
+
+// List CUDA values on its own
 
 #define ARITHMETIC_CUDA_TYPE_0 float
-#define ARITHMETIC_CUDA_TYPE_1 ComplexFloat
-#define ARITHMETIC_CUDA_TYPE_2 double
+#define ARITHMETIC_CUDA_TYPE_1 double
+#define ARITHMETIC_CUDA_TYPE_2 ComplexFloat
 #define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
 
-// Define for the arithmetic types the counterparts of enum Scalar::Tyep
-// Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt
+/** Number of suported types by CUDA devices */
+#ifdef SCAI_COMPLEX_SUPPORTED
 
-#define SCALAR_ARITHMETIC_TYPE0 scai::common::scalar::FLOAT
-#define SCALAR_ARITHMETIC_TYPE1 scai::common::scalar::COMPLEX
-#define SCALAR_ARITHMETIC_TYPE2 scai::common::scalar::DOUBLE
-#define SCALAR_ARITHMETIC_TYPE3 scai::common::scalar::DOUBLE_COMPLEX
-#define SCALAR_ARITHMETIC_TYPE4 scai::common::scalar::LONG_DOUBLE
-#define SCALAR_ARITHMETIC_TYPE5 scai::common::scalar::LONG_DOUBLE_COMPLEX
+#define ARITHMETIC_CUDA_TYPE_CNT 4
 
-// For convenience we define ARRAY_TYPE
+#else
 
-#define ARRAY_TYPE_CNT 7
+#define ARITHMETIC_CUDA_TYPE_CNT 2
 
-#define ARRAY_TYPE0    int
+#endif
+
+
+// List MIC value types on its own
+
+#define ARITHMETIC_MIC_TYPE_0 float
+#define ARITHMETIC_MIC_TYPE_1 double
+#define ARITHMETIC_MIC_TYPE_2 ComplexFloat
+#define ARITHMETIC_MIC_TYPE_3 ComplexDouble
+
+/** Number of supported types by MIC devices */
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+#define ARITHMETIC_MIC_TYPE_CNT 4
+
+#else
+
+#define ARITHMETIC_MIC_TYPE_CNT 2
+
+#endif
+
+// For convenience we define ARRAY_TYPE, must be ARITHMETIC_HOST_TYPE_CNT + 1
+
+
+#define ARRAY_TYPE0    IndexType
 #define ARRAY_TYPE1    float
-#define ARRAY_TYPE2    ComplexFloat
-#define ARRAY_TYPE3    double
+#define ARRAY_TYPE2    double
+#define ARRAY_TYPE3    ComplexFloat
 #define ARRAY_TYPE4    ComplexDouble
 #define ARRAY_TYPE5    long double
 #define ARRAY_TYPE6    ComplexLongDouble
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+#define ARRAY_TYPE_CNT 7
+
+#else
+
+#define ARRAY_TYPE_CNT 3
+
+#endif
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+typedef ComplexLongDouble ScalarRepType;
+
+#else
+
+typedef double ScalarRepType;
+
+#endif

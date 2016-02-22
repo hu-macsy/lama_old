@@ -80,6 +80,10 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    /** Get sync token in case of asynchronous execution should be started. */
+
+    static TaskSyncToken* getCurrentSyncToken();
+
 private:
 
     common::shared_ptr<tasking::Task> mTask;

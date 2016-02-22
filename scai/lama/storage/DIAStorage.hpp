@@ -55,7 +55,9 @@ namespace lama
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DIAStorage: public CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT DIAStorage:
+    public CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<DIAStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -83,8 +85,8 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numDiagonals,
-        const LAMAArray<IndexType>& offsets,
-        const LAMAArray<ValueType>& values );
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::HArray<ValueType>& values );
 
     /** Default copy constructor is overridden */
 
@@ -99,7 +101,7 @@ public:
 
     /** Copy constructor can take any matrix storage or context. */
 
-    DIAStorage( const _MatrixStorage& other, const ContextPtr context )
+    DIAStorage( const _MatrixStorage& other, const hmemo::ContextPtr context )
     {
         setContextPtr( context );
         assign( other );
@@ -123,9 +125,9 @@ public:
 
     virtual DIAStorage* copy() const;
 
-    /** Implementation of MatrixStorage::create for derived class. */
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
 
-    virtual DIAStorage* clone() const;
+    virtual DIAStorage* newMatrixStorage() const;
 
     /** Implementation of _MatrixStorage::clear  */
 
@@ -172,10 +174,10 @@ public:
      */
     template<typename OtherValueType>
     void buildCSR(
-        LAMAArray<IndexType>& ia,
-        LAMAArray<IndexType>* ja,
-        LAMAArray<OtherValueType>* values,
-        const ContextPtr loc ) const;
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>* ja,
+        hmemo::HArray<OtherValueType>* values,
+        const hmemo::ContextPtr loc ) const;
 
     /**
      * @brief fills DIA matrix storage by csr sparse data.
@@ -193,53 +195,53 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const LAMAArray<OtherValueType>& values,
-        const ContextPtr loc );
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc );
 
     /** Implementation of MatrixStorage::matrixTimesVector for DIA */
 
     virtual void matrixTimesVector(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrix for DIA */
 
     virtual void vectorTimesMatrix(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for DIA */
 
     virtual tasking::SyncToken* matrixTimesVectorAsync(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrixAsync for DIA */
 
     virtual tasking::SyncToken* vectorTimesMatrixAsync(
-        LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::jacobiIterate for DIA */
 
     virtual void jacobiIterate(
-        LAMAArray<ValueType>& solution,
-        const LAMAArray<ValueType>& oldSolution,
-        const LAMAArray<ValueType>& rhs,
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /* Print relevant information about matrix storage format. */
@@ -248,11 +250,11 @@ public:
 
     /** Getter routine for the matrix offsets (read-only). */
 
-    const LAMAArray<IndexType>& getOffsets() const;
+    const hmemo::HArray<IndexType>& getOffsets() const;
 
     /** Getter routine for the matrix values (read-only). */
 
-    const LAMAArray<ValueType>& getValues() const;
+    const hmemo::HArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of diagonals. */
 
@@ -261,7 +263,7 @@ public:
     /** Template method for getting row. */
 
     template<typename OtherType>
-    void getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
 
     /** This method returns the diagonal
      *
@@ -270,24 +272,24 @@ public:
      * Calculations are dependent to the diagonal property
      */
     template<typename OtherType>
-    void getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const __attribute( ( noinline ) );
+    void getDiagonalImpl( hmemo::HArray<OtherType>& diagonal ) const __attribute( ( noinline ) );
 
-    /** This method replaces the diagonal
+    /** This method replaces the diagonal by an array of new values
      *
-     * @param[in] diagonal  is the source array
+     * @param[in] diagonal  is the array with the new values
      *
      * Calculations are dependent to the diagonal property
      */
     template<typename OtherType>
-    void setDiagonalImpl( const LAMAArray<OtherType>& diagonal ) __attribute( ( noinline ) );
+    void setDiagonalImpl( const hmemo::HArray<OtherType>& diagonal ) __attribute( ( noinline ) );
 
     /** This method replaces the diagonal by a diagonal value
      *
-     * @param[in] scalar  is the source value
+     * @param[in] value  is the source value
      *
      * Calculations are dependent to the diagonal property
      */
-    void setDiagonalImpl( const Scalar scalar );
+    void setDiagonalImpl( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -296,11 +298,15 @@ public:
     /** Template version used for virtual routine scale with known value type. */
 
     template<typename OtherType>
-    void scaleImpl( const LAMAArray<OtherType>& values ) __attribute( ( noinline ) );
+    void scaleImpl( const hmemo::HArray<OtherType>& values ) __attribute( ( noinline ) );
 
     /** Implementation of pure method.  */
 
-    virtual void scaleImpl( const Scalar value );
+    virtual void scaleImpl( const ValueType value );
+
+    /** Implementation of pure method.  */
+
+    virtual void conj();
 
     /** Implementation for MatrixStorage::l1Norm */
 
@@ -320,7 +326,7 @@ public:
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
-    void prefetch( const ContextPtr location ) const;
+    void prefetch( const hmemo::ContextPtr location ) const;
 
     /** Will wait for all outstanding asynchronous data transfers. */
 
@@ -352,8 +358,8 @@ protected:
 
     IndexType mNumDiagonals; //!< number of diagonals with values
 
-    LAMAArray<IndexType> mOffset; //!< size == mNumDiagonals, diagonal offsets
-    LAMAArray<ValueType> mValues; //!< non-zero values, size is mNumValuesPerDiagonal * mNumDiagonals
+    hmemo::HArray<IndexType> mOffset; //!< size == mNumDiagonals, diagonal offsets
+    hmemo::HArray<ValueType> mValues; //!< non-zero values, size is mNumValuesPerDiagonal * mNumDiagonals
 
 private:
 
@@ -389,6 +395,16 @@ private:
     static void setUsedDiagonal( bool upperDiagonalUsed[], bool lowerDiagonalUsed[], IndexType i, IndexType j );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

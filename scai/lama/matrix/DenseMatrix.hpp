@@ -47,9 +47,6 @@
 // internal scai libraries
 #include <scai/common/shared_ptr.hpp>
 
-//boost
-#include <boost/lexical_cast.hpp>
-
 namespace scai
 {
 
@@ -104,14 +101,14 @@ public:
      * @param[in] rowDist   TODO[doxy] Complete Description.
      * @param[in] colDist   TODO[doxy] Complete Description.
      */
-    DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist );
+    DenseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /**
      * Constructor of a square unity matrix.
      *
      * @param[in] dist   TODO[doxy] Complete Description.
      */
-    explicit DenseMatrix( DistributionPtr dist );
+    explicit DenseMatrix( dmemo::DistributionPtr dist );
 
     /** Overwrites default copy constructor so it uses other copy constructor.
      *
@@ -146,19 +143,19 @@ public:
      *  The constructor with distributions is more convenient and might be more efficient
      *  due to less memory allocations as less temporary data is needed.
      */
-    DenseMatrix( const Matrix& other, DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    DenseMatrix( const Matrix& other, dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /** Constructs a dense matrix from another dense matrix with new distributions.
      *
-     *  @param[in] matrix            input matrix.
+     *  @param[in] other             input matrix.
      *  @param[in] rowDistribution   new distribution of rows among processors
      *  @param[in] colDistribution   new distribution of columns for blocking
      *
      */
     DenseMatrix(
-        const DenseMatrix<ValueType>& matrix,
-        DistributionPtr rowDistribution,
-        DistributionPtr colDistribution );
+        const DenseMatrix<ValueType>& other,
+        dmemo::DistributionPtr rowDistribution,
+        dmemo::DistributionPtr colDistribution );
 
     /** Constructor of a dense matrix by local storage.
      *
@@ -169,7 +166,7 @@ public:
      *  This constructor works also fine if localData is the full global matrix;
      *  in this case only local rows will be taken on this processor.
      */
-    DenseMatrix( const _MatrixStorage& localData, DistributionPtr rowDist, DistributionPtr colDist );
+    DenseMatrix( const _MatrixStorage& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /**
      * Constructor of a replicated dense matrix from the passed csr sparse matrix.
@@ -270,7 +267,7 @@ public:
 
     /** Implementation of pure method Matrix::setIdentity. */
 
-    virtual void setIdentity( DistributionPtr distribution );
+    virtual void setIdentity( dmemo::DistributionPtr distribution );
 
     /**
      *  Implementation for Matrix::readFromFile
@@ -280,40 +277,40 @@ public:
     /** Implementation of pure Matrix::setDenseData */
 
     virtual void setDenseData(
-        DistributionPtr rowDistribution,
-        DistributionPtr colDistribution,
-        const ContextArray& values,
+        dmemo::DistributionPtr rowDistribution,
+        dmemo::DistributionPtr colDistribution,
+        const hmemo::_HArray& values,
         const Scalar eps );
 
     /** Implementation for pure method Matrix::setCSRData. */
 
     virtual void setCSRData(
-        DistributionPtr rowDist,
-        DistributionPtr colDist,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const ContextArray& values );
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::_HArray& values );
 
     /** Implementation of pure method for the dense storage format. */
 
-    virtual void buildCSRData( LAMAArray<IndexType>& rowIA, LAMAArray<IndexType>& rowJA, ContextArray& rowValues ) const;
+    virtual void buildCSRData( hmemo::HArray<IndexType>& rowIA, hmemo::HArray<IndexType>& rowJA, hmemo::_HArray& rowValues ) const;
 
     /** Implementation of pure method. */
 
     virtual void setCSRData(
-        const LAMAArray<IndexType>& rowIA,
-        const LAMAArray<IndexType>& rowJA,
-        const ContextArray& rowValues,
-        DistributionPtr rowDistribution,
-        DistributionPtr colDistribution );
+        const hmemo::HArray<IndexType>& rowIA,
+        const hmemo::HArray<IndexType>& rowJA,
+        const hmemo::_HArray& rowValues,
+        dmemo::DistributionPtr rowDistribution,
+        dmemo::DistributionPtr colDistribution );
 
     /** Local version of setCSRData . */
 
     void setCSRDataLocal(
-        const LAMAArray<IndexType>& rowIA,
-        const LAMAArray<IndexType>& rowJA,
-        const ContextArray& rowValues ) const;
+        const hmemo::HArray<IndexType>& rowIA,
+        const hmemo::HArray<IndexType>& rowJA,
+        const hmemo::_HArray& rowValues ) const;
 
     /* Implementation of pure method of class Matrix. */
 
@@ -325,7 +322,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -357,7 +354,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist );
+    virtual void assign( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** @brief TODO[doxy] Complete Description.
      *
@@ -371,15 +368,11 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    void redistribute( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /* Implementation of pure method of class Matrix. */
 
     virtual void getDiagonal( Vector& diagonal ) const;
-
-    /* Implementation of pure method of class Matrix. */
-
-    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
 
     /* Implementation of pure method of class Matrix. */
 
@@ -396,6 +389,10 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual void scale( const Scalar value );
+
+    /* Implementation of pure method of class Matrix. */
+
+    virtual void conj();
 
     /* Implementation of pure method of class Matrix. */
 
@@ -538,21 +535,29 @@ public:
      *  Writing is only supported for a replicated matrix.
      */
 
-    void writeToFile(
+    void writeToFile1(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
-        const File::DataType dataType = File::INTERNAL,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
+
     /**
-     * @brief Implementation of pure function Matrix::clone with covariant return type.
+     * @brief Implementation of pure function Matrix::copy with covariant return type.
      */
-    virtual DenseMatrix<ValueType>* clone() const;
+    virtual DenseMatrix<ValueType>* newMatrix() const;
 
     /**
      * @brief Implementation of pure function Matrix::copy with covariant return type.
      */
     virtual DenseMatrix<ValueType>* copy() const;
+
+    /* Implementation of pure method Matrix::getFormatType with covariant return type */
+
+    virtual Format::MatrixStorageFormat getFormatType() const
+    {
+        return Format::DENSE;
+    }
 
     /* Implementation of pure method of class Matrix. */
 
@@ -574,6 +579,10 @@ public:
     {
         return mOwners;
     }
+
+    /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
+
+    void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
 
 protected:
 
@@ -602,22 +611,19 @@ private:
 
     void allocateData();
 
+    /** Join column data of column distributed dense data
+     *
+     *  @param[out]  result     will be the joined data
+     *  @param[in]   firstRow   first local row
+     *  @param[in]   nRows      number of rows to join
+     *
+     *  Note: the column distribution is taken from the values of mOwners
+     */
+    void joinColumnData( scai::hmemo::HArray<ValueType>& result, const IndexType firstRow, const IndexType nRows ) const;
+
     /***************************************************************************
      *  Static Methods for dense storage                                        *
      ***************************************************************************/
-
-    /** Join dense storage of column distributed data
-     *
-     *  @param[out]  result        will be the joined storage
-     *  @param[in]   chunks        is a vector of all chunks, one chunk for each partition
-     *  @param[in]   columnOwners  vector with owner for each column
-     *
-     *  Note: the column distribution itself is given implicitly by the vector of owners
-     */
-    static void joinColumnData(
-        DenseStorage<ValueType>& result,
-        const std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
-        const std::vector<IndexType>& columnOwners );
 
     /** Split dense storage data according to a distribution into chunks.
      *
@@ -642,7 +648,7 @@ private:
     static void localize(
         DenseStorage<ValueType>& local,
         const DenseStorage<ValueType>& global,
-        const Distribution& rowDistribution );
+        const dmemo::Distribution& rowDistribution );
 
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 
@@ -654,16 +660,14 @@ private:
     template<typename OtherT>
     void getDiagonalImpl( DenseVector<OtherT>& diagonal ) const;
 
-    void redistributeRows( DistributionPtr rowDistribution );
+    void redistributeRows( dmemo::DistributionPtr rowDistribution );
 
     /** Split the replicated columns into chunks according to the column distribution. */
 
-    void splitColumns( DistributionPtr colDistribution );
+    void splitColumns( dmemo::DistributionPtr colDistribution );
 
-    void getRow( DenseVector<ValueType>& row, const IndexType i ) const;
-
-    mutable LAMAArray<ValueType> mSendValues;
-    mutable LAMAArray<ValueType> mReceiveValues;
+    mutable hmemo::HArray<ValueType> mSendValues;
+    mutable hmemo::HArray<ValueType> mReceiveValues;
 
     //TODO: no implementation: implement or delete
     //void initChunks();  // common initialization for constructors
@@ -672,7 +676,7 @@ private:
 
     void    computeOwners();
 
-    /** @brief Predicate to check if SCALapack is supported via LAMAInterface. */
+    /** @brief Predicate to check if SCALapack::inverse routine has been registered in kernel registry. */
 
     bool hasScalaPack();
 
@@ -690,7 +694,9 @@ public:
 
     // key for factory 
 
-    static std::pair<MatrixStorageFormat, common::scalar::ScalarType> createValue();
+    static MatrixCreateKeyType createValue();
+
+    MatrixCreateKeyType getCreateValue() const;
 };
 
 /*  template methods implementations */

@@ -42,6 +42,7 @@
 // internal scai library
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/function.hpp>
+#include <scai/common/Thread.hpp>
 
 #include <scai/logging.hpp>
 
@@ -87,7 +88,7 @@ public:
  * absolutely mandatory and can be done in the following ways:
  *
  * \code
- *    auto_ptr<SyncToken> token = new XXXSyncToken( ... )
+ *    common::unique_ptr<SyncToken> token ( new XXXSyncToken( ...) )
  *    ! synchronization is alway done when object will be deleted at the end of the scope
  *
  *    token->wait();     // explicit wait
@@ -141,6 +142,31 @@ public:
 
     void pushRoutine( common::function<void()> routine );
 
+    /** 
+     *  Set this SyncToken as the current one of this thread.
+     *
+     *  Only one SyncToken can be the current one.
+     *
+     *  Global access to the current sync token makes design easier
+     *  as it can be decided locally where and how to start an 
+     *  asynchronous operation.
+     *
+     *  Be careful: SyncToken is not current for the executing thread
+     *              but for the parent thread that will run it.
+     */
+
+    void setCurrent();
+
+    /**
+     *  Current SyncToken will be no more current one.
+     */
+    void unsetCurrent();
+
+    /**
+     *  Get the current sync token of this thread.
+     */
+    static SyncToken* getCurrentSyncToken();
+ 
 protected:
 
     /** Default constructor can only be called by derived classes. */
@@ -178,6 +204,10 @@ private:
 
     static CGuard cguard;//!< required to call routine at its destructor
 
+    /** Each thread can set globally (thread-private) a SyncToken */
+
+    static common::ThreadPrivatePtr<SyncToken> currentSyncToken;
+
     /** Vector of shared pointers  that will be released after completion. */
 
     std::vector< common::shared_ptr<SyncTokenMember > > mTokens;
@@ -185,8 +215,36 @@ private:
     bool mSynchronized;  //!< if true the token has already been synchronized.
 
     std::vector< common::function<void()> > mSynchronizedFunctions;
+
+public:
+ 
+    class ScopedAsynchronous 
+    {
+    public:
+
+        ScopedAsynchronous( SyncToken& token ) : mToken( &token )
+        {
+            mToken->setCurrent();
+        }
+    
+        ScopedAsynchronous( SyncToken* token ) : mToken( token )
+        {
+            mToken->setCurrent();
+        }
+    
+        ~ScopedAsynchronous()
+        {
+            mToken->unsetCurrent();
+        }
+
+    private:
+  
+        SyncToken* mToken;
+    };
 };
 
 } /* end namespace tasking */
 
 } /* end namespace scai */
+
+#define SCAI_ASYNCHRONOUS( token ) scai::tasking::SyncToken::ScopedAsynchronous _SCAIAsyncScope( token );

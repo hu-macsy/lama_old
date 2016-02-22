@@ -34,7 +34,7 @@
 #include <scai/tracing/CallTreeTable.hpp>
 
 // internal scai libraries
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <unistd.h> // getpid required

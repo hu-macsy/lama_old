@@ -35,13 +35,15 @@
 
 #include <scai/lama/matrix/Matrix.hpp>
 
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/expression/MatrixVectorExpressions.hpp>
-
-#include <scai/lama/expression/MatrixVectorExpressions.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/DenseVector.hpp>
+
+#include <scai/lama/test/TestMacros.hpp>
+
+#include <scai/hmemo/HArray.hpp>
+#include <scai/common/Math.hpp>
 
 #include <boost/test/unit_test.hpp>
 
@@ -49,42 +51,129 @@
  *  (different distributions, different value types) whether the elements are
  *  close enough.
  *
- *  The comparison is done by multiplying each matrix with a unity vector.
- */
-
-template<typename MatrixType1, typename MatrixType2>
-void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
-{
-    typedef typename MatrixType1::MatrixValueType ValueType1;
-    typedef typename MatrixType2::MatrixValueType ValueType2;
-    // Both matrices must be matrices of the same size
-    const IndexType m = m1.getNumRows();
-    const IndexType n = m1.getNumColumns();
-    BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
-    BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
-    scai::lama::DenseVector<ValueType1> x1( m1.getColDistributionPtr(), 1.0 );
-    scai::lama::DenseVector<ValueType2> x2( m2.getColDistributionPtr(), 1.0 );
-    scai::lama::DenseVector<ValueType1> y1( m1.getDistributionPtr(), 0.0 );
-    scai::lama::DenseVector<ValueType2> y2( m2.getDistributionPtr(), 0.0 );
-    y1 = m1 * x1; // YA = mA * XA;
-    y2 = m2 * x2; // YB = mB * XB;
-    // replicate the vectors to avoid communication overhead for single elements
-    scai::lama::DistributionPtr replicated( new scai::lama::NoDistribution( m ) );
-    y1.redistribute( replicated );
-    y2.redistribute( replicated );
-
-    for ( IndexType i = 0; i < m; i++ )
-    {
-        scai::lama::Scalar s1 = y1.getValue( i );
-        scai::lama::Scalar s2 = y2.getValue( i );
-        BOOST_CHECK_CLOSE( s1.getValue<double>(), s2.getValue<double>(), 0.01 );
-    }
-}
-
-/** This test compares two general matrices by comparing all matrix elements.
- *
  *  For efficiency on distributed matrices, it will do it row-wise.
  */
 
-void assertSameMatrix( const scai::lama::Matrix& m1, const scai::lama::Matrix& m2 );
+/**
+ * @brief This method compares checks if two matrices have (nearly) the same values.
+ *
+ * @param[in] m1 is the first matrix
+ * @param[in] m2 is the second matrix
+ * @param[in] maximal absolute difference between two values
+ * @param[in] tolerance in percentage that value might differ
+ *
+ * Both matrices must have the same dimensions, but they can have different types (double, float, ... )
+ * or different storage formats ( DENSE, CSR, ELL, ... ) or different distributions.
+ *
+ * If the absolute difference between the values is greater than small than the values
+ * must be in a tolerance that depends on the precision.
+ */
+static inline void testSameMatrix( const scai::lama::Matrix& m1, 
+                                   const scai::lama::Matrix& m2, 
+                                   scai::lama::Scalar small = scai::lama::Scalar( 0 ),
+                                   scai::lama::Scalar tolerance = scai::lama::Scalar( 0.01 ) )
+{
+    using namespace scai;
+    using namespace lama;
 
+    const IndexType nRows = m1.getNumRows();
+    const IndexType nCols = m1.getNumColumns();
+
+    // require for same sizes, otherwise it is illegal to access elements
+
+    BOOST_REQUIRE_EQUAL( nRows, m2.getNumRows() );
+    BOOST_REQUIRE_EQUAL( nCols, m2.getNumColumns() );
+
+    // create dense vectors for the rows with the same value type
+
+    VectorCreateKeyType vectorType1( DENSE, m1.getValueType() );
+    VectorCreateKeyType vectorType2( DENSE, m2.getValueType() );
+
+    common::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
+    common::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );
+
+    typedef double CompareType;  // complex type does not work
+
+    CompareType tol = tolerance.getValue<CompareType>();
+
+    // now compare all rows
+
+    for ( IndexType i = 0; i < nRows; ++i )
+    {
+        // Note: rows will be broadcast in case of distributed matrices
+
+        m1.getRow( *ptrRow1, i );
+        m2.getRow( *ptrRow2, i );
+
+        // compare the two vectors element-wise
+
+        for ( IndexType j = 0; j < nCols; j++ )
+        {
+            // std::cout << i << ", " << j << ": " << ptrRow1->getValue( j ) << ", " << ptrRow2->getValue( j ) << std::endl;
+
+            Scalar elem1 = ptrRow1->getValue( j );
+            Scalar elem2 = ptrRow2->getValue( j );
+
+            Scalar diff  = abs( elem1 - elem2 );
+
+            if ( diff > small )
+            {
+                // for large numbers we just check for a tolerance
+
+                BOOST_CHECK_CLOSE( elem1.getValue<CompareType>(), elem2.getValue<CompareType>(), tol );
+            }
+        }
+    }
+}
+
+/**
+ * @brief testSameMatrixStorage() checks whether two matrices have the same dimensions and values. Equality of values is
+ * checked by SCAI_CHECK_CLOSE, zero values have to be zero in both matrices (check testSameMatrixStorageClose as
+ * alternative)
+ */
+template<typename ValueType1, typename ValueType2>
+void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, 
+                            const scai::lama::MatrixStorage<ValueType2>& m2,
+                            const scai::lama::Scalar small = 0.0,
+                            const scai::lama::Scalar tolerance = 0.01 )
+{
+    const IndexType m = m1.getNumRows();
+    const IndexType n = m1.getNumColumns();
+
+    BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
+    BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
+
+    scai::hmemo::HArray<ValueType1> row1(n);
+    scai::hmemo::HArray<ValueType2> row2(n);
+
+    typedef double CompareType;  // complex type does not work
+
+    CompareType tolV   = tolerance.getValue<CompareType>();
+    CompareType smallV = small.getValue<CompareType>();
+
+    for ( IndexType i = 0; i < m; ++i )
+    {
+        m1.getRow( row1, i );
+        m2.getRow( row2, i );
+
+        // compare the two vectors element-wise
+
+        scai::hmemo::ReadAccess<ValueType1> readRow1(row1);
+        scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
+
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            CompareType elem1 = static_cast<CompareType>( readRow1[j] );
+            CompareType elem2 = static_cast<CompareType>( readRow2[j] );
+       
+            CompareType diff = scai::common::Math::abs( elem1 - elem2 );
+
+            if ( diff >= smallV )
+            {
+                // if absolute difference is too big we check for close
+
+                BOOST_CHECK_CLOSE( elem1, elem2, tolV );
+            }
+        }
+    }
+}

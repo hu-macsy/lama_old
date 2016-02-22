@@ -38,6 +38,7 @@
 
 // internal scai libraries
 #include <scai/logging.hpp>
+#include <scai/common/NonCopyable.hpp>
 
 namespace scai
 {

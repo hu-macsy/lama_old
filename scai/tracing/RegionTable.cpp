@@ -39,7 +39,7 @@
 // internal scai libraries
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Thread.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <cstdio>
@@ -116,7 +116,7 @@ double RegionTable::elapsed( int regionId )
 
 int RegionTable::getRegionId( const char* regionName, const char* file, int scl )
 {
-    std::map<const char*, int, CmpString>::iterator it = mapTimer.find( regionName );
+    MapRegion::iterator it = mapTimer.find( regionName );
 
     if ( it == mapTimer.end() )
     {
@@ -144,7 +144,7 @@ int RegionTable::getRegionId( const char* regionName, const char* file, int scl 
 
 int RegionTable::getRegionId( const char* regionName )
 {
-    std::map<const char*, int, CmpString>::iterator it = mapTimer.find( regionName );
+    MapRegion::iterator it = mapTimer.find( regionName );
 
     if ( it == mapTimer.end() )
     {
@@ -197,7 +197,7 @@ void RegionTable::printTimer( ostream& outfile )
     }
 
     // use map iterator for alphabetical output
-    std::map<const char*, int, CmpString>::iterator it;
+    MapRegion::iterator it;
 
     for ( it = mapTimer.begin(); it != mapTimer.end(); it++ )
     {

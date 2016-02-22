@@ -110,6 +110,10 @@ public:
 
     void synchronizeEvent( const CUevent event ) const;
 
+    /** Get sync token in case of asynchronous execution should be started. */
+
+    static CUDAStreamSyncToken* getCurrentSyncToken();
+
 private:
 
     hmemo::CUDAContextPtr mCUDAContext; // needed for synchronization

@@ -35,7 +35,7 @@
 #!/bin/bash
 
 # Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
-dirname=xmlresult$(date +%y_%m_%d-%H%M)
+dirname=xmlresult_$(date +%s)
 echo "Create result directory: ${dirname}"
 mkdir ${dirname}
 
@@ -48,7 +48,7 @@ if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
     echo "Running distributed tests serial"
-    distributed/lama_dist_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dist_tests.xml
+    mpirun -np 3 --output-filename ${dirname}/dist_tests.xml distributed/lama_dist_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
 
 	#for i in 2 3 4;
 	#do

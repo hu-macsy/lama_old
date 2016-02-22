@@ -67,6 +67,21 @@ if ( NOT CMAKE_BUILD_TYPE )
     message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 endif ( NOT CMAKE_BUILD_TYPE )
 
+# Choose Doc type
+if ( NOT SCAI_DOC_TYPE )
+    set ( SCAI_DOC_TYPE_OPTIONS html json ) 
+    set ( SCAI_DOC_TYPE html CACHE STRING 
+        "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_OPTIONS}." FORCE )
+    checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_OPTIONS}" )
+    message ( STATUS "Doc type is set to " ${CMAKE_BUILD_TYPE} )
+
+    if    ( SCAI_DOC_TYPE STREQUAL json )
+        set ( DOC_EXTENTSION "fjson" )
+    else  ( SCAI_DOC_TYPE STREQUAL json )
+        set ( DOC_EXTENTSION "html" )
+    endif ( SCAI_DOC_TYPE STREQUAL json )
+endif ( NOT SCAI_DOC_TYPE )
+
 ## Check if lama should be build static or shared
 
 # default: build shared library
@@ -78,6 +93,13 @@ else  ( NOT SCAI_LIBRARY_TYPE )
 endif ( NOT SCAI_LIBRARY_TYPE )
 checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_OPTIONS}" )
 
+
 set ( TRUE_FALSE_CHOICE TRUE FALSE )
+
+# Set cache variable
+set ( BUILD_TEST TRUE CACHE BOOL "Enable / Disable building of tests" )
+checkValue ( ${BUILD_TEST} "${TRUE_FALSE_CHOICE}" )
+
+## Check if lama should be build for code coverage
 set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
 checkValue ( ${USE_CODE_COVERAGE} "${TRUE_FALSE_CHOICE}" )

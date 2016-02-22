@@ -35,11 +35,13 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/storage/DIAStorage.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
+using namespace scai::utilskernel;
 using namespace scai::hmemo;
 
 extern bool base_test_case;
@@ -106,8 +108,8 @@ void constructorTest1( logging::Logger& logger )
     { 0.5f, 0.5f, 0.3f, 0.2f, 0.1f, 0.0f };
     const IndexType numValues = sizeof( values ) / sizeof( ValueType );
     const IndexType numDiagonals = sizeof( offsets ) / sizeof( IndexType );
-    LAMAArray<IndexType> diaOffsets( 2, offsets );
-    LAMAArray<ValueType> diaValues( numValues, values );
+    LArray<IndexType> diaOffsets( 2, offsets );
+    LArray<ValueType> diaValues( numValues, values );
     DIAStorage<ValueType> diaStorage( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
     BOOST_REQUIRE_EQUAL( numRows, diaStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, diaStorage.getNumColumns() );
@@ -150,9 +152,9 @@ void constructorTest1( logging::Logger& logger )
 //        BOOST_CHECK_EQUAL( values[4], diaValues[4] );
 //        BOOST_CHECK_EQUAL( values[5], diaValues[5] );
 //    }
-    LAMAArray<IndexType> csrIa;
-    LAMAArray<IndexType> csrJa;
-    LAMAArray<ValueType> csrValues;
+    LArray<IndexType> csrIa;
+    LArray<IndexType> csrJa;
+    LArray<ValueType> csrValues;
     // const IndexType csrIaResult[] = { 0, 2, 4, 5 };
     // const IndexType csrJaResult[] = { 0, 1, 1, 2, 2 };
     // const ValueType csrValuesResult[] = { 0.5, 0.2, 0.5, 0.1, 0.3 };

@@ -34,14 +34,13 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/GeneralDistribution.hpp>
-#include <scai/lama/distribution/GenBlockDistribution.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
@@ -56,8 +55,10 @@
 #include <scai/lama/test/SameMatrixHelper.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 
+using namespace scai;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -136,7 +137,7 @@ CSRSparseMatrix<float>,
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( LocalConstructorTest, MatrixType, MatrixTypes )
 {
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     const int size = comm->getSize();
     const int n = 10;
     DistributionPtr dist( new BlockDistribution( n * size, comm ) );
@@ -161,7 +162,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( LocalConstructorTest, MatrixType, MatrixTypes )
 BOOST_AUTO_TEST_CASE_TEMPLATE( SetDenseDataTest, MatrixType, MatrixTypes )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     // use multiple test cases for different nValues
     const IndexType nValues[] = { 0, 1, 3, 17 };
     const int nCases = sizeof( nValues ) / sizeof( IndexType );
@@ -215,7 +216,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetDenseDataTest, MatrixType, MatrixTypes )
 BOOST_AUTO_TEST_CASE_TEMPLATE( SetCSRDataTest, MatrixType, MatrixTypes )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     // use multiple test cases for different nValues
     const IndexType nValues[] = { 0, 1, 3, 17 };
     const int nCases = sizeof( nValues ) / sizeof( IndexType );
@@ -266,15 +267,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes )
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<double> inputA;
     MatrixCreator<double>::buildPoisson2D( inputA, 9, N1, N2 );
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     const IndexType n = inputA.getNumRows();
+    SCAI_LOG_DEBUG( logger, "inputA = " << inputA )
     DistributionPtr dist( new BlockDistribution( n, comm ) );
     MatrixType m1( inputA );
+    SCAI_LOG_DEBUG( logger, "m1( inputA ) = " << m1 )
     testSameMatrix( inputA, m1 );
     MatrixType m2( inputA, dist, dist );
+    SCAI_LOG_DEBUG( logger, "m2( inputA, dist, dist ) = " << m2 )
     testSameMatrix( inputA, m2 );
     MatrixType m3;
     m3 = inputA;
+    SCAI_LOG_DEBUG( logger, "m3 ( = inputA ) = " << m3 )
     testSameMatrix( inputA, m3 );
 };
 
@@ -289,7 +294,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, MatrixType, SparseMatrixTypes )
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType globalSize = 100;
     StorageType localStorage;
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     DistributionPtr dist( new BlockDistribution( globalSize, comm ) );
     DistributionPtr rep ( new NoDistribution( globalSize ) );
     const IndexType localSize = dist->getLocalSize();
@@ -327,28 +332,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, MatrixType, SparseMatrixTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixTypes )
 {
-    std::string prefix = Configuration::getInstance().getPath();
+    std::string prefix = scai::test::Configuration::getPath();
     SCAI_LOG_INFO( logger, "prefix = " << prefix << ", can be changed by LAMA" );
     CSRSparseMatrix<double> tmp( prefix + "/can___24.mtx" );
     SCAI_LOG_INFO( logger, "constructed replicated matrix by file: " << tmp );
     IndexType numTotalRows = tmp.getNumRows();
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     DistributionPtr dist = makeDistribution( numTotalRows, comm, 1 );
     SCAI_LOG_INFO( logger, "new distribution: " << *dist );
     CSRSparseMatrix<double> matrix( tmp, dist, dist );
     IndexType numLocalRows = matrix.getLocalNumRows();
+
     /* get distributed data */
+
     IndexType numLocalValues = matrix.getLocalStorage().getNumValues();
     IndexType numHaloValues = matrix.getHaloStorage().getNumValues();
+
     SCAI_LOG_INFO( logger, *comm << ": local N = " << numLocalRows << ", nnz = "
                    << numLocalValues << " (local) + " << numHaloValues << " (halo)" );
-    IndexType* iaLocal = new IndexType[ numLocalRows + 1 ];
-    IndexType* jaLocal = new IndexType[ numLocalValues ];
-    double* valuesLocal = new double[ numLocalValues ];
-    IndexType* iaHalo = new IndexType[ numLocalRows + 1 ];
-    IndexType* jaHalo = new IndexType[ numHaloValues ];
-    double* valuesHalo = new double[ numHaloValues ];
+
+    common::scoped_array<IndexType> iaLocal( new IndexType[ numLocalRows + 1 ] );
+    common::scoped_array<IndexType> jaLocal( new IndexType[ numLocalValues ] );
+    common::scoped_array<double> valuesLocal( new double[ numLocalValues ] );
+
+    common::scoped_array<IndexType> iaHalo( new IndexType[ numLocalRows + 1 ] );
+    common::scoped_array<IndexType> jaHalo( new IndexType[ numHaloValues ] );
+    common::scoped_array<double> valuesHalo( new double[ numHaloValues ] );
+
     const CSRStorage<double>& localSt = matrix.getLocalStorage();
+
     ReadAccess<IndexType> iaLocalRead( localSt.getIA() );
     ReadAccess<IndexType> jaLocalRead( localSt.getJA() );
     ReadAccess<double> valuesLocalRead( localSt.getValues() );
@@ -356,18 +368,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     ReadAccess<IndexType> iaHaloRead( haloSt.getIA() );
     ReadAccess<IndexType> jaHaloRead( haloSt.getJA() );
     ReadAccess<double> valuesHaloRead( haloSt.getValues() );
+    ReadAccess<IndexType> halo2global( matrix.getHalo().getRequiredIndexes() );
 
     for ( IndexType i = 0; i < numLocalRows + 1; ++i )
     {
         iaLocal[i] = iaLocalRead[i];
-        SCAI_LOG_INFO( logger, "local: ia[ " << i << " ] = " << iaLocal[i] )
+        SCAI_LOG_TRACE( logger, "local: ia[ " << i << " ] = " << iaLocal[i] )
     }
 
     // Be careful, halo might be 0 x 0, so we have now iaHalo
 
     if ( haloSt.getNumRows() == 0 )
     {
-        SCAI_LOG_INFO( logger, "local: ia[ 0 .. " << numLocalRows << " + 1 ] = 0 " )
+        SCAI_LOG_TRACE( logger, "local: ia[ 0 .. " << numLocalRows << " + 1 ] = 0 " )
 
         for ( IndexType i = 0; i < numLocalRows + 1; ++i )
         {
@@ -381,20 +394,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
         for ( IndexType i = 0; i < numLocalRows + 1; ++i )
         {
             iaHalo[i] = iaHaloRead[i];
-            SCAI_LOG_INFO( logger, "halo: ia[ " << i << " ] = " << iaHalo[i] )
+            SCAI_LOG_TRACE( logger, "halo: ia[ " << i << " ] = " << iaHalo[i] )
         }
     }
 
     for ( IndexType i = 0; i < numLocalValues; ++i )
     {
-        jaLocal[i] = jaLocalRead[i];
+        jaLocal[i] = jaLocalRead[i];   // local indexes remain local
         valuesLocal[i] = valuesLocalRead[i];
+        SCAI_LOG_TRACE( logger, "local: ja[ " << i << " ] = " << jaLocal[i] )
+        SCAI_LOG_TRACE( logger, "local: values[ " << i << " ] = " << valuesLocal[i] )
     }
 
     for ( IndexType i = 0; i < numHaloValues; ++i )
     {
         jaHalo[i] = jaHaloRead[i];
+        jaHalo[i] = halo2global[jaHalo[i]];   // halo indexes must be global
         valuesHalo[i] = valuesHaloRead[i];
+        SCAI_LOG_TRACE( logger, "halo: ja[ " << i << " ] = " << jaHalo[i] )
+        SCAI_LOG_TRACE( logger, "halo: values[ " << i << " ] = " << valuesHalo[i] )
     }
 
     std::vector<IndexType> globalIndexes( numLocalRows );
@@ -405,9 +423,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
         SCAI_LOG_TRACE( logger, *comm << ": local row " << i << " is global row " << globalIndexes[i] );
     }
 
-    MatrixType distMatrix( numLocalRows, numLocalValues, numHaloValues, iaLocal,
-                           jaLocal, valuesLocal, iaHalo, jaHalo,
-                           valuesHalo, globalIndexes, comm );
+    MatrixType distMatrix( numLocalRows, numLocalValues, numHaloValues, 
+                           iaLocal.get(), jaLocal.get(), valuesLocal.get(), 
+                           iaHalo.get(), jaHalo.get(), valuesHalo.get(), 
+                           globalIndexes, comm );
+
     testSameMatrix( matrix, distMatrix );
 }
 
@@ -416,12 +436,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
 BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes )
 {
     MatrixType m1 = TestSparseMatrices::n4m4TestMatrix1<double>();
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     const IndexType n = m1.getNumRows();
     DistributionPtr bdist( new BlockDistribution( n, comm ) );
     DistributionPtr ndist( new NoDistribution( n ) );
     m1.redistribute( bdist, ndist );
-    SCAI_LOG_INFO( logger, "Input random matrix for invert: " << m1 );
+    SCAI_LOG_TRACE( logger, "Input random matrix for invert: " << m1 );
     MatrixType m2;
     m2.invert( m1 );
     SCAI_LOG_INFO( logger, "Inverted matrix: " << m2 );
@@ -434,7 +454,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes )
     MatrixType unity;
     unity.setIdentity( bdist );
     SCAI_LOG_INFO( logger, "Distributed identity matrix: " << mm );
-    testSameMatrix( unity, mm );
+    // CLOSE test not sufficient as mm might have inexact ZERO values, so use small value
+    Scalar small( common::TypeTraits<typename MatrixType::MatrixValueType>::small() );
+    testSameMatrix( unity, mm, small );
 }
 
 /* --------------------------------------------------------------------- */
@@ -450,7 +472,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixMultTest, MatrixType, SparseMatrixTypes )
     SCAI_LOG_INFO( logger, "verify: n6m4MatrixE1 * n4m3MatrixE2 = n6m3MatrixDRes" );
     testSameMatrix( matrixR, matrixP );
 // now we use distributions
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     DistributionPtr rowDist( new BlockDistribution( matrix1.getNumRows(), comm ) );
     DistributionPtr colDist( new BlockDistribution( matrix1.getNumColumns(), comm ) );
     DistributionPtr repDist( new NoDistribution( matrix2.getNumColumns() ) );

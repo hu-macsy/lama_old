@@ -34,7 +34,7 @@
 #include <scai/tasking/Task.hpp>
 
 // internal scai libraries
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/bind.hpp>
 
 // std
@@ -83,6 +83,8 @@ Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 Task::~Task()
 {
     SCAI_LOG_INFO( logger, "~Task" )
+
+    synchronize();
 }
 
 /* ------------------------------------------------------------------------- */

@@ -51,8 +51,6 @@
 namespace scai
 {
 
-using tasking::SyncToken;
-
 namespace lama
 {
 
@@ -79,7 +77,7 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>,ValueType>
 {
 
-    friend class SpecializedJacobi;
+//    friend class SpecializedJacobi;
 
 public:
 
@@ -125,25 +123,25 @@ public:
      */
     SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage );
 
-    SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist );
+    SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, dmemo::DistributionPtr rowDist );
 
     SparseMatrix(
         common::shared_ptr<MatrixStorage<ValueType> > storage,
-        DistributionPtr rowDist,
-        DistributionPtr colDist );
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist );
 
     /** Constructor of a sparse matrix with local and halo data available. */
 
     SparseMatrix(
         common::shared_ptr<MatrixStorage<ValueType> > localData,
         common::shared_ptr<MatrixStorage<ValueType> > haloData,
-        const Halo& halo,
-        DistributionPtr rowDist,
-        DistributionPtr colDist );
+        const dmemo::Halo& halo,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist );
 
     SparseMatrix( const Matrix& matrix, const bool transposeFlag = false );
 
-    SparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist );
+    SparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Override also the default copy constructor that does not make a
      *  deep copy of the input matrix due to the use of shared pointers.
@@ -160,14 +158,15 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContextPtr( const ContextPtr context )
+    virtual void setContextPtr( const hmemo::ContextPtr context )
     {
+        SCAI_ASSERT_DEBUG( context, "NULL context" )
         setContextPtr( context, context );
     }
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContextPtr( const ContextPtr localContext, const ContextPtr haloContext )
+    virtual void setContextPtr( const hmemo::ContextPtr localContext, const hmemo::ContextPtr haloContext )
     {
         mLocalData->setContextPtr( localContext );
         mHaloData->setContextPtr( haloContext );
@@ -175,7 +174,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual ContextPtr getContextPtr() const
+    virtual hmemo::ContextPtr getContextPtr() const
     {
         return mLocalData->getContextPtr();
     }
@@ -183,20 +182,20 @@ public:
     /** Implementation for Matrix::setDenseData */
 
     virtual void setDenseData(
-        DistributionPtr rowDistribution,
-        DistributionPtr colDistribution,
-        const ContextArray& values,
+        dmemo::DistributionPtr rowDistribution,
+        dmemo::DistributionPtr colDistribution,
+        const hmemo::_HArray& values,
         Scalar eps = Scalar( 0 ) );
 
     /** Implementation for pure method Matrix::setCSRData. */
 
     virtual void setCSRData(
-        DistributionPtr rowDist,
-        DistributionPtr colDist,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const ContextArray& values );
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::_HArray& values );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -212,7 +211,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
 
@@ -220,7 +219,7 @@ public:
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
-    virtual void setIdentity( DistributionPtr distribution );
+    virtual void setIdentity( dmemo::DistributionPtr distribution );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -250,7 +249,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist );
+    virtual void assign( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Implementation of of pure method of class Matrix. */
 
@@ -278,10 +277,6 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
-
-    /* Implementation of pure method of class Matrix. */
-
     virtual void setDiagonal( const Vector& diagonal );
 
     /* Implementation of pure method of class Matrix. */
@@ -295,6 +290,10 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual void scale( const Scalar scaling );
+
+    /* Implementation of pure method of class Matrix. */
+
+    virtual void conj();
 
     /*
      *  Set local data of the matrix.
@@ -367,19 +366,19 @@ public:
      *  - localX is usually the local part of a distributed vector.
      */
     void haloOperationSync(
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX,
-        LAMAArray<ValueType>& haloX,
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        hmemo::HArray<ValueType>& haloX,
         common::function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> localF,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX )> localF,
         common::function<
         void(
             const MatrixStorage<ValueType>* haloMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& haloX )> haloF ) const;
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& haloX )> haloF ) const;
 
     /**
      * @brief Operation on distributed matrix with halo exchange, async version
@@ -388,49 +387,49 @@ public:
      * can overlap with the halo exchange.
      */
     void haloOperationAsync(
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX,
-        LAMAArray<ValueType>& haloX,
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        hmemo::HArray<ValueType>& haloX,
         common::function<
-        SyncToken*(
+        tasking::SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> localAsyncF,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX )> localAsyncF,
         common::function<
         void(
             const MatrixStorage<ValueType>* haloMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& haloX )> haloF ) const;
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& haloX )> haloF ) const;
 
     void vectorHaloOperationSync(
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX,
-        const LAMAArray<ValueType>& localY,
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        const hmemo::HArray<ValueType>& localY,
         common::function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> calcF,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX )> calcF,
         common::function<
         void(
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX,
-            const LAMAArray<ValueType>& localY )> addF ) const;
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX,
+            const hmemo::HArray<ValueType>& localY )> addF ) const;
 
     void vectorHaloOperationAsync(
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX,
-        const LAMAArray<ValueType>& localY,
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        const hmemo::HArray<ValueType>& localY,
         common::function<
-        SyncToken*(
+        tasking::SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> calcF,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX )> calcF,
         common::function<
-        /*SyncToken**/void(
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX,
-            const LAMAArray<ValueType>& localY )> addF ) const;
+        /*tasking::SyncToken**/void(
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX,
+            const hmemo::HArray<ValueType>& localY )> addF ) const;
 
     /* Implemenation of pure method of class Matrix */
 
@@ -493,7 +492,7 @@ public:
      *
      * @return   reference to the halo of the distributed matrix
      */
-    const Halo& getHalo() const;
+    const dmemo::Halo& getHalo() const;
 
     /* Implementation of method writeAt for sparse matrix. */
 
@@ -521,9 +520,7 @@ public:
 
     virtual size_t getValueTypeSize() const;
 
-    /* Implementation of pure method Matrix::create with covariant return type */
-
-    virtual SparseMatrix<ValueType>* clone() const;
+    SparseMatrix<ValueType>* newMatrix() const;
 
     /* Implementation of pure method Matrix::copy with covariant return type */
 
@@ -531,7 +528,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    void redistribute( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /**  */
     /**
@@ -547,10 +544,10 @@ public:
 
     /** Writes this sparse matrix to a file in CSR format. */
 
-    void writeToFile(
+    void writeToFile1(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
-        const File::DataType dataType = File::INTERNAL,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
 
@@ -595,6 +592,10 @@ public:
         return Matrix::SPARSE;
     }
 
+    /** Get a complete row of local part only. */
+
+    void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
+
 protected:
 
     /** Test consistency of sparse matrix data, only used if ASSERT_DEBUG is enabled. */
@@ -605,7 +606,7 @@ protected:
 
     common::shared_ptr<MatrixStorage<ValueType> > mHaloData; //!< local columns of sparse matrix
 
-    Halo mHalo; //!< Exchange plans for halo part due to column distribution
+    dmemo::Halo mHalo; //!< Exchange plans for halo part due to column distribution
 
     /**
      * @brief Set this matrix = alpha * A + beta * B
@@ -658,17 +659,13 @@ private:
      *  This routine can also handle the case that otherLocalData is a reference to the local
      *  data of this matrix ( helpful to avoid unneccessary copies ).
      */
-    void    set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist );
+    void    set( const MatrixStorage<ValueType>& otherLocalData, dmemo::DistributionPtr otherDist );
 
     /** Implementation of transposed assign for sparse matrix of a known value type. */
 
     void assignTransposeImpl ( const SparseMatrix<ValueType>& matrix );
 
-    /** Get a complete row of local part only. */
-
-    void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
-
-    mutable LAMAArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
+    mutable hmemo::HArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
 };
 
 } /* end namespace lama */

@@ -41,7 +41,6 @@
 #include <scai/lama/test/NormTest.hpp>
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/lama/test/SparseMatrixTest.hpp>
-#include <scai/lama/test/distributed/CommunicatorTest.hpp>
 
 #include <list>
 #include <string>
@@ -52,7 +51,7 @@
 
 bool base_test_case = false;
 std::string testcase;
-std::string loglevel_argument = "";
+//std::string loglevel_argument = "";
 
 /*
  * @brief HelperMakro TC_REG( test_classes, test_methods )
@@ -92,7 +91,6 @@ int main( int argc, char* argv[] )
         TC_REG( normtestclasses, normtestmethods );
         TC_REG( sparsematrixtestclasses, sparsematrixtestmethods );
         TC_REG( storagetestclasses, storagetestmethods );
-        TC_REG( commtestclasses, commtestmethods );
 
         /* Parse command line arguments */
         for ( int i = 0; i < argc; i++ )
@@ -114,24 +112,24 @@ int main( int argc, char* argv[] )
             runtest_argument = iterator->second;
         }
 
-        /* Find log_level in runtime parameters */
-        iterator = runtime_arguments.find( "--log_level" );
+//        /* Find log_level in runtime parameters */
+//        iterator = runtime_arguments.find( "--log_level" );
+//
+//        if ( iterator != runtime_arguments.end() )
+//        {
+//            loglevel_argument = iterator->second;
+//        }
 
-        if ( iterator != runtime_arguments.end() )
-        {
-            loglevel_argument = iterator->second;
-        }
-
-        char* loglevel_env = getenv( "BOOST_TEST_LOG_LEVEL" );
-
-        if ( loglevel_argument == "" && loglevel_env == NULL )
-        {
-            loglevel_argument = "";
-        }
-        else if ( loglevel_argument == "" && loglevel_env != NULL )
-        {
-            loglevel_argument = loglevel_env;
-        }
+//        char* loglevel_env = getenv( "BOOST_TEST_LOG_LEVEL" );
+//
+//        if ( loglevel_argument == "" && loglevel_env == NULL )
+//        {
+//            loglevel_argument = "";
+//        }
+//        else if ( loglevel_argument == "" && loglevel_env != NULL )
+//        {
+//            loglevel_argument = loglevel_env;
+//        }
 
         /* Find specific context from the given runtime parameters.
          * If the environment variable LAMA_TEST_CONTEXT is set before, it will be overwritten.

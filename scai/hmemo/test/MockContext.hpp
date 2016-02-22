@@ -30,6 +30,8 @@
  * @date 05.07.2015
  **/
 
+#include "MockMemory.hpp"
+
 #include <scai/hmemo/Context.hpp>
 #include <scai/hmemo/Memory.hpp>
  
@@ -37,7 +39,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/weak_ptr.hpp>
-#include "MockMemory.hpp"
+#include <scai/common/macros/assert.hpp>
 
 /** Exampes of a new context class that implements all relevant routines. */
 
@@ -64,7 +66,7 @@ public:
         stream << "MockContext( dev = " << mDeviceNr << " )";
     }
 
-    virtual scai::hmemo::MemoryPtr getMemoryPtr() const
+    virtual scai::hmemo::MemoryPtr getLocalMemoryPtr() const
     {
         scai::hmemo::MemoryPtr memory;
 
@@ -99,9 +101,9 @@ public:
         // return &memory == getMemory().get();
     }
 
-    virtual scai::hmemo::context::ContextType getType() const
+    virtual scai::common::context::ContextType getType() const
     {
-        return scai::hmemo::context::UserContext;
+        return scai::common::context::UserContext;
     }
 
     virtual scai::tasking::TaskSyncToken* getSyncToken() const
@@ -116,16 +118,16 @@ public:
 
     static scai::hmemo::ContextPtr create( int deviceNr );
 
-    static scai::hmemo::context::ContextType createValue()
+    static scai::common::context::ContextType createValue()
     { 
-        return scai::hmemo::context::UserContext;
+        return scai::common::context::UserContext;
     }
 
 private:
 
     // MockContext uses the type UserContext as its type
 
-    MockContext( int deviceNr ) : scai::hmemo::Context( scai::hmemo::context::UserContext )
+    MockContext( int deviceNr ) : scai::hmemo::Context( scai::common::context::UserContext )
     {
         mDeviceNr = deviceNr;
     }

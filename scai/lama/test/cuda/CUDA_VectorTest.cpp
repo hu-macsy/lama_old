@@ -49,8 +49,8 @@
 
 #include <scai/lama/cuda/CUDAHostContextManager.hpp>
 #include <scai/lama/CommunicatorFactory.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/Distribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/Distribution.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -59,7 +59,6 @@
 #include <scai/lama/ContextFactory.hpp>
 #include <scai/lama/Context.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 #include <scai/lama/test/EquationHelper.hpp>
 #include <scai/lama/test/cuda/CUDAContext.hpp>
@@ -168,7 +167,7 @@ void matrixTimesVectorTestImpl()
     int numRows = 4 * size;
     int numCols = 4 * size;
     DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
-    LAMAArray<ValueType>& localDenseCorrectResult2 = denseCorrectResult2.getLocalValues();
+    HArray<ValueType>& localDenseCorrectResult2 = denseCorrectResult2.getLocalValues();
     scoped_array<ValueType> values( new ValueType[numRows * numCols] );
     {
         HostWriteAccess<ValueType> localDenseCorrectResult2Access( localDenseCorrectResult2 );
@@ -295,7 +294,7 @@ void vectorTimesMatrixTestImpl()
     int numRows = 4 * size;
     int numCols = 4 * size;
     DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
-    LAMAArray<ValueType>& localDenseCorrectResult2 = denseCorrectResult2.getLocalValues();
+    HArray<ValueType>& localDenseCorrectResult2 = denseCorrectResult2.getLocalValues();
     scoped_array<ValueType> values( new ValueType[numRows * numCols] );
     {
         HostWriteAccess<ValueType> localDenseCorrectResult2Access( localDenseCorrectResult2 );

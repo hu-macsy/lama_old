@@ -34,14 +34,13 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/common/macros/print_string.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
 
 using common::shared_ptr;
+using namespace dmemo;
 
 namespace lama
 {
@@ -330,18 +329,21 @@ void CSRSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::clone() const
+CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::newMatrix() const
 {
-    CSRSparseMatrix* newSparseMatrix = new CSRSparseMatrix<ValueType>();
+    common::unique_ptr<CSRSparseMatrix<ValueType> > newSparseMatrix( new CSRSparseMatrix<ValueType>() );
 
     // inherit the context, communication kind of this matrix for the new matrix
 
     newSparseMatrix->setContextPtr( this->getContextPtr() );
+
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger,
+                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr())
+                   << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
-    return newSparseMatrix;
+    return newSparseMatrix.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -375,10 +377,9 @@ Matrix* CSRSparseMatrix<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<MatrixStorageFormat, common::scalar::ScalarType> CSRSparseMatrix<ValueType>::createValue()
+MatrixCreateKeyType CSRSparseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<MatrixStorageFormat, common::scalar::ScalarType> ( Format::CSR, skind );
+    return MatrixCreateKeyType( Format::CSR, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

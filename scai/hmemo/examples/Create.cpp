@@ -25,18 +25,18 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Demo program for the Factory of LAMAArray.
+ * @brief Demo program for the Factory of HArray.
  * @author: Thomas Brandes, Lauretta Schubert
  * @date 18.04.2012
  **/
 
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
 #include <scai/logging.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 #include <scai/common/shared_ptr.hpp>
 
@@ -50,19 +50,19 @@ SCAI_LOG_DEF_LOGGER( logger, "CreateTest" )
 
 // Template instantiation of LAMArray
 
-template class LAMAArray<double>;
+template class HArray<double>;
 
 int main()
 {
     SCAI_LOG_THREAD( "Main" )
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     static IndexType N =  100;
 
-    LAMAArray<float> lamaArray ( N, 1.0 );
+    HArray<float> lamaArray ( N, 1.0 );
 
-    shared_ptr<LAMAArray<float> > lamaArray1( lamaArray.clone() );
+    shared_ptr<HArray<float> > lamaArray1( HArray<float>::create( lamaArray.getValueType() ) );
 
     *lamaArray1 = lamaArray;
 
@@ -79,13 +79,11 @@ int main()
   
     std::cout << "Create finished" << std::endl;
 
-    std::cout << "LAMAArray<float>::initialized = " << LAMAArray<float>::initialized << std::endl;
-
-    shared_ptr<ContextArray> lamaArray2( ContextArray::create( scalar::FLOAT ) );
+    shared_ptr<_HArray> lamaArray2( _HArray::create( scalar::FLOAT ) );
 
     std::cout << "lamaArray2 = " << *lamaArray2 << std::endl;
 
-    shared_ptr<ContextArray> lamaArray3( ContextArray::create( scalar::DOUBLE ) );
+    shared_ptr<_HArray> lamaArray3( _HArray::create( scalar::DOUBLE ) );
 
     std::cout << "lamaArray3 = " << *lamaArray3 << std::endl;
 }

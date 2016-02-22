@@ -126,20 +126,21 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
     ### Search for libraries mkl_gnu_thread, mkl_intel_thread and mkl_core
     
     if ( EXISTS ${MKL_LIBRARY_PATH} )
+
         # search for mkl_intel_lp64 lib 
+
         find_library ( MKL_LIBRARY_LP64 mkl_intel_lp64 PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
 
         if ( NOT EXISTS ${MKL_LIBRARY_LP64} )
             message ( STATUS "WARNING MKL library mkl_intel_lp64 not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
         endif( NOT EXISTS ${MKL_LIBRARY_LP64} )
-        set(MKL_LIBRARIES  ${MKL_LIBRARY_LP64} )
-        
-        if ( NOT EXISTS ${MKL_LIBRARY_BLACS} )
-            message ( STATUS "WARNING MKL library mkl_blacs not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
-        endif( NOT EXISTS ${MKL_LIBRARY_BLACS} )
+
+        set ( MKL_LIBRARIES  ${MKL_LIBRARY_LP64} )
         
         # search for mkl_core lib 
+
         find_library ( MKL_LIBRARY_CORE mkl_core PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
+
         if ( NOT EXISTS ${MKL_LIBRARY_CORE} )
             message ( STATUS "WARNING MKL library mkl_core not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
         endif ( NOT EXISTS ${MKL_LIBRARY_CORE} )
@@ -148,11 +149,11 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
             
         # search for gnu compiler libs
         if ( CMAKE_COMPILER_IS_GNUCC )
-            if ( OPENMP_FOUND )
+            if ( OPENMP_FOUND AND USE_OPENMP )
                 find_library ( MKL_LIBRARY_GNU mkl_gnu_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
-            else ( OPENMP_FOUND )
+            else ( OPENMP_FOUND AND USE_OPENMP )
                 find_library ( MKL_LIBRARY_GNU mkl_sequential PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
-            endif ( OPENMP_FOUND )
+            endif ( OPENMP_FOUND AND USE_OPENMP )
             if ( NOT EXISTS ${MKL_LIBRARY_GNU} )
                 message ( STATUS "WARNING MKL library mkl_gnu_thread not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
             endif( NOT EXISTS ${MKL_LIBRARY_GNU} )
@@ -161,11 +162,11 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
         
          # search for intel compiler libs
          if ( CMAKE_C_COMPILER_ID MATCHES Intel )
-            if ( OPENMP_FOUND )
+            if ( OPENMP_FOUND AND USE_OPENMP )
                 find_library ( MKL_LIBRARY_INTEL mkl_intel_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
-            else ( OPENMP_FOUND )
+            else ( OPENMP_FOUND AND USE_OPENMP )
                 find_library ( MKL_LIBRARY_INTEL mkl_sequential PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
-            endif ( OPENMP_FOUND )
+            endif ( OPENMP_FOUND AND USE_OPENMP )
             if ( NOT EXISTS ${MKL_LIBRARY_INTEL} )
                 message ( STATUS "WARNING MKL library mkl_intel_thread not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
             endif()
@@ -180,18 +181,6 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
             list ( APPEND MKL_LIBRARIES ${MKL_LIBRARY_INTEL} )
          endif( ${CMAKE_GENERATOR} MATCHES "Visual Studio" )
 
-        # search for gfortran. Required by older MKL versions
-        if ( NOT WIN32 )
-            find_library ( GFORTRAN_LIBRARY gfortran HINTS ${GFORTRAN_LIBRARY_PATH} )
-            mark_as_advanced( FORCE GFORTRAN_LIBRARY )
-        
-            if ( EXISTS ${GFORTRAN_LIBRARY} )
-                list ( APPEND MKL_LIBRARIES ${GFORTRAN_LIBRARY} )
-            else ( EXISTS ${GFORTRAN_LIBRARY} )
-                message ( STATUS "WARNING Library gfortran not found. Required by some older MKL libraries. Please define GFORTRAN_LIBRARY_PATH." )
-            endif ( EXISTS ${GFORTRAN_LIBRARY} )
-        endif ( NOT WIN32 )
-        
         # conclude libs
         list ( APPEND MKL_LIBRARIES ${MKL_LIBRARY_CORE} )
         

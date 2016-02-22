@@ -36,9 +36,9 @@
 
 #include <scai/lama/Scalar.hpp>
 #include <scai/common/Complex.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 //#include <complex>
 
@@ -74,38 +74,6 @@ BOOST_AUTO_TEST_CASE( ScalarGetTypeTest )
     BOOST_CHECK_EQUAL( getScalarType<ComplexFloat>(), scalar::COMPLEX );
     BOOST_CHECK_EQUAL( getScalarType<ComplexDouble>(), scalar::DOUBLE_COMPLEX );
     BOOST_CHECK_EQUAL( getScalarType<ComplexLongDouble>(), scalar::LONG_DOUBLE_COMPLEX );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( ScalarTypeSizeTest )
-{
-    // Note: this test might be misleading but you should be aware
-    //       that for a Scalar s you cannot determine how it has been constructed
-    float value_float = 1.0f;
-    double value_double = 1.0;
-    LongDouble value_long_double = 1.0l;
-    ComplexFloat value_c_float( 1.0, 2.0 );
-    ComplexDouble value_c_double( 1.0, 2.0 );
-    ComplexLongDouble value_c_long_double( 1.0, 2.0 );
-    Scalar s_float( value_float );
-    size_t size = s_float.getTypeSize( scalar::FLOAT );
-    BOOST_CHECK_EQUAL( size, sizeof( float ) );
-    Scalar s_double( value_double );
-    size = s_double.getTypeSize( scalar::DOUBLE );
-    BOOST_CHECK_EQUAL( size, sizeof( double ) );
-    Scalar s_long_double( value_long_double );
-    size = s_long_double.getTypeSize( scalar::LONG_DOUBLE );
-    BOOST_CHECK_EQUAL( size, sizeof( LongDouble ) );
-    Scalar s_float_c( value_c_float );
-    size = s_float.getTypeSize( scalar::COMPLEX );
-    BOOST_CHECK_EQUAL( size, sizeof( ComplexFloat ) );
-    Scalar s_double_c( value_c_double );
-    size = s_double_c.getTypeSize( scalar::DOUBLE_COMPLEX );
-    BOOST_CHECK_EQUAL( size, sizeof( ComplexDouble ) );
-    Scalar s_long_double_c( value_c_long_double );
-    size = s_long_double_c.getTypeSize( scalar::LONG_DOUBLE_COMPLEX );
-    BOOST_CHECK_EQUAL( size, sizeof( ComplexLongDouble ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -157,16 +125,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( IsRealTest )
-{
-    Scalar complexScalar = ComplexFloat( 1.0, 2.0 );
-    BOOST_CHECK( !complexScalar.isReal() );
-    Scalar realScalar( 2 );
-    BOOST_CHECK( realScalar.isReal() );
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( NegativNumberTest, ValueType, test_types )
 {
     Scalar s( 2.0 );
@@ -206,8 +164,8 @@ BOOST_AUTO_TEST_CASE( MiscTests )
     BOOST_CHECK_EQUAL( abs( t ), 9.0 );
     BOOST_CHECK_EQUAL( max( s, t ), 9.0  );
     BOOST_CHECK_EQUAL( min( s, t ), 6.25 );
-    Scalar c1( 3.0, 4.0 );
-    Scalar c2( 2.0, 2.0 );
+    Scalar c1( ComplexFloat( 3.0, 4.0 ) );
+    Scalar c2( ComplexFloat( 2.0, 2.0 ) );
     BOOST_CHECK_EQUAL( max( c1, c2 ), c1  );
     BOOST_CHECK_EQUAL( min( c1, c2 ), c2 );
     // Pythagoras: 3^2 + 4^2 = 5^2

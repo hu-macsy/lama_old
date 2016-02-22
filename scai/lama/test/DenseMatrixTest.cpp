@@ -34,22 +34,20 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <test/TestSparseMatrices.hpp>
-#include <scai/common/test/TestMacros.hpp>
-#include <test/SameMatrixHelper.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
+#include <scai/lama/test/TestMacros.hpp>
+#include <scai/lama/test/SameMatrixHelper.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
-
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/all.hpp>
 
 //-------------------------
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/GenBlockDistribution.hpp> 
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp> 
 #include <scai/common/shared_ptr.hpp>   
 //-------------------------
 #include <scai/lama/matutils/MatrixCreator.hpp> 
@@ -59,6 +57,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using scai::common::unique_ptr;
 using scai::common::scoped_array;
 using scai::common::shared_ptr;
@@ -745,7 +744,7 @@ void swapTest( )
 template<typename ValueType>
 void transposeTest( )
 {
-    CommunicatorPtr comm = Communicator::get("MPI");
+    CommunicatorPtr comm = Communicator::getCommunicator(scai::dmemo::communicator::MPI);  // MPI
     CSRSparseMatrix<ValueType> testMatrixA = TestSparseMatrices::n6m4MatrixD1<ValueType>();
     CSRSparseMatrix<ValueType> testMatrixB = TestSparseMatrices::n6m6Full<ValueType>();
     DenseMatrix<ValueType> matrixA(testMatrixA);

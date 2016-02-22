@@ -40,6 +40,7 @@
 
 // logging
 #include <scai/logging.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 namespace scai
 {
@@ -67,10 +68,10 @@ public:
      *  Attention: this kind of write access assumes that the array is completely new written.
      */
 
-    WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context )
+    WriteOnlyAccess( HArray<ValueType>& array, ContextPtr context )
         : WriteAccess<ValueType>( array, context, false )
     {
-        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )
     }
 
     /** Create a write access with keep flag = false for the host context
@@ -78,47 +79,49 @@ public:
      *  Attention: this kind of write access assumes that the array is completely new written.
      */
 
-    WriteOnlyAccess( LAMAArray<ValueType>& array )
+    WriteOnlyAccess( HArray<ValueType>& array )
         : WriteAccess<ValueType>( array, false )
     {
-        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )
     }
 
     /**
      *  @brief Acquire a write only access with a resize.
      *
-     * @param[in] array     the LAMAArray for which access is required
+     * @param[in] array     the HArray for which access is required
      * @param[in] context   the context where data will be written later
      * @param[in] size      the new size of the LAMA array.
      *
      * Attention: this kind of write access assumes that the array is completely new written.
      */
-    WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size )
+    WriteOnlyAccess( HArray<ValueType>& array, ContextPtr context, const IndexType size )
         : WriteAccess<ValueType>( array, context, false )
     {
         this->resize( 0 );      // invalidates all data before resize
         this->resize( size );   // now resize
 
-        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">: " << *mArray )
+        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
-    WriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size )
+    WriteOnlyAccess( HArray<ValueType>& array, const IndexType size )
         : WriteAccess<ValueType>( array, false )
     {
         this->resize( 0 );      // invalidates all data before resize
         this->resize( size );   // now resize
 
-        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">: " << *mArray )
+        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
     ~WriteOnlyAccess()
     {
-        SCAI_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )
     }
 
 protected:
 
+#ifndef SCAI_LOG_LEVEL_OFF
     using WriteAccess<ValueType>::logger;   // no additinal logger for this derived class
+#endif
 
 private:
 

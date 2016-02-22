@@ -1,5 +1,5 @@
 /**
- * @file LAMAArrayRefTest.cpp
+ * @file HArrayRefTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains all relevant tests for class LAMAArrayRef
+ * @brief Contains all relevant tests for class HArrayRef
  * @author: Thomas Brandes
  * @date 07.07.2015
  **/
@@ -41,7 +41,7 @@ using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( LAMAArrayRefTest )
+BOOST_AUTO_TEST_SUITE( HArrayRefTest )
 
 /* --------------------------------------------------------------------- */
 
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
     {
         // LAMA array keeps myData on Host
 
-        LAMAArrayRef<ValueType> lamaArray( 10, myData );
+        HArrayRef<ValueType> lamaArray( 10, myData );
 
         SCAI_LOG_INFO( logger, "lamaArray = " << lamaArray )
 
@@ -117,9 +117,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
         {
             // this will create a LAMA array with a const reference,
 
-            LAMAArrayRef<ValueType> lamaArray( 10, myConstData );
+            HArrayRef<ValueType> lamaArray( 10, myConstData );
 
-            BOOST_CHECK_EQUAL( 10, lamaArray.size() );
+            BOOST_CHECK_EQUAL( lamaArray.size(), static_cast<IndexType>( 10 ) );
             // Write access should not be allowed
             BOOST_CHECK_THROW(
             {

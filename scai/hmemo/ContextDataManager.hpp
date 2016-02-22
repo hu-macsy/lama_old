@@ -71,7 +71,7 @@ typedef size_t ContextDataIndex;
  *  at different contexts.
  */
 
-class ContextDataManager : private scai::common::NonCopyable, public scai::common::Printable
+class ContextDataManager : private common::NonCopyable, public common::Printable
 {
 public:
 
@@ -101,7 +101,7 @@ public:
      *  @returns  index to a corresponding entry for ContextData.
      */
 
-    ContextDataIndex acquireAccess( ContextPtr context, context::AccessKind kind, size_t allocSize, size_t validSize );
+    ContextDataIndex acquireAccess( ContextPtr context, common::context::AccessKind kind, size_t allocSize, size_t validSize );
 
     /** This routine must be called when an access is released, otherwise further accesses are not allowed. 
      *
@@ -109,7 +109,7 @@ public:
      *  @param[in] kind    kind of access, read or write
      */
 
-    void releaseAccess( ContextDataIndex index, context::AccessKind kind );
+    void releaseAccess( ContextDataIndex index, common::context::AccessKind kind );
 
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
@@ -125,15 +125,13 @@ public:
 
     void wait();
   
-    /** Return true if there is at least one access to any context data. 
-     *  For a locked array further write access is not possible.
-     */
+    /** Return number of all accesses. */
 
-    bool locked() const;
+    int locked() const;
 
-    /** Return true if there is at least one write access to any context data. */
+    /** Return number of accesses for a certain kind. */
 
-    bool locked( context::AccessKind kind ) const;
+    int locked( common::context::AccessKind kind ) const;
 
     void invalidateAll();
 
@@ -165,7 +163,9 @@ public:
 
     /** This routine tries to find a context where valid data is available */
 
-    ContextPtr getValidContext( const context::ContextType preferredType );
+    ContextPtr getValidContext( const ContextPtr prefContext ) const;
+
+    ContextPtr getFirstTouchContextPtr() const;
 
     void reserve( ContextPtr context, const size_t size, const size_t validSize );
 
@@ -190,7 +190,7 @@ private:
 
     std::vector<ContextData> mContextData; // Incarnations of the array at different contexts
 
-    scai::common::unique_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
+    common::unique_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
 
     ContextDataIndex findContextData( ContextPtr context ) const;
 
@@ -217,11 +217,11 @@ private:
     mutable common::Thread::Mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive 
     mutable common::Thread::Condition mAccessCondition;  // notify if all accesses are released
 
-    void lockAccess( context::AccessKind kind, ContextPtr context );
+    void lockAccess( common::context::AccessKind kind, ContextPtr context );
 
-    void unlockAccess( context::AccessKind kind );
+    void unlockAccess( common::context::AccessKind kind );
 
-    int mLock[context::MaxAccessKind];
+    int mLock[common::context::MaxAccessKind];
 
     ContextPtr accessContext;    // context that has locked
     common::Thread::Id accessThread;     // thread that has locked
@@ -229,7 +229,7 @@ private:
     bool  multiContext;   // multiple reads at different Context
     bool  multiThreaded;  // multiple reads by different threads
 
-    bool hasAccessConflict( context::AccessKind kind ) const;
+    bool hasAccessConflict( common::context::AccessKind kind ) const;
 };
 
 

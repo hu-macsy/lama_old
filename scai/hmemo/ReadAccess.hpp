@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of a template class ReadAccess for reading a LAMAArray.
+ * @brief Definition of a template class ReadAccess for reading a HArray.
  * @author Thomas Brandes, Jiri Kraus
  * @date 29.04.2011
  */
@@ -34,13 +34,16 @@
 
 // local library
 #include <scai/hmemo/Access.hpp>
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 // internal scai libraries
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/macros/assert.hpp>
+#include <scai/common/function.hpp>
+#include <scai/common/bind.hpp>
 
 namespace scai
 {
@@ -49,10 +52,10 @@ namespace hmemo
 {
 
 /**
- * @brief The template ReadAccess is used to enforce the consistency of the template LAMAArray.
+ * @brief The template ReadAccess is used to enforce the consistency of the template HArray.
  *
- * ReadAccess enforces the consistency of the template LAMAArray by following the RAII Idiom. This is
- * done by acquiring a read lock on a LAMAArray in the constructor and releasing this read lock in
+ * ReadAccess enforces the consistency of the template HArray by following the RAII Idiom. This is
+ * done by acquiring a read lock on a HArray in the constructor and releasing this read lock in
  * the destructor. Therefore a ReadAccess should be only used as a stack object.
  *
  * @tparam ValueType is the value type stored in the wrapped container.
@@ -64,7 +67,7 @@ class COMMON_DLL_IMPORTEXPORT ReadAccess: public Access
 
 private:
 
-    const LAMAArray<ValueType>* mArray;   // read access to this associated LAMA array
+    const HArray<ValueType>* mArray;   // read access to this associated LAMA array
 
     const ValueType* mData;               // pointer to the data used by the access
 
@@ -73,32 +76,32 @@ private:
 public:
 
     /**
-     * @brief Acquires a ReadAccess to the passed LAMAArray for a given context.
+     * @brief Acquires a ReadAccess to the passed HArray for a given context.
      *
-     * @param[in] array      the LAMAArray to acquire a ReadAccess for
+     * @param[in] array      the HArray to acquire a ReadAccess for
      * @param[in] contextPtr the context that needs a read acess
      * @throws Exception     if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
      */
 
-    ReadAccess( const LAMAArray<ValueType>& array, ContextPtr contextPtr );
+    ReadAccess( const HArray<ValueType>& array, ContextPtr contextPtr );
 
     /**
-     * @brief Acquires a ReadAccess to the passed LAMAArray for the host context.
+     * @brief Acquires a ReadAccess to the passed HArray for the host context.
      *
-     * @param[in] array     the LAMAArray to acquire a ReadAccess for
+     * @param[in] array     the HArray to acquire a ReadAccess for
      * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
      */
-    ReadAccess( const LAMAArray<ValueType>& array );
+    ReadAccess( const HArray<ValueType>& array );
 
     /**
-     * @brief Releases the ReadAccess on the associated LAMAArray.
+     * @brief Releases the ReadAccess on the associated HArray.
      */
     virtual ~ReadAccess();
 
     /**
      * @brief Returns a valid pointer to the data usable for the context.
      *
-     * @return a pointer to the wrapped LAMAArray.
+     * @return a pointer to the wrapped HArray.
      */
     const ValueType* get() const;
 
@@ -115,6 +118,15 @@ public:
      */
     virtual void release();
 
+    /**
+     *  @brief Delay the release of the access in an own function
+     *
+     *  The access can no more be used afterwards but there is no
+     *  release done with the destructor.
+     */
+
+    common::function<void()> releaseDelayed();
+
     /** 
      * @brief Output of this object in a stream. 
      */
@@ -123,7 +135,7 @@ public:
     /**
      * @brief Returns the size of the array
      *
-     * @return  the size of the wrapped LAMAArray
+     * @return  the size of the wrapped HArray
      */
     IndexType size() const;
 
@@ -139,11 +151,11 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr contextPtr ) : mArray( &array )
+ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array, ContextPtr contextPtr ) : mArray( &array )
 {
     SCAI_ASSERT( contextPtr.get(), "NULL context for read access not allowed" )
 
-    SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>()
+    SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id()
                     << "> : create for " << array << " @ " << *contextPtr )
 
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
@@ -152,11 +164,11 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr
 }
 
 template<typename ValueType>
-ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array ) : mArray( &array )
+ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array ) : mArray( &array )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
-    SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>()
+    SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id()
                     << "> : create for " << array << " @ " << *contextPtr )
 
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
@@ -169,7 +181,7 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array ) : mArray(
 template<typename ValueType>
 ReadAccess<ValueType>::~ReadAccess()
 {
-    SCAI_LOG_DEBUG( logger, "~ReadAccess<" << common::getScalarType<ValueType>() << ">" )
+    SCAI_LOG_DEBUG( logger, "~ReadAccess<" << common::TypeTraits<ValueType>::id() << ">" )
     release();
 }
 
@@ -180,7 +192,7 @@ void ReadAccess<ValueType>::release()
 {
     if ( mArray )
     {
-        SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>() << ">: realase for " << *mArray )
+        SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id() << ">: realase for " << *mArray )
         mArray->releaseReadAccess( mContextDataIndex );
     }
 
@@ -190,9 +202,27 @@ void ReadAccess<ValueType>::release()
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+common::function<void()> ReadAccess<ValueType>::releaseDelayed()
+{
+    SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
+
+    void ( _HArray::*releaseAccess ) ( ContextDataIndex ) const = &_HArray::releaseReadAccess;
+
+    const _HArray* ctxArray = mArray;
+
+    // This access itself is treated as released
+
+    mArray = NULL;
+
+    return common::bind( releaseAccess, ctxArray, mContextDataIndex );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "ReadAccess<" << common::getScalarType<ValueType>() << "> ";
+    stream << "ReadAccess<" << common::TypeTraits<ValueType>::id() << "> ";
 
     if ( mArray )
     {

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Vector.hpp
+ * @brief Definition of an abstract class for distributed vectors.
  * @author Jiri Kraus
  * @date 22.02.2011
  * $Id$
@@ -36,7 +36,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/Distributed.hpp>
+#include <scai/dmemo/Distributed.hpp>
 
 // local library
 #include <scai/lama/expression/Expression.hpp>
@@ -52,6 +52,8 @@
 #include <scai/common/Factory.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/SCAITypes.hpp>
+
+#include <utility>
 
 namespace scai
 {
@@ -100,27 +102,16 @@ typedef std::pair<VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
 class COMMON_DLL_IMPORTEXPORT Vector: 
 
      public common::Factory<VectorCreateKeyType, Vector*>,
-     public Distributed
+     public dmemo::Distributed
 
 {
 public:
-
-    /**
-     * @brief Vector factory to get a vector of a certain kind and a certain type
-     *
-     * @param[in] kind is either DENSE or SPARSE
-     * @param[in] valueType specifies the value type as the elements, e.g. FLOAT, DOUBLE
-     *
-     * This factory operation allows to create a vector at runtime of any format or any type.
-     * Internally, all vector classes must register their create operation.
-     */
-    static Vector* getVector( const VectorKind kind, const common::scalar::ScalarType valueType );
 
     /** @brief Create a dense vector of a certain value type and a given distribution.
      *
      *  This method keeps compatibility with an older method that did know which vectors were supported.
      */
-    static Vector* createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution );
+    static Vector* createVector( const common::scalar::ScalarType valueType, dmemo::DistributionPtr distribution );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -258,7 +249,7 @@ public:
      *
      * Only the type of the LAMA array is used as input arg to determine the value type.
      */
-    virtual void buildValues( hmemo::ContextArray& values ) const = 0;
+    virtual void buildValues( hmemo::_HArray& values ) const = 0;
 
     /**
      * @brief Sets the local values of a vector by an array.
@@ -268,7 +259,7 @@ public:
      * Note: A conversion operator must be available for values.getValueType() to
      *       the type of this vector.
      */
-    virtual void setValues( const hmemo::ContextArray& values ) = 0;
+    virtual void setValues( const hmemo::_HArray& values ) = 0;
 
     /**
      * @brief Assign this vector with values stored the file with the given filename.
@@ -280,15 +271,22 @@ public:
      */
     virtual void readFromFile( const std::string& filename ) = 0;
 
+    /**
+     * @brief write the vector to an output file
+     *
+     * @param[in] fileName is the name of the output file (suffix might be added according to the file type)
+     * @param[in] fileType format of the output file, default is binary
+     * @param[in] dataType representation type for output values, default is same type as vector
+     */
     virtual void writeToFile(
-        const std::string& fileBaseName,
-        const File::FileType fileType = File::XDR,
-        const File::DataType dataType = File::DOUBLE ) const = 0;
+        const std::string& fileName,
+        const File::FileType fileType = File::BINARY,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL ) const = 0;
 
     /**
      * @brief get a vector with all local values
      */
-    virtual const hmemo::ContextArray& getLocalValues() const = 0;
+    virtual const hmemo::_HArray& getLocalValues() const = 0;
 
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
@@ -347,24 +345,16 @@ public:
     virtual Scalar maxNorm() const = 0;
 
     /**
-     * @brief clone is a virtual call of the default constructor of the derived classes
-     *
-     * @return a pointer to the new Vector, caller takes the ownership.
-     */
-    virtual Vector* clone() const = 0;
-
-    /**
-     * @brief Create is a virtual constructor, which clones a new Vector with the same concrete class as this.
-     *
-     * @param[in] distribution  the distribution to use for the new Vector.
-     * @return                  a pointer to the new Vector, caller has the owner ship.
-     */
-    virtual Vector* clone( DistributionPtr distribution ) const = 0;
-
-    /**
      *  @brief copy is a virtual call of the copy constructor of the derived classes
      */
     virtual Vector* copy() const = 0;
+
+    /**
+     *  @brief Creates a new Vector of the same type and value type
+     */
+    virtual Vector* newVector() const = 0;
+
+    virtual VectorCreateKeyType getCreateValue() const = 0;
 
     /**
      * @brief Returns the size of the vector.
@@ -393,7 +383,7 @@ public:
     /**
      *  Assignment to vector by local values and distribution.
      */
-    virtual void assign( const hmemo::ContextArray& localValues, DistributionPtr distribution ) = 0;
+    virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution ) = 0;
 
     /**
      *  Builds an array with local values of a distributed vector.
@@ -403,7 +393,7 @@ public:
      *  For different value types, implicit format conversion will be done.
      *  A sparse vector should generate an array with all values.
      */
-    virtual void buildLocalValues( hmemo::ContextArray& localValues ) const = 0;
+    virtual void buildLocalValues( hmemo::_HArray& localValues ) const = 0;
 
     /**
      * @brief Assigns the passed value to all elements of this.
@@ -452,7 +442,7 @@ public:
     /**
      * @brief Sets the 'preferred' context where data resides and computations are done.
      */
-    void setContextPtr( hmemo::ContextPtr location );
+    void setContextPtr( hmemo::ContextPtr context );
 
     /**
      * @brief Getter function for the context (pointer) of a vector.
@@ -473,7 +463,7 @@ public:
      *  All elements of the vector are undefined after this operation.
      *  Elements can be set e.g. with
      */
-    void resize( DistributionPtr distributionPtr );
+    void resize( dmemo::DistributionPtr distributionPtr );
 
     /**
      * @brief Redistributes this vector to the new passed distribution.
@@ -483,7 +473,12 @@ public:
      * The global vector itself remains unchanged; only local parts
      * can be different now.
      */
-    virtual void redistribute( DistributionPtr distribution ) = 0;
+    virtual void redistribute( dmemo::DistributionPtr distribution ) = 0;
+
+    /** 
+     *  Build the conjugate vector in place. 
+     */
+    virtual void conj() = 0;
 
 protected:
 
@@ -498,7 +493,7 @@ protected:
      * @param[in] distribution  the distribution to use for the new Vector.
      * @param[in] context       is optional, will be Host context.
      */
-    explicit Vector( DistributionPtr distribution, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    explicit Vector( dmemo::DistributionPtr distribution, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * @brief Creates a copy of the passed Vector.

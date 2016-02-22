@@ -34,13 +34,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using scai::common::Exception;
 
 typedef boost::mpl::list<double, float> test_types;
@@ -53,7 +54,7 @@ struct P_MatrixCreatorTestConfig
 {
     P_MatrixCreatorTestConfig()
     {
-        comm = Communicator::get();
+        comm = Communicator::getCommunicator();
     }
 
     ~P_MatrixCreatorTestConfig()

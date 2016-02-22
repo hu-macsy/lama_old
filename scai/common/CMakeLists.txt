@@ -28,6 +28,7 @@
  # @brief CMake configuration file for common library
  # @author Thomas Brandes
  # @date 09.06.2015
+ # @since 2.0.0
 ###
 
 ### Set required CMake version
@@ -39,117 +40,146 @@ project ( scai_common CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-### Include Compiler Flags
-if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-else  ( NOT SCAI_COMPLETE_BUILD )
-	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( common )
-endif ( NOT SCAI_COMPLETE_BUILD )
+### includes ###
 
-include ( CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 )
-    include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-### include all search packages
-# no internal dependencies
+## important Variables for project
+include ( VersionDefinition )
+include ( SetProjectVariables)
+include ( InternalDependencies )
 include ( ExternalDependencies )
 
-foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+## needed functions
+include ( Functions/scaiFunctions )
+include ( Functions/scaiProject )
+include ( Functions/relativeInstall )
+
+### Include compile dependent things
+if    ( NOT SCAI_COMPLETE_BUILD )
+    include ( SetBuildFlags )
+    include ( CompilerVersion )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+else  ( NOT SCAI_COMPLETE_BUILD )
+	include ( Functions/CheckValueAtCompleteBuild )
+	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
+endif ( NOT SCAI_COMPLETE_BUILD )
+
+## C++11 or Boost
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+### include all search packages
+addInternalAndExternalPackages()
 
 ### finalize build flags
 include ( ConcludeFlags )
 
 ### add definitions
-
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include
-include_directories ( ../.. )
+set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
+include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
+addInternalAndExternalIncludes()
 
-### build library
-
-## add subdirectories
-add_subdirectory ( examples )
-
-## add source files
-
-include ( Functions/scaiProject )
-
+### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 scai_project (
 
-    CLASSES
+    CLASSES                  # .cpp, .hpp
 
         Printable
         ScalarType
+        SCAITypes
+        ContextType
         Settings
         Thread
         Walltime
+        LibModule
 
-    HEADERS
+    HEADERS                  # .hpp only
 
-        Assert
-        bind     
         Complex
         config
         Constants
         Factory
         Factory1
-        function
+        Math
         OpenMP
+        preprocessor
+        ReductionOp
         NonCopyable
-        SCAITypes
-        shared_ptr
         TypeTraits
-        unique_ptr
-        weak_ptr
 )
 
-## add CUDA if supported
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-    include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
-endif ( CUDA_FOUND AND USE_CUDA )
+## configure c++11/boost dependent sources
+set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
 
-# subdirectory macros
-add_subdirectory ( macros )
+if    ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
+    install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
-## add exception dir
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CONFIGURE_DIR}/bind.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CONFIGURE_DIR}/function.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CONFIGURE_DIR}/shared_ptr.hpp" )
+    if    ( ${Boost_VERSION} GREATER "105700" )
+        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost_157" "${CONFIGURE_DIR}/unique_ptr.hpp" )
+    else  ( ${Boost_VERSION} GREATER "105700" )
+        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost" "${CONFIGURE_DIR}/unique_ptr.hpp" )
+    endif ( ${Boost_VERSION} GREATER "105700" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in_boost" "${CONFIGURE_DIR}/weak_ptr.hpp" )
+else  ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in" "${CONFIGURE_DIR}/bind.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in" "${CONFIGURE_DIR}/function.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in" "${CONFIGURE_DIR}/shared_ptr.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CONFIGURE_DIR}/unique_ptr.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CONFIGURE_DIR}/weak_ptr.hpp" )
+endif ( NOT CXX_SUPPORTS_C11 )
+install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
+                ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
+                ${CONFIGURE_DIR}/weak_ptr.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+
+## add subdirectories
+
+add_subdirectory ( cuda )
+add_subdirectory ( doc )
+add_subdirectory ( examples )
 add_subdirectory ( exception )
+add_subdirectory ( macros )
+add_subdirectory ( mic )
 
-add_subdirectory ( test )
+if ( FOUND_BOOST_TEST AND BUILD_TEST )
+    add_subdirectory ( test )
+endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
-## add library
-add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+### add library ###
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
-foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_common ${SCAI_${upper_module}_LIBRARIES} )
-endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+addExternalLinkLibraries()
 
 ### install ###
-install ( TARGETS scai_common DESTINATION lib )
 
-include ( Functions/relativeInstall )
-relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/common )
+## install lib
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
+
+## install headers
+relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
-install ( FILES ../common.hpp DESTINATION include/scai )
+install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
-## add custum target distClean
+### add custum target distClean
 include ( DistClean )
 
+### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/common )
+	include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

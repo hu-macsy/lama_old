@@ -47,7 +47,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
     
     ### choosing the right compute capability
     ### we just start from version 1.3 ( 1.0 - 1.2 is not supported )
-    list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "50" )
+    list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "37" "50" "52" )
 	set ( CACHE CUDA_COMPUTE_CAPABILITY PROPERTY STRINGS ${CC_CHOICES} )
     checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
     

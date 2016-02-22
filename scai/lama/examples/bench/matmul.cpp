@@ -53,7 +53,7 @@ static bool verboseFlag = false;
 template<typename ValueType>
 static void bench( IndexType size, double fillRate )
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     CSRSparseMatrix<ValueType> a( size, size );
     CSRSparseMatrix<ValueType> b( size, size );
@@ -77,7 +77,7 @@ static void bench( IndexType size, double fillRate )
 
     timeHost = Walltime::get() - timeHost;
 
-    ContextPtr gpu = Context::getContextPtr( context::CUDA );
+    ContextPtr gpu = Context::getContextPtr( scai::common::context::CUDA );
 
     a.setContextPtr( gpu );
     b.setContextPtr( gpu );
@@ -108,7 +108,7 @@ static void bench( IndexType size, double fillRate )
         cout << "c = " << c << endl;
 
         cout << "time <" << scai::common::getScalarType<ValueType>() << "> on " << *gpu
-                 << ", size = " << size << ", rate = " << fillRate << " = " << time << endl;
+                 << ", size = " << size << ", rate = " << fillRate << endl;
     }
 
     const int precision = 1;

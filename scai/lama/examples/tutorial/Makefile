@@ -1,10 +1,10 @@
 include ../make.inc
 
-INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include
+INCLUDE_FLAGS = -I${SCAI_BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include
 
 LD_FLAGS = ${SCAI_LD_FLAGS} -Wl,-rpath=${SCAI_ROOT}/lib 
 
-EXECUTABLE: simple.exe vector.exe solver.exe blas1.exe vector_exp.exe matrix.exe scalar.exe 
+EXECUTABLE: ${EXECUTABLES_TUTORIAL}
 
 .SUFFIXES:
 

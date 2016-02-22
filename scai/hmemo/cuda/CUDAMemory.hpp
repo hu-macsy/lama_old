@@ -100,7 +100,15 @@ public:
 
     virtual void memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const;
 
+    /** Overrides Memory::memcpyFromAsync */
+
+    virtual tasking::SyncToken* memcpyFromAsync( void* dst, const Memory& srcMemory, const void* src, size_t size ) const;
+
     virtual void memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const;
+
+    /** Overrides Memory::memcpyFromAsync */
+
+    virtual tasking::SyncToken* memcpyToAsync( const Memory& dstMemory, void* dst, const void* src, size_t size ) const;
 
     virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 

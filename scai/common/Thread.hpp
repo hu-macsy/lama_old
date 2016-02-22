@@ -36,6 +36,7 @@
 
 // local library
 #include <scai/common/NonCopyable.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // external
 #include <pthread.h>
@@ -75,11 +76,11 @@ public:
     class Mutex
     {
 
-    friend class ScopedLock;  // allow access to the mutex
+        friend class ScopedLock;  // allow access to the mutex
 
     public:
 
-        /** Constructor creates and initalizes the mutex. 
+        /** Constructor creates and initalizes the mutex.
          *
          *  @param[in] isRecursive if true the mutex will be recursive
          *
@@ -115,7 +116,7 @@ public:
         {
         }
 
-        ~RecursiveMutex() 
+        ~RecursiveMutex()
         {
         }
     };
@@ -125,7 +126,7 @@ public:
     class ScopedLock
     {
 
-    friend class Condition;  // allow access to the mutex
+        friend class Condition;  // allow access to the mutex
 
     public:
 
@@ -165,7 +166,7 @@ public:
         pthread_cond_t p_condition;
     };
 
-    typedef void* (*pthread_routine) (void*);
+    typedef void* ( *pthread_routine ) ( void* );
 
     Thread() : running( false )
     {
@@ -174,17 +175,17 @@ public:
     /** Constructor of a new thread that executes a void routine with one reference argument. */
 
     template<typename T>
-    Thread( void (*work) ( T& ), T& arg )
+    Thread( void ( *work ) ( T& ), T& arg )
     {
-        void *parg = (void *) ( &arg );
-        pthread_routine routine = ( pthread_routine ) work;
-        start( routine, parg );
+        run( work, arg );
     }
 
+    /** Run can also be called after thread has been created. */
+
     template<typename T>
-    void run( void (*work) ( T& ), T& arg )
+    void run( void ( *work ) ( T& ), T& arg )
     {
-        void *parg = (void *) ( &arg );
+        void* parg = ( void* ) ( &arg );
         pthread_routine routine = ( pthread_routine ) work;
         start( routine, parg );
     }
@@ -193,14 +194,52 @@ public:
 
     void join();
 
+    Id getId()
+    {
+        return mTId;
+    }
+
     /** Destructor of thread, waits for its termination. */
 
     ~Thread();
 
 private:
 
-    pthread_t tid;
-    bool      running;
+    Id    mTId;
+    bool  running;
+};
+
+/** Thread-private pointer variable of a certain type */
+
+template<typename T>
+class ThreadPrivatePtr : common::NonCopyable
+{
+public:
+    ThreadPrivatePtr()
+    {
+        int ierr = pthread_key_create( &mKey, NULL );
+
+        if ( ierr != 0 )
+        {
+            COMMON_THROWEXCEPTION( "create key failed." )
+        }
+    }
+
+    ~ThreadPrivatePtr()
+    {
+    }
+
+    T* get()
+    {
+        return static_cast<T*>( pthread_getspecific( mKey ) );
+    }
+
+    void set( T* obj )
+    {
+        pthread_setspecific( mKey, obj );
+    }
+
+    pthread_key_t mKey;   // key specific for this private data
 };
 
 } /* end namespace common */

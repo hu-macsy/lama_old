@@ -99,9 +99,9 @@ public:
     virtual MemoryPtr getHostMemoryPtr() const;
 
     /**
-     *  @brief Implementation of Context::getMemory for this class.
+     *  @brief Implementation of Context::getLocalMemory for this class.
      */
-    virtual MemoryPtr getMemoryPtr() const;
+    virtual MemoryPtr getLocalMemoryPtr() const;
 
     int getDeviceNr() const
     {
@@ -145,9 +145,9 @@ public:
 
     /** This routine is required for Register in Context Factory. */
 
-    static context::ContextType createValue()
+    static common::context::ContextType createValue() 
     {
-        return context::CUDA;
+        return common::context::CUDA;
     }
 
     /** This routine is required for Register in Context Factory. */

@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/lama/test/SparseMatrixTest.hpp>
 

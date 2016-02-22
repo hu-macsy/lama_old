@@ -51,7 +51,7 @@
 #include <scai/hmemo/Context.hpp>
 
 //include for using the NoDistribution
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 //include the generic inner product functions of LAMA
 #include <scai/lama/expression/all.hpp>
@@ -125,11 +125,11 @@ int main()
 
   lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
 
-  hmemo::LAMAArray<ScalarType> lama_array1 ( 10, plain_vec );
+  utilskernel::LArray<ScalarType> lama_array1 ( 10, plain_vec );
   lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
   lama_vec2.setValues( lama_array1 );
 
-  lama::DistributionPtr noDist( new lama::NoDistribution( 10 ) );
+  dmemo::DistributionPtr noDist( new dmemo::NoDistribution( 10 ) );
   lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
 
   std::cout << "DenseVector with rand values filled" << std::endl;
@@ -138,13 +138,13 @@ int main()
   // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
   //
   hmemo::ContextPtr cudaContext;
-  if ( hmemo::Context::canCreate( hmemo::context::CUDA ) )
+  if ( hmemo::Context::canCreate( common::context::CUDA ) )
   {
-      cudaContext = hmemo::Context::getContextPtr( hmemo::context::CUDA, 0 );
+      cudaContext = hmemo::Context::getContextPtr( common::context::CUDA, 0 );
   }
   else
   {
-      cudaContext = hmemo::Context::getContextPtr( hmemo::context::Host );
+      cudaContext = hmemo::Context::getContextPtr( common::context::Host );
   }
   lama_vec1.setContextPtr( cudaContext );
   lama_vec2.setContextPtr( cudaContext );

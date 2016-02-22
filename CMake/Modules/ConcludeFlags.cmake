@@ -12,7 +12,9 @@ endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 if    ( SCAI_COMMON_FOUND ) 
 	set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${SCAI_COMMON_FLAGS}" )
 else  ( SCAI_COMMON_FOUND )
-	set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${OpenMP_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
+    if ( USE_OPENMP )
+	    set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${OpenMP_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
+    endif ( USE_OPENMP )
 endif ( SCAI_COMMON_FOUND ) 
 
 ## add variables to cache with new names so they can be modified by the user via CCMAKE

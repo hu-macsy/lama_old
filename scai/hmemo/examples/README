@@ -1,0 +1,12 @@
+Example programs
+================
+
+Aliasing: 
+
+ - Demo on how to use HArrays in operations where input and output array can be aliased
+
+Array:
+
+  - Demo on how to use HArray with read and write access.
+
+

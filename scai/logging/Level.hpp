@@ -45,6 +45,8 @@ namespace scai
 namespace logging
 {
 
+/** Own namespace for enum type Level and its values. */
+
 namespace level
 {
 

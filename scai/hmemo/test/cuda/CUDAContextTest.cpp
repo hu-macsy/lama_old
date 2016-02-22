@@ -52,6 +52,7 @@ using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;
 
 using namespace hmemo;
+namespace context = common::context;
 
 typedef boost::mpl::list<double, float> test_types;
 
@@ -74,7 +75,7 @@ static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToke
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    std::cout << "scal( n = " << n << ", alpha = " << alpha << ", x[], inc_x = " << inc_x << std::endl;
+    //std::cout << "scal( n = " << n << ", alpha = " << alpha << ", x[], inc_x = " << inc_x << std::endl;
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "scal set stream" );
     SCAI_CUBLAS_CALL( cublasSscal( CUDAContext_cublasHandle, n, &alpha, x_d, inc_x ), "cublasSscal" );
@@ -101,14 +102,14 @@ BOOST_AUTO_TEST_CASE( getContextTest )
 
 BOOST_AUTO_TEST_CASE( allocateTest )
 {
-    LAMAArray<int> ctxArray; // default, not allocated at all
+    HArray<int> ctxArray; // default, not allocated at all
     ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
     {
         WriteAccess<int> array( ctxArray, cudaContext );
         array.resize( 10 );
         // Destructors will be called for array, ctxArray, cudaContext
     }
-    BOOST_CHECK_EQUAL( 10, ctxArray.size() );
+    BOOST_CHECK_EQUAL( static_cast<IndexType>( 10 ), ctxArray.size() );
     BOOST_CHECK( ctxArray.capacity( cudaContext ) >= 10 );
 }
 
@@ -118,7 +119,7 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
 {
     ContextPtr contextPtr = Context::getContextPtr( context::Host );
 
-    LAMAArray<IndexType> ctxArray; // default, not allocated at all
+    HArray<IndexType> ctxArray; // default, not allocated at all
     ReadAccess<IndexType> readTestAccess( ctxArray, contextPtr );
     readTestAccess.release();
     WriteAccess<IndexType> writeAccess( ctxArray, contextPtr );
@@ -137,7 +138,7 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
 
     for ( IndexType i = 0; i < 5; i++ )
     {
-        BOOST_CHECK_EQUAL( 3, readAccess.get()[i] );
+        BOOST_CHECK_EQUAL( static_cast<IndexType>( 3 ), readAccess.get()[i] );
     }
 
     readAccess.release();
@@ -149,7 +150,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 {
     ContextPtr contextPtr = Context::getContextPtr( context::Host );
 
-    LAMAArray<IndexType> ctxArray; // default, not allocated at all
+    HArray<IndexType> ctxArray; // default, not allocated at all
     {
         WriteAccess<IndexType> writeAccess( ctxArray, contextPtr );
         // Possible problem: fetch from any location not possible
@@ -177,7 +178,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;
-    LAMAArray<float> vector( n, value );
+    HArray<float> vector( n, value );
     common::shared_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
 
     common::shared_ptr<SyncToken> token( cudaContext->getSyncToken() );
@@ -210,7 +211,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;
-    LAMAArray<float> vector( n, value );
+    HArray<float> vector( n, value );
     {
         WriteAccess<float> cudaV( vector, cudaContext );
         SCAI_CONTEXT_ACCESS( cudaContext );

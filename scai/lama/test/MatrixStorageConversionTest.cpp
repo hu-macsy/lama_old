@@ -57,9 +57,9 @@ void setCSRStorage( _MatrixStorage& storage )
     { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 };
     IndexType ia[] =
     { 0, 2, 3, 5, 8, 10, 10, 12 };
-    LAMAArrayRef<IndexType> csrIA( numRows + 1, ia );
-    LAMAArrayRef<IndexType> csrJA( numValues, ja );
-    LAMAArrayRef<ValueType> csrValues( numValues, values );
+    HArrayRef<IndexType> csrIA( numRows + 1, ia );
+    HArrayRef<IndexType> csrJA( numValues, ja );
+    HArrayRef<ValueType> csrValues( numValues, values );
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
 
@@ -114,10 +114,10 @@ void conversion( ContextPtr loc )
 
 /* ------------------------------------------------------------------------- */
 
-static ContextPtr host = Context::getContextPtr( context::Host );
+static ContextPtr host = Context::getHostPtr();
 
 static ContextPtr cuda =
-    Context::hasContext( context::CUDA ) ? Context::getContextPtr( context::CUDA ) :
+    Context::hasContext( scai::common::context::CUDA ) ? Context::getContextPtr( scai::common::context::CUDA ) :
     ContextPtr();
 
 /* ------------------------------------------------------------------------- */
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CreateTest, StorageType, StorageTypes )
     typedef typename StorageType::StorageValueType ValueType;
     StorageType storage;
     setCSRStorage<ValueType>( storage );
-    scai::common::shared_ptr<_MatrixStorage> storage1( storage.clone() );
+    scai::common::shared_ptr<_MatrixStorage> storage1( MatrixStorage<ValueType>::create( storage.getCreateValue() ) );
 // check for same format and value type
     BOOST_CHECK_EQUAL( storage1->getFormat(), storage.getFormat() );
     BOOST_CHECK_EQUAL( storage1->getValueType(), storage.getValueType() );

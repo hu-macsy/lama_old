@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief DenseVector.hpp
+ * @brief Definition of template class that stands for a dense vector of a certain type.
  * @author Jiri Kraus
  * @date 22.02.2011
  */
@@ -39,21 +39,19 @@
 #include <scai/lama/Vector.hpp>
 
 // local library
-#include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/Halo.hpp>
-
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/LArray.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/Halo.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/TypeTraits.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <fstream>
@@ -90,7 +88,7 @@ public:
      *
      * @param[in] distribution  the distribution to use for the new vector.
      */
-    explicit DenseVector( DistributionPtr distribution );
+    explicit DenseVector( dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a replicated DenseVector of the passed size initialized to the passed value.
@@ -108,7 +106,7 @@ public:
      * @param[in] value         the value to assign to all elements of the new DenseVector.
      * @param[in] context   specifies optionally the context where dense vector should reside
      */
-    DenseVector( DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    DenseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** Constructor of a replicated vector by replicated C++ array. */
 
@@ -145,7 +143,7 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    DenseVector( const Vector& other, DistributionPtr distribution );
+    DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed DenseVector with given local values.
@@ -153,7 +151,7 @@ public:
      * @param[in] localValues   the local values to initialize the new DenseVector with.
      * @param[in] distribution  the distribution the
      */
-    DenseVector( const hmemo::ContextArray& localValues, DistributionPtr distribution );
+    DenseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
 
     /**
      * @brief This constructor creates a vector with the size and values stored
@@ -233,7 +231,7 @@ public:
 
     /** Allocate a dense vector with a certain distribution, values are undefined. */
 
-    void allocate( DistributionPtr distribution );
+    void allocate( dmemo::DistributionPtr distribution );
 
     /** Override the default assignment operator.
      *
@@ -261,29 +259,22 @@ public:
     /**
      * Implementation of pure method.
      */
-    virtual void buildValues( hmemo::ContextArray& values ) const;
+    virtual void buildValues( hmemo::_HArray& values ) const;
 
     /**
      * Implementation of pure method.
      */
-    virtual void setValues( const hmemo::ContextArray& values );
-
-    /**
-     * Implementation of Vector::clone with covariant return type.
-     */
-
-    virtual DenseVector* clone() const;
-
-    /**
-     * Implementation of Vector::clone with covariant return type.
-     */
-    virtual DenseVector* clone( DistributionPtr distribution ) const;
+    virtual void setValues( const hmemo::_HArray& values );
 
     /**
      * Implementation of Vector::copy with covariant return type.
      */
-
     virtual DenseVector* copy() const;
+
+    /**
+     * Implementation of Vector::newVector with covariant return type.
+     */
+    virtual DenseVector* newVector() const;
 
     //TODO: We either need a none const getLocalValues()
     // or an operator[] with local sematics or both
@@ -293,7 +284,7 @@ public:
     // getLocalValues and getHaloValues is more explicite and there for
     // better understandable and less errorprone.
     // Maybe an access proxy would be a nice solution, because with a proxy we
-    // can avoid to change the size and other attributes of the LAMAArray
+    // can avoid to change the size and other attributes of the HArray
     // mLocalValues.
     /**
      * @brief get a non constant reference to local values of this Dense Vector.
@@ -301,7 +292,7 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    hmemo::LAMAArray<ValueType>& getLocalValues()
+    utilskernel::LArray<ValueType>& getLocalValues()
     {
         return mLocalValues;
     }
@@ -311,7 +302,7 @@ public:
      *
      * @return  a constant reference to the local values of this.
      */
-    const hmemo::LAMAArray<ValueType>& getLocalValues() const
+    const utilskernel::LArray<ValueType>& getLocalValues() const
     {
         return mLocalValues;
     }
@@ -323,7 +314,7 @@ public:
      *
      * Note: halo of a vector can also be used for writes in case of const vectors.
      */
-    hmemo::LAMAArray<ValueType>& getHaloValues() const
+    utilskernel::LArray<ValueType>& getHaloValues() const
     {
         return mHaloValues;
     }
@@ -333,7 +324,7 @@ public:
      *
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      */
-    void updateHalo( const Halo& halo ) const;
+    void updateHalo( const dmemo::Halo& halo ) const;
 
     /**
      * @brief update the halo values according to the passed Halo asynchronously.
@@ -341,7 +332,7 @@ public:
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      * @return          a SyncToken which can be used to synchronize to the asynchronous update.
      */
-    tasking::SyncToken* updateHaloAsync( const Halo& halo ) const;
+    tasking::SyncToken* updateHaloAsync( const dmemo::Halo& halo ) const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -355,21 +346,23 @@ public:
 
     virtual Scalar maxNorm() const;
 
+    virtual void conj();
+
     static void vectorPlusVector(
-        hmemo::ContextPtr context,
-        hmemo::LAMAArray<ValueType>& result,
+        scai::hmemo::ContextPtr prefContext,
+        scai::hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const hmemo::LAMAArray<ValueType>& x,
+        const scai::hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y );
+        const scai::hmemo::HArray<ValueType>& y );
 
     static tasking::SyncToken* vectorPlusVectorAsync(
-        hmemo::ContextPtr context,
-        hmemo::LAMAArray<ValueType>& result,
+        hmemo::ContextPtr prefContext,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const hmemo::LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y );
+        const hmemo::HArray<ValueType>& y );
 
     virtual void swap( Vector& other );
 
@@ -385,9 +378,9 @@ public:
 
     virtual void assign( const Vector& other );
 
-    virtual void assign( const hmemo::ContextArray& localValues, DistributionPtr dist );
+    virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr dist );
 
-    virtual void buildLocalValues( hmemo::ContextArray& localValues ) const;
+    virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;
 
@@ -401,12 +394,16 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
-    virtual void redistribute( DistributionPtr distribution );
+    virtual void redistribute( dmemo::DistributionPtr distribution );
 
-    void writeToFile(
-        const std::string& fileBaseName,
+    /**
+     * @brief Implementatio of pure method, see Vector::writeToFile 
+     *
+     */
+    virtual void writeToFile(
+        const std::string& fileName,
         const File::FileType fileType = File::BINARY,
-        const File::DataType dataType = File::INTERNAL ) const;
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL ) const;
 
 protected:
 
@@ -422,15 +419,15 @@ private    :
 
     void writeVectorToBinaryFile(
                     const std::string& fileName,
-                    const File::DataType outputType ) const;
+                    const common::scalar::ScalarType outputType ) const;
 
     void writeVectorToXDRFile(
                     const std::string& fileName,
-                    const File::DataType outputType ) const;
+                    const common::scalar::ScalarType outputType ) const;
 
     void writeVectorDataToBinaryFile(
                     std::fstream& outFile,
-                    const File::DataType outputType ) const;
+                    const common::scalar::ScalarType outputType ) const;
 
     void readVectorHeader( const std::string& filename, File::FileType& fileType, long& dataTypeSize );
 
@@ -441,13 +438,13 @@ private    :
 
     void writeVectorToMMFile(
                     const std::string& filename,
-                    const File::DataType& dataType ) const;
+                    const common::scalar::ScalarType& dataType ) const;
 
     void readVectorFromFormattedFile( const std::string& fileName );
 
     void readVectorFromBinaryFile(
                     const std::string& fileName,
-                    const File::DataType dataType );
+                    const common::scalar::ScalarType dataType );
 
     void readVectorFromXDRFile(
                     const std::string& fileName,
@@ -457,11 +454,11 @@ private    :
 
     void readVectorDataFromBinaryFile(
                     std::fstream &inFile,
-                    const File::DataType dataType );
+                    const common::scalar::ScalarType dataType );
 
-    hmemo::LAMAArray<ValueType> mLocalValues; //!< my local values of vector
+    utilskernel::LArray<ValueType> mLocalValues; //!< my local values of vector
 
-    mutable hmemo::LAMAArray<ValueType> mHaloValues;//!< my halo values of vector
+    mutable utilskernel::LArray<ValueType> mHaloValues;//!< my halo values of vector
 
 public:
 
@@ -471,7 +468,9 @@ public:
 
     // key for factory 
 
-    static std::pair<VectorKind, common::scalar::ScalarType> createValue();
+    static VectorCreateKeyType createValue();
+
+    virtual VectorCreateKeyType getCreateValue() const;
 };
 
 /* ------------------------------------------------------------------------- */
@@ -483,11 +482,11 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType*
 {
     // use LAMA array reference to avoid copy of the raw data
 
-    hmemo::LAMAArrayRef<OtherValueType> valuesArrayRef( size, values );
+    hmemo::HArrayRef<OtherValueType> valuesArrayRef( size, values );
 
     // use mContext instead of context to avoid NULL pointer
 
-    LAMAArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
+    utilskernel::HArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
 
     // Halo is not used yet
 

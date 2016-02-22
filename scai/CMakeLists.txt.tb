@@ -77,15 +77,31 @@ set ( SCAI_TRACING_LIBRARY scai_tracing
 set ( SCAI_TRACING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tracing
       CACHE PATH "tracing include directory" )
 
+# Project: tasking library
+
 add_subdirectory( tasking )
 
 ### Set variables for Findscai_tasking so other projects can use it 
 
 set ( SCAI_TASKING_LIBRARY scai_tasking 
-      CACHE FILEPATH  "library for thread tasking" )
+      CACHE FILEPATH  "library for tasking" )
 
 set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tasking
       CACHE PATH "tasking include directory" )
+
+# Project: kregistry library
+
+add_subdirectory( kregistry )
+
+### Set variables for Findscai_kregistry so other projects can use it 
+
+set ( SCAI_KREGISTRY_LIBRARY scai_kregistry
+      CACHE FILEPATH  "library for kernel registry" )
+
+set ( SCAI_KREGISTRY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kregistry
+      CACHE PATH "kernel registry include directory" )
+
+# Project: hmemo library
 
 add_subdirectory( hmemo )
 
@@ -95,11 +111,55 @@ set ( SCAI_HMEMO_LIBRARY scai_hmemo
       CACHE FILEPATH  "library for hybrid memory on multiple devices" )
 
 set ( SCAI_HMEMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hmemo
-      CACHE PATH "tracing include directory" )
+      CACHE PATH "hmemo include directory" )
 
-### Final: lama project
+# Project: blaskernel library
+
+add_subdirectory( blaskernel )
+
+### Set variables for Findscai_blaskernel so further projects can use it 
+
+set ( SCAI_BLASKERNEL_LIBRARY scai_blaskernel
+      CACHE FILEPATH  "library for kernels implemented by BLAS" )
+
+set ( SCAI_BLASKERNEL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/blaskernel
+      CACHE PATH "blaskernel include directory" )
+
+# Project: dmemo library
+
+add_subdirectory( dmemo )
+
+### Set variables for Findscai_lama so further projects can use it 
+
+set ( SCAI_DMEMO_LIBRARY scai_dmemo
+      CACHE FILEPATH  "library for distributed memory computation" )
+
+set ( SCAI_DMEMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dmemo
+      CACHE PATH "dmemo include directory" )
+
+# Project: lama library
 
 add_subdirectory( lama )
+
+### Set variables for Findscai_lama so further projects can use it 
+
+set ( SCAI_LAMA_LIBRARY scai_lama
+      CACHE FILEPATH  "library for accelerated math applications" )
+
+set ( SCAI_LAMA_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lama
+      CACHE PATH "lama include directory" )
+
+# Project: solver library
+
+add_subdirectory( solver )
+
+### Set variables for Findscai_solver so further projects can use it 
+
+set ( SCAI_SOLVER_LIBRARY scai_solver
+      CACHE FILEPATH  "library for solver basing on lama" )
+
+set ( SCAI_SOLVER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/solver
+      CACHE PATH "solver include directory" )
 
 # Documentation
 

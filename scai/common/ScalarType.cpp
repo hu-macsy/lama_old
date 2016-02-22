@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Implementation of operations on ScalarType.
- * @author Jiri Kraus
+ * @author Thomas Brandes
  * @date 07.11.2011
  */
 
@@ -39,53 +39,67 @@ namespace scai
 namespace common
 {
 
+MIC_CALLABLE_MEMBER const char* scalar2str( const scalar::ScalarType stype )
+{
+    switch ( stype )
+    {
+        case scalar::FLOAT:
+            return "float";
+
+        case scalar::DOUBLE:
+            return "double";
+
+        case scalar::INDEX_TYPE:
+            return "IndexType";
+
+        case scalar::LONG_DOUBLE:
+            return "LongDouble";
+
+        case scalar::COMPLEX:
+            return "ComplexFloat";
+
+        case scalar::DOUBLE_COMPLEX:
+            return "ComplexDouble";
+
+        case scalar::LONG_DOUBLE_COMPLEX:
+            return "ComplexLongDouble";
+
+        case scalar::INTERNAL:
+            return "_Internal";
+
+        case scalar::PATTERN:
+            return "_Pattern";
+
+        default:
+            return "Unknown";
+    }
+}
+
 namespace scalar
 {
 
-std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
+bool isComplex( const ScalarType t )
 {
-    switch( object )
+    bool is = false;
+
+    switch ( t )
     {
-        case FLOAT:
-            stream << "float";
-            break;
-
-        case DOUBLE:
-            stream << "double";
-            break;
-
-        case INDEX_TYPE:
-            stream << "IndexType";
-            break;
-
-        case LONG_DOUBLE:
-            stream << "LongDouble";
-            break;
-
-        case COMPLEX:
-            stream << "ComplexFloat";
-            break;
-
         case DOUBLE_COMPLEX:
-            stream << "ComplexDouble";
-            break;
-
-        case LONG_DOUBLE_COMPLEX:
-            stream << "ComplexLongDouble";
-            break;
-
-        case INTERNAL:
-            stream << "_Internal";
-            break;
-
-        case PATTERN:
-            stream << "_Pattern";
+        case COMPLEX:
+        case LONG_DOUBLE_COMPLEX :
+            is = true;
             break;
 
         default:
-            stream << "Unknown";
+            is = false;
     }
 
+    return is;
+}
+
+std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
+{
+    stream << scalar2str( object );
     return stream;
 }
 

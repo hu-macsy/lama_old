@@ -44,6 +44,7 @@
 
 using namespace scai::hmemo;
 using namespace scai::lama;
+using scai::utilskernel::LArray;
 
 //
 // EXAMPLE multiplication of a dense vector with a sparse matrix in CSR format.
@@ -84,11 +85,11 @@ int main()
     // Vector values for our multiplication.
     ValueType vectorValues[] = {   6.0f, 4.0f, 7.0f, -9.3f };
 
-    // All data has to be stored in LAMAArrays.
-    const LAMAArray<IndexType> matrixIA = LAMAArray<IndexType>( numRows + 1, ia );
-    const LAMAArray<IndexType> matrixJA = LAMAArray<IndexType>( numValues, ja );
-    const LAMAArray<ValueType> mValues  = LAMAArray<ValueType>( numValues, matrixValues );
-    const LAMAArray<ValueType> vValues  = LAMAArray<ValueType>( numColumns, vectorValues );
+    // All data has to be stored in LAMA Arrays.
+    const LArray<IndexType> matrixIA = LArray<IndexType>( numRows + 1, ia );
+    const LArray<IndexType> matrixJA = LArray<IndexType>( numValues, ja );
+    const LArray<ValueType> mValues  = LArray<ValueType>( numValues, matrixValues );
+    const LArray<ValueType> vValues  = LArray<ValueType>( numColumns, vectorValues );
 
     // Create a CSRStorage.
     CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( numRows, numColumns, numValues,
@@ -105,8 +106,8 @@ int main()
     DenseVector<ValueType> result( numRows, 0.0 );
 
     // Distribution pointer are needed to construct a CSRSparseMatrix.
-    scai::lama::DistributionPtr rowDist( new scai::lama::NoDistribution( numRows ) );
-    scai::lama::DistributionPtr colDist( new scai::lama::NoDistribution( numColumns ) );
+    scai::dmemo::DistributionPtr rowDist( new scai::dmemo::NoDistribution( numRows ) );
+    scai::dmemo::DistributionPtr colDist( new scai::dmemo::NoDistribution( numColumns ) );
 
     // Allocation of the CSRSparseMatrix.
     CSRSparseMatrix<ValueType> csrMatrix( *csrStorage, rowDist, colDist );

@@ -14,6 +14,8 @@
 using namespace scai;
 using namespace scai::hmemo;
 
+namespace context = common::context;
+
 SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 
 template<typename ValueType>
@@ -84,7 +86,7 @@ int main()
 
     const IndexType N = 100;
 
-    LAMAArray<double> data( cudaContext );
+    HArray<double> data( cudaContext );
     
     std::cout << "data = " << data << std::endl;
 

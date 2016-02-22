@@ -41,7 +41,8 @@
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
+#include <scai/common/Settings.hpp>
 
 // external
 #include <omp.h>
@@ -68,7 +69,7 @@ int MICContext::numUsedDevices = 0;
 
 
 MICContext::MICContext( int deviceNr )
-    : Context( context::MIC ), mDeviceNr( deviceNr )
+    : Context( common::context::MIC ), mDeviceNr( deviceNr )
 {
     SCAI_LOG_INFO( logger, "construct MICContext, device nr = = " << deviceNr )
 
@@ -124,7 +125,7 @@ MICContext::~MICContext()
 
 void MICContext::writeAt( std::ostream& stream ) const
 {
-    stream << "MICContext(" << mDeviceNr << ": " << mNumThreads << " Threads)";
+    stream << "MICContext( device = " << mDeviceNr << ", " << mNumThreads << " Threads )";
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -167,7 +168,7 @@ bool MICContext::canUseMemory( const Memory& other ) const
 
 /* ----------------------------------------------------------------------------- */
 
-MemoryPtr MICContext::getMemoryPtr() const
+MemoryPtr MICContext::getLocalMemoryPtr() const
 {
     MemoryPtr memory;
 
@@ -207,7 +208,11 @@ int MICContext::getCurrentDevice()
 
 static int getDefaultDeviceNr()
 {
-    return 0;
+    int device = 0;
+
+    common::Settings::getEnvironment( device, "SCAI_DEVICE" );
+
+    return device;
 }
 
 /* ----------------------------------------------------------------------------- */

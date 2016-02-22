@@ -35,9 +35,10 @@
 
 // local library
 #include <scai/common/config.hpp>
-#include <scai/common/unique_ptr.hpp>
+#include <scai/common/shared_ptr.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // std
 #include <memory>
@@ -86,13 +87,19 @@ public:
 
         Register();
 
-        /** Method that does the registration. */
+        /** Guard class that registers/unregisters the creator.   */
 
-        inline static bool init();
+        class RegisterGuard
+        {
+        public:
+            RegisterGuard();
+            ~RegisterGuard();
+            bool initialized;
+        };
 
-        /** Boolean variable whose initialization does the registration. */
+        /** Static guard variable takes care of registration */
 
-        static bool initialized;
+        static RegisterGuard registerGuard;
     };
 
     /** @brief check if create is supported for a given input value */
@@ -113,50 +120,78 @@ protected:
 
     static void addCreator( const InputType type, CreateFn create );
 
+    /** Routine to unregister the create routine in the factory. */
+
+    static void removeCreator( const InputType type );
+
 private:
 
     typedef std::map<InputType, CreateFn> CreatorMap;
 
     /** Map container to get for the key the create function. */
 
-    static CreatorMap& getFactory();
+    static CreatorMap* getFactory();
 };
 
 template<typename InputType, typename ValueType, typename OutputType> 
 template<class Derived>
 Factory1<InputType, ValueType, OutputType>::Register<Derived>::Register()
 {
-    // Use of initialized forces its initialization and therefore registration
+    // just some trick stuff to cheat most compilers so they instantiate the static variable
 
-    if ( !initialized )
+    if ( !registerGuard.initialized )
     {
-        init();
+        // Attention: caused problems on Intel MIC with dlopen
+        // COMMON_THROWEXCEPTION( "Register without Guard" )
     }
 }
 
-template<typename InputType, typename ValueType, typename OutputType> 
+/* -----------------------------------------------------------------------------*/
+/*  Constructor/Destructor + static variable for registerGuard                  */
+/* -----------------------------------------------------------------------------*/
+
+// Constructor of the guard, does initialization
+
+template<typename InputType, typename ValueType, typename OutputType>
 template<class Derived>
-inline bool Factory1<InputType, ValueType, OutputType>::Register<Derived>::init()
+Factory1<InputType, ValueType, OutputType>::Register<Derived>::RegisterGuard::RegisterGuard()
 {
-   Derived::addCreator( Derived::createValue(), Derived::create );
-   return true;
+    Derived::addCreator( Derived::createValue(), Derived::create );
+    initialized = true;
 }
 
-template<typename InputType, typename ValueType, typename OutputType> 
+// Destructor of the guard, removes also entry from Factory
+
+template<typename InputType, typename ValueType, typename OutputType>
 template<class Derived>
-bool Factory1<InputType, ValueType, OutputType>::Register<Derived>::initialized = 
-    Factory1<InputType, ValueType, OutputType>::Register<Derived>::init();
+Factory1<InputType, ValueType, OutputType>::Register<Derived>::RegisterGuard::~RegisterGuard()
+{
+    Derived::removeCreator( Derived::createValue() );
+}
+
+// ATTENTION: instantiation must be done explicitly for some compilers
+
+template<typename InputType, typename ValueType, typename OutputType>
+template<class Derived>
+typename Factory1<InputType, ValueType, OutputType>::template Register<Derived>::RegisterGuard
+Factory1<InputType, ValueType, OutputType>::Register<Derived>::registerGuard;
+
+/* -----------------------------------------------------------------------------*/
+/*  Implementation of methods for template class                                */
+/* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename ValueType, typename OutputType> 
 OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType type, const ValueType val )
 {
     OutputType value;
 
-    const CreatorMap& factory = getFactory();
+    const CreatorMap* factory = getFactory();
 
-    typename CreatorMap::const_iterator fn = factory.find( type );
+    SCAI_ASSERT( factory != NULL, "create on destroyed factory" )
 
-    if ( fn  != factory.end() )
+    typename CreatorMap::const_iterator fn = factory->find( type );
+
+    if ( fn  != factory->end() )
     {
         value = fn->second( val );
     }
@@ -169,49 +204,85 @@ OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType t
 }
 
 template<typename InputType, typename ValueType, typename OutputType>
-std::map<InputType, OutputType(* )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
+std::map<InputType, OutputType(* )( ValueType ) >* Factory1<InputType, ValueType, OutputType>::getFactory()
 {
-    static scai::common::unique_ptr<CreatorMap> factory;
+    static scai::common::shared_ptr<CreatorMap> factory;
+    static bool initialized;
 
-    if ( !factory.get() )
+    if ( !initialized )
     {
         factory.reset( new CreatorMap() );
+        initialized = true;
+    }
+    else if ( factory.use_count() == 0 )
+    {
+        // destructor on factory has already been called
+        // Note: test factory.get() == NULL does not work with boost::shared_ptr, boost::auto_ptr
+
+        return NULL;
     }
 
-    return *factory;
+    return factory.get();
 }
 
 template<typename InputType, typename ValueType, typename OutputType>
 void Factory1<InputType, ValueType, OutputType>::addCreator( const InputType type, CreateFn create )
 {
-    CreatorMap& factory = getFactory();
+    CreatorMap* factory = getFactory();
+
+    SCAI_ASSERT( factory != NULL, "addCreator on destroyed factory" )
 
     // checks for multiple entries is not really necessary here, so just add entry in map container.
 
-    factory.insert( std::pair<InputType, CreateFn>( type, create ) );
+    factory->insert( std::pair<InputType, CreateFn>( type, create ) );
+}
+
+template<typename InputType, typename ValueType, typename OutputType>
+void Factory1<InputType, ValueType, OutputType>::removeCreator( const InputType type )
+{
+    CreatorMap* factory = getFactory();
+
+    if ( factory == NULL )
+    {
+        return;   // factory is already destroyed, remove not needed
+    }
+
+    // checks for multiple entries is not really necessary here, so just add entry in map container.
+
+    factory->erase( type );
 }
 
 template<typename InputType, typename ValueType, typename OutputType>
 bool Factory1<InputType, ValueType, OutputType>::canCreate( InputType value )
 {
-    CreatorMap& factory = getFactory();
+    CreatorMap* factory = getFactory();
 
-    typename CreatorMap::const_iterator it = factory.find( value );
+    if ( factory == NULL )
+    {
+        return false;
+    }
 
-    return it != factory.end();
+    typename CreatorMap::const_iterator it = factory->find( value );
+
+    return it != factory->end();
 }
 
 template<typename InputType, typename ValueType, typename OutputType>
 void Factory1<InputType, ValueType, OutputType>::getCreateValues( std::vector<InputType>& values )
 {
-    CreatorMap& factory = getFactory();
+    CreatorMap* factory = getFactory();
+
+    if ( factory == NULL )
+    {
+        return;
+    }
 
     values.clear();
-    values.reserve( factory.size() );
+    values.reserve( factory->size() );
 
     typename CreatorMap::const_iterator it;
 
-    for ( it = factory.begin(); it != factory.end(); ++it )
+    for ( it = factory->begin(); it != factory->end(); ++it )
     {
         values.push_back( it->first );
     }

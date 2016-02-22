@@ -70,10 +70,10 @@ void addHost( ValueType array[], const IndexType n )
 }
 
 template<typename ValueType>
-void doBench( LAMAArray<ValueType>& array, const IndexType N )
+void doBench( HArray<ValueType>& array, const IndexType N )
 {
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
-    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
 
     int nhost = 1;
     int ncuda = 1;
@@ -137,24 +137,24 @@ int main()
 {
     const IndexType N = 8 * 1024 * 1024;  // 8 MB data
 
-    ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
-    ContextPtr cudaContextPtr = Context::getContextPtr( context::CUDA );
+    ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
+    ContextPtr cudaContextPtr = Context::getContextPtr( common::context::CUDA );
 
     // First touch on host memory, never uses CUDA host memory
 
     std::cout << "Benchmark for array, first touch on host memory" << std::endl;
 
-    LAMAArray<double> data1( hostContextPtr->getMemoryPtr() );
+    HArray<double> data1( hostContextPtr->getMemoryPtr() );
     doBench( data1, N );
 
     std::cout << "Benchmark for array, first touch on cuda memory" << std::endl;
  
-    LAMAArray<double> data2( cudaContextPtr->getMemoryPtr() );
+    HArray<double> data2( cudaContextPtr->getMemoryPtr() );
     doBench( data2, N );
 
     std::cout << "Benchmark for array, first touch on cuda host memory" << std::endl;
  
-    LAMAArray<double> data3( cudaContextPtr->getHostMemoryPtr() );
+    HArray<double> data3( cudaContextPtr->getHostMemoryPtr() );
     doBench( data3, N );
 }
 

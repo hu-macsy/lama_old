@@ -40,9 +40,9 @@
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/GenBlockDistribution.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
@@ -50,7 +50,7 @@
 
 #include <scai/lama/test/cuda/CUDAContext.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 

@@ -45,12 +45,12 @@ namespace lama_test
 class TestContext
 {
 public:
-    static scai::hmemo::ContextPtr getContext( const scai::hmemo::context::ContextType type );
+    static hmemo::ContextPtr getContext( const common::context::ContextType type );
 private:
     TestContext();
     virtual ~TestContext();
 
-    static std::map<scai::hmemo::context::ContextType, scai::hmemo::ContextPtr> contexts;
+    static std::map<common::context::ContextType, hmemo::ContextPtr> contexts;
 };
 
 } /* end namespace lama_test */

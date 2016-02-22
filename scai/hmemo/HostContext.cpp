@@ -39,22 +39,22 @@
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/weak_ptr.hpp>
 
-using  scai::common::shared_ptr;
-using  scai::common::weak_ptr;
-
 namespace scai
 {
+
+using  common::shared_ptr;
+using  common::weak_ptr;
 
 namespace hmemo
 {
 
 SCAI_LOG_DEF_LOGGER( HostContext::logger, "Context.HostContext" )
 
-HostContext::HostContext() : Context( context::Host )
+HostContext::HostContext() : Context( common::context::Host )
 {
     SCAI_LOG_INFO( logger, "HostContext created" )
 }
@@ -122,7 +122,7 @@ bool HostContext::canUseMemory( const Memory& other ) const
     {
         canUseIt = true;
     }
-    else if ( other.getContext().getType() == context::Host )
+    else if ( other.getContext().getType() == common::context::Host )
     {
         // If other memory can be used on Host it is okay
 
@@ -134,7 +134,7 @@ bool HostContext::canUseMemory( const Memory& other ) const
 
 /* ------------------------------------------------------------------------- */
 
-MemoryPtr HostContext::getMemoryPtr() const
+MemoryPtr HostContext::getLocalMemoryPtr() const
 {
     return HostMemory::getIt();
 }

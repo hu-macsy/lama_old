@@ -35,38 +35,49 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_tracing CXX )
+project ( scai_tracing CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-### Include Compiler Flags
+### includes ###
+
+## important Variables for project
+include ( VersionDefinition )
+include ( SetProjectVariables)
+include ( InternalDependencies )
+include ( ExternalDependencies )
+
+## needed functions
+include ( Functions/scaiFunctions )
+include ( Functions/scaiProject )
+include ( Functions/relativeInstall )
+
+### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-else  ( NOT SCAI_COMPLETE_BUILD )	
-	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( tracing )
+    include ( SetBuildFlags )
+    include ( CompilerVersion )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+else  ( NOT SCAI_COMPLETE_BUILD )
+    include ( Functions/CheckValueAtCompleteBuild )
+    CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
-### include all search packages
-include ( InternalDependencies )
-# no external dependencies
+## Boost for Test
+if ( BUILD_TEST )
+    include( Package/Boost )
+endif ( BUILD_TEST )
 
-foreach    ( PACKAGE_TO_FIND ${SCAI_TRACING_INTERNAL_DEPS} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${SCAI_TRACING_INTERNAL_DEPS} )
+### include all search packages
+addInternalAndExternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
 
 ### add definitions
-
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
-
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if    ( WIN32 )
@@ -74,22 +85,16 @@ if    ( WIN32 )
 endif ( WIN32 )
 
 ### Project System-Include
-include_directories ( ../.. )
+### Project System-Include ( also configured files )
+set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
+include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
+addInternalAndExternalIncludes()
 
-foreach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_TRACING_INTERNAL_DEPS} )
-
-### build library
-
-## set files in variables CXX_SOURCES and CXX_HEADERS
-
-include ( Functions/scaiProject )
+### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
 scai_project (
 
-    CLASSES
+    CLASSES                  # .cpp, .hpp
 
         CallTreeTable
         FileTable
@@ -99,43 +104,51 @@ scai_project (
         TraceRegionRecord
         VTInterface
 
-    HEADERS
+    HEADERS                  # .hpp only
 
         CallStack
         Counters
         RegionEntry
 )
 
-### add library
-add_library ( scai_tracing ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-
-## add link libraries
-list ( REVERSE SCAI_TRACING_INTERNAL_DEPS )
-foreach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-	set ( TRACING_LINK_LIBRARIES ${TRACING_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
-endforeach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
-target_link_libraries ( scai_tracing ${SCAI_START_LINK_LIBRARIES} ${TRACING_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
-
 ## add subdirectories
+add_subdirectory( doc )
 add_subdirectory ( examples )
-
-### install ###
-install ( TARGETS scai_tracing DESTINATION lib/ )
-
-include ( Functions/relativeInstall )
-relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/tracing )
+## begin subdir test
+# prepare test
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+# add test
+enable_testing()
+add_test ( tracing_test test/test.sh )
+## end subdir test
 
 if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 ) 
-	add_subdirectory( gui )
+    add_subdirectory( gui )
 endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
 
+### add library ###
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
+
+## add link libraries
+addInternalAndExternalLinkLibraries()
+
+### install ###
+
+## install lib
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
+
+## install headers
+relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+
 ## install library.hpp
-install ( FILES ../tracing.hpp DESTINATION include/scai )
+install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ## add custum target distClean
 include ( DistClean )
 
+### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/tracing )
+	include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

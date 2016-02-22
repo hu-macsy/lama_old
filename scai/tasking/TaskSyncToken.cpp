@@ -35,7 +35,7 @@
 
 // internal scai libraries
 #include <scai/common/bind.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 namespace scai
 {
@@ -139,6 +139,31 @@ void TaskSyncToken::writeAt( std::ostream& stream ) const
     }
 
     stream << ", synchronized = " << isSynchronized() << ")";
+}
+
+TaskSyncToken* TaskSyncToken::getCurrentSyncToken()
+{
+    SyncToken* syncToken = SyncToken::getCurrentSyncToken();
+
+    if ( syncToken == NULL )
+    {
+        return NULL;
+    }
+
+    // make a dynamic CAST
+
+    TaskSyncToken* taskSyncToken = dynamic_cast<TaskSyncToken*>( syncToken );
+
+    // If the current sync token is not a Task token it is very likely an error
+
+    if ( taskSyncToken == NULL )
+    {
+        SCAI_LOG_ERROR( logger, "Current sync token = " << *syncToken << " not TaskSyncToken as expected" )
+    }
+
+    // But might not be too serious so probably NULL results in synchronous execution
+
+    return taskSyncToken;
 }
 
 } /* end namespace tasking */

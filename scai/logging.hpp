@@ -386,7 +386,7 @@
 
 #ifdef SCAI_LOG_LEVEL_OFF
 
-#define SCAI_LOG_THREAD                          \
+#define SCAI_LOG_THREAD( name )                  \
 {                                                \
     if ( false )                                 \
     {                                            \

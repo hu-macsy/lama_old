@@ -58,7 +58,8 @@ namespace lama
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage:
 
-    public CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>
+    public CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<SparseAssemblyStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -220,7 +221,7 @@ public:
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
-    virtual void prefetch( const ContextPtr location ) const;
+    virtual void prefetch( const hmemo::ContextPtr location ) const;
 
     /** Will wait for all outstanding asynchronous data transfers. */
 
@@ -247,7 +248,7 @@ public:
      * @param[in] ja    the column vector of row i.
      * @param[in] a     the values of row i.
      */
-    void setRow( const IndexType i, const LAMAArray<IndexType>& ja, const LAMAArray<ValueType>& a );
+    void setRow( const IndexType i, const hmemo::HArray<IndexType>& ja, const hmemo::HArray<ValueType>& a );
 
     /**
      * @brief fixDiagonalProperty fixes the diagonal property of row.
@@ -272,25 +273,25 @@ public:
     /** Template method for getting row. */
 
     template<typename OtherType>
-    void getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const;
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
 
     /** Typed version of getDiagonal
      *
      * @param[out] diagonal is the typed LAMA array for output
      */
     template<typename OtherValueType>
-    void getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const;
+    void getDiagonalImpl( hmemo::HArray<OtherValueType>& diagonal ) const;
 
     /** Typed version of setDiagonal
      *
      * @param[in] diagonal is the typed LAMA array for input
      */
     template<typename OtherValueType>
-    void setDiagonalImpl( const LAMAArray<OtherValueType>& diagonal );
+    void setDiagonalImpl( const hmemo::HArray<OtherValueType>& diagonal );
 
     /** Implementation of pure method. */
 
-    void setDiagonalImpl( const Scalar scalar );
+    void setDiagonalImpl( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -299,11 +300,15 @@ public:
     /** Template version used for virtual routine scale with known value type. */
 
     template<typename OtherType>
-    void scaleImpl( const LAMAArray<OtherType>& values );
+    void scaleImpl( const hmemo::HArray<OtherType>& values );
 
     /** Implementation of pure method.  */
 
-    void scaleImpl( const Scalar value );
+    void scaleImpl( const ValueType value );
+
+    /** Implementation of pure method.  */
+
+    void conj();
 
     /** General routine to build any kind of CSR storage.
      *
@@ -315,10 +320,10 @@ public:
 
     template<typename OtherValueType>
     void buildCSR(
-        LAMAArray<IndexType>& ia,
-        LAMAArray<IndexType>* ja,
-        LAMAArray<OtherValueType>* values,
-        const ContextPtr loc ) const;
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>* ja,
+        hmemo::HArray<OtherValueType>* values,
+        const hmemo::ContextPtr loc ) const;
 
     /**
      * @brief fills Assembly sparse matrix by csr sparse data.
@@ -336,10 +341,10 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const LAMAArray<OtherValueType>& values,
-        const ContextPtr loc );
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc );
 
     /** Test the storage data for inconsistencies.
      *
@@ -348,16 +353,13 @@ public:
      */
     void check( const char* msg ) const;
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+    virtual SparseAssemblyStorage* newMatrixStorage() const;
+
+    /** Implementation of MatrixStorage::copy for derived class. */
     virtual SparseAssemblyStorage* copy() const
     {
         return new SparseAssemblyStorage( *this );
-    }
-
-    /** Implementation of MatrixStorage::create for derived class. */
-
-    virtual SparseAssemblyStorage* clone() const
-    {
-        return new SparseAssemblyStorage();
     }
 
     using MatrixStorage<ValueType>::assign;
@@ -380,6 +382,7 @@ private:
         Row& operator=( const Row& other );
         void reserve( const IndexType numValuesPerRow );
         void scale( const ValueType val );
+        void conj();
     };
 
     std::vector<Row> mRows;
@@ -395,6 +398,16 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static    std::string theTypeName;
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

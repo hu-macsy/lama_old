@@ -2,7 +2,7 @@
  * @file TypeTraits.hpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -25,15 +25,18 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the template TypeTraits and specializations.
- * @author Jiri Kraus
- * @date 14.04.2010
- * @since 1.0.0
+ * @brief Type specific implementations for arithmetic value types.
+ * @author Thomas Brandes
+ * @date 17.11.2015
  */
+
 #pragma once
 
-// local library
-#include <scai/common/SCAITypes.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/Math.hpp>
+
+#include <cmath>
+#include <cstdlib>
 
 namespace scai
 {
@@ -42,114 +45,324 @@ namespace common
 {
 
 /**
- * @brief The template class TypeTraits determines the index and value types.
+ * @brief The template class TypeTraits determines type-specific implementations.
  *
- * The template class TypeTraits is used to determine the type of indices and
- * values in higher level types like CSRSparseMatrix. Its facilities are used by
- * the template function maxNorm (@see MaxNorm.hpp) among others.
- *
- * @tparam ValueType The type for values and indices.
+ * @tparam T The type of any arithmetic value type used
  */
-template<typename TypeTraitsType>
+template<typename ValueType>
 class TypeTraits
 {
 public:
+
+    /** Return type of function abs( ValueType ) */
+
+	typedef ValueType AbsType;
+
+    /** Get value-specific epsilon for comparison. */
+
+    static inline ValueType getEps()
+    {
+        return std::numeric_limits<ValueType>::epsilon();
+    }
+
+    /** Get type-specific precision to be used for comparison in matrix-vector operations */
+
+    static inline ValueType small()
+    {
+        return getEps();
+    }
+
+    /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
+
+    static inline ValueType getMax()
+    {
+        return std::numeric_limits<ValueType>::max();
+    }
+
+    /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
+
+    static inline ValueType getMin()
+    {
+        return - std::numeric_limits<ValueType>::max();
+    }
+
     /**
-     * @brief The type for indices.
-     */
-    typedef typename TypeTraitsType::IndexType IndexType;
+     * @brief Corresponding type value of enum ScalarType.
+    */
+    static const scalar::ScalarType stype = scalar::UNKNOWN;
+
     /**
-     * @brief The type for values.
+     * @brief Return name of the type for identification.
+     *
+     * Note: this routine returns more meaningful names than typeinfo( T ).name()
      */
-    typedef typename TypeTraitsType::ValueType ValueType;
-
-    typedef typename TypeTraitsType::ExpressionMemberType ExpressionMemberType;
-
-    static const long size = sizeof(ValueType);
+    static inline const char* id()
+    {
+        return scalar2str( scalar::UNKNOWN );
+    }
 };
+
+/** Type specific traits for IndexType */
 
 template<>
-class TypeTraits<long>
+class TypeTraits<IndexType>
 {
 public:
-    typedef long IndexType;
-    typedef long ValueType;
+	typedef IndexType AbsType;
 
-    typedef const long ExpressionMemberType;
+    static inline IndexType getEps()
+    {
+        return 0;
+    }
 
-    static const long size = 8;
+    static inline IndexType small()
+    {
+        return 0;
+    }
+
+    static inline IndexType getMax()
+    {
+        return std::numeric_limits<IndexType>::max();
+    }
+
+    static inline IndexType getMin()
+    {
+        return - std::numeric_limits<IndexType>::max();
+    }
+
+    static const scalar::ScalarType stype = scalar::INDEX_TYPE;
+
+    static inline const char* id()
+    {
+        return scalar2str( scalar::INDEX_TYPE );
+    }
 };
+
+/** Type specific traits for long double */
 
 template<>
-class TypeTraits<int>
+class TypeTraits<long double>
 {
 public:
-    typedef int IndexType;
-    typedef int ValueType;
-    typedef const int ExpressionMemberType;
-    static const long size = 4;
+	typedef long double AbsType;
+
+    static inline long double getEps()
+    {
+        return std::numeric_limits<long double>::epsilon();
+    }
+
+    static inline long double small()
+    {
+        return 1e-8L;
+    }
+
+    static inline long double getMax()
+    {
+        return std::numeric_limits<long double>::max();
+    }
+
+    static inline long double getMin()
+    {
+        return - std::numeric_limits<long double>::max();
+    }
+
+    static const scalar::ScalarType stype = scalar::LONG_DOUBLE;
+
+    static inline const char* id()
+    {
+        return scalar2str( scalar::LONG_DOUBLE );
+    }
 };
 
-template<>
-class TypeTraits<float>
-{
-public:
-    typedef int IndexType;
-    typedef float ValueType;
-    typedef const float ExpressionMemberType;
-    static const long size = sizeof(float);
-};
+/** Type specific traits for double */
 
 template<>
 class TypeTraits<double>
 {
 public:
-    typedef int IndexType;
-    typedef double ValueType;
-    typedef const double ExpressionMemberType;
-    static const long size = sizeof(double);
+	typedef double AbsType;
+
+    static inline double getEps()
+    {
+        return std::numeric_limits<double>::epsilon();
+    }
+
+    static inline double small()
+    {
+        return 1e-5;
+    }
+
+    static inline double getMax()
+    {
+        return std::numeric_limits<double>::max();
+    }
+    static inline double getMin()
+    {
+        return - std::numeric_limits<double>::max();
+    }
+
+    static const scalar::ScalarType stype = scalar::DOUBLE;
+
+    static inline const char* id()
+    {
+        return scalar2str( scalar::DOUBLE );
+    }
 };
+
+/** Type specific traits for float */
+
+template<>
+class TypeTraits<float>
+{
+public:
+	typedef float AbsType;
+
+    static inline float getEps()
+    {
+        return std::numeric_limits<float>::epsilon();
+    }
+
+    static inline float small()
+    {
+        return 1e-3f;
+    }
+
+    static inline float getMax()
+    {
+        return std::numeric_limits<float>::max();
+    }
+    static inline float getMin()
+    {
+        return - std::numeric_limits<float>::max();
+    }
+
+    static const scalar::ScalarType stype = scalar::FLOAT;
+
+    static inline const char* id()
+    {
+        return scalar2str( stype );
+    }
+};
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+/** Type specific traits for complex(float) */
 
 template<>
 class TypeTraits<ComplexFloat>
 {
 public:
-    typedef int IndexType;
-    typedef ComplexFloat ValueType;
-    typedef const ComplexFloat ExpressionMemberType;
-    static const long size = sizeof(ComplexFloat);
+	typedef float AbsType;
+
+    static inline ComplexFloat getEps()
+    {
+        return std::numeric_limits<float>::epsilon();
+    }
+
+    static inline ComplexFloat small()
+    {
+        return ComplexFloat( 1e-3f );
+    }
+
+    static inline ComplexFloat getMax()
+    {
+        return std::numeric_limits<float>::max();
+    }
+    static inline ComplexFloat getMin()
+    {
+        return 0;
+    }
+
+    static const scalar::ScalarType stype = scalar::COMPLEX;
+
+    static inline const char* id()
+    {
+        return "ComplexFloat";
+    }
 };
+
+/** Type specific traits for complex(double) */
 
 template<>
 class TypeTraits<ComplexDouble>
 {
 public:
-    typedef int IndexType;
-    typedef ComplexDouble ValueType;
-    typedef const ComplexDouble ExpressionMemberType;
-    static const long size = sizeof(ComplexDouble);
+	typedef double AbsType;
+
+    static inline ComplexDouble getEps()
+    {
+        return std::numeric_limits<double>::epsilon();
+    }
+
+    static inline ComplexDouble small()
+    {
+        return ComplexDouble( 1e-5 );
+    }
+
+    static inline ComplexDouble getMax()
+    {
+        return std::numeric_limits<double>::epsilon();
+    }
+
+    static inline ComplexDouble getMin()
+    {
+        return 0;
+    }
+
+    static const scalar::ScalarType stype = scalar::DOUBLE_COMPLEX;
+
+    static inline const char* id()
+    {
+        return scalar2str( scalar::DOUBLE_COMPLEX );
+    }
 };
+
+/** Type specific traits for complex(long double) */
 
 template<>
 class TypeTraits<ComplexLongDouble>
 {
 public:
-    typedef int IndexType;
-    typedef ComplexLongDouble ValueType;
-    typedef const ComplexLongDouble ExpressionMemberType;
-    static const long size = sizeof(ComplexLongDouble);
+	typedef long double AbsType;
+
+    static inline ComplexLongDouble getEps()
+    {
+        return std::numeric_limits<long double>::epsilon();
+    }
+
+    static inline ComplexLongDouble small()
+    {
+        return ComplexLongDouble( 1e-8L );
+    }
+
+    static inline ComplexLongDouble getMax()
+    {
+        return std::numeric_limits<long double>::max();
+    }
+
+    static inline ComplexLongDouble getMin()
+    {
+        return 0;
+    }
+
+    static const scalar::ScalarType stype = scalar::LONG_DOUBLE_COMPLEX;
+
+    static inline const char* id()
+    {
+        return scalar2str( stype );
+    }
 };
 
-template<>
-class TypeTraits<LongDouble>
+#endif
+
+/** For convenience and for compatibility make own routine of getScalarType */
+
+template<typename ValueType> inline scalar::ScalarType getScalarType()
 {
-public:
-    typedef int IndexType;
-    typedef LongDouble ValueType;
-    typedef const LongDouble ExpressionMemberType;
-    static const long size = sizeof(LongDouble);
-};
+    return TypeTraits<ValueType>::stype;
+}
 
-} /* end namespace common */
+}  // namespace common
 
-} /* end namespace scai */
+}  // namespace scai
+

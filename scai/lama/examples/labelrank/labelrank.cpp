@@ -3,7 +3,6 @@
 #include <scai/lama/matrix/all.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
-#include <scai/lama/Communicator.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/common/Walltime.hpp>
 
@@ -42,7 +41,7 @@ struct Properties {
 } props;
 
 /** Determine evidence indexes of Dense label matrix. */
-
+/* UNUSED
 static void getEvidence( std::vector<IndexType>& evidenceVector, const DenseStorage<ValueType>& labelsMatrix )
 {
     // Get indexes of all rows where at least one element is found
@@ -80,6 +79,7 @@ static void getEvidence( std::vector<IndexType>& evidenceVector, const DenseStor
 
     cout << "evidence vector, len = " << evidenceVector.size() << endl;
 }
+*/
 
 /** Determine evidence indexes of CSR label matrix. */
 
@@ -90,7 +90,7 @@ static void getEvidence( std::vector<IndexType>& evidenceVector, const CSRStorag
     evidenceVector.clear();
 
     const IndexType numRows = labelsMatrix.getNumRows();
-    const IndexType numCols = labelsMatrix.getNumColumns();
+    //const IndexType numCols = labelsMatrix.getNumColumns();
 
     ReadAccess<IndexType> csrIA( labelsMatrix.getIA() );
 
@@ -110,13 +110,13 @@ static void getEvidence( std::vector<IndexType>& evidenceVector, const CSRStorag
 }
 
 /** Update affinity matrix if it is dense. */
-
+/* UNUSED
 static void update( DenseStorage<ValueType>& affinityMatrix, const std::vector<IndexType>& evidenceVector )
 {
     // This is some kind of hack to make sure that labelsMatrix is not updated in
     // all rows where at least one element is found
 
-    const IndexType numRows = affinityMatrix.getNumRows();
+    //const IndexType numRows = affinityMatrix.getNumRows();
     const IndexType numCols = affinityMatrix.getNumColumns();
 
     WriteAccess<ValueType> affinityDense( affinityMatrix.getData() );
@@ -140,6 +140,7 @@ static void update( DenseStorage<ValueType>& affinityMatrix, const std::vector<I
         affinityDense[ i * numCols + i ] = 1.0;
     }
 }
+*/
 
 /** Update affinity matrix if it is CSR. */
 
@@ -228,7 +229,7 @@ int main( int argc, char* argv[] ) {
 
     start = Walltime::get();
 
-    const IndexType numRows = affinityMatrix.getNumRows();
+    //const IndexType numRows = affinityMatrix.getNumRows();
     const IndexType numCols = affinityMatrix.getNumColumns();
 
     DenseVector<ValueType> oneVector( numCols, 1.0 );

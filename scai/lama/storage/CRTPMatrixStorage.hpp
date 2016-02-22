@@ -80,6 +80,11 @@ public:
     {
     }
 
+    MatrixStorageCreateKeyType getCreateValue() const
+    {
+        return Derived::createValue();
+    }
+
     /** Implementation of _MatrixStorage::setCSRData for derived class.
      *
      *  This routine requires that the derived class provides a corresponding
@@ -90,9 +95,9 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const ContextArray& values )
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::_HArray& values )
     {
         common::scalar::ScalarType arrayType = values.getValueType();
 
@@ -102,10 +107,10 @@ public:
 /** Call implementation routine with the type of the values array */
 
 #define LAMA_SET_CSR_CALL( z, I, _ )                                                      \
-case SCALAR_ARITHMETIC_TYPE##I:                                                           \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                         \
 {                                                                                         \
-    const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                              \
-            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( values );           \
+    const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                          \
+            dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( values );       \
     static_cast<Derived*>( this )->setCSRDataImpl(                                        \
             numRows, numColumns, numValues, ia, ja, typedValues, this->getContextPtr() ); \
     break;                                                                                \
@@ -124,27 +129,27 @@ case SCALAR_ARITHMETIC_TYPE##I:                                                 
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
 
-    void buildCSRSizes( LAMAArray<IndexType>& ia ) const
+    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
     {
 // The sizes will be available via buildCSR with NULL for ja, values
 
-        LAMAArray<IndexType>* ja = NULL;
-        LAMAArray<ValueType>* values = NULL;
+        hmemo::HArray<IndexType>* ja = NULL;
+        hmemo::HArray<ValueType>* values = NULL;
 
         static_cast<const Derived*>( this )->buildCSR( ia, ja, values, this->getContextPtr() );
     }
 
-    void buildCSRData( LAMAArray<IndexType>& csrIA, LAMAArray<IndexType>& csrJA, ContextArray& csrValues ) const
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
     {
         common::scalar::ScalarType arrayType = csrValues.getValueType();
 
         switch ( arrayType )
         {
 #define LAMA_BUILD_CSR_CALL( z, I, _ )                                        \
-case SCALAR_ARITHMETIC_TYPE##I:                                               \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                \
 {                                                                             \
-    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                        \
-            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( csrValues );  \
+    hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                        \
+            dynamic_cast<hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( csrValues );  \
     static_cast<const Derived*>( this )->buildCSR(                            \
             csrIA, &csrJA, &typedValues, this->getContextPtr() );             \
     break;                                                                    \
@@ -165,17 +170,17 @@ case SCALAR_ARITHMETIC_TYPE##I:                                               \
 
     /** Get the i-th row of a storage as LAMA array. */
 
-    void getRow( ContextArray& row, const IndexType irow ) const
+    void getRow( hmemo::_HArray& row, const IndexType irow ) const
     {
         common::scalar::ScalarType arrayType = row.getValueType();
 
         switch ( arrayType )
         {
 #define LAMA_GET_ROW_CALL( z, I, _ )                                    \
-case SCALAR_ARITHMETIC_TYPE##I:                                         \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
 {                                                                       \
-    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedRow =                     \
-            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( row );  \
+    hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedRow =                     \
+            dynamic_cast<hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( row );  \
     static_cast<const Derived*>( this )->getRowImpl( typedRow, irow );  \
     break;                                                              \
 }
@@ -192,7 +197,7 @@ case SCALAR_ARITHMETIC_TYPE##I:                                         \
         }
     }
 
-    void getDiagonal( ContextArray& diagonal ) const
+    void getDiagonal( hmemo::_HArray& diagonal ) const
     {
         if ( !this->hasDiagonalProperty() )
         {
@@ -204,10 +209,10 @@ case SCALAR_ARITHMETIC_TYPE##I:                                         \
         switch ( arrayType )
         {
 #define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                   \
-case SCALAR_ARITHMETIC_TYPE##I:                                             \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
 {                                                                           \
-    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
-            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
+    hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
+            dynamic_cast<hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
     static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );  \
     break;                                                                  \
 }
@@ -222,7 +227,7 @@ case SCALAR_ARITHMETIC_TYPE##I:                                             \
         }
     }
 
-    void setDiagonal( const Scalar value )
+    void setDiagonal( const ValueType value )
     {
         if ( !this->hasDiagonalProperty() )
         {
@@ -232,7 +237,7 @@ case SCALAR_ARITHMETIC_TYPE##I:                                             \
         static_cast<Derived*>( this )->setDiagonalImpl( value );
     }
 
-    void setDiagonal( const ContextArray& diagonal )
+    void setDiagonalV( const hmemo::_HArray& diagonal )
     {
         IndexType numDiagonalElements = diagonal.size();
 
@@ -251,10 +256,10 @@ case SCALAR_ARITHMETIC_TYPE##I:                                             \
         switch ( arrayType )
         {
 #define LAMA_SET_DIAGONAL_CALL( z, I, _ )                                         \
-case SCALAR_ARITHMETIC_TYPE##I:                                                   \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
 {                                                                                 \
-    const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
-            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
+    const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
+            dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
     static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );              \
     break;                                                                        \
 }
@@ -268,14 +273,14 @@ case SCALAR_ARITHMETIC_TYPE##I:                                                 
         }
     }
 
-    void scale( const Scalar value )
+    void scale( const ValueType value )
     {
         static_cast<Derived*>( this )->scaleImpl( value );
     }
 
-    /** Polymorph implementation for MatrixStorage<ValueType>::scale */
+    /** Polymorph implementation for MatrixStorage<ValueType>::scaleRows */
 
-    void scale( const ContextArray& diagonal )
+    void scaleRows( const hmemo::_HArray& diagonal )
     {
         SCAI_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
 
@@ -284,10 +289,10 @@ case SCALAR_ARITHMETIC_TYPE##I:                                                 
         switch ( arrayType )
         {
 #define LAMA_SCALE_CALL( z, I, _ )                                                \
-case SCALAR_ARITHMETIC_TYPE##I:                                                   \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
 {                                                                                 \
-    const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
-            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
+    const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
+            dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
     static_cast<Derived*>( this )->scaleImpl( typedDiagonal );                    \
     break;                                                                        \
 }

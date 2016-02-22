@@ -39,13 +39,15 @@
 #include <scai/hmemo/Access.hpp>
 
 // local library
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/Context.hpp>
 
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
+#include <scai/common/function.hpp>
+#include <scai/common/bind.hpp>
 
 namespace scai
 {
@@ -54,10 +56,10 @@ namespace hmemo
 {
 
 /**
- * @brief The Template WriteAccess is used to enforce the consistency of the template LAMAArray.
+ * @brief The Template WriteAccess is used to enforce the consistency of the template HArray.
  *
- * WriteAccess enforces the consistency of the template LAMAArray by following the RAII Idiom. This is
- * done by acquiring a write lock on a LAMAArray in the constructor and releasing this write lock in
+ * WriteAccess enforces the consistency of the template HArray by following the RAII Idiom. This is
+ * done by acquiring a write lock on a HArray in the constructor and releasing this write lock in
  * the destructor. There for a WriteAccess should be only used as a stack object.
  *
  * @tparam ValueType is the value type stored in the wrapped container.
@@ -69,7 +71,7 @@ class COMMON_DLL_IMPORTEXPORT WriteAccess: public Access
 
 protected:
 
-    LAMAArray <ValueType>* mArray;
+    HArray <ValueType>* mArray;
 
     ValueType* mData;   // current pointer to the data, cache value for mArray->get( mContextDataIndex )
 
@@ -78,50 +80,50 @@ protected:
 public:
 
     /**
-     * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location.
+     * @brief Acquires a WriteAccess to the passed HArray for the passed location.
      *
-     * @param[in] array       the LAMAArray to acquire a WriteAccess for
+     * @param[in] array       the HArray to acquire a WriteAccess for
      * @param[in] contextPtr  the context to acquire a WriteAccess for
      * @param[in] keep        if false, implicit clear, old values of the array are no more needed
      * @throws Exception      if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
      *
-     * This constructor acquires a WriteAccess to the passed LAMAArray for the passed location. Depending on the flag
-     * keep the LAMAArray is updated on location or not. This flag can be used to acquire write only access, e.g. if
-     * one want to write only to the passed wrapped LAMAArray. If the passed LAMAArray is not valid at location and keep
-     * is true the LAMAArray will be made valid at location before this constructor returns.
+     * This constructor acquires a WriteAccess to the passed HArray for the passed location. Depending on the flag
+     * keep the HArray is updated on location or not. This flag can be used to acquire write only access, e.g. if
+     * one want to write only to the passed wrapped HArray. If the passed HArray is not valid at location and keep
+     * is true the HArray will be made valid at location before this constructor returns.
      */
-    WriteAccess( LAMAArray<ValueType>& array, ContextPtr contextPtr, const bool keep = true );
+    WriteAccess( HArray<ValueType>& array, ContextPtr contextPtr, const bool keep = true );
 
     /**
-     * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location.
+     * @brief Acquires a WriteAccess to the passed HArray for the passed location.
      *
-     * @param[in] array     the LAMAArray to acquire a WriteAccess for
+     * @param[in] array     the HArray to acquire a WriteAccess for
      * @param[in] keep      if false, implicit clear, old values of the array are no more needed
      * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
      *
-     * This constructor acquires a WriteAccess to the passed LAMAArray for the passed location. Depending on the flag
-     * keep the LAMAArray is updated on location or not. This flag can be used to acquire write only access, e.g. if
-     * one want to write only to the passed wrapped LAMAArray. If the passed LAMAArray is not valid at location and keep
-     * is true the LAMAArray will be made valid at location before this constructor returns.
+     * This constructor acquires a WriteAccess to the passed HArray for the passed location. Depending on the flag
+     * keep the HArray is updated on location or not. This flag can be used to acquire write only access, e.g. if
+     * one want to write only to the passed wrapped HArray. If the passed HArray is not valid at location and keep
+     * is true the HArray will be made valid at location before this constructor returns.
      */
-    WriteAccess( LAMAArray<ValueType>& array, const bool keep = true );
+    WriteAccess( HArray<ValueType>& array, const bool keep = true );
 
     /**
-     * @brief Releases the WriteAccess on the associated LAMAArray.
+     * @brief Releases the WriteAccess on the associated HArray.
      */
     virtual ~WriteAccess();
 
     /**
-     * @brief Returns a pointer to the data of the wrapped LAMAArray.
+     * @brief Returns a pointer to the data of the wrapped HArray.
      *
-     * @return a pointer to the wrapped LAMAArray.
+     * @return a pointer to the wrapped HArray.
      */
     ValueType* get();
 
     /**
      * @brief Support implicit type conversion to pointer of the data.
      *
-     * @return a pointer to the wrapped LAMAArray.
+     * @return a pointer to the wrapped HArray.
      */
     operator ValueType*();
 
@@ -134,9 +136,9 @@ public:
     void clear();
 
     /**
-     * @brief Resizes the wrapped LAMAArray.
+     * @brief Resizes the wrapped HArray.
      *
-     * @param[in] newSize   the new size of the wrapped LAMAArray
+     * @param[in] newSize   the new size of the wrapped HArray
      *
      * If a reallocation is necessary it is only done at the associated location
      * for all other locations this is done lazy.
@@ -145,7 +147,7 @@ public:
     void resize( const IndexType newSize );
 
     /**
-     * @brief Reserves storage for the wrapped LAMAArray at the associated location.
+     * @brief Reserves storage for the wrapped HArray at the associated location.
      *
      * @param[in] capacity  the number of elements that should fit into the new storage
      */
@@ -157,9 +159,18 @@ public:
     IndexType capacity() const;
 
     /**
-     * @brief Releases the WriteAccess on the associated LAMAArray.
+     * @brief Releases the WriteAccess on the associated HArray.
      */
     virtual void release();
+
+    /**
+     * @brief Return function that does the release later.
+     *
+     * This method can be used for asynchronous operations so the array is kept 
+     * locked even if the ~WriteAccess has been called.
+     */
+
+    common::function<void()> releaseDelayed();
 
     /**
      * @brief Override method of base class Printable
@@ -167,9 +178,9 @@ public:
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
-     * @brief Returns the size of the wrapped LAMAArray.
+     * @brief Returns the size of the wrapped HArray.
      *
-     * @return  the size of the wrapped LAMAArray
+     * @return  the size of the wrapped HArray
      */
     inline IndexType size() const;
 
@@ -185,7 +196,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueTyp
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, ContextPtr contextPtr, const bool keep )
+WriteAccess<ValueType>::WriteAccess( HArray<ValueType>& array, ContextPtr contextPtr, const bool keep )
     : mArray( &array )
 {
     SCAI_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
@@ -198,12 +209,12 @@ WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, ContextPtr con
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, const bool keep /* = true*/ )
+WriteAccess<ValueType>::WriteAccess( HArray<ValueType>& array, const bool keep /* = true*/ )
     : mArray( &array )
 {
     SCAI_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
@@ -309,11 +320,30 @@ void WriteAccess<ValueType>::release()
     }
     else
     {
-        SCAI_LOG_DEBUG( logger, "release write access for an already released LAMAArray" )
+        SCAI_LOG_DEBUG( logger, "release write access for an already released HArray" )
     }
 
     mArray = 0;
     mData = 0;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+common::function<void()> WriteAccess<ValueType>::releaseDelayed()
+{
+    SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
+
+    void ( _HArray::*releaseAccess ) ( ContextDataIndex ) = &_HArray::releaseWriteAccess;
+
+    _HArray* ctxArray = mArray; 
+
+    // This access itself is treated as released
+
+    mArray = 0;
+    mData  = 0;
+
+    return common::bind( releaseAccess, ctxArray, mContextDataIndex ); 
 }
 
 /* --------------------------------------------------------------------------- */

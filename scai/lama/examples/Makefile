@@ -4,9 +4,6 @@ clean: makeAllClean
 
 DIRS = bench \
 	   labelrank \
-	   lecture \
-       solver \
-       spy \
        tutorial
 
 makeAll:

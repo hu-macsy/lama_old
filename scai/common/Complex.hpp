@@ -1,4 +1,4 @@
-/*
+/**
  * @file Complex.hpp
  *
  * @license
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Complex.hpp
+ * @brief Definition of template class Complex
  * @author Eric Schricker
  * @date 22.01.2014
  * @since 1.1.0
@@ -33,20 +33,26 @@
 
 #pragma once
 
+/** Enable preprocessor flag to tell other code that ComplexZZZ is supported */
+
+#define SCAI_COMPLEX_SUPPORTED
+
 // local library
 #include <scai/common/config.hpp>
+#include <scai/common/cuda/CUDACallable.hpp>
+#include <scai/common/mic/MICCallable.hpp>
+#include <scai/common/Math.hpp>
 
 // std
 #include <sstream>
+#include <algorithm>
 
 #ifdef __CUDACC__
-#define CUDA_CALLABLE_MEMBER __device__ __host__
 #include <cuComplex.h>
-#include <math.h>
+//#include <math.h>
 #include <thrust/device_reference.h>
 #else
-#define CUDA_CALLABLE_MEMBER
-#include <cmath>
+//#include <cmath>
 #endif
 
 /*
@@ -65,13 +71,13 @@
     imag( static_cast<ValueType>( t.imag() ) );                                                         \
     return *this;
 
-#define COMPLEX_OP_REAL( op )                                                                            \
-    real( real() op static_cast<ValueType>( t ) );                                                       \
+#define COMPLEX_OP_REAL( op )                                                                           \
+    real( real() op static_cast<ValueType>( t ) );                                                      \
     return *this;
 
-#define COMPLEX_OP_COMPLEX( op )                                                                         \
-    real( real() op static_cast<ValueType>( t.real() ) );                                                \
-    imag( imag() op static_cast<ValueType>( t.imag() ) );                                                \
+#define COMPLEX_OP_COMPLEX( op )                                                                        \
+    real( real() op static_cast<ValueType>( t.real() ) );                                               \
+    imag( imag() op static_cast<ValueType>( t.imag() ) );                                               \
     return *this;
 
 #define COMPLEX_MULTIPLY_REAL                                                                           \
@@ -104,7 +110,7 @@
     return *this;
 
 #define COMPLEX_CAST_REAL(type)                                                                         \
-    return static_cast<type>( metrikCuda() );
+    return static_cast<type>( real() );
 
 #define COMPLEX_CAST_COMPLEX(type)                                                                      \
     return Complex<type>( static_cast<type>( real() ), static_cast<type>( imag() ) );
@@ -131,6 +137,7 @@
  */
 
 #define COMPLEX_CONSTRUCTOR_CUDA( type, method )                                                        \
+    MIC_CALLABLE_MEMBER                                                                                 \
     CUDA_CALLABLE_MEMBER                                                                                \
     inline Complex( type value )                                                                        \
     {                                                                                                   \
@@ -144,6 +151,7 @@
     }
 
 #define COMPLEX_CONSTRUCTOR_2_CUDA( type1, type2, method )                                              \
+    MIC_CALLABLE_MEMBER                                                                                 \
     CUDA_CALLABLE_MEMBER                                                                                \
     inline Complex( type1 value1, type2 value2 )                                                        \
     {                                                                                                   \
@@ -161,11 +169,15 @@
  */
 
 #define COMPLEX_OPERATOR_CUDA( op, type, method )                                                       \
-    CUDA_CALLABLE_MEMBER inline Complex<ValueType>& op( const type t )                                  \
+    MIC_CALLABLE_MEMBER                                                                                 \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    inline Complex<ValueType>& op( const type t )                                                       \
     {                                                                                                   \
         method                                                                                          \
     }                                                                                                   \
-    CUDA_CALLABLE_MEMBER inline volatile Complex<ValueType>& op( const type t ) volatile                \
+    MIC_CALLABLE_MEMBER                                                                                 \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    inline volatile Complex<ValueType>& op( const type t ) volatile                                     \
     {                                                                                                   \
         method                                                                                          \
     }
@@ -185,7 +197,9 @@
  */
 
 #define COMPLEX_OPERATOR_CAST_CUDA( type, method )                                                      \
-    CUDA_CALLABLE_MEMBER operator type() const                                                          \
+    MIC_CALLABLE_MEMBER                                                                                 \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    operator type() const                                                                               \
     {                                                                                                   \
         method                                                                                          \
     }
@@ -203,17 +217,23 @@
 
 #define COMPLEX_OPERATOR_COMPARISON_CUDA(op, sign, type)                                                \
     template<typename ValueType>                                                                        \
-    CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )          \
+    MIC_CALLABLE_MEMBER                                                                                 \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    inline bool op( const Complex<ValueType>& a, const Complex<type>& b )                               \
     {                                                                                                   \
         return a.metrikCuda() sign static_cast<ValueType>(b.metrikCuda());                              \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
-    CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const type& b )                   \
+    MIC_CALLABLE_MEMBER                                                                                 \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    inline bool op( const Complex<ValueType>& a, const type& b )                                        \
     {                                                                                                   \
         return a.metrikCuda() sign static_cast<ValueType>(b);                                           \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
-    CUDA_CALLABLE_MEMBER inline bool op( const type& a, const Complex<ValueType>& b )                   \
+    MIC_CALLABLE_MEMBER                                                                                 \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    inline bool op( const type& a, const Complex<ValueType>& b )                                        \
     {                                                                                                   \
         return a sign static_cast<type>(b.metrikCuda());                                                \
     }
@@ -241,17 +261,23 @@
 
 #define COMPLEX_OPERATOR_EQUALITY_CUDA(op, sign, connection, type)                                      \
     template<typename ValueType>                                                                        \
-    CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )          \
+    MIC_CALLABLE_MEMBER                                                                                 \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    inline bool op( const Complex<ValueType>& a, const Complex<type>& b )                               \
     {                                                                                                   \
         return a.real() sign b.real() connection a.imag() sign b.imag();                                \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
-    CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const type& b )                   \
+    MIC_CALLABLE_MEMBER                                                                                 \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    inline bool op( const Complex<ValueType>& a, const type& b )                                        \
     {                                                                                                   \
         return a.real() sign b connection a.imag() sign 0;                                              \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
-    CUDA_CALLABLE_MEMBER inline bool op( const type& a, const Complex<ValueType>& b )                   \
+    MIC_CALLABLE_MEMBER                                                                                 \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    inline bool op( const type& a, const Complex<ValueType>& b )                                        \
     {                                                                                                   \
         return a sign b.real() connection 0 sign b.imag();                                              \
     }
@@ -279,47 +305,59 @@
 
 #define COMPLEX_OPERATOR_NONMEMBER_CUDA(op, sign, type)                                                         \
     template<typename ValueType>                                                                                \
-    CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )    \
+    MIC_CALLABLE_MEMBER                                                                                         \
+    CUDA_CALLABLE_MEMBER                                                                                        \
+    inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )                         \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
         x sign b;                                                                                               \
         return x;                                                                                               \
     }                                                                                                           \
     template<typename ValueType>                                                                                \
-    CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( volatile Complex<ValueType>& a, const Complex<type>& b ) \
+    MIC_CALLABLE_MEMBER                                                                                         \
+    CUDA_CALLABLE_MEMBER                                                                                        \
+    inline Complex<ValueType> op( volatile Complex<ValueType>& a, const Complex<type>& b )                      \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
         x sign b;                                                                                               \
         return x;                                                                                               \
     }                                                                                                           \
-    CUDA_CALLABLE_MEMBER inline Complex<type> op( volatile Complex<type>& a, const Complex<type>& b )           \
+    MIC_CALLABLE_MEMBER                                                                                         \
+    CUDA_CALLABLE_MEMBER                                                                                        \
+    inline Complex<type> op( volatile Complex<type>& a, const Complex<type>& b )                                \
     {                                                                                                           \
         Complex<type> x = a;                                                                                    \
         x sign b;                                                                                               \
         return x;                                                                                               \
     }                                                                                                           \
     template<typename ValueType>                                                                                \
-    CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( const Complex<ValueType>& a, const type& b )             \
+    MIC_CALLABLE_MEMBER                                                                                         \
+    CUDA_CALLABLE_MEMBER                                                                                        \
+    inline Complex<ValueType> op( const Complex<ValueType>& a, const type& b )                                  \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
         x sign static_cast<ValueType>(b);                                                                       \
         return x;                                                                                               \
     }                                                                                                           \
     template<typename ValueType>                                                                                \
-    CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( const type& a, const Complex<ValueType>& b )             \
+    MIC_CALLABLE_MEMBER                                                                                         \
+    CUDA_CALLABLE_MEMBER                                                                                        \
+    inline Complex<ValueType> op( const type& a, const Complex<ValueType>& b )                                  \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
         x sign b;                                                                                               \
         return x;                                                                                               \
     }                                                                                                           \
     template<typename ValueType>                                                                                \
-    CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( Complex<ValueType>& a, Complex<type>& b )                \
+    MIC_CALLABLE_MEMBER                                                                                         \
+    CUDA_CALLABLE_MEMBER                                                                                        \
+    inline Complex<ValueType> op( Complex<ValueType>& a, Complex<type>& b )                                     \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
         x sign b;                                                                                               \
         return x;                                                                                               \
     }                                                                                                           \
-
+     
 #define COMPLEX_OPERATOR_NONMEMBER_NONCUDA(op, sign, type)                                              \
     template<typename ValueType>                                                                        \
     inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )                 \
@@ -356,38 +394,40 @@
         return x;                                                                                       \
     }
 
-/**
- * @brief The class Complex represents complex numbers.
- */
 namespace scai
 {
 
 namespace common
 {
 
-using std::sqrt;
-using std::abs;
+
+/**
+ * @brief The class Complex represents complex numbers.
+ */
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Complex
 {
 public:
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     explicit Complex();
 
     template<typename OtherValueType>
-    CUDA_CALLABLE_MEMBER explicit inline Complex( const OtherValueType value );
+    MIC_CALLABLE_MEMBER
+    CUDA_CALLABLE_MEMBER
+    explicit inline Complex( const OtherValueType value );
 
     /*
      * @brief Constructs a complex representing the passed real
      *
      * @param[in] real the real part this complex should represent
      */
-    COMPLEX_CONSTRUCTOR_CUDA( const int, COMPLEX_CONSTRUCTOR_REAL)
-    COMPLEX_CONSTRUCTOR_CUDA( const long, COMPLEX_CONSTRUCTOR_REAL)
-    COMPLEX_CONSTRUCTOR_CUDA( const float, COMPLEX_CONSTRUCTOR_REAL)
-    COMPLEX_CONSTRUCTOR_CUDA( const double, COMPLEX_CONSTRUCTOR_REAL)
-    COMPLEX_CONSTRUCTOR_NONCUDA( const long double, COMPLEX_CONSTRUCTOR_REAL)
+    COMPLEX_CONSTRUCTOR_CUDA( const int, COMPLEX_CONSTRUCTOR_REAL )
+    COMPLEX_CONSTRUCTOR_CUDA( const long, COMPLEX_CONSTRUCTOR_REAL )
+    COMPLEX_CONSTRUCTOR_CUDA( const float, COMPLEX_CONSTRUCTOR_REAL )
+    COMPLEX_CONSTRUCTOR_CUDA( const double, COMPLEX_CONSTRUCTOR_REAL )
+    COMPLEX_CONSTRUCTOR_NONCUDA( const long double, COMPLEX_CONSTRUCTOR_REAL )
 
     /*
      * @brief Constructs a complex representing the passed real and imaginary part
@@ -395,51 +435,59 @@ public:
      * @param[in] real the real part this complex should represent
      * @param[in] imag the imaginary part this complex should represent
      */
-	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const int, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const long, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const float, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const double, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_NONCUDA( const int, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const int, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const int, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const int, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const int, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_NONCUDA( const int, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
 
-	COMPLEX_CONSTRUCTOR_2_CUDA( const long, const int, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const long, const long, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const long, const float, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const long, const double, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const long, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const long, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const long, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const long, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_NONCUDA( const long, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
 
-	COMPLEX_CONSTRUCTOR_2_CUDA( const float, const int, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const float, const long, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const float, const float, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const float, const double, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_NONCUDA( const float, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const float, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const float, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const float, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const float, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_NONCUDA( const float, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
 
-	COMPLEX_CONSTRUCTOR_2_CUDA( const double, const int, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const double, const long, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const double, const float, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const double, const double, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_NONCUDA( const double, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const double, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const double, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const double, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const double, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_NONCUDA( const double, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
 
-	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const int, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const long, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const float, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const double, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+
+#ifdef __CUDACC__
+    template<typename OtherValueType>
+    CUDA_CALLABLE_MEMBER inline Complex( const thrust::device_reference<Complex<OtherValueType> >& value )
+    {
+        *this = static_cast<Complex<ValueType> >( value );
+    }
+#endif
 
     /*
      * @brief Constructs a scalar representing the passed complex value.
      *
      * @param[in]   value the value this complex should represent
      */
-	COMPLEX_CONSTRUCTOR_CUDA( const Complex<int>&, COMPLEX_CONSTRUCTOR_COMPLEX )
-	COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<int>&, COMPLEX_CONSTRUCTOR_COMPLEX )
-	COMPLEX_CONSTRUCTOR_CUDA( const Complex<long>&, COMPLEX_CONSTRUCTOR_COMPLEX )
-	COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<long>&, COMPLEX_CONSTRUCTOR_COMPLEX )
-	COMPLEX_CONSTRUCTOR_CUDA( const Complex<float>&, COMPLEX_CONSTRUCTOR_COMPLEX )
-	COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<float>&, COMPLEX_CONSTRUCTOR_COMPLEX )
-	COMPLEX_CONSTRUCTOR_CUDA( const Complex<double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
-	COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
-	COMPLEX_CONSTRUCTOR_NONCUDA( const Complex<long double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
-	COMPLEX_CONSTRUCTOR_NONCUDA( volatile const Complex<long double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_CUDA( const Complex<int>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<int>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_CUDA( const Complex<long>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<long>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_CUDA( const Complex<float>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<float>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_CUDA( const Complex<double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_NONCUDA( const Complex<long double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+    COMPLEX_CONSTRUCTOR_NONCUDA( volatile const Complex<long double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
 
     /*
      * Creation of the member operators through macros
@@ -448,76 +496,78 @@ public:
     /*
      * @brief Binary operator
      */
-    COMPLEX_OPERATOR_CUDA(operator=, int, COMPLEX_SET_REAL)
-	COMPLEX_OPERATOR_CUDA(operator=, long, COMPLEX_SET_REAL)
-    COMPLEX_OPERATOR_CUDA(operator=, float, COMPLEX_SET_REAL)
-    COMPLEX_OPERATOR_CUDA(operator=, double, COMPLEX_SET_REAL)
-    COMPLEX_OPERATOR_NONCUDA(operator=, long double, COMPLEX_SET_REAL)
-    COMPLEX_OPERATOR_CUDA(operator=, Complex<int>, COMPLEX_SET_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator=, Complex<long>, COMPLEX_SET_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator=, Complex<float>, COMPLEX_SET_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator=, Complex<double>, COMPLEX_SET_COMPLEX)
-    COMPLEX_OPERATOR_NONCUDA(operator=, Complex<long double>, COMPLEX_SET_COMPLEX)
+    COMPLEX_OPERATOR_CUDA( operator=, int, COMPLEX_SET_REAL )
+    COMPLEX_OPERATOR_CUDA( operator=, long, COMPLEX_SET_REAL )
+    COMPLEX_OPERATOR_CUDA( operator=, float, COMPLEX_SET_REAL )
+    COMPLEX_OPERATOR_CUDA( operator=, double, COMPLEX_SET_REAL )
+    COMPLEX_OPERATOR_NONCUDA( operator=, long double, COMPLEX_SET_REAL )
+    COMPLEX_OPERATOR_CUDA( operator=, Complex<int>, COMPLEX_SET_COMPLEX )
+    COMPLEX_OPERATOR_CUDA( operator=, Complex<long>, COMPLEX_SET_COMPLEX )
+    COMPLEX_OPERATOR_CUDA( operator=, Complex<float>, COMPLEX_SET_COMPLEX )
+    COMPLEX_OPERATOR_CUDA( operator=, Complex<double>, COMPLEX_SET_COMPLEX )
+    COMPLEX_OPERATOR_NONCUDA( operator=, Complex<long double>, COMPLEX_SET_COMPLEX )
 
-    COMPLEX_OPERATOR_CUDA(operator+=, int, COMPLEX_OP_REAL( + ) )
-    COMPLEX_OPERATOR_CUDA(operator+=, long, COMPLEX_OP_REAL( + ) )
-    COMPLEX_OPERATOR_CUDA(operator+=, float, COMPLEX_OP_REAL( + ) )
-    COMPLEX_OPERATOR_CUDA(operator+=, double, COMPLEX_OP_REAL( + ) )
-    COMPLEX_OPERATOR_NONCUDA(operator+=, long double, COMPLEX_OP_REAL( + ) )
-    COMPLEX_OPERATOR_CUDA(operator+=, Complex<int>, COMPLEX_OP_COMPLEX( + ) )
-    COMPLEX_OPERATOR_CUDA(operator+=, Complex<long>, COMPLEX_OP_COMPLEX( + ) )
-    COMPLEX_OPERATOR_CUDA(operator+=, Complex<float>, COMPLEX_OP_COMPLEX( + ) )
-    COMPLEX_OPERATOR_CUDA(operator+=, Complex<double>, COMPLEX_OP_COMPLEX( + ) )
-    COMPLEX_OPERATOR_NONCUDA(operator+=, Complex<long double>, COMPLEX_OP_COMPLEX( + ) )
+    COMPLEX_OPERATOR_CUDA( operator+=, int, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_CUDA( operator+=, long, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_CUDA( operator+=, float, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_CUDA( operator+=, double, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_NONCUDA( operator+=, long double, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_CUDA( operator+=, Complex<int>, COMPLEX_OP_COMPLEX( + ) )
+    COMPLEX_OPERATOR_CUDA( operator+=, Complex<long>, COMPLEX_OP_COMPLEX( + ) )
+    COMPLEX_OPERATOR_CUDA( operator+=, Complex<float>, COMPLEX_OP_COMPLEX( + ) )
+    COMPLEX_OPERATOR_CUDA( operator+=, Complex<double>, COMPLEX_OP_COMPLEX( + ) )
+    COMPLEX_OPERATOR_NONCUDA( operator+=, Complex<long double>, COMPLEX_OP_COMPLEX( + ) )
 
-    COMPLEX_OPERATOR_CUDA(operator-=, int, COMPLEX_OP_REAL( - ) )
-    COMPLEX_OPERATOR_CUDA(operator-=, long, COMPLEX_OP_REAL( - ) )
-    COMPLEX_OPERATOR_CUDA(operator-=, float, COMPLEX_OP_REAL( - ) )
-    COMPLEX_OPERATOR_CUDA(operator-=, double, COMPLEX_OP_REAL( - ) )
-    COMPLEX_OPERATOR_NONCUDA(operator-=, long double, COMPLEX_OP_REAL( - ) )
-    COMPLEX_OPERATOR_CUDA(operator-=, Complex<int>, COMPLEX_OP_COMPLEX( - ) )
-    COMPLEX_OPERATOR_CUDA(operator-=, Complex<long>, COMPLEX_OP_COMPLEX( - ) )
-    COMPLEX_OPERATOR_CUDA(operator-=, Complex<float>, COMPLEX_OP_COMPLEX( - ) )
-    COMPLEX_OPERATOR_CUDA(operator-=, Complex<double>, COMPLEX_OP_COMPLEX( - ) )
-    COMPLEX_OPERATOR_NONCUDA(operator-=, Complex<long double>, COMPLEX_OP_COMPLEX( - ) )
+    COMPLEX_OPERATOR_CUDA( operator-=, int, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_CUDA( operator-=, long, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_CUDA( operator-=, float, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_CUDA( operator-=, double, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_NONCUDA( operator-=, long double, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_CUDA( operator-=, Complex<int>, COMPLEX_OP_COMPLEX( - ) )
+    COMPLEX_OPERATOR_CUDA( operator-=, Complex<long>, COMPLEX_OP_COMPLEX( - ) )
+    COMPLEX_OPERATOR_CUDA( operator-=, Complex<float>, COMPLEX_OP_COMPLEX( - ) )
+    COMPLEX_OPERATOR_CUDA( operator-=, Complex<double>, COMPLEX_OP_COMPLEX( - ) )
+    COMPLEX_OPERATOR_NONCUDA( operator-=, Complex<long double>, COMPLEX_OP_COMPLEX( - ) )
 
-    COMPLEX_OPERATOR_CUDA(operator*=, int, COMPLEX_MULTIPLY_REAL)
-    COMPLEX_OPERATOR_CUDA(operator*=, long, COMPLEX_MULTIPLY_REAL)
-    COMPLEX_OPERATOR_CUDA(operator*=, float, COMPLEX_MULTIPLY_REAL)
-    COMPLEX_OPERATOR_CUDA(operator*=, double, COMPLEX_MULTIPLY_REAL)
-    COMPLEX_OPERATOR_NONCUDA(operator*=, long double, COMPLEX_MULTIPLY_REAL)
-    COMPLEX_OPERATOR_CUDA(operator*=, Complex<int>, COMPLEX_MULTIPLY_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator*=, Complex<long>, COMPLEX_MULTIPLY_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator*=, Complex<float>, COMPLEX_MULTIPLY_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator*=, Complex<double>, COMPLEX_MULTIPLY_COMPLEX)
-    COMPLEX_OPERATOR_NONCUDA(operator*=, Complex<long double>, COMPLEX_MULTIPLY_COMPLEX)
+    COMPLEX_OPERATOR_CUDA( operator*=, int, COMPLEX_MULTIPLY_REAL )
+    COMPLEX_OPERATOR_CUDA( operator*=, long, COMPLEX_MULTIPLY_REAL )
+    COMPLEX_OPERATOR_CUDA( operator*=, float, COMPLEX_MULTIPLY_REAL )
+    COMPLEX_OPERATOR_CUDA( operator*=, double, COMPLEX_MULTIPLY_REAL )
+    COMPLEX_OPERATOR_NONCUDA( operator*=, long double, COMPLEX_MULTIPLY_REAL )
+    COMPLEX_OPERATOR_CUDA( operator*=, Complex<int>, COMPLEX_MULTIPLY_COMPLEX )
+    COMPLEX_OPERATOR_CUDA( operator*=, Complex<long>, COMPLEX_MULTIPLY_COMPLEX )
+    COMPLEX_OPERATOR_CUDA( operator*=, Complex<float>, COMPLEX_MULTIPLY_COMPLEX )
+    COMPLEX_OPERATOR_CUDA( operator*=, Complex<double>, COMPLEX_MULTIPLY_COMPLEX )
+    COMPLEX_OPERATOR_NONCUDA( operator*=, Complex<long double>, COMPLEX_MULTIPLY_COMPLEX )
 
-    COMPLEX_OPERATOR_CUDA(operator/=, int, COMPLEX_DIVIDE_REAL)
-    COMPLEX_OPERATOR_CUDA(operator/=, long, COMPLEX_DIVIDE_REAL)
-    COMPLEX_OPERATOR_CUDA(operator/=, float, COMPLEX_DIVIDE_REAL)
-    COMPLEX_OPERATOR_CUDA(operator/=, double, COMPLEX_DIVIDE_REAL)
-    COMPLEX_OPERATOR_NONCUDA(operator/=, long double, COMPLEX_DIVIDE_REAL)
-    COMPLEX_OPERATOR_CUDA(operator/=, Complex<int>, COMPLEX_DIVIDE_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator/=, Complex<long>, COMPLEX_DIVIDE_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator/=, Complex<float>, COMPLEX_DIVIDE_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator/=, Complex<double>, COMPLEX_DIVIDE_COMPLEX)
-    COMPLEX_OPERATOR_NONCUDA(operator/=, Complex<long double>, COMPLEX_DIVIDE_COMPLEX)
+    COMPLEX_OPERATOR_CUDA( operator/=, int, COMPLEX_DIVIDE_REAL )
+    COMPLEX_OPERATOR_CUDA( operator/=, long, COMPLEX_DIVIDE_REAL )
+    COMPLEX_OPERATOR_CUDA( operator/=, float, COMPLEX_DIVIDE_REAL )
+    COMPLEX_OPERATOR_CUDA( operator/=, double, COMPLEX_DIVIDE_REAL )
+    COMPLEX_OPERATOR_NONCUDA( operator/=, long double, COMPLEX_DIVIDE_REAL )
+    COMPLEX_OPERATOR_CUDA( operator/=, Complex<int>, COMPLEX_DIVIDE_COMPLEX )
+    COMPLEX_OPERATOR_CUDA( operator/=, Complex<long>, COMPLEX_DIVIDE_COMPLEX )
+    COMPLEX_OPERATOR_CUDA( operator/=, Complex<float>, COMPLEX_DIVIDE_COMPLEX )
+    COMPLEX_OPERATOR_CUDA( operator/=, Complex<double>, COMPLEX_DIVIDE_COMPLEX )
+    COMPLEX_OPERATOR_NONCUDA( operator/=, Complex<long double>, COMPLEX_DIVIDE_COMPLEX )
 
     /*
      * @brief Casts operator
      */
-    COMPLEX_OPERATOR_CAST_CUDA(int, COMPLEX_CAST_REAL(int))
-    COMPLEX_OPERATOR_CAST_CUDA(long, COMPLEX_CAST_REAL(long))
-    COMPLEX_OPERATOR_CAST_CUDA(float, COMPLEX_CAST_REAL(float))
-    COMPLEX_OPERATOR_CAST_CUDA(double, COMPLEX_CAST_REAL(double))
-    COMPLEX_OPERATOR_CAST_NONCUDA(long double, COMPLEX_CAST_REAL(long double))
+    COMPLEX_OPERATOR_CAST_CUDA( int, COMPLEX_CAST_REAL( int ) )
+    COMPLEX_OPERATOR_CAST_CUDA( long, COMPLEX_CAST_REAL( long ) )
+    COMPLEX_OPERATOR_CAST_CUDA( float, COMPLEX_CAST_REAL( float ) )
+    COMPLEX_OPERATOR_CAST_CUDA( double, COMPLEX_CAST_REAL( double ) )
+    COMPLEX_OPERATOR_CAST_NONCUDA( long double, COMPLEX_CAST_REAL( long double ) )
 
     /*
      * @brief Returns the metric for a complex number which is used to determine an order for complex numbers. Through this it is possible to use functions like min or max. This one is callable from CUDA space.
      *
      * @return      the metric of a complex number
      */
-    CUDA_CALLABLE_MEMBER ValueType metrikCuda( void ) const;
+    inline MIC_CALLABLE_MEMBER
+    CUDA_CALLABLE_MEMBER
+    ValueType metrikCuda( void ) const;
 
     /*
      * @brief Returns the metric for a complex number which is used to determine an order for complex numbers. Through this it is possible to use functions like min or max. This one is not callable from CUDA space and used for long double operations.
@@ -531,24 +581,28 @@ public:
      *
      * @return     the imaginary part of a complex number
      */
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void )
     {
         return mParts[1];
     }
 
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void ) const
     {
         return mParts[1];
     }
 
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void ) volatile
     {
         return mParts[1];
     }
 
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void ) const volatile
     {
@@ -560,12 +614,14 @@ public:
      *
      * @param[in] a    the new imaginary part of the complex number
      */
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline void imag( const ValueType a )
     {
         mParts[1] = a;
     }
 
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline void imag( const ValueType a ) volatile
     {
@@ -577,24 +633,28 @@ public:
      *
      * @return     the real part of a complex number
      */
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void )
     {
         return mParts[0];
     }
 
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void ) const
     {
         return mParts[0];
     }
 
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void ) volatile
     {
         return mParts[0];
     }
 
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void ) const volatile
     {
@@ -606,12 +666,14 @@ public:
      *
      * @param[in] a    the new real part of the complex number
      */
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline void real( const ValueType a )
     {
         mParts[0] = a;
     }
 
+    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline void real( const ValueType a ) volatile
     {
@@ -623,53 +685,31 @@ private:
 };
 
 template<typename ValueType>
-CUDA_CALLABLE_MEMBER Complex<ValueType>::Complex()
+MIC_CALLABLE_MEMBER
+CUDA_CALLABLE_MEMBER
+Complex<ValueType>::Complex()
 {
     //Constructor have to be empty. Otherwise cuda will output a lot of warnings
 }
 
 template<typename ValueType>
-CUDA_CALLABLE_MEMBER ValueType Complex<ValueType>::metrikCuda( void ) const
+MIC_CALLABLE_MEMBER
+CUDA_CALLABLE_MEMBER
+ValueType Complex<ValueType>::metrikCuda( void ) const
 {
-    return sqrt( real() * real() + imag() * imag() );
+    return Math::sqrt( real() * real() + imag() * imag() );
 }
 
 template<typename ValueType>
 ValueType Complex<ValueType>::metrikHost( void ) const
 {
-    return sqrt( real() * real() + imag() * imag() );
+    return Math::sqrt( real() * real() + imag() * imag() );
 }
 
 template<typename ValueType>
-CUDA_CALLABLE_MEMBER inline ValueType abs( const Complex<ValueType>& a )
+CUDA_CALLABLE_MEMBER inline Complex<ValueType> conj( const Complex<ValueType>& a )
 {
-    return ( sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
-}
-
-/*
- * long double version must not be CUDA_CALLABLE_MEMBER
- */
-inline long double abs( const Complex<long double>& a )
-{
-    return ( sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
-}
-
-template<typename ValueType>
-CUDA_CALLABLE_MEMBER inline Complex<ValueType> fabs( const Complex<ValueType>& a )
-{
-    Complex<ValueType> x = a;
-
-    if( x.real() < 0 )
-    {
-        x.real( x.real() * -1 );
-    }
-
-    if( x.imag() < 0 )
-    {
-        x.imag( x.imag() * -1 );
-    }
-
-    return x;
+    return Complex<ValueType>( a.real(), - a.imag() );
 }
 
 /*
@@ -679,11 +719,11 @@ CUDA_CALLABLE_MEMBER inline Complex<ValueType> fabs( const Complex<ValueType>& a
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is lower than b
  */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, <, int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, <, long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, <, float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, <, double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<, <, long double )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, < , int )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, < , long )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, < , float )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, < , double )
+COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<, < , long double )
 
 /*
  * @brief Check if a is greater than b.
@@ -692,11 +732,11 @@ COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<, <, long double )
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is greater than b
  */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, >, int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, >, long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, >, float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, >, double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>, >, long double )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, > , int )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, > , long )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, > , float )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, > , double )
+COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>, > , long double )
 
 /*
  * @brief Check if a is lower than b or equal to b.
@@ -705,11 +745,11 @@ COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>, >, long double )
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is lower than b or equal to b
  */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <=, int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <=, long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <=, float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <=, double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <=, long double )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , int )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , long )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , float )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , double )
+COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <= , long double )
 
 /*
  * @brief Check if a is greater than b or equal to b.
@@ -718,11 +758,11 @@ COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <=, long double )
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is greater than b or equal to b
  */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >=, int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >=, long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >=, float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >=, double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>=, >=, long double )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , int )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , long )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , float )
+COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , double )
+COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>=, >= , long double )
 
 /*
  * @brief Check equality of a and b.
@@ -731,11 +771,11 @@ COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>=, >=, long double )
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is equal to b
  */
-COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, ==, &&, int )
-COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, ==, &&, long )
-COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, ==, &&, float )
-COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, ==, &&, double )
-COMPLEX_OPERATOR_EQUALITY_NONCUDA( operator==, ==, &&, long double )
+COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, == , && , int )
+COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, == , && , long )
+COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, == , && , float )
+COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, == , && , double )
+COMPLEX_OPERATOR_EQUALITY_NONCUDA( operator==, == , && , long double )
 
 /*
  * @brief Check inequality of a and b.
@@ -744,14 +784,16 @@ COMPLEX_OPERATOR_EQUALITY_NONCUDA( operator==, ==, &&, long double )
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is unequal to b
  */
-COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, !=, ||, int )
-COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, !=, ||, long )
-COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, !=, ||, float )
-COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, !=, ||, double )
-COMPLEX_OPERATOR_EQUALITY_NONCUDA( operator!=, !=, ||, long double )
+COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, != , || , int )
+COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, != , || , long )
+COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, != , || , float )
+COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, != , || , double )
+COMPLEX_OPERATOR_EQUALITY_NONCUDA( operator!=, != , || , long double )
 
 template<typename ValueType>
-CUDA_CALLABLE_MEMBER inline Complex<ValueType> operator-( const Complex<ValueType>& a )
+MIC_CALLABLE_MEMBER
+CUDA_CALLABLE_MEMBER
+inline Complex<ValueType> operator-( const Complex<ValueType>& a )
 {
     Complex<ValueType> x;
     x.real( -a.real() );
@@ -766,11 +808,11 @@ CUDA_CALLABLE_MEMBER inline Complex<ValueType> operator-( const Complex<ValueTyp
  * @param[in] b     2nd Complex.
  * @return          sum
  */
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, +=, int )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, +=, long )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, +=, float )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, +=, double )
-COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator+, +=, long double )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, += , int )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, += , long )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, += , float )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, += , double )
+COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator+, += , long double )
 
 /*
  * @brief Subtract Complex a with Complex b
@@ -779,11 +821,11 @@ COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator+, +=, long double )
  * @param[in] b     2nd Complex.
  * @return          difference
  */
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -=, int )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -=, long )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -=, float )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -=, double )
-COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator-, -=, long double )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -= , int )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -= , long )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -= , float )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -= , double )
+COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator-, -= , long double )
 
 /*
  * @brief Multiply Complex a with Complex b
@@ -792,11 +834,11 @@ COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator-, -=, long double )
  * @param[in] b     2nd Complex.
  * @return          product
  */
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *=, int )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *=, long )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *=, float )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *=, double )
-COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator*, *=, long double )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *= , int )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *= , long )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *= , float )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *= , double )
+COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator*, *= , long double )
 
 /*
  * @brief Divide Complex a with Complex b
@@ -805,56 +847,15 @@ COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator*, *=, long double )
  * @param[in] b     2nd Complex.
  * @return          quotient
  */
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, int )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, long )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, float )
-COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, double )
-COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator/, /=, long double )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /= , int )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /= , long )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /= , float )
+COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /= , double )
+COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator/, /= , long double )
 
-template<typename ValueType>
-CUDA_CALLABLE_MEMBER inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
-{
-    ValueType x = a.real();
-    ValueType y = a.imag();
-
-    if( x == ValueType() )
-    {
-        ValueType t = sqrt( abs( y ) / 2 );
-        return Complex<ValueType>( t, y < ValueType() ? -t : t );
-    }
-    else
-    {
-        ValueType t = sqrt( 2 * ( abs( a ) + abs( x ) ) );
-        ValueType u = t / 2;
-        return x > ValueType() ? Complex<ValueType>( u, y / t ) :
-                        Complex<ValueType>( abs( y ) / t, y < ValueType() ? -u : u );
-    }
-}
-
-/*
- * long double version must not be CUDA_CALLABLE_MEMBER
- */
-inline Complex<long double> sqrt( const Complex<long double>& a )
-{
-    long double x = a.real();
-    long double y = a.imag();
-
-    if( x == 0.0 )
-    {
-        long double t = sqrt( abs( y ) / 2 );
-        return Complex<long double>( t, y < 0.0 ? -t : t );
-    }
-    else
-    {
-        long double t = sqrt( 2 * ( abs( a ) + abs( x ) ) );
-        long double u = t / 2;
-        return x > 0.0 ? Complex<long double>( u, y / t ) : Complex<long double>( abs( y ) / t, y < 0.0 ? -u : u );
-    }
-}
-
-template<typename ValueType,typename InputType1,typename InputType2>
-std::basic_istream<InputType1,InputType2>&
-operator>>( std::basic_istream<InputType1,InputType2>& input, Complex<ValueType>& x )
+template<typename ValueType, typename InputType1, typename InputType2>
+std::basic_istream<InputType1, InputType2>&
+operator>>( std::basic_istream<InputType1, InputType2>& input, Complex<ValueType>& x )
 {
     ValueType real = 0;
     ValueType imag = 0;
@@ -868,7 +869,7 @@ operator>>( std::basic_istream<InputType1,InputType2>& input, Complex<ValueType>
 template<typename ValueType>
 std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object )
 {
-    if( object.imag() == 0 )
+    if ( object.imag() == 0 )
     {
         stream << object.real();
     }
@@ -880,11 +881,148 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
     return stream;
 }
 
+/*
+
+template<>
+long double Complex<long double>::metrikCuda( void ) const
+{
+    return Math::sqrt( real() * real() + imag() * imag() );
+}
+
+*/
+
+// ------------------ Math::sqrt --------------------------------
+
+Complex<float> Math::sqrt( const Complex<float>& a )
+{
+    float x = a.real();
+    float y = a.imag();
+
+    if ( x == 0.0f )
+    {
+        float t = Math::sqrt( Math::abs( y ) / 2 );
+        return Complex<float>( t, y < 0.0f ? -t : t );
+    }
+    else
+    {
+        float t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
+        float u = t / 2;
+        return x > 0.0f ? Complex<float>( u, y / t ) :
+               Complex<float>( Math::abs( y ) / t, y < 0.0f ? -u : u );
+    }
+}
+
+Complex<double> Math::sqrt( const Complex<double>& a )
+{
+    double x = a.real();
+    double y = a.imag();
+
+    if ( x == 0.0 )
+    {
+        double t = Math::sqrt( Math::abs( y ) / 2 );
+        return Complex<double>( t, y < 0.0 ? -t : t );
+    }
+    else
+    {
+        double t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
+        double u = t / 2;
+        return x > 0.0 ? Complex<double>( u, y / t ) :
+               Complex<double>( Math::abs( y ) / t, y < 0.0 ? -u : u );
+    }
+}
+
+Complex<long double> Math::sqrt( const Complex<long double>& a )
+{
+    long double x = a.real();
+    long double y = a.imag();
+
+    if ( x == 0.0l )
+    {
+        long double t = Math::sqrt( Math::abs( y ) / 2 );
+        return Complex<long double>( t, y < 0.0l ? -t : t );
+    }
+    else
+    {
+        long double t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
+        long double u = t / 2;
+        return x > 0.0l ? Complex<long double>( u, y / t ) :
+               Complex<long double>( Math::abs( y ) / t, y < 0.0l ? -u : u );
+    }
+}
+
+// ------------------ Math::abs --------------------------------
+float Math::abs( const Complex<float>& a )
+{
+    float x = a.real();
+    float y = a.imag();
+    const float ax = Math::abs( x );
+    const float ay = Math::abs( y );
+    const float s = ax > ay ? ax : ay;
+
+    if ( s == 0.0f )
+    {
+        return s;
+    }
+
+    x /= s;
+    y /= s;
+    return s * Math::sqrt( x * x + y * y );
+}
+
+double Math::abs( const Complex<double>& a )
+{
+    double x = a.real();
+    double y = a.imag();
+    const double ax = Math::abs( x );
+    const double ay = Math::abs( y );
+    const double s = ax > ay ? ax : ay;
+
+    if ( s == 0.0 )
+    {
+        return s;
+    }
+
+    x /= s;
+    y /= s;
+    return s * Math::sqrt( x * x + y * y );
+}
+
+long double Math::abs( const Complex<long double>& a )
+{
+    long double x = a.real();
+    long double y = a.imag();
+    const long double ax = Math::abs( x );
+    const long double ay = Math::abs( y );
+    const long double s = ax > ay ? ax : ay;
+
+    if ( s == 0.0l )
+    {
+        return s;
+    }
+
+    x /= s;
+    y /= s;
+    return s * Math::sqrt( x * x + y * y );
+}
+
+// ------------------ Math::conj --------------------------------
+Complex<float> Math::conj( const Complex<float>& a )
+{
+    return Complex<float>( a.real(), -a.imag() );
+}
+Complex<double> Math::conj( const Complex<double>& a )
+{
+    return Complex<double>( a.real(), -a.imag() );
+}
+Complex<long double> Math::conj( const Complex<long double>& a )
+{
+    return Complex<long double>( a.real(), -a.imag() );
+}
+
 } /* end namespace common */
 
 } /* end namespace scai */
 
-#undef CUDA_CALLABLE_MEMBER
 #undef COMPLEX_SET_REAL
 #undef COMPLEX_SET_COMPLEX
 #undef COMPLEX_OP_REAL
@@ -912,4 +1050,10 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 #undef COMPLEX_OPERATOR_EQUALITY_NONCUDA
 #undef COMPLEX_OPERATOR_NONMEMBER_CUDA
 #undef COMPLEX_OPERATOR_NONMEMBER_NONCUDA
+
+// define more convenient names
+
+typedef scai::common::Complex<float> ComplexFloat;
+typedef scai::common::Complex<double> ComplexDouble;
+typedef scai::common::Complex<long double> ComplexLongDouble;
 

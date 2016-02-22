@@ -31,27 +31,34 @@
  # @since 2.0.0
 ###
 
+### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
+### Set PROJECT NAME / supported LANGUAGES
 project ( LAMA_ALL CXX )
-set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
-include ( VersionDefinition )
+### Set Module Path
+set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
+include ( CompilerVersion )
 include ( SCAIAssert )
 include ( SetCPPFlags )
 
 include ( CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 )
+#if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 )
+#endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
 include ( Functions/checkWhiteList )
 include ( Functions/concatCacheArguments )
+
+include ( VersionDefinition )
+include ( SetProjectVariables )
+include ( Functions/scaiFunctions )
 
 include ( ExternalDependencies )
 
@@ -65,12 +72,7 @@ include ( TracingSettings )
 include ( ConcludeFlags )
 
 ## documentation
-
-# user docu --> make userdoc, make userdoc_json, make install_userdoc
-include ( Package/Sphinx )
-
-#system docu --> make doc
-include ( Package/Doxygen )
+include( Package/doc )
 
 ## summary of what is found
 include ( Summaries/scai )
@@ -103,6 +105,7 @@ foreach    ( CACHE_VAR ${CACHE_VARS} )
 	check_whitelist ( CACHE_VAR "${MPI_WHITELIST}" "MPI_ARGS" )
 	check_whitelist ( CACHE_VAR "${OPENMP_WHITELIST}" "OPENMP_ARGS" )
 	check_whitelist ( CACHE_VAR "${SCAI_BLAS_WHITELIST}" "SCAI_BLAS_ARGS" )
+      check_whitelist ( CACHE_VAR "${DOXYGEN_WHITELIST}" "DOXYGEN_ARGS" )
     
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
@@ -116,6 +119,7 @@ endforeach ( CACHE_VAR ${CACHE_VARS} )
 #message ( STATUS "Passed MPI_ARGS ${MPI_ARGS}" )
 #message ( STATUS "Passed OPENMP_ARGS ${OPENMP_ARGS}" )
 #message ( STATUS "Passed SCAI_BLAS_ARGS ${SCAI_BLAS_ARGS}" )
+#message ( STATUS "Passed DOXYGEN_ARGS ${DOXYGEN_ARGS}" )
 
 ## define external projects
 
@@ -134,7 +138,7 @@ concatCacheArguments ( scai_common "CACHE_ARGS" )
 #message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_common 
-			DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
+		DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
             PREFIX common
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/common
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
@@ -190,6 +194,66 @@ ExternalProject_Add ( scai_hmemo
 	    	BINARY_DIR hmemo
             )
 
+concatCacheArguments ( scai_kregistry "CACHE_ARGS" )
+#message ( STATUS "kregistry CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_kregistry
+            DEPENDS ${SCAI_KREGISTRY_INTERNAL_DEPS}
+            PREFIX kregistry
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/kregistry
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+	    	BINARY_DIR kregistry
+            )
+
+concatCacheArguments ( scai_blaskernel "CACHE_ARGS" )
+#message ( STATUS "blaskernel CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_blaskernel
+            DEPENDS ${SCAI_BLASKERNEL_INTERNAL_DEPS}
+            PREFIX blaskernel
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/blaskernel
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+	    	BINARY_DIR blaskernel
+            )
+            
+concatCacheArguments ( scai_utilskernel "CACHE_ARGS" )
+#message ( STATUS "blaskernel CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_utilskernel
+            DEPENDS ${SCAI_UTILSKERNEL_INTERNAL_DEPS}
+            PREFIX utilskernel
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/utilskernel
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+	    	BINARY_DIR utilskernel
+            )
+            
+concatCacheArguments ( scai_sparsekernel "CACHE_ARGS" )
+#message ( STATUS "blaskernel CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_sparsekernel
+            DEPENDS ${SCAI_SPARSEKERNEL_INTERNAL_DEPS}
+            PREFIX sparsekernel
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/sparsekernel
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+	    	BINARY_DIR sparsekernel
+            )
+
+concatCacheArguments ( scai_dmemo "CACHE_ARGS" )
+#message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_dmemo
+            DEPENDS ${SCAI_DMEMO_INTERNAL_DEPS}
+            PREFIX dmemo
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/dmemo
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+            BINARY_DIR dmemo
+            )
+
 concatCacheArguments ( scai_lama "CACHE_ARGS" )
 #message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
 
@@ -199,11 +263,24 @@ ExternalProject_Add ( scai_lama
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/lama
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR lama
+            BINARY_DIR lama
             )
 
-## add custom target docclean
-include ( DocClean )
+concatCacheArguments ( scai_solver "CACHE_ARGS" )
+#message ( STATUS "solver CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_solver
+            DEPENDS ${SCAI_SOLVER_INTERNAL_DEPS}
+            PREFIX solver
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/solver
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+            BINARY_DIR solver
+            )
+
+if    ( BUILD_DOC )
+      add_subdirectory ( doc )
+endif ( BUILD_DOC )
 
 ## add custom target distclean
 include ( DistClean )

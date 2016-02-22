@@ -43,7 +43,7 @@ scai_project (
 #       CUDA_HostContextTest
         CUDA_MatrixStorageTest
 #       CUDA_VectorTest
-#       CUDA_InterfaceRegistryTest
+        CUDA_KernelRegistryTest
 
 )
 
@@ -54,7 +54,7 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
 ### set include directories ###
-include_directories ( ${CUDA_INCLUDE_DIRS} )
+include_directories ( ${SCAI_CUDA_INCLUDE_DIR} )
 
 ### set link directories ###
 if ( WIN32 )
@@ -66,7 +66,7 @@ add_executable ( lama_cuda_test lama_cuda_test.cpp ${CXX_SOURCES} )
 
 ### set target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lama_cuda_test ama )
+    target_link_libraries ( lama_cuda_test ${PROJECT_NAME} )
 else ( WIN32 )
-    target_link_libraries ( lama_cuda_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+    target_link_libraries ( lama_cuda_test ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )

@@ -42,7 +42,13 @@
 namespace scai
 {
 
-using hmemo::LAMAArray;
+namespace dmemo
+{
+    class Communicator;
+    class Halo;
+    class Distribution;
+    class Redistributor;
+}
 
 namespace lama
 {
@@ -52,10 +58,10 @@ class COMMON_DLL_IMPORTEXPORT _StorageMethods
 public:
 
     static void buildHalo(
-        class Halo& halo,
-        LAMAArray<IndexType>& haloJA,
+        class dmemo::Halo& halo,
+        hmemo::HArray<IndexType>& haloJA,
         IndexType& haloSize,
-        const class Distribution& colDist );
+        const dmemo::Distribution& colDist );
 
 protected:
 
@@ -87,13 +93,13 @@ public:
      */
 
     static void localizeCSR(
-        LAMAArray<IndexType>& localIA,
-        LAMAArray<IndexType>& localJA,
-        LAMAArray<ValueType>& localValues,
-        const LAMAArray<IndexType>& globalIA,
-        const LAMAArray<IndexType>& globalJA,
-        const LAMAArray<ValueType>& globalValues,
-        const class Distribution& rowDist );
+        hmemo::HArray<IndexType>& localIA,
+        hmemo::HArray<IndexType>& localJA,
+        hmemo::HArray<ValueType>& localValues,
+        const hmemo::HArray<IndexType>& globalIA,
+        const hmemo::HArray<IndexType>& globalJA,
+        const hmemo::HArray<ValueType>& globalValues,
+        const dmemo::Distribution& rowDist );
 
     /** Build global CSR storage for row distributed CSR storages.
      *
@@ -104,13 +110,13 @@ public:
      */
 
     static void replicateCSR(
-        LAMAArray<IndexType>& globalIA,
-        LAMAArray<IndexType>& globalJA,
-        LAMAArray<ValueType>& globalValues,
-        const LAMAArray<IndexType>& localIA,
-        const LAMAArray<IndexType>& localJA,
-        const LAMAArray<ValueType>& localValues,
-        const class Distribution& rowDist );
+        hmemo::HArray<IndexType>& globalIA,
+        hmemo::HArray<IndexType>& globalJA,
+        hmemo::HArray<ValueType>& globalValues,
+        const hmemo::HArray<IndexType>& localIA,
+        const hmemo::HArray<IndexType>& localJA,
+        const hmemo::HArray<ValueType>& localValues,
+        const dmemo::Distribution& rowDist );
 
     /** Redistribute CSR storages.
      *
@@ -120,13 +126,13 @@ public:
      */
 
     static void redistributeCSR(
-        LAMAArray<IndexType>& targetIA,
-        LAMAArray<IndexType>& targetJA,
-        LAMAArray<ValueType>& targetValues,
-        const LAMAArray<IndexType>& sourceIA,
-        const LAMAArray<IndexType>& sourceJA,
-        const LAMAArray<ValueType>& sourceValues,
-        const class Redistributor& redistributor );
+        hmemo::HArray<IndexType>& targetIA,
+        hmemo::HArray<IndexType>& targetJA,
+        hmemo::HArray<ValueType>& targetValues,
+        const hmemo::HArray<IndexType>& sourceIA,
+        const hmemo::HArray<IndexType>& sourceJA,
+        const hmemo::HArray<ValueType>& sourceValues,
+        const dmemo::Redistributor& redistributor );
 
     /** Exchange rows by halo.
      *
@@ -139,14 +145,14 @@ public:
      */
 
     static void exchangeHaloCSR(
-        LAMAArray<IndexType>& targetIA,
-        LAMAArray<IndexType>& targetJA,
-        LAMAArray<ValueType>& targetValues,
-        const LAMAArray<IndexType>& sourceIA,
-        const LAMAArray<IndexType>& sourceJA,
-        const LAMAArray<ValueType>& sourceValues,
-        const class Halo& halo,
-        const class Communicator& comm );
+        hmemo::HArray<IndexType>& targetIA,
+        hmemo::HArray<IndexType>& targetJA,
+        hmemo::HArray<ValueType>& targetValues,
+        const hmemo::HArray<IndexType>& sourceIA,
+        const hmemo::HArray<IndexType>& sourceJA,
+        const hmemo::HArray<ValueType>& sourceValues,
+        const dmemo::Halo& halo,
+        const dmemo::Communicator& comm );
 
     /** Splitting CSR storage.
      *
@@ -160,17 +166,17 @@ public:
      */
 
     static void splitCSR(
-        LAMAArray<IndexType>& localIA,
-        LAMAArray<IndexType>& localJA,
-        LAMAArray<ValueType>& localValues,
-        LAMAArray<IndexType>& haloIA,
-        LAMAArray<IndexType>& haloJA,
-        LAMAArray<ValueType>& haloValues,
-        const LAMAArray<IndexType>& csrIA,
-        const LAMAArray<IndexType>& csrJA,
-        const LAMAArray<ValueType>& csrValues,
-        const class Distribution& colDist,
-        const class Distribution* rowDist );
+        hmemo::HArray<IndexType>& localIA,
+        hmemo::HArray<IndexType>& localJA,
+        hmemo::HArray<ValueType>& localValues,
+        hmemo::HArray<IndexType>& haloIA,
+        hmemo::HArray<IndexType>& haloJA,
+        hmemo::HArray<ValueType>& haloValues,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const dmemo::Distribution& colDist,
+        const dmemo::Distribution* rowDist );
 
     /**
      *  Static method that joins rows of two data sets of CSR data.
@@ -185,15 +191,15 @@ public:
      */
 
     static void joinCSR(
-        LAMAArray<IndexType>& csrIA,
-        LAMAArray<IndexType>& csrJA,
-        LAMAArray<ValueType>& csrValues,
-        const LAMAArray<IndexType>& localIA,
-        const LAMAArray<IndexType>& localJA,
-        const LAMAArray<ValueType>& localValues,
-        const LAMAArray<IndexType>& haloIA,
-        const LAMAArray<IndexType>& haloJA,
-        const LAMAArray<ValueType>& haloValues,
+        hmemo::HArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::HArray<ValueType>& csrValues,
+        const hmemo::HArray<IndexType>& localIA,
+        const hmemo::HArray<IndexType>& localJA,
+        const hmemo::HArray<ValueType>& localValues,
+        const hmemo::HArray<IndexType>& haloIA,
+        const hmemo::HArray<IndexType>& haloJA,
+        const hmemo::HArray<ValueType>& haloValues,
         const IndexType numKeepDiagonals );
 };
 

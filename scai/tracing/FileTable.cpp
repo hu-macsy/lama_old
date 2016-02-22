@@ -65,7 +65,7 @@ FileTable::~FileTable()
 
 int FileTable::getFileId( const char* fileName )
 {
-    std::map<const char*, int, CmpString>::iterator it = mapTimer.find( fileName );
+    MapFiles::iterator it = mapTimer.find( fileName );
 
     if ( it == mapTimer.end() )
     {

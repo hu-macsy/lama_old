@@ -35,15 +35,15 @@
 // local library
 #include <scai/hmemo/Context.hpp>
 
-// base classes
-#include <scai/common/Printable.hpp>
-#include <scai/common/NonCopyable.hpp>
 
 // internal scai libraries
+
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
 #include <scai/common/shared_ptr.hpp>
+#include <scai/common/Printable.hpp>
+#include <scai/common/NonCopyable.hpp>
 
 namespace scai
 {
@@ -52,8 +52,6 @@ namespace tasking
 {
     class SyncToken;    // forward declaration
 }
-
-/** Namespace for all data structures of the context memory management. */
 
 namespace hmemo
 {
@@ -74,6 +72,7 @@ enum MemoryType
     CUDAMemory,       //!< CUDA GPU memory on a device
     CUDAHostMemory,   //!< pinned memory that allows faster transfer to a certain CUDA Device
     MICMemory,        //!< Memory on Intel MIC
+    GPIMemory,        //!< Pinned memory for GPI communication
     UserMemory        //!< can be used for a new derived Context class
 };
 
@@ -97,8 +96,8 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Me
  */
 class COMMON_DLL_IMPORTEXPORT Memory: 
   
-    public  scai::common::Printable,
-    private scai::common::NonCopyable
+    public  common::Printable,
+    private common::NonCopyable
 {
 public:
 

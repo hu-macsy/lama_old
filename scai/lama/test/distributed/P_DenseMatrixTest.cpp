@@ -39,22 +39,21 @@
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/GeneralDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-
 #include <scai/lama/test/TestSparseMatrices.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::common;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 typedef boost::mpl::list<double, float> test_types;
 
@@ -66,7 +65,7 @@ struct P_DenseMatrixTestConfig
 {
     P_DenseMatrixTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::getCommunicator();
     }
 
     ~P_DenseMatrixTestConfig()
@@ -83,6 +82,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.P_DenseMatrixTest" );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
 {
+    using scai::common::TypeTraits;
+
     PartitionId size = comm->getSize();
     int numRows = 3 * size;
     int numCols = 5 * size;
@@ -106,7 +107,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
         {
             Scalar value = repM.getValue( i , j );
             Scalar expectedvalue = Scalar( static_cast<ValueType>( values[i * numCols + j] ) );
-            SCAI_CHECK_SCALAR_SMALL( value - expectedvalue, ValueType, eps<ValueType>() );
+            SCAI_CHECK_SCALAR_SMALL( value - expectedvalue, ValueType, TypeTraits<ValueType>::small() );
         }
     }
 
@@ -120,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
         {
             Scalar value = distM.getValue( i, j );
             Scalar expectedvalue = repM.getValue( i, j );
-            SCAI_CHECK_SCALAR_SMALL( value - expectedvalue , ValueType, eps<ValueType>() );
+            SCAI_CHECK_SCALAR_SMALL( value - expectedvalue , ValueType, TypeTraits<ValueType>::small() );
         }
     }
 }

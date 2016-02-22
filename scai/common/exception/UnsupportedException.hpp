@@ -1,5 +1,5 @@
 /**
- * @file LAMAInterface.hpp
+ * @file UnsupportedException.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -34,7 +34,7 @@
 #pragma once
 
 // base class
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 namespace scai
 {
