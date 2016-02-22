@@ -93,13 +93,18 @@ void CGS::initialize( const Matrix& coefficients ){
     runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecQ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecU.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-
+    runtime.mVecPT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecUT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecTemp.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
     runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecQ->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecU->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecT->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecPT->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecUT->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecTemp->setContextPtr( coefficients.getContextPtr() ); 
 }
 
 
@@ -137,6 +142,15 @@ void CGS::solveInit( Vector& solution, const Vector& rhs ){
     *runtime.mVecP = *runtime.mResidual;
     *runtime.mVecU = *runtime.mResidual;
 
+    // PRECONDITIONING
+    if(mPreconditioner != NULL){
+        *runtime.mVecPT  = Scalar(0.0);
+        mPreconditioner->solve( *runtime.mVecPT, *runtime.mVecP);      
+    } 
+    else   *runtime.mVecPT = *runtime.mVecP;
+
+
+
     //initial <res,res> inner product;
     runtime.mInnerProdRes = (*runtime.mRes0).dotProduct(*runtime.mRes0);
 
@@ -154,6 +168,9 @@ void CGS::iterate(){
     Vector& vecQ = *runtime.mVecQ;
     Vector& vecU = *runtime.mVecU;
     Vector& vecT = *runtime.mVecT;
+    Vector& vecPT = *runtime.mVecPT;
+    Vector& vecUT = *runtime.mVecUT;
+    Vector& vecTemp = *runtime.mVecTemp;
     Vector& solution = *runtime.mSolution;
     Scalar& innerProdRes = runtime.mInnerProdRes;
 
@@ -164,7 +181,9 @@ void CGS::iterate(){
     Scalar& normRes = runtime.mNormRes;
 	lama::MaxNorm norm;
 
-    vecT= A *vecP;         
+
+
+    vecT= A *vecPT;
 
     Scalar innerProduct = res0.dotProduct(vecT);
     if(normRes< eps || innerProduct < eps)    //innerProduct is small
@@ -172,13 +191,19 @@ void CGS::iterate(){
     else alpha= innerProdRes/innerProduct;
 
     vecQ= vecU - alpha*vecT;
-    solution = solution + alpha*vecU;
-    solution = solution + alpha*vecQ;
+
+    // PRECONDITIONING
+    if(mPreconditioner != NULL){
+        vecUT = Scalar(0.0);
+        vecTemp = vecU + vecQ;
+        mPreconditioner->solve(vecUT,vecTemp);      
+    } 
+    else   vecUT  = vecU + vecQ;
+    solution = solution + alpha*vecUT;
 
     Scalar innerProdResOld = innerProdRes;
 
-    res = res - alpha*A*vecU;
-    res = res - alpha*A*vecQ; 
+    res = res - alpha*A*vecUT; 
     innerProdRes = res0.dotProduct(res);
 
     normRes = norm.apply(res);
@@ -190,6 +215,13 @@ void CGS::iterate(){
     vecU = res + beta*vecQ;
     vecP = vecU + beta*beta*vecP;
     vecP = vecP + beta*vecQ;
+
+    // PRECONDITIONING
+    if(mPreconditioner != NULL){
+        vecPT  = Scalar(0.0);
+        mPreconditioner->solve( vecPT, vecP);      
+    } 
+    else   vecPT = vecP ;
 
     //End Implementation
     mCGSRuntime.mSolution.setDirty( false );

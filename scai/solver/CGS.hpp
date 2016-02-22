@@ -104,6 +104,9 @@ public:
         common::shared_ptr<lama::Vector> mVecQ;
         common::shared_ptr<lama::Vector> mVecU;
         common::shared_ptr<lama::Vector> mVecT;
+        common::shared_ptr<lama::Vector> mVecPT;
+        common::shared_ptr<lama::Vector> mVecUT;
+        common::shared_ptr<lama::Vector> mVecTemp;
 
         lama::Scalar mEps;
         lama::Scalar mNormRes;
