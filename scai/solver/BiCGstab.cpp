@@ -50,6 +50,8 @@
 namespace scai
 {
 
+using namespace lama;
+
 namespace solver
 {
 
@@ -147,7 +149,7 @@ void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
 
     // Initialize
     this->getResidual();
-    print(*runtime.mResidual,4);
+    // print(*runtime.mResidual,4);
 
     *runtime.mRes0 = *runtime.mResidual;
 
