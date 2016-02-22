@@ -30,10 +30,6 @@ First of all you need to install the following software for building LAMA:
 
   - For LAMA we need the headers only packages *thread* for the internal thread management. *unit_test_framework* and *regex* are used for the tests (optional).
 
-- :doc:`BLAS and LAPack <configuration/blas>`
-
-  - Needed for the implementation of the dense blas functions. LAMA only prepares own implementations for sparse blas routines, for dense matrices we rely on given implementations. Supported libraries are: Intel MKL, GOTO, ACML, FortranBLAS. 
-
 .. _recommended:
 
 Recommended software
@@ -41,9 +37,17 @@ Recommended software
 
 For using the support of parallel/hybrid machines in LAMA, you need the following:
 
+- :doc:`BLAS and LAPack <configuration/blas>`
+
+  - Needed for the implementation of the dense blas functions. Supported libraries are: Intel MKL, GOTO, ACML, FortranBLAS. 
+
 - :doc:`CUDA (version 4.0 or later) <configuration/cuda>`
 
   - Needed to utilize CUDA capable GPUs from NVidia.
+  
+- :doc:`Intel MIC <configuration/mic>`
+
+  - Needed to utilize Intel MICs
 
 - :doc:`MPI <configuration/mpi>`
 

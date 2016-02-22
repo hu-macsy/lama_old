@@ -40,6 +40,34 @@ export SCAI_UNSUPPORTED=IGNORE
     ./MemoryTest
 )
 
+# KRegistry tests
+
+(
+	cd build/kregistry/test
+	./KernelInterfaceTest
+)
+
+# BLASKernel tests
+
+(
+	cd build/blaskernel/test
+	./BLASKernelTest
+)
+
+# UtilsKernel tests
+
+(
+	cd build/utilskernel/test
+	./UtilsKernelTest
+)
+
+# SparseKernel tests
+
+(
+	cd build/sparsekernel/test
+	./SparseKernelTest
+)
+
 # DMemo tests
 
 (

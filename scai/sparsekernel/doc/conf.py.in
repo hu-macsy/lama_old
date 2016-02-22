@@ -12,12 +12,9 @@ intersphinx_mapping = {
     'scaitracing': ('${SCAI_TRACING_DOC_DIR}', None),
     'scaitasking': ('${SCAI_TASKING_DOC_DIR}', None),
     'scaihmemo': ('${SCAI_HMEMO_DOC_DIR}', None),
-    'scaikregistry': ('${SCAI_KREGISTRY_DOC_DIR}', None),
-    'scaiblaskernel': ('${SCAI_BLASKERNEL_DOC_DIR}', None),
-    'scaiutilskernel': ('${SCAI_UTILSKERNEL_DOC_DIR}', None),
-    'scaisparsekernel': ('${SCAI_SPARSEKERNEL_DOC_DIR}', None),
-    'scaidmemo': ('${SCAI_DMEMO_DOC_DIR}', None)
+    'scaikregistry': ('${SCAI_KREGISTRY_DOC_DIR}', None)
 }
+
 
 # The suffix of source filenames.
 source_suffix = '.rst'
