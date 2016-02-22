@@ -460,11 +460,16 @@ vectorformat::VectorFormat str2Kind( const char* str )
     return vectorformat::UNDEFINED;
 }
 
+namespace vectorformat
+{
+
 std::ostream& operator<<( std::ostream& stream, const vectorformat::VectorFormat vectorKind )
 {
     stream << scai::lama::kind2Str( vectorKind );
     return stream;
 }
+
+} /* end namespace vectorformat */
 
 /* ---------------------------------------------------------------------------------- */
 

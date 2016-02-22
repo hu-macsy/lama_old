@@ -82,7 +82,7 @@ typedef enum
     UNDEFINED
 } VectorFormat;
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const vectorformat::VectorFormat vectorKind )
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const vectorformat::VectorFormat vectorKind );
 
 }  // namespace vectorformat
 
