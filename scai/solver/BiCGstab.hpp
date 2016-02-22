@@ -104,6 +104,9 @@ public:
         common::shared_ptr<lama::Vector> mVecP;
         common::shared_ptr<lama::Vector> mVecS;
         common::shared_ptr<lama::Vector> mVecT;
+        common::shared_ptr<lama::Vector> mVecPT;
+        common::shared_ptr<lama::Vector> mVecST;
+        common::shared_ptr<lama::Vector> mVecTT;
 
         lama::Scalar mEps;
         lama::Scalar mResNorm;
@@ -134,7 +137,6 @@ public:
 protected:
 
     virtual void iterate();
-
     /**
      *  @brief own implementation of Printable::writeAt
      */
