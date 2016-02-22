@@ -124,6 +124,30 @@ set ( SCAI_BLASKERNEL_LIBRARY scai_blaskernel
 
 set ( SCAI_BLASKERNEL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/blaskernel
       CACHE PATH "blaskernel include directory" )
+      
+# Project: utilskernel library
+
+add_subdirectory( utilskernel )
+
+### Set variables for Findscai_utilskernel so further projects can use it 
+
+set ( SCAI_UTILSKERNEL_LIBRARY scai_utilskernel
+      CACHE FILEPATH  "library for kernel utilities" )
+
+set ( SCAI_UTILSKERNEL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/utilskernel
+      CACHE PATH "utilskernel include directory" )
+      
+# Project: sparsekernel library
+
+add_subdirectory( sparsekernel )
+
+### Set variables for Findscai_sparsekernel so further projects can use it 
+
+set ( SCAI_SPARSEKERNEL_LIBRARY scai_sparsekernel
+      CACHE FILEPATH  "library for sparse kernels" )
+
+set ( SCAI_SPARSEKERNEL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sparsekernel
+      CACHE PATH "blaskernel include directory" )
 
 # Project: dmemo library
 
