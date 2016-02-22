@@ -78,11 +78,17 @@ namespace vectorformat
 typedef enum
 {
     DENSE, //!< vector format for a dense vector
-    SPARSE //!< vector format for a sparse vector, not supported yet
-
+    SPARSE, //!< vector format for a sparse vector, not supported yet
+    UNDEFINED
 } VectorFormat;
 
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const vectorformat::VectorFormat vectorKind )
+
 }  // namespace vectorformat
+
+COMMON_DLL_IMPORTEXPORT const char* kind2Str( const vectorformat::VectorFormat vectorKind );
+
+COMMON_DLL_IMPORTEXPORT vectorformat::VectorFormat str2Kind( const char* str );
 
 /** For convenience: add the key type used for the Vector factory. */
 
