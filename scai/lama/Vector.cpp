@@ -61,13 +61,51 @@ namespace lama
 
 SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
+/* ---------------------------------------------------------------------------------- */
+
+const char* _Vector::kind2Str( const VectorFormat vectorKind )
+{
+    switch ( vectorKind )
+    {
+        case DENSE: return "Dense"; break;
+        case SPARSE: return "Sparse"; break;
+        case UNDEFINED: return "Undefined"; break;
+    }
+
+    return "Undefined";
+}
+
+_Vector::VectorFormat _Vector::str2Kind( const char* str )
+
+{
+    for ( int kind = DENSE; kind < UNDEFINED; ++kind )
+    {
+        if ( strcmp( kind2Str( VectorFormat( kind ) ), str ) == 0 )
+        {
+            return VectorFormat( kind );
+        }
+    }
+
+    return UNDEFINED;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*    VectorKind opertor<<                                                                */
+/* ---------------------------------------------------------------------------------------*/
+
+std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kind )
+{
+    stream << _Vector::kind2Str( kind );
+    return stream;
+}
+
 /* ---------------------------------------------------------------------------------------*/
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
 Vector* Vector::createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
 {
-    VectorCreateKeyType vectype( vectorformat::DENSE, valueType );
+    VectorCreateKeyType vectype( Vector::DENSE, valueType );
     Vector* v = Vector::create( vectype );
 
     v->resize( distribution );
@@ -432,44 +470,6 @@ void Vector::resize( DistributionPtr distributionPtr )
     setDistributionPtr( distributionPtr );
     resizeImpl();
 }
-
-/* ---------------------------------------------------------------------------------- */
-
-const char* kind2Str( const vectorformat::VectorFormat vectorKind )
-{
-    switch ( vectorKind )
-    {
-        case vectorformat::DENSE: return "Dense"; break;
-        case vectorformat::SPARSE: return "Sparse"; break;
-        case vectorformat::UNDEFINED: return "Undefined"; break;
-    }
-
-    return "Undefined";
-}
-
-vectorformat::VectorFormat str2Kind( const char* str )
-{
-    for ( int kind = vectorformat::DENSE; kind < vectorformat::UNDEFINED; ++kind )
-    {
-        if ( strcmp( kind2Str( vectorformat::VectorFormat( kind ) ), str ) == 0 )
-        {
-            return vectorformat::VectorFormat( kind );
-        }
-    }
-
-    return vectorformat::UNDEFINED;
-}
-
-namespace vectorformat
-{
-
-std::ostream& operator<<( std::ostream& stream, const vectorformat::VectorFormat vectorKind )
-{
-    stream << scai::lama::kind2Str( vectorKind );
-    return stream;
-}
-
-} /* end namespace vectorformat */
 
 /* ---------------------------------------------------------------------------------- */
 

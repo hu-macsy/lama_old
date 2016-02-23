@@ -122,7 +122,7 @@ public:
 
     // key for factory
 
-    static communicator::CommunicatorKind createValue();
+    static CommunicatorKind createValue();
 
 private:
 

@@ -52,22 +52,19 @@ namespace scai
 namespace dmemo
 {
 
-namespace communicator
-{
-
-std::ostream& operator<<( std::ostream& stream, const CommunicatorKind& type )
+std::ostream& operator<<( std::ostream& stream, const _Communicator::CommunicatorKind& type )
 {   
     switch ( type )
     {
-        case NO :
+        case _Communicator::NO :
             stream << "NO";
             break;
 
-        case MPI :
+        case _Communicator::MPI :
             stream << "MPI";
             break;
 
-        case GPI : 
+        case _Communicator::GPI : 
             stream << "GPI";
             break;
 
@@ -78,13 +75,11 @@ std::ostream& operator<<( std::ostream& stream, const CommunicatorKind& type )
     return stream;
 }
 
-}
-
 /* -----------------------------------------------------------------------------*/
 
 SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
-CommunicatorPtr Communicator::getCommunicator( const communicator::CommunicatorKind& type )
+CommunicatorPtr Communicator::getCommunicator( const CommunicatorKind& type )
 {
     SCAI_LOG_TRACE( logger, "Get communicator of type " << type )
 
@@ -104,21 +99,21 @@ CommunicatorPtr Communicator::getDefaultCommunicator()
 {
     // try MPI communicator for default
 
-    if ( canCreate( communicator::MPI ) )
+    if ( canCreate( MPI ) )
     {
-        return create( communicator::MPI );
+        return create( MPI );
     }
 
     // no MPI, try GPI communicator for default
 
-    if ( canCreate( communicator::GPI ) )
+    if ( canCreate( GPI ) )
     {
-        return create( communicator::GPI );
+        return create( GPI );
     }
 
     // if even NO is not availabe an exception is thrown
 
-    return create( communicator::NO );
+    return create( NO );
 }
 
 CommunicatorPtr Communicator::getCommunicator()
@@ -135,17 +130,17 @@ CommunicatorPtr Communicator::getCommunicator()
 
         if ( comm == "MPI" )
         {
-            return getCommunicator( communicator::MPI );
+            return getCommunicator( MPI );
         }
 
         if ( comm == "GPI" )
         {
-            return getCommunicator( communicator::GPI );
+            return getCommunicator( GPI );
         }
 
         if ( comm == "NO" )
         {
-            return getCommunicator( communicator::NO );
+            return getCommunicator( NO );
         }
 
         COMMON_THROWEXCEPTION( "SCAI_COMMUNICATOR=" << comm << ", unknown communicator type" )
@@ -154,7 +149,7 @@ CommunicatorPtr Communicator::getCommunicator()
     return getDefaultCommunicator();
 }
 
-Communicator::Communicator( const communicator::CommunicatorKind& type )
+Communicator::Communicator( const CommunicatorKind& type )
     : mCommunicatorType( type )
 {
     SCAI_LOG_DEBUG( logger, "Communicator constructed, type = " << type )

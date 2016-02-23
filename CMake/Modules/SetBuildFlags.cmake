@@ -40,15 +40,6 @@ else  ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
     set ( SCAI_FIND_PACKAGE_FLAGS QUIET )
 endif ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
 
-# CMAKE configuration variable that guarantees adding rpath for installed
-# libraries; very useful so that installed library can be used without 
-# complex settings of LD_LIBRARY_PATH
-
-set ( CMAKE_SKIP_BUILD_RPATH FALSE )
-set ( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set ( CMAKE_BUILD_WITH_INSTALL_RPATH FALSE )
-set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
-
 # Makefile outputs
 set ( CMAKE_VERBOSE_MAKEFILE OFF )
 

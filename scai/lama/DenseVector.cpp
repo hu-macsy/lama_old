@@ -1680,7 +1680,7 @@ Vector* DenseVector<ValueType>::create()
 template<typename ValueType>
 VectorCreateKeyType DenseVector<ValueType>::createValue()
 {
-    return VectorCreateKeyType( vectorformat::DENSE, common::getScalarType<ValueType>() );
+    return VectorCreateKeyType( Vector::DENSE, common::getScalarType<ValueType>() );
 }
 
 template<typename ValueType>

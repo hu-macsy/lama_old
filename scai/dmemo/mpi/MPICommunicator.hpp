@@ -225,7 +225,7 @@ private:
 
 protected:
 
-    MPICommunicator( int& argc, char** & argv, const communicator::CommunicatorKind& type );
+    MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type );
 
     MPICommunicator();
 
@@ -259,7 +259,7 @@ public:
 
     // key for factory
 
-    static communicator::CommunicatorKind createValue();
+    static CommunicatorKind createValue();
 
 private:
 

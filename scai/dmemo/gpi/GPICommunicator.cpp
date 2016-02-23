@@ -97,9 +97,9 @@ CommunicatorPtr GPICommunicator::create()
     return theGPICommunicator;
 }
 
-communicator::CommunicatorKind GPICommunicator::createValue()
+Communicator::CommunicatorKind GPICommunicator::createValue()
 {
-    return communicator::GPI;
+    return GPI;
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -123,7 +123,7 @@ GPICommunicator::GPIGuard GPICommunicator::guard;
 /* ---------------------------------------------------------------------------------- */
 
 GPICommunicator::GPICommunicator( )
-    : CRTPCommunicator<GPICommunicator>( communicator::GPI ), 
+    : CRTPCommunicator<GPICommunicator>( GPI ), 
       mQueueID( 0 ), 
       mThreadSafetyLevel( Communicator::Funneled )
 {
