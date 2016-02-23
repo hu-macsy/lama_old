@@ -1,33 +1,19 @@
 Download
 ========
 
-Tar ball
---------
+Due to export control it is mandatory to register at our download portal_. We need information on your name, email, company and country. After the export control check, you receive a confirmation email and get access for downloading a tar ball of a recent releases. If you are interested in ongoing work, please contact_ us and we will check for granting you access to our git.
 
-You find a tar ball of our first release of LAMA (Alpamayo) on sourceforge_.
+.. _portal: http://libama.scai.fraunhofer.de:8080/lamaui/
+.. _contact: mailto:lama@scai.fraunhofer.de
 
-.. _sourceforge: http://sourceforge.net/projects/libama/
+Registration Process
+--------------------
 
-We are pleased if you will rate and/or write a review.
+On the portal web page, please register by filling in all mandatory (*) informations and accept our terms of condition.
 
-If you have any problems do not hesitate to `contact`_ us or add a ticket in the bug tracker.
+.. hier screenshot von Registrierungsvorgang
 
-.. _`contact`: mailto:lama@scai.fraunhofer.de
+Downloading Tar Ball
+--------------------
 
-Git
----
-
-You can check out the source code via GIT where the HTTP access is as follows:
-
-.. code-block:: bash
-
-    git clone http://git.code.sf.net/p/libama/git lama
-
-Code developers must register at SourceForge, should place there rsa-key at Account --> Services
-and download the software as follows:
-
-.. code-block:: bash
-
-   git clone ssh://<your_user_id>@git.code.sf.net/p/libama/git lama
-
-A new directory lama will be created. This directory will be refered to by ``<project-root>``.
+After confirmation you can login and download a choosen tar ball. Our recent release is LAMA 2.0.0.

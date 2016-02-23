@@ -92,6 +92,12 @@ set ( OPENMP_ARGS "" )
 set ( SCAI_BLAS_ARGS "" )
 
 get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
+#message ( STATUS "all CACHE_VARS ${CACHE_VARS}")
+
+# always NOTFOUND ?!
+#get_cmake_property ( DEFINITION_VARS COMPILE_DEFINITIONS )
+#message ( STATUS "all DEFINITION_VARS ${DEFINITION_VARS}")
+
 foreach    ( CACHE_VAR ${CACHE_VARS} )
 
 	#message ( STATUS "test VAR ${CACHE_VAR}" )
@@ -132,7 +138,7 @@ include ( ExternalProject )
 #message ( STATUS "general ${CMAKE_ARGS}" )
 
 ## TODO: do in foreach loop
-#foreache ( project scai_common scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_lama )
+#foreach ( project ${LAMA_ALL_INTERNAL_DEPS} )
 
 concatCacheArguments ( scai_common "CACHE_ARGS" )
 #message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )

@@ -44,6 +44,7 @@ macro    ( check_whitelist VAR WHITELIST_NAME ARGS_LIST )
 	        #message ( STATUS "CACHE_VAR ${CACHE_VAR}" )
 	        if     ( CACHE_VAR_TYPE STREQUAL "INTERNAL" )
 	            # skip Variable
+	        	# message ( STATUS "Skip Variable ${CACHE_VAR}" )
 	        #elseif ( CACHE_VAR_TYPE STREQUAL "UNINITIALIZED" )
 	        #    set ( CACHE_VAR_TYPE )
 	        #    list ( APPEND ${ARGS_LIST} "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )

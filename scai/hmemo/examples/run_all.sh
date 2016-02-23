@@ -47,30 +47,61 @@ if [ $count -ne $i ]; then
     exit 1
 fi
 
-cd $MYDIR/cuda
+if [ -d $MYDIR/cuda ];
+then
 
-# build examples
-make
+	cd $MYDIR/cuda
+
+	# build examples
+	make
 
 
-# reset counter for CUDA examples
-i=0
+	# reset counter for CUDA examples
+	i=0
 
-# run CUDA examples
-RUN 1 cuda/AliasProblem.exe
-RUN 1 cuda/Allocate.exe
-RUN 1 cuda/CUBlasExample.exe
-RUN 1 cuda/CUDABenchContext.exe
-RUN 1 cuda/CUSparseExample.exe
-RUN 1 cuda/Devices.exe
-RUN 1 cuda/Example1.exe
-RUN 1 cuda/Example2.exe
-RUN 1 cuda/MemBandwidth.exe
-RUN 1 cuda/Prefetch.exe
+	# run CUDA examples
+	RUN 1 cuda/AliasProblem.exe
+	RUN 1 cuda/Allocate.exe
+	RUN 1 cuda/CUBlasExample.exe
+	RUN 1 cuda/CUDABenchContext.exe
+	RUN 1 cuda/CUSparseExample.exe
+	RUN 1 cuda/Devices.exe
+	RUN 1 cuda/Example1.exe
+	RUN 1 cuda/Example2.exe
+	RUN 1 cuda/MemBandwidth.exe
+	RUN 1 cuda/Prefetch.exe
 
-# check if there are unkown examples
-count=`ls -l -la $MYDIR/cuda/*.exe | wc -l`
-if [ $count -ne $i ]; then
-    echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
-    exit 1
+	# check if there are unkown examples
+	count=`ls -l -la $MYDIR/cuda/*.exe | wc -l`
+	if [ $count -ne $i ]; then
+	    echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
+	    exit 1
+	fi
+
+	cd ..
+
+fi
+
+if [ -d $MYDIR/mic ];
+then
+
+	cd $MYDIR/mic
+
+	# build examples
+	make
+
+	# reset counter for CUDA examples
+	i=0
+
+	# run mic examples
+	RUN 1 mic/MICExample1.exe
+
+	# check if there are unkown examples
+	count=`ls -l -la $MYDIR/mic/*.exe | wc -l`
+	if [ $count -ne $i ]; then
+	    echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
+	    exit 1
+	fi
+
+	cd ..
 fi

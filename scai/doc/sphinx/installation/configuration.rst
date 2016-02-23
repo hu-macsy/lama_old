@@ -5,8 +5,8 @@ The configuration of LAMA tries to find required and optional software needed by
 compilation and link flags. At the end of the configuration, a ``Makefile`` or ``Visual Studio project`` is generated
 that can be used to build libraries and executables of LAMA.
 
-This section will guide you through the Cmake configuration. If all packages are installed in the system path there is
-less to do. If not or you have more than one option of a package you need to give Cmake some hints where to find the
+This section will guide you through the CMake configuration. If all packages are installed in the system path there is
+less to do. If not or you have more than one option of a package, you need to give CMake some hints where to find the
 packages or which one to choose. For a specific package please refer to the belonging subpage.
 
 .. toctree::
@@ -18,6 +18,8 @@ packages or which one to choose. For a specific package please refer to the belo
    CUDA <configuration/cuda>
    MIC <configuration/mic>
    MPI <configuration/mpi>
+   GPI-2 <configuration/gpi>
+   (Par)Metis <configuration/metis>
    Tracing <configuration/tracing>
 
 The following steps are for generating Makefiles under Linux. For the creation of a Visual Studio project under Windows

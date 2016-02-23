@@ -1,8 +1,8 @@
 ##########################################################################
-        LAMA (Version 1.0.1 Alpamayo)
+        LAMA (Version 2.0.0)
 ##########################################################################
 
-2013-06-20    Fraunhofer SCAI
+2016-02-23    Fraunhofer SCAI
 
 VERSION 1.x.x:
 
@@ -24,3 +24,8 @@ VERSION 1.0.1:
  
  - dot product only available as vec.dotProduct() not as expression,
  	because of confusion of scaling a vector component-by-component
+
+VERSION 2.0.0
+
+ * new structure with subprojects
+ * TODO: 

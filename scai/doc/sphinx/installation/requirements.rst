@@ -2,75 +2,82 @@ Software Prerequisites
 ======================
 
 For the installation of LAMA you will need some general software packages. In the following sections we list the
-:ref:`required <required>`, :ref:`recommended <recommended>`,  :ref:`optional <optional>` and
-:ref:`experimental <experimental>` software for building LAMA.
-You will get precise help to tell LAMA the installation path of the individual packages in seperate chapters.
-At the end we will summarize our experience with different :ref:`configurations <supported>` regarding various versions of packages.
+:ref:`required <required>`, :ref:`recommended <recommended>` and :ref:`optional <optional> software for building LAMA.
 
-On linux you can install the corresponding software via your package manager or simply use apt-get.
+For installing dependencies please refer to the precise project pages. On linux it is the prefered way to install via the package manager of your system. But also custom build should be no problem. On Windows you need to download the package from the precise page and install it on your machine. You get precise help to explicitly tell LAMA the installation path of the individual packages in seperate chapters if they are not found implicitly.
 
-On Windows you need to download the package from the precise page and install them on your machine.
+At the end of the page, our experience with different :ref:`configurations <supported>` regarding various versions of packages is summarized.
 
 ..	_required:
 
-Required software
+Required Software
 -----------------
 
-First of all you need to install the following software for building LAMA:
+All you need for the LAMA installation are the following software packages:
 
-- CMake Version 2.8 or later
+- :doc:`CMake <configuration/cmake>` Version 2.8 or later
 
-  - Needed for creating platform independent makefiles or projects.  
+  - Needed for creating platform independent makefiles or projects.
 
-- :doc:`C/C++ Compiler <configuration/c++>` with OpenMP 2.0 capable
+- :doc:`C++ Compiler <configuration/c++>`
 
-  - Supported Compilers are: GNU, Intel, PGI. 
+  - Supported Compilers are: GNU, Intel, PGI.
 
-- :doc:`Boost (version 1.34 or later) <configuration/boost>`
+  - optionally: with OpenMP 2.0 capable
+
+  - recommendent but not mandatory: capable of C++11 (e.g. since gcc 4.7 or icc 11.1)
+
+- :doc:`Boost <configuration/boost>` (version 1.34 or later)
 
   - For LAMA we need the headers only packages *thread* for the internal thread management. *unit_test_framework* and *regex* are used for the tests (optional).
 
 .. _recommended:
 
-Recommended software
+Recommended Software
 --------------------
 
-For using the support of parallel/hybrid machines in LAMA, you need the following:
+The following software packages are not mandatory, but will give you a performance boost through optimized routines from BLAS and accelerator backends (CUDA, MIC) as well as distributed memory support
 
 - :doc:`BLAS and LAPack <configuration/blas>`
 
-  - Needed for the implementation of the dense blas functions. Supported libraries are: Intel MKL, GOTO, ACML, FortranBLAS. 
+  - Needed for the implementation of the dense blas functions. Supported libraries are: Intel MKL, BLAS. 
 
 - :doc:`CUDA (version 4.0 or later) <configuration/cuda>`
 
-  - Needed to utilize CUDA capable GPUs from NVidia.
+  - Needed to utilize CUDA capable GPUs from Nvidia.
   
 - :doc:`Intel MIC <configuration/mic>`
 
-  - Needed to utilize Intel MICs
+  - Needed to utilize Intel Xeon Phi
 
 - :doc:`MPI <configuration/mpi>`
 
-  - Needed for distributed memory parallelism.
+  - Needed for distributed memory parallelism through the Message Passing Interface.
+
+- :doc:`GPI-2 <configuration/gpi>`
+
+  - Needed for distributed memory parallelism through the Global Address Space Programming Interface.
 
 .. _optional:
 
-Optional software
+Optional Software
 -----------------
 
 For optional features you may also install the following:
 
-- Doxygen
-
-  - Needed to build the API documentation.
+- Metis/ParMetis
+ 
+  - Needed to generate optimized Distributions based on SparseMatrix structure.
 
 - Sphinx
 
-  - Needed to build documentation
+  - Needed to build the user documentation (this).
 
-- Metis/ParMetis (feature/loadbalancing)
- 
-  - Needed to generate optimized Distributions based on SparseMatrix structure.
+- Doxygen
+
+  - Needed to build the API documentation.
+.. (also here__).
+.. __ https://
   
 .. - ScaLAPack
 
@@ -80,20 +87,7 @@ For optional features you may also install the following:
 
 ..   - Needed for performance analysis with `Vampir`_.
   
-  .. _Vampir: http://http://vampir.eu/
-
-.. _experimental:
-
-Experimental software
----------------------
-
-For experimental features (only available in the corresponding git branches not in the release!) you may also install
-the following:
-
-- OpenCL (feature/opencl)
- 
-  - Needed to utilize OpenCL Accelerators, eg. AMD GPU's.
-   
+.. .. _Vampir: http://http://vampir.eu/
 
 .. _supported:
 
