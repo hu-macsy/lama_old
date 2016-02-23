@@ -90,7 +90,7 @@ void communicatorInfo()
 {
     using namespace scai::dmemo;
 
-    vector<communicator::CommunicatorKind> values;  // string is create type for the factory
+    vector<Communicator::CommunicatorKind> values;  // string is create type for the factory
 
     Communicator::getCreateValues( values );
 
