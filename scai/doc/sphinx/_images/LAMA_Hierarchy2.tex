@@ -1,0 +1,370 @@
+% bilder/CUDA-Speicherhierarchie.tex
+\documentclass{article}
+%\usepackage{lmodern}
+%\usepackage{typearea}
+
+%\usepackage{newtxtext,newtxmath} % selects Times Roman as basic font
+\usepackage{helvet}          % selects Helvetica as sans-serif font
+\renewcommand{\familydefault}{\sfdefault}
+\fontfamily{phv}\selectfont
+%\usepackage{courier}         % selects Courier as typewriter font
+
+
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+
+\usepackage{tikz}
+\usepackage[active,tightpage]{preview}
+\usepackage{varwidth}
+\usepackage{array}
+\usepackage{tabu}
+\usepackage{multirow}
+
+\newcommand\Umbruch[2][4em]{\begin{varwidth}{#1}\centering#2\end{varwidth}}
+	\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\usepackage{color}
+
+% =====================
+% = Color Definitions =
+% =====================
+\definecolor{c_solver}{RGB}{180,180,180}
+\definecolor{c_lama}{RGB}{180,180,180}
+\definecolor{c_dmemo}{RGB}{50,127,180}
+\definecolor{c_utilskernel}{RGB}{0,148,116}
+\definecolor{c_blaskernel}{RGB}{0,148,116}
+\definecolor{c_sparsekernel}{RGB}{0,148,116}
+\definecolor{c_hmemo}{RGB}{0,148,116}
+\definecolor{c_kregistry}{RGB}{0,148,116}
+\definecolor{c_tasking}{RGB}{180,180,180}
+\definecolor{c_tracing}{RGB}{180,180,180}
+\definecolor{c_logging}{RGB}{180,180,180}
+\definecolor{c_common}{RGB}{180,180,180}
+\definecolor{c_devs}{RGB}{100,100,100}
+
+\newcommand{\SOLVERColorValue}{110}
+\newcommand{\LAMAColorValue}{90}
+\newcommand{\DMEMOColorValue}{40}
+\newcommand{\UTILSKERNELColorValue}{40}
+\newcommand{\BLASKERNELColorValue}{50}
+\newcommand{\SPARSEKERNELColorValue}{60}
+\newcommand{\HMEMOColorValue}{30}
+\newcommand{\KREGISTRYColorValue}{20}
+\newcommand{\TASKINGColorValue}{70}
+\newcommand{\TRACINGColorValue}{50}
+\newcommand{\LOGGINGColorValue}{30}
+\newcommand{\COMMONColorValue}{10}
+\newcommand{\DEVSColorValue}{60}
+
+\usetikzlibrary{fit}
+\usetikzlibrary{arrows}
+\usetikzlibrary{positioning, calc}
+\tikzset{>=triangle 45,}
+
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{10pt}
+
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
+
+\begin{document}
+
+\begin{tikzpicture}[
+	subEntry/.style={
+		text centered,
+		minimum width=7.5em,
+		},
+	smallSubEntry/.style={
+		text centered,
+		minimum width=7.5em,
+		minimum height=1.5em
+		},
+	bigEntry/.style={
+		rectangle,
+		rounded corners,
+		draw=black, 
+		text centered,
+		minimum width=15em,
+		},
+	bigSubEntry/.style={
+		rectangle,
+		rounded corners,
+		draw=black, 
+		text centered,
+		minimum width=6.5em,		
+		fill=white!100,
+		}
+]
+
+%\coordinate (desc) at(0em, 0em);
+
+\newcommand{\levelHeight}{10em}
+
+\coordinate (lvl0) at(0em, 0em); % Solver
+\coordinate (lvl1) at($(lvl0)-(0em,7.5em)$); % LAMA
+\coordinate (lvl2) at($(lvl1)-(0em,9.5em)$); % DMemo, UtilsKernel, BLASKernel, SparseKernel
+\coordinate (lvl3) at($(lvl2)-(0em,7.0em)$); % HMemo, Kregistry
+\coordinate (lvl4) at($(lvl3)-(0em,4.5em)$); % Tasking
+\coordinate (lvl5) at($(lvl4)-(0em,4.0em)$); % Tracing
+\coordinate (lvl6) at($(lvl5)-(0em,4.0em)$); % Logging
+\coordinate (lvl7) at($(lvl6)-(0em,4.0em)$); % Common
+\coordinate (lvl8) at($(lvl7)-(0em,8.0em)$); % Backends
+
+% ==========
+% = Levels =
+% ==========
+% |- Solver
+\draw[subEntry] node(lamaSol) at(lvl0) {\textbf{\Umbruch[4em]{solver}}};
+\node[below=0.25em of lamaSol] 
+{
+\begin{tabular}{c}
+Solver\\
+Preconditioner\\
+StoppingCriterion
+\end{tabular}
+};
+
+% |- LAMA
+\draw[subEntry] node(lama) at(lvl1) {\textbf{lama}};
+\node[below=0.25em of lama] 
+{
+\begin{tabular}{cc}
+Storage & Matrix\\
+Vector & Norm\\
+\multicolumn{2}{c}{Expression}\\
+\end{tabular}
+};
+
+% |- DMemo, UtilsKernel, BLASKernel, SparseKernel
+\node(level2) at(lvl2) 
+{
+\begin{tabular}{C{6.0em}C{7em}C{6.5em}C{7em}}
+\textbf{dmemo} & \textbf{utilskernel} & \textbf{blaskernel} & \textbf{sparsekernel}\\
+~ & ~ & ~ & ~\\
+Distribution 			 		 & UtilsKernelTrait		    & \multirow{2}*{\Umbruch[5.0em]{BLASKernel-Trait}}  & CSRUtilTrait\\ 
+\multirow{2}*{\Umbruch[5.5em]{Communi-cator}}		 & LArray					&       		   & COOUtilTrait\\
+								 & LAArrayUtils				& ~      		   & ...\\
+\end{tabular}
+};
+
+% |- HMemo, KRegistry
+\node(level3) at(lvl3) 
+{
+\begin{tabular}{C{16em}C{16em}}
+\textbf{hmemo} & \textbf{kregistry}\\
+~ & ~\\
+Context 			 		 & KernelContextFunction\\ 
+Access						 & KernelRegistry		\\
+HArray						 & ~					\\
+\end{tabular}
+};
+
+% |- Tasking
+\draw[subEntry] node(tasking) at(lvl4) {\textbf{tasking}};
+\node (taskingEntry) [below=0.25em of tasking] 
+{
+\begin{tabular}{C{8em}C{8em}C{8em}}
+SyncToken & Task & ThreadPool\\
+\end{tabular}
+};
+
+% |- Tracing
+\draw[subEntry] node(tracing) at(lvl5) {\textbf{tracing}};
+\node (tracingEntry) [below=0.25em of tracing] 
+{
+\begin{tabular}{C{8em}C{8em}C{8em}}
+RegionTable & CallTree & CallStack\\
+\end{tabular}
+};
+
+% |- Logging
+\draw[subEntry] node(logging) at(lvl6) {\textbf{logging}};
+\node (loggingEntry) [below=0.25em of logging] 
+{
+\begin{tabular}{C{8em}C{8em}C{8em}}
+Logger & SourceLocation & Level\\
+\end{tabular}
+};
+
+% |- Common
+\draw[subEntry] node(common) at(lvl7) {\textbf{common}};
+\node (commonEntry) [below=0.25em of common] 
+{
+\begin{tabular}{C{8em}C{8em}C{8em}C{8em}C{8em}C{8em}C{8em}}
+SCAITypes & TypeTraits & LibModule & Thread & ContextTypes & Exception & Factory\\
+\end{tabular}
+};
+
+% ============================
+% = Coordinates for Triangle =
+% ============================
+
+\coordinate (cornerLeftDown) at ($(commonEntry.south west)-(2.5em,0em)$);
+\coordinate (cornerRightDown) at ($(commonEntry.south east)+(2.5em,0em)$);
+\coordinate (cornerUp) at ($(lamaSol.north)+(0em,7.5em)$);
+
+% ====================
+% = Horizontal lines =
+% ====================
+
+% common / logging
+\coordinate (hor1l) at ($(cornerLeftDown)!0.075!(cornerUp)$);
+\coordinate (hor1r) at ($(cornerRightDown)!0.075!(cornerUp)$);
+
+% logging / tracing
+\coordinate (hor2l) at ($(cornerLeftDown)!0.15!(cornerUp)$);
+\coordinate (hor2r) at ($(cornerRightDown)!0.15!(cornerUp)$);
+
+% tracing / tasking
+\coordinate (hor3l) at ($(cornerLeftDown)!0.23!(cornerUp)$);
+\coordinate (hor3r) at ($(cornerRightDown)!0.23!(cornerUp)$);
+
+% tasking / ( hmemo, kregistry )
+\coordinate (hor4l) at ($(cornerLeftDown)!0.31!(cornerUp)$);
+\coordinate (hor4r) at ($(cornerRightDown)!0.31!(cornerUp)$);
+
+% ( hmemo, kregistry ) / ( dmemo, utilskernel, blaskernel, sparsekernel )
+\coordinate (hor5l) at ($(cornerLeftDown)!0.445!(cornerUp)$);
+\coordinate (hor5r) at ($(cornerRightDown)!0.445!(cornerUp)$);
+
+% ( dmemo, utilskernel, blaskernel, sparsekernel ) / lama
+\coordinate (hor6l) at ($(cornerLeftDown)!0.59!(cornerUp)$);
+\coordinate (hor6r) at ($(cornerRightDown)!0.59!(cornerUp)$);
+
+% lama / solver
+\coordinate (hor7l) at ($(cornerLeftDown)!0.72!(cornerUp)$);
+\coordinate (hor7r) at ($(cornerRightDown)!0.72!(cornerUp)$);
+
+
+% ==================
+% = Vertical lines =
+% ==================
+
+% hmemo / kregistry
+\coordinate (ver4_1u) at ($(hor4l)!0.50!(hor4r)$);
+\coordinate (ver4_1o) at (ver4_1u|-hor5l);
+
+% dmemo / utilskernel
+\coordinate (ver5_1u) at ($(hor5l)!0.29!(hor5r)$);
+\coordinate (ver5_1o) at (ver5_1u|-hor6l);
+
+% utilskernel / blaskernel
+\coordinate (ver5_2u) at ($(hor5l)!0.50!(hor5r)$);
+\coordinate (ver5_2o) at (ver5_2u|-hor6l);
+
+% blaskernel & sparsekernel
+\coordinate (ver5_3u) at ($(hor5l)!0.7!(hor5r)$);
+\coordinate (ver5_3o) at (ver5_3u|-hor6l);
+
+
+% Coordination internal / external
+\draw[dotted] ($(cornerLeftDown)-(2.5em,2.5em)$) -- ($(cornerRightDown)-(0em,2.5em)$);
+\draw node at ($(cornerLeftDown)-(-5.75em,1.5em)$) {\texttt{SCAI Internal Libraries}};
+\draw node at ($(cornerLeftDown)-(-5.75em,3.5em)$) {\texttt{SCAI External Libraries}};
+
+
+% ==================
+% = Backend blocks =
+% ==================
+
+% |- CUDA
+\draw[bigEntry] node(cuda) [left=1.0em of lvl8] {\textbf{CUDA}};
+\draw[bigSubEntry] node(cudart) [draw, below left=1em and -7em of cuda, fill=c_hmemo!\HMEMOColorValue] {\Umbruch[6.0em]{CUDA runtime}};
+\draw[bigSubEntry] node(cublas) [draw, below right=1em and -7em of cuda, fill=c_blaskernel!\BLASKERNELColorValue] {cuBLAS};
+\draw[bigSubEntry] node(cusparse) [draw, below=1em of cublas, fill=c_sparsekernel!\SPARSEKERNELColorValue] {cuSPARSE};
+\draw[bigSubEntry] node(thrust) [draw, below=1em of cusparse, fill=c_utilskernel!\UTILSKERNELColorValue] {Thrust};
+
+\coordinate (thrustEdge) at ($(thrust.south east)-(0em,0.5em)$);
+
+% |- MIC
+\draw[bigEntry] node(mic) [right=2.0em of cuda]{\textbf{Xeon Phi}};
+\draw[bigSubEntry] node(micopenmp) [draw, below left=1em and -7em of mic, fill=c_hmemo!\HMEMOColorValue]{\Umbruch[6.0em]{OpenMP for Accelerators}};
+\draw[bigSubEntry] node(mkl) [draw, below right=1em and -7em of mic, fill=c_blaskernel!\BLASKERNELColorValue]{MKL};
+
+\coordinate(mklEdge) at ($(mkl.south east)-(0em,0.5em)$);
+\coordinate(mklEdgeLow) at (mklEdge|-thrustEdge);
+
+% |- Host
+\draw[bigEntry] node(host) [left=2.0em of cuda]{\textbf{Host}};
+\draw[bigSubEntry] node(hostopenmp) [draw,below left=1em and -7em of host, fill=c_hmemo!\HMEMOColorValue]{\Umbruch[6.0em]{OpenMP threads}};
+\draw[bigSubEntry] node(hostmkl) [draw,below right=1em and -7em of host, fill=c_blaskernel!\BLASKERNELColorValue]{MKL};
+\draw[bigSubEntry] node(blas) [draw,below=1em of hostmkl, fill=c_blaskernel!\BLASKERNELColorValue]{\Umbruch[8em]{BLAS}};
+\draw[bigSubEntry] node(lapack) [draw,below=1em of blas, fill=c_blaskernel!\BLASKERNELColorValue]{LAPACK};
+
+\coordinate(mklHostEdge) at ($(hostmkl.south east)-(0em,0.5em)$);
+\coordinate(mklHostEdgeLow) at (mklHostEdge|-thrustEdge);
+
+% |- Interconnect
+\draw[bigEntry] node(intercon)  [right=2.0em of mic] {\textbf{Interconnect}};
+\draw[bigSubEntry] node(metis) [draw, below left=1em and -7em of intercon, fill=c_dmemo!\DMEMOColorValue] {Metis};
+\draw[bigSubEntry] node(mpi) [draw, below right=1em and -7em  of intercon, fill=c_dmemo!\DMEMOColorValue] {MPI};
+\draw[bigSubEntry] node(gpi) [draw, below=1em of mpi, fill=c_dmemo!\DMEMOColorValue] {GPI-2};
+
+\coordinate(gpiEdge) at ($(gpi.south east)-(0em,0.5em)$);
+\coordinate(gpiEdgeLow) at (gpiEdge|-thrustEdge);
+
+% ##########################
+% ####### Background #######
+% ##########################
+\begin{pgfonlayer}{background}
+
+% Flaeche Solver
+\draw[fill=c_solver!\SOLVERColorValue] (cornerUp) -- (hor7l) -- (hor7r) -- (cornerUp);
+
+% Flaeche LAMA
+\draw[fill=c_lama!\LAMAColorValue] (hor7l) -- (hor7r) -- (hor6r) -- (hor6l) -- (hor7l);
+
+% Flaeche DMemo
+\draw[fill=c_dmemo!\DMEMOColorValue] (hor6l) -- (ver5_1o) -- (ver5_1u) -- (hor5l) -- (hor6l);
+
+% Flaeche UtilsKernel
+\draw[fill=c_utilskernel!\UTILSKERNELColorValue] (ver5_1o) -- (ver5_2o) -- (ver5_2u) -- (ver5_1u) -- (ver5_1o);
+
+% Flaeche BLASKernel
+\draw[fill=c_blaskernel!\BLASKERNELColorValue] (ver5_2o) -- (ver5_3o) -- (ver5_3u) -- (ver5_2u) -- (ver5_2o);
+
+% Flaeche SparseKernel
+\draw[fill=c_sparsekernel!\SPARSEKERNELColorValue] (ver5_3o) -- (hor6r) -- (hor5r) -- (ver5_3u) -- (ver5_3o);
+
+% Flaeche HMemo
+\draw[fill=c_hmemo!\HMEMOColorValue] (hor5l) -- (ver4_1o) -- (ver4_1u) -- (hor4l) -- (hor5l);
+
+% Flaeche KRegistry
+\draw[fill=c_kregistry!\KREGISTRYColorValue] (ver4_1o) -- (hor5r) -- (hor4r) -- (ver4_1u) -- (ver4_1o);
+
+% Flaeche Tasking
+\draw[fill=c_tasking!\TASKINGColorValue] (hor4l) -- (hor4r) -- (hor3r) -- (hor3l) -- (hor4l);
+
+% Flaeche Tracing
+\draw[fill=c_tracing!\TRACINGColorValue] (hor3l) -- (hor3r) -- (hor2r) -- (hor2l) -- (hor3l);
+
+% Flaeche Logging
+\draw[fill=c_logging!\LOGGINGColorValue] (hor2l) -- (hor2r) -- (hor1r) -- (hor1l) -- (hor2l);
+
+% Flaeche Common
+\draw[fill=c_common!\COMMONColorValue] (cornerLeftDown) -- (hor1l) -- (hor1r) -- (cornerRightDown) -- (cornerLeftDown);
+
+% Kasten um Host
+\draw[fill=c_kregistry!\KREGISTRYColorValue] (host.north east) -- (host.north east|-mklHostEdgeLow) -- (host.north west|-mklHostEdgeLow) -- (host.north west) -- (host.north east);
+
+% Kasten um CUDA
+\draw[fill=c_kregistry!\KREGISTRYColorValue] (cuda.north east) -- (cuda.north east|-thrustEdge) -- (cuda.west|-thrustEdge) -- (cuda.north west) -- (cuda.north east);
+
+% Kasten um MIC
+\draw[fill=c_kregistry!\KREGISTRYColorValue] (mic.north east) -- (mic.north east|-mklEdgeLow) -- (mic.north west|-mklEdgeLow) -- (mic.north west) -- (mic.north east);
+
+% Kasten um Interconnect
+\draw[fill=c_dmemo!\DMEMOColorValue] (intercon.north east) -- (intercon.north east|-mklHostEdgeLow) -- (intercon.north west|-gpiEdgeLow) -- (intercon.north west) -- (intercon.north east);
+
+% ----------------------------
+% --- Arrow
+% ----------------------------
+\coordinate (arrowX) at (-36.5em,0em);
+
+\draw[->] (arrowX|-mklHostEdgeLow) to node[left]{\rotatebox{90}{Level of Abstraction}} (arrowX|-cornerUp);
+
+\end{pgfonlayer}
+\end{tikzpicture}
+
+\end{document}
