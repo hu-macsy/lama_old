@@ -4,8 +4,8 @@ Projects
 
 The LAMA library is build up of a couple of subproject, depending on each other.
 
-.. figure:: _images/softwareStack.pdf
-    :width: 500px
+.. figure:: _images/LAMA_Hierarchy2.png
+    :width: 750px
     :align: center
     :alt: LAMA software stack
 

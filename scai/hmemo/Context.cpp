@@ -38,6 +38,7 @@
 
 // internal scai libraries
 #include <scai/common/macros/throw.hpp>
+#include <scai/common/Settings.hpp>
 
 // std
 #include <map>
@@ -156,6 +157,42 @@ MemoryPtr Context::getMemoryPtr() const
 ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
 {
     return create( type, deviceNr );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextPtr Context::getContextPtr()
+{
+    std::string ctx_string;
+
+    if ( common::Settings::getEnvironment( ctx_string, "SCAI_CONTEXT" ) )
+    {
+        // ctx_string name not case sensitive, take it upper case
+
+        for ( std::string::iterator p = ctx_string.begin(); ctx_string.end() != p; ++p )
+        {
+            *p = toupper( *p );
+        }
+
+        if ( ctx_string == "CUDA" )
+        {
+            return getContextPtr( common::context::CUDA );
+        }
+
+        if ( ctx_string == "MIC" )
+        {
+            return getContextPtr( common::context::MIC );
+        }
+
+        if ( ctx_string == "HOST" )
+        {
+            return getContextPtr( common::context::Host );
+        }
+
+        COMMON_THROWEXCEPTION( "SCAI_CONTEXT=" << ctx_string << ", unknown communicator type" )
+    }
+
+    return getHostPtr();
 }
 
 } /* end namespace hmemo */

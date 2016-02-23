@@ -85,7 +85,7 @@ typedef common::shared_ptr<const Communicator> CommunicatorPtr;
 
 /** @brief Own namespace for the enum type CommunicatorKind and its values */
 
-namespace communicator
+struct _Communicator
 {
 
 typedef enum
@@ -96,9 +96,9 @@ typedef enum
     MAX_COMMUNICATOR     //!< dummy value for number of communicators
 } CommunicatorKind;
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const CommunicatorKind& kind );
+};
 
-}
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _Communicator::CommunicatorKind& kind );
 
 /**
  * @brief Base and interface class for communicators used in LAMA
@@ -120,8 +120,9 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Co
  */
 class COMMON_DLL_IMPORTEXPORT Communicator:
 
+    public  _Communicator,
     public  scai::common::Printable,
-    public  scai::common::Factory<communicator::CommunicatorKind, CommunicatorPtr>,
+    public  scai::common::Factory<_Communicator::CommunicatorKind, CommunicatorPtr>,
     private scai::common::NonCopyable
 {
 
@@ -135,7 +136,7 @@ public:
      *  More convenient than Factory::create that throws Exception
      */
 
-    static CommunicatorPtr getCommunicator( const communicator::CommunicatorKind& type );
+    static CommunicatorPtr getCommunicator( const CommunicatorKind& type );
 
     /** Get communicator from the factory.
      *
@@ -740,7 +741,7 @@ public:
 
     /** @brief Getter for the type of a communicator. */
 
-    const communicator::CommunicatorKind& getType() const
+    const CommunicatorKind& getType() const
     {
         return mCommunicatorType;
     }
@@ -760,9 +761,9 @@ protected:
 
     // Default constructor can only be called by base classes.
 
-    Communicator( const communicator::CommunicatorKind& type );
+    Communicator( const CommunicatorKind& type );
 
-    communicator::CommunicatorKind mCommunicatorType;
+    CommunicatorKind mCommunicatorType;
 
     int mNodeRank; // rank of this processor on its node
     int mNodeSize; // number of processors on same node

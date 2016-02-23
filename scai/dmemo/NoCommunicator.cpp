@@ -54,7 +54,7 @@ namespace dmemo
 SCAI_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
 
 NoCommunicator::NoCommunicator()
-    : CRTPCommunicator<NoCommunicator>( communicator::NO )
+    : CRTPCommunicator<NoCommunicator>( NO )
 {
     SCAI_LOG_DEBUG( logger, "NoCommunicator()" )
 }
@@ -325,9 +325,9 @@ CommunicatorPtr NoCommunicator::create()
 
 /* --------------------------------------------------------------- */
 
-communicator::CommunicatorKind NoCommunicator::createValue()
+Communicator::CommunicatorKind NoCommunicator::createValue()
 {
-    return communicator::NO;
+    return NO;
 }
 
 } /* end namespace dmemo */

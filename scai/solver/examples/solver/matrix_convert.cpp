@@ -197,7 +197,7 @@ void convertVector(
     // Note: inFileType is given implicitly by the input file
     // use vector of inDataType so no information is lost
 
-    VectorCreateKeyType vectorType( vectorformat::DENSE, inDataType );
+    VectorCreateKeyType vectorType( Vector::DENSE, inDataType );
     common::shared_ptr<Vector> v ( Vector::create( vectorType ) );
 
     v->readFromFile( inFileName );

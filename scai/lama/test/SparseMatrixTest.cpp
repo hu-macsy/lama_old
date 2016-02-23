@@ -113,7 +113,7 @@ SCAI_LOG_INFO( logger, "cTorTest" );
 //TODO: to P_ test?
 const IndexType n = 4;
 
-CommunicatorPtr comm = Communicator::getCommunicator( communicator::MPI );
+CommunicatorPtr comm = Communicator::getCommunicator( Communicator::MPI );
 
 DistributionPtr bdist( new BlockDistribution( n, comm ) );
 DistributionPtr cdist( new CyclicDistribution( n, 1, comm ) );
