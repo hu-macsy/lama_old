@@ -1,5 +1,5 @@
-C/C++ Compiler
---------------
+C++ Compiler
+------------
 
 LAMA is written in C++, therefore a C++ compiler is mandatory.
 
