@@ -113,9 +113,6 @@ public:
      */
     virtual const CGRuntime& getConstRuntime() const;
 
-    double getAverageIterationTime() const;
-    double getAveragePreconditionerTime() const;
-
     static std::string createValue();
     static Solver* create( const std::string name );
 
@@ -131,11 +128,6 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     CGRuntime    mCGRuntime;
-
-private:
-
-    double totalIterationTime;
-    double totalPreconditionerTime;
 };
 
 } /* end namespace solver */

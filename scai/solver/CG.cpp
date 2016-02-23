@@ -105,14 +105,10 @@ void CG::initialize( const Matrix& coefficients )
     runtime.mP->setContextPtr( coefficients.getContextPtr() );
     runtime.mQ->setContextPtr( coefficients.getContextPtr() );
     runtime.mZ->setContextPtr( coefficients.getContextPtr() );
-
-    totalIterationTime = 0.0;
-    totalPreconditionerTime = 0.0;
 }
 
 void CG::iterate()
 {
-    double iterationStartTime = common::Walltime::get();
     SCAI_REGION( "Solver.CG.iterate" )
     CGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
@@ -144,10 +140,8 @@ void CG::iterate()
     else
     {
         SCAI_REGION( "Solver.CG.solvePreconditioner" )
-        z = 0.0;
-        double preconditionerStartTime = common::Walltime::get();
+        z = Scalar(0.0);
         mPreconditioner->solve( z, residual );
-        totalPreconditionerTime += common::Walltime::get() - preconditionerStartTime;
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
@@ -212,17 +206,6 @@ void CG::iterate()
     }
     //CG implementation end
     mCGRuntime.mSolution.setDirty( false );
-    totalIterationTime += common::Walltime::get() - iterationStartTime;
-}
-
-double CG::getAverageIterationTime() const
-{
-    return ( totalIterationTime - totalPreconditionerTime ) / this->getIterationCount();
-}
-
-double CG::getAveragePreconditionerTime() const
-{
-    return totalPreconditionerTime / this->getIterationCount();
 }
 
 SolverPtr CG::copy()
