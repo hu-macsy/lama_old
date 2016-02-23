@@ -9,6 +9,7 @@ find_path ( GPI2_INCLUDE_DIR GASPI.h
     /usr/local/include
     /usr/include
     $ENV{GPI2_INCLUDE_PATH}
+    ${GPI2_ROOT}/include
 )
 
 # message( STATUS "GPI2_INCLUDE_DIR: ${GPI2_INCLUDE_DIR}" )
@@ -17,6 +18,7 @@ find_library ( GPI2_LIBRARIES GPI2
     /usr/local/lib
     /usr/lib
     $ENV{GPI2_LIBRARY_PATH}
+    ${GPI2_ROOT}/lib
 )
 
 # message( STATUS "GPI2_LIBRARIES: ${GPI2_LIBRARIES}" )
