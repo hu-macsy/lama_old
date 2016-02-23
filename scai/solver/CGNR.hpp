@@ -110,9 +110,9 @@ public:
         common::shared_ptr<lama::Vector> mVecD;
         common::shared_ptr<lama::Vector> mVecW;
         common::shared_ptr<lama::Vector> mVecZ;
+        common::shared_ptr<lama::Vector> mResidual2;
 
         lama::Scalar mEps;
-        lama::Scalar mNormVecZ;
     };
     /**
     * @brief Returns the complete configuration of the derived class

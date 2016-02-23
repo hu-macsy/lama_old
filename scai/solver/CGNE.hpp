@@ -107,9 +107,9 @@ public:
 
     common::shared_ptr<lama::Matrix> mTransposedMat;
 	common::shared_ptr<lama::Vector> mVecP;
+    common::shared_ptr<lama::Vector> mVecZ;
 
     lama::Scalar mEps;
-    lama::Scalar mScalarProductResidual;
     };
     /**
     * @brief Returns the complete configuration of the derived class
