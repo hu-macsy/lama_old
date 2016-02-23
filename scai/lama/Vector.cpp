@@ -61,33 +61,41 @@ namespace lama
 
 SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
+/* ---------------------------------------------------------------------------------- */
+
+const char* _Vector::kind2Str( const VectorFormat vectorKind )
+{
+    switch ( vectorKind )
+    {
+        case DENSE: return "Dense"; break;
+        case SPARSE: return "Sparse"; break;
+        case UNDEFINED: return "Undefined"; break;
+    }
+
+    return "Undefined";
+}
+
+_Vector::VectorFormat _Vector::str2Kind( const char* str )
+
+{
+    for ( int kind = DENSE; kind < UNDEFINED; ++kind )
+    {
+        if ( strcmp( kind2Str( VectorFormat( kind ) ), str ) == 0 )
+        {
+            return VectorFormat( kind );
+        }
+    }
+
+    return UNDEFINED;
+}
+
 /* ---------------------------------------------------------------------------------------*/
 /*    VectorKind opertor<<                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
 std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kind )
 {
-    switch( kind )
-    {
-        case _Vector::DENSE:
-        {
-            stream << "DENSE";
-            break;
-        }
-
-        case _Vector::SPARSE:
-        {
-            stream << "SPARSE";
-            break;
-        }
-
-        default:
-        {
-            stream << "<unknown vector format>";
-            break;
-        }
-    }
-
+    stream << _Vector::kind2Str( kind );
     return stream;
 }
 
@@ -462,6 +470,8 @@ void Vector::resize( DistributionPtr distributionPtr )
     setDistributionPtr( distributionPtr );
     resizeImpl();
 }
+
+/* ---------------------------------------------------------------------------------- */
 
 } /* end namespace lama */
 

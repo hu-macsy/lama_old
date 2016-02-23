@@ -6,8 +6,10 @@ BOOST
 .. _Boost: http://www.boost.org
 
 LAMA uses some Boost libraries and therefore you must have an actual version (1.34 or later) installed on your machine.
+The amount of used Boost libraries dependens on the compiler. If the compiler provides support for C++11 fewer parts of Boost
+will be used. 
 
-The following only header libraries are used by LAMA:
+The following only header libraries are used by LAMA (obsolete by using a C++11 compiler):
 
   - **Smart pointers**: avoid to keep track of ownership of dynamically allocated memory
   - **Function**: object wrappers for deferred calls or callbacks.
@@ -18,7 +20,7 @@ Beside some only header libraries, the following *compiled* libraries are used b
 
   - **thread** (portable C++ multi-threading, mandatory)
   - **unit_test_framework** and **regex** (program and full unit testing, recommended)
-  - **program_options** (easy access to options of a program call, optional)
+.. - **program_options** (easy access to options of a program call, optional)
 
 Many linux installations provide an actual release of Boost and if Boost is installed, the LAMA configuration should
 have no problems to find it.
@@ -39,11 +41,12 @@ Via ccmake you can verify that the Boost variables needed for LAMA have correct 
     BOOST_ROOT                        <path/to/boost/installation>
     Boost_INCLUDE_DIR                 <path/to/boost/installation>/include
     Boost_LIBRARY_DIRS                <path/to/boost/installation>/lib
-    Boost_PROGRAM_OPTIONS_LIBRARY     <path/to/boost/installation>/lib/libboost_program_options.so
     Boost_REGEX_LIBRARY               <path/to/boost/installation>/lib/libboost_regex.so
     Boost_SYSTEM_LIBRARY              <path/to/boost/installation>/lib/libboost_system.so
     Boost_THREAD_LIBRARY              <path/to/boost/installation>/lib/libboost_thread.so
     Boost_UNIT_TEST_FRAMEWORK_LIBRARY <path/to/boost/installation>/lib/libboost_unit_test_framework.so
+..    Boost_PROGRAM_OPTIONS_LIBRARY     <path/to/boost/installation>/lib/libboost_program_options.so
+
 
 There are known issues with some older Boost Installations with there own Boost.cmake definition.
 If you have error message looking like::

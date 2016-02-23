@@ -102,6 +102,7 @@ public:
 	common::shared_ptr<lama::Vector> mInitialR;
 	common::shared_ptr<lama::Vector> mVecVEven;
 	common::shared_ptr<lama::Vector> mVecVOdd;
+    common::shared_ptr<lama::Vector> mVecVT;
 	common::shared_ptr<lama::Vector> mVecW;
 	common::shared_ptr<lama::Vector> mVecZ;
 

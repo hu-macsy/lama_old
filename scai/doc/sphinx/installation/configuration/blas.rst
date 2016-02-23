@@ -20,7 +20,8 @@ LAMA uses BLAS and LAPACK routines, mainly for operations on dense matrices, but
 Libraries implementing this standard are available on nearly all platforms and are mandatory for building LAMA.
 
 Highly optimized implementations of the BLAS interface have been developed by hardware vendors 
-such as Intel (MKL) and AMD, as well as by other authors, e.g. Goto BLAS and ATLAS (a portable self-optimizing BLAS).
+such as Intel (MKL) and AMD, as well as by other authors, e.g. Goto BLAS (development has been abandoned), 
+OpenBLAS (fork of Goto BLAS) and ATLAS (a portable self-optimizing BLAS).
 
 We recommend using Intel MKL libraries for BLAS, LAPACK and (optional) ScaLAPACK routines. 
 If the environment variable MKL_ROOT is set to the corresponding installation directory,

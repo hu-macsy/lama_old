@@ -5,7 +5,7 @@ Introduction
 This documentation will give an overview of the features of the \Library of \Accelerated \Math \Applications
 (\L\A\M\A) and will describe the general usage of these features.
 
-You will find concise :doc:`installation` instruction and an overview of our subproject, followed by simple examples on how to use LAMA (:doc:`tutorial`). We close with informations about writing own tests (see :doc:`testing`), :doc:`benchmarks` and on special hints :doc:`developer`. At the end we reference :doc:`relatedWork`.
+You will find concise :doc:`installation` instruction and an overview of our subprojects, followed by simple examples on how to use LAMA (:doc:`tutorial`). We close with informations about writing own tests (see :doc:`testing`), :doc:`benchmarks` and on special hints :doc:`developer`. At the end we reference :doc:`relatedWork`.
 
 About LAMA
 ==========
@@ -40,6 +40,20 @@ Given features
 
 The supported features of the actual release are listed below:
 
+ - matrix/vector value type
+
+   - float
+
+   - double
+
+   - long double (only on CPU)
+
+   - complex float
+
+   - complex double
+
+   - complex long double (only on CPU)
+
  - matrix formats
 
    - Dense 
@@ -64,6 +78,12 @@ The supported features of the actual release are listed below:
       
     - MIC (OpenMP optimized)
 
+ - communicators
+
+   - MPI
+
+   - GPI2
+
  - distributions
  
    - blocked
@@ -73,6 +93,8 @@ The supported features of the actual release are listed below:
    - blockcyclic (general block)
 
    - general
+
+     - METIS generated (sparse matrix ordering and partitioning)
    
  - solvers
  
@@ -116,42 +138,33 @@ The supported features of the actual release are listed below:
  
        - SimpleAMG
 
-   - generative solver
+       - Additionally to our open source implementation we also support a commercial version SAMG. If you are interested in this, please `contact`_ us. 
 
-     - MetaSolver
+.. _contact: http://www.libama.org/support.html
+
+..   - generative solver
+
+..     - MetaSolver
     
 Work in progress that you can find in our feature branches and that will come with next releases are:
  
+ - mixed precision
+ 
  - OpenCL-Backend
 
- - C-Interface
-
- - PGAS support for communication (till now we support MPI)
-
- - easy to use configuration of solver through a DSL
-
- - sparse matrix ordering and partitioning through METIS
-
- - connectivity to OpenFOAM
+ - easy to use configuration of solver through a DSL (MetaSolver)
 
 There are also a couple of features that are planned:
 
  - consideration of GPU direct
 
- - OpenACC backend
+ - C- and Fortran-Interface
 
  - MatLab interface
 
+ - connectivity to OpenFOAM
+
  - support of structured matrices
-
- - mixed precision
-
- - complex data type
-
-Additionally to our open source implementation we also support a commercial version of the AMG method.
-If you are interested in this, please `contact`_ us. 
-
-.. _contact: http://www.libama.org/support.html
 
 Use Cases
 =========

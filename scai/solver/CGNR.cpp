@@ -92,6 +92,7 @@ void CGNR::initialize( const Matrix& coefficients )
     runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mResidual2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
     runtime.mTransposedMat->assignTranspose( coefficients );
     runtime.mTransposedMat->conj();
@@ -99,6 +100,7 @@ void CGNR::initialize( const Matrix& coefficients )
     runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
+    runtime.mResidual2->setContextPtr( coefficients.getContextPtr() );
 }
 
 
@@ -137,16 +139,15 @@ void CGNR::solveInit( Vector& solution, const Vector& rhs )
 
     // Initialize
     this->getResidual();
+    *runtime.mResidual2 = (*runtime.mTransposedMat) * (*runtime.mResidual);
 
-    const Matrix& transposedA = *runtime.mTransposedMat;
-    const Vector& residual = *runtime.mResidual;
-    Vector& vecZ = *runtime.mVecZ;
-    vecZ = transposedA * residual;
+    if(mPreconditioner != NULL){
+        *runtime.mVecZ = Scalar(0.0);
+        mPreconditioner->solve(*runtime.mVecZ,*runtime.mResidual2);
+    }
+    else *runtime.mVecZ = *runtime.mResidual2;
 
     *runtime.mVecD = *runtime.mVecZ;
-
-    lama::L2Norm norm;
-    runtime.mNormVecZ = norm.apply( vecZ );
     runtime.mSolveInit = true;
 }
 
@@ -160,8 +161,8 @@ void CGNR::iterate()
     Vector& vecD = *runtime.mVecD;
     Vector& vecZ = *runtime.mVecZ;
     Vector& residual = *runtime.mResidual;
+    Vector& residual2 = *runtime.mResidual2;
     Vector& solution = *runtime.mSolution;
-    Scalar& normVecZ = runtime.mNormVecZ;
     Scalar alpha;
     Scalar beta;
 
@@ -170,34 +171,34 @@ void CGNR::iterate()
 
     vecW = A * vecD;
     Scalar normVecW = norm.apply( vecW );
-
+    Scalar scalarProduct = vecZ.dotProduct(residual2);
     if ( normVecW < eps )           //norm is small
     {
         alpha = 0.0;
     }
     else
     {
-        alpha = ( normVecZ * normVecZ ) / ( normVecW * normVecW );
+        alpha = scalarProduct / ( normVecW * normVecW );
     }
 
     solution = solution + alpha * vecD;
     residual = residual - alpha * vecW;
-    vecZ = transposedA * residual;
+    residual2 = transposedA * residual;
 
-    Scalar normVecZNew = norm.apply( vecZ );
-
-
-    if ( normVecZ < eps )        //norm is small
+    // PRECONDITIONING
+    if(mPreconditioner != NULL) mPreconditioner->solve(vecZ,residual2);
+    else vecZ = residual2;
+    
+    if ( scalarProduct < eps )        //norm is small
     {
         beta = 0.0;
     }
     else
     {
-        beta = ( normVecZNew * normVecZNew ) / ( normVecZ * normVecZ );
+        beta = vecZ.dotProduct(residual2) / scalarProduct;
     }
 
     vecD = vecZ + beta * vecD;
-    normVecZ = normVecZNew;
     //CGNR Implementation End
     mCGNRRuntime.mSolution.setDirty( false );
 }

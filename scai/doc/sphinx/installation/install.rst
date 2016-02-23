@@ -25,5 +25,8 @@ The directory ``{SCAI_ROOT}/lib`` should contain the following libraries:
 - libscai_hmemo.so
 - libscai_kregistry.so
 - libscai_blaskernel.so
+- libscai_utilskernel.so
+- libscai_sparsekernel.so
+- libscai_dmemo.so
 - libscai_lama.so
 - libscai_solver.so

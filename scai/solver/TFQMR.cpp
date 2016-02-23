@@ -98,6 +98,7 @@ void TFQMR::initialize( const Matrix& coefficients ){
     runtime.mVecVOdd.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecVT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
     runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
     runtime.mInitialR->setContextPtr( coefficients.getContextPtr() );
@@ -105,6 +106,7 @@ void TFQMR::initialize( const Matrix& coefficients ){
     runtime.mVecVOdd->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecVT->setContextPtr( coefficients.getContextPtr() );
 }
 
 void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
@@ -140,10 +142,17 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
     const Matrix& A = *runtime.mCoefficients;
 
     *runtime.mInitialR = *runtime.mResidual;
-    *runtime.mVecVEven = *runtime.mResidual;
-    *runtime.mVecW = *runtime.mResidual;
+    *runtime.mVecVEven = *runtime.mResidual;  
 
-    *runtime.mVecZ = A * (*runtime.mResidual);
+    // PRECONDITIONING
+    if(mPreconditioner != NULL){
+        *runtime.mVecW = Scalar(0.0);
+        mPreconditioner->solve( *runtime.mVecW , *runtime.mResidual );      
+    } 
+    else    *runtime.mVecW = *runtime.mResidual;
+
+    *runtime.mVecZ = A * (*runtime.mVecW);
+    *runtime.mVecW = *runtime.mResidual;
     *runtime.mVecD = Scalar(0.0);                   
 
     lama::L2Norm norm;
@@ -186,6 +195,7 @@ void TFQMR::iterationOdd(){
 	Scalar& rhoNew = runtime.mRhoNew;
 	Scalar& beta = runtime.mBeta;
 	Vector& vecZ = *runtime.mVecZ;
+    Vector& vecVT = *runtime.mVecVT;
     const Scalar& eps = runtime.mEps;
 
 	rhoNew 	= initialR.dotProduct(vecW);
@@ -195,10 +205,16 @@ void TFQMR::iterationOdd(){
     else beta = rhoNew / rhoOld;
 
 	vecVEven = vecW + beta* vecVOdd;
+//  PRECONDITIONING
+    if(mPreconditioner != NULL){
+        vecVT = Scalar(0.0);
+        mPreconditioner->solve(vecVT,vecVEven);
+    }
+    else vecVT = vecVEven;
 
 	vecZ *= beta;
 	vecZ = beta * A * vecVOdd + beta * vecZ;
-	vecZ = A * vecVEven + vecZ;
+	vecZ = A * vecVT + vecZ;
     rhoOld = rhoNew;
 }	
 
@@ -232,7 +248,7 @@ void TFQMR::iterate(){
     Scalar tempScal;
     if(abs(alpha)<eps || abs(theta)< eps || abs(eta)<eps)   // scalar is small 
         tempScal=0.0;
-    else tempScal = theta*theta*eta/alpha;
+    else tempScal = (theta*theta/alpha)*eta;
 
     vecD = vecV + tempScal * vecD;
 
@@ -244,7 +260,6 @@ void TFQMR::iterate(){
     tau = tau* theta * c;
     eta = c*c*alpha;
     solution = solution + eta * vecD;
-
     if( (iteration % 2) == 1 )
         iterationOdd();
 }

@@ -77,10 +77,14 @@ struct _Vector
  */
 typedef enum
 {
-    DENSE, //!< vector format for a dense vector
-    SPARSE //!< vector format for a sparse vector, not supported yet
-
+    DENSE,      //!< vector format for a dense vector
+    SPARSE,     //!< vector format for a sparse vector, not supported yet
+    UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
 } VectorFormat;
+
+static COMMON_DLL_IMPORTEXPORT const char* kind2Str( const VectorFormat vectorKind );
+
+static COMMON_DLL_IMPORTEXPORT VectorFormat str2Kind( const char* str );
 
 };  // struct _Vector
 
