@@ -179,7 +179,15 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContextPtr( const common::context::ContextType type = common::context::Host, int deviceNr = -1 );
+    static ContextPtr getContextPtr( const common::context::ContextType type, int deviceNr = -1 );
+
+    /** @brief get context as set by SCAI_CONTEXT and SCAI_DEVICE 
+     *
+     *  @return             a context of the type as set by environment variable SCAI_CONTEXT (Host if not set)
+     *  @throws Exception if the context set by SCAI_CONTEXT is not available or unknown
+     */
+
+    static ContextPtr getContextPtr();
 
     /** @brief getHostPtr() as abbreviation of getContextPtr( context::Host ) */
 
