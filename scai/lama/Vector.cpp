@@ -62,12 +62,42 @@ namespace lama
 SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
 /* ---------------------------------------------------------------------------------------*/
+/*    VectorKind opertor<<                                                                */
+/* ---------------------------------------------------------------------------------------*/
+
+std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kind )
+{
+    switch( kind )
+    {
+        case _Vector::DENSE:
+        {
+            stream << "DENSE";
+            break;
+        }
+
+        case _Vector::SPARSE:
+        {
+            stream << "SPARSE";
+            break;
+        }
+
+        default:
+        {
+            stream << "<unknown vector format>";
+            break;
+        }
+    }
+
+    return stream;
+}
+
+/* ---------------------------------------------------------------------------------------*/
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
 Vector* Vector::createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
 {
-    VectorCreateKeyType vectype( vectorformat::DENSE, valueType );
+    VectorCreateKeyType vectype( Vector::DENSE, valueType );
     Vector* v = Vector::create( vectype );
 
     v->resize( distribution );
