@@ -239,7 +239,7 @@ protected:
 
     // Default constructor can only be called by derived classes.
 
-    CRTPCommunicator<Derived>( const communicator::CommunicatorKind& type )
+    CRTPCommunicator<Derived>( const CommunicatorKind& type )
         : Communicator( type )
     {
     }
