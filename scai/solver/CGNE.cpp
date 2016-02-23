@@ -88,8 +88,10 @@ void CGNE::initialize( const Matrix& coefficients ){
     runtime.mTransposedMat->conj();
     
     runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-
+    runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    
     runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
 }
 
 
@@ -123,13 +125,14 @@ void CGNE::solveInit( Vector& solution, const Vector& rhs ){
 
     // Initialize
     this->getResidual();   
-   
-    const Matrix& transposedA = *runtime.mTransposedMat;
-    const Vector& residual = *runtime.mResidual;
-    Vector& vecP = *runtime.mVecP;
-    vecP = transposedA*residual;
-  
-    runtime.mScalarProductResidual = residual.dotProduct(residual);
+    // PRECONDITIONING
+    if(mPreconditioner != NULL){
+        *runtime.mVecZ = Scalar(0.0);
+        mPreconditioner->solve(*runtime.mVecZ,*runtime.mResidual);
+    }
+    else *runtime.mVecZ = *runtime.mResidual;
+
+    *runtime.mVecP = (*runtime.mTransposedMat) * (*runtime.mVecZ);
     runtime.mSolveInit = true;
 }
 
@@ -142,26 +145,27 @@ void CGNE::iterate(){
     Vector& vecP= *runtime.mVecP;
     Vector& residual = *runtime.mResidual;
     Vector& solution = *runtime.mSolution;
-    Scalar& ScalarProductResidual = runtime.mScalarProductResidual;
+    Vector& vecZ = *runtime.mVecZ;
     Scalar alpha;
     Scalar beta;
     Scalar eps = runtime.mEps;
 
     Scalar scalarProductP = vecP.dotProduct(vecP);
-
+    Scalar scalarProductZR = vecZ.dotProduct(residual);
     if(scalarProductP < eps)    alpha=0.0;     //norm is small 
-    else    alpha = ScalarProductResidual/scalarProductP;
+    else    alpha = scalarProductZR/scalarProductP;
     
     solution= solution + alpha*vecP;
     residual = residual - alpha*A*vecP;
 
-    Scalar scalarProductResidualNew=residual.dotProduct(residual);
+    // PRECONDITIONING
+    if(mPreconditioner != NULL) mPreconditioner->solve(vecZ,residual);
+    else vecZ = residual;
 
-    if(scalarProductResidualNew < eps)     beta=0.0;   //norm is small
-    else    beta = scalarProductResidualNew/ScalarProductResidual;
+    if(scalarProductZR < eps)     beta=0.0;   //norm is small
+    else    beta = vecZ.dotProduct(residual)/scalarProductZR;
 
-    vecP = transposedA*residual + beta * vecP;
-    ScalarProductResidual = scalarProductResidualNew;
+    vecP = transposedA*vecZ + beta * vecP;
     //CGNE Implementation End
     mCGNERuntime.mSolution.setDirty(false);
 }
