@@ -33,9 +33,11 @@
 
 include make.inc
 
-INCLUDE_FLAGS = -I${INCLUDES}
+INCLUDE_FLAGS = ${SCAI_INCLUDES}
 
-LD_FLAGS = -L.. -L${INSTALL_PREFIX}/lib -Wl,-rpath=${INSTALL_PREFIX}/lib -lscai_tracing -lscai_logging -lscai_common
+CXX_FLAGS = ${SCAI_CXX_FLAGS}
+
+LD_FLAGS = ${SCAI_LD_FLAGS}
 
 DEFINES =
 
