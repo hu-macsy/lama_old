@@ -126,6 +126,11 @@ void CUDAHostMemory::memcpy( void* dst, const void* src, const size_t size ) con
     ::memcpy( dst, src, size );
 }
 
+void CUDAHostMemory::memset( void* dst, const int val, const size_t size ) const
+{
+    ::memset( dst, val, size );
+}
+
 SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     SCAI_CONTEXT_ACCESS( mCUDAContext )

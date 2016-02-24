@@ -257,6 +257,10 @@ public:
      */
 
     IndexType capacity( ContextDataIndex index ) const;
+
+    /** Query the memory for a certain access. */
+
+    const Memory& getMemory( ContextDataIndex index ) const;
 };
 
 /* ---------------------------------------------------------------------------------*/
@@ -320,6 +324,13 @@ inline IndexType _HArray::capacity( ContextDataIndex index ) const
     const ContextData& entry = mContextDataManager[index];
 
     return static_cast<IndexType>( entry.capacity() / mValueSize );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+inline const Memory& _HArray::getMemory( ContextDataIndex index ) const
+{
+    return mContextDataManager[ index ].getMemory();
 }
 
 /* ---------------------------------------------------------------------------------*/

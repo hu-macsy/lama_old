@@ -39,7 +39,7 @@ scai_project (
  
     CUDA_SOURCES
 
-        LAMAArrayTest
+        HArrayTest
 )
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )

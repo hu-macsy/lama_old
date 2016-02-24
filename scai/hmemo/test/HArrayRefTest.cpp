@@ -54,7 +54,7 @@ typedef boost::mpl::list<float, double> test_types;
 template<typename ValueType>
 static void update( ValueType* data, size_t size )
 {
-    SCAI_LOG_INFO( logger, "update at data = " << data )
+    SCAI_LOG_DEBUG( logger, "update at data = " << data )
 
     for ( size_t i = 0; i < size; ++i )
     {
@@ -66,50 +66,56 @@ static void update( ValueType* data, size_t size )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 {
-    ContextPtr context = Context::create( context::UserContext, 0 );
+    ContextPtr mock = Context::create( context::UserContext, 0 );
     ContextPtr host = Context::create( context::Host, -1 );
 
-    BOOST_CHECK( context );
+    BOOST_CHECK( mock );
     BOOST_CHECK( host );
 
-    const IndexType n = 10;
-    ValueType myData[10] = {   1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
+    const IndexType N = 10;
+
+    ValueType myData[ N ] = { 1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
+
     const ValueType* myConstData = myData;
 
     SCAI_LOG_INFO( logger, "myData = " << myData )
 
     {
-        // LAMA array keeps myData on Host
+        // hArray keeps myData on Host
 
-        HArrayRef<ValueType> lamaArray( 10, myData );
+        HArrayRef<ValueType> hArray( N, myData );
 
-        SCAI_LOG_INFO( logger, "lamaArray = " << lamaArray )
+        SCAI_LOG_INFO( logger, "hArray = " << hArray )
 
         {
-            // modify the data @ context
+            // modify the data @ mock
 
-            WriteAccess<ValueType> write( lamaArray, context );
-            update( write.get(), 10 );
+            WriteAccess<ValueType> write( hArray, mock );
+            update( write.get(), N );
         }
 
-        SCAI_LOG_INFO( logger, "modified at userContext: lamaArray = " << lamaArray )
+        {
+            WriteAccess<ValueType> write( hArray, mock );
+        }
+
+        SCAI_LOG_INFO( logger, "modified at userContext: hArray = " << hArray )
 
         {
             // get valid data back @ host
 
-            ReadAccess<ValueType> read( lamaArray, host );
+            ReadAccess<ValueType> read( hArray, host );
         }
 
         {
-            WriteAccess<ValueType> write( lamaArray, host );
+            WriteAccess<ValueType> write( hArray, host );
             BOOST_CHECK_THROW(
             {
-                write.resize( 20 );
+                write.resize( 2 * N );
             },
             Exception )
         }
 
-        for ( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < N; ++i )
         {
             BOOST_CHECK_EQUAL( myData[i], 1 );
         }
@@ -117,13 +123,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
         {
             // this will create a LAMA array with a const reference,
 
-            HArrayRef<ValueType> lamaArray( 10, myConstData );
+            HArrayRef<ValueType> hArray( N, myConstData );
 
-            BOOST_CHECK_EQUAL( lamaArray.size(), static_cast<IndexType>( 10 ) );
+            BOOST_CHECK_EQUAL( hArray.size(), static_cast<IndexType>( N ) );
             // Write access should not be allowed
             BOOST_CHECK_THROW(
             {
-                WriteAccess<ValueType> lamaArrayWAccess( lamaArray, host);
+                WriteAccess<ValueType> hArrayWAccess( hArray, host);
             }
             , Exception );
         }

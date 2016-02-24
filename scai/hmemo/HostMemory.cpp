@@ -140,6 +140,13 @@ void HostMemory::memcpy( void* dst, const void* src, const size_t size ) const
     ::memcpy( dst, src, size );
 }
 
+void HostMemory::memset( void* dst, const int val, const size_t size ) const
+{
+    SCAI_REGION( "Memory.Host_memset" )
+
+    ::memset( dst, val, size );
+}
+
 tasking::SyncToken* HostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     return new tasking::TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
