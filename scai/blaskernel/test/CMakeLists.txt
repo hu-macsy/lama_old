@@ -40,19 +40,12 @@ set ( CXX_SOURCES
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-add_executable ( BLASKernelTest ${CXX_SOURCES} )
+add_executable ( blaskernelTest ${CXX_SOURCES} )
 
-target_link_libraries ( BLASKernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
-
-#if    ( CUDA_FOUND AND USE_CUDA )
-#    add_subdirectory ( cuda )
-#endif ( CUDA_FOUND AND USE_CUDA )
-#
-#if    ( USE_MIC )
-#    add_subdirectory ( mic )
-#endif ( USE_MIC )
+target_link_libraries ( blaskernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
 ### Copy the xmltest.sh file in build directory ### 
+
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
 
 if ( USE_CODE_COVERAGE )
