@@ -6,23 +6,27 @@ allocated and where operations on it might be executed.
 The enumeration type for context might be used for registration and 
 searching of objects belonging to a certain context.
 
-.. code-block:: c++
+.. literalinclude:: ../ContextType.hpp 
+   :language: c++
+   :lines: 54-55,63-72,82,85
 
-  namespace context
-  {
-      typdef enum 
-      {
-          Host,          //!< context for cpu + main memory
-          CUDA,          //!< CUDA GPU device
-          OpenCL,        //!< OpenCL GPU device, currently not supported
-          MIC,           //!< Intel MIC
-          UserContext,   //!< can be used for a new derived Context class
-          MaxContext     //!< used for dimension of ContextType arrays
-      } ContextType; 
-  
-      std::ostream& operator<<( std::ostream& stream, const ContextType& type );
-
-  } // namespace context
+..	.. code-block:: c++
+	
+	  namespace context
+	  {
+	      typdef enum 
+	      {
+	          Host,          //!< context for cpu + main memory
+	          CUDA,          //!< CUDA GPU device
+	          OpenCL,        //!< OpenCL GPU device, currently not supported
+	          MIC,           //!< Intel MIC
+	          UserContext,   //!< can be used for a new derived Context class
+	          MaxContext     //!< used for dimension of ContextType arrays
+	      } ContextType; 
+	  
+	      std::ostream& operator<<( std::ostream& stream, const ContextType& type );
+	
+	  } // namespace context
 
 
 ScalarType
@@ -32,26 +36,30 @@ ScalarType is an enumeration type that has a value at least for each supported a
 Some additional values are used for internal purposes. This enum type can be used for operations 
 where type ids itself are not allowed or inefficient.
 
-.. code-block:: c++
+.. literalinclude:: ../ScalarType.hpp 
+   :language: c++
+   :lines: 54-55,70-82,92-94
 
-  namespace scalar
-  {
-      typedef enum
-      {
-          INDEX_TYPE,          //!<  synonymous for IndexType
-          FLOAT,               //!<  synonymous for float
-          DOUBLE,              //!<  synonymous for double
-          LONG_DOUBLE,         //!<  synonymous for long double
-          COMPLEX,             //!<  synonymous for complex
-          DOUBLE_COMPLEX,      //!<  synonymous for double complex
-          LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
-          PATTERN,             //!<  dummy type of size 0
-          INTERNAL,            //!<  for internal use in I/O
-          UNKNOWN
-      } ScalarType;
-
-      std::ostream& operator<<( std::ostream& stream, const ScalarType& type );
-  }
+..	.. code-block:: c++
+	
+	  namespace scalar
+	  {
+	      typedef enum
+	      {
+	          INDEX_TYPE,          //!<  synonymous for IndexType
+	          FLOAT,               //!<  synonymous for float
+	          DOUBLE,              //!<  synonymous for double
+	          LONG_DOUBLE,         //!<  synonymous for long double
+	          COMPLEX,             //!<  synonymous for complex
+	          DOUBLE_COMPLEX,      //!<  synonymous for double complex
+	          LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
+	          PATTERN,             //!<  dummy type of size 0
+	          INTERNAL,            //!<  for internal use in I/O
+	          UNKNOWN
+	      } ScalarType;
+	
+	      std::ostream& operator<<( std::ostream& stream, const ScalarType& type );
+	  }
 
 The following example shows how this enumeration type is used in LAMA or might
 be used within other applications. Its main purpose is to provide some
@@ -112,23 +120,27 @@ ReductionOp
 The following enumeration type specifies the different kind of binary operators
 that can be used in reduction operators.
 
-.. code-block:: c++
+.. literalinclude:: ../ReductionOp.hpp 
+   :language: c++
+   :lines: 49-50,62-71,76,105
 
-  namespace reduction
-  {
-      typedef enum
-      {
-          COPY,     // for assign   x = y
-          ADD,      // for operator x += y
-          MULT,     // for operator x *= y
-          MIN,      // for operator x = min( x, y )
-          MAX,      // for operator x = max( x, y )
-          ABS_MAX   // for operator x = max( x, abs(y) )
-  
-      } ReductionOp;
-
-      std::ostream& operator<<( std::ostream& stream, const ReductionOp& op );
-  }
+..	.. code-block:: c++
+	
+	  namespace reduction
+	  {
+	      typedef enum
+	      {
+	          COPY,     // for assign   x = y
+	          ADD,      // for operator x += y
+	          MULT,     // for operator x *= y
+	          MIN,      // for operator x = min( x, y )
+	          MAX,      // for operator x = max( x, y )
+	          ABS_MAX   // for operator x = max( x, abs(y) )
+	  
+	      } ReductionOp;
+	
+	      std::ostream& operator<<( std::ostream& stream, const ReductionOp& op );
+	  }
 
 The enum class is used in ordeer to have one common function with an addtional op argument instead
 of individual functions for each kind of operator.

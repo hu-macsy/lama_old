@@ -7,6 +7,8 @@
 LAMA User's Guide
 *****************
 
+.. The \Library of \Accelerated \Math \Applications (\L\A\M\A) is framework for 
+
 Contents:
 
 .. toctree::

@@ -28,13 +28,17 @@ lhs vector to 0, if it is 1, no scaling is required at all.
  
 The static class ``Constants`` provides an enum type for specific values:
 
-.. code-block:: c++
+.. literalinclude:: ../Constants.hpp 
+   :language: c++
+   :lines: 56-60
 
-    enum ConstantType
-    {
-        ONE,
-        ZERO
-    };
+..	.. code-block:: c++
+	
+	    enum ConstantType
+	    {
+	        ONE,
+	        ZERO
+	    };
 
 Furthermore, it has an overloaded comparison operator for equality:
 

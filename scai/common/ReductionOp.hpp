@@ -67,7 +67,6 @@ namespace reduction
         MIN,      // for operator x = min( x, y )
         MAX,      // for operator x = max( x, y )
         ABS_MAX   // for operator x = max( x, abs(y) )
-
     } ReductionOp;
 
     /*
