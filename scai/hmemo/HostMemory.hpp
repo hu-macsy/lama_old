@@ -75,6 +75,8 @@ public:
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
 
+    virtual void memset( void* dst, const int val, const size_t size ) const;
+
     /** This routine implements Context::memcpyAsync  */
 
     virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;

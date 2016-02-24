@@ -189,7 +189,7 @@ ContextPtr Context::getContextPtr()
             return getContextPtr( common::context::Host );
         }
 
-        COMMON_THROWEXCEPTION( "SCAI_CONTEXT=" << ctx_string << ", unknown communicator type" )
+        COMMON_THROWEXCEPTION( "SCAI_CONTEXT=" << ctx_string << ", unknown context type" )
     }
 
     return getHostPtr();

@@ -95,6 +95,11 @@ public:
         ::memcpy( target, source, size );
     }
 
+    virtual void memset( void* target, const int val, const size_t size ) const
+    {
+        ::memset( target, val, size );
+    }
+
     static scai::tasking::SyncToken* theMemcpyAsync( void* dst, const void* src, const size_t size )
     {
         return new scai::tasking::TaskSyncToken( scai::common::bind( &::memcpy, dst, src, size ) );

@@ -7,35 +7,93 @@
 
 #include "MockContext.hpp"
 
-using namespace scai::common::context;
+using namespace scai;
+using namespace hmemo;
 
-BOOST_AUTO_TEST_CASE( ContextTest )
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE( ContextTest )
+
+/* --------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.ContextTest" )
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( hostContextText )
 {
+    // make sure that host context is always available
+
+    BOOST_CHECK( Context::canCreate( common::context::Host ) );
+
+    ContextPtr host = Context::create( common::context::Host, -1 );
+
+    BOOST_CHECK( host.get() );
+
+    BOOST_CHECK( host == Context::getHostPtr() );
+
+    SCAI_LOG_INFO( logger, "host context = " << *host )
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( getContextText )
+{
+    // some basic test to get the specified context
+
+    ContextPtr ctx = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "context = " << *ctx << ", type = " << ctx->getType() )
+
+    BOOST_CHECK( ctx.get() );
+
+    BOOST_CHECK( Context::hasContext( ctx->getType() ) );
+
+    // context of this type should be available directly 
+
+    ContextPtr ctx1 = Context::getContextPtr( ctx->getType() );
+
+    // equality of devices checked by pointer equality
+
+    BOOST_CHECK_EQUAL( ctx.get(), ctx1.get() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( useContextTest )
+{
+    using namespace common::context;  // make enum ContextType visible
+
     SCAI_LOG_DEF_LOGGER( logger, "Test" )
 
-    SCAI_LOG_THREAD( "main" )
-
-    using namespace scai::hmemo;
-
     ContextPtr userContext  = Context::getContextPtr( UserContext, 1 );
-    ContextPtr userContext2 = Context::getContextPtr( UserContext, 2 );
     ContextPtr hostContext  = Context::getContextPtr( Host );
+    ContextPtr testContext  = Context::getContextPtr();
 
-    SCAI_LOG_INFO( logger, "userContext = " << *userContext );
+    SCAI_LOG_INFO( logger, "testContext = " << *testContext << ", userContext = " << *userContext );
 
-    HArray<double> X( 10, 5.0 );
+    const IndexType N = 7;
 
+    HArray<double> X( N, 5.0 );
+
+    // take ownership on userContext
     {
         WriteAccess<double> write( X, userContext );  
     }
 
-    // read @ userContext2: valid data is transfered from userContext to here
+    // take ownership on testContext
 
-    ReadAccess<double> read( X, userContext2 );
+    {
+        WriteAccess<double> write( X, testContext );  
+    }
+
+    // read @ userContext: valid data is transfered from testContext to here
+
+    ReadAccess<double> read( X, userContext );
 
     const double* vals = read.get();
 
-    for ( int i = 0; i < 10; ++i )
+    for ( int i = 0; i < 7; ++i )
     {
         SCAI_ASSERT_EQUAL( vals[i], 5.0, "check" )
     }
@@ -51,15 +109,22 @@ BOOST_AUTO_TEST_CASE( ContextTest )
         WriteAccess<float> write( v, userContext );
     }
 
-    try
+    // read and write access at same time not possible
+
+    if ( userContext.get() != testContext.get() )
     {
-        ReadAccess<float> read( v, userContext );
-        WriteAccess<float> write( v, userContext2 );
-        COMMON_THROWEXCEPTION( "read and write access at same time not possible" )
-    }
-    catch ( scai::common::Exception& ex )
-    {
-        //std::cout << "Exception caught: " << ex.what() << std::endl;
+        SCAI_LOG_DEBUG( logger, "exception must be thrown for read/write on different devices" )
+
+        BOOST_CHECK_THROW( 
+            {
+                ReadAccess<float> read( v, userContext );
+                WriteAccess<float> write( v, testContext );
+            }, 
+            common::Exception );
     }
 }
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();
 

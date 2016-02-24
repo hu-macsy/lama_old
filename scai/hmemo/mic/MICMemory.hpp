@@ -90,6 +90,8 @@ public:
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
 
+    virtual void memset( void* dst, const int val, const size_t size ) const;
+
     virtual void memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const;
 
     virtual void memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const;

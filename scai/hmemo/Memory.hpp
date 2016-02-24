@@ -183,6 +183,15 @@ public:
      */
     virtual void memcpy( void* dst, const void* src, const size_t size ) const = 0;
 
+    /** Fill the memory with some byte value
+     *
+     * param[in] dst pointer to the destination
+     * param[in] val will be interpreted as unsigned_char
+     * param[in] size is the number of bytes to be filled
+     *
+     */
+    virtual void memset( void* dst, const int val, const size_t size ) const = 0;
+
     /** Asynchronous copy within the same memory.
      *
      * param[in] dst pointer to the destination
