@@ -57,17 +57,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, test_types )
 {
     const IndexType N = 10;
 
-    const ValueType a( 1 );
-    const ValueType b( 2 );
-    const ValueType c( 3 );
+    const ValueType a = 1;
+    const ValueType b = 2;
+    const ValueType c = 3;
 
+    ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
 
     HArray<ValueType> array( N );
 
-    HArrayUtils::setScalar( array, a, reduction::COPY, host );  // array = a
-    HArrayUtils::setScalar( array, b, reduction::ADD, host  );  // array += b
-    HArrayUtils::setScalar( array, c, reduction::MULT, host  ); // array *= c
+    HArrayUtils::setScalar( array, a, reduction::COPY, ctx );  // array = a
+    HArrayUtils::setScalar( array, b, reduction::ADD, ctx  );  // array += b
+    HArrayUtils::setScalar( array, c, reduction::MULT, ctx  ); // array *= c
 
     ValueType expectedValue = ( a + b ) * c;
 
@@ -88,14 +89,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, test_types )
     const IndexType N = 10;
     const IndexType k = 3;    // one value in range 0 .. N-1
 
-    const ValueType a( 1 );
-    const ValueType b( 2 );
+    const ValueType a = 1;
+    const ValueType b = 2;
 
+    ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
 
     HArray<ValueType> array( N );
 
-    HArrayUtils::setScalar( array, a, reduction::COPY, host );  // array = a
+    HArrayUtils::setScalar( array, a, reduction::COPY, ctx );  // array = a
 
     HArrayUtils::setVal( array, k, b );  // array[k] = b
 
