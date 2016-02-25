@@ -38,31 +38,38 @@
 #include <scai/hmemo.hpp>
 #include <scai/kregistry.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/common/test/TestMacros.hpp>
+#include <scai/hmemo/test/TestMacros.hpp>
 
-#include <scai/sparsekernel/test/TestMacros.hpp>
+/*--------------------------------------------------------------------- */
 
-using namespace scai::hmemo;
-using namespace scai::kregistry;
-using namespace scai::sparsekernel;
+using namespace scai;
+using namespace hmemo;
+using namespace sparsekernel;
+using common::TypeTraits;
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-namespace scai
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE( CSRUtilsTest )
+
+/* --------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_arithmetic_test_types )
 {
+    ContextPtr testContext = ContextFix::testContext;
 
-namespace lama
-{
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
 
-namespace CSRUtilsTest
-{
+    ContextPtr loc = Context::getContextPtr( absMaxDiffVal.validContext( testContext->getType() ) );
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-template<typename ValueType, typename OtherValueType>
-void absMaxDiffValTest( ContextPtr loc )
-{
-    KernelTraitContextFunction<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
+    SCAI_LOG_INFO( logger, "absMaxDiffVal< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     // input arrays
     //    Array1             Array2
@@ -86,19 +93,12 @@ void absMaxDiffValTest( ContextPtr loc )
     const IndexType numValues1 = sizeof( ja1 ) / sizeof( IndexType );
     const IndexType numValues2 = sizeof( ja2 ) / sizeof( IndexType );
 
-    HArray<IndexType> csrIA1( numRows + 1 );
-    HArray<IndexType> csrJA1( numValues1 );
-    HArray<ValueType> csrValues1( numValues1 );
-    HArray<IndexType> csrIA2( numRows + 1 );
-    HArray<IndexType> csrJA2( numValues2 );
-    HArray<ValueType> csrValues2( numValues2 );
-
-    initArray( csrIA1, ia1, numRows + 1);
-    initArray( csrJA1, ja1, numValues1);
-    initArray( csrValues1, values1, numValues1);
-    initArray( csrIA2, ia2, numRows + 1);
-    initArray( csrJA2, ja2, numValues2);
-    initArray( csrValues2, values2, numValues2);
+    HArray<IndexType> csrIA1( numRows + 1, ia1, testContext );
+    HArray<IndexType> csrJA1( numValues1, ja1, testContext );
+    HArray<ValueType> csrValues1( numValues1, values1, testContext );
+    HArray<IndexType> csrIA2( numRows + 1, ia2, testContext );
+    HArray<IndexType> csrJA2( numValues2, ja2, testContext );
+    HArray<ValueType> csrValues2( numValues2, values2, testContext );
 
     ReadAccess<IndexType> rCSRIA1( csrIA1, loc );
     ReadAccess<IndexType> rCSRJA1( csrJA1, loc );
@@ -116,12 +116,20 @@ void absMaxDiffValTest( ContextPtr loc )
     BOOST_CHECK_EQUAL( 3, maxVal );
 }
 
-template<typename ValueType>
-void transposeTestSquare( ContextPtr loc )
-{
-    KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+/* ------------------------------------------------------------------------------------- */
 
-    //  input array           transpose
+BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_arithmetic_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+
+    ContextPtr loc = Context::getContextPtr( convertCSR2CSC.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
+
     //    1.0   -   2.0       1.0  0.5   -
     //    0.5  0.3   -         -   0.3   -
     //     -    -   3.0       2.0   -   3.0
@@ -141,17 +149,14 @@ void transposeTestSquare( ContextPtr loc )
     const IndexType numColumns = 3;
     const IndexType numValues = 5;
 
-    HArray<IndexType> csrIA( numRows + 1 );
-    HArray<IndexType> csrJA( numValues );
-    HArray<ValueType> csrValues( numValues );
+    HArray<IndexType> csrIA( numRows + 1, ia1, testContext );
+    HArray<IndexType> csrJA( numValues, ja1, testContext );
+    HArray<ValueType> csrValues( numValues, values1, testContext );
+
     HArray<IndexType> cscIA;
     HArray<IndexType> cscJA;
     HArray<ValueType> cscValues;
 
-    initArray( csrIA, ia1, numRows + 1 );
-    initArray( csrJA, ja1, numValues );
-    initArray( csrValues, values1, numValues );
-  
     {
         ReadAccess<IndexType> rCSRIA( csrIA, loc );
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
@@ -174,7 +179,9 @@ void transposeTestSquare( ContextPtr loc )
         }
 
         // For comparison of cscJA and cscValue we need to sort it
+
         bool diagonalFlag = false;
+
         OpenMPCSRUtils::sortRowElements( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
 
         for ( int j = 0; j < numValues; ++j )
@@ -189,10 +196,20 @@ void transposeTestSquare( ContextPtr loc )
     }
 }
 
-template<typename ValueType>
-void transposeTestNonSquare( ContextPtr loc )
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_arithmetic_test_types )
 {
-    KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    ContextPtr testContext = ContextFix::testContext;
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+
+    ContextPtr loc = Context::getContextPtr( convertCSR2CSC.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
+
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -    4.0
     //    0.5  0.3   -         -   0.3   -    1.5
@@ -214,16 +231,13 @@ void transposeTestNonSquare( ContextPtr loc )
     const IndexType numColumns = 3;
     const IndexType numValues = 7;
 
-    HArray<IndexType> csrIA( numRows + 1 );
-    HArray<IndexType> csrJA( numValues );
-    HArray<ValueType> csrValues( numValues );
+    HArray<IndexType> csrIA( numRows + 1, ia1, testContext );
+    HArray<IndexType> csrJA( numValues, ja1, testContext );
+    HArray<ValueType> csrValues( numValues, values1, testContext );
+
     HArray<IndexType> cscIA;
     HArray<IndexType> cscJA;
     HArray<ValueType> cscValues;
-
-    initArray( csrIA, ia1, numRows + 1 );
-    initArray( csrJA, ja1, numValues );
-    initArray( csrValues, values1, numValues );
 
     // CSC <- transpose CSR
 
@@ -239,23 +253,46 @@ void transposeTestNonSquare( ContextPtr loc )
                              numColumns, numValues );
     }
   
-    // check CSC for correctness
+    //  For comparison later we sort cscJA and cscValue
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
+
+    loc = Context::getContextPtr( sortRowElements.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    SCAI_LOG_INFO( logger, "sortRowElements< " << TypeTraits<ValueType>::id() << "> for " << *testContext << " on " << *loc )
 
     {
-        ContextPtr host = Context::getHostPtr();
-
-        ReadAccess<IndexType> rCSCIA( cscIA, host );
-        WriteAccess<IndexType> wCSCJA( cscJA, host );
-        WriteAccess<ValueType> wCSCValues( cscValues, host );
+        ReadAccess<IndexType> rCSCIA( cscIA, loc );
+        WriteAccess<IndexType> wCSCJA( cscJA, loc );
+        WriteAccess<ValueType> wCSCValues( cscValues, loc );
 
         for ( int j = 0; j <= numColumns; ++j )
         {
             BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
         }
 
-        // For comparison of cscJA and cscValue we need to sort it
         bool diagonalFlag = false;
-        OpenMPCSRUtils::sortRowElements( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
+
+        // For comparison of cscJA and cscValue we need to sort it
+
+        sortRowElements[loc->getType()]( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
+    }
+
+    // check CSC for correctness, done on host
+
+    {
+        ContextPtr host = Context::getHostPtr();
+
+        ReadAccess<IndexType> rCSCIA( cscIA, host );
+        ReadAccess<IndexType> wCSCJA( cscJA, host );
+        ReadAccess<ValueType> wCSCValues( cscValues, host );
+
+        for ( int j = 0; j <= numColumns; ++j )
+        {
+            BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
+        }
 
         for ( int j = 0; j < numValues; ++j )
         {
@@ -268,22 +305,6 @@ void transposeTestNonSquare( ContextPtr loc )
         }
     }
 }
-
-} /* end namespace CSRUtilsTest */
-
-} /* end namespace lama */
-
-} /* end namespace scai */
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_SUITE( CSRUtilsTest )
-
-SCAI_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
-
-LAMA_AUTO_TEST_CASE_CTT( absMaxDiffValTest, CSRUtilsTest )
-LAMA_AUTO_TEST_CASE_CT( transposeTestSquare, CSRUtilsTest, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( transposeTestNonSquare, CSRUtilsTest, scai::lama )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

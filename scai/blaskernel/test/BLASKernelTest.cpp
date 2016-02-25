@@ -19,7 +19,13 @@
 
 #include <iostream>
 
-scai::hmemo::ContextPtr testContext;
+#include <scai/blaskernel/test/TestMacros.hpp>
+
+BOOST_GLOBAL_FIXTURE( ContextFix )
+
+/** Static variables of ContextFix are defined here */
+
+scai::hmemo::ContextPtr ContextFix::testContext;
 
 /** The init function returns true if it can get the specified context. */
 
@@ -27,7 +33,7 @@ bool init_function()
 {
     try
     {
-        testContext = scai::hmemo::Context::getContextPtr();
+        scai::hmemo::ContextPtr testContext = scai::hmemo::Context::getContextPtr();
         return true;
     }
     catch ( scai::common::Exception& ex )
@@ -45,7 +51,5 @@ int main( int argc, char* argv[] )
 
     int rc = boost::unit_test::unit_test_main( &init_function, argc, argv );
  
-    testContext.reset();   // frees the context
-
     return rc;
 }

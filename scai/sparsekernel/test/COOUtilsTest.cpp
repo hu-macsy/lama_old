@@ -41,32 +41,36 @@
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
 
-using namespace scai::hmemo;
+/*--------------------------------------------------------------------- */
 
-using namespace scai::kregistry;
+using namespace scai;
 
-using namespace scai::sparsekernel;
+using namespace hmemo;
+using namespace sparsekernel;
+using namespace kregistry;
+using common::TypeTraits;
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* --------------------------------------------------------------------- */
 
-// Dummy type, needed to use the lama interface
-typedef bool NoType;
+BOOST_AUTO_TEST_SUITE( COOUtilsTest )
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* --------------------------------------------------------------------- */
 
-namespace scai
+SCAI_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( offsets2iaTest )
 {
-namespace lama
-{
-namespace COOUtilsTest
-{
+    ContextPtr testContext = ContextFix::testContext;
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename NoType>
-void offsets2iaTest( ContextPtr loc )
-{
     KernelTraitContextFunction<COOKernelTrait::offsets2ia > offsets2ia;
+
+    ContextPtr loc = Context::getContextPtr( offsets2ia.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "offsets2ia test for " << *testContext << " on " << *loc )
 
     // Test without diagonal property
     {
@@ -79,9 +83,7 @@ void offsets2iaTest( ContextPtr loc )
         const IndexType numValues = sizeof( ia_values ) / sizeof( IndexType );
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
-        HArray<IndexType> offsets( numOffsets );
-
-        initArray( offsets, offsets_values, numOffsets );
+        HArray<IndexType> offsets( numOffsets, offsets_values, testContext );
 
         HArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
@@ -111,9 +113,7 @@ void offsets2iaTest( ContextPtr loc )
         const IndexType numValues = sizeof( ia_values ) / sizeof( IndexType );
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
-        HArray<IndexType> offsets( numOffsets );
-
-        initArray( offsets, offsets_values, numOffsets );
+        HArray<IndexType> offsets( numOffsets, offsets_values, testContext );
 
         HArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
@@ -133,21 +133,30 @@ void offsets2iaTest( ContextPtr loc )
     }
 } // offsets2iaTest
 
-template<typename NoType>
-void setCSRDataTest( ContextPtr loc )
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_arithmetic_test_types )
 {
-    KernelTraitContextFunction<COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
+    typedef float CSRValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    KernelTraitContextFunction<COOKernelTrait::setCSRData<ValueType, CSRValueType> > setCSRData;
+
+    ContextPtr loc = Context::getContextPtr( setCSRData.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "setCSRData< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     // setCSRData is for conversion of CSR storage to COO storage
     // is usually just a copy but has some reordering if diagonal property is required
     // here we test only for csrJA
     {
-        const IndexType offsets_values[] =
-        { 0, 2, 5, 7, 9 };
-        const IndexType csrja_values[] =
-        { 0, 5, 1, 4, 5, 2, 0, 4, 3 };
-        const IndexType cooja_values[] =
-        { 0, 1, 2, 5, 4, 5, 0, 4, 3 };
+        const IndexType offsets_values[] = { 0, 2, 5, 7, 9 };
+        const CSRValueType csrja_values[]   = { 0, 5, 1, 4, 5, 2, 0, 4, 3 };
+        const ValueType cooja_values[]   = { 0, 1, 2, 5, 4, 5, 0, 4, 3 };
+
         const IndexType numOffsets = sizeof( offsets_values ) / sizeof( IndexType );
         const IndexType numRows = numOffsets - 1;
         const IndexType numDiagonals = 3;
@@ -155,46 +164,29 @@ void setCSRDataTest( ContextPtr loc )
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
         BOOST_REQUIRE( numDiagonals <= numRows );
-        HArray<IndexType> offsets( numOffsets );
 
-        initArray( offsets, offsets_values, numOffsets );
+        HArray<IndexType> offsets( numOffsets, offsets_values, testContext );
+        HArray<CSRValueType> csrJA( numValues, csrja_values, testContext );
 
-        HArray<IndexType> csrJA( numValues );
-
-        initArray( csrJA, csrja_values, numValues );
-
-        HArray<IndexType> cooJA;
+        HArray<ValueType> cooJA;
         ReadAccess<IndexType> rOffsets( offsets, loc );
-        ReadAccess<IndexType> rCSRJA( csrJA, loc );
+        ReadAccess<CSRValueType> rCSRJA( csrJA, loc );
         {
-            WriteOnlyAccess<IndexType> wCOOJA( cooJA, loc, numValues );
+            WriteOnlyAccess<ValueType> wCOOJA( cooJA, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
             setCSRData[loc->getType()]( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
-        ReadAccess<IndexType> rCOOJA( cooJA );
+        ReadAccess<ValueType> rCOOJA( cooJA );
 
         for ( int i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( rCOOJA[i], cooja_values[i] );
         }
     }
+
 } // setCSRData
-
-} /* end namespace COOUtilsTest */
-
-} /* end namespace lama */
-
-} /* end namespace scai */
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_SUITE( COOUtilsTest )
-
-SCAI_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
-
-LAMA_AUTO_TEST_CASE_CTDUMMY( offsets2iaTest, COOUtilsTest )
-LAMA_AUTO_TEST_CASE_CTDUMMY( setCSRDataTest, COOUtilsTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END()
+

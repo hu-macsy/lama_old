@@ -47,10 +47,6 @@ using namespace scai;
 using namespace scai::hmemo;
 using common::TypeTraits;
 
-/** Global variable for context, saves overhead for context initialization for each test */
-
-extern ContextPtr testContext;
-
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( BLAS2Test )
@@ -63,11 +59,13 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
 {
+    ContextPtr testContext = ContextFix::testContext;
+
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
 
-    BOOST_WARN( gemv[testContext->getType()] );
-
     ContextPtr loc = Context::getContextPtr( gemv.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     SCAI_LOG_INFO( logger, "gemv< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
@@ -84,15 +82,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
         const ValueType beta = 13.0;
         const IndexType incY = 2;
         const ValueType result[] = { -74.0, 33.0 };
-//        LAMAArray<ValueType> Am( 6, matrix );
-//        LAMAArray<ValueType> Ax( 3, x );
-//        LAMAArray<ValueType> Ay( 3, y );
-        HArray<ValueType> Am( 6 );
-        initArray( Am, matrix, 6 );
-        HArray<ValueType> Ax( 3 );
-        initArray( Ax, x, 3 );
-        HArray<ValueType> Ay( 3 );
-        initArray( Ay, y, 3 );
+
+        HArray<ValueType> Am( 6, matrix, testContext );
+        HArray<ValueType> Ax( 3, x, testContext );
+        HArray<ValueType> Ay( 3, y, testContext );
+ 
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
@@ -108,30 +102,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
     }
     // CblasColMajor and CblasNoTrans
     {
-        ValueType matrix[] =
-        { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
-        ValueType x[] =
-        { 2.0, -1.0, 4.0 };
-        ValueType y[] =
-        { 10.0, -20.0, 30.0 };
+        ValueType matrix[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
+        ValueType x[] = { 2.0, -1.0, 4.0 };
+        ValueType y[] = { 10.0, -20.0, 30.0 };
+
         const IndexType m = 2;
         const IndexType n = 3;
         const ValueType alpha = 17.0;
+
         const IndexType lda = 2;
         const IndexType incX = 1;
         const ValueType beta = 13.0;
         const IndexType incY = 2;
-        const ValueType result[] =
-        { -74.0, 33.0 };
-//        LAMAArray<ValueType> Am( 6, matrix );
-//        LAMAArray<ValueType> Ax( 3, x );
-//        LAMAArray<ValueType> Ay( 3, y );
-        HArray<ValueType> Am( 6 );
-		initArray( Am, matrix, 6 );
-		HArray<ValueType> Ax( 3 );
-		initArray( Ax, x, 3 );
-		HArray<ValueType> Ay( 3 );
-		initArray( Ay, y, 3 );
+        const ValueType result[] = { -74.0, 33.0 };
+
+        HArray<ValueType> Am( 6, matrix, testContext );
+        HArray<ValueType> Ax( 3, x, testContext );
+        HArray<ValueType> Ay( 3, y, testContext );
+
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
@@ -162,15 +150,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
         const IndexType incY = 1;
         const ValueType result[] =
         { 436.0, 148.0, -120.0 };
-//        LAMAArray<ValueType> Am( 6, matrix );
-//        LAMAArray<ValueType> Ax( 3, x );
-//        LAMAArray<ValueType> Ay( 3, y );
-        HArray<ValueType> Am( 6 );
-		initArray( Am, matrix, 6 );
-		HArray<ValueType> Ax( 3 );
-		initArray( Ax, x, 3 );
-		HArray<ValueType> Ay( 3 );
-		initArray( Ay, y, 3 );
+
+        HArray<ValueType> Am( 6, matrix, testContext );
+        HArray<ValueType> Ax( 3, x, testContext );
+        HArray<ValueType> Ay( 3, y, testContext );
+
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
@@ -187,12 +171,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
     }
     // CblasColMajor and CblasTrans
     {
-        ValueType matrix[] =
-        { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
-        ValueType x[] =
-        { 2.0, -1.0, 4.0 };
-        ValueType y[] =
-        { 10.0, -20.0, 30.0 };
+        ValueType matrix[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
+        ValueType x[] = { 2.0, -1.0, 4.0 };
+        ValueType y[] = { 10.0, -20.0, 30.0 };
+
         const IndexType m = 2;
         const IndexType n = 3;
         const ValueType alpha = 17.0;
@@ -200,17 +182,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
         const IndexType incX = 2;
         const ValueType beta = 13.0;
         const IndexType incY = 1;
-        const ValueType result[] =
-        { 436.0, 148.0, -120.0 };
-//        LAMAArray<ValueType> Am( 6, matrix );
-//        LAMAArray<ValueType> Ax( 3, x );
-//        LAMAArray<ValueType> Ay( 3, y );
-        HArray<ValueType> Am( 6 );
-		initArray( Am, matrix, 6 );
-		HArray<ValueType> Ax( 3 );
-		initArray( Ax, x, 3 );
-		HArray<ValueType> Ay( 3 );
-		initArray( Ay, y, 3 );
+        const ValueType result[] = { 436.0, 148.0, -120.0 };
+
+        HArray<ValueType> Am( 6, matrix, testContext );
+        HArray<ValueType> Ax( 3, x, testContext );
+        HArray<ValueType> Ay( 3, y, testContext );
+
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
