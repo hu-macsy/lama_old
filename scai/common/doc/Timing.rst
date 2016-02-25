@@ -1,23 +1,9 @@
 Timing
-------
+======
 
-.. code-block:: c++
-
-  typedef uint64_t INTEGER_8;
-
-  class COMMON_DLL_IMPORTEXPORT Walltime
-  {
-  public:
-
-      /**  @return current walltime in ticks */
-      static INTEGER_8 timestamp();
- 
-      /** Number of ticks per second, so timestamp() / timerate() gives time in seconds. */
-      static INTEGER_8 timerate();
-  
-      /** @return current walltime in seconds */
-      static double get();
-  };
+.. literalinclude:: ../Walltime.hpp
+   :language: c++
+   :lines: 53-78
 
 .. code-block:: c++
 

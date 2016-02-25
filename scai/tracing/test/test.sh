@@ -32,23 +32,29 @@
  # @since 2.0.0
 ###
 
-#TODO:
-# - documentation of functions
-# - improve checks of the .ct and .time files (maybe combine check*FilesExist and check*FileContents functions)
+# =====================================================================================================================
+# Basic variables and functions definitions
+#
+# =====================================================================================================================
 
-genericTimePattern=", inclusive = "[0-9]{1,5}\.[0-9]{4,6}", exclusive = "[0-9]{1,5}\.[0-9]{4,6}$
+# set error variable
 errors=0
 
-# =====================================================================================================================
-# Runtime configurations tests
-#
-# In this test the executable is build WITH trace support and the runtime configuration via environmental variables is
-# used to control the tracing behavior. 
-# =====================================================================================================================
+# common regex pattern which matches the end of timing lins in .time files
+genericTimePattern=", inclusive = "[0-9]{1,5}\.[0-9]{4,6}", exclusive = "[0-9]{1,5}\.[0-9]{4,6}$
 
-# Define checkTimeFileContents and checkCTFileContents first. Functions validate the contents of the created *.ct
-# and *.time files.
+# TODO: if the test is executed without OpenMP numThreads should be set to 1
+numThreads=4
 
+# we should use 4 threads for all tests
+export OMP_NUM_THREADS=$numThreads
+
+
+# =====================================================================================================================
+# Function that prepares a new test case. It removes all existing .ct and .time files in the folder, sets the
+# SCAI_TRACE environmental variable properly and executes the simpleTracing.exe program
+# usage:    prepareTestCase $SCAI_TRACE_OPTIONS
+# examples: prepareTestCase ct:time
 function prepareTestCase {
     if [ $# -ne 1 ]; then
         echo "Invalid number of parameters!"
@@ -83,6 +89,11 @@ function prepareTestCase {
     
 }
 
+# =====================================================================================================================
+# Function that checks the number of existing .ct files. Returns an error if number of existing files
+# does not match $num
+# usage:    checkCTFilesExist $num
+# example:  checkCTFilesExist 1
 function checkCTFilesExist {
     if [ $# -ne 1 ]; then
         echo "Invalid number of parameters!"
@@ -99,6 +110,11 @@ function checkCTFilesExist {
     fi
 }
 
+# =====================================================================================================================
+# Function that checks the number of existing .time files. Returns an error if number of existing files
+# does not match $num
+# usage:    checkCTFilesExist $num
+# example:  checkCTFilesExist 1
 function checkTimeFilesExist {
     if [ $# -ne 1 ]; then
         echo "Invalid number of parameters!"
@@ -115,9 +131,10 @@ function checkTimeFilesExist {
     fi
 }
 
-
-
-# usage: checktimeFileContents $FILE $NTHREADS
+# =====================================================================================================================
+# Function that checks the contents of the given .time file.
+# usage:    checkTimeFileContents $FILE $NTHREADS
+# example:  checkTimeFileContents simpleTracing.exe.time 4
 function checkTimeFileContents {
     # all the regions with the correct number of calls should appear in the .time file
 
@@ -139,28 +156,32 @@ function checkTimeFileContents {
     fi
             
     # check for region 'Time A'
-    count=`echo "$content" | grep -E "^Time A \(in ms\) : #calls = 75000${genericTimePattern}" | wc -l`
+    numCalls=$((300000/$numThreads))
+    count=`echo "$content" | grep -E "^Time A \(in ms\) : #calls = ${numCalls}${genericTimePattern}" | wc -l`
     if [ "$count" -ne "$nThreads" ]; then
         echo "ERROR: Content of the .time file is wrong (region A)"
         errors=$(($errors + 1))
     fi
     
     # check for region 'Time B'
-    count=`echo "$content" | grep -E "^Time B \(in ms\) : #calls = 50000${genericTimePattern}" | wc -l`
+    numCalls=$((200000/$numThreads))
+    count=`echo "$content" | grep -E "^Time B \(in ms\) : #calls = ${numCalls}${genericTimePattern}" | wc -l`
     if [ "$count" -ne "$nThreads" ]; then
         echo "ERROR: Content of the .time file is wrong (region B)"
         errors=$(($errors + 1))
     fi
     
     # check for region 'Time main.loopA'
-    count=`echo "$content" | grep -E "^Time main.loopA \(in ms\) : #calls = 2500${genericTimePattern}" | wc -l`
+    numCalls=$((10000/$numThreads))
+    count=`echo "$content" | grep -E "^Time main.loopA \(in ms\) : #calls = ${numCalls}${genericTimePattern}" | wc -l`
     if [ "$count" -ne "$nThreads" ]; then
         echo "ERROR: Content of the .time file is wrong (region main.loopA)"
         errors=$(($errors + 1))
     fi
     
     # check for region 'Time main.loopB'
-    count=`echo "$content" | grep -E "^Time main.loopB \(in ms\) : #calls = 2500${genericTimePattern}" | wc -l`
+    numCalls=$((10000/$numThreads))
+    count=`echo "$content" | grep -E "^Time main.loopB \(in ms\) : #calls = ${numCalls}${genericTimePattern}" | wc -l`
     if [ "$count" -ne "$nThreads" ]; then
         echo "ERROR: Content of the .time file is wrong (region main.loopB)"
         errors=$(($errors + 1))
@@ -178,99 +199,140 @@ function checkTimeFileContents {
     fi
 }
 
-# usage: checkCTFileContents $FILE
+# =====================================================================================================================
+# Function that checks the contents of the given .ct file. It looks for all files that have the syntax $FILE.*
+# if $NTHREADS is bigger 1
+# usage:    checkCTFileContents $FILE $NTHREADS
+# example:  checkCTFileContents simpleTracing.exe.ct 4
+
 function checkCTFileContents {
     # the structure of the .ct files is quite complicated and can't be fully tested here. We therefore only do
     # some quick validity checks
     
-    # for each region in the simpleTest there has to be a line similar to
-    # fn 0 0 main 2 52 52 ?    
-         
-    if [ $# -ne 1 ]; then
+    if [ $# -ne 2 ]; then
         echo "Invalid number of parameters!"
         exit 1
     fi
+    
+    nThreads=$2
 
-    content=`cat $1 2> /dev/null`
+    # The following loop checks all the criteria that should be matched by ALL .ct files
+    for file in ${1}*; do
+        content=`cat $file 2> /dev/null`
+        
+        # check for region 'loopA'
+        output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ loopA [0-9]+ [0-9]+ [0-9]+ main$'`
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Content of the .ct file is wrong (region loopA)"
+            errors=$(($errors + 1))
+        fi
     
-    # check for region 'main'
-    output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ main [0-9]+ [0-9]+ [0-9]+ \?$'`
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Content of the .ct file is wrong (region main)"
-        errors=$(($errors + 1))
-    fi
+        # check for region 'loopB'
+        output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ loopB [0-9]+ [0-9]+ [0-9]+ main$'`
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Content of the .ct file is wrong (region loopB)"
+            errors=$(($errors + 1))
+        fi
+        
+        # check for region 'A'
+        output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ A [0-9]+ [0-9]+ [0-9]+ \?$'`
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Content of the .ct file is wrong (region A)"
+            errors=$(($errors + 1))
+        fi
+        
+        # check for region 'B'
+        output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ B [0-9]+ [0-9]+ [0-9]+ \?$'`
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Content of the .ct file is wrong (region B)"
+            errors=$(($errors + 1))
+        fi
+        
+        
+        # we can also check if there is a line containing the correct number of lines
+        
+        # check for region 'A'
+        numCalls=$((300000/$numThreads))
+        output=`echo "$content" | grep -E "^calls ${numCalls} 0$"`
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Content of the .ct file is wrong (calls region A)"
+            errors=$(($errors + 1))
+        fi
+        
+        # check for region 'B'
+        numCalls=$((200000/$numThreads))
+        output=`echo "$content" | grep -E "^calls ${numCalls} 0$"`
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Content of the .ct file is wrong (calls region B)"
+            errors=$(($errors + 1))
+        fi
+        
+    done
     
-    # check for region 'loopA'
-    output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ loopA [0-9]+ [0-9]+ [0-9]+ main$'`
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Content of the .ct file is wrong (region loopA)"
-        errors=$(($errors + 1))
-    fi
     
-    # check for region 'loopB'
-    output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ loopB [0-9]+ [0-9]+ [0-9]+ main$'`
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Content of the .ct file is wrong (region loopB)"
-        errors=$(($errors + 1))
-    fi
     
-    # check for region 'A'
-    output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ A [0-9]+ [0-9]+ [0-9]+ \?$'`
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Content of the .ct file is wrong (region A)"
-        errors=$(($errors + 1))
-    fi
+    # There is some content that can only be found in the "main" .ct file as the parallism is created in the main
+    # function of the program. The following loop checks whether there is exactly one file that matches the related
+    # criteria
     
-    # check for region 'B'
-    output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ B [0-9]+ [0-9]+ [0-9]+ \?$'`
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Content of the .ct file is wrong (region B)"
-        errors=$(($errors + 1))
-    fi
+    found=0
+    for file in ${1}*; do
+        content=`cat $file 2> /dev/null`
     
-    # we can also check if there is a line containing the correct number of lines
+        # The "main" .ct file should contain the 'main' region
+        output=`echo "$content" | grep -E '^fn [0-9]+ [0-9]+ main [0-9]+ [0-9]+ [0-9]+ \?$'`
+        if [ $? -ne 0 ]; then
+            continue
+            echo "ERROR: Content of the .ct file is wrong (region main)"
+            errors=$(($errors + 1))
+        fi
+        
+        # Only the "main" .ct file contains the following call numbers of 'loopA' and 'loopB'
+        numCalls=$((10000/$numThreads))
+        output=`echo "$content" | grep -E "^calls ${numCalls} 0$" | wc -l`
+        if [ "$output" -ne 2 ]; then
+            continue
+            echo "ERROR: Content of the .ct file is wrong (calls region loopA / loopB)"
+            errors=$(($errors + 1))
+        fi
     
-    # check for region 'loopA' and 'loopB'
-    output=`echo "$content" | grep -E '^calls 2500 0$' | wc -l`
-    if [ "$output" -ne 2 ]; then
-        echo "ERROR: Content of the .ct file is wrong (calls region loopA / loopB)"
-        errors=$(($errors + 1))
-    fi
+        # check for some other structural properties
+        
+        # check if there are exactly 4 call cost regions
+        output=`echo "$content" | grep 'begin call cost line' | wc -l`
+        if [ "$output" -ne 4 ]; then
+            continue
+            echo "ERROR: Content of the .ct file is wrong (number of call cost regions)"
+            errors=$(($errors + 1))
+        fi
+        
+        # check if there are exactly 4 exclusive call cost regions
+        output=`echo "$content" | grep 'begin exclusive cost line' | wc -l`
+        if [ "$output" -ne 5 ]; then
+            continue
+            echo "ERROR: Content of the .ct file is wrong (number of exclusive call cost regions)"
+            errors=$(($errors + 1))
+        fi
+        
+        if [ $found -eq 1 ]; then
+            echo "ERROR: Multiple .ct file matched the criteria for the "main" file containing the full calltree!"
+            errors=$(($errors + 1))
+        fi
+        found=1
+    done
 
-    # check for region 'A'
-    output=`echo "$content" | grep -E '^calls 75000 0$'`
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Content of the .ct file is wrong (calls region A)"
-        errors=$(($errors + 1))
-    fi
-    
-    # check for region 'B'
-    output=`echo "$content" | grep -E '^calls 50000 0$'`
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Content of the .ct file is wrong (calls region B)"
-        errors=$(($errors + 1))
-    fi
-    
-    
-    # check for some other structural properties
-    
-    # check if there are exactly 4 call cost regions
-    output=`echo "$content" | grep 'begin call cost line' | wc -l`
-    if [ "$output" -ne 4 ]; then
-        echo "ERROR: Content of the .ct file is wrong (number of call cost regions)"
-        errors=$(($errors + 1))
-    fi
-    
-    # check if there are exactly 4 exclusive call cost regions
-    output=`echo "$content" | grep 'begin exclusive cost line' | wc -l`
-    if [ "$output" -ne 5 ]; then
-        echo "ERROR: Content of the .ct file is wrong (number of exclusive call cost regions)"
+    if [ "$found" -eq 0 ]; then
+        echo "ERROR: No .ct file matched the criteria for the "main" file containing the full calltree!"
         errors=$(($errors + 1))
     fi
 }
 
-# we should use 4 threads for all tests
-export OMP_NUM_THREADS=4
+# =====================================================================================================================
+# Runtime configurations tests
+#
+# In this test the executable is build WITH trace support and the runtime configuration via environmental variables is
+# used to control the tracing behavior. 
+# =====================================================================================================================
 
 echo "Running runtime configuration tests:"
 make clean > /dev/null
@@ -320,7 +382,7 @@ else
         
         checkCTFilesExist 1
         if [ $ret -eq 0 ]; then
-            checkCTFileContents simpleTracing.exe.ct
+            checkCTFileContents simpleTracing.exe.ct 1
         fi
     fi
         
@@ -360,7 +422,7 @@ else
         checkCTFilesExist 1
         
         if [ $ret -eq 0 ]; then
-            checkCTFileContents simpleTracing.exe.ct
+            checkCTFileContents simpleTracing.exe.ct 1
         fi
         
         checkTimeFilesExist 1
@@ -385,7 +447,7 @@ else
         
         checkTimeFilesExist 1
         if [ $ret -eq 0 ]; then
-            checkTimeFileContents simpleTracing.exe.time 4
+            checkTimeFileContents simpleTracing.exe.time $numThreads
         fi
     fi
     
@@ -399,16 +461,12 @@ else
         # there should be no .time files
         checkTimeFilesExist 0
         
-        checkCTFilesExist 4
+        checkCTFilesExist $numThreads
         if [ $ret -eq 0 ]; then
-            for file in *.ct*; do
-                echo -n ""
-                # TODO fix test...
-                #checkCTFileContents $file
-            done
+            checkCTFileContents simpleTracing.exe.ct $numThreads
         fi
     fi
-    
+
     # =================================================================================================================
     # Test 8
     # check execution width SCAI_TRACE=time:ct:thread
@@ -416,13 +474,14 @@ else
     prepareTestCase time:ct:thread
     
     if [ $ret -eq 0 ]; then
-        checkCTFilesExist 4
-        # TODO: check contents of CT files
-
+        checkCTFilesExist $numThreads
+        if [ $ret -eq 0 ]; then
+            checkCTFileContents simpleTracing.exe.ct $numThreads
+        fi
         
         checkTimeFilesExist 1
         if [ $ret -eq 0 ]; then
-            checkTimeFileContents simpleTracing.exe.time 4
+            checkTimeFileContents simpleTracing.exe.time $numThreads
         fi
     fi
     
@@ -433,11 +492,17 @@ else
     prepareTestCase PREFIX=customPrefix:time:ct:thread
     
     if [ $ret -eq 0 ]; then
-        checkCTFilesExist 4
+        checkCTFilesExist $numThreads
+    
+        # Check wheter the correct naming was used        
+        count=`ls -l -la customPrefix.ct.* 2> /dev/null | wc -l`
+        if [ $count -ne $numThreads ]; then
+            echo "Test failed. Wrong number of .ct file has been generated or a wrong names were used."
+            errors=$(($errors + 1))
+        else
+            checkCTFileContents customPrefix.ct $numThreads
+        fi
 
-        # TODO: check .ct files are named correctly
-        # TODO: check contents of .ct files        
-        
 
         checkTimeFilesExist 1
         
@@ -447,19 +512,60 @@ else
             echo "Test failed. No .time file has been generated or a wrong name was used."
             errors=$(($errors + 1))
         else
-            checkTimeFileContents customPrefix.time 4
+            checkTimeFileContents customPrefix.time $numThreads
         fi
     fi
 fi
 
+# =====================================================================================================================
+# Compile time tests
+#
+# =====================================================================================================================
 
-
-# compile time test
-# 1 check if tracing is disabled when the enviroment variable is set, but compilation was done without trace SCAI_TRACE_OFF
-# 2 same check again with no SCAI_TRACE_XX
-
+# Check if no tracing files are generated if executable is build without trace support but environmental variable
+# is set
+echo ""
+echo "Running compile time tests:"
 make clean > /dev/null
+make simple DEFINES="-DSCAI_TRACE_OFF" &> /dev/null
+if [ $? -ne 0 ]; then
+    echo "ERROR: Could not build executable! Tests are skipped!"
+    errors=$(($errors + 1))
+else
+    prepareTestCase ct:time
+    
+    # There should be no .ct or .time files
+    checkCTFilesExist 0
+    checkTimeFilesExist 0
+fi
 
+# TODO: This does not work at the moment!
+
+## Check if the tracing works with unnamed threads
+#make clean > /dev/null
+#make simple DEFINES="-DSCAI_TRACE_ON -DUNNAMED_THREADS" &> /dev/null
+#if [ $? -ne 0 ]; then
+#    echo "ERROR: Could not build executable! Tests are skipped!"
+#    errors=$(($errors + 1))
+#else
+#    prepareTestCase ct:time:threads
+#    
+#    checkCTFilesExist $numThreads
+#    if [ $ret -eq 0 ]; then
+#        checkCTFileContents simpleTracing.exe.ct $numThreads
+#    fi
+#    
+#    checkTimeFilesExist 1
+#    if [ $ret -eq 0 ]; then
+#        checkTimeFileContents simpleTracing.exe.time $numThreads
+#    fi
+#fi
+
+
+
+# =====================================================================================================================
+# Check for errors and return with proper exist code
+#
 # =====================================================================================================================
 echo ""
 if [ $errors -eq 0 ]; then

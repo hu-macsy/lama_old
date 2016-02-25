@@ -1,0 +1,42 @@
+Usage
+=====
+
+Collection at runtime
+---------------------
+
+The environment variable SCAI_TRACE specifies which trace data is collected at runtime.
+
+::
+
+    SCAI_TRACE=time
+    SCAI_TRACE=ct
+    SCAI_TRACE=time:thread:ct
+
+If tracing is disabled the overhead for each region is very low (just comparison with a global variable).
+
+Timing of Regions
+-----------------
+
+:: 
+
+    export SCAI_TRACE=time
+    export SCAI_TRACE=time:thread
+
+The generated output file is called <executable>.time and contains the inclusive and exclusive costs for each region. The inclusive costs are costs for the total region, for the exclusive costs the inclusive costs of all called regions within
+the region are subtracted.
+
+:: 
+
+    export SCAI_TRACE=time:PREFIX=myTest
+
+Instead of the name of the executable the PREFIX value is used in the filename, i.e. myTest.time here.
+
+Calltree
+--------
+
+:: 
+
+    export SCAI_TRACE=ct
+    export SCAI_TRACE=ct:thread  
+
+    ${CMAKE_INSTALL_PREFIX}/bin/TraceCT <file.ct>

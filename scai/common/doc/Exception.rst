@@ -1,5 +1,5 @@
 Exception
----------
+=========
 
 Within LAMA one base class is provided for all LAMA relevant exceptions.
 
@@ -20,6 +20,8 @@ This macros is helpful to throw a general exception:
 
    COMMON_THROWEXCEPTION( msg )
 
+Besides the general exception common provides the following inherited exceptions: 
+AssertException, NotSupportedValueTypeException, UnsupportedException.  
 This macro can be used to throw a specific exception of a derived class.
 
 .. code-block:: c++

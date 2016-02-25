@@ -38,10 +38,10 @@ add_subdirectory ( bench )
 add_subdirectory ( labelrank )
 add_subdirectory ( tutorial )
 
+file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ./ DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILES_MATCHING REGEX "^.*.mtx$" )
-install ( DIRECTORY ./ DESTINATION ${PROJECT_EXAMPLE_DIR} FILES_MATCHING REGEX "^(.*.(cpp|hpp|mtx))|(Makefile)$" )
+#install ( FILES ${EXAMPLE_FILES} DESTINATION ${PROJECT_EXAMPLE_DIR} )
 install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
 install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )

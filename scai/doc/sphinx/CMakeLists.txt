@@ -55,7 +55,7 @@ add_custom_command (
 # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
 add_custom_target (
     doc ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SPHINX_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SPHINX_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-documentation/
     DEPENDS ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
     COMMENT "Creating sphinx doc."
 )

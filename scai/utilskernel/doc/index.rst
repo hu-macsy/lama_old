@@ -1,19 +1,23 @@
 .. _main-page_utilskernel:
 
+################
 SCAI UtilsKernel 
-===============
+################
 
-Contents:
+********
+Contents
+********
 
 .. toctree::
    :titlesonly:
    :maxdepth: 1
    
+   LArray
+   LAMAKernel
    
-   
-************
-Introduction
-************
+*************
+Specification
+*************
 
 * Contains utilities for the different backends
 * Supports different backends (currently Host, CUDA, MIC)

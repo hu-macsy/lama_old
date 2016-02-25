@@ -38,7 +38,12 @@
 foreach ( executable MICExample1 )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES_MIC ${EXAMPLE_FILES_MIC} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES_MIC "${EXAMPLE_EXECUTABLES_MIC} ${executable}.exe" )
 endforeach ( executable )
 
-set ( EXAMPLE_EXECUTABLES_MIC "${EXAMPLE_EXECUTABLES_MIC}" PARENT_SCOPE )
+## install examples
+install ( FILES ${EXAMPLE_FILES_MIC} DESTINATION ${PROJECT_EXAMPLE_DIR}/mic )
+install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR}/mic )
+
+set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA}" PARENT_SCOPE )

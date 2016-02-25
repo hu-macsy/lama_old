@@ -33,7 +33,12 @@
 foreach ( executable conversion matadd matmul )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES_BENCH ${EXAMPLE_FILES_BENCH} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES_BENCH "${EXAMPLE_EXECUTABLES_BENCH} ${executable}.exe" )
 endforeach ( executable )
+
+#install examples
+install ( FILES ${EXAMPLE_FILES_BENCH} DESTINATION ${PROJECT_EXAMPLE_DIR}/bench )
+install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR}/bench )
 
 set ( EXAMPLE_EXECUTABLES_BENCH "${EXAMPLE_EXECUTABLES_BENCH}" PARENT_SCOPE )

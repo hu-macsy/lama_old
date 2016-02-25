@@ -1,5 +1,5 @@
 OpenMP
-------
+======
 
 OpenMP is exploited for the parallelization on one node, either for multiple cores or multiple CPUs.
 OpenMP is mainly based on macros that are enabled by a certain compiler flag.

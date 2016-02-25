@@ -1,5 +1,5 @@
 TypeTrait
----------
+=========
 
 When writing template functions that might be instantiated for different value
 types, it is sometimes the case that this code contains some specific part that
@@ -14,30 +14,6 @@ that provides in C++ a standardized way to query various properties of arithmeti
 .. literalinclude:: ../TypeTraits.hpp 
    :language: c++
    :lines: 52-103
-
-..	.. code-block:: c++
-	
-	  template <typename ValueType>
-	  struct TypeTrait
-	  {
-	      // square root function
-	      static inline ValueType sqrt( const ValueType x );
-	  
-	      // absolute value function
-	      static inline ValueType abs( const ValueType y );
-	
-	      // conversion ValueType -> enum ScalarType
-	      static scalar::ScalarType stype = scalar::UNKNOWN; 
-	  
-	      // convenient name of type for output
-	      static inline const char* id();
-	  
-	      // Get value-specific epsilon for comparison.
-	      static inline ValueType getEps();
-	  
-	      // Get maximal value of a ValueType, used for reductions on arrays. */
-	      static inline ValueType getMax();
-	  };
 
 The member variable stype of the TypeTrait is set with the enum value of 
 ScalarType that stands for the corresponding type. It can be used to implement

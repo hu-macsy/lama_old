@@ -1,5 +1,5 @@
 Smart Pointers
---------------
+==============
 
 The philosophy of using smart pointers in LAMA is explained in the developers guide.
 As smart pointers free the allocated data in their destructor, the code becomes 

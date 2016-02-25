@@ -33,7 +33,21 @@
 foreach ( executable labelrank )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES_LABELRANK ${EXAMPLE_FILES_LABELRANK} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES_LABELRANK "${EXAMPLE_EXECUTABLES_LABELRANK} ${executable}.exe" )
 endforeach ( executable )
+
+# add config.hpp for installation
+set ( EXAMPLE_FILES_LABELRANK ${EXAMPLE_FILES_LABELRANK} Config.hpp )
+
+# add mtx files for installation
+set ( EXAMPLE_FILES_LABELRANK ${EXAMPLE_FILES_LABELRANK} affinity.mtx labels.mtx )
+
+# copy mtx files to build dir
+file( COPY affinity.mtx labels.mtx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
+#install examples
+install ( FILES ${EXAMPLE_FILES_LABELRANK} DESTINATION ${PROJECT_EXAMPLE_DIR}/labelrank )
+install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR}/labelrank )
 
 set ( EXAMPLE_EXECUTABLES_LABELRANK "${EXAMPLE_EXECUTABLES_LABELRANK}" PARENT_SCOPE )
