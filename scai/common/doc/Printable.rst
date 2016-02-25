@@ -1,5 +1,5 @@
 Printable
----------
+=========
 
 Instead of the implemation of the operator<< for each class, we use a virtual method within the
 class.

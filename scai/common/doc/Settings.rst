@@ -1,5 +1,5 @@
 Settings
----------
+========
 
 The class Settings provides a standardized way to query values from environment variables
 and to set them via command line arguments.
