@@ -101,6 +101,8 @@ if ( CUDA_FOUND AND USE_CUDA )
 	# conclude all needed CUDA libraries
 	set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} )
 
+	get_filename_component ( SCAI_CUDA_LIBRARY_PATH ${CUDA_CUDART_LIBRARY} PATH CACHE )
+
 endif ( CUDA_FOUND AND USE_CUDA )
 
 if    ( USE_CUDA AND NOT CUDA_FOUND )

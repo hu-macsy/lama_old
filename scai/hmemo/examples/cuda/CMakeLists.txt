@@ -35,18 +35,24 @@
 #   - include_directories are taken over from project
 #
 
+string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
+
 foreach ( executable CUSparseExample CUBlasExample MemBandwidth Prefetch Allocate )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES_CUDA ${EXAMPLE_FILES_CUDA} ${executable}.cpp ) 
     set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA} ${executable}.exe" )
 endforeach ( executable )
 
 foreach ( executable Example1 Example2 Devices CUDABenchContext AliasProblem )
     cuda_add_executable( ${executable}.exe ${executable}.cu )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES_CUDA ${EXAMPLE_FILES_CUDA} ${executable}.cu )
     set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA} ${executable}.exe" )
 endforeach ( executable )
 
+## install examples
+install ( FILES ${EXAMPLE_FILES_CUDA} DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
+install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
 
 set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA}" PARENT_SCOPE )
-
