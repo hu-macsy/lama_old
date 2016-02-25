@@ -1,5 +1,5 @@
 Context
--------
+=======
 
  * Base class
  * One derived class for each ContextType
