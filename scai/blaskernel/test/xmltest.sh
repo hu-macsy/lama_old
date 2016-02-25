@@ -41,6 +41,11 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running tests serial
-echo "Running serial tests"
-./BLASKernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/BLASKernelTest.xml
+echo "Running blaskernel test on Host"
+
+./blaskernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/blasKernelTestHost.xml
+
+echo "Running blaskernel test on CUDA"
+
+./blaskernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/blasKernelTestCUDA.xml
+

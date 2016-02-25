@@ -22,7 +22,10 @@ Class                   Description
 ContextType             Enumeration types ContextType and AccessKind
 ScalarType              Enumeration type for supported value types (allows registration for different types in factories, interfaces, ...)
 TypeTrait               Struct with all specific stuff for any supported arithmetic value type in matrix/vector operations
-SCAIType                Supported arithmetic types for template instantiations
+Math                    Wrapper for operations from math.h to use them in templated code
+SCAITypes               Supported arithmetic types for template instantiations
+Complex                 Complexnumbers which can be handled on host, CUDA and MIC
+Constants               Operations to compare value to a machine specific eps
 ====================    ==========================================
 
 .. toctree::
@@ -42,6 +45,7 @@ Common Classes
 Class                   Description
 ====================    ==========================================
 Exception               Error handling, call stack
+Assertion               Assertion checking, which can be compiled out of code
 Factory                 Template class for Factory
 Factory1                Factory, but create with additional argument
 Thread                  Basic stuff to deal with multithreading (uses pThreads)

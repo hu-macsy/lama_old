@@ -39,30 +39,43 @@
 #include <scai/hmemo.hpp>
 #include <scai/kregistry/KernelContextFunction.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+
 #include <scai/blaskernel/test/TestMacros.hpp>
 
+using namespace scai;
 using namespace scai::hmemo;
+using common::TypeTraits;
 
-namespace scai
-{
-namespace blaskernel
-{
-namespace BLAS2Test
-{
+/** Global variable for context, saves overhead for context initialization for each test */
 
-template<typename ValueType>
-void gemvTest( ContextPtr loc )
+extern ContextPtr testContext;
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE( BLAS2Test )
+
+/* --------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
+
+    BOOST_WARN( gemv[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( gemv.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "gemv< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     // CblasRowMajor and CblasNoTrans
     {
-        ValueType matrix[] =
-        { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
-        ValueType x[] =
-        { 2.0, -1.0, 4.0 };
-        ValueType y[] =
-        { 10.0, -20.0, 30.0 };
+        ValueType matrix[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
+        ValueType x[] = { 2.0, -1.0, 4.0 };
+        ValueType y[] = { 10.0, -20.0, 30.0 };
         const IndexType m = 2;
         const IndexType n = 3;
         const ValueType alpha = 17.0;
@@ -70,8 +83,7 @@ void gemvTest( ContextPtr loc )
         const IndexType incX = 1;
         const ValueType beta = 13.0;
         const IndexType incY = 2;
-        const ValueType result[] =
-        { -74.0, 33.0 };
+        const ValueType result[] = { -74.0, 33.0 };
 //        LAMAArray<ValueType> Am( 6, matrix );
 //        LAMAArray<ValueType> Ax( 3, x );
 //        LAMAArray<ValueType> Ay( 3, y );
@@ -215,19 +227,6 @@ void gemvTest( ContextPtr loc )
     }
 } // gemvTest
 
-} /* end namespace BLAS2Test */
-
-} /* end namespace blaskernel */
-
-} /* end namespace scai */
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_SUITE( BLAS2Test )
-
-SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
-
-LAMA_AUTO_TEST_CASE_CT( gemvTest, BLAS2Test, scai::blaskernel )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -45,13 +45,43 @@
 
 // boost
 #include <boost/assign/list_of.hpp>
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
+#include <boost/mpl/list.hpp>
+
 
 #include <boost/test/detail/unit_test_parameters.hpp>
 
 // std
 #include <string>
 #include <map>
+
+/* -------------------------------------------------------------------------------- */
+/*  arithmetic test types                                                           */
+/* -------------------------------------------------------------------------------- */
+
+#define SCAI_TYPE( z, I, _ ) ARITHMETIC_HOST_TYPE_##I ,
+
+typedef boost::mpl::list<
+        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, SCAI_TYPE, _ )
+        mpl_::na
+> scai_arithmetic_test_types;
+
+#undef SCAI_TYPE
+
+/* -------------------------------------------------------------------------------- */
+/*  array test types                                                                */
+/* -------------------------------------------------------------------------------- */
+
+#define SCAI_TYPE( z, I, _ ) ARRAY_TYPE##I ,
+
+typedef boost::mpl::list<
+        BOOST_PP_REPEAT( ARRAY_TYPE_CNT, SCAI_TYPE, _ )
+        mpl_::na
+> scai_array_test_types;
+
+#undef SCAI_TYPE
+
+/* -------------------------------------------------------------------------------- */
 
 /*
  * log levels are defined in boost/test/detail/log_level.hpp

@@ -38,46 +38,69 @@
 
 #include <scai/kregistry/KernelContextFunction.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
-
 #include <scai/blaskernel/test/TestMacros.hpp>
+#include <scai/common/TypeTraits.hpp>
 
-using namespace scai::hmemo;
+using namespace scai;
+using namespace hmemo;
+using namespace kregistry;
+using common::TypeTraits;
+
+extern ContextPtr testContext;
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.LAPACKTest" )
 
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( LAPACKTest )
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.LAPACKTest" )
-
 typedef boost::mpl::list<float, double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
 {
     const IndexType n = 3;
-// set up values for A and B with A * B = identiy
+
+    // set up values for A and B with A * B = identiy
+
     static ValueType avalues[] =
     {   2.0, 0.0, -1.0, -3.0, 0.0, 2.0, -2.0, -1.0, 0.0};
+
     static ValueType bvalues[] =
     {   2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
-//    LAMAArray<ValueType> a( n * n, avalues );
-//    LAMAArray<IndexType> permutation( n );
+
     HArray<ValueType> a( n * n );
     initArray( a, avalues, n * n );
-    HArray<IndexType> permutation( n );
-    ContextPtr loc = Context::getHostPtr();
+
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getinv<ValueType> > getinv;
+
+    ContextPtr loc = Context::getContextPtr( getinv.validContext( testContext->getType() ) );
+
+    BOOST_WARN( loc->getType() == testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "getinv<" << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
+
     {
+        SCAI_CONTEXT_ACCESS( loc );
         WriteAccess<ValueType> wA( a, loc );
-        scai::kregistry::KernelTraitContextFunction<scai::blaskernel::BLASKernelTrait::getinv<ValueType> > getinv;
         getinv[loc->getType()]( n, wA.get(), n );
     }
     {
-        ReadAccess<ValueType> rA( a );
+        // comparison only possible on Host
+
+        ContextPtr host = Context::getHostPtr();
+
+        ReadAccess<ValueType> rA( a, host );
 
         for ( int i = 0; i < n * n; ++i )
         {
-            BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
+            typedef typename TypeTraits<ValueType>::AbsType CompareType;
+
+            CompareType x1 = common::Math::abs( rA[i] );
+            CompareType x2 = common::Math::abs( bvalues[i] );
+
+            BOOST_CHECK_CLOSE( x1, x2, 1 );
         }
     }
 }
@@ -86,8 +109,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 {
-    static scai::kregistry::KernelTraitContextFunction<scai::blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
-    static scai::kregistry::KernelTraitContextFunction<scai::blaskernel::BLASKernelTrait::getri<ValueType> > getri;
+    static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
+    static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getri<ValueType> > getri;
+
+    SCAI_LOG_INFO( logger, "getrif<" << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << "host" )
 
     const IndexType n = 3;
 // set up values for A and B with A * B = identiy
@@ -155,7 +180,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
 {
-    static scai::kregistry::KernelTraitContextFunction<scai::blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
+    static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
 
     {
         const IndexType n = 3;

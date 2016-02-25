@@ -90,6 +90,7 @@ public:
         IndexProxy& operator= ( ValueType val )
         {
             HArrayUtils::setVal( mArray, mIndex, val );    
+            return *this;
         }
 
         /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */

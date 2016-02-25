@@ -41,6 +41,10 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running tests serial
-echo "Running serial tests"
-./UtilsKernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
+# Running test on Host
+
+echo "Running utilskernel test on Host"
+./UtilsKernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
+
+echo "Running utilskernel test on CUDA"
+./UtilsKernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
