@@ -65,13 +65,12 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayTest" )
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
-
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( testContext );
 
-    BOOST_WARN( loc.get() == testContext.get() );
+    BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
     SCAI_LOG_INFO( logger, "scaleTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
@@ -103,7 +102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 
     ContextPtr loc = reduce.getValidContext( testContext );
 
-    BOOST_WARN( loc != testContext );    // kernel not available for testContext
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
 
     SCAI_LOG_INFO( logger, "sumTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
@@ -138,7 +137,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 
     SCAI_LOG_INFO( logger, "setValTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
-    BOOST_WARN( loc.get() == testContext.get() );   // print warning if not available for test context
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
 
     {
         const IndexType n = 20;
@@ -178,7 +177,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
 
     ContextPtr loc = isSorted.getValidContext( testContext );
 
-    BOOST_WARN( loc.get() == testContext.get() );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
 
     SCAI_LOG_INFO( logger, "isSortedTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
  
@@ -262,7 +261,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types
 
     ContextPtr loc = invert.getValidContext( testContext );
 
-    BOOST_WARN( loc.get() == testContext.get() );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
 
     SCAI_LOG_INFO( logger, "invertTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 

@@ -40,7 +40,7 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
-#include <boost/assign/list_of.hpp>
+#include <boost/test/unit_test.hpp>
 
 /* --------------------------------------------------------------------- */
 
