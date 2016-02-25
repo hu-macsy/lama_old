@@ -1,5 +1,5 @@
 Integration
------------
+===========
 
 To integrate the logging-framework into a software a set of macros is provided. Each macro starts with
 the prefix SCAI_LOG to indicate that it is used for logging. 
@@ -14,7 +14,7 @@ There is an include file that contains the definitions for all the macros:
     #include <scai/logging.hpp>
 
 Instantiation
-^^^^^^^^^^^^^
+-------------
 
 In the different subroutines and modules it is possible to get access to a logger. The macro SCAI_LOG_DEF_LOGGER
 defines a static logger variable with a certain name. 
@@ -33,7 +33,7 @@ Furthermore, for template classes:
     
     
 Logging-Statements
-^^^^^^^^^^^^^^^^^^
+------------------
 
 A logger is used in the following macros that stand for the logging statements at the different levels. The
 variable logger must have been defined with one of the two previous macros:
@@ -72,7 +72,7 @@ as it is only an integer comparison with a static variable.
 
 
 Logger-Hierarchy
-^^^^^^^^^^^^^^^^
+----------------
 
 Loggers can be structured hierarchically. Each dot in the name gives a new hierarchy,
 The hierarchy of the loggers makes it more comfortable to configure the loggers.
@@ -97,7 +97,7 @@ These definitions of the loggers result in the following hierarchy:
     
 
 Use of logging for C++ classes
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 Usually, each C++ class should have its own logger that is used within the methods of the class. 
 The logger becomes a static variable of the class.

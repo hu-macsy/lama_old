@@ -1,5 +1,5 @@
 Related Work
-------------
+============
 
 The following three versions of logging libraries are used in most other C++ projects:
 

@@ -1,8 +1,8 @@
 Runtime-Configuration
----------------------
+=====================
 
 Global-Definition
-^^^^^^^^^^^^^^^^^
+-----------------
 
 Logging can be configured at runtime by setting the environment variable ``SCAI_LOG`` with a logging level.
 
@@ -17,7 +17,7 @@ Logging can be configured at runtime by setting the environment variable ``SCAI_
 
 
 Config-Definition
-^^^^^^^^^^^^^^^^^
+-----------------
 
 For setting loggers invididually, a configuration file can be used whose name should be different to 
 the logging levels.
@@ -54,8 +54,8 @@ displayed even if the program crashes. Flushing can be activated by the config f
 
     flush = true
 
-Output
-^^^^^^
+Formatstring
+------------
 
 The default output format of logging messages is as follows:
 

@@ -1,8 +1,8 @@
 Compilation
------------
+===========
 
 Configuration logging at compile time
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------------
 
 By default, all logging statements will be compiled so that they can be enabled at runtime. If the logging
 is switched off at runtime, the logging becomes just a comparison between integers. But even this might
@@ -37,7 +37,7 @@ So switching off logging by ``SCAI_LOG_LEVEL_OFF`` via define in the source code
 if ``-DSCAI_LOG_LEVEL_WARN`` has been set at compile flag.
 
 Conditional code for logging
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
 
 In some situations it might be necessary to have some additional code that is needed to compute values for
 the logging. It should be executed only if the corresponding logging level is enabled.
@@ -62,7 +62,7 @@ higher than INFO.
 
 
 Compile Flags
-^^^^^^^^^^^^^
+-------------
 
 Source files containing logging statements should include the file ``scai/logging.hpp``.
 
@@ -91,7 +91,7 @@ lower level and they can not be used at runtime any more.
 
 
 CMake-Support
-^^^^^^^^^^^^^
+-------------
 
 The logging library itself is built with CMake.
 

@@ -1,8 +1,8 @@
 Examples
---------
+========
 
 Log-Levels
-^^^^^^^^^^
+----------
 
 The first example shows a simple example with logging statements of all different levels.
 
@@ -47,7 +47,7 @@ level of the logger *Demo*.
     2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::49 ) FATAL a message for a fatal error, execution will stop
 
 Multiple-Thread-Environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 
  The next example demonstrates the use of logging with multiple threads.
 

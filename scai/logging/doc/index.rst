@@ -1,7 +1,12 @@
 .. _main-page_logging:
 
+############
+SCAI Logging
+############
+
+************
 Introduction
-============
+************
 
 Inserting log statements into code is a low-tech method for debugging it. It may also be the only way because
 debuggers are not always available or applicable. This is usually the case for multithreaded applications and
@@ -18,21 +23,25 @@ blindness. To alleviate these concerns, our logging module is designed to be rel
 Since logging is rarely the main focus of an application, the API strives to be simple to understand and to
 use.
 
+*************
 Specification
--------------
+*************
 
 * Contains macros for defining loggers and logging calls
 * Internal dependencies: common
 
-SCAI Logging
-------------
+
+**********
+Motivation
+**********
 
 We decided to use an own simple logging facilitate to decrease dependencies with other software packages.
 The macros make it possible to implement the logging with one arbitrary library and may be later
 with an own version.
 
-
-
+********
+Contents
+********
 
 .. toctree::
    :titlesonly:
@@ -44,9 +53,9 @@ with an own version.
    Example
    RelatedWork
 
-
+*******
 Summary
--------
+*******
 
 The SCAI logging library is a very convenient and efficient library that supports logging in C++ applications.
 It has very low overhead and has quite powerful mechanisms for generating logging output.
