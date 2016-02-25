@@ -1,5 +1,5 @@
 ContextType
------------
+===========
 
 A context specifies a device like CPU or GPU accelerator where memory can be
 allocated and where operations on it might be executed.

@@ -1,5 +1,5 @@
 Exception
----------
+=========
 
 Within LAMA one base class is provided for all LAMA relevant exceptions.
 

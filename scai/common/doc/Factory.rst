@@ -1,5 +1,5 @@
 Factory 
--------
+=======
 
 LAMA makes like many other object-oriented software heavy use of inheritance. Typically for each
 base class there are many derived classes available.

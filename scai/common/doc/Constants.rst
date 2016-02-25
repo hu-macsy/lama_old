@@ -1,5 +1,5 @@
 Constants
----------
+=========
 
 There are sometimes situations where a specific value of an argument
 allow  more efficient implementations.

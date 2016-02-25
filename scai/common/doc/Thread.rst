@@ -1,5 +1,5 @@
 Thread
--------
+======
 
 For threading we use an own class. In a previous version we used the thread class of boost 
 that caused a lot of problems during installation as differnt libraries are
