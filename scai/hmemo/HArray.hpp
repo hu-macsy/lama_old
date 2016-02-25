@@ -40,6 +40,7 @@
 
 // common library
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {
@@ -89,6 +90,16 @@ public:
     HArray();
 
     /**
+     * @brief Initialize an array with values from host
+     */
+    void init( const ValueType src[], const IndexType size );
+
+    /**
+     * @brief Initialize an array with same value for each entry
+     */
+    void init( const ValueType src, const IndexType size );
+
+    /**
      * @brief Create a Heterogeneous array and give it a first touch on a context
      *
      * The first context decides about the default context and the default memory          
@@ -121,7 +132,17 @@ public:
      * HArray( const IndexType n ) creates a HArray of size n, allocates Host memory and fills the Host memory with
      * the passed value.
      */
-    HArray( const IndexType n, const ValueType& value );
+    HArray( const IndexType n, const ValueType& value, ContextPtr context = Context::getHostPtr() );
+
+    /**
+     * @brief Create a HArray of size n and initialize it with values from Host
+     *
+     * @param[in] n      the size of the HArray to create
+     * @param[in] values host values
+     *
+     * Note: the data is directly copied and the array can have no incarnation on Host
+     */
+    HArray( const IndexType n, const ValueType[], ContextPtr context = Context::getHostPtr() );
 
     /**
      * @brief Override the default copy constructor with appropriate version.
@@ -300,9 +321,13 @@ HArray<ValueType>::HArray( const IndexType n ) :
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>::HArray( const IndexType n, const ValueType& value ) : _HArray( n, sizeof( ValueType ) )
+HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr context ) : 
+
+    _HArray( n, sizeof( ValueType ) )
 
 {
+    mContextDataManager.getContextData( context );  // first touch here
+
     // In constructor of the HArray lock of accesses is not required 
 
     ContextPtr host = Context::getHostPtr();
@@ -330,6 +355,25 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value ) : _HArray
     releaseWriteAccess( index );
 
     SCAI_LOG_DEBUG( logger, "constructed: " << *this )
+
+    // if array is constructed for other context than host, we prefetch the data to it
+
+    if ( context->getType() != host->getType() )
+    {
+        prefetch( context );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+HArray<ValueType>::HArray( const IndexType n, const ValueType values[], ContextPtr context ) :
+
+     _HArray( 0, sizeof( ValueType ) )
+
+{
+    /* ContextDataIndex data = */  mContextDataManager.getContextData( context );
+    init( values, n );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -377,6 +421,32 @@ common::scalar::ScalarType HArray<ValueType>::getValueType() const
     // Note: this is implementation of the pure method of base class _HArray.
 
     return common::TypeTraits<ValueType>::stype;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void HArray<ValueType>::init( const ValueType src[], const IndexType size )
+{
+    // context manager copies the data to the first touch location
+
+    mContextDataManager.init( src, sizeof( ValueType ) * size );
+    mSize = size;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void HArray<ValueType>::init( const ValueType value, const IndexType size )
+{
+    common::scoped_array<ValueType> data( new ValueType[size] );
+
+    for ( IndexType i = 0; i < size; ++i )
+    {
+        data[i] = value;
+    }
+
+    init( data.get(), size );
 }
 
 /* ---------------------------------------------------------------------------------*/

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Basic tests for LAMA arrays.
+ * @brief Basic tests for Heterogeneous arrays.
  * @author: Thomas Brandes
  * @date 08.07.2015
  **/
@@ -124,6 +124,41 @@ BOOST_AUTO_TEST_CASE( constructorTest )
         {
             ReadAccess<float> read( array2, contextPtr );
             readTest<float>( read.get(), N, N * 5 );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( initTest )
+{
+    ContextPtr hostContext = Context::getHostPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
+    const double values[] = { 1, 3, 5, 7, 4 };
+
+    const IndexType N = sizeof( values ) / sizeof( double );
+
+    SCAI_LOG_INFO( logger, "initTest ( " << N << " values ) on " << *testContext );
+
+    HArray<double> array( testContext );
+
+    array.init( values, N );
+
+    BOOST_CHECK_EQUAL( array.size(), N );
+
+    // init values must be valid at chosen context
+
+    BOOST_CHECK( array.isValid( testContext ) );
+
+    // just check for correct values on the host
+
+    {
+        ReadAccess<double>read( array, hostContext );
+  
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            BOOST_CHECK_EQUAL( values[i], read[i] );
         }
     }
 }

@@ -844,6 +844,31 @@ void ContextDataManager::writeAt( std::ostream& stream ) const
 
 /* ---------------------------------------------------------------------------------*/
 
+void ContextDataManager::init( const void* data, const size_t size )
+{
+    // choose as context for valid entries the first touch context
+
+    ContextPtr ctx = getFirstTouchContextPtr();
+
+    // acquire write only access on this context, validSize = 0;
+
+    ContextDataIndex index = acquireAccess( ctx, common::context::Write, size, 0 );
+
+    // make a fictive ContextData entry for host data
+
+    ContextData hostEntry( Context::getHostPtr()->getMemoryPtr() );
+
+    hostEntry.setRef( const_cast<void*>( data ), size );
+ 
+    // copy the host data to the destination
+
+    mContextData[index].copyFrom( hostEntry, size );
+
+    releaseAccess( index, common::context::Write );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 } /* end namespace hmemo */
 
 } /* end namespace scai */

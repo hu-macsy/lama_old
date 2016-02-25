@@ -42,37 +42,47 @@
 
 #include <boost/assign/list_of.hpp>
 
+/* --------------------------------------------------------------------- */
 
-/*
- * @brief initializes a HArray with an array
+/** Fixture to be used for BOOST_GLOBAL_FIXTURE     
+ *
+ *  provides access to testContext used as context at which tests should run
+ *  and hostContext for host context
+ *
+ *  Note: use global Fixture avoids init/free of Context for each device
+ *        (but static variable testContext must be defined)
  */
-template<typename ValueType>
-void initArray( scai::hmemo::HArray<ValueType>& dst, const ValueType src[], const IndexType size)
+struct ContextFix
 {
-    scai::hmemo::ContextPtr loc = scai::hmemo::Context::getHostPtr();
-
-    scai::hmemo::WriteAccess<ValueType> wDst( dst );
-
-    for( IndexType i = 0; i < size; ++i)
-    {
-        wDst[i] = src[i];
+    ContextFix()
+    {   
+        testContext = scai::hmemo::Context::getContextPtr();
+        BOOST_TEST_MESSAGE( "Setup ContextFix: test context = " << *testContext ); 
     }
+
+    ~ContextFix()
+    {
+        BOOST_TEST_MESSAGE( "Teardown ContextFix" ); 
+        testContext.reset();
+    }
+    
+    static scai::hmemo::ContextPtr testContext;
+};
+
+// ***********************************************************
+
+// Rest of this file is old stuff and considered to be deleted
+
+template<typename ValueType>
+static inline void initArray( scai::hmemo::HArray<ValueType>& dst, const ValueType src[], const IndexType size)
+{
+    dst.init( src, size );
 }
 
-/*
- * @brief initializes a HArray with an scalar
- */
 template<typename ValueType>
-void initArray( scai::hmemo::HArray<ValueType>& dst, const ValueType value, const IndexType size)
+static inline void initArray( scai::hmemo::HArray<ValueType>& dst, const ValueType value, const IndexType size)
 {
-    scai::hmemo::ContextPtr loc = scai::hmemo::Context::getHostPtr();
-
-    scai::hmemo::WriteAccess<ValueType> wDst( dst );
-
-    for( IndexType i = 0; i < size; ++i)
-    {
-        wDst[i] = value;
-    }
+    dst.init( value, size );
 }
 
 /**

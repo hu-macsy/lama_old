@@ -108,21 +108,21 @@ BOOST_AUTO_TEST_CASE( accessTest )
     const double value = 1.0;
     const double value2 = 2.0;
 
-    ContextPtr contextPtr = Context::getHostPtr();
+    ContextPtr hostContext = Context::getHostPtr();
 
     HArray<double> hArray( n, value );
     {
-        ReadAccess<double> hArrayRAccess( hArray, contextPtr );
+        ReadAccess<double> hArrayRAccess( hArray, hostContext );
 
         for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value, hArrayRAccess.get()[i] );
         }
 
-        WriteAccess<double> tmpWriteAccess( hArray, contextPtr );
+        WriteAccess<double> tmpWriteAccess( hArray, hostContext );
     }
     {
-        WriteAccess<double> hArrayWAccess( hArray, contextPtr );
+        WriteAccess<double> hArrayWAccess( hArray, hostContext );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -131,9 +131,9 @@ BOOST_AUTO_TEST_CASE( accessTest )
 
         hArrayWAccess.release();
 
-        ReadAccess<double> tmpReadAccess( hArray, contextPtr );
+        ReadAccess<double> tmpReadAccess( hArray, hostContext );
 
-        ReadAccess<double> hArrayRAccess( hArray, contextPtr );
+        ReadAccess<double> hArrayRAccess( hArray, hostContext );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -150,13 +150,13 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     const double value = 1.0;
     HArray<double> hArray( N, value );
 
-    ContextPtr contextPtr = Context::getHostPtr();
+    ContextPtr hostContext = Context::getHostPtr();
 
     {
         // read and write access at same time by same thread
 
-        ReadAccess<double> read( hArray, contextPtr );
-        WriteAccess<double> write( hArray, contextPtr );
+        ReadAccess<double> read( hArray, hostContext );
+        WriteAccess<double> write( hArray, hostContext );
 
         for ( IndexType i = 0; i < N; ++i )
         {
@@ -166,31 +166,31 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     {
         // verify that operation was really on the same array
 
-        ReadAccess<double> read( hArray, contextPtr );
+        ReadAccess<double> read( hArray, hostContext );
         readTest<double>( read.get(), N, N * value * 2.0 );
     }
     {
         // with a single write access resize is possilbe
 
-        WriteAccess<double> write( hArray, contextPtr );
+        WriteAccess<double> write( hArray, hostContext );
         write.resize( 2 * N );
     }
     {
         // read and write access at same time by same thread
 
-        WriteOnlyAccess<double> write( hArray, contextPtr, 2 * N );
+        WriteOnlyAccess<double> write( hArray, hostContext, 2 * N );
         BOOST_CHECK_THROW(
         { 
            // read access no more possible as write only did not take care about valid data
 
-           ReadAccess<double> read( hArray, contextPtr );
+           ReadAccess<double> read( hArray, hostContext );
         }, common::Exception );
     }
     {
         // with read and write at the same time resize throws Exception
 
-        ReadAccess<double> read( hArray, contextPtr );
-        WriteAccess<double> write( hArray, contextPtr );
+        ReadAccess<double> read( hArray, hostContext );
+        WriteAccess<double> write( hArray, hostContext );
         BOOST_CHECK_THROW(
         { 
             write.resize( 3 * N );
@@ -199,8 +199,8 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     {
         // read and write access at same time by same thread
 
-        ReadAccess<double> read( hArray, contextPtr );
-        WriteAccess<double> write( hArray, contextPtr );
+        ReadAccess<double> read( hArray, hostContext );
+        WriteAccess<double> write( hArray, hostContext );
 
         // a clear is not possible as it affects the other access
         // Note: clear is the same as resize( 0 )
