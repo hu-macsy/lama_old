@@ -147,7 +147,7 @@ if ( AMG_SUBDIRPRESENT )
 endif ( AMG_SUBDIRPRESENT )
 
 ### add library ###
-add_library ( scai_solver ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
@@ -156,13 +156,13 @@ addInternalAndExternalLinkLibraries()
 #message ( STATUS "SOLVER uses following solver libraries: ${SOLVER_SUB_LIBRARIES}" )
 if    ( SOLVER_SUB_LIBRARIES )
 #    message ( STATUS "linked to solver: ${SOLVER_SUB_LIBRARIES}" )
-    target_link_libraries( scai_solver ${SOLVER_SUB_LIBRARIES} )
+    target_link_libraries( ${PROJECT_NAME} ${SOLVER_SUB_LIBRARIES} )
 endif ( SOLVER_SUB_LIBRARIES )
 
 ### install ###
 
 ## install lib
-install ( TARGETS scai_solver DESTINATION lib )
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
 relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/solver )
