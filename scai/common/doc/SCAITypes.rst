@@ -15,18 +15,12 @@ The data type int is the preferred one as it is the same type used in external l
 like MKL or cuSPARSE. Using ''unsigned int'' is possible but might result in a lot of
 warnings at compile time.
 
-Supported value types for vectors and matrices must be listed as follows:
+For every backend a list of value types which are used to instantiate template is provided. 
+E.g. the list of value types for the Host-Backend. 
 
-.. code-block:: c++
-
-  #define ARITHMETIC_HOST_TYPE_CNT 6
-
-  #define ARITHMETIC_HOST_TYPE_0 float
-  #define ARITHMETIC_HOST_TYPE_1 double
-  #define ARITHMETIC_HOST_TYPE_2 ComplexFloat
-  #define ARITHMETIC_HOST_TYPE_3 ComplexDouble
-  #define ARITHMETIC_HOST_TYPE_4 LongDouble
-  #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
+.. literalinclude:: ../SCAITypes.hpp 
+   :language: c++
+   :lines: 93-109
 
 The reason for this syntax is the use of BOOST_PP_MACRO for instantiation of 
 classes and methods.

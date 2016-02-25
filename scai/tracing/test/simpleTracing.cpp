@@ -33,6 +33,7 @@
 
 #include <scai/tracing.hpp>
 #include <cstdio>
+#include <omp.h>
 
 void subA( int& X )
 {
@@ -51,8 +52,11 @@ int main()
     int X = 0;
     SCAI_REGION( "main" )
 
+    #pragma omp parallel for
     for ( int i = 0; i < 10000; ++i )
     {
+        SCAI_LOG_THREAD( omp_get_thread_num() );
+
         SCAI_REGION_START( "main.loopA" )
         for ( int j = 0; j < 30; ++ j )
         {

@@ -159,6 +159,12 @@ public:
     IndexType capacity() const;
 
     /**
+     * @brief return the memory where data has been allocated
+     */
+
+    const Memory& getMemory() const;
+
+    /**
      * @brief Releases the WriteAccess on the associated HArray.
      */
     virtual void release();
@@ -228,6 +234,16 @@ WriteAccess<ValueType>::~WriteAccess()
 {
     SCAI_LOG_DEBUG( logger, "~WriteAccess: release" )
     release();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+const Memory& WriteAccess<ValueType>::getMemory() const
+{   
+    SCAI_ASSERT( mArray, "ReadAccess has already been released." )
+    
+    return mArray->getMemory( mContextDataIndex );
 }
 
 /* --------------------------------------------------------------------------- */

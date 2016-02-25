@@ -1,5 +1,5 @@
 /**
- * @file HArrayUtilsTest.cpp
+ * @file LArrayTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,96 +25,107 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Tests for the class HArrayUtils
+ * @brief Tests for the class LArray
  * @author: Thomas Brandes
- * @date 22.01.2016
+ * @date 22.02.2016
  **/
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 
-#include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/test/TestMacros.hpp>
-#include <scai/common/ReductionOp.hpp>
+#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 using namespace scai::utilskernel;
 using namespace scai::hmemo;
 using namespace scai::common;
 
-typedef boost::mpl::list<IndexType, float, double> test_types;
+extern ContextPtr testContext;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( HArrayUtilsTest )
+BOOST_AUTO_TEST_SUITE( LArrayTest )
 
 /* --------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayUtilsTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.LArrayTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE( indexTest )
 {
+    SCAI_LOG_INFO( logger, "indexTest on " << *testContext )
+
+    // the LArray allows indexed access, but attention: can be very slow
+
+    LArray<IndexType> array( testContext );
+
     const IndexType N = 10;
 
-    const ValueType a = 1;
-    const ValueType b = 2;
-    const ValueType c = 3;
+    array.resize( N );
 
-    ContextPtr ctx  = Context::getContextPtr();
-    ContextPtr host = Context::getHostPtr();
-
-    HArray<ValueType> array( N );
-
-    HArrayUtils::setScalar( array, a, reduction::COPY, ctx );  // array = a
-    HArrayUtils::setScalar( array, b, reduction::ADD, ctx  );  // array += b
-    HArrayUtils::setScalar( array, c, reduction::MULT, ctx  ); // array *= c
-
-    ValueType expectedValue = ( a + b ) * c;
-
+    for ( IndexType i = 0; i < N; ++i )
     {
-        ReadAccess<ValueType> read( array, host );
+        array[i] = i;
+    }
 
-        for ( IndexType i = 0; i < N; ++i )
-        {
-            BOOST_CHECK_EQUAL( expectedValue, read[i] );
-        }
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_CHECK_EQUAL( i, array[i] );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE( assignTest )
 {
+    SCAI_LOG_INFO( logger, "assignTest on " << *testContext )
+
+    // the LArray allows indexed access, but attention: can be very slow
+
+    LArray<IndexType> array( testContext );
+
     const IndexType N = 10;
-    const IndexType k = 3;    // one value in range 0 .. N-1
+    const IndexType val = 3;
 
-    const ValueType a = 1;
-    const ValueType b = 2;
+    array.resize( N );
 
-    ContextPtr ctx  = Context::getContextPtr();
-    ContextPtr host = Context::getHostPtr();
+    array = val;
 
-    HArray<ValueType> array( N );
-
-    HArrayUtils::setScalar( array, a, reduction::COPY, ctx );  // array = a
-
-    HArrayUtils::setVal( array, k, b );  // array[k] = b
-
+    for ( IndexType i = 0; i < N; ++i )
     {
-        ReadAccess<ValueType> read( array, host );
+        BOOST_CHECK_EQUAL( val, array[i] );
+    }
+}
 
-        for ( IndexType i = 0; i < N; ++i )
-        {
-            if ( i == k )
-            {
-                BOOST_CHECK_EQUAL( b, read[i] );
-            }
-            else
-            {
-                BOOST_CHECK_EQUAL( a, read[i] );
-            }
-        }
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( constructorTest )
+{
+    SCAI_LOG_INFO( logger, "constructorTest on " << *testContext )
+
+    // the LArray allows indexed access, but attention: can be very slow
+
+    const IndexType N = 10;
+    const IndexType val = 3;
+
+    LArray<IndexType> array( N, val, testContext );
+
+    BOOST_CHECK( array.isValid( testContext ) );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_CHECK_EQUAL( val, array[i] );
+    }
+
+    const IndexType myVals[N] = { 1, 5, 9, 4, 6, 3, 7, 8, 0, 2 };
+
+    LArray<IndexType> array1( N, myVals, testContext );
+
+    BOOST_CHECK( array.isValid( testContext ) );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_CHECK_EQUAL( myVals[i], array1[i] );
     }
 }
 

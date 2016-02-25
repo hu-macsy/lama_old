@@ -42,20 +42,35 @@
 
 #include <scai/blaskernel/test/TestMacros.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/TypeTraits.hpp>
 
-using namespace scai::hmemo;
+using namespace scai;
+using namespace blaskernel;
+using namespace hmemo;
+using common::TypeTraits;
 
-namespace scai
-{
-namespace blaskernel
-{
-namespace BLAS1Test
-{
+/** Global variable for context, saves overhead for context initialization for each test */
 
-template<typename ValueType>
-void asumTest( ContextPtr loc )
+extern ContextPtr testContext;
+
+BOOST_AUTO_TEST_SUITE( BLAS1Test )
+
+/* --------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" )
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( asumTest, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
+
+    BOOST_WARN( asum[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( asum.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "asum< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
+
     {
         ValueType values[] =
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
@@ -64,7 +79,6 @@ void asumTest( ContextPtr loc )
         const IndexType incX2 = 2;
         const ValueType result1 = 21.0;
         const ValueType result2 = 9.0;
-//        HArray<ValueType> AValues( nValues, values );
         HArray<ValueType> AValues( nValues );
         initArray( AValues, values, nValues );
         {
@@ -88,10 +102,16 @@ void asumTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void axpyTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
+
+    BOOST_WARN( axpy[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( axpy.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "axpy< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
+
     // check with n <= 0
     {
         ValueType x[] =
@@ -183,10 +203,15 @@ void axpyTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void copyTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
+
+    BOOST_WARN( copy[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( copy.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "copy< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     // check with n <= 0
     {
@@ -280,10 +305,17 @@ void copyTest( ContextPtr loc )
 } // copyTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-template<typename ValueType>
-void dotTest( ContextPtr loc )
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( dotTest, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
+
+    BOOST_WARN( dot[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( dot.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "dot< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
+
     {
         ValueType x[] =
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
@@ -316,10 +348,15 @@ void dotTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void iamaxTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( iamaxTest, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::iamax<ValueType> > iamax;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::iamax<ValueType> > iamax;
+
+    BOOST_WARN( iamax[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( iamax.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "iamax< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     {
         ValueType values[] =
@@ -352,10 +389,15 @@ void iamaxTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void nrm2Test( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( nrm2Test, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::nrm2<ValueType> > nrm2;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::nrm2<ValueType> > nrm2;
+
+    BOOST_WARN( nrm2[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( nrm2.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "nrm2< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     {
         ValueType values[] =
@@ -379,19 +421,24 @@ void nrm2Test( ContextPtr loc )
             BOOST_CHECK_EQUAL( euclideanNorm, 0.0 );
             // n > 0 and incX > 0
             euclideanNorm = nrm2[loc->getType()]( nValues / incX1, rAValues.get(), incX1 );
-            SCAI_CHECK_CLOSE( euclideanNorm, scai::common::Math::sqrt( result1 ), 1e-4 );
+            SCAI_CHECK_CLOSE( euclideanNorm, common::Math::sqrt( result1 ), 1e-4 );
             euclideanNorm = nrm2[loc->getType()]( nValues / incX2, rAValues.get(), incX2 );
-            SCAI_CHECK_CLOSE( euclideanNorm, scai::common::Math::sqrt( result2 ), 1e-4 );
+            SCAI_CHECK_CLOSE( euclideanNorm, common::Math::sqrt( result2 ), 1e-4 );
         }
     }
 } // nrm2Test
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void scalTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scalTest, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::scal<ValueType> > scal;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::scal<ValueType> > scal;
+
+    BOOST_WARN( scal[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( scal.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "scal< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     // check with n <= 0
     {
@@ -459,10 +506,15 @@ void scalTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void sumTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
+
+    BOOST_WARN( sum[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( sum.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "sum< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     // check with n <= 0
     {
@@ -531,10 +583,15 @@ void sumTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void swapTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, blas_test_types )
 {
-    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::swap<ValueType> > swap;
+    kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::swap<ValueType> > swap;
+
+    BOOST_WARN( swap[testContext->getType()] );
+
+    ContextPtr loc = Context::getContextPtr( swap.validContext( testContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "swap< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     // check with n <= 0
     {
@@ -630,28 +687,6 @@ void swapTest( ContextPtr loc )
         }
     }
 } // swapTest
-
-} // namespace BLAS1Test
-
-} /* end namespace blaskernel */
-
-} /* end namespace scai */
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_SUITE( BLAS1Test )
-
-SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" )
-
-LAMA_AUTO_TEST_CASE_CT( asumTest, BLAS1Test, scai::blaskernel )
-LAMA_AUTO_TEST_CASE_CT( axpyTest, BLAS1Test, scai::blaskernel )
-LAMA_AUTO_TEST_CASE_CT( copyTest, BLAS1Test, scai::blaskernel )
-LAMA_AUTO_TEST_CASE_CT( dotTest, BLAS1Test, scai::blaskernel )
-LAMA_AUTO_TEST_CASE_CT( iamaxTest, BLAS1Test, scai::blaskernel )
-LAMA_AUTO_TEST_CASE_CT( nrm2Test, BLAS1Test, scai::blaskernel )
-LAMA_AUTO_TEST_CASE_CT( scalTest, BLAS1Test, scai::blaskernel )
-LAMA_AUTO_TEST_CASE_CT( sumTest, BLAS1Test, scai::blaskernel )
-LAMA_AUTO_TEST_CASE_CT( swapTest, BLAS1Test, scai::blaskernel )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

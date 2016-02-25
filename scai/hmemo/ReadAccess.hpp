@@ -67,7 +67,7 @@ class COMMON_DLL_IMPORTEXPORT ReadAccess: public Access
 
 private:
 
-    const HArray<ValueType>* mArray;   // read access to this associated LAMA array
+    const HArray<ValueType>* mArray;      // read access to this associated LAMA array
 
     const ValueType* mData;               // pointer to the data used by the access
 
@@ -109,6 +109,12 @@ public:
      * @brief Allow type conversion.
      */
     operator const ValueType*() const;
+
+    /**
+     * @brief return the memory where data has been allocated
+     */
+
+    const Memory& getMemory() const;
 
     /**
      * @brief Releases the acquired ReadAccess.
@@ -197,6 +203,16 @@ void ReadAccess<ValueType>::release()
     }
 
     mArray = NULL;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+const Memory& ReadAccess<ValueType>::getMemory() const
+{
+    SCAI_ASSERT( mArray, "ReadAccess has already been released." )
+
+    return mArray->getMemory( mContextDataIndex );
 }
 
 /* ---------------------------------------------------------------------------------*/

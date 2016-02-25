@@ -168,6 +168,16 @@ void CUDAMemory::memcpy( void* dst, const void* src, const size_t size ) const
 
 /* ----------------------------------------------------------------------------- */
 
+void CUDAMemory::memset( void* dst, const int val, const size_t size ) const
+{
+    SCAI_CONTEXT_ACCESS( mCUDAContext )
+    SCAI_LOG_INFO( logger, "set " << size << " bytes with " << val << " to " << dst << " (device) " )
+    SCAI_CUDA_DRV_CALL( cuMemsetD8( ( CUdeviceptr ) dst, ( unsigned char ) val, size ),
+                        "cuMemsetD8( " << dst << ", " << val << ", " << size << " ) failed" )
+}
+
+/* ----------------------------------------------------------------------------- */
+
 void CUDAMemory::memcpyToCUDA( const CUDAMemory& dstMemory, void* dst, const void* src, const size_t size ) const
 {
     SCAI_CONTEXT_ACCESS( mCUDAContext )

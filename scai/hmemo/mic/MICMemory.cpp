@@ -184,6 +184,20 @@ void MICMemory::memcpy( void* dst, const void* src, const size_t size ) const
 
 /* ----------------------------------------------------------------------------- */
 
+void MICMemory::memset( void* dst, const int val, const size_t size ) const
+{
+    const size_t dst_ptr = (size_t) dst;
+
+    #pragma offload target( mic : deviceNr ) in( dst_ptr, size, val )
+    {
+        void* dst = ( void* ) dst_ptr;
+
+        ::memset( dst, val, size );
+    }
+}
+
+/* ----------------------------------------------------------------------------- */
+
 bool MICMemory::canCopyFrom( const Memory& other ) const
 {
     bool supported = false;

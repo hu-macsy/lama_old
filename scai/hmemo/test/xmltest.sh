@@ -41,14 +41,16 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running tests serial
-echo "Running serial tests"
-./MemoryTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/MemoryTest.xml
+# Running tests for Host context
+echo "Running hmemo test for Host context"
+./hmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoHostTest.xml
 
 if [ -d cuda ];
 then
+    echo "Running hmemo test for CUDA context"
+    ./hmemoTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoCUDATest.xml
     #Running CUDA tests
-    echo "Running cuda tests"
+    echo "Running dedicated CUDA test"
     cuda/CUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CUDATest.xml
 fi
 

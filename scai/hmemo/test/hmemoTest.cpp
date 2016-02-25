@@ -3,7 +3,7 @@
     #define BOOST_TEST_DYN_LINK
 #endif
 
-#define BOOST_TEST_MODULE utilskernelTest
+#define BOOST_TEST_MODULE hmemoTest
 
 // indicate that default main of Boost is not used here
 
@@ -19,15 +19,13 @@
 
 #include <iostream>
 
-scai::hmemo::ContextPtr testContext;
-
 /** The init function returns true if it can get the specified context. */
 
 bool init_function()
 {
     try
     {
-        testContext = scai::hmemo::Context::getContextPtr();
+        scai::hmemo::ContextPtr ctx = scai::hmemo::Context::getContextPtr();
         return true;
     }
     catch ( scai::common::Exception& ex )
@@ -43,9 +41,5 @@ int main( int argc, char* argv[] )
 
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
-    int rc = boost::unit_test::unit_test_main( &init_function, argc, argv );
- 
-    testContext.reset();   // frees the context
-
-    return rc;
+    return boost::unit_test::unit_test_main( &init_function, argc, argv );
 }

@@ -31,19 +31,19 @@
 ###
 
 set ( CXX_SOURCES
-      LAMAArrayRefTest.cpp  
-      MemoryTest.cpp
+      hmemoTest.cpp
       ContextTest.cpp  
-      HostContextTest.cpp  
-      LAMAArrayTest.cpp  
-      DelayedReleaseTest.cpp
+      AccessTest.cpp  
+      HArrayTest.cpp  
+      HArrayRefTest.cpp  
+      MemoryTest.cpp
 ) 
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-add_executable ( MemoryTest ${CXX_SOURCES} )
+add_executable ( hmemoTest ${CXX_SOURCES} )
 
-target_link_libraries ( MemoryTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( hmemoTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
@@ -54,7 +54,12 @@ if    ( USE_MIC )
 endif ( USE_MIC )
 
 ### Copy the xmltest.sh file in build directory ### 
+
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
+
+### Copy the README in build directory ### 
+
+file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
 
 if ( USE_CODE_COVERAGE )
     configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)

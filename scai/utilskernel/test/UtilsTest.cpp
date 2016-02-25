@@ -33,40 +33,47 @@
 
 // boost
 #include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 
 // others
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/hmemo.hpp>
+#include <scai/common/TypeTraits.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+// import scai_arithmetic_test_types, scai_array_test_types
 
-using namespace scai::utilskernel;
-using namespace scai::hmemo;
+#include <scai/common/test/TestMacros.hpp>
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+using namespace scai;
+using namespace utilskernel;
+using namespace hmemo;
 
-// Dummy type, needed to use the lama interface
-typedef bool NoType;
+/* --------------------------------------------------------------------- */
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+extern ContextPtr testContext;
 
-namespace scai
-{
+/* --------------------------------------------------------------------- */
 
-namespace lama
-{
+BOOST_AUTO_TEST_SUITE( HArrayTest )
 
-namespace UtilsTest
-{
+/* --------------------------------------------------------------------- */
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayTest" )
 
-template<typename ValueType>
-void scaleTest( ContextPtr loc )
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
+
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+    ContextPtr loc = setVal.getValidContext( testContext );
+
+    BOOST_WARN( loc.get() == testContext.get() );
+
+    SCAI_LOG_INFO( logger, "scaleTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
     ValueType valuesValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
@@ -90,10 +97,16 @@ void scaleTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void sumTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
+
+    ContextPtr loc = reduce.getValidContext( testContext );
+
+    BOOST_WARN( loc != testContext );    // kernel not available for testContext
+
+    SCAI_LOG_INFO( logger, "sumTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+
     {
         ValueType valuesValues[] =
         { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
@@ -117,10 +130,16 @@ void sumTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void setValTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+    ContextPtr loc = setVal.getValidContext( testContext );
+
+    SCAI_LOG_INFO( logger, "setValTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+
+    BOOST_WARN( loc.get() == testContext.get() );   // print warning if not available for test context
+
     {
         const IndexType n = 20;
         LArray<ValueType> values;
@@ -153,10 +172,16 @@ void setValTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-void isSortedTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
+
+    ContextPtr loc = isSorted.getValidContext( testContext );
+
+    BOOST_WARN( loc.get() == testContext.get() );
+
+    SCAI_LOG_INFO( logger, "isSortedTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+ 
     {
         ValueType values1[] =
         { 1, 2, 2, 2, 5, 8 };
@@ -194,9 +219,14 @@ void isSortedTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename NoType>
-void setOrderTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE( setOrderTest )
 {
+    // setOrder is only for IndexType
+
+    ContextPtr loc = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "setOrderTest on " << *loc )
+
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     {
         const IndexType n = 20;
@@ -224,10 +254,18 @@ void setOrderTest( ContextPtr loc )
     }
 }
 
-template<typename ValueType>
-void invertTest( ContextPtr loc )
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types )
 {
     static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
+
+    ContextPtr loc = invert.getValidContext( testContext );
+
+    BOOST_WARN( loc.get() == testContext.get() );
+
+    SCAI_LOG_INFO( logger, "invertTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+
     {
         // TODO: should it be possible to pass 0 elements? What should be the result?
         ValueType valuesValues[] =
@@ -243,7 +281,7 @@ void invertTest( ContextPtr loc )
 
         for ( IndexType i = 0; i < nValues; i++ )
         {
-            SCAI_CHECK_CLOSE( 1 / valuesValues[i], rValues.get()[i], 1 );
+            BOOST_CHECK_EQUAL( ValueType( 1 ) / valuesValues[i], rValues[i] );
         }
     }
     {
@@ -257,27 +295,7 @@ void invertTest( ContextPtr loc )
     }
 }
 
-// TODO: add SPMV tests
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-}//namespace UtilsTest
+BOOST_AUTO_TEST_SUITE_END()
 
-} /* end namespace lama */
-
-} /* end namespace scai */
-
-/* ------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_SUITE( UtilsTest )
-
-SCAI_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
-
-LAMA_AUTO_TEST_CASE_CT( sumTest, UtilsTest, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( isSortedTest, UtilsTest, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( setValTest, UtilsTest, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( invertTest, UtilsTest, scai::lama )
-
-LAMA_AUTO_TEST_CASE_CTDUMMY( setOrderTest, UtilsTest )
-
-LAMA_AUTO_TEST_CASE_CT( scaleTest, UtilsTest, scai::lama )
-
-/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()

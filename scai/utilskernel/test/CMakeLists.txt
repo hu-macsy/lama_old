@@ -34,6 +34,7 @@ set ( CXX_SOURCES
       UtilsKernelTest
       HArrayUtilsTest
       UtilsTest
+      LArrayTest
 ) 
 
 include_directories ( ${Boost_INCLUDE_DIR} )
