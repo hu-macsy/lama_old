@@ -33,7 +33,12 @@
 foreach ( executable blas1 matrix scalar simple vector )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES_TUTORIAL ${EXAMPLE_FILES_TUTORIAL} ${executable}.cpp ) 
     set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL} ${executable}.exe" )
 endforeach ( executable )
+
+#install examples
+install ( FILES ${EXAMPLE_FILES_TUTORIAL} DESTINATION ${PROJECT_EXAMPLE_DIR}/tutorial )
+install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR}/tutorial )
 
 set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL}" PARENT_SCOPE )
