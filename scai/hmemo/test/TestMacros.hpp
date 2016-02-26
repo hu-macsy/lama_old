@@ -47,22 +47,21 @@
 /** Fixture to be used for BOOST_GLOBAL_FIXTURE     
  *
  *  provides access to testContext used as context at which tests should run
- *  and hostContext for host context
  *
  *  Note: use global Fixture avoids init/free of Context for each device
- *        (but static variable testContext must be defined)
+ *        (but static variable testContext must be defined in implementation file)
  */
 struct ContextFix
 {
     ContextFix()
     {   
         testContext = scai::hmemo::Context::getContextPtr();
-        BOOST_TEST_MESSAGE( "Setup ContextFix: test context = " << *testContext ); 
+        // BOOST_TEST_MESSAGE( "Setup ContextFix: test context = " << *testContext ); 
     }
 
     ~ContextFix()
     {
-        BOOST_TEST_MESSAGE( "Teardown ContextFix" ); 
+        // BOOST_TEST_MESSAGE( "Teardown ContextFix" ); 
         testContext.reset();
     }
     
@@ -70,17 +69,21 @@ struct ContextFix
 };
 
 // ***********************************************************
-
+// ***********************************************************
+// ***********************************************************
 // Rest of this file is old stuff and considered to be deleted
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
 
 template<typename ValueType>
-static inline void initArray( scai::hmemo::HArray<ValueType>& dst, const ValueType src[], const IndexType size)
+static inline void initArrayVals( scai::hmemo::HArray<ValueType>& dst, const ValueType src[], const IndexType size)
 {
     dst.init( src, size );
 }
 
 template<typename ValueType>
-static inline void initArray( scai::hmemo::HArray<ValueType>& dst, const ValueType value, const IndexType size)
+static inline void initArrayVal( scai::hmemo::HArray<ValueType>& dst, const ValueType value, const IndexType size)
 {
     dst.init( value, size );
 }
@@ -194,7 +197,6 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
     ContextPtr loc;                                                                                                    \
     loc = Context::getContextPtr( *Iter );
 
-
 /** This macro runs method<ValueType>( context ) where ValueType is given by the I-th arithmetic Host Type
  *  (skips the run for long double types on CUDA as not supported there).
  *
@@ -205,7 +207,7 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
     try                                                                                                         \
     {                                                                                                           \
         if ( context->getType() == scai::common::context::CUDA                                                  \
-				|| context->getType() == scai::common::context::MIC )                                           \
+                               || context->getType() == scai::common::context::MIC )                                           \
         {                                                                                                       \
             switch( scai::common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() )                                   \
             {                                                                                                   \

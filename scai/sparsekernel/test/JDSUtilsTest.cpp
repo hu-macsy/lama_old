@@ -91,19 +91,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
     const IndexType i = 2;
     const IndexType numColumns = 16;
     const IndexType numRows = 3;
-    HArray<ValueType> values( nValues );
-    HArray<IndexType> ja( nJa );
-    HArray<IndexType> dlg( nDlg );
-    HArray<IndexType> ilg( nIlg );
-    HArray<IndexType> perm( nPerm );
-    HArray<OtherValueType> row( numColumns );
 
-    initArray( values, valuesValues, nValues );
-    initArray( ja, valuesJa, nJa );
-    initArray( dlg, valuesDlg, nDlg );
-    initArray( ilg, valuesIlg, nIlg );
-    initArray( perm, valuesPerm, nPerm );
-    initArray( row, OtherValueType(0), numColumns );
+    HArray<ValueType> values( nValues, valuesValues, testContext );
+    HArray<IndexType> ja( nJa, valuesJa, testContext );
+    HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+    HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+    HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+
+    HArray<OtherValueType> row;
 
     ReadAccess<ValueType> rValues( values, loc );
     ReadAccess<IndexType> rJa( ja, loc );
@@ -160,17 +155,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_typ
     };
     const IndexType numColumns = 10;
     const IndexType numRows = 5;
-    HArray<ValueType> values( nValues );
-    HArray<IndexType> ja( nJa );
-    HArray<IndexType> dlg( nDlg );
-    HArray<IndexType> ilg( nIlg );
-    HArray<IndexType> perm( nPerm );
 
-    initArray( values, valuesValues, nValues );
-    initArray( ja, valuesJa, nJa );
-    initArray( dlg, valuesDlg, nDlg );
-    initArray( ilg, valuesIlg, nIlg );
-    initArray( perm, valuesPerm, nPerm );
+    HArray<ValueType> values( nValues, valuesValues, testContext );
+    HArray<IndexType> ja( nJa, valuesJa, testContext );
+    HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+    HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+    HArray<IndexType> perm( nPerm, valuesPerm, testContext );
 
     ReadAccess<ValueType> rValues( values, loc );
     ReadAccess<IndexType> rJa( ja, loc );
@@ -203,50 +193,45 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_t
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    ValueType valuesValues[] =
-    { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
+    ValueType valuesValues[] = { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
+    IndexType valuesDlg[]    = { 3, 3, 3, 3, 2, 1 };
+    IndexType valuesIlg[]    = { 6, 5, 4 };
+    IndexType valuesPerm[]   = { 1, 2, 0 };
+
+    OtherValueType valuesDiagonal[] = { 3, 1, 2 };
+    ValueType expectedValues[] = { 1, 14, 36, 2, 16, 39, 3, 18, 42, 4, 20, 45, 5, 22, 6 };
+
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-    IndexType valuesDlg[] =
-    { 3, 3, 3, 3, 2, 1 };
     const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-    IndexType valuesIlg[] =
-    { 6, 5, 4 };
     const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-    IndexType valuesPerm[] =
-    { 1, 2, 0 };
     const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
-    OtherValueType valuesDiagonal[] =
-    { 3, 1, 2 };
+
     const IndexType nDiagonal = sizeof( valuesDiagonal ) / sizeof( OtherValueType );
-    ValueType expectedValues[] =
-    { 1, 14, 36, 2, 16, 39, 3, 18, 42, 4, 20, 45, 5, 22, 6 };
     const IndexType numRows = 3;
-    HArray<ValueType> values( nValues );
-    HArray<IndexType> dlg( nDlg );
-    HArray<IndexType> ilg( nIlg );
-    HArray<IndexType> perm( nPerm );
-    HArray<OtherValueType> diagonal( nDiagonal );
 
-    initArray( values, valuesValues, nValues );
-    initArray( dlg, valuesDlg, nDlg );
-    initArray( ilg, valuesIlg, nIlg );
-    initArray( perm, valuesPerm, nPerm );
-    initArray( diagonal, valuesDiagonal, nDiagonal );
+    HArray<ValueType> values( nValues, valuesValues, testContext );
+    HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+    HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+    HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+    HArray<OtherValueType> diagonal( nDiagonal, valuesDiagonal, testContext );
 
-    ReadAccess<IndexType> rDlg( dlg, loc );
-    ReadAccess<IndexType> rIlg( ilg, loc );
-    ReadAccess<IndexType> rPerm( perm, loc );
-    ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
     {
+        ReadAccess<IndexType> rDlg( dlg, loc );
+        ReadAccess<IndexType> rIlg( ilg, loc );
+        ReadAccess<IndexType> rPerm( perm, loc );
+        ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
         scaleValue[loc->getType()]( numRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
     }
-    ReadAccess<ValueType> rValues( values );
 
-    for ( IndexType i = 0; i < nValues; i++ )
     {
-        BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
+        ReadAccess<ValueType> rValues( values );
+
+        for ( IndexType i = 0; i < nValues; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
+        }
     }
 }
 
@@ -264,41 +249,40 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 
     // check with matrix without diagonal property
     {
-        IndexType valuesJa[] =
-        { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 };
+        IndexType valuesJa[]   = { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 };
+        IndexType valuesDlg[]  = { 3, 3, 3, 3, 2, 1 };
+        IndexType valuesIlg[]  = { 6, 5, 4 };
+        IndexType valuesPerm[] = { 1, 2, 0 };
+
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
-        IndexType valuesDlg[] =
-        { 3, 3, 3, 3, 2, 1 };
         const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-        IndexType valuesIlg[] =
-        { 6, 5, 4 };
         const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-        IndexType valuesPerm[] =
-        { 1, 2, 0 };
         const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
+
         const IndexType numRows = 3;
         const IndexType numColumns = 16;
         const IndexType numDiagonals = 3;
-        HArray<IndexType> ja( nJa );
-        HArray<IndexType> dlg( nDlg );
-        HArray<IndexType> ilg( nIlg );
-        HArray<IndexType> perm( nPerm );
 
-        initArray( ja, valuesJa, nJa );
-        initArray( dlg, valuesDlg, nDlg );
-        initArray( ilg, valuesIlg, nIlg );
-        initArray( perm, valuesPerm, nPerm );
+        HArray<IndexType> ja( nJa, valuesJa, testContext );
+        HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
 
         ReadAccess<IndexType> rJa( ja, loc );
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
         ReadAccess<IndexType> rPerm( perm, loc );
+
         SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty;
-        diagonalProperty = checkDiagonalProperty[loc->getType()]( numDiagonals, numRows, numColumns,
-                                                       rPerm.get(), rJa.get(), rDlg.get() );
+
+        bool diagonalProperty = 
+
+            checkDiagonalProperty[loc->getType()]( numDiagonals, numRows, numColumns,
+                                                   rPerm.get(), rJa.get(), rDlg.get() );
+
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
+
     // check with matrix with diagonal property
     {
         IndexType valuesJa[] =
@@ -316,20 +300,17 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
         const IndexType numRows = 3;
         const IndexType numColumns = 3;
         const IndexType numDiagonals = 3;
-        HArray<IndexType> ja( nJa );
-        HArray<IndexType> dlg( nDlg );
-        HArray<IndexType> ilg( nIlg );
-        HArray<IndexType> perm( nPerm );
 
-        initArray( ja, valuesJa, nJa );
-        initArray( dlg, valuesDlg, nDlg );
-        initArray( ilg, valuesIlg, nIlg );
-        initArray( perm, valuesPerm, nPerm );
+        HArray<IndexType> ja( nJa, valuesJa, testContext );
+        HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
 
         ReadAccess<IndexType> rJa( ja, loc );
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
         ReadAccess<IndexType> rPerm( perm, loc );
+
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty;
         diagonalProperty = checkDiagonalProperty[loc->getType()]( numDiagonals, numRows, numColumns,
@@ -371,23 +352,27 @@ BOOST_AUTO_TEST_CASE( ilg2dlgTest )
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     {
-        IndexType valuesIlg[] =
-        { 7, 7, 5, 4, 4, 1 };
-        const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-        IndexType expectedValues[] =
-        { 6, 5, 5, 5, 3, 2, 2 };
-        const IndexType numRows = 6;
-        const IndexType numDiagonals = 7;
-        HArray<IndexType> dlg( numDiagonals );
-        HArray<IndexType> ilg( nIlg );
+        IndexType valuesIlg[]      = { 7, 7, 5, 4, 4, 1 };
+        IndexType expectedValues[] = { 6, 5, 5, 5, 3, 2, 2 };
 
-        initArray( ilg, valuesIlg, nIlg );
+        const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
+        const IndexType nExpected = sizeof( expectedValues ) / sizeof( IndexType );
+
+        const IndexType numRows = 6;
+        const IndexType numDiagonals = 7;   // must also be maxval( valuesIlg )
+
+        BOOST_REQUIRE_EQUAL( numDiagonals, nExpected );
+
+        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+        HArray<IndexType> dlg( testContext );
+
         {
             WriteOnlyAccess<IndexType> wDlg( dlg, loc, numDiagonals );
             ReadAccess<IndexType> rIlg( ilg, loc );
             SCAI_CONTEXT_ACCESS( loc );
             ilg2dlg[loc->getType()]( wDlg.get(), numDiagonals, rIlg.get(), numRows );
         }
+
         ReadAccess<IndexType> rDlg( dlg );
 
         for ( IndexType i = 0; i < numDiagonals; i++ )
@@ -633,23 +618,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test
     { 2, 3, 6, 0, 2, 4, 5, 1, 3, 4, 5, 7, 0, 2, 0, 3, 7 };
     OtherValueType expectedCSRValues[] =
     { 5, 3, 4, 3, 4, 3, 5, 2, 8, 7, 9, 5, 2, 3, 5, 7, 9 };
+
     const IndexType numRows = 5;
     const IndexType nJDS = nJDSValues;
-    HArray<IndexType> JDSJa( nJDSJa );
-    HArray<ValueType> JDSValues( nJDSValues );
-    HArray<IndexType> JDSDlg( nJDSDlg );
-    HArray<IndexType> JDSIlg( nJDSIlg );
-    HArray<IndexType> JDSPerm( nJDSPerm );
-    HArray<IndexType> CSRIa( nCSRIa );
-    HArray<IndexType> CSRJa( nJDS );
-    HArray<OtherValueType> CSRValues( nJDS );
 
-    initArray( JDSJa, valuesJDSJa, nJDSJa );
-    initArray( JDSValues, valuesJDSValues, nJDSValues );
-    initArray( JDSDlg, valuesJDSDlg, nJDSDlg );
-    initArray( JDSIlg, valuesJDSIlg, nJDSIlg );
-    initArray( JDSPerm, valuesJDSPerm, nJDSPerm );
-    initArray( CSRIa, valuesCSRIa, nCSRIa );
+    // Input arrays: initialized directly on testContext
+
+    HArray<IndexType> JDSJa( nJDSJa, valuesJDSJa, testContext );
+    HArray<ValueType> JDSValues( nJDSValues, valuesJDSValues, testContext );
+    HArray<IndexType> JDSDlg( nJDSDlg, valuesJDSDlg, testContext );
+    HArray<IndexType> JDSIlg( nJDSIlg, valuesJDSIlg, testContext );
+    HArray<IndexType> JDSPerm( nJDSPerm, valuesJDSPerm, testContext );
+    HArray<IndexType> CSRIa( nCSRIa, valuesCSRIa );
+
+    // Output arrays: no initialization
+
+    HArray<IndexType> CSRJa;
+    HArray<OtherValueType> CSRValues;
+
     {
         ReadAccess<IndexType> rJDSJa( JDSJa, loc );
         ReadAccess<ValueType> rJDSValues( JDSValues, loc );

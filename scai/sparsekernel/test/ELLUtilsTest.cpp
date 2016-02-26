@@ -614,15 +614,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.0;
-        HArray<ValueType> ellValues( nELLValues );
-        HArray<IndexType> ellIa( nELLIa );
-        HArray<IndexType> ellJa( nELLJa );
-        HArray<IndexType> newEllIa( nELLIa );
 
-        initArray( ellValues, valuesELLValues, nELLValues );
-        initArray( ellIa, valuesELLIa, nELLIa );
-        initArray( ellJa, valuesELLJa, nELLJa );
-        initArray( newEllIa, 0, nELLIa );
+        HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
+        HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
+        HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
+
+        HArray<IndexType> newEllIa( testContext );  // output array
+
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -632,6 +630,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
             WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, nELLIa );
             compressIA[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
+
         ReadAccess<IndexType> rNewELLIa( newEllIa );
 
         for ( IndexType i = 0; i < nELLIa; i++ )
@@ -655,15 +654,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.01;
-        HArray<ValueType> ellValues( nELLValues );
-        HArray<IndexType> ellIa( nELLIa );
-        HArray<IndexType> ellJa( nELLJa );
-        HArray<IndexType> newEllIa( nELLIa);
 
-        initArray( ellValues, valuesELLValues, nELLValues );
-        initArray( ellIa, valuesELLIa, nELLIa );
-        initArray( ellJa, valuesELLJa, nELLJa );
-        initArray( newEllIa, 0, nELLIa );
+        HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
+        HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
+        HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
+
+        HArray<IndexType> newEllIa( testContext );  // output array
 
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
@@ -693,18 +689,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
         const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType );
         IndexType expectedELLIa[] =
         { 5, 5, 5 };
+
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.0;
-        HArray<ValueType> ellValues( nELLValues );
-        HArray<IndexType> ellIa( nELLIa );
-        HArray<IndexType> ellJa( nELLJa );
-        HArray<IndexType> newEllIa( nELLIa );
 
-        initArray( ellValues, valuesELLValues, nELLValues );
-        initArray( ellIa, valuesELLIa, nELLIa );
-        initArray( ellJa, valuesELLJa, nELLJa );
-        initArray( newEllIa, 0, nELLIa );
+        HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
+        HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
+        HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
+
+        HArray<IndexType> newEllIa( testContext ); // output array
+
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -754,17 +749,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
         const ValueType eps = 0.0;
         const IndexType numValues = 12;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
-        HArray<ValueType> ellValues( nELLValues );
-        HArray<IndexType> ellIa( nELLIa );
-        HArray<IndexType> ellJa( nELLJa );
-        HArray<ValueType> newEllValues( numValues );
-        HArray<IndexType> newEllJa( numValues );
 
-        initArray( ellValues, valuesELLValues, nELLValues );
-        initArray( ellIa, valuesELLIa, nELLIa );
-        initArray( ellJa, valuesELLJa, nELLJa );
-        initArray( newEllValues, ValueType(0), numValues );
-        initArray( newEllJa, 0, numValues );
+        HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
+        HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
+        HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
+
+        HArray<IndexType> newEllJa( testContext );      // output array
+        HArray<ValueType> newEllValues( testContext );  // output array
+
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -804,17 +796,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
         const ValueType eps = 0.01;
         const IndexType numValues = 12;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
-        HArray<ValueType> ellValues( nELLValues );
-        HArray<IndexType> ellIa( nELLIa );
-        HArray<IndexType> ellJa( nELLJa );
-        HArray<ValueType> newEllValues( numValues );
-        HArray<IndexType> newEllJa( numValues );
 
-        initArray( ellValues, valuesELLValues, nELLValues );
-        initArray( ellIa, valuesELLIa, nELLIa );
-        initArray( ellJa, valuesELLJa, nELLJa );
-        initArray( newEllValues, ValueType(0), numValues );
-        initArray( newEllJa, 0, numValues );
+        HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
+        HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
+        HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
+
+        HArray<IndexType> newEllJa( testContext );      // output array
+        HArray<ValueType> newEllValues( testContext );  // output array
+
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -825,6 +814,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
             compressValues[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
                                  newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
+
         ReadAccess<ValueType> rNewELLValues( newEllValues );
         ReadAccess<IndexType> rNewELLJa( newEllJa );
 
@@ -854,17 +844,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
         const IndexType numValues = 12;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
-        HArray<ValueType> ellValues( nELLValues );
-        HArray<IndexType> ellIa( nELLIa );
-        HArray<IndexType> ellJa( nELLJa );
-        HArray<ValueType> newEllValues( numValues );
-        HArray<IndexType> newEllJa( numValues );
 
-        initArray( ellValues, valuesELLValues, nELLValues );
-        initArray( ellIa, valuesELLIa, nELLIa );
-        initArray( ellJa, valuesELLJa, nELLJa );
-        initArray( newEllValues, ValueType(0), numValues );
-        initArray( newEllJa, 0, numValues );
+        HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
+        HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
+        HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
+
+        HArray<IndexType> newEllJa( testContext );      // output array
+        HArray<ValueType> newEllValues( testContext );  // output array
+
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -915,17 +902,14 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
         IndexType numValues = 5; // all matrices have shape 5 x 5
         IndexType aNumValuesPerRow = aNumValues / numValues;
         IndexType bNumValuesPerRow = bNumValues / numValues;
-        HArray<IndexType> AIa( aNumRows );
-        HArray<IndexType> AJa( aNumValues );
-        HArray<IndexType> BIa( bNumRows );
-        HArray<IndexType> BJa( bNumValues );
-        HArray<IndexType> CIa( numValues );
 
-        initArray( AIa, valuesAIa, aNumRows );
-        initArray( AJa, valuesAJa, aNumValues );
-        initArray( BIa, valuesBIa, bNumRows );
-        initArray( BJa, valuesBJa, bNumValues );
-        initArray( CIa, 0, numValues );
+        HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
+        HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
+        HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
+        HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
+
+        HArray<IndexType> CIa( testContext );
+
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -936,6 +920,9 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
             matrixMultiplySizes[loc->getType()]( wCIa.get(), numValues, numValues, numValues, false, rAIa.get(), rAJa.get(),
                                       aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
+
+        BOOST_CHECK_EQUAL( numValues, CIa.size() );
+
         ReadAccess<IndexType> rCIa( CIa );
 
         for ( IndexType i = 0; i < numValues; i++ )
@@ -968,17 +955,14 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
         // a and a * b have same number rows
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
-        HArray<IndexType> AIa( aNumRows );
-        HArray<IndexType> AJa( aNumValues );
-        HArray<IndexType> BIa( bNumRows );
-        HArray<IndexType> BJa( bNumValues );
-        HArray<IndexType> CIa( cNumRows );
 
-        initArray( AIa, valuesAIa, aNumRows );
-        initArray( AJa, valuesAJa, aNumValues );
-        initArray( BIa, valuesBIa, bNumRows );
-        initArray( BJa, valuesBJa, bNumValues );
-        initArray( CIa, 0, cNumRows );
+        HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
+        HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
+        HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
+        HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
+
+        HArray<IndexType> CIa( testContext );
+
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -990,6 +974,9 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
             matrixMultiplySizes[loc->getType()]( wCIa.get(), aNumRows, numColumns, bNumRows, false, rAIa.get(), rAJa.get(),
                                       aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
+
+        BOOST_CHECK_EQUAL( cNumRows, CIa.size() );
+
         ReadAccess<IndexType> rCIa( CIa );
 
         for ( IndexType i = 0; i < cNumRows; i++ )
@@ -1038,25 +1025,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
         { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 3, 2, 2, 3, 3, 0, 3, 3 };
         IndexType numValues = 20;
         ValueType alpha = 1;
-        HArray<ValueType> AValues( nAValues );
-        HArray<IndexType> AIa( aNumRows );
-        HArray<IndexType> AJa( aNumValues );
-        HArray<ValueType> BValues( nBValues );
-        HArray<IndexType> BIa( bNumRows );
-        HArray<IndexType> BJa( bNumValues );
-        HArray<ValueType> CValues( numValues );
-        HArray<IndexType> CIa( cNumRows );
-        HArray<IndexType> CJa( numValues );
 
-        initArray( AValues, valuesAValues, nAValues );
-        initArray( AIa, valuesAIa, aNumRows );
-        initArray( AJa, valuesAJa, aNumValues );
-        initArray( BValues, valuesBValues, nBValues );
-        initArray( BIa, valuesBIa, bNumRows );
-        initArray( BJa, valuesBJa, bNumValues );
-        initArray( CValues, ValueType(0), numValues );
-        initArray( CIa, valuesCIa, cNumRows );
-        initArray( CJa, 0, numValues );
+        HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
+        HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
+        HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
+        HArray<ValueType> BValues( nBValues, valuesBValues, testContext );
+        HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
+        HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
+        HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
+
+        // output arrays
+
+        HArray<ValueType> CValues( testContext );
+        HArray<IndexType> CJa( testContext );
 
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
@@ -1116,30 +1097,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
         { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 3, 2, 2, 3, 3, 0, 3, 3 };
         IndexType numValues = 20;
         ValueType alpha = 2.5;
-        HArray<ValueType> AValues( nAValues );
-        HArray<IndexType> AIa( aNumRows );
-        HArray<IndexType> AJa( aNumValues );
-        HArray<ValueType> BValues( nBValues );
-        HArray<IndexType> BIa( bNumRows );
-        HArray<IndexType> BJa( bNumValues );
-        HArray<ValueType> CValues( numValues );
-        HArray<IndexType> CIa( cNumRows );
-        HArray<IndexType> CJa( numValues );
 
-        initArray( AValues, valuesAValues, nAValues );
-        initArray( AIa, valuesAIa, aNumRows );
-        initArray( AJa, valuesAJa, aNumValues );
-        initArray( BValues, valuesBValues, nBValues );
-        initArray( BIa, valuesBIa, bNumRows );
-        initArray( BJa, valuesBJa, bNumValues );
-        initArray( CValues, ValueType(0), numValues );
-        initArray( CIa, valuesCIa, cNumRows );
-        initArray( CJa, 0, numValues );
+        // input arrays, directly initialized on context device
 
+        HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
+        HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
+        HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
+        HArray<ValueType> BValues( nBValues, valuesBValues, testContext );
+        HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
+        HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
+        HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
+
+        // output arrays
+
+        HArray<ValueType> CValues( testContext );
+        HArray<IndexType> CJa( testContext );
 
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = numValues / cNumRows;
+
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -1157,6 +1134,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
                                  diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
                                  rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
+
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
 
@@ -1197,23 +1175,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
         { 0, 0, 0, 1, 1, 1, 2, 2, 2 };
         IndexType cNumValues = 9;
         ValueType alpha = 1;
-        HArray<ValueType> AValues( nAValues );
-        HArray<IndexType> AIa( aNumRows );
-        HArray<IndexType> AJa( aNumValues );
-        HArray<ValueType> BValues( nBValues );
-        HArray<IndexType> BIa( bNumRows );
-        HArray<IndexType> BJa( bNumValues );
-        HArray<IndexType> CIa( cNumRows );
-        HArray<ValueType> CValues( cNumValues );
-        HArray<IndexType> CJa( cNumValues );
 
-        initArray( AValues, valuesAValues, nAValues );
-        initArray( AIa, valuesAIa, aNumRows );
-        initArray( AJa, valuesAJa, aNumValues );
-        initArray( BValues, valuesBValues, nBValues );
-        initArray( BIa, valuesBIa, bNumRows );
-        initArray( BJa, valuesBJa, bNumValues );
-        initArray( CIa, valuesCIa, cNumRows );
+        // input arrays, directly initialized on context device
+
+        HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
+        HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
+        HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
+        HArray<ValueType> BValues( nBValues, valuesBValues, testContext );
+        HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
+        HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
+        HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
+
+        // output arrays
+
+        HArray<ValueType> CValues( testContext );
+        HArray<IndexType> CJa( testContext );
 
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
@@ -1280,17 +1256,14 @@ BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
     BOOST_REQUIRE_EQUAL( aNumRows * aNumValuesPerRow, aNumValues );
     IndexType bNumValuesPerRow = bNumValues / bNumRows;
     BOOST_REQUIRE_EQUAL( bNumRows * bNumValuesPerRow, bNumValues );
-    HArray<IndexType> AIa( aNumRows );
-    HArray<IndexType> AJa( aNumValues );
-    HArray<IndexType> BIa( bNumRows );
-    HArray<IndexType> BJa( bNumValues );
-    HArray<IndexType> CIa( cNumRows );
 
-    initArray( AIa, valuesAIa, aNumRows );
-    initArray( AJa, valuesAJa, aNumValues );
-    initArray( BIa, valuesBIa, bNumRows );
-    initArray( BJa, valuesBJa, bNumValues );
-    initArray( CIa, 0, cNumRows );
+    HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
+    HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
+    HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
+    HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
+
+    HArray<IndexType> CIa( testContext );
+
     {
         ReadAccess<IndexType> rAIa( AIa, loc );
         ReadAccess<IndexType> rAJa( AJa, loc );
@@ -1352,25 +1325,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
         IndexType numColumns = 5; // for convenience
         ValueType alpha = 1;
         ValueType beta = 1;
-        HArray<ValueType> AValues( nAValues );
-        HArray<IndexType> AIa( aNumRows );
-        HArray<IndexType> AJa( aNumValues );
-        HArray<ValueType> BValues( nBValues );
-        HArray<IndexType> BIa( bNumRows );
-        HArray<IndexType> BJa( bNumValues );
-        HArray<ValueType> CValues( cNumValues );
-        HArray<IndexType> CIa( cNumRows );
-        HArray<IndexType> CJa( cNumValues );
 
-        initArray( AValues, valuesAValues, nAValues );
-        initArray( AIa, valuesAIa, aNumRows );
-        initArray( AJa, valuesAJa, aNumValues );
-        initArray( BValues, valuesBValues, nBValues );
-        initArray( BIa, valuesBIa, bNumRows );
-        initArray( BJa, valuesBJa, bNumValues );
-        initArray( CValues, ValueType(0), cNumValues );
-        initArray( CIa, valuesCIa, cNumRows );
-        initArray( CJa, 0, cNumValues );
+        // input arrays, directly initialized on context device
+
+        HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
+        HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
+        HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
+        HArray<ValueType> BValues( nBValues, valuesBValues, testContext );
+        HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
+        HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
+        HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
+
+        // output arrays
+
+        HArray<ValueType> CValues( testContext );
+        HArray<IndexType> CJa( testContext );
 
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
@@ -1431,25 +1400,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
         IndexType numColumns = 5; // for convenience
         ValueType alpha = 1;
         ValueType beta = 2;
-        HArray<ValueType> AValues( nAValues );
-        HArray<IndexType> AIa( aNumRows );
-        HArray<IndexType> AJa( aNumValues );
-        HArray<ValueType> BValues( nBValues );
-        HArray<IndexType> BIa( bNumRows );
-        HArray<IndexType> BJa( bNumValues );
-        HArray<ValueType> CValues( cNumValues );
-        HArray<IndexType> CIa( cNumRows );
-        HArray<IndexType> CJa( cNumValues );
 
-        initArray( AValues, valuesAValues, nAValues );
-        initArray( AIa, valuesAIa, aNumRows );
-        initArray( AJa, valuesAJa, aNumValues );
-        initArray( BValues, valuesBValues, nBValues );
-        initArray( BIa, valuesBIa, bNumRows );
-        initArray( BJa, valuesBJa, bNumValues );
-        initArray( CValues, ValueType(0), cNumValues );
-        initArray( CIa, valuesCIa, cNumRows );
-        initArray( CJa, 0, cNumValues );
+        // input arrays, directly initialized on context device
+
+        HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
+        HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
+        HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
+        HArray<ValueType> BValues( nBValues, valuesBValues, testContext );
+        HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
+        HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
+        HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
+
+        // output arrays
+
+        HArray<ValueType> CValues( testContext );
+        HArray<IndexType> CJa( testContext );
 
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
