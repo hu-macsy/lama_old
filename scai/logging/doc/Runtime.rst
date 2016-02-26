@@ -68,6 +68,7 @@ where the tokens starting with # have the following meanings:
 - ``#date`` stands for the current date, e.g. 2015-07-26 (yyyy-mm-dd)
 - ``#time`` stands for the time of the output, e.g. 13:21:22 (hh:mm:ss)
 - ``#name`` stands for the full name of the logger
+- ``#thread`` stands for the thread name as defined by ``SCAI_LOG_THREAD``
 - ``#func`` stands for the function in which the logging has been called
 - ``#file`` is the file contaning the logging macro
 - ``#line`` is the line number in the file with the actual logging statement

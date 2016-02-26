@@ -70,7 +70,6 @@ runtime especially for the lower levels (DEBUG, INFO).
 Logging macros have nearly no overhead if the logging is disabled at runtime,
 as it is only an integer comparison with a static variable. 
 
-
 Logger-Hierarchy
 ----------------
 
@@ -95,6 +94,23 @@ These definitions of the loggers result in the following hierarchy:
     :align: center
     :alt: Hierarchical structure of loggers.
     
+Logging with Multiple Threads
+-----------------------------
+
+Logging is thread-safe, i.e. each thread can use all defined loggers and the logging
+message lines will not be mixed up in the output.
+Furthermore, each thread gets by default an internal name with an unique number that 
+will appear in each logging message. This makes it possible to distinguish
+logging output lines from different threads.
+
+The following macro can be used to give a calling thread a user-specific name. The
+argument for the name can also be built up with multiple arguments combined with
+the output opearator ``<<``.
+
+.. code-block:: c++
+
+    SCAI_LOG_THREAD( thread_name )
+
 
 Use of logging for C++ classes
 ------------------------------
