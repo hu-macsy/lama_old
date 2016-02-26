@@ -1,5 +1,5 @@
 GPI-2
-=====
+^^^^^
 
 GPI-2__ is an API for asynchronous communication. It provides a flexible, scalable and fault tolerant interface for parallel applications.
 

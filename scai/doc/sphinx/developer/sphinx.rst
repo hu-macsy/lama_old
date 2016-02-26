@@ -1,12 +1,18 @@
-.. no warning for not included in toc
-
-:orphan:
-
 Examples of Sphinx for User Guide
-=================================
+---------------------------------
+
+Hiearchy
+^^^^^^^^
+
+* Projectnames #
+* Chapters on project page *
+* Subpage-topic =
+	* subtopic -
+		* subsubtopic ^
+			* subsubsubtopic " 
 
 Lists
------
+^^^^^
 
 - A bullet list item
 
@@ -32,12 +38,12 @@ Lists
 #) Second item  
 
 Images
-------
+^^^^^^
 
 .. image:: ../_images/test.jpg
 
 Links
------
+^^^^^
 
 A sentence with links to Wikipedia_ and the `Linux kernel archive`_.
 
@@ -51,7 +57,7 @@ __ http://www.python.org/
 A link to Lists_ with `Lists_`
 
 Code
-----
+^^^^
 
 code block::
 
@@ -63,7 +69,7 @@ code block::
 More *italic* **bold** Text or a small ``inline::code::snippet()``
 
 Maths
------
+^^^^^
 
 .. math::
    :nowrap:

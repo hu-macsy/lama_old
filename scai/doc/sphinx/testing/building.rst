@@ -1,5 +1,5 @@
 Building and Executing Unit Tests
-=================================
+---------------------------------
 
 Running the unit tests is very helpful to identify problems at an early stage.
 Therefore it is recommended to run the LAMA unit tests after successful compilation.

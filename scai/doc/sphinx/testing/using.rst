@@ -1,5 +1,5 @@
 Using Boost.Test
-================
+----------------
 
 Boost.Test offers different runtime parameters, which simplify the usage of this testframework.
 

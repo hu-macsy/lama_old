@@ -1,6 +1,5 @@
-************
 Related Work
-************
+============
 
 There are a couple of other frameworks that are working on the same field of
 interest. Just to name a few of them:

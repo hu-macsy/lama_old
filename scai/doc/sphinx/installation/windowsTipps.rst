@@ -1,5 +1,5 @@
 Windows Installation
-====================
+--------------------
 
 CMake also provides the creation of Visual Studio projects, so you can build LAMA in Visual Studio after configuraition.
 For this, make sure that cmake.exe is in your (system) path, subsequent cmake calls depend on it. You can also have the
@@ -11,7 +11,7 @@ windows and will advise you of possible installion paths, because windows does n
 The variable can be readily defined in cmake-gui.   
 
 Boost
------
+^^^^^
 
 Download, compile and install Boost. During LAMA's CMake configure specify BOOST_ROOT (-DBOOST_ROOT) pointing to the
 installation path, e.g.
@@ -48,10 +48,10 @@ If you want to use a different MPI follow the documentation of the CMake Module 
 
 
 BLAS/LAPack
------------
+^^^^^^^^^^^
 
 Alternative 1 Intel MKL
-^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""
 
 Download and install Intel MKL. During CMake configure specify MKL_ROOT pointing to the installation path, e.g.
 
@@ -63,7 +63,7 @@ Sometimes the architecture detection does not work correctly in our FindMKL CMak
 found specify MKL_Is64=true during CMake configure.
 
 Alternative 2 ACML
-^^^^^^^^^^^^^^^^^^
+""""""""""""""""""
 
 Download and install ACML . During CMake configure specify ACML_ROOT pointing to the installation path, e.g.
 
@@ -72,13 +72,13 @@ Download and install ACML . During CMake configure specify ACML_ROOT pointing to
    ACML_ROOT=C:/acml/acml-4.4.0/ifort64_mp
 
 CUDA
-----
+^^^^
 
 Download and install the CUDA Toolkit from NVidia CUDA Downloads. If the Toolkit is installed at its default location
 CMake should find it.
 
 OpenCL
-------
+^^^^^^
 
 (only in branch feature/opencl)
 

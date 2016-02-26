@@ -1,7 +1,7 @@
 .. _styleGuide:
 
 Style Guide
-===========
+-----------
 
 This style guide should improve the readability and help to maintain a common style of the LAMA source code. In general
 it should be considered as a guide line not strict rule set. To fulfill these requirements and to make it easier to
@@ -9,7 +9,7 @@ flow each rule should have a motivation. This style guide is mainly intended for
 apply to source code written in other languages.
 
 General Remarks
----------------
+^^^^^^^^^^^^^^^
 
 - All source files should compile with all enabled warnings without emitting any warning message.
   This rule also applies for the generation of the documentation with doxygen and CMake. Rationale:
@@ -34,7 +34,7 @@ General Remarks
   development time.
 
 Formatting
-----------
+^^^^^^^^^^
 
 The rationale for the formatting rules is code readability and the maintenance of a common style within LAMA, if no
 other rationale is given.
@@ -187,7 +187,7 @@ Example
    - around operators
 
 Naming
-------
+^^^^^^
 
 - The upper case letters **I** (i), **O** (o) and lower case letter **l** (L) should not be used alone for an identifier,
   because they can easily be mistaken for an **0** or **1**.
@@ -202,7 +202,7 @@ Naming
 - In C source files we do not use CamelCase, because it should be callable by the case insensitiv language Fortran.
 
 Namespace
----------
+^^^^^^^^^
 
 - To avoid naming conflicts we use the name space lama in the C++ part and prefix global names with ``lama_`` in the C part.
 
@@ -211,7 +211,7 @@ Namespace
 - In all none header files **using namespace ...** is consequently used, because it augments the code readability.
 
 Naming conventions
-^^^^^^^^^^^^^^^^^^
+""""""""""""""""""
 
 We should stick to the following naming conventions, because especially when working with sparse matrix formats they greatly enhance the understandability of the source code.
 
@@ -243,7 +243,7 @@ To give an example, here the code for a CSR sparse matrix vector multiplication:
    }
 
 Files
------
+^^^^^
 - Source files which contain a main method are named like the executable build.
 
 - We use the following file extensions: **.hpp** for C++ header files, **.h** for C header files, **.cuh** for C for
@@ -272,7 +272,7 @@ Files
   - Includes of header files that are not part of LAMA should be always done with **#include <file>** to maintain a clear separation between projects.
 
 Example
-^^^^^^^
+"""""""
    
 directory structure:
    
@@ -311,7 +311,7 @@ in src/test/cppFile.cpp:
    #include "cppFile2.hpp"
 
 Directories
------------
+^^^^^^^^^^^
 
 - If directories are getting to full sub directories that form logical subgroups should be created.
 
@@ -319,7 +319,7 @@ Directories
   insensitive file systems (e.g. Windows).
 
 Variables
---------- 
+^^^^^^^^^ 
 
 - We do not use global variables. Global variables make it extremely difficult to spot side effects
   and dependencies and therefore they especially make it hard to parallelize code.
@@ -347,14 +347,14 @@ Variables
   is necessary pointers to host memory are have the suffix **<VariableName>h**.
 
 Methods and Functions
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 - The argument list of methods and functions are starting with the output parameters. The input (constant) parameters
   follow at the end. Because in an assignment the assigned value is on the left this is intuitive and makes the source
   code more consistent.
 
 Comments
---------
+^^^^^^^^
 
 - All comments should conform to the language standard in use, i.e.
 
@@ -398,7 +398,7 @@ Example:
   describing function and variable names should be preferred. 
 
 Logging and Output
-------------------
+^^^^^^^^^^^^^^^^^^
 
 - We do not use the standard output or standard error streams. Instead we use the logging mechanism
   described in :ref:`logging <scailogging:main-page_logging>`.
@@ -406,7 +406,7 @@ Logging and Output
 - Please keep in mind, that good logging messages are also explaining the source code.
 
 CMake
------
+^^^^^
 
 In all CMake files we stick to the style of the `official CMake documentation`_. All **VARIABLE_NAMES** are written
 in upper case and joined by underscore. The **function_names()** are written in lower case letters and are also joined
@@ -419,7 +419,7 @@ __ http://www.itk.org/Wiki/CMake:How_To_Find_Libraries#Writing_find_modules
 .. _tools:
 
 Tools
------
+^^^^^
 
 - Eclipse Code Style:
 

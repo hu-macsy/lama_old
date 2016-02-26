@@ -1,10 +1,10 @@
 Teststructure
-=============
+-------------
 
 Boost.Test offers different Macros to create testsuites and testcases.
 
 Standard test class
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 The structure of a classic TestClass.cpp in LAMA looks like this:
 
@@ -64,7 +64,7 @@ If it is not neccessary to create those common used objects, the alternative for
 Both kinds of testsuite have to be closed with the macro BOOST_AUTO_TEST_SUITE_END();
 
 Inherited testclasses
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 A lot of classes in LAMA inherits from abstract classes, e.g. all concrete storages: CSRStorage, COOStorage, ... inherits from class MatrixStorage. You can find these inheritances again in the testhierarchies.
 For each inheritance we have created a common used test class, which tests all functions, that are given by the abstract class. CSRStorageTest.cpp, COOStorageTest.cpp, ... use the testclass MatrixStorageTest.cpp to test all common methods.
@@ -167,7 +167,7 @@ Examples of common base test class are:
 - CommunicatorTest
 
 Regular Expressions in common test classes
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Boost.Test includes the facility to use regular expressions to invoke a subgroup of tests. Because we have implemented 
 these common base classes, it is not possible to invoke them with regular expressions and the logic of Boost.Test.

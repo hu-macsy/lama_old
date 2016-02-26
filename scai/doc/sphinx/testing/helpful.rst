@@ -1,5 +1,5 @@
 Some helpful Classes
-====================
+--------------------
 
 - TestSparseMatrices.hpp
 

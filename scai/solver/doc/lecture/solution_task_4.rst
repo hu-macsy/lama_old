@@ -5,61 +5,9 @@ Solution Task 4
 
 Here is the solution of task 4. The code demonstrate a CG-Solver running with MPI. 
 
-.. code-block:: c++
-   :emphasize-lines: 26,27,28,40
-
-   #include <scai/lama.hpp>
-
-   #include <scai/lama/storage/SparseAssemblyStorage.hpp>
-   #include <scai/lama/matrix/CSRSparseMatrix.hpp>
-   #include <scai/lama/DenseVector.hpp>
-   #include <scai/tracing.hpp>
-
-   #include <scai/lama/solver/CG.hpp>
-   #include <scai/lama/solver/criteria/IterationCount.hpp>
-
-   #include <scai/lama/CommunicatorFactory.hpp>
-   #include <scai/lama/distribution/BlockDistribution.hpp>
-
-   #include <iostream>
-
-   using namespace lama;
-
-   int main( int argc, char* argv[] )
-   {
-      //TASK 1:
-      CSRSparseMatrix<double> m( argv[1] );
-      IndexType size = m.getNumRows();
-   
-      //TASK 4:
-      CommunicatorPtr comm( CommunicatorFactory::get( "MPI" ) ); /*(1)*/
-      DistributionPtr dist( new BlockDistribution( size, comm ) ); /*(2)*/
-      m.redistribute( dist, dist ); /*(3)*/
-
-      //Creation of Vector (task 2):
-      DenseVector<double> rhs( size, 0.0 );
-      HostWriteAccess<double> hwarhs( rhs.getLocalValues() );
-
-      for ( IndexType i = 0; i < size; ++i )
-      {
-         hwarhs[i] = double( i + 1 );
-      }
-      hwarhs.release();
-
-      rhs.redistribute( dist ); /*(4)*/
-
-      DenseVector<double> solution( 0.0, dist );
-
-      //TASK 2:
-      //Here is the self-provided implementation of task 2
-      {...}
-
-      for ( IndexType i = 0; i < solution.size(); ++i ) 
-      {
-         std::cout << solution.getValue( i ) << " ";
-      }
-      return 0;
-    }
+.. literalinclude:: ../../examples/lecture/task4.cpp 
+   :language: c++
+   :emphasize-lines: 35,36,37,49
 
 (1) Creating a CommunicationPointer to get access to a parallel environment.
 (2) Creating a DistributionPointer of a BlockDistribution.

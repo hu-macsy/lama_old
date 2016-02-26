@@ -11,41 +11,17 @@ First we need to include the headers for the types and operations we are going t
 use later. **lama.hpp** needs to be included. Always make sure it is included
 first.
 
-::
-
-   // Always include lama.hpp first
-   #include <scai/lama.hpp>
-
-   #include <scai/lama/DenseVector.hpp>
-   #include <scai/lama/matrix/CSRSparseMatrix.hpp>
-   
-   // includes operators (+,*) for book syntax
-   #include <scai/lama/expression/all.hpp>
-
-   #include <scai/lama/solver/CG.hpp>
-   #include <scai/lama/solver/criteria/ResidualThreshold.hpp>
-   #include <scai/lama/norm/L2Norm.hpp>
-
-   #include <iostream>
-
-   using namespace lama;
+.. literalinclude:: ../../examples/lecture/task0.cpp 
+   :language: c++
+   :lines: 3-18
 
 Next we are reading the input matrix from the file provided via a command line
 argument. The CSRSparseMatrix provides a constructor to read from a matrix
 market file for this.
 
-.. code-block:: c++
-
-   int main( int argc, char* argv[] )
-   {
-       if ( argc < 2 )
-       {
-           std::cerr << "No input file specified" << std::endl;
-           exit( -1 );
-        }
-
-        //Read a sparse matrix from the passed input file
-        CSRSparseMatrix<double> m( argv[1] );
+.. literalinclude:: ../../examples/lecture/task0.cpp 
+   :language: c++
+   :lines: 20-29
 
 Then we create our right hand side and our solution vector of appropriate
 size. To verify the correctness of the solution we are
@@ -53,24 +29,9 @@ calculating a right hand side from the exact solution. LAMA uses operator
 overloading and proxy objects to support and easy to use and simple interface
 to BLAS functionality, that we are using to calculate the vector **rhs**.
 
-.. code-block:: c++
-
-        std::cout << "Read matrix m : " << m << std::endl;
-        IndexType size = m.getNumRows();
-
-        //Create rhs vector
-        DenseVector<double> rhs( size , 0.0 );
-        std::cout << "Vector rhs : " << rhs << std::endl;
-
-        //Create solution vector
-        DenseVector<double> solution( size , 1.0 );
-        std::cout << "Vector solution : " << solution << std::endl;
-
-        //Compute the rhs that fits our solution to be able to calculate the error later
-        rhs = m*solution;
-
-        //Reset solution to zero so that there is something to solve
-        solution = 0.0;
+.. literalinclude:: ../../examples/lecture/task0.cpp 
+   :language: c++
+   :lines: 30-45
 
 Now we have created a system of linear equations. To solve it we want to use
 the CG solver provided by LAMA and so we start with creating an object of type
@@ -91,42 +52,23 @@ ResidualThreshold takes three arguments:
 After we have created the ResidualThreshold object we need to pass it to our
 solver object cgSolver.
 
-.. code-block:: c++
-
-        //Create a CG solver
-        CG cgSolver( "CGTestSolver" );
-        
-        //Create a stopping criterion for the iterative solver cgSolver
-        NormPtr norm = NormPtr ( new L2Norm ( ) );
-    	CriterionPtr criterion ( new ResidualThreshold ( norm, 1E-8, ResidualThreshold::Absolute ) );
-        cgSolver.setStoppingCriterion( criterion );
+.. literalinclude:: ../../examples/lecture/task0.cpp 
+   :language: c++
+   :lines: 47-52
 
 Finally we need to initialize our solver with the system matrix and solve the
 system.
 
-.. code-block:: c++
-
-        //Initialize the solver
-        cgSolver.initialize( m );
-        
-        //Solve m * solution = rhs
-        cgSolver.solve( solution, rhs );
-
+.. literalinclude:: ../../examples/lecture/task0.cpp 
+   :language: c++
+   :lines: 54-57
 
 Because we know the exact solution we can calculate the error and the L2-Norm of
 the error.
 
-.. code-block:: c++
-
-        //calculate the error and its L2-Norm
-        DenseVector<double> error( size, 1.0 );
-
-        error = error - solution;
-
-        std::cout << "L2-Norm of error is " << l2Norm( error ) << std::endl;
-
-        return 0;
-        }
+.. literalinclude:: ../../examples/lecture/task0.cpp 
+   :language: c++
+   :lines: 59-67
 
 Task 0 and an example input matrix can be found in
 **<project-root>/examples/lecture**.

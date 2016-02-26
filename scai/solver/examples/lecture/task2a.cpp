@@ -56,6 +56,8 @@ int main( int argc, char* argv[] )
         std::cout << hra[i] << " ";
     }
 
+    std::cout << std::endl;
+
     hra.release();
     return 0;
 }

@@ -1,5 +1,5 @@
 Continuous Integration in LAMA
-==============================
+------------------------------
 
 Continuous Integration (CI) provides different advantages for a software development project: Centralisation of all
 necessary data of this project, automatization of processes, like nightly builds or summing up testresults, an early
@@ -16,7 +16,7 @@ plugins.
 - Hudson Cmake Builder : Let you build automatically a cmake-based project
 
 Configuration of a LAMA-Job
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 General option:
 
@@ -52,7 +52,7 @@ This can be done by writing a shell script in a post build task:
 	./lama_test --log_level=test_suite 
 
 Prospective option
-------------------
+^^^^^^^^^^^^^^^^^^
 
 Boost.Test version 1.42 and higher offers the runtime parameter log\_sink=file to push the output into a specific file. 
 This option can be used to push the XML-output created by the runtime parameter log\_format=XML into a \*.xml file, that 

@@ -1,6 +1,5 @@
-*******
 Testing
-*******
+=======
 
 .. toctree::
    :titlesonly:

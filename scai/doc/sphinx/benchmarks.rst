@@ -1,6 +1,5 @@
-**********
 Benchmarks
-**********
+==========
 
 .. toctree::
    :titlesonly:

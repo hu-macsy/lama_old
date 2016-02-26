@@ -1,5 +1,5 @@
 Using Intel MIC in LAMA
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 The MIC stands for many integrated core. The Intel Xeon Phi is device which has this architecture. 
 

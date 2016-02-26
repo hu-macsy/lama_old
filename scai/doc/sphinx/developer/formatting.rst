@@ -1,5 +1,5 @@
 Source Code Formatting
-======================
+----------------------
 
 The formatting rules of LAMA are described in the :doc:`styleGuide`
 
