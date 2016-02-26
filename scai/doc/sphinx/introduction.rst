@@ -1,6 +1,5 @@
-************
 Introduction
-************
+============
 
 This documentation will give an overview of the features of the \Library of \Accelerated \Math \Applications
 (\L\A\M\A) and will describe the general usage of these features.
@@ -8,7 +7,7 @@ This documentation will give an overview of the features of the \Library of \Acc
 You will find concise :doc:`installation` instruction and an overview of our subprojects, followed by simple examples on how to use LAMA (:doc:`tutorial`). We close with informations about writing own tests (see :doc:`testing`), :doc:`benchmarks` and on special hints :doc:`developer`. At the end we reference :doc:`relatedWork`.
 
 About LAMA
-==========
+----------
 
 .. figure:: _images/LAMA.png
     :width: 500px
@@ -23,7 +22,7 @@ kernels for various sparse matrix formats organized, so you do not have to care 
 basic linear solvers as a jacobi or CG method.
 
 Our goals
-=========
+---------
 
  - easy to use text-book syntax for linear algebra operations (y = A * x + b)
 
@@ -36,7 +35,7 @@ Our goals
  - easy extensibility (e.g. for sparse matrix formats, compute backends, communication models, ...)
 
 Given features
-==============
+--------------
 
 The supported features of the actual release are listed below:
 
@@ -167,7 +166,7 @@ There are also a couple of features that are planned:
  - support of structured matrices
 
 Use Cases
-=========
+---------
 
 So, when is the time to use LAMA?
 

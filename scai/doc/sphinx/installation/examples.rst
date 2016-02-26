@@ -1,5 +1,5 @@
 Examples
-========
+--------
 
 Every subproject is shipped with its own examples. You will find them in the subdirectory <project>/examples
 in your build directory. Additionally they will be installed in ``SCAI_ROOT`` in the folder share/examples

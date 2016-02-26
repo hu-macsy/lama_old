@@ -1,8 +1,8 @@
 Scalars and Vectors
-===================
+-------------------
 
 Multiplication of a Scalar and a DenseVector
---------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In this example we simply multiply a scalar with a dense vector.  
 

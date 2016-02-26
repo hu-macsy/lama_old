@@ -1,5 +1,5 @@
 General information about testing in LAMA
-=========================================
+-----------------------------------------
 
 All testhierarchies in LAMA were made by using the testframework Boost.Test, which is part of Boost_.
 

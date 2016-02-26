@@ -1,5 +1,5 @@
 Shared and Unique Pointers
-==========================
+--------------------------
 
 If an object has been allocated dynamically, it must be deleted when it is no more used.
 In this sense, somebody takes the ownership and has to take care for the deletion and to
@@ -20,7 +20,7 @@ A scoped array has exactly the same purpose as the unique pointer but is used fo
 of single objects. Its implementation uses the new[] and delete[] operator. 
 
 Shared Pointers in LAMA
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 LAMA uses heayily shared pointers when ownership is not limited to one place. E.g. the
 same distribution might be used for multiple vectors and none of the vectors is preferred to take
@@ -36,7 +36,7 @@ The SCAI common library offers a class ``common::shared_ptr`` that is used in LA
 allows using either of the both possibilities without any loss of efficiency.
 
 Unique Pointers in LAMA
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 LAMA uses unique pointers in all situations where ownership is limited to one scope or where
 ownership is exactly defined at one place, e.g. as a member variable of an object. It is not
@@ -54,7 +54,7 @@ allows using either of the both possibilities without any loss of efficiency. It
 is in the same way limited as the ``std::auto_ptr``.
 
 Scoped Arrays in LAMA
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 LAMA uses scoped arrays in all situations where lifetime of the array is limited to one scope or where
 ownership is exactly defined, e.g. for a member variable of an object.
@@ -92,7 +92,7 @@ allows using either of the both other possibilities without any loss of efficien
 .. _container:
 
 Containers of Allocated Objects
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Allocated objects are often used in containers (e.g. std::vector) instead of usual objects. This is mandatory
 if the copy constructor is not supported for the container type. It might be also more efficient if the 

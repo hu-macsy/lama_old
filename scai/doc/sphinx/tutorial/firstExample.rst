@@ -1,5 +1,5 @@
 First LAMA Example Program
-==========================
+--------------------------
 
 The following C++ program shows a very simple example program of how to use LAMA.
 

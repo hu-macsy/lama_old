@@ -1,5 +1,5 @@
 Using CUDA in LAMA
-------------------
+^^^^^^^^^^^^^^^^^^
 
 CUDA is needed to utilize CUDA capable GPUs from NVidia. The CUDA toolkit can be downloaded `here`__.
 

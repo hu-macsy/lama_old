@@ -1,5 +1,5 @@
 Structure of the Benchmark Runner Files
-=======================================
+---------------------------------------
 
 The Benchmark Runner Files are formatted according to the YAML Specification.
 The Benchmark Runner File contains 2 Lists:
@@ -45,7 +45,7 @@ This Configuration would result in the benchmarks being lauched at least **z** t
 Benchmark will execute its execute() function at least **x** times. But the benchmark will run at least **y** seconds.
 
 Input Sets
-----------
+^^^^^^^^^^
 
 You can specify arguments, passed to an Input Set, with brackets:
 

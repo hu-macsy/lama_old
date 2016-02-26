@@ -1,7 +1,7 @@
 :orphan:
 
 Include
-=======
+-------
 
 .. TODO Explain directory structure
 

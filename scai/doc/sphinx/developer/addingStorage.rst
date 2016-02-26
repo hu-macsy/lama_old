@@ -1,5 +1,5 @@
 Adding a new Sparse Matrix Storage
-==================================
+----------------------------------
 
 - Add MatrixStorage Class (See CSRStorage as an Example)
 

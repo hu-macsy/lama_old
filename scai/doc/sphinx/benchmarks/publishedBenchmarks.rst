@@ -1,5 +1,5 @@
 Publication Benchmarks
-======================
+----------------------
 
 To run the benchmarks presented in the publications about LAMA check out LAMA
 from the subversion repository, configure and build it. How to configure and
