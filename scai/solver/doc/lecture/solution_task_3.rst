@@ -1,7 +1,7 @@
 :orphan:
 
 Solution Task 3
-===============
+---------------
 
 .. code-block:: c++
    :emphasize-lines: 46,47,50

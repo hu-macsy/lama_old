@@ -8,7 +8,7 @@ Your benefit is, that you can write one program using the metasolver, compile it
 solver configurations in every run by just editing the configuration file.
 
 Writing a configuration
-.......................
+^^^^^^^^^^^^^^^^^^^^^^^
 
 To create a configuration you define a text file with the content or hand it over to the configure method as a std::string.
 
@@ -29,7 +29,7 @@ To create a configuration you define a text file with the content or hand it ove
    }
 
 Run a MetaSolver
-................
+^^^^^^^^^^^^^^^^
 
 ::
 

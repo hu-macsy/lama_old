@@ -1,7 +1,7 @@
 :orphan:
 
 Solution Task 6
-===============
+---------------
 
 Here is the solution of task 6.
 

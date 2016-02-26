@@ -1,7 +1,7 @@
 :orphan:
 
 Solution Task 4
-===============
+---------------
 
 Here is the solution of task 4. The code demonstrate a CG-Solver running with MPI. 
 
@@ -79,7 +79,7 @@ To execute task4 in parallel use mpirun
 Be careful by printing out values of a parallel run. Use
 getValue(IndexType globalindex) to get a correct access with a global index.
 
-::
+.. code-block:: c++
 
    for ( IndexType i = 0; i < solution.size(); ++i )
    {
