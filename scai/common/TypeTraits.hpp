@@ -56,7 +56,7 @@ public:
 
     /** Return type of function abs( ValueType ) */
 
-	typedef ValueType AbsType;
+    typedef ValueType AbsType;
 
     /** Get value-specific epsilon for comparison. */
 

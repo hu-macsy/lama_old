@@ -1,19 +1,12 @@
 .. _main-page_sparsekernel:
 
+#################
 SCAI SparseKernel 
-===============
+#################
 
-Contents:
-
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
-   
-   
-   
-************
-Introduction
-************
+*************
+Specification
+*************
 
 * Provides wrapper for different SparseBLAS-libraries
 * Contains own implementations for different sparse matrix formats
@@ -23,3 +16,32 @@ Introduction
 * Internal dependencies: common, logging, tracing, tasking, hmemo, kregistry, utilskernel
 * External dependencies: [cuda --> cusparse], [mic --> mkl] 
 
+*********
+Contents:
+*********
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   
+   COOKernelTrait
+   CSRKernelTrait
+   DenseKernelTrait
+   DIAKernelTrait
+   ELLKernelTrait
+   JDSKernelTrait
+
+*******
+Classes
+*******
+
+===================   =======================================================
+Name                  Description
+===================   =======================================================
+COOKernelTrait        routines for COO matrix storage
+CSRKernelTrait        routines for CSR matrix storage
+DenseKernelTrait      routines for Dense matrix storage
+DIAKernelTrait        routines for DIA matrix storage
+ELLKernelTrait        routines for ELL matrix storage
+JDSKernelTrait        routines for JDS matrix storage
+===================   =======================================================

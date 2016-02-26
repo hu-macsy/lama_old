@@ -1,7 +1,7 @@
 :orphan:
 
 Task 4: Let the CG Iterative Solver run MPI parallel
-====================================================
+----------------------------------------------------
 
 LAMA offers different solvers for equation systems, e.g. Jacobi, AMG, or SOR.
 Using one of these LAMA-Solvers is an alternative to integrating a

@@ -1,7 +1,7 @@
 :orphan:
 
 Task 2: Implement a CG Iterative Solver
-=======================================
+---------------------------------------
 
 The aim of this task is to introduce the linear algebra functionality of LAMA.
 Through operator overloading LAMA supports a text book (or pseudocode) like

@@ -1,7 +1,7 @@
 :orphan:
 
 Task 3: Enable Solver logging
-=============================
+-----------------------------
 
 The solvers that are implemented in LAMA provide a solver interface to allow
 detailed monitoring of their behavior, e.g. plotting of a convergence history.

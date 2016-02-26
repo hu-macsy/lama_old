@@ -1,7 +1,7 @@
 :orphan:
 
 Task 0: Solving a system of linear equations
-============================================
+--------------------------------------------
 
 The aim of this task is to build an application that reads a matrix from a file,
 initializes a right hand side and solves this equation system with the LAMA
@@ -34,7 +34,7 @@ Next we are reading the input matrix from the file provided via a command line
 argument. The CSRSparseMatrix provides a constructor to read from a matrix
 market file for this.
 
-::
+.. code-block:: c++
 
    int main( int argc, char* argv[] )
    {
@@ -53,7 +53,7 @@ calculating a right hand side from the exact solution. LAMA uses operator
 overloading and proxy objects to support and easy to use and simple interface
 to BLAS functionality, that we are using to calculate the vector **rhs**.
 
-::
+.. code-block:: c++
 
         std::cout << "Read matrix m : " << m << std::endl;
         IndexType size = m.getNumRows();
@@ -91,7 +91,7 @@ ResidualThreshold takes three arguments:
 After we have created the ResidualThreshold object we need to pass it to our
 solver object cgSolver.
 
-::
+.. code-block:: c++
 
         //Create a CG solver
         CG cgSolver( "CGTestSolver" );
@@ -104,7 +104,7 @@ solver object cgSolver.
 Finally we need to initialize our solver with the system matrix and solve the
 system.
 
-::
+.. code-block:: c++
 
         //Initialize the solver
         cgSolver.initialize( m );
@@ -116,7 +116,7 @@ system.
 Because we know the exact solution we can calculate the error and the L2-Norm of
 the error.
 
-::
+.. code-block:: c++
 
         //calculate the error and its L2-Norm
         DenseVector<double> error( size, 1.0 );
