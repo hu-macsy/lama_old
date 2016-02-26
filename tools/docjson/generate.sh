@@ -12,7 +12,7 @@ rm -rf output
 mkdir output
 
 
-docs="common logging tracing tasking hmemo kregistry lama"
+docs="common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel dmemo lama solver documentation"
 
 
 #create all docs
@@ -21,14 +21,14 @@ for doc in $docs; do
     mkdir output/$doc
     
     # copy all json files to the main folder
-    find $1/$doc/doc/ \( -name "*.fjson" -o -name "*.json" \) -exec cp {} output/$doc \;
+    find $1/scai-${doc}*/ \( -name "*.fjson" -o -name "*.json" \) -exec cp {} output/$doc \;
     
     # copy all additional files
-    if [ -e $1/$doc/doc/_images ]; then
-        cp -R $1/$doc/doc/_images output/$doc
+    if [ -e $1/scai-${doc}*/_images ]; then
+        cp -R $1/scai-${doc}*/_images output/$doc
     fi
-    if [ -e $1/$doc/doc/_downloads ]; then
-        cp -R $1/$doc/doc/_downloads output/$doc
+    if [ -e $1/scai-${doc}*/_downloads ]; then
+        cp -R $1/scai-${doc}*/_downloads output/$doc
     fi
     
     # rename main index file to fit the guidelines of the rest plugin
@@ -42,6 +42,6 @@ for doc in $docs; do
 
     # replace all inter-sphinx links with the corresponding links on the website
     for doc2 in $docs; do
-        find output/$doc/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/0-9a-Z_-]*\/share\/doc\/scai-'"${doc2}"'-[0-9\.]*\/#main-page/href=\\\"http:\/\/www.libama.org\/documentation\/'"${doc2}"'.html/g' {} \;
+        find output/$doc/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/0-9a-Z_-]*\/share\/doc\/user\/json\/scai-[0-9\.]*\/scai-'"${doc2}"'-[0-9\.]*\/#main-page[0-9a-Z_-]*\\\"/href=\\\"http:\/\/www.libama.org\/documentation\/'"${doc2}"'.html\\\"/g' {} \;
     done
 done

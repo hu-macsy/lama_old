@@ -1,7 +1,7 @@
 :orphan:
 
 Task 6: Enable Logging to track the moving of data to and from the GPU
-======================================================================
+----------------------------------------------------------------------
 
 LAMA includes sophisticated logging facilities. There are different gradations
 of logging: TRACE, DEBUG, INFO, WARN, ERROR, and FATAL. You can regulate the logging

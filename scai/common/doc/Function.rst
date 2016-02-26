@@ -1,5 +1,5 @@
 Function/Bind
--------------
+=============
 
 The C++11 standard provides with the ``function`` a new family of class templates that is similiar
 to the function pointer but more general.

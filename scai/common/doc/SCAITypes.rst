@@ -1,5 +1,5 @@
 SCAI Types
-----------
+==========
 
 The file SCAITypes.hpp includes all relevant type definitions needed 
 for the instantiation of LAMA vectors and matrices.

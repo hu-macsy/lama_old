@@ -1,5 +1,5 @@
 Timing
-------
+======
 
 .. literalinclude:: ../Walltime.hpp
    :language: c++

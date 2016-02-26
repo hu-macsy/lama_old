@@ -1,6 +1,5 @@
-*******
 Lecture
-*******
+=======
 
 This lecture gives an insight into the Library for Accelerated Math
 Applications(LAMA) and its concepts. It guides you through the LAMA-architecture
@@ -18,7 +17,7 @@ functions and classes you should use to complete them. Please consult the
 .. _online API documentation: http://libama.sourceforge.net/doc/index.html
 
 Requirements
-============
+------------
 
 Here we assume that LAMA has already been downloaded, configured, compiled, and
 installed on your machine.

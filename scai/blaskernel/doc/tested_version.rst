@@ -1,8 +1,7 @@
 .. _blaskernel-tested-versions:
 
-***************
 Tested Versions
-***************
+===============
 
 BLAS-libraries
 --------------

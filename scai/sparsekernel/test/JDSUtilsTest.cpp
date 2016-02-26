@@ -40,28 +40,36 @@
 #include <scai/hmemo.hpp>
 #include <scai/sparsekernel/test/TestMacros.hpp>
 
-using namespace scai::sparsekernel;
-using namespace scai::kregistry;
-using namespace scai::hmemo;
+/*--------------------------------------------------------------------- */
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+using namespace scai;
+using namespace hmemo;
+using namespace sparsekernel;
+using namespace kregistry;
+using common::TypeTraits;
+using common::Exception;
 
-// Dummy type, needed to use the lama interface
-typedef bool NoType;
+/* --------------------------------------------------------------------- */
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+BOOST_AUTO_TEST_SUITE( JDSUtilsTest )
 
-namespace scai
+/* --------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" )
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types )
 {
-namespace lama
-{
-namespace JDSUtilsTest
-{
+    typedef float OtherValueType;
 
-template<typename ValueType, typename OtherValueType>
-void getRowTest( ContextPtr loc )
-{
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
+
+    ContextPtr loc = Context::getContextPtr( getRow.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     ValueType valuesValues[] =
     { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
@@ -83,19 +91,14 @@ void getRowTest( ContextPtr loc )
     const IndexType i = 2;
     const IndexType numColumns = 16;
     const IndexType numRows = 3;
-    HArray<ValueType> values( nValues );
-    HArray<IndexType> ja( nJa );
-    HArray<IndexType> dlg( nDlg );
-    HArray<IndexType> ilg( nIlg );
-    HArray<IndexType> perm( nPerm );
-    HArray<OtherValueType> row( numColumns );
 
-    initArray( values, valuesValues, nValues );
-    initArray( ja, valuesJa, nJa );
-    initArray( dlg, valuesDlg, nDlg );
-    initArray( ilg, valuesIlg, nIlg );
-    initArray( perm, valuesPerm, nPerm );
-    initArray( row, OtherValueType(0), numColumns );
+    HArray<ValueType> values( nValues, valuesValues, testContext );
+    HArray<IndexType> ja( nJa, valuesJa, testContext );
+    HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+    HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+    HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+
+    HArray<OtherValueType> row;
 
     ReadAccess<ValueType> rValues( values, loc );
     ReadAccess<IndexType> rJa( ja, loc );
@@ -117,10 +120,15 @@ void getRowTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
-void getValueTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_types )
 {
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::getValue<ValueType> > getValue;
+
+    ContextPtr loc = Context::getContextPtr( getValue.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     ValueType valuesValues[] =
     { 1, 5, 4, 3, 1, 3, 2, 2, 2, 8, 4, 9, 9, 7, 8, 7, 2 };
@@ -147,19 +155,12 @@ void getValueTest( ContextPtr loc )
     };
     const IndexType numColumns = 10;
     const IndexType numRows = 5;
-    HArray<ValueType> values( nValues );
-    HArray<IndexType> ja( nJa );
-    HArray<IndexType> dlg( nDlg );
-    HArray<IndexType> ilg( nIlg );
-    HArray<IndexType> perm( nPerm );
-    HArray<OtherValueType> row( numColumns );
 
-    initArray( values, valuesValues, nValues );
-    initArray( ja, valuesJa, nJa );
-    initArray( dlg, valuesDlg, nDlg );
-    initArray( ilg, valuesIlg, nIlg );
-    initArray( perm, valuesPerm, nPerm );
-    initArray( row, OtherValueType(0), numColumns );
+    HArray<ValueType> values( nValues, valuesValues, testContext );
+    HArray<IndexType> ja( nJa, valuesJa, testContext );
+    HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+    HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+    HArray<IndexType> perm( nPerm, valuesPerm, testContext );
 
     ReadAccess<ValueType> rValues( values, loc );
     ReadAccess<IndexType> rJa( ja, loc );
@@ -180,102 +181,108 @@ void getValueTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
-void scaleValueTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_types )
 {
+    typedef float OtherValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
 
-    ValueType valuesValues[] =
-    { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
+    ContextPtr loc = Context::getContextPtr( scaleValue.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    ValueType valuesValues[] = { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
+    IndexType valuesDlg[]    = { 3, 3, 3, 3, 2, 1 };
+    IndexType valuesIlg[]    = { 6, 5, 4 };
+    IndexType valuesPerm[]   = { 1, 2, 0 };
+
+    OtherValueType valuesDiagonal[] = { 3, 1, 2 };
+    ValueType expectedValues[] = { 1, 14, 36, 2, 16, 39, 3, 18, 42, 4, 20, 45, 5, 22, 6 };
+
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-    IndexType valuesDlg[] =
-    { 3, 3, 3, 3, 2, 1 };
     const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-    IndexType valuesIlg[] =
-    { 6, 5, 4 };
     const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-    IndexType valuesPerm[] =
-    { 1, 2, 0 };
     const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
-    OtherValueType valuesDiagonal[] =
-    { 3, 1, 2 };
+
     const IndexType nDiagonal = sizeof( valuesDiagonal ) / sizeof( OtherValueType );
-    ValueType expectedValues[] =
-    { 1, 14, 36, 2, 16, 39, 3, 18, 42, 4, 20, 45, 5, 22, 6 };
     const IndexType numRows = 3;
-    HArray<ValueType> values( nValues );
-    HArray<IndexType> dlg( nDlg );
-    HArray<IndexType> ilg( nIlg );
-    HArray<IndexType> perm( nPerm );
-    HArray<OtherValueType> diagonal( nDiagonal );
 
-    initArray( values, valuesValues, nValues );
-    initArray( dlg, valuesDlg, nDlg );
-    initArray( ilg, valuesIlg, nIlg );
-    initArray( perm, valuesPerm, nPerm );
-    initArray( diagonal, valuesDiagonal, nDiagonal );
+    HArray<ValueType> values( nValues, valuesValues, testContext );
+    HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+    HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+    HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+    HArray<OtherValueType> diagonal( nDiagonal, valuesDiagonal, testContext );
 
-    ReadAccess<IndexType> rDlg( dlg, loc );
-    ReadAccess<IndexType> rIlg( ilg, loc );
-    ReadAccess<IndexType> rPerm( perm, loc );
-    ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
     {
+        ReadAccess<IndexType> rDlg( dlg, loc );
+        ReadAccess<IndexType> rIlg( ilg, loc );
+        ReadAccess<IndexType> rPerm( perm, loc );
+        ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
         scaleValue[loc->getType()]( numRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
     }
-    ReadAccess<ValueType> rValues( values );
 
-    for ( IndexType i = 0; i < nValues; i++ )
     {
-        BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
+        ReadAccess<ValueType> rValues( values );
+
+        for ( IndexType i = 0; i < nValues; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
+        }
     }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename NoType>
-void checkDiagonalPropertyTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 {
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
+
+    ContextPtr loc = Context::getContextPtr( checkDiagonalProperty.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     // check with matrix without diagonal property
     {
-        IndexType valuesJa[] =
-        { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 };
+        IndexType valuesJa[]   = { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 };
+        IndexType valuesDlg[]  = { 3, 3, 3, 3, 2, 1 };
+        IndexType valuesIlg[]  = { 6, 5, 4 };
+        IndexType valuesPerm[] = { 1, 2, 0 };
+
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
-        IndexType valuesDlg[] =
-        { 3, 3, 3, 3, 2, 1 };
         const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-        IndexType valuesIlg[] =
-        { 6, 5, 4 };
         const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-        IndexType valuesPerm[] =
-        { 1, 2, 0 };
         const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
+
         const IndexType numRows = 3;
         const IndexType numColumns = 16;
         const IndexType numDiagonals = 3;
-        HArray<IndexType> ja( nJa );
-        HArray<IndexType> dlg( nDlg );
-        HArray<IndexType> ilg( nIlg );
-        HArray<IndexType> perm( nPerm );
 
-        initArray( ja, valuesJa, nJa );
-        initArray( dlg, valuesDlg, nDlg );
-        initArray( ilg, valuesIlg, nIlg );
-        initArray( perm, valuesPerm, nPerm );
+        HArray<IndexType> ja( nJa, valuesJa, testContext );
+        HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
 
         ReadAccess<IndexType> rJa( ja, loc );
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
         ReadAccess<IndexType> rPerm( perm, loc );
+
         SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty;
-        diagonalProperty = checkDiagonalProperty[loc->getType()]( numDiagonals, numRows, numColumns,
-                                                       rPerm.get(), rJa.get(), rDlg.get() );
+
+        bool diagonalProperty = 
+
+            checkDiagonalProperty[loc->getType()]( numDiagonals, numRows, numColumns,
+                                                   rPerm.get(), rJa.get(), rDlg.get() );
+
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
+
     // check with matrix with diagonal property
     {
         IndexType valuesJa[] =
@@ -293,20 +300,17 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         const IndexType numRows = 3;
         const IndexType numColumns = 3;
         const IndexType numDiagonals = 3;
-        HArray<IndexType> ja( nJa );
-        HArray<IndexType> dlg( nDlg );
-        HArray<IndexType> ilg( nIlg );
-        HArray<IndexType> perm( nPerm );
 
-        initArray( ja, valuesJa, nJa );
-        initArray( dlg, valuesDlg, nDlg );
-        initArray( ilg, valuesIlg, nIlg );
-        initArray( perm, valuesPerm, nPerm );
+        HArray<IndexType> ja( nJa, valuesJa, testContext );
+        HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
+        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
 
         ReadAccess<IndexType> rJa( ja, loc );
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
         ReadAccess<IndexType> rPerm( perm, loc );
+
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty;
         diagonalProperty = checkDiagonalProperty[loc->getType()]( numDiagonals, numRows, numColumns,
@@ -335,29 +339,38 @@ void checkDiagonalPropertyTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename NoType>
-void ilg2dlgTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 {
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::ilg2dlg> ilg2dlg;
 
-    {
-        IndexType valuesIlg[] =
-        { 7, 7, 5, 4, 4, 1 };
-        const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-        IndexType expectedValues[] =
-        { 6, 5, 5, 5, 3, 2, 2 };
-        const IndexType numRows = 6;
-        const IndexType numDiagonals = 7;
-        HArray<IndexType> dlg( numDiagonals );
-        HArray<IndexType> ilg( nIlg );
+    ContextPtr loc = Context::getContextPtr( ilg2dlg.validContext( testContext->getType() ) );
 
-        initArray( ilg, valuesIlg, nIlg );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    {
+        IndexType valuesIlg[]      = { 7, 7, 5, 4, 4, 1 };
+        IndexType expectedValues[] = { 6, 5, 5, 5, 3, 2, 2 };
+
+        const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
+        const IndexType nExpected = sizeof( expectedValues ) / sizeof( IndexType );
+
+        const IndexType numRows = 6;
+        const IndexType numDiagonals = 7;   // must also be maxval( valuesIlg )
+
+        BOOST_REQUIRE_EQUAL( numDiagonals, nExpected );
+
+        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+        HArray<IndexType> dlg( testContext );
+
         {
             WriteOnlyAccess<IndexType> wDlg( dlg, loc, numDiagonals );
             ReadAccess<IndexType> rIlg( ilg, loc );
             SCAI_CONTEXT_ACCESS( loc );
             ilg2dlg[loc->getType()]( wDlg.get(), numDiagonals, rIlg.get(), numRows );
         }
+
         ReadAccess<IndexType> rDlg( dlg );
 
         for ( IndexType i = 0; i < numDiagonals; i++ )
@@ -369,10 +382,15 @@ void ilg2dlgTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename NoType>
-void sortRowsTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE( sortRowsTest )
 {
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::sortRows> sortRows;
+
+    ContextPtr loc = Context::getContextPtr( sortRows.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     {
         IndexType valuesIlg[] =
@@ -386,17 +404,17 @@ void sortRowsTest( ContextPtr loc )
         IndexType expectedPerm[] =
         { 5, 0, 2, 3, 1, 4 };
         const IndexType numRows = 6;
-        HArray<IndexType> perm( nPerm );
-        HArray<IndexType> ilg( nIlg );
 
-        initArray( perm, valuesPerm, nPerm );
-        initArray( ilg, valuesIlg, nIlg );
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
+
         {
             WriteAccess<IndexType> wPerm( perm, loc );
             WriteAccess<IndexType> wIlg( ilg, loc );
             SCAI_CONTEXT_ACCESS( loc );
             sortRows[loc->getType()]( wIlg.get(), wPerm.get(), numRows );
         }
+
         ReadAccess<IndexType> rIlg( ilg );
         ReadAccess<IndexType> rPerm( perm );
 
@@ -421,10 +439,15 @@ void sortRowsTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename NoType>
-void setInversePermTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE( setInversePermTest )
 {
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::setInversePerm> setInversePerm;
+
+    ContextPtr loc = Context::getContextPtr( setInversePerm.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     {
         IndexType valuesPerm[] =
@@ -433,16 +456,17 @@ void setInversePermTest( ContextPtr loc )
         IndexType expectedPerm[] =
         { 1, 4, 2, 3, 5, 0 };
         const IndexType numRows = 6;
-        HArray<IndexType> perm( nPerm );
-        HArray<IndexType> inversePerm( nPerm );
 
-        initArray( perm, valuesPerm, nPerm );
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+        HArray<IndexType> inversePerm;  // will be allocated/used on loc
+
         {
             ReadAccess<IndexType> rPerm( perm, loc );
             WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
             SCAI_CONTEXT_ACCESS( loc );
             setInversePerm[loc->getType()]( wInversePerm.get(), rPerm.get(), numRows );
         }
+
         ReadAccess<IndexType> rInversePerm( inversePerm );
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -465,10 +489,17 @@ void setInversePermTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
-void setCSRValuesTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test_types )
 {
+    typedef float OtherValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
+
+    ContextPtr loc = Context::getContextPtr( setCSRValues.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     /*
      * Testmatrix:
@@ -502,21 +533,19 @@ void setCSRValuesTest( ContextPtr loc )
     { 2, 3, 5, 5, 2, 8, 4, 3, 7, 3, 7, 3, 4, 9, 9, 5, 5 };
     const IndexType numRows = 5;
     const IndexType nJDS = nCSRValues;
-    HArray<IndexType> JDSJa( nJDS );
-    HArray<ValueType> JDSValues( nJDS );
-    HArray<IndexType> JDSDlg( nJDSDlg );
-    HArray<IndexType> JDSIlg( nJDSIlg );
-    HArray<IndexType> JDSPerm( nJDSPerm );
-    HArray<IndexType> CSRIa( nCSRIa );
-    HArray<IndexType> CSRJa( nCSRJa );
-    HArray<OtherValueType> CSRValues( nCSRValues );
 
-    initArray( JDSDlg, valuesJDSDlg, nJDSDlg );
-    initArray( JDSIlg, valuesJDSIlg, nJDSIlg );
-    initArray( JDSPerm, valuesJDSPerm, nJDSPerm );
-    initArray( CSRIa, valuesCSRIa, nCSRIa );
-    initArray( CSRJa, valuesCSRJa, nCSRJa );
-    initArray( CSRValues, valuesCSRValues, nCSRValues );
+    HArray<IndexType> JDSDlg( nJDSDlg, valuesJDSDlg );
+    HArray<IndexType> JDSIlg( nJDSIlg, valuesJDSIlg );
+    HArray<IndexType> JDSPerm( nJDSPerm, valuesJDSPerm );
+    HArray<IndexType> CSRIa( nCSRIa, valuesCSRIa );
+    HArray<IndexType> CSRJa( nCSRJa, valuesCSRJa );
+    HArray<OtherValueType> CSRValues( nCSRValues, valuesCSRValues );
+
+    // output arrays
+
+    HArray<IndexType> JDSJa;
+    HArray<ValueType> JDSValues;
+
     {
         WriteOnlyAccess<IndexType> wJDSJa( JDSJa, loc, nJDS );
         WriteOnlyAccess<ValueType> wJDSValues( JDSValues, loc, nJDS );
@@ -530,6 +559,7 @@ void setCSRValuesTest( ContextPtr loc )
         setCSRValues[loc->getType()]( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), nJDSDlg, rJDSDlg.get(),
                            rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
     }
+
     ReadAccess<IndexType> rJDSJa( JDSJa );
     ReadAccess<ValueType> rJDSValues( JDSValues );
 
@@ -542,10 +572,17 @@ void setCSRValuesTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
-void getCSRValuesTest( ContextPtr loc )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test_types )
 {
+    typedef float OtherValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+
+    ContextPtr loc = Context::getContextPtr( getCSRValues.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     /*
      * Testmatrix:
@@ -577,23 +614,24 @@ void getCSRValuesTest( ContextPtr loc )
     { 2, 3, 6, 0, 2, 4, 5, 1, 3, 4, 5, 7, 0, 2, 0, 3, 7 };
     OtherValueType expectedCSRValues[] =
     { 5, 3, 4, 3, 4, 3, 5, 2, 8, 7, 9, 5, 2, 3, 5, 7, 9 };
+
     const IndexType numRows = 5;
     const IndexType nJDS = nJDSValues;
-    HArray<IndexType> JDSJa( nJDSJa );
-    HArray<ValueType> JDSValues( nJDSValues );
-    HArray<IndexType> JDSDlg( nJDSDlg );
-    HArray<IndexType> JDSIlg( nJDSIlg );
-    HArray<IndexType> JDSPerm( nJDSPerm );
-    HArray<IndexType> CSRIa( nCSRIa );
-    HArray<IndexType> CSRJa( nJDS );
-    HArray<OtherValueType> CSRValues( nJDS );
 
-    initArray( JDSJa, valuesJDSJa, nJDSJa );
-    initArray( JDSValues, valuesJDSValues, nJDSValues );
-    initArray( JDSDlg, valuesJDSDlg, nJDSDlg );
-    initArray( JDSIlg, valuesJDSIlg, nJDSIlg );
-    initArray( JDSPerm, valuesJDSPerm, nJDSPerm );
-    initArray( CSRIa, valuesCSRIa, nCSRIa );
+    // Input arrays: initialized directly on testContext
+
+    HArray<IndexType> JDSJa( nJDSJa, valuesJDSJa, testContext );
+    HArray<ValueType> JDSValues( nJDSValues, valuesJDSValues, testContext );
+    HArray<IndexType> JDSDlg( nJDSDlg, valuesJDSDlg, testContext );
+    HArray<IndexType> JDSIlg( nJDSIlg, valuesJDSIlg, testContext );
+    HArray<IndexType> JDSPerm( nJDSPerm, valuesJDSPerm, testContext );
+    HArray<IndexType> CSRIa( nCSRIa, valuesCSRIa );
+
+    // Output arrays: no initialization
+
+    HArray<IndexType> CSRJa;
+    HArray<OtherValueType> CSRValues;
+
     {
         ReadAccess<IndexType> rJDSJa( JDSJa, loc );
         ReadAccess<ValueType> rJDSValues( JDSValues, loc );
@@ -617,28 +655,6 @@ void getCSRValuesTest( ContextPtr loc )
     }
 }
 
-} /* end namespace JDSUtilsTest */
-
-} /* end namespace lama */
-
-} /* end namespace scai */
-/* ----------------------------------------------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE( JDSUtilsTest )
-
-SCAI_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" )
-
-LAMA_AUTO_TEST_CASE_CTDUMMY( checkDiagonalPropertyTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_CTDUMMY( ilg2dlgTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_CTDUMMY( sortRowsTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_CTDUMMY( setInversePermTest, JDSUtilsTest )
-
-LAMA_AUTO_TEST_CASE_CTT( getRowTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_CTT( getValueTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_CTT( scaleValueTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_CTT( setCSRValuesTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_CTT( getCSRValuesTest, JDSUtilsTest )
-
-// TODO: add jacobi tests etc.
 /* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_SUITE_END()

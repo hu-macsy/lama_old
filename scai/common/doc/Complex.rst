@@ -1,5 +1,5 @@
 Complex
--------
+=======
 
 The common library provides an own implementation for complex numbers instead
 of using the std::complex type. The template class Complex can be instantiated

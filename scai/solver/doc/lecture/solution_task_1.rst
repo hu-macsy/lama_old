@@ -1,7 +1,7 @@
 :orphan:
 
 Solution Task 1 (a)
-===================
+-------------------
 
 .. code-block:: c++
    :emphasize-lines: 9,10
@@ -24,7 +24,7 @@ Solution Task 1 (a)
 :download:`Download complete solution Task 1 (a) <../../../solver/examples/lecture/task1a.cpp>`
 
 Solution Task 1 (b)
-===================
+-------------------
 
 The following Code is an alternative solution for task 1. Explanations for each
 line are listened below.
@@ -71,7 +71,7 @@ line are listened below.
 (3) Creation of CSRSparseMatrix of type double and committing the SparseAssemblyStorage.
 
 Setting the right hand side and the solution vector
----------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: c++
    :emphasize-lines: 10,11,13,18,20

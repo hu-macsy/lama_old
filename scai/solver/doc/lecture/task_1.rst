@@ -1,7 +1,7 @@
 :orphan:
 
 Task 1: Setup a system of linear equations
-==========================================
+------------------------------------------
 
 Linear algebra requires working with objects like scalars, vectors and matrices.
 LAMA includes classes, which represent those objects and offers the possibility
@@ -11,7 +11,7 @@ already used in task 0 a little bit closer. Additionally the
 SparseAssemblyStorage and some supporting classes are introduced.
 
 Setting up a CSRSparseMatrix
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 LAMA currently supports the sparse matrix formats CSR, ELLPACK and JDS through
 the classes CSRSparseMatrix, ELLSparseMatrix and JDSSparseMatrix. During this
@@ -39,7 +39,7 @@ SparseAssemblyStorage just call the appropriate constructor.
 
 
 Setting the right hand side and the solution vector
----------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the first part of this task has introduced how sparse matrices are handled in
 LAMA. For systems of linear equations it is necessary to create vectors as well.

@@ -1,22 +1,14 @@
 .. _main-page_blaskernel:
 
+###############
 SCAI BLASKernel 
-===============
+###############
 
-Contents:
-
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
-   
-   naming_scheme_wrapping
-   extension
-   tested_version
    
    
-************
-Introduction
-************
+*************
+Specification
+*************
 
 * Provides wrapper for different BLAS-libraries
 * Provides wrapper for different LAPACK-libraries
@@ -30,3 +22,14 @@ Introduction
 The library doesn't cover all blas functionallity, yet. Currently just the ones are 
 accessible which are used inside LAMA.  
 
+********
+Contents
+********
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   
+   naming_scheme_wrapping
+   extension
+   tested_version

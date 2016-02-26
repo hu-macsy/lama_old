@@ -62,7 +62,21 @@ Thread::Id Thread::getSelf()
 
 // Map that defines mapping thread ids -> thread names (as strings)
 
-static map<Thread::Id, string> mapThreads;
+typedef map<Thread::Id, string> MapThreads;
+
+static MapThreads& getMapThreads()
+{
+    static MapThreads* mapThreads;
+
+    if ( mapThreads == NULL )
+    {
+        // allocate it for when its used the first time
+
+        mapThreads = new MapThreads;
+    }
+
+    return *mapThreads;
+}
 
 Thread::Mutex::Mutex( bool isRecursive )
 {
@@ -153,6 +167,8 @@ void Thread::defineCurrentThreadName( const char* name )
     cout << "defineCurrentThreadName, id = " << id << ", name = " << name << endl;
 #endif
 
+    MapThreads& mapThreads = getMapThreads();
+
     map<Thread::Id, string>::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
@@ -183,38 +199,30 @@ const char* Thread::getThreadName( Thread::Id id )
 {
     Thread::ScopedLock lock( map_mutex );
 
-    map<Thread::Id, string>::iterator it = mapThreads.find( id );
+    MapThreads& mapThreads = getMapThreads();
+
+    MapThreads::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
-        // No name defined yet
+        // No name defined yet, give it one, use internal numbering 
+        // Tracing requires unique name
 
-        /* Building a string on the stack is not useful.
+        ostringstream thread_name;
 
-           ostringstream thread_name;
-           thread_name << "t_" << id;
-           return thread_name.str().c_str();
+        thread_name << "thread_" << mapThreads.size();
 
-        */
+        // Attention: This would not possible if mapThreads is not statically initialized
+        
+        mapThreads.insert( std::pair<Thread::Id, string>( id, thread_name.str() ) );
 
-        /* Attention: This fails when called before program start:
+        it = mapThreads.find( id );
 
-           mapThreads[ id ] = thread_name.str();
-
-           it = mapThreads.find( id );
-
-           return it->second.c_str();
-        */
-
-        return "<unk_thread>";
     }
 
-    else
-    {
-        // return the defined name
+    // return the defined name
 
-        return it->second.c_str();
-    }
+    return it->second.c_str();
 }
 
 const char* Thread::getCurrentThreadName()

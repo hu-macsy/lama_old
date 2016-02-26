@@ -31,7 +31,7 @@
 ###
 
 set ( CXX_SOURCES
-      SparseKernelTest
+      sparsekernelTest
       COOUtilsTest
       CSRUtilsTest
       ELLUtilsTest
@@ -40,19 +40,12 @@ set ( CXX_SOURCES
 
 include_directories ( ${Boost_INCLUDE_DIR} )
 
-add_executable ( SparseKernelTest ${CXX_SOURCES} )
+add_executable ( sparsekernelTest ${CXX_SOURCES} )
 
-target_link_libraries ( SparseKernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
-
-#if    ( CUDA_FOUND AND USE_CUDA )
-#    add_subdirectory ( cuda )
-#endif ( CUDA_FOUND AND USE_CUDA )
-#
-#if    ( USE_MIC )
-#    add_subdirectory ( mic )
-#endif ( USE_MIC )
+target_link_libraries ( sparsekernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
 ### Copy the xmltest.sh file in build directory ### 
+
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
 
 if ( USE_CODE_COVERAGE )

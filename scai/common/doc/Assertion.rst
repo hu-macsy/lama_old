@@ -1,5 +1,5 @@
 Assertions
-----------
+==========
 
 It is very common to throw an exception if a certain condition is given.
 

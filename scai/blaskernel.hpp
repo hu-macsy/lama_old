@@ -1,8 +1,8 @@
 /*
- * kregistry.hpp
+ * blaskernel.hpp
  *
  *  Created on: 17.10.2015
- *      Author: Thomas Brandes
+ *      Author: Eric Schricker
  */
 
 #pragma once

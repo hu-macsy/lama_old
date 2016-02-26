@@ -43,4 +43,5 @@ ERROR_LEVEL=test_suite
 
 # Running tests serial
 echo "Running serial tests"
-./SparseKernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/SparseKernelTest.xml
+./sparsekernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/SparseKernelTestHost.xml
+./sparsekernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/SparseKernelTestHost.xml

@@ -1,10 +1,12 @@
 .. _main-page_solver:
 
-*****************
+#################
 LAMA User's Guide
-*****************
+#################
 
-Contents:
+********
+Contents
+********
 
 .. toctree::
    :titlesonly:

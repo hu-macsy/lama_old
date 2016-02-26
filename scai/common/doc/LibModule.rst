@@ -1,5 +1,5 @@
 LibModule
----------
+=========
 
 Many functionality of LAMA can be 
 either linked directly with the LAMA library
@@ -17,34 +17,6 @@ Advantages of using Library Modules loaded at runtime:
 
 Be careful: unload/free of module not mandatory
 
-..
-	.. code-block:: c++
-	
-	  class LibModule
-	  {
-	  public:
-	
-	      /** Data type definition for library handle, might be OS specifici. */
-	
-	      typedef void* LibHandle;
-	
-	      /** Load a library with its full name (might be absolute or relative) */
-	
-	       static LibHandle loadLib( const char* filename );
-	
-	       /** Unload a library  */
-	
-	       static void freeLib( LibHandle handle );
-	
-	       /** This routine reads a directory and tries to load all library modules in it */
-	
-	      static void loadLibsInDir( const char* dir );
-	
-	      /** multiple directory/libaries by patterns <pattern1>:<pattern2>:<pattern3>  */
-	
-	      static void loadLibsByPath( const char* path );
-	  }
-	  
 .. literalinclude:: ../LibModule.hpp
    :language: c++
    :lines: 47-78

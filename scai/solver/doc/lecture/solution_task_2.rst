@@ -1,7 +1,7 @@
 :orphan:
 
 Solution Task 2
-===============
+---------------
 
 Here is the solution of task 2. The code demonstrate a self-provided CG-Solver. 
 
@@ -102,7 +102,7 @@ Here is the solution of task 2. The code demonstrate a self-provided CG-Solver.
 
 An alternative solution for task 2 is the CG-class of LAMA, which contains the same calculation.
 
-::
+.. code-block:: c++
 
    Scalar eps = 0.00001;
    NormPtr norm = NormPtr( new L2Norm() );
@@ -120,7 +120,7 @@ An alternative solution for task 2 is the CG-class of LAMA, which contains the s
 To see results, it is possible to print out the values of vectors. By the way, an explicit function to print out results does not exist.
 But it is possible to use a HostReadAccess to get reading access to the values.
 
-::
+.. code-block:: c++
 
     std::cout << "The solution is: ";
     HostReadAccess<double> hra( solution.getLocalValues() );

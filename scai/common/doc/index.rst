@@ -1,7 +1,8 @@
 .. _main-page_common:
 
+###########
 SCAI Common
-===========
+###########
 
 The common library contains different functionality needed in nearly all SCAI projects.
 These are some utitily classes (e.g. for exceptions, factories, timing, ...), some
@@ -13,8 +14,9 @@ types, ...).
 
 All classes and type defintions are done in the namespace ``scai/common``.
 
+**********
 SCAI Types
-----------
+**********
 
 ====================    ==========================================
 Class                   Description
@@ -38,8 +40,9 @@ Constants               Operations to compare value to a machine specific eps
    SCAITypes
    Complex
 
+**************
 Common Classes
---------------
+**************
 
 ====================    ==========================================
 Class                   Description

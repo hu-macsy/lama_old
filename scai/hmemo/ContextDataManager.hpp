@@ -171,6 +171,8 @@ public:
 
     void resize( const size_t size, const size_t validSize );
 
+    void init( const void* data, const size_t size );
+
     virtual void writeAt( std::ostream& stream ) const;
 
 protected:

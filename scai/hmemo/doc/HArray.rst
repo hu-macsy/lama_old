@@ -1,5 +1,5 @@
 Heterogeneous Array
--------------------
+===================
 
 HArray is a template class where the template argument specifies the type of the elements of the array.
 
@@ -16,7 +16,7 @@ should be observed:
 Usually the value type is a primitive type or other arithmetic types like complex<float> or complex<double>.
 
 HArray
-^^^^^^
+------
 
 HArray is container where data might be allocated at different memory locations. 
 
@@ -108,7 +108,7 @@ Host     8192         true
 
 
 Alias Problem
-^^^^^^^^^^^^^
+-------------
 
 Many mathematical routines might use lhs array also on rhs.
 
@@ -187,7 +187,7 @@ If res == a, then ReadAccess after WriteAccess is not allowed as data might be r
 This is fine, resize on res is not needed.
 
 Prefetch
-^^^^^^^^
+--------
 
 Each HArray has a prefetch method in order to get a valid incarnation of the array
 at a certain context. If a memory transfer is required, this memory transfer is started
@@ -218,7 +218,7 @@ incarnation of the array on the Host is in the CUDA Host memory. Otherwise a
 separate thread is started that takes care of the memory transfer.
 
 Using Pinned Memory
-^^^^^^^^^^^^^^^^^^^
+-------------------
 
 By default, an incarnation of an Harray on the host is allocated in the Host memory.
 
@@ -275,7 +275,7 @@ Some other strategies have been dropped for these reasons:
    is not always recommended as the overhead does not pay off with one single transfer.
 
 HArrayRef
-^^^^^^^^^
+---------
 
 Each incarnation of an HArray is allocated in a corresponding memory object where the
 memory management is handled by a corresponding manager.
@@ -309,7 +309,7 @@ The destructor of the array takes care that the specified memory will contain
 a valid copy of the data.
 
 Non-Zero Copy
-^^^^^^^^^^^^^
+-------------
 
  * CUDA devices can also operate on CUDA Host memory
  * Avoids data transfer to and from the device

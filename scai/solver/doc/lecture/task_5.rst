@@ -1,7 +1,7 @@
 :orphan:
 
 Task 5: Let the CG Iterative Solver run on a GPU
-================================================
+------------------------------------------------
 
 LAMA provides the concept of contexts to run code on different compute devices.
 For GPU, LAMA supports OpenCL and CUDA. A LAMA-Context represents a compute and

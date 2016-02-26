@@ -11,7 +11,7 @@ factory. If the requested context is not available, because it is not supported 
 CUDA is found, you receive the default context. So your program using the CUDA context can be compiled and executed on 
 another machine without CUDA running on the host without changing code.
  
-::
+.. code-block:: c++
 
    ContextPtr hostCtx = ContextFactor::getContext( Context::Host );
    ContextPtr cudaCtx = ContextFactor::getContext( Context::CUDA, 0 ); // 0 defines the CUDA device used
@@ -19,7 +19,7 @@ another machine without CUDA running on the host without changing code.
 You need a *ContextPtr* to pass it to a matrix and/or vector to set the compute location for calculations with the
 matrix/vector. 
 
-::
+.. code-block:: c++
 
    CSRSparseMatrix<double> csrMatrix( ... );
    csrMatrix.setContext( cudaCtx );
@@ -38,7 +38,7 @@ of the *csrMatrix* and *vec* are copied to the GPU with the invocation of the mu
 command. If you want to time the calculation only the data movements have to be attached before by *prefetch* otherwise
 the movements is timed, too.
 
-:: 
+.. code-block:: c++
 
    CSRSparseMatrix<double> csrMatrix( ... );
    csrMatrix.prefetch( cudaCtx );

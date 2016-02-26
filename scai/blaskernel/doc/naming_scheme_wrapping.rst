@@ -1,6 +1,5 @@
 .. _blaskernel-namingscheme-wrapping:
 
-========
 Wrapping
 ========
 

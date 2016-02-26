@@ -36,6 +36,8 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/hmemo/test/TestMacros.hpp>
 
+#include <scai/hmemo/Context.hpp>
+
 /* --------------------------------------------------------------------- */
 /*     test types for BLAS ( S, D, C, Z )                                */
 /* --------------------------------------------------------------------- */
@@ -43,3 +45,4 @@
 typedef boost::mpl::list<float, double, ComplexFloat, ComplexDouble> blas_test_types;
 
 /* --------------------------------------------------------------------- */
+

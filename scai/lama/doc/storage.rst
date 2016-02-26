@@ -172,7 +172,7 @@ The ELL format without diagonal element shifting for the example matrix looks li
 
 The C++ code for the matrix vector multiplication using an ELL matrix:
 
-::
+.. code-block:: c++
 
     // ia is not used here, not necessarily needed to, but useful if non zero values per line vary a lot. 
     for ( IndexType i = 0; i < numRows; ++i )
@@ -250,7 +250,7 @@ The JDS format without diagonal element shifting for the example matrix looks li
 
 The C++ code for the matrix vector multiplication using a JDS matrix:
 
-::
+.. code-block:: c++
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
@@ -267,7 +267,7 @@ The C++ code for the matrix vector multiplication using a JDS matrix:
 The array ilg is employed when constructing the JDS array. After sorting the rows the array can be easily recomputed
 as follows:
 
-::
+.. code-block:: c++
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
@@ -283,7 +283,7 @@ as follows:
 
 The C++ code for the matrix vector multiplication without the array ilg would look like this:
 
-::
+.. code-block:: c++
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
