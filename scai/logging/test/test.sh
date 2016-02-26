@@ -32,9 +32,9 @@
  # @since 2.0.0
 ###
 
-genericPatternSimple=[0-9]{4}-[0-9]{2}-[0-9]{2},\ [0-9]{2}:[0-9]{2}:[0-9]{2}" Test @ <unk_thread> \( main -> simpleLogging.cpp::"[0-9]{1,2}" \)"
+genericPatternSimple=[0-9]{4}-[0-9]{2}-[0-9]{2},\ [0-9]{2}:[0-9]{2}:[0-9]{2}" Test @ thread_"[0-9]{1,2}" \( main -> simpleLogging.cpp::"[0-9]{1,2}" \)"
 genericPatternComplex1=[0-9]{4}-[0-9]{2}-[0-9]{2},\ [0-9]{2}:[0-9]{2}:[0-9]{2}
-genericPatternComplex2="@ <unk_thread> \( main -> complexLogging.cpp::"[0-9]{1,2}" \)"
+genericPatternComplex2="@ thread_"[0-9]{1,2}" \( main -> complexLogging.cpp::"[0-9]{1,2}" \)"
 errors=0
 
 # =====================================================================================================================
