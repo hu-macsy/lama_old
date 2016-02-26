@@ -53,7 +53,7 @@ struct CSRKernelTrait
     template<typename ValueType>
     struct sortRowElements
     {
-        /** This metod sorts the elements of a row by increasing column indexes.
+        /** This method sorts the elements of a row by increasing column indexes.
          *
          *  @param[in,out] csrJA, csrValues  the CSR matrix data and their column indexes
          *  @param[in]     csrIA             row offsets

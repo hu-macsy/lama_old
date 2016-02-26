@@ -341,8 +341,6 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 
 BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 {
-    typedef float OtherValueType;
-
     ContextPtr testContext = ContextFix::testContext;
 
     KernelTraitContextFunction<JDSKernelTrait::ilg2dlg> ilg2dlg;
@@ -386,8 +384,6 @@ BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 
 BOOST_AUTO_TEST_CASE( sortRowsTest )
 {
-    typedef float OtherValueType;
-
     ContextPtr testContext = ContextFix::testContext;
 
     KernelTraitContextFunction<JDSKernelTrait::sortRows> sortRows;

@@ -46,7 +46,7 @@ struct COOKernelTrait
 {
     struct hasDiagonalProperty
     {
-        /** Routine checks for diagonal propertie, first n entries are the diagonal elements.
+        /** Routine checks for diagonal property, first n entries are the diagonal elements.
          *
          *  @param[in] cooIA row indexes 
          *  @param[in] cooJA column indexes
