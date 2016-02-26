@@ -1,8 +1,7 @@
 .. _blaskernel-extension:
 
-*********
 Extension
-*********
+=========
 
 The extension of the library will be shown on an example by adding the function rot.
 We will just provide the implementation for one library, the other will be handled analog. 
