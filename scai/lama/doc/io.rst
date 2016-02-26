@@ -27,7 +27,7 @@ Read from file
 To initialise a matrix from file just pass the filename to the constructor or the *readFromFile* function.
 For a vector pass it to the constructor.
 
-::
+.. code-block:: c++
 
    std::string matrixname = ...;
    std::string vectorname = ...;
@@ -44,7 +44,7 @@ Write to file
 To write a matrix/vector to file call *writeToFile* with the name of the output file and the formatting. The default for just
 giving a name and no formatting is binary SAMG format in internal precision for the *values* und int for *ia* and *ja*.
 
-::
+.. code-block:: c++
 
    csrMatrix.writeToFile( "matrix_out.mtx", File::MatrixMarket, File::FLOAT );
    vec.writeToFile( "vec_out", File::XDR, File::DOUBLE );

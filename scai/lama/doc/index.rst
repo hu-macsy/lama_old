@@ -1,10 +1,12 @@
 .. _main-page_lama:
 
-*****************
+#################
 LAMA User's Guide
-*****************
+#################
 
-Contents:
+********
+Contents
+********
 
 .. toctree::
    :titlesonly:
