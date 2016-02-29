@@ -11,4 +11,3 @@
 #include <scai/utilskernel/LArrayRef.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
-
