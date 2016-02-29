@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <scai/utilskernel/LArray.hpp
-#include <scai/utilskernel/LArrayRef.hpp
-#include <scai/utilskernel/LAMAKernel.hpp
-#include <scai/utilskernel/UtilKernelTrait.hpp
+#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/LArrayRef.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
 
