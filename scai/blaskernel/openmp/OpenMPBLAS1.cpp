@@ -48,6 +48,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -566,6 +567,26 @@ void OpenMPBLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+struct Registrator
+{
+    static void initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+    {
+        using common::context::Host;
+        using kregistry::KernelRegistry;
+
+        KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( OpenMPBLAS1::scal, Host, flag );
+        KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( OpenMPBLAS1::nrm2, Host, flag );
+        KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( OpenMPBLAS1::asum, Host, flag );
+        KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( OpenMPBLAS1::iamax, Host, flag );
+        KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( OpenMPBLAS1::swap, Host, flag );
+        KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( OpenMPBLAS1::copy, Host, flag );
+        KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( OpenMPBLAS1::axpy, Host, flag );
+        KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( OpenMPBLAS1::dot, Host, flag );
+        KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( OpenMPBLAS1::sum, Host, flag );
+    }
+};
+
 void OpenMPBLAS1::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
@@ -584,6 +605,12 @@ void OpenMPBLAS1::registerKernels( bool deleteFlag )
 
     // Loop over all support arithmetic types for CUDA
 
+    typedef common::mepr::Container<Registrator, float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble> ValueTypes;
+
+    common::mepr::instantiate( flag, ValueTypes() );
+//    common::mepr::instantiate<instantiateAndRegister, float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble>( flag );
+
+    /*
 #define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
     KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, Host, flag );    \
     KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, Host, flag );    \
@@ -598,7 +625,7 @@ void OpenMPBLAS1::registerKernels( bool deleteFlag )
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
 #undef LAMA_BLAS1_REGISTER
-
+*/
 }
 
 /* --------------------------------------------------------------------------- */
