@@ -68,6 +68,34 @@ public:
         const IndexType dim1,
         const IndexType dim2 );
 
+    /** 
+     * @brief Creates a sparse, symmetric and NOT positive-definite matrix in CSR format.
+     *
+     * This matrix bfwb398.mtx is real, sparse, symmetric and NOT positive definite.
+     * It can be used to test convergence for the following krylow methods:
+     * BiCG, CGS (slow), GMRES, MINRES, QMR
+     *
+     * Doesn't work for: CG, BiCGstab, TFQMR 
+     *
+     *  @param[out] matrix in CSR format
+     */
+    template<typename ValueType>
+    static scai::lama::CSRSparseMatrix<ValueType> symmNotPosDefMatrix();
+
+    /** 
+     * @brief Creates a sparse, NOT symmetric and NOT positive-definite matrix in CSR format.
+     *
+     * This matrix west0381.mtx is real, sparse, unsymmetric and NOT positive definite.
+     * It can be used to test convergence for the following krylow methods:
+     * QMR (extremely slow)
+     *
+     * Doesn't work for: CG, BiCG, BiCGstab, CGS, GMRES, TFQMR
+     *
+     *  @param[out] matrix in CSR format
+     */
+    template<typename ValueType>
+    static scai::lama::CSRSparseMatrix<ValueType> notSymmNotPosDefMatrix();
+
     /**
      * @brief Creates a dim x dim matrix in CSR format.
      * 
@@ -104,6 +132,26 @@ scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::buildPoisson2D(
 {
     scai::lama::CSRSparseMatrix<ValueType> matrix;
     scai::lama::MatrixCreator<ValueType>::buildPoisson2D(matrix,stencilType,dim1,dim2);
+    return matrix;
+}
+
+template<typename ValueType>
+scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::symmNotPosDefMatrix()
+{
+    std::string prefix = scai::test::Configuration::getPath();
+    std::string inputFile = prefix + "/bfwb398.mtx";
+
+    scai::lama::CSRSparseMatrix<double> matrix(inputFile);
+    return matrix;
+}
+
+template<typename ValueType>
+scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::notSymmNotPosDefMatrix()
+{
+    std::string prefix = scai::test::Configuration::getPath();
+    std::string inputFile = prefix + "/west0381.mtx";
+
+    scai::lama::CSRSparseMatrix<double> matrix(inputFile);
     return matrix;
 }
 
