@@ -38,6 +38,8 @@
 namespace scai
 {
 
+/** Namespace for all kernels belonging to operations for matrix storage. */
+
 namespace sparsekernel
 {
 

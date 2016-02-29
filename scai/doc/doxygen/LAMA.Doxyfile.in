@@ -560,6 +560,8 @@ INPUT                  = ${CMAKE_SOURCE_DIR}/common  \
                          ${CMAKE_SOURCE_DIR}/hmemo  \
                          ${CMAKE_SOURCE_DIR}/kregistry  \
                          ${CMAKE_SOURCE_DIR}/blaskernel  \
+                         ${CMAKE_SOURCE_DIR}/utilskernel  \
+                         ${CMAKE_SOURCE_DIR}/sparsekernel  \
                          ${CMAKE_SOURCE_DIR}/dmemo  \
                          ${CMAKE_SOURCE_DIR}/lama  \
                          ${CMAKE_SOURCE_DIR}/solver
@@ -619,7 +621,11 @@ EXCLUDE                =  ${CMAKE_SOURCE_DIR}/lama/test \
                           ${CMAKE_SOURCE_DIR}/solver/examples \
                           ${CMAKE_SOURCE_DIR}/solver/test     \
                           ${CMAKE_SOURCE_DIR}/blaskernel/examples \
-                          ${CMAKE_SOURCE_DIR}/blaskernel/test
+                          ${CMAKE_SOURCE_DIR}/blaskernel/test \
+                          ${CMAKE_SOURCE_DIR}/utilskernel/examples \
+                          ${CMAKE_SOURCE_DIR}/utilskernel/test \
+                          ${CMAKE_SOURCE_DIR}/sparsekernel/examples \
+                          ${CMAKE_SOURCE_DIR}/sparsekernel/test
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or
 # directories that are symbolic links (a Unix filesystem feature) are excluded
