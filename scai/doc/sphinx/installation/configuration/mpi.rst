@@ -1,5 +1,5 @@
 Using MPI in LAMA
------------------
+^^^^^^^^^^^^^^^^^
 
 Message Passing Interface (MPI) is a standardized and portable message-passing system designed by a group of researchers
 from academia and industry to function on a wide variety of parallel computers. 

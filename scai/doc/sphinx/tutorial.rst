@@ -1,6 +1,5 @@
-********
 Tutorial
-********
+========
 
 First some simple use cases 
 becoming more and more complex

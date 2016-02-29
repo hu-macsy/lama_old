@@ -1,5 +1,5 @@
 Build
-=====
+-----
 
 After a successful configuration a Makefile is generated in the build directory.
 The make utility takes this input file for building LAMA.
@@ -42,7 +42,7 @@ The directory ``{SCAI_ROOT}/lib`` should contain the following libraries:
 - libscai_solver.so
 
 User Documentation
-------------------
+^^^^^^^^^^^^^^^^^^
 
 If Sphinx is found by CMake the user documentation will be automatically built. 
 If you don't want CMake to do this you have to pass -DBUILD_DOC=OFF to CMake.
@@ -50,7 +50,7 @@ You find the documentation in your build directory and find it in doc/sphinx/htm
 in the installation dir in share/doc/user/html/scai-<verion>/index.html.
   
 API Documentation
------------------
+^^^^^^^^^^^^^^^^^
 
 To build LAMAs API documentation call
 

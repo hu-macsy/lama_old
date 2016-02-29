@@ -1,6 +1,5 @@
-********
 Projects
-********
+========
 
 The LAMA library is build up of a couple of subproject, depending on each other.
 

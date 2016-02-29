@@ -1,5 +1,5 @@
 Software Prerequisites
-======================
+----------------------
 
 For the installation of LAMA you will need some general software packages. In the following sections we list the
 :ref:`required <required>`, :ref:`recommended <recommended>` and :ref:`optional <optional> software for building LAMA.
@@ -11,7 +11,7 @@ At the end of the page, our experience with different :ref:`configurations <supp
 ..	_required:
 
 Required Software
------------------
+^^^^^^^^^^^^^^^^^
 
 All you need for the LAMA installation are the following software packages:
 
@@ -34,7 +34,7 @@ All you need for the LAMA installation are the following software packages:
 .. _recommended:
 
 Recommended Software
---------------------
+^^^^^^^^^^^^^^^^^^^^
 
 The following software packages are not mandatory, but will give you a performance boost through optimized routines from BLAS and accelerator backends (CUDA, MIC) as well as distributed memory support
 
@@ -61,7 +61,7 @@ The following software packages are not mandatory, but will give you a performan
 .. _optional:
 
 Optional Software
------------------
+^^^^^^^^^^^^^^^^^
 
 For optional features you may also install the following:
 
@@ -92,7 +92,8 @@ For optional features you may also install the following:
 .. _supported:
 
 Configurations
---------------
+^^^^^^^^^^^^^^
+
 We have tested the installation of LAMA with various versions of the required software.
 Have a look at the following table whether your configuration is explicitly supported.
 All tests are configured as release build.

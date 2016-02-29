@@ -144,7 +144,7 @@ private:
      *  (if the pointer is NULL, destructor has been called)
      */
 
-    static CreatorMap* getFactory();
+    static CreatorMap& getFactory();
 };
 
 /* -----------------------------------------------------------------------------*/
@@ -201,13 +201,11 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 
     OutputType value;
 
-    const CreatorMap* factory = getFactory();
+    const CreatorMap& factory = getFactory();
 
-    SCAI_ASSERT( factory != NULL, "create on destroyed factory" )
+    typename CreatorMap::const_iterator fn = factory.find( type );
 
-    typename CreatorMap::const_iterator fn = factory->find( type );
-
-    if ( fn  != factory->end() )
+    if ( fn  != factory.end() )
     {
         value = fn->second();
     }
@@ -222,86 +220,73 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 }
 
 template<typename InputType, typename OutputType>
-std::map<InputType, OutputType(* )() >* Factory<InputType, OutputType>::getFactory()
+std::map<InputType, OutputType(* )() >& Factory<InputType, OutputType>::getFactory()
 {
-    static scai::common::shared_ptr<CreatorMap> factory;
-    static bool initialized = false;
+    // Factory will be created during static initialization when it is needed for the first time
+    // A destructor is never called as registered objects still might remove themselves later
 
-    if ( !initialized )
-    {
-        factory.reset( new CreatorMap() );
-        initialized = true;
-    }
-    else if ( factory.use_count() == 0 )
-    {
-        // destructor on factory has already been called
-        // Note: test factory.get() == NULL does not work with boost::shared_ptr, boost::auto_ptr
+    static CreatorMap* factory = NULL;
 
-        return NULL;
+    if ( factory == NULL )
+    {
+        factory = new CreatorMap();
     }
 
-    return factory.get();
+    return *factory;
 }
+
+/* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename OutputType>
 void Factory<InputType, OutputType>::addCreator( const InputType type, CreateFn create )
 {
-    CreatorMap* factory = getFactory();
-
-    SCAI_ASSERT( factory != NULL, "addCreator on destroyed factory" )
+    CreatorMap& factory = getFactory();
 
     // checks for multiple entries is not really necessary here, so just add entry in map container.
 
-    factory->insert( std::pair<InputType, CreateFn>( type, create ) );
+    factory.insert( std::pair<InputType, CreateFn>( type, create ) );
 }
+
+/* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename OutputType>
 void Factory<InputType, OutputType>::removeCreator( const InputType type )
 {
-    CreatorMap* factory = getFactory();
+    // Note: factory is never deleted so this call is safe at program exit
 
-    if ( factory == NULL )
-    {
-        return;   // factory is already destroyed, remove not needed
-    }
+    CreatorMap& factory = getFactory();
 
     // the following call is also safe if factory does not contain the creator for type
 
-    factory->erase( type );
+    factory.erase( type );
 }
+
+/* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename OutputType>
 bool Factory<InputType, OutputType>::canCreate( InputType value )
 {
-    CreatorMap* factory = getFactory();
+    CreatorMap& factory = getFactory();
 
-    if ( factory == NULL )
-    {
-        return false;
-    }
+    typename CreatorMap::const_iterator it = factory.find( value );
 
-    typename CreatorMap::const_iterator it = factory->find( value );
-
-    return it != factory->end();
+    return it != factory.end();
 }
+
+/* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename OutputType>
 void Factory<InputType, OutputType>::getCreateValues( std::vector<InputType>& values )
 {
-    CreatorMap* factory = getFactory();
+    CreatorMap& factory = getFactory();
 
     values.clear();
 
-    if ( factory == NULL )
-    {
-        return;
-    }
-
-    values.reserve( factory->size() );
+    values.reserve( factory.size() );
 
     typename CreatorMap::const_iterator it;
 
-    for ( it = factory->begin(); it != factory->end(); ++it )
+    for ( it = factory.begin(); it != factory.end(); ++it )
     {
         values.push_back( it->first );
     }

@@ -1,5 +1,5 @@
 Using CTest
-===========
+-----------
 
 CTest is part of Cmake and helps to integrate various testing executable with various runtime configurations to the existing buildsystem.
 

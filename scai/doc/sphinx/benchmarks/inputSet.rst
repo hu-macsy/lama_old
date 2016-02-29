@@ -1,10 +1,10 @@
 Input sets
-==========
+----------
 
 .. Introduction
 
 Random
-------
+^^^^^^
 
 The **Random** input set takes one or two parameters:
 
@@ -14,7 +14,7 @@ The **Random** input set takes one or two parameters:
 This input set creates a matrix and two vectors with randomly distributed values of the value (1 / size).
 
 File
-^^^^
+""""
 
 The **File** input set takes one parameter.
 
@@ -24,7 +24,7 @@ It reads the matrix out of the file, which either has to be in the Matrix Market
 Furthermore it creates two vectors, the first vector has as much values as the matrix columns. The other one is the product of the first vector and the matrix.
 
 Poisson
-^^^^^^^
+"""""""
 
 The **Poisson** input set takes one parameter.
 
@@ -45,7 +45,7 @@ Type should have the following format: **aDbP_dimX_dimY_dimZ** valid values are:
 +--------+-----+------+-------+
 
 LAMASpVdotDVInputSet
-^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""
 
 The **LAMASpVdotDV** input set takes two or three parameters separated with ",":
 

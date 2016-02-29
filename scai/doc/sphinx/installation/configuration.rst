@@ -1,5 +1,5 @@
 Configuration
-=============
+-------------
 
 The configuration of LAMA tries to find required and optional software needed by LAMA and to identify correct
 compilation and link flags. At the end of the configuration, a ``Makefile`` or ``Visual Studio project`` is generated
@@ -29,12 +29,12 @@ There are a couple of advanced :ref:`options <options>` for defining special bui
 .. _options:
 
 Options
--------
+^^^^^^^
 
 For defining the options you need to write ''-D<VARIABLE_NAME>=value''. A whitespace between -D and the VARIABLE_NAME is optional, but a call without a whitespace is our recommendation with CMake.
 
 CMake
-^^^^^
+"""""
 
 If you have not installed CMake in the system path you need to specify to CMake include and library path by:
 
@@ -46,7 +46,7 @@ If you have not installed CMake in the system path you need to specify to CMake 
          ../scai
 
 Build_Type
-^^^^^^^^^^
+""""""""""
 
 For an optimized installation of LAMA call define CMAKE_BUILD_TYPE=Release. Otherwise you build a debug version of LAMA.
 
@@ -55,7 +55,7 @@ For an optimized installation of LAMA call define CMAKE_BUILD_TYPE=Release. Othe
    cmake -DCMAKE_INSTALL_PREFIX=<path/to/install/dir> -DCMAKE_BUILD_TYPE=Release ../scai
 
 Build Specific Options
-^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""
 
 All relevant LAMA options and their significations are listed in the table below.
 
@@ -84,7 +84,7 @@ All relevant LAMA options and their significations are listed in the table below
 ..   "SCAI_ADDITIONAL_LINK_FLAGS", "Additional linker Flags"
 
 Packages
-^^^^^^^^
+""""""""
 
 If all packages are installed in the system path, CMake should find them automatically - if available - and there is less to do. If they are installed somewhere else or you have more than one option of a package, you need to give CMake some hints where to find the packages or which one to choose. For a specific package please refer to the belonging subpage.
 Especially for changing the C++ compiler please see the subpage, because there is a different way for telling CMake.
@@ -128,7 +128,7 @@ Your cmake-call may look like this then:
 The mkl library from '/opt/intel/mkl' will be used (instead of the libraries in the system path). All other libraries will be taken from the system path. 
 
 Check
-^^^^^
+"""""
 
 To check the configuration you may call in the build directory:
 
@@ -139,7 +139,7 @@ To check the configuration you may call in the build directory:
 It will show you the advanced LAMA configuration definitions first, after toggeling (t) you can view all settings.
 
 Additional Information
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 More information about useful CMake variables can be found in the `CMake Wiki`_.
 

@@ -1,5 +1,5 @@
 Assertions
-==========
+----------
 
 Boost.Test offers a lot of assertions to check a statement. Here is a list of mostly needed assertions:
 

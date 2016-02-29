@@ -1,5 +1,5 @@
 Using different contexts
-========================
+------------------------
 
 LAMA can use different hardware architectures. This is implemented by using the context classes. Especially for testing it is profitable to have a construct to run a testcase on every available context.
 This construct is called a Contextloop, which can be found in TestMacros.hpp. Using a CONTEXTLOOP() { ... } in combination with the macro GETCONTEXT( contextptr ) provides a facility to iterate 

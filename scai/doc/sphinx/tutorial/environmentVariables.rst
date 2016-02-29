@@ -1,12 +1,12 @@
 :orphan:
 
 Environment variables
-=====================
+---------------------
 
 This is a summary of environment variables that are currently used for LAMA.
 
 SCAI_LOG
---------
+^^^^^^^^
 
 The variable ``SCAI_LOG`` specifies the detail of logging or the logger configuration file.
 
@@ -26,7 +26,7 @@ as follows:
     Matrix.DenseMatrix = INFO
 
 SCAI_UNSUPPORTED
-----------------
+^^^^^^^^^^^^^^^^
 
 The variable ``SCAI_UNSUPPORTED`` specifies how the LAMA library deals with operations
 that are not efficiently implemented. These might be operations 
@@ -44,7 +44,7 @@ or not in the desired matrix format (e.g. implicit conversion to CSR format and 
 * ``IGNORE`` will not give any information or action for such operations.
 
 SCAI_DEVICE
------------
+^^^^^^^^^^^
 
 This variable specifies the default device for creation of a CUDA Context in case operations should be
 executed on a GPU.
@@ -54,7 +54,7 @@ Example::
     export SCAI_DEVICE=1
 
 LAMA_TEST_DEVICE
-----------------
+^^^^^^^^^^^^^^^^
 
 This variable is only used for the LAMA unit test to restrict execution of the test on a 
 specific device. If not set, tests will run on all devices.
@@ -65,7 +65,7 @@ specific device. If not set, tests will run on all devices.
     export LAMA_TEST_DEVICE=CUDA
 
 LAMA_NP
--------
+^^^^^^^
 
 This variable specifies the configuration of a processor array. It is used for Poisson input setgenerators
 that generates sparse matrices for 2D and 3D problems. 

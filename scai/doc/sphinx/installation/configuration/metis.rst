@@ -1,5 +1,5 @@
 Metis
-=====
+^^^^^
 
 Metis__ is a family of graph and hypergraph partitioning software. Actually we support a Metis generated (graph partitioned) Distribution, that depends on the sparse matrix structure and the number of cores. This works with *METIS_PartGraphRecursive* out of the Metis package. ParMetis comes with a full Metis installation, so you also can use it.
 

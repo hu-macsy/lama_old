@@ -1,5 +1,5 @@
 BLAS and LAPACK
----------------
+^^^^^^^^^^^^^^^
 
 `Wikipedia BLAS`_.
 

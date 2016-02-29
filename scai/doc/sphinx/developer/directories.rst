@@ -1,5 +1,5 @@
 Directory Structure
-====================
+-------------------
 
 LAMA itself is the largest SCAI project coming with the distribution, but there are many others:
 

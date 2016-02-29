@@ -1,5 +1,5 @@
 Enum Types
-==========
+----------
 
 * should always be defined in an own namespace (unless they are defined in struct or class)
 * operator<< should always be defined in same namespace

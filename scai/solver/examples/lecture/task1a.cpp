@@ -1,5 +1,5 @@
 
-//Solution of task 1b:
+//Solution of task 1a:
 
 #include <scai/lama.hpp>
 

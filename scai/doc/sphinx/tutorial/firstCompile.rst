@@ -1,5 +1,5 @@
 Compilation and Execution of LAMA Programs on Linux Systems
-===========================================================
+-----------------------------------------------------------
 
 The environment variable LAMA_ROOT refers the directory of your LAMA installation::
 
