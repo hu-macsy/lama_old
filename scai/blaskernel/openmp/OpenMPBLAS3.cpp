@@ -365,6 +365,8 @@ void OpenMPBLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry:
     using common::context::Host;
     using kregistry::KernelRegistry;
 
+    SCAI_LOG_INFO( logger, "register BLAS3 OpenMP-routines for Host at kernel registry [" << flag << "]" )
+
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( OpenMPBLAS3::gemm, Host, flag );
 }
 

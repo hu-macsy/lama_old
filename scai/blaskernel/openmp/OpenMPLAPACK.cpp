@@ -541,6 +541,8 @@ void OpenMPLAPACK::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry
     using common::context::Host;
     using kregistry::KernelRegistry;
 
+    SCAI_LOG_INFO( logger, "register LAPACK OpenMP-routines for Host at kernel registry [" << flag << "]" )
+
     KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( OpenMPLAPACK::getrf, Host, flag );
     KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( OpenMPLAPACK::getri, Host, flag );
     KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( OpenMPLAPACK::getinv, Host, flag );

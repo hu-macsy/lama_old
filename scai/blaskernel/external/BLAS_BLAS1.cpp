@@ -50,7 +50,7 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/bind.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 namespace scai
 {
@@ -313,8 +313,12 @@ ValueType BLAS_BLAS1::dot(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void BLAS_BLAS1::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void BLAS_BLAS1::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
+    using kregistry::KernelRegistry;
+
     bool useBLAS = false;
     int level = 0;
 
@@ -335,31 +339,14 @@ void BLAS_BLAS1::registerKernels( bool deleteFlag )
 
     SCAI_LOG_INFO( logger, "register BLAS1 wrapper routines for Host at kernel registry" )
 
-    // REGISTER1: give these routines priority in case of overriding
-
-    using kregistry::KernelRegistry;
-    using common::context::Host;
-
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-#define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
-    KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, Host, flag );  \
-    KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, Host, flag );      \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
-
-#undef LAMA_BLAS1_REGISTER
+    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( BLAS_BLAS1::scal, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( BLAS_BLAS1::nrm2, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( BLAS_BLAS1::asum, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( BLAS_BLAS1::iamax, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( BLAS_BLAS1::swap, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( BLAS_BLAS1::copy, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( BLAS_BLAS1::axpy, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( BLAS_BLAS1::dot, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -368,14 +355,16 @@ void BLAS_BLAS1::registerKernels( bool deleteFlag )
 
 BLAS_BLAS1::BLAS_BLAS1()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_EXT_HOST> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_REPLACE, ValueTypes() );
 }
 
 BLAS_BLAS1::~BLAS_BLAS1()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_EXT_HOST> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

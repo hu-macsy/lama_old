@@ -44,6 +44,9 @@
 
 #include <scai/logging.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/kregistry/Registrator.hpp>
+
 namespace scai
 {
 
@@ -136,7 +139,7 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    static void registerKernels( bool deleteFlag );
+    SCAI_DECLARE_REGISTRATOR( ValueType )
 
     /** Constructor for registration. */
 
