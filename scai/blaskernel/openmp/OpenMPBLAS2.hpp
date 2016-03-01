@@ -43,6 +43,7 @@
 #include <scai/common/SCAITypes.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/kregistry/Registrator.hpp>
 
 namespace scai
 {
@@ -82,11 +83,7 @@ private:
 
     /** structure that registers all methods at the kernel registry. */
 
-    template<typename ValueType>
-    struct Registrator
-    {
-        static void initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
+    SCAI_DECLARE_REGISTRATOR( ValueType )
 
     /** Constructor for registration. */
 
