@@ -47,7 +47,6 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/preprocessor.hpp>
 #include <scai/common/mepr/Container.hpp>
 
 #include <scai/tracing.hpp>
