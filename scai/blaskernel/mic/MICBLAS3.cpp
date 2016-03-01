@@ -157,7 +157,7 @@ void MICBLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::Ke
 
     SCAI_LOG_INFO( logger, "register BLAS3 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( MICBLAS2::gemm, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( MICBLAS3::gemm, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
