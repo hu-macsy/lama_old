@@ -517,20 +517,20 @@ ValueType CUDABLAS1::dot(
 template<typename ValueType>
 void CUDABLAS1::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
+    using common::context::CUDA;
     using kregistry::KernelRegistry;
 
     SCAI_LOG_INFO( logger, "register BLAS1 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( CUDABLAS1::sum, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( CUDABLAS1::scal, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( CUDABLAS1::nrm2, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( CUDABLAS1::asum, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( CUDABLAS1::iamax, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( CUDABLAS1::swap, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( CUDABLAS1::copy, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( CUDABLAS1::axpy, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( CUDABLAS1::dot, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( CUDABLAS1::sum, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( CUDABLAS1::scal, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( CUDABLAS1::nrm2, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( CUDABLAS1::asum, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( CUDABLAS1::iamax, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( CUDABLAS1::swap, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( CUDABLAS1::copy, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( CUDABLAS1::axpy, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( CUDABLAS1::dot, CUDA, flag );
 }
 
 /* --------------------------------------------------------------------------- */

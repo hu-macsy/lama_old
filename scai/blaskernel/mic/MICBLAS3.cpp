@@ -45,7 +45,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 // external
 #include <mkl_blas.h>
@@ -149,25 +149,15 @@ void MICBLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS3::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void MICBLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "register BLAS3 kernels for MIC in Kernel Registry" )
-
-    using kregistry::KernelRegistry;
     using common::context::MIC;
+    using kregistry::KernelRegistry;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+    SCAI_LOG_INFO( logger, "register BLAS3 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                           \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_MIC_TYPE_##I> >( gemm, MIC, flag );  \
-
-    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
-
-#undef LAMA_BLAS3_REGISTER
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( MICBLAS2::gemm, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -176,14 +166,16 @@ void MICBLAS3::registerKernels( bool deleteFlag )
 
 MICBLAS3::RegisterGuard::RegisterGuard()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_MIC> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 MICBLAS3::RegisterGuard::~RegisterGuard()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_MIC> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 MICBLAS3::RegisterGuard MICBLAS3::guard;    // guard variable for registration

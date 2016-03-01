@@ -155,12 +155,12 @@ void CUDABLAS2::gemv(
 template<typename ValueType>
 void CUDABLAS2::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
+    using common::context::CUDA;
     using kregistry::KernelRegistry;
 
     SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( CUDABLAS2::gemv, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( CUDABLAS2::gemv, CUDA, flag );
 }
 
 /* --------------------------------------------------------------------------- */

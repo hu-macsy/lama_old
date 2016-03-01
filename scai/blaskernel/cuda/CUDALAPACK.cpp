@@ -42,13 +42,19 @@
 // internal scai library
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 namespace scai
 {
 
 namespace blaskernel
 {
+
+/* ---------------------------------------------------------------------------------------*/
+
+SCAI_LOG_DEF_LOGGER( CUDALAPACK::logger, "CUDA.LAPACK" )
+
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
 void CUDALAPACK::laswp(
@@ -103,26 +109,15 @@ void CUDALAPACK::laswp(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDALAPACK::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void CUDALAPACK::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+    SCAI_LOG_INFO( logger, "register LAPACK routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-#define CUDA_LAPACK_REGISTER(z, I, _)                                                             \
-    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_CUDA_TYPE_##I> >( laswp, CUDA, flag );  \
-
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, CUDA_LAPACK_REGISTER, _ )
-
-#undef CUDA_LAPACK_REGISTER
-
-    // other routines are not used by LAMA yet
+    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( CUDALAPACK::laswp, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -131,14 +126,16 @@ void CUDALAPACK::registerKernels( bool deleteFlag )
 
 CUDALAPACK::CUDALAPACK()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 CUDALAPACK::~CUDALAPACK()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 CUDALAPACK CUDALAPACK::guard;    // guard variable for registration
