@@ -188,6 +188,8 @@ void MICMemory::memset( void* dst, const int val, const size_t size ) const
 {
     const size_t dst_ptr = (size_t) dst;
 
+    int deviceNr = mMICContext->getDeviceNr();
+
     #pragma offload target( mic : deviceNr ) in( dst_ptr, size, val )
     {
         void* dst = ( void* ) dst_ptr;
