@@ -43,6 +43,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 
+#include <scai/kregistry/Registrator.hpp>
+
 // CUDA
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
@@ -85,7 +87,7 @@ private:
 
     /** Registration of methods  at kernel registry. */
 
-    static void registerKernels( bool deleteFlag );
+    SCAI_DECLARE_REGISTRATOR( ValueType )
 
     /** Constructor for registration. */
 

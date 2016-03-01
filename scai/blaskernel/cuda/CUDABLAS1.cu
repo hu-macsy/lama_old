@@ -49,7 +49,7 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 using namespace scai::tasking;
 using namespace scai::hmemo;
@@ -514,38 +514,23 @@ ValueType CUDABLAS1::dot(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS1::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void CUDABLAS1::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+    SCAI_LOG_INFO( logger, "register BLAS1 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    SCAI_LOG_INFO( logger, "register BLAS1 routines implemented by CuBLAS in KernelRegistry" )
-
-    // register for one CUDA type: ARITHMETIC_CUDA_TYPE_xxx
-
-#define LAMA_BLAS1_REGISTER(z, I, _)                                                              \
-    KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_CUDA_TYPE_##I> >( scal, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_CUDA_TYPE_##I> >( nrm2, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_CUDA_TYPE_##I> >( asum, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_CUDA_TYPE_##I> >( iamax, CUDA, flag );  \
-    KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_CUDA_TYPE_##I> >( swap, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_CUDA_TYPE_##I> >( copy, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_CUDA_TYPE_##I> >( axpy, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_CUDA_TYPE_##I> >( dot, CUDA, flag );      \
-    KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, CUDA, flag );      \
-
-    // loop over all supported CUDA types
-
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
-
-#undef LAMA_BLAS1_REGISTER
+    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( CUDABLAS1::sum, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( CUDABLAS1::scal, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( CUDABLAS1::nrm2, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( CUDABLAS1::asum, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( CUDABLAS1::iamax, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( CUDABLAS1::swap, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( CUDABLAS1::copy, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( CUDABLAS1::axpy, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( CUDABLAS1::dot, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -554,14 +539,16 @@ void CUDABLAS1::registerKernels( bool deleteFlag )
 
 CUDABLAS1::CUDABLAS1()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 CUDABLAS1::~CUDABLAS1()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 CUDABLAS1 CUDABLAS1::guard;    // guard variable for registration

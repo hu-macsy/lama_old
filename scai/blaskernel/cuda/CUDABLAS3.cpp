@@ -46,7 +46,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 using namespace scai::tasking;
 using namespace scai::hmemo;
@@ -407,26 +407,15 @@ void CUDABLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS3::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void CUDABLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+    SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry" )
-
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                            \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, CUDA, flag );  \
-
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
-
-#undef LAMA_BLAS3_REGISTER
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( CUDABLAS3::gemm, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -435,14 +424,16 @@ void CUDABLAS3::registerKernels( bool deleteFlag )
 
 CUDABLAS3::CUDABLAS3()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 CUDABLAS3::~CUDABLAS3()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 CUDABLAS3 CUDABLAS3::guard;    // guard variable for registration

@@ -46,7 +46,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 using namespace scai::tasking;
 using namespace scai::hmemo;
@@ -152,28 +152,15 @@ void CUDABLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS2::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void CUDABLAS2::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+    SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry" )
-
-    // register for one CUDA type: ARITHMETIC_CUDA_TYPE_xxx
-
-#define LAMA_BLAS2_REGISTER(z, I, _)                                                            \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, CUDA, flag );  \
-
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
-
-#undef LAMA_BLAS2_REGISTER
+    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( CUDABLAS2::gemv, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -182,14 +169,16 @@ void CUDABLAS2::registerKernels( bool deleteFlag )
 
 CUDABLAS2::CUDABLAS2()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 CUDABLAS2::~CUDABLAS2()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 CUDABLAS2 CUDABLAS2::guard;    // guard variable for registration
