@@ -42,6 +42,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
+
 namespace scai
 {
 
@@ -78,9 +80,13 @@ public:
 
 private:
 
-    /** Routine that registers all methods at the kernel registry. */
+    /** structure that registers all methods at the kernel registry. */
 
-    static void registerKernels( bool deleteFlag );
+    template<typename ValueType>
+    struct Registrator
+    {
+        static void initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

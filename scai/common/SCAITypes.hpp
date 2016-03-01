@@ -97,6 +97,8 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
 
+#define ARITHMETIC_HOST float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble
+
 /** Number of supported types used in REPEAT macros */
 #ifdef SCAI_COMPLEX_SUPPORTED
 

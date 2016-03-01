@@ -44,6 +44,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 namespace scai
 {
@@ -285,28 +286,13 @@ void OpenMPBLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPBLAS2::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void OpenMPBLAS2::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using kregistry::KernelRegistry;
     using common::context::Host;
+    using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
-
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-#define LAMA_BLAS2_REGISTER(z, I, _)                                                          \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, Host, flag ); \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
-
-#undef LAMA_BLAS2_REGISTER
-
-    // all other routines are not used in LAMA yet
+    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( OpenMPBLAS2::gemv, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -315,14 +301,16 @@ void OpenMPBLAS2::registerKernels( bool deleteFlag )
 
 OpenMPBLAS2::OpenMPBLAS2()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<OpenMPBLAS2::Registrator, ARITHMETIC_HOST> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 OpenMPBLAS2::~OpenMPBLAS2()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<OpenMPBLAS2::Registrator, ARITHMETIC_HOST> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */
