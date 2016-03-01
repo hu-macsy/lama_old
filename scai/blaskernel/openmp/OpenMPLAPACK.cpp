@@ -48,6 +48,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 // std
 #include <cmath>
@@ -535,32 +536,17 @@ void OpenMPLAPACK::laswp(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPLAPACK::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void OpenMPLAPACK::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::Host;       // context for registration
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    SCAI_LOG_INFO( logger, "set LAPACK routines for OpenMP in Kernel Registry" )
-
-#define LAMA_LAPACK_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, Host, flag ); \
-    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, Host, flag ); \
-    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, Host, flag ); \
-    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, Host, flag ); \
-    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_HOST_TYPE_##I> >( laswp, Host, flag ); \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
-
-#undef LAMA_LAPACK_REGISTER
-
-    // other routines are not used by LAMA yet
+    KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( OpenMPLAPACK::getrf, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( OpenMPLAPACK::getri, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( OpenMPLAPACK::getinv, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( OpenMPLAPACK::tptrs, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( OpenMPLAPACK::laswp, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -569,14 +555,16 @@ void OpenMPLAPACK::registerKernels( bool deleteFlag )
 
 OpenMPLAPACK::OpenMPLAPACK()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 OpenMPLAPACK::~OpenMPLAPACK()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
+
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -301,14 +301,14 @@ void OpenMPBLAS2::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 OpenMPBLAS2::OpenMPBLAS2()
 {
-    typedef common::mepr::Container<OpenMPBLAS2::Registrator, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 OpenMPBLAS2::~OpenMPBLAS2()
 {
-    typedef common::mepr::Container<OpenMPBLAS2::Registrator, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }

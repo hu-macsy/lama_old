@@ -375,14 +375,14 @@ void OpenMPBLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 OpenMPBLAS3::OpenMPBLAS3()
 {
-    typedef common::mepr::Container<OpenMPBLAS3::Registrator, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 OpenMPBLAS3::~OpenMPBLAS3()
 {
-    typedef common::mepr::Container<OpenMPBLAS3::Registrator, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
