@@ -492,7 +492,7 @@ MICDIAUtils::RegisterGuard::RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
 
     kregistry::instantiate( flag, ValueTypes() );
 }
@@ -501,7 +501,7 @@ MICDIAUtils::RegisterGuard::~RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
 
     kregistry::instantiate( flag, ValueTypes() );
 }

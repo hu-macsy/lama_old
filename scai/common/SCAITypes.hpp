@@ -103,7 +103,7 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 #define ARITHMETIC_CUDA float, double, ComplexFloat, ComplexDouble
 
-#define ARITHMETIC_MIC float, double, ComplexFloat, ComplexDouble
+#define ARITHMETIC_MIC float, double
 
 /** Number of supported types used in REPEAT macros */
 #ifdef SCAI_COMPLEX_SUPPORTED

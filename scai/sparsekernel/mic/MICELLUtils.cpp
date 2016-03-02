@@ -1212,34 +1212,6 @@ void MICELLUtils::sparseGEMV(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void MICELLUtils::registerKernels( bool deleteFlag )
-{
-    SCAI_LOG_INFO( logger, "set ELL routines for MIC in Interface" )
-
-    SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
-
-    using kregistry::KernelRegistry;
-    using common::context::MIC;
-
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-
-
-
-
-
-
-    /*
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, float )
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, double )
-     */
-}
-
 void MICELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::MIC;
@@ -1293,8 +1265,8 @@ MICELLUtils::RegisterGuard::RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
-    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_MIC> MoreValueTypes;
 
     Registrator::initAndReg( flag );
     kregistry::instantiate( flag, ValueTypes() );
@@ -1305,8 +1277,8 @@ MICELLUtils::RegisterGuard::~RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
-    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_MIC> MoreValueTypes;
 
     Registrator::initAndReg( flag );
     kregistry::instantiate( flag, ValueTypes() );
