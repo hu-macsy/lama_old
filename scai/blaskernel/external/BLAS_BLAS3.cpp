@@ -135,7 +135,7 @@ void BLAS_BLAS3::gemm(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void BLAS_BLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void BLAS_BLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
@@ -169,14 +169,14 @@ void BLAS_BLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::
 
 BLAS_BLAS3::BLAS_BLAS3()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_EXT_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_REPLACE, ValueTypes() );
 }
 
 BLAS_BLAS3::~BLAS_BLAS3()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_EXT_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }

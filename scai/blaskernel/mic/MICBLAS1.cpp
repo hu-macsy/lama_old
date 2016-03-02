@@ -547,7 +547,7 @@ void MICBLAS1::sum(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICBLAS1::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::MIC;
     using kregistry::KernelRegistry;
@@ -571,14 +571,14 @@ void MICBLAS1::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::Ke
 
 MICBLAS1::RegisterGuard::RegisterGuard()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_MIC> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 MICBLAS1::RegisterGuard::~RegisterGuard()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_MIC> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }

@@ -214,7 +214,7 @@ int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void LAPACKe_LAPACK::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void LAPACKe_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
@@ -228,13 +228,13 @@ void LAPACKe_LAPACK::Registrator<ValueType>::initAndReg( kregistry::KernelRegist
 }
 
 LAPACKe_LAPACK::LAPACKe_LAPACK() {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_EXT_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_REPLACE, ValueTypes() );
 }
 
 LAPACKe_LAPACK::~LAPACKe_LAPACK() {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_EXT_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }

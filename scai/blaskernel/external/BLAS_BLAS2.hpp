@@ -80,7 +80,7 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_DECLARE_REGISTRATOR( Registrator, typename ValueType )
+    SCAI_DECLARE_REGISTRATOR( RegistratorV, typename ValueType )
 
     /** Constructor for registration. */
 

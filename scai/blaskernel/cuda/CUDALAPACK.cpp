@@ -110,7 +110,7 @@ void CUDALAPACK::laswp(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDALAPACK::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDALAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
@@ -126,14 +126,14 @@ void CUDALAPACK::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::
 
 CUDALAPACK::CUDALAPACK()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 CUDALAPACK::~CUDALAPACK()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }

@@ -408,7 +408,7 @@ void CUDABLAS3::gemm(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDABLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDABLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::CUDA;
     using kregistry::KernelRegistry;
@@ -424,14 +424,14 @@ void CUDABLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::K
 
 CUDABLAS3::CUDABLAS3()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 CUDABLAS3::~CUDABLAS3()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }

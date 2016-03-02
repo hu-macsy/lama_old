@@ -144,8 +144,8 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_DECLARE_REGISTRATOR( Registrator, typename ValueType )
-    SCAI_DECLARE_REGISTRATOR( Registrator2, typename ValueType, typename OtherValueType )
+    SCAI_DECLARE_REGISTRATOR( RegistratorV, typename ValueType )
+    SCAI_DECLARE_REGISTRATOR( RegistratorVO, typename ValueType, typename OtherValueType )
 
     /** Constructor for registration. */
 

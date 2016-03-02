@@ -515,7 +515,7 @@ ValueType CUDABLAS1::dot(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDABLAS1::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDABLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::CUDA;
     using kregistry::KernelRegistry;
@@ -539,14 +539,14 @@ void CUDABLAS1::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::K
 
 CUDABLAS1::CUDABLAS1()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 CUDABLAS1::~CUDABLAS1()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }

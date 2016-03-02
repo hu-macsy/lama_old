@@ -602,7 +602,7 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
@@ -622,7 +622,7 @@ void OpenMPUtils::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry:
 }
 
 template<typename ValueType, typename OtherValueType>
-void OpenMPUtils::Registrator2<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
@@ -644,22 +644,22 @@ void OpenMPUtils::Registrator2<ValueType, OtherValueType>::initAndReg( kregistry
 
 OpenMPUtils::OpenMPUtils()
 {
-    typedef common::mepr::Container<Registrator, IndexType, ARITHMETIC_HOST> ValueTypes;
-    typedef common::mepr::Container2<Registrator2, IndexType, ARITHMETIC_HOST> ValueTypes2;
+    typedef common::mepr::ContainerV<RegistratorV, IndexType, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
-    common::mepr::instantiate2( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes2() );
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, MoreValueTypes() );
 
 //    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, Host, flag );
 }
 
 OpenMPUtils::~OpenMPUtils()
 {
-    typedef common::mepr::Container<Registrator, IndexType, ARITHMETIC_HOST> ValueTypes;
-    typedef common::mepr::Container2<Registrator2, IndexType, ARITHMETIC_HOST> ValueTypes2;
+    typedef common::mepr::ContainerV<RegistratorV, IndexType, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
 
     common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
-    common::mepr::instantiate2( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes2() );
+    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, MoreValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */
