@@ -54,6 +54,7 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
@@ -717,39 +718,41 @@ void CUDACOOUtils::setCSRData(
 
 /* --------------------------------------------------------------------------- */
 
-void CUDACOOUtils::registerKernels( bool deleteFlag )
+void CUDACOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "set COO routines for CUDA in Interface" )
-
-    using namespace scai::kregistry;
     using common::context::CUDA;
+    using kregistry::KernelRegistry;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+    SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( CUDACOOUtils::offsets2ia, CUDA, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( CUDACOOUtils::setCSRData, CUDA, flag );
+}
 
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, CUDA, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, CUDA, flag );
+template<typename ValueType>
+void CUDACOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::CUDA;
+    using kregistry::KernelRegistry;
 
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                    \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setCSRData, CUDA, flag );  \
-     
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                  \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, CUDA, flag ); \
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, CUDA, flag ); \
-                                                                                                          \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                            \
-                     LAMA_COO_UTILS2_REGISTER,                                                            \
-                     ARITHMETIC_CUDA_TYPE_##I )                                                           \
-     
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
+    SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-#undef LAMA_COO_UTILS_REGISTER
-#undef LAMA_COO_UTILS2_REGISTER
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, CUDA, flag );
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( CUDACOOUtils::normalGEVM, CUDA, flag );
 
+}
+
+template<typename ValueType, typename OtherValueType>
+void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::CUDA;
+    using kregistry::KernelRegistry;
+
+    SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( CUDACOOUtils::setCSRData, CUDA, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -758,14 +761,26 @@ void CUDACOOUtils::registerKernels( bool deleteFlag )
 
 CUDACOOUtils::CUDACOOUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_CUDA> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    common::mepr::instantiate( flag, ValueTypes() );
+    common::mepr::instantiate( flag, MoreValueTypes() );
 }
 
 CUDACOOUtils::~CUDACOOUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_CUDA> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    common::mepr::instantiate( flag, ValueTypes() );
+    common::mepr::instantiate( flag, MoreValueTypes() );
 }
 
 CUDACOOUtils CUDACOOUtils::guard;    // guard variable for registration
