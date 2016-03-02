@@ -37,7 +37,7 @@ if ( SPHINX_FOUND AND BUILD_DOC )
 
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
-    setIntersphinxInternalVariables()    
+    setIntersphinxInternalVariables()
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
     
     # Add custom command for building the userdoc

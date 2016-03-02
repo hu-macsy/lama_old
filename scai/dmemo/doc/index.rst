@@ -27,7 +27,7 @@ Contents
 Motivation
 **********
 
-DMemo stands for **Distributed Memory** and is a library that provides distribuion and communication
+DMemo stands for **Distributed Memory** and is a library that provides distribution and communication.
 routines.
 
 *************

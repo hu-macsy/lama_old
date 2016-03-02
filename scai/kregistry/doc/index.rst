@@ -64,7 +64,7 @@ Motivation
        kernel_add( wa.get(), rb.get(), rc.get(), n )
   }
 
-The library ''kregistry'' managages different kernel implementations dependent on the 
+The library ''kregistry'' manages different kernel implementations dependent on the 
 context where the routine is executed.
 
  * Use of switch statement makes code not extendable
@@ -72,5 +72,3 @@ context where the routine is executed.
  * Class KernelRegistry: provides function pointers for different implementations 
  * Registry allows for adding new implementations dynamically
  * Wanted: fallback if routine is not implemented on specified context
-
-

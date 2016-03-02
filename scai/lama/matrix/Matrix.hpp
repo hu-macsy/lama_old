@@ -89,6 +89,10 @@ class COMMON_DLL_IMPORTEXPORT Matrix:
 
 public:
 
+    /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
+     */
+    static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType valueType );
+
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
      */

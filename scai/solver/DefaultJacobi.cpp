@@ -102,7 +102,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     if( !runtime.mDiagonalTimesRhs.get() )
     {
         runtime.mDiagonalTimesRhs.reset(
-            Vector::createVector( coefficients.getValueType(), coefficients.getDistributionPtr() ) );
+            Vector::getDenseVector( coefficients.getValueType(), coefficients.getDistributionPtr() ) );
 
         SCAI_LOG_DEBUG( logger, "Created diagonalTimesRhs vector = " << *runtime.mDiagonalTimesRhs )
     }

@@ -92,13 +92,13 @@ void TFQMR::initialize( const Matrix& coefficients ){
 
     common::scalar::ScalarType type = coefficients.getValueType();
     
-    runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mInitialR.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVEven.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVOdd.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecD.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mInitialR.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecVEven.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecVOdd.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecW.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecZ.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecVT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
 
     runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
     runtime.mInitialR->setContextPtr( coefficients.getContextPtr() );

@@ -54,6 +54,16 @@ namespace lama
 
 SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
+/* ---------------------------------------------------------------------------------------*/
+/*    Factory to create a matrix                                                          */
+/* ---------------------------------------------------------------------------------------*/
+
+Matrix* Matrix::getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType valueType )
+{
+    MatrixCreateKeyType mattype( format, valueType );
+    return Matrix::create( mattype );
+}
+
 /* ----------------------------------------------------------------------- */
 
 Matrix::Matrix( const Matrix& other ) : 

@@ -229,9 +229,9 @@ public:
      */
     virtual ~DenseVector();
 
-    /** Allocate a dense vector with a certain distribution, values are undefined. */
+    /** Implememenation of pure routine Vector::allocate. */
 
-    void allocate( dmemo::DistributionPtr distribution );
+    virtual void allocate( dmemo::DistributionPtr distribution );
 
     /** Override the default assignment operator.
      *
@@ -406,8 +406,6 @@ public:
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL ) const;
 
 protected:
-
-    virtual void resizeImpl();
 
     using Vector::mContext;
 

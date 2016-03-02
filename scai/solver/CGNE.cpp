@@ -87,8 +87,8 @@ void CGNE::initialize( const Matrix& coefficients ){
     runtime.mTransposedMat->assignTranspose( coefficients );
     runtime.mTransposedMat->conj();
     
-    runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecP.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecZ.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
     
     runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );

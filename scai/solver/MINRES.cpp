@@ -93,12 +93,12 @@ void MINRES::initialize( const Matrix& coefficients ){
 
     common::scalar::ScalarType type = coefficients.getValueType();
     
-    runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVOld.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVNew.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecPOld.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecPNew.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecV.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecVOld.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecVNew.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecP.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecPOld.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecPNew.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
 
     runtime.mVecV->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecVOld->setContextPtr( coefficients.getContextPtr() );

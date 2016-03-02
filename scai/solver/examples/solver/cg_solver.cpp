@@ -93,21 +93,10 @@ int main( int argc, char* argv[] )
         lamaconf.setArg( argv[i] );
     }
 
-    // use unique pointer so that matrix will be deleted at program exit
+    // using pointer classes MatrixPtr, VectorPtr take care of delete
 
-    unique_ptr<Matrix> matrixPtr;
-    unique_ptr<Vector> rhsPtr;
-
-    if ( lamaconf.getValueType() == scai::common::scalar::FLOAT )
-    {
-        matrixPtr.reset( lamaconf.createSparseMatrix<float>() );
-        rhsPtr.reset( new DenseVector<float>() );
-    }
-    else
-    {
-        matrixPtr.reset( lamaconf.createSparseMatrix<double>() );
-        rhsPtr.reset( new DenseVector<double>() );
-    }
+    MatrixPtr matrixPtr( lamaconf.getMatrix() );
+    VectorPtr rhsPtr( Vector::getDenseVector( matrixPtr->getValueType(), matrixPtr->getDistributionPtr() ) );
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
@@ -134,7 +123,7 @@ int main( int argc, char* argv[] )
             {
                 scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
-                x.resize( matrix.getColDistributionPtr() );
+                x.allocate( matrix.getColDistributionPtr() );
                 x = Scalar( 1 );
                 rhs = matrix * x;
             }
@@ -153,7 +142,7 @@ int main( int argc, char* argv[] )
 
     int numRows = matrix.getNumRows();
 
-    solution.resize( matrix.getColDistributionPtr() );
+    solution.allocate( matrix.getColDistributionPtr() );
     solution = 0.0;   // intialize of a vector
 
     // distribute data (trivial block partitioning)

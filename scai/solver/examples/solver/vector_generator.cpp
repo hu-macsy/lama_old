@@ -277,12 +277,12 @@ int main( int argc, char* argv[] )
 
     if ( options.size == 0 && matrix.get() )
     {
-        v->resize( matrix->getColDistributionPtr() );
+        v->allocate( matrix->getColDistributionPtr() );
     }
     else
     {
         DistributionPtr dist ( new NoDistribution( options.size ) );
-        v->resize( dist );
+        v->allocate( dist );
     }
 
     cout << "Vector (uninitialized): " << *v << endl;

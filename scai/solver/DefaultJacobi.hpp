@@ -137,7 +137,7 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
     template<typename ValueType>
     void initialize(const lama::Matrix& coefficients);

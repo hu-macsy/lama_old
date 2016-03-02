@@ -103,9 +103,9 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
 
     SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
 
-    mSolutionVector.reset( Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
-    mRhsVector.reset( Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
-    mTmpResVector.reset( Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
+    mSolutionVector.reset( Vector::getDenseVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
+    mRhsVector.reset( Vector::getDenseVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
+    mTmpResVector.reset( Vector::getDenseVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
 }
 
 Solver& SingleGridSetup::getCoarseLevelSolver()

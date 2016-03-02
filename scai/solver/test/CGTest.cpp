@@ -58,11 +58,15 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
+#include <scai/hmemo/Context.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+
 #include <scai/solver/test/TestMacros.hpp>
 
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -97,62 +101,84 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 
 /* --------------------------------------------------------------------- */
 
-template<typename MatrixType>
-void testSolveWithPreconditionmethod( ContextPtr context )
+BOOST_AUTO_TEST_CASE( testSolveWithPreconditionMethod )
 {
-    typedef typename MatrixType::MatrixValueType ValueType;
-    LoggerPtr slogger(
-        new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly) );
-    CG cgSolver( "CGTestSolver", slogger );
-    const IndexType N1 = 4;
-    const IndexType N2 = 4;
-    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-    CSRSparseMatrix<ValueType> helpcoefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-    // convert to the corresponding matrix type, keep distribution
-    MatrixType coefficients( helpcoefficients );
-    SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
-    coefficients.setContextPtr( context );
-    SCAI_LOG_INFO( logger, "CGTest uses context = " << context->getType() );
-    DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
-    DenseVector<ValueType> rhs( coefficients * exactSolution );
-    IndexType expectedIterations = 10;
-    CriterionPtr criterion( new IterationCount( expectedIterations ) );
-    cgSolver.setStoppingCriterion( criterion );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    cgSolver.setPreconditioner( preconditioner );
-    cgSolver.initialize( coefficients );
-    cgSolver.solve( solution, rhs );
-    BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
-    DenseVector<ValueType> diff( solution - exactSolution );
-    Scalar s = maxNorm( diff );
-    SCAI_LOG_INFO( logger,
-                   "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
-}
+    ContextPtr context = Context::getContextPtr();
+    CommunicatorPtr comm = Communicator::getCommunicator();
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
-{
-    CONTEXTLOOP()
+    std::vector<MatrixCreateKeyType> keys;
+
+    Matrix::getCreateValues( keys );
+
+    for ( size_t i = 0; i < keys.size(); ++i )
     {
-        GETCONTEXT( context );
-        testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        //testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
-        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >();
-        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >();
+        if ( keys[i].first == Format::DENSE )
+        {
+            // does not matter, takes too much time
+            continue;
+        }
+
+        MatrixPtr coefficients( Matrix::create( keys[i] ) );
+        coefficients->setContextPtr( context );
+
+        DistributionPtr dist( new BlockDistribution( coefficients->getNumRows(), comm ) );
+        coefficients->redistribute( dist, dist );
+
+        SCAI_LOG_INFO( logger, "CG (with preconditioning) for " << *coefficients << " on " << *context )
+
+        LoggerPtr slogger(
+             new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly) );
+         CG cgSolver( "CGTestSolver", slogger );
+         const IndexType N1 = 4;
+         const IndexType N2 = 4;
+         SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+         CSRSparseMatrix<float> helpcoefficients;
+         MatrixCreator<float>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
+
+         // convert to the corresponding matrix type, keep distribution
+
+         *coefficients = helpcoefficients;
+         SCAI_LOG_DEBUG( logger, "coefficients matrix = " << *coefficients );
+
+         VectorPtr solution( Vector::getDenseVector( keys[i].second, coefficients->getColDistributionPtr() ) );
+         solution->setContextPtr( context );
+         *solution = 1.0;
+
+         VectorPtr exactSolution( Vector::getDenseVector( keys[i].second, coefficients->getColDistributionPtr() ) );
+         exactSolution->setContextPtr( context );
+         *exactSolution = 2.0;
+
+         VectorPtr rhs( Vector::getDenseVector( keys[i].second, coefficients->getDistributionPtr() ) ) ;
+         rhs->setContextPtr( context );
+         *rhs = *coefficients * *exactSolution;
+
+         IndexType expectedIterations = 10;
+         CriterionPtr criterion( new IterationCount( expectedIterations ) );
+         cgSolver.setStoppingCriterion( criterion );
+         SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
+         cgSolver.setPreconditioner( preconditioner );
+         cgSolver.initialize( *coefficients );
+         cgSolver.solve( *solution, *rhs );
+         BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
+
+         VectorPtr diff( Vector::getDenseVector( keys[i].second, coefficients->getColDistributionPtr() ) );
+         diff->setContextPtr( context );
+         *diff = *solution - *exactSolution;
+         Scalar s = l2Norm( *diff );
+         SCAI_LOG_INFO( logger,
+                        "l2Norm of diff = " << *diff << " = ( solution - exactSolution ) = " << s );
+         BOOST_CHECK( s.getValue<float>() < 1E-4 );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-template<typename MatrixType>
-void testSolveWithoutPreconditionmethod( ContextPtr context )
+typedef boost::mpl::list<CSRSparseMatrix<float> > MatrixTypes;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditionMethod, MatrixType, MatrixTypes )
 {
+    ContextPtr context = Context::getContextPtr();
+
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -184,24 +210,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
-{
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< COOSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< DenseMatrix<ValueType> >( context );
-        // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DenseMatrix<T> >();
-        // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DIASparseMatrix<T> >();
-    }
-}
-
-/* --------------------------------------------------------------------- */
-BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, scai_arithmetic_test_types )
 {
     const IndexType N1 = 4;
     const IndexType N2 = 4;

@@ -808,7 +808,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 
     if( x.getDistribution() != getDistribution() || x.size() != size() )
     {
-        resize( x.getDistributionPtr() );
+        allocate( x.getDistributionPtr() );
     }
 
     if( typeid( *this ) == typeid( x ) && typeid( *this ) == typeid( y ) )
@@ -1072,16 +1072,6 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         setDistributionPtr( distribution );
     }
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DenseVector<ValueType>::resizeImpl()
-{
-    // resize array with local values
-
-    mLocalValues.resize( getDistribution().getLocalSize() );
 }
 
 /* -- IO ------------------------------------------------------------------- */

@@ -88,14 +88,14 @@ void CGS::initialize( const Matrix& coefficients ){
 
     common::scalar::ScalarType type = coefficients.getValueType();
 
-    runtime.mRes0.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecT.reset(Vector::createVector( type, coefficients.getDistributionPtr() ));
-    runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecQ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecU.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecPT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecUT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecTemp.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mRes0.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecT.reset(Vector::getDenseVector( type, coefficients.getDistributionPtr() ));
+    runtime.mVecP.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecQ.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecU.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecPT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecUT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecTemp.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
 
     runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
