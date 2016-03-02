@@ -156,7 +156,7 @@ private:
 //            static void initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag );
 //        };
 
-    SCAI_DECLARE_REGISTRATOR( ValueType )
+    SCAI_DECLARE_REGISTRATOR( Registrator, typename ValueType )
 
     /** Constructor for registration. */
 
