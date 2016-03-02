@@ -95,14 +95,14 @@ void BiCGstab::initialize( const Matrix& coefficients )
 
     common::scalar::ScalarType type = coefficients.getValueType();
 
-    runtime.mRes0.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecS.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecPT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecST.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecTT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mRes0.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecV.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecP.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecS.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecPT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecST.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecTT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
 
 
     runtime.mRes0->setContextPtr( coefficients.getContextPtr() );

@@ -128,7 +128,7 @@ public:
      *
      *  This method keeps compatibility with an older method that did know which vectors were supported.
      */
-    static Vector* createVector( const common::scalar::ScalarType valueType, dmemo::DistributionPtr distribution );
+    static Vector* getDenseVector( const common::scalar::ScalarType valueType, dmemo::DistributionPtr distribution );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.

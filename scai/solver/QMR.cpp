@@ -104,19 +104,19 @@ void QMR::initialize( const Matrix& coefficients )
     runtime.mTransposeA->assignTranspose( coefficients );
     runtime.mTransposeA->conj();
 
-    runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecQ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecS.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );    
-    runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecY.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );    /*preconditioning 1*/ 
-    runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) ); 
-    runtime.mVecPT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecWT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecYT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecZT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecD.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecP.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecQ.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecS.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );    
+    runtime.mVecV.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecW.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecY.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );    /*preconditioning 1*/ 
+    runtime.mVecZ.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) ); 
+    runtime.mVecPT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecVT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecWT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecYT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecZT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
    
 
     runtime.mVecD->setContextPtr( coefficients.getContextPtr() );

@@ -89,10 +89,10 @@ void CGNR::initialize( const Matrix& coefficients )
     runtime.mEps = std::numeric_limits<double>::epsilon() * 3; //CAREFUL: No abstract type
 
     runtime.mTransposedMat.reset( coefficients.newMatrix() );
-    runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mResidual2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecD.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecW.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecZ.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mResidual2.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
 
     runtime.mTransposedMat->assignTranspose( coefficients );
     runtime.mTransposedMat->conj();
