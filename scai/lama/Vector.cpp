@@ -103,6 +103,12 @@ std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kin
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
+Vector* Vector::getVector( const VectorFormat format, const common::scalar::ScalarType valueType )
+{
+    VectorCreateKeyType vectype( format, valueType );
+    return Vector::create( vectype );
+}
+
 Vector* Vector::getDenseVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
 {
     VectorCreateKeyType vectype( Vector::DENSE, valueType );

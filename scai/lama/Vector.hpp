@@ -124,6 +124,10 @@ class COMMON_DLL_IMPORTEXPORT Vector:
 {
 public:
 
+    /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
+     */
+    static Vector* getVector( const VectorFormat format, const common::scalar::ScalarType valueType );
+
     /** @brief Create a dense vector of a certain value type and a given distribution.
      *
      *  This method keeps compatibility with an older method that did know which vectors were supported.
