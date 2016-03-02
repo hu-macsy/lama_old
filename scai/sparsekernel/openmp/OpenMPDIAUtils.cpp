@@ -47,7 +47,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/bind.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 // std
 #include <cmath>
@@ -540,40 +540,32 @@ void OpenMPDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPDIAUtils::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void OpenMPDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::Host;       // context for registration
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+    SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
+    KernelRegistry::set<DIAKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, Host, flag );
+    KernelRegistry::set<DIAKernelTrait::absMaxVal<ValueType> >( absMaxVal, Host, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, Host, flag );
+    KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, Host, flag );
+}
 
-    // use of BOOST_PP_REPEAT to register for all value types
-    // use of nested BOOST_PP_REPEAT to get all pairs of value types for conversions
+template<typename ValueType, typename OtherValueType>
+void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
 
-#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<DIAKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );  \
+    SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                     \
-    KernelRegistry::set<DIAKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, Host, flag );  \
-    KernelRegistry::set<DIAKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, Host, flag );      \
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );    \
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );    \
-    KernelRegistry::set<DIAKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );            \
-                                                                                                             \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                               \
-                     LAMA_DIA_UTILS2_REGISTER,                                                               \
-                     ARITHMETIC_HOST_TYPE_##I )
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
-
-#undef LAMA_DIA_UTILS_REGISTER
-#undef LAMA_DIA_UTILS2_REGISTER
-
+    KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -582,14 +574,24 @@ void OpenMPDIAUtils::registerKernels( bool deleteFlag )
 
 OpenMPDIAUtils::OpenMPDIAUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 OpenMPDIAUtils::~OpenMPDIAUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

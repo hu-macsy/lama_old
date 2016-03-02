@@ -38,9 +38,12 @@
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
+
+#include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
-#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/bind.hpp>
 #include <scai/common/macros/assert.hpp>
@@ -49,9 +52,8 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/mepr/Container.hpp>
 
-#include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/common/preprocessor.hpp>
 
 // std
 #include <set>
@@ -1231,17 +1233,12 @@ void OpenMPELLUtils::sparseGEVM(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void OpenMPELLUtils::registerKernels( bool deleteFlag )
+void OpenMPELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::Host;      // context for registration
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
+    SCAI_LOG_INFO( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, Host, flag );
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, Host, flag );
@@ -1250,37 +1247,45 @@ void OpenMPELLUtils::registerKernels( bool deleteFlag )
 
     KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, Host, flag );
     KernelRegistry::set<ELLKernelTrait::matrixAddSizes>( matrixAddSizes, Host, flag );
+}
 
-#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host, flag );              \
-    KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, Host, flag );      \
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host, flag );  \
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );  \
+template<typename ValueType>
+void OpenMPELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
 
-#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                                             \
-    KernelRegistry::set<ELLKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, Host, flag );              \
-    KernelRegistry::set<ELLKernelTrait::compressIA<ARITHMETIC_HOST_TYPE_##I> >( compressIA, Host, flag );            \
-    KernelRegistry::set<ELLKernelTrait::compressValues<ARITHMETIC_HOST_TYPE_##I> >( compressValues, Host, flag );    \
-    KernelRegistry::set<ELLKernelTrait::matrixAdd<ARITHMETIC_HOST_TYPE_##I> >( matrixAdd, Host, flag );              \
-    KernelRegistry::set<ELLKernelTrait::matrixMultiply<ARITHMETIC_HOST_TYPE_##I> >( matrixMultiply, Host, flag );    \
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );            \
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, Host, flag );            \
-    KernelRegistry::set<ELLKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );            \
-    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, Host, flag );            \
-    KernelRegistry::set<ELLKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );                    \
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, Host, flag );            \
-    KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, Host, flag );                \
-    KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, Host, flag );      \
-                                                                                                                     \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                       \
-                     LAMA_ELL_UTILS2_REGISTER,                                                                       \
-                     ARITHMETIC_HOST_TYPE_##I )                                                                      \
-     
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
+    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-#undef LAMA_ELL_UTILS_REGISTER
-#undef LAMA_ELL_UTILS2_REGISTER
+    KernelRegistry::set<ELLKernelTrait::absMaxVal<ValueType> >( absMaxVal, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::compressIA<ValueType> >( compressIA, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::compressValues<ValueType> >( compressValues, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::matrixAdd<ValueType> >( matrixAdd, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::normalGEVM<ValueType> >( normalGEVM, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, Host, flag );
+}
 
+template<typename ValueType, typename OtherValueType>
+void OpenMPELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
+
+    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1289,14 +1294,26 @@ void OpenMPELLUtils::registerKernels( bool deleteFlag )
 
 OpenMPELLUtils::OpenMPELLUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 OpenMPELLUtils::~OpenMPELLUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

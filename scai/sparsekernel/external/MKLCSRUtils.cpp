@@ -51,7 +51,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -172,44 +172,16 @@ void MKLCSRUtils::convertCSR2CSC(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MKLCSRUtils::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void OpenMPCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    bool useMKL = true;
-
-    // using MKL for CSR might be disabled explicitly by environment variable
-
-    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
-
-    if( !useMKL )
-    {
-        SCAI_LOG_INFO( logger, "MKL routines for Host Interface are disabled" )
-        return;
-    }
-
-    // REGISTER1: give these routines priority in case of overriding
-
-    SCAI_LOG_INFO( logger, "set CSR routines for MKL in Host Interface" )
-
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::Host;       // context for registration
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE ;   // higher priority
+    SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-#define LAMA_MKL_CSR_UTILS_REGISTER(z, I, _)                                                                   \
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_MKL_CSR_UTILS_REGISTER, _ )
-
-    // MKL conversion csr to csc has worse performance than our OpenMP Implementation
-    // so we do not use it here.
-
-//     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, Host, flag );
-//     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -218,14 +190,20 @@ void MKLCSRUtils::registerKernels( bool deleteFlag )
 
 MKLCSRUtils::MKLCSRUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+
+    kregistry::instantiate( flag, ValueTypes() );
 }
 
 MKLCSRUtils::~MKLCSRUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+
+    kregistry::instantiate( flag, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */
