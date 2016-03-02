@@ -51,7 +51,7 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 // CUDA
 #include <cuda.h>
@@ -2225,51 +2225,51 @@ void CUDAELLUtils::jacobiHalo(
 /*                                Template instantiations via registration routine                                    */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void CUDAELLUtils::registerKernels( bool deleteFlag )
+void CUDAELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "register ELL routines for CUDA in KernelRegistry" )
-
+    using common::context::CUDA;
     using kregistry::KernelRegistry;
 
-    using common::context::CUDA;
-
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
+    SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, CUDA, flag );
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, CUDA, flag );
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, CUDA, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, CUDA, flag );
+}
 
-#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                                                       \
-    KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, CUDA, flag );             \
-    KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, CUDA, flag );     \
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, CUDA, flag ); \
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, CUDA, flag ); \
-     
-#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                                        \
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, CUDA, flag );               \
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, CUDA, flag );           \
-    KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, CUDA, flag ); \
-                                                                                                                \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                                  \
-                     LAMA_ELL_UTILS2_REGISTER,                                                                  \
-                     ARITHMETIC_CUDA_TYPE_##I )                                                                 \
-     
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
+template<typename ValueType>
+void CUDAELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::CUDA;
+    using kregistry::KernelRegistry;
 
-#undef LAMA_ELL_UTILS_REGISTER
-#undef LAMA_ELL_UTILS2_REGISTER
+    SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::normalGEVM<ValueType> >( normalGEVM, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, CUDA, flag );
+}
+
+template<typename ValueType, typename OtherValueType>
+void CUDAELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::CUDA;
+    using kregistry::KernelRegistry;
+
+    SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, CUDA, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2278,14 +2278,26 @@ void CUDAELLUtils::registerKernels( bool deleteFlag )
 
 CUDAELLUtils::CUDAELLUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_CUDA> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 CUDAELLUtils::~CUDAELLUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_CUDA> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 CUDAELLUtils CUDAELLUtils::guard;    // guard variable for registration
