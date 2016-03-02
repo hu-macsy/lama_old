@@ -52,9 +52,12 @@
 #include <scai/lama/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
+#include <scai/dmemo/BlockDistribution.hpp>
+
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -72,34 +75,51 @@ template<typename MatrixType>
 void testSolveMethod( ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
-    DenseVector<ValueType> solution( system.coefficients.getNumRows(), 0.0 );
-    DenseVector<ValueType> reference( system.solution );
+
     MatrixType coefficients( system.coefficients );
     coefficients.setContextPtr( context );
+
+    DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
+    coefficients.redistribute( dist, dist );
+
+    DenseVector<ValueType> solution( system.coefficients.getNumRows(), 0.0 );
+    solution.setContextPtr( context );
+    solution.redistribute( coefficients.getColDistributionPtr() );
+
+    DenseVector<ValueType> reference( system.solution );
+    reference.setContextPtr( context );
+    reference.redistribute( coefficients.getColDistributionPtr() );
+
     SCAI_LOG_INFO( logger, "InverseSolverTest uses context = " << context->getType() );
     DenseVector<ValueType> rhs( system.rhs );
+    rhs.setContextPtr( context );
+    rhs.redistribute( coefficients.getDistributionPtr() );
+
     InverseSolver inverseSolver( "InverseSolverTest solver" );
     inverseSolver.initialize( coefficients );
     inverseSolver.solve( solution, rhs );
+
     DenseVector<ValueType> diff( reference - solution );
+    diff.setContextPtr( context );
+    diff.redistribute( coefficients.getColDistributionPtr() );
+
     Scalar maxDiff = maxNorm( diff );
     BOOST_CHECK( maxDiff.getValue<ValueType>() < 1E-6 );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveMethod< DenseMatrix<ValueType> >( context );
-        testSolveMethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveMethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveMethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveMethod< COOSparseMatrix<ValueType> >( context );
-        //TODO: DIA crashs
-        //testSolveMethod< DIASparseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr();
+    testSolveMethod< DenseMatrix<ValueType> >( context );
+    testSolveMethod< CSRSparseMatrix<ValueType> >( context );
+    testSolveMethod< ELLSparseMatrix<ValueType> >( context );
+    testSolveMethod< JDSSparseMatrix<ValueType> >( context );
+    testSolveMethod< COOSparseMatrix<ValueType> >( context );
+    //TODO: DIA crashs
+    //testSolveMethod< DIASparseMatrix<ValueType> >( context );
 }
 
 /* ------------------------------------------------------------------------- */

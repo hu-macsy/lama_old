@@ -81,7 +81,7 @@ typedef boost::mpl::list<
 
 #undef SCAI_TYPE
 
-#define TEST_TYPE ARITHMETIC_HOST_TYPE_0
+#define SCAI_TEST_TYPE ARITHMETIC_HOST_TYPE_0
 
 /* -------------------------------------------------------------------------------- */
 
