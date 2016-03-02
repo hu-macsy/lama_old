@@ -601,13 +601,26 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
+void OpenMPUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
+
+    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
+
+    // we keep the registrations for IndexType as we do not need conversions
+
+    kregistry::KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, common::context::Host, flag );
+}
+
 template<typename ValueType>
 void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
     // we keep the registrations for IndexType as we do not need conversions
 
@@ -627,7 +640,8 @@ void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
     using common::context::Host;
     using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     // we keep the registrations for IndexType as we do not need conversions
 
@@ -644,22 +658,27 @@ void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
 
 OpenMPUtils::OpenMPUtils()
 {
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
     typedef common::mepr::ContainerV<RegistratorV, IndexType, ARITHMETIC_HOST> ValueTypes;
     typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, MoreValueTypes() );
+    Registrator::initAndReg( flag );
+    common::mepr::instantiate( flag, ValueTypes() );
+    common::mepr::instantiate( flag, MoreValueTypes() );
 
-//    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, Host, flag );
 }
 
 OpenMPUtils::~OpenMPUtils()
 {
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
     typedef common::mepr::ContainerV<RegistratorV, IndexType, ARITHMETIC_HOST> ValueTypes;
     typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, MoreValueTypes() );
+    Registrator::initAndReg( flag );
+    common::mepr::instantiate( flag, ValueTypes() );
+    common::mepr::instantiate( flag, MoreValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */
