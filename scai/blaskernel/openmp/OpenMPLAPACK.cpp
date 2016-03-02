@@ -558,14 +558,14 @@ OpenMPLAPACK::OpenMPLAPACK()
 {
     typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 OpenMPLAPACK::~OpenMPLAPACK()
 {
     typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

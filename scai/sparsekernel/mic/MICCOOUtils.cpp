@@ -564,8 +564,8 @@ MICCOOUtils::RegisterGuard::RegisterGuard()
     typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
 
     Registrator::initAndReg( flag );
-    common::mepr::instantiate( flag, ValueTypes() );
-    common::mepr::instantiate( flag, MoreValueTypes() );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 MICCOOUtils::RegisterGuard::~RegisterGuard()
@@ -576,8 +576,8 @@ MICCOOUtils::RegisterGuard::~RegisterGuard()
     typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
 
     Registrator::initAndReg( flag );
-    common::mepr::instantiate( flag, ValueTypes() );
-    common::mepr::instantiate( flag, MoreValueTypes() );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 MICCOOUtils::RegisterGuard MICCOOUtils::guard;    // guard variable for registration

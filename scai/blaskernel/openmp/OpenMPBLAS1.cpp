@@ -593,14 +593,14 @@ OpenMPBLAS1::OpenMPBLAS1()
 {
     typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 OpenMPBLAS1::~OpenMPBLAS1()
 {
     typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

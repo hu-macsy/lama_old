@@ -664,8 +664,8 @@ OpenMPUtils::OpenMPUtils()
     typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
 
     Registrator::initAndReg( flag );
-    common::mepr::instantiate( flag, ValueTypes() );
-    common::mepr::instantiate( flag, MoreValueTypes() );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 
 }
 
@@ -677,8 +677,8 @@ OpenMPUtils::~OpenMPUtils()
     typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
 
     Registrator::initAndReg( flag );
-    common::mepr::instantiate( flag, ValueTypes() );
-    common::mepr::instantiate( flag, MoreValueTypes() );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

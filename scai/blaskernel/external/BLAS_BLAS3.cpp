@@ -171,14 +171,14 @@ BLAS_BLAS3::BLAS_BLAS3()
 {
     typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_REPLACE, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_REPLACE, ValueTypes() );
 }
 
 BLAS_BLAS3::~BLAS_BLAS3()
 {
     typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

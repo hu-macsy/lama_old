@@ -752,8 +752,8 @@ CUDAUtils::CUDAUtils()
     typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_CUDA> MoreValueTypes;
 
     Registrator::initAndReg( flag );
-    common::mepr::instantiate( flag, ValueTypes() );
-    common::mepr::instantiate( flag, MoreValueTypes() );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 CUDAUtils::~CUDAUtils()
@@ -764,8 +764,8 @@ CUDAUtils::~CUDAUtils()
     typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_CUDA> MoreValueTypes;
 
     Registrator::initAndReg( flag );
-    common::mepr::instantiate( flag, ValueTypes() );
-    common::mepr::instantiate( flag, MoreValueTypes() );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 CUDAUtils CUDAUtils::guard;    // guard variable for registration
