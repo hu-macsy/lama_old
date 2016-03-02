@@ -19,7 +19,7 @@ EXECUTABLE: ${EXECUTABLES} Module.so DummyModule.so
 	${CXX} -o lib$*.so $*.o ${LD_FLAGS} -shared
 	
 .cpp.o:
-	${CXX} -fPIC ${CXX_FLAGS} ${INCLUDE_FLAGS} -c $*.cpp
+	${CXX} -fPIC ${CXX_FLAGS} ${SCAI_DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
 
 clean:
 	rm -rf *.exe *.o *.so

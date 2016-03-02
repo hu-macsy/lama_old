@@ -41,7 +41,5 @@ add_subdirectory ( tutorial )
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 ## install examples
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-#install ( FILES ${EXAMPLE_FILES} DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR} )
 install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )

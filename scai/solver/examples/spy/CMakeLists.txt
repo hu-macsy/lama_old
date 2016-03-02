@@ -30,6 +30,8 @@
  # @date 02.12.2015
 ###
 
+set ( HEADER Bitmap.hpp )
+
 ## Example needs the PNG library
 
 find_path( PNG_INCLUDE_DIR png.h
@@ -46,10 +48,18 @@ if ( PNG_LIBRARY AND PNG_INCLUDE_DIR )
     foreach ( executable amg_spy spy )
         add_executable( ${executable}.exe ${executable}.cpp )
         target_link_libraries( ${executable}.exe ${PROJECT_NAME} ${PNG_LIBRARY} )
-        set ( EXAMPLE_EXECUTABLES_SPY "${EXAMPLE_EXECUTABLES_SPY} ${executable}.exe" )
+        set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
+        set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
     endforeach ( executable )
 endif ()
 
 mark_as_advanced( PNG_LIBRARY PNG_INCLUDE_DIR )
+
+# configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
+prepareExamplesMakeInc()
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
     
-set ( EXAMPLE_EXECUTABLES_SPY "${EXAMPLE_EXECUTABLES_SPY}" PARENT_SCOPE )
+#install examples
+install ( FILES ${EXAMPLE_FILES} ${HEADER} Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc
+          DESTINATION ${PROJECT_EXAMPLE_DIR}/spy )

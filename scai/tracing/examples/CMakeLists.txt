@@ -31,20 +31,24 @@
 ###
 
 # Explicitly enable tracing at compile time here
-
-add_definitions( -DSCAI_TRACE_ON )
+set ( SCAI_TRACING_FLAG SCAI_TRACE_ON ) # also needed in prepareExamplesMakeInc for make.inc
 
 foreach ( executable TraceTest TraceCalls TraceThreads )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set_target_properties( ${executable}.exe PROPERTIES COMPILE_FLAGS -D${SCAI_TRACING_FLAG} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
+# configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
+prepareExamplesMakeInc()
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+
 ## install examples
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 install ( FILES ${EXAMPLE_FILES} DESTINATION ${PROJECT_EXAMPLE_DIR} )
 install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
 install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )

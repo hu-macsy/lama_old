@@ -16,7 +16,7 @@ EXECUTABLE: ${EXECUTABLES}
 	${CXX} -o $*.exe $*.o ${LD_FLAGS}
 	
 .cpp.o:
-	${CXX} -fPIC ${CXX_FLAGS} ${INCLUDE_FLAGS} -c $*.cpp
+	${CXX} -fPIC ${CXX_FLAGS} ${SCAI_DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
 
 clean:
 	rm -rf *.exe *.o
