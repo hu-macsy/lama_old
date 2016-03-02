@@ -154,8 +154,8 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "BiCGstabTest uses context = " << context->getType() );
 
-    DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
+    DenseVector<ValueType> solution( coefficients.getRowDistributionPtr(), 1.0 );
+    const DenseVector<ValueType> exactSolution( coefficients.getRowDistributionPtr(), 2.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
 
     IndexType expectedIterations = 300;

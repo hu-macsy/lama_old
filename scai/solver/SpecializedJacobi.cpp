@@ -122,9 +122,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
     if( !runtime.mOldSolution.get() )
     {
         SCAI_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " )
-        runtime.mOldSolution.reset(
-            Vector::getDenseVector( runtime.mCoefficients->getValueType(),
-                                  runtime.mCoefficients->getDistributionPtr() ) );
+        runtime.mOldSolution.reset( runtime.mCoefficients->newDenseVector() );
     }
 
     if( runtime.mCoefficients->getMatrixKind() == Matrix::SPARSE )

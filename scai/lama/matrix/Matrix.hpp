@@ -569,6 +569,24 @@ public:
     inline dmemo::DistributionPtr getColDistributionPtr() const;
 
     /**
+     * @brief Gets a constant reference to the row distribution.
+     *
+     * @return a constant reference to the row distribution.
+     *
+     * Note: same as getDistribution()
+     */
+    inline const dmemo::Distribution& getRowDistribution() const;
+
+    /**
+     * @brief Gets a pointer to the row distribution.
+     *
+     * @return a pointer to the row distribution.
+     *
+     * Note: same as getDistribution()
+     */
+    inline dmemo::DistributionPtr getRowDistributionPtr() const;
+
+    /**
      * @brief Specifies on which compute back end the matrix operations should take place.
      *
      * @param[in] context  the compute back to use for calculations with matrix
@@ -798,6 +816,19 @@ public:
       */
     virtual Matrix* newMatrix() const = 0;
 
+    /*
+     *  @brief Create a dense vector with same type/context as matrix and same row distribution
+     *
+     *  Note: this method is for a more convenient use
+     */
+
+    Vector* newDenseVector() const
+    {
+        Vector* v = Vector::getDenseVector( getValueType(), getRowDistributionPtr() );
+        v->setContextPtr( getContextPtr() );
+        return v;
+    }
+
     /**
      * @brief Constructor function which creates a copy of this matrix.
      *
@@ -983,6 +1014,10 @@ protected:
 
 private    :
 
+    using Distributed::getDistribution;
+
+    using Distributed::getDistributionPtr;
+
     void sanityCheck( const Expression<Matrix, Matrix, Times>& exp );
 
     void sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Matrix& C );
@@ -1000,7 +1035,7 @@ private    :
 
 inline IndexType Matrix::getNumRows() const
 {
-    //return getDistributionPtr().get()->getGlobalSize();
+    //return getRowDistributionPtr().get()->getGlobalSize();
     return mNumRows;
 }
 
@@ -1025,6 +1060,16 @@ inline dmemo::DistributionPtr Matrix::getColDistributionPtr() const
 {
     SCAI_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return mColDistribution;
+}
+
+inline const dmemo::Distribution& Matrix::getRowDistribution() const
+{
+    return getDistribution();
+}
+
+inline dmemo::DistributionPtr Matrix::getRowDistributionPtr() const
+{
+    return getDistributionPtr();
 }
 
 /** This function prints a SyncKind on an output stream.

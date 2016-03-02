@@ -90,23 +90,15 @@ void TFQMR::initialize( const Matrix& coefficients ){
     runtime.mTheta = 0.0;
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
 
-    common::scalar::ScalarType type = coefficients.getValueType();
-    
-    runtime.mVecD.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mInitialR.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVEven.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVOdd.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecW.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecZ.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
+    // create dense runtime vectors with same row distribution, type, context as coefficients
 
-    runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
-    runtime.mInitialR->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecVEven->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecVOdd->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecVT->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecD.reset( coefficients.newDenseVector() );
+    runtime.mInitialR.reset( coefficients.newDenseVector() );
+    runtime.mVecVEven.reset( coefficients.newDenseVector() );
+    runtime.mVecVOdd.reset( coefficients.newDenseVector() );
+    runtime.mVecW.reset( coefficients.newDenseVector() );
+    runtime.mVecZ.reset( coefficients.newDenseVector() );
+    runtime.mVecVT.reset( coefficients.newDenseVector() );
 }
 
 void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
@@ -115,26 +107,10 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
-    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() ){
-        COMMON_THROWEXCEPTION(
-            "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
-    }
-
-    if ( runtime.mCoefficients->getNumColumns() != solution.size() ){
-        COMMON_THROWEXCEPTION(
-            "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
-    }
-
-    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() ){
-        COMMON_THROWEXCEPTION(
-            "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
-    }
-
-    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() ){
-        COMMON_THROWEXCEPTION(
-            "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
-    }
-
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
 
     // Initialize
     this->getResidual();   

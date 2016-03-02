@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE( testSolveWithPreconditionMethod )
          exactSolution->setContextPtr( context );
          *exactSolution = 2.0;
 
-         VectorPtr rhs( Vector::getDenseVector( keys[i].second, coefficients->getDistributionPtr() ) ) ;
+         VectorPtr rhs( Vector::getDenseVector( keys[i].second, coefficients->getRowDistributionPtr() ) ) ;
          rhs->setContextPtr( context );
          *rhs = *coefficients * *exactSolution;
 

@@ -95,17 +95,17 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
     mSolver->initialize( coefficients );
 
     SCAI_LOG_DEBUG( logger, "mIdentity.reset" )
-    mIdentity.reset( Matrix::create( coefficients.getCreateValue() ) );
+    mIdentity.reset( coefficients.newMatrix() );
 
     SCAI_LOG_DEBUG( logger, "before identity" )
-    mIdentity->setIdentity( coefficients.getDistributionPtr() );
+    mIdentity->setIdentity( coefficients.getRowDistributionPtr() );
     SCAI_LOG_DEBUG( logger, "after identity" )
 
     SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
 
-    mSolutionVector.reset( Vector::getDenseVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
-    mRhsVector.reset( Vector::getDenseVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
-    mTmpResVector.reset( Vector::getDenseVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
+    mSolutionVector.reset( coefficients.newDenseVector() );
+    mRhsVector.reset( coefficients.newDenseVector() );
+    mTmpResVector.reset( coefficients.newDenseVector() );
 }
 
 Solver& SingleGridSetup::getCoarseLevelSolver()

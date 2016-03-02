@@ -96,7 +96,7 @@ int main( int argc, char* argv[] )
     // using pointer classes MatrixPtr, VectorPtr take care of delete
 
     MatrixPtr matrixPtr( lamaconf.getMatrix() );
-    VectorPtr rhsPtr( Vector::getDenseVector( matrixPtr->getValueType(), matrixPtr->getDistributionPtr() ) );
+    VectorPtr rhsPtr( matrixPtr->newDenseVector() );
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;

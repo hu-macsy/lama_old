@@ -95,7 +95,7 @@ int main( int argc, char* argv[] )
     // use auto pointer so that matrix will be deleted at program exit
 
     unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-    unique_ptr<Vector> rhsPtr( Vector::getDenseVector( matrixPtr->getValueType(), matrixPtr->getDistributionPtr() ) );
+    unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
@@ -128,7 +128,7 @@ int main( int argc, char* argv[] )
                 Vector& x = *xPtr;
                 x.allocate( inMatrix.getColDistributionPtr() );
                 x = Scalar( 1 );
-                rhs.allocate( inMatrix.getDistributionPtr() );
+                rhs.allocate( inMatrix.getRowDistributionPtr() );
                 rhs = inMatrix * x;
             }
         }

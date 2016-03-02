@@ -282,7 +282,7 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector(
     const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression ) //Expression_SMV_SV
 
-                : Vector( expression.getArg1().getArg2().getArg1().getDistributionPtr(),
+                : Vector( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
                           expression.getArg1().getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -308,7 +308,7 @@ DenseVector<ValueType>::DenseVector(
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression )
 
-                : Vector( expression.getArg2().getArg1().getDistributionPtr(),
+                : Vector( expression.getArg2().getArg1().getRowDistributionPtr(),
                           expression.getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -332,7 +332,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Vector,M
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression<Matrix,Vector,Times>& expression )
-                : Vector( expression.getArg1().getDistributionPtr(), expression.getArg1().getContextPtr() )
+                : Vector( expression.getArg1().getRowDistributionPtr(), expression.getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( A * x )" )

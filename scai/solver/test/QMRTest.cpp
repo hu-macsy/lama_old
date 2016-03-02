@@ -145,8 +145,8 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
     coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "QMRTest uses context = " << context->getType() );
-    DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
+    DenseVector<ValueType> solution( coefficients.getRowDistributionPtr(), 1.0 );
+    const DenseVector<ValueType> exactSolution( coefficients.getRowDistributionPtr(), 2.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
     IndexType expectedIterations = 5;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );

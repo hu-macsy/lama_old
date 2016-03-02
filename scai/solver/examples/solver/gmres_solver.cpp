@@ -87,7 +87,7 @@ int main( int argc, char* argv[] )
     }
 
     MatrixPtr matrixPtr( lamaconf.getMatrix() );
-    VectorPtr rhsPtr( Vector::getDenseVector( matrixPtr->getValueType(), matrixPtr->getDistributionPtr() ) );
+    VectorPtr rhsPtr( matrixPtr->newDenseVector() ); 
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
@@ -120,7 +120,7 @@ int main( int argc, char* argv[] )
                 Vector& x = *xPtr;
                 x.allocate( inMatrix.getColDistributionPtr() );
                 x = Scalar( 1 );
-                rhs.allocate( inMatrix.getDistributionPtr() );
+                rhs.allocate( inMatrix.getRowDistributionPtr() );
                 rhs = inMatrix * x;
             }
         }

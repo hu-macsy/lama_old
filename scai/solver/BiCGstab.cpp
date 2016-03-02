@@ -93,29 +93,16 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mResNorm = 1.0;
     runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
 
-    common::scalar::ScalarType type = coefficients.getValueType();
+    // get runtime vectors with same row distribution / context / type as cofficients matrix
 
-    runtime.mRes0.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecV.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecP.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecS.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecPT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecST.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecTT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-
-
-    runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecV->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecS->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecT->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecPT->setContextPtr( coefficients.getContextPtr() );
-
-    runtime.mVecST->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecTT->setContextPtr( coefficients.getContextPtr() );
-
-
+    runtime.mRes0.reset( coefficients.newDenseVector() );
+    runtime.mVecV.reset( coefficients.newDenseVector() );
+    runtime.mVecP.reset( coefficients.newDenseVector() );
+    runtime.mVecS.reset( coefficients.newDenseVector() );
+    runtime.mVecT.reset( coefficients.newDenseVector() );
+    runtime.mVecPT.reset( coefficients.newDenseVector() );
+    runtime.mVecST.reset( coefficients.newDenseVector() );
+    runtime.mVecTT.reset( coefficients.newDenseVector() );
 }
 
 
@@ -138,18 +125,8 @@ void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
             "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
     }
 
-    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
-    }
-
-    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
-    }
-
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "distribution mismatch" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), runtime.mRhs->getDistribution(), "distribution mismatch" )
 
     // Initialize
     this->getResidual();

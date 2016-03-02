@@ -570,8 +570,8 @@ public:
 
     using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getColDistribution;
     using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getColDistributionPtr;
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getDistribution;
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getRowDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getRowDistributionPtr;
     using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::setDistributionPtr;
 
     using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getCommunicationKind;

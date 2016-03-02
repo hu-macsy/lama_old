@@ -146,7 +146,7 @@ int main( int argc, char* argv[] )
     // use auto pointer so that matrix will be deleted at program exit
 
     MatrixPtr matrixPtr( lamaconf.getMatrix() );
-    VectorPtr rhsPtr( Vector::getDenseVector( matrixPtr->getValueType(), matrixPtr->getDistributionPtr() ) );
+    VectorPtr rhsPtr( matrixPtr->newDenseVector() );
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
