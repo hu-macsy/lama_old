@@ -6,10 +6,23 @@
 // internal scai libraries
 #include <scai/common/mepr/Container.hpp>
 
+/*
+ * Declare Registrator inside a class
+ *
+ * Functions without template-parameter
+ * - SCAI_DECLARE_REGISTRATOR( Registrator )
+ *
+ * Functions with one template-parameter
+ * - SCAI_DECLARE_REGISTRATOR( RegistratorV, template<typename ValueType> )
+ *
+ * Functions with two template-parameter
+ * - SCAI_DECLARE_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+ *
+ */
 
-#define SCAI_DECLARE_REGISTRATOR( name, ... )                                                            \
-    __VA_ARGS__                                                            \
-    struct name                                                                      \
+#define SCAI_DECLARE_REGISTRATOR( name, ... )                                               \
+    __VA_ARGS__                                                                             \
+    struct name                                                                             \
     {                                                                                       \
         static void initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag );       \
     };
@@ -18,42 +31,59 @@ namespace scai {
 
 namespace kregistry {
 
+/*
+ * Instantiate the Registrator for one template-parameter with different kind of ValueTypes
+ * Currently up to 12 supported
+ */
+
 template<template<typename> class R, typename T1>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1> )
 {
     R<T1>::initAndReg( flag );
 }
 
 template<template<typename> class R, typename T1, typename T2>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2>() );
 }
 
 template<template<typename> class R, typename T1, typename T2, typename T3>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3>() );
 }
 
 template<template<typename> class R, typename T1, typename T2, typename T3, typename T4>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3, T4> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3, T4> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3, T4>() );
 }
 
 template<template<typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3, T4, T5> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3, T4, T5> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3, T4, T5>() );
 }
 
 template<template<typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3, T4, T5, T6>() );
@@ -61,7 +91,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3, T4, T5, T6, T7>() );
@@ -69,7 +101,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7, typename T8>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3, T4, T5, T6, T7, T8>() );
@@ -77,7 +111,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7, typename T8, typename T9>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8, T9> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8, T9> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3, T4, T5, T6, T7, T8, T9>() );
@@ -85,7 +121,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7, typename T8, typename T9, typename T10>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3, T4, T5, T6, T7, T8, T9, T10>() );
@@ -93,7 +131,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7, typename T8, typename T9, typename T10, typename T11>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>() );
@@ -101,16 +141,24 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7, typename T8, typename T9, typename T10, typename T11, typename T12>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerV<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> )
 {
     R<T1>::initAndReg( flag );
     instantiate( flag, common::mepr::ContainerV<R, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>() );
 }
 
-/* ------------------------------------------- */
+/*
+ * Instantiate the Registrator for two template-parameter with different kind of ValueTypes
+ * Currently up to 12 supported
+ * Every combination will be instantiated
+ */
 
 template<template<typename, typename> class R, typename T1, typename T2>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2> )
 {
     R<T1, T1>::initAndReg( flag );
     R<T1, T2>::initAndReg( flag );
@@ -119,7 +167,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 }
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2>() );
 
@@ -132,7 +182,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 }
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3, typename T4>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3, T4> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3, T4> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2, T3>() );
 
@@ -147,7 +199,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 }
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3, T4, T5> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2, T3, T4>() );
 
@@ -164,7 +218,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 }
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5>() );
 
@@ -184,7 +240,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5,
         typename T6, typename T7>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6>() );
 
@@ -206,7 +264,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5,
         typename T6, typename T7, typename T8>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7>() );
 
@@ -230,7 +290,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7, typename T8, typename T9>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8>() );
 
@@ -256,7 +318,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7, typename T8, typename T9, typename T10>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9>() );
 
@@ -284,7 +348,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7, typename T8, typename T9, typename T10, typename T11>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>() );
 
@@ -314,7 +380,9 @@ static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, com
 
 template<template<typename, typename> class R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
     typename T7, typename T8, typename T9, typename T10, typename T11, typename T12>
-static void instantiate( kregistry::KernelRegistry::KernelRegistryFlag flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> )
+static void instantiate(
+    kregistry::KernelRegistry::KernelRegistryFlag flag,
+    common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> )
 {
     instantiate( flag, common::mepr::ContainerVO<R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>() );
 
