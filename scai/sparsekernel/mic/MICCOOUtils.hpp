@@ -37,11 +37,11 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
-#include <scai/common/SCAITypes.hpp>
+#include <scai/kregistry/Registrator.hpp>
 
 #include <scai/logging.hpp>
 
-#include <scai/kregistry/Registrator.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
