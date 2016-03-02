@@ -131,9 +131,9 @@ int main( int argc, char* argv[] )
             {
                 scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
-                x.resize( inMatrix.getColDistributionPtr() );
+                x.allocate( inMatrix.getColDistributionPtr() );
                 x = Scalar( 1 );
-                rhs.resize( inMatrix.getDistributionPtr() );
+                rhs.allocate( inMatrix.getDistributionPtr() );
                 rhs = inMatrix * x;
             }
         }
@@ -151,7 +151,7 @@ int main( int argc, char* argv[] )
 
     int numRows = inMatrix.getNumRows();
 
-    solution.resize( inMatrix.getColDistributionPtr() );
+    solution.allocate( inMatrix.getColDistributionPtr() );
 
     solution = 0.0;   // intialize of a vector
 

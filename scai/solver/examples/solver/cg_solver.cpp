@@ -134,7 +134,7 @@ int main( int argc, char* argv[] )
             {
                 scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
-                x.resize( matrix.getColDistributionPtr() );
+                x.allocate( matrix.getColDistributionPtr() );
                 x = Scalar( 1 );
                 rhs = matrix * x;
             }
@@ -153,7 +153,7 @@ int main( int argc, char* argv[] )
 
     int numRows = matrix.getNumRows();
 
-    solution.resize( matrix.getColDistributionPtr() );
+    solution.allocate( matrix.getColDistributionPtr() );
     solution = 0.0;   // intialize of a vector
 
     // distribute data (trivial block partitioning)

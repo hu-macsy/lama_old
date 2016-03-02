@@ -119,7 +119,7 @@ public:
         {
             // we inherit the row distribution of this matrix to result
 
-            result.resize( getDistributionPtr() );
+            result.allocate( getDistributionPtr() );
 
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
@@ -166,7 +166,7 @@ public:
         {
             // we inherit the row distribution of this matrix to result
 
-            result.resize( getDistributionPtr() );
+            result.allocate( getDistributionPtr() );
 
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
@@ -218,15 +218,15 @@ public:
             SCAI_LOG_INFO( logger, "temporary vector: " << *tmpVector << ", for row = " << row )
         }
 
-        // if row is not same size and replicated, resize / replicate it
+        // if row is not same size and replicated, allocate / replicate it
 
         if ( !typedRow->getDistribution().isReplicated() || typedRow->size() != getNumColumns() )
         {
             dmemo::DistributionPtr dist( new dmemo::NoDistribution( getNumColumns() ) );
 
-            typedRow->resize( dist );
+            typedRow->allocate( dist );
 
-            SCAI_LOG_INFO( logger, "resized vector for row, is now : " << *typedRow )
+            SCAI_LOG_INFO( logger, "allocated vector for row, is now : " << *typedRow )
         }
 
         // on a replicated matrix each processor can fill the row by its own

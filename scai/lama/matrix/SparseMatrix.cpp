@@ -899,7 +899,7 @@ void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 
     mLocalData->getDiagonal( localDiagonal );
 
-    diagonal.resize( getDistributionPtr() ); // Give the diagonal the right distribution
+    diagonal.allocate( getDistributionPtr() ); // Give the diagonal the right distribution
     diagonal.setValues( localDiagonal ); // Copy values, sizes will fit
 }
 
@@ -1897,7 +1897,7 @@ void SparseMatrix<ValueType>::matrixTimesVector(
     {
         // we inherit the row distribution of this matrix to result
 
-        result.resize( getDistributionPtr() );
+        result.allocate( getDistributionPtr() );
 
         // no more to check: result.size() == mNumRows, getDistribution() == result.getDistribution()
     }
@@ -1944,7 +1944,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrix(
     {
         // we inherit the column distribution of this matrix to result
 
-        result.resize( getColDistributionPtr() );
+        result.allocate( getColDistributionPtr() );
 
         // no more to check: result.size() == mNumColumns, getDistribution() == result.getColDistribution()
     }

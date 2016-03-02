@@ -185,7 +185,7 @@ int main( int argc, char* argv[] )
     unique_ptr<Vector> solutionPtr( rhs.newVector() );
     Vector& solution = *solutionPtr;
 
-    solution.resize( rhs.getDistributionPtr() );
+    solution.allocate( rhs.getDistributionPtr() );
     solution = 0.0;   // intialize of a vector
 
     double stop = Walltime::get();  // stop timing for reading

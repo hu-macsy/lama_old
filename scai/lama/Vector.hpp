@@ -475,12 +475,11 @@ public:
     virtual size_t getMemoryUsage() const = 0;
 
     /**
-     *  @brief Allocates this vector for a given distribution.
+     *  @brief Allocates or reallocates this vector for a given distribution.
      *
      *  All elements of the vector are undefined after this operation.
-     *  Elements can be set e.g. with
      */
-    void resize( dmemo::DistributionPtr distributionPtr );
+    virtual void allocate( dmemo::DistributionPtr distributionPtr ) = 0;
 
     /**
      * @brief Redistributes this vector to the new passed distribution.
@@ -525,11 +524,6 @@ protected:
      *  @brief Swaps member variables of Vector class.
      */
     void swapVector( Vector& other );
-
-    /**
-     *  @brief TODO[doxy] Complete Description.
-     */
-    virtual void resizeImpl() = 0;
 
     hmemo::ContextPtr mContext; //!< decides about location of vector operations
 
