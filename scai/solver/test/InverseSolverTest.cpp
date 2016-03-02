@@ -96,7 +96,7 @@ void testSolveMethod( ContextPtr context )
     SCAI_LOG_INFO( logger, "InverseSolverTest uses context = " << context->getType() );
     DenseVector<ValueType> rhs( system.rhs );
     rhs.setContextPtr( context );
-    rhs.redistribute( coefficients.getDistributionPtr() );
+    rhs.redistribute( coefficients.getRowDistributionPtr() );
 
     InverseSolver inverseSolver( "InverseSolverTest solver" );
     inverseSolver.initialize( coefficients );

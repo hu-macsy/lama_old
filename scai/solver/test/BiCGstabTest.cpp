@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 
     DenseVector<ValueType> solution( rhs );
     solution.setContextPtr( context );
-    solution.redistribute( coefficients.getDistributionPtr() );
+    solution.redistribute( coefficients.getRowDistributionPtr() );
 
     BiCGstabSolver.initialize( coefficients );   // Not WORKING
 

@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 
     DenseVector<ValueType> rhs( coefficients.getNumRows(), 1.0 );
     rhs.setContextPtr( context );
-    rhs.redistribute( coefficients.getDistributionPtr() );
+    rhs.redistribute( coefficients.getRowDistributionPtr() );
 
     DenseVector<ValueType> solution( coefficients.getNumRows(), 1.0 );
     solution.setContextPtr( context );
@@ -201,7 +201,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
 
     DenseVector<ValueType> rhs( system.rhs );
     rhs.setContextPtr( context );
-    rhs.redistribute( coefficients.getDistributionPtr() );
+    rhs.redistribute( coefficients.getRowDistributionPtr() );
 
     DenseVector<ValueType> solution( system.coefficients.getNumRows(), static_cast<ValueType>( 2.1 ) );
     solution.setContextPtr( context );
