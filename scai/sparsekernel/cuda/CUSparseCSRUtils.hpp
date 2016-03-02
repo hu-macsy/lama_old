@@ -37,6 +37,8 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/Registrator.hpp>
+
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
@@ -153,7 +155,8 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    static void registerKernels( bool deleteFlag );
+    SCAI_DECLARE_REGISTRATOR( Registrator )
+    SCAI_DECLARE_REGISTRATOR( RegistratorV, template<typename ValueType> )
 
     /** Constructor for registration. */
 

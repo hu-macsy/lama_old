@@ -38,6 +38,9 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
+
+#include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -52,9 +55,6 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/mepr/Container.hpp>
 
-#include <scai/kregistry/KernelRegistry.hpp>
-#include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/common/preprocessor.hpp>
 
 // std
 #include <vector>

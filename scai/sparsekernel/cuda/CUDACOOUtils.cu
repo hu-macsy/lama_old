@@ -46,7 +46,6 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/bind.hpp>
-#include <scai/common/preprocessor.hpp>
 
 #include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/cuda/CUDASettings.hpp>
@@ -740,7 +739,6 @@ void CUDACOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistr
 
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, CUDA, flag );
     KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( CUDACOOUtils::normalGEVM, CUDA, flag );
-
 }
 
 template<typename ValueType, typename OtherValueType>

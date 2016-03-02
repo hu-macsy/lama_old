@@ -55,7 +55,6 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
-#include <scai/common/preprocessor.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>

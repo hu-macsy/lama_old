@@ -48,7 +48,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Constants.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 // CUDA
 #include <cuda.h>
@@ -412,48 +412,30 @@ void CUSparseCSRUtils::matrixMultiply(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUSparseCSRUtils::registerKernels( bool deleteFlag )
+void CUSparseCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "set CSR routines for CUSparse in Interface" )
-
-    bool useCUSparse = true;
-
-    // using CUSparse for CSR might be disabled explicitly by environment variable
-
-    common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
-
-    if ( !useCUSparse )
-    {
-        return;
-    }
-
-    // REGISTER1: overwrites previous settings
-
-    using kregistry::KernelRegistry;
     using common::context::CUDA;
+    using kregistry::KernelRegistry;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
+    SCAI_LOG_INFO( logger, "register CSRUtils CUSparse-routines for CUDA at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, CUDA, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, CUDA, flag );
+}
 
+template<typename ValueType>
+void CUSparseCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::CUDA;
+    using kregistry::KernelRegistry;
 
-#define LAMA_CUSPARSE_CSR_REGISTER(z, I, _)                                                                         \
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, CUDA, flag );           \
-    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ARITHMETIC_CUDA_TYPE_##I> >( convertCSR2CSC, CUDA, flag );   \
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<ARITHMETIC_CUDA_TYPE_##I> >( matrixAdd, CUDA, flag );             \
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ARITHMETIC_CUDA_TYPE_##I> >( matrixMultiply, CUDA, flag );
+    SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    // loop over all supported CUDA types
-
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_CUSPARSE_CSR_REGISTER, _ )
-
-#undef LAMA_CUSPARSE_CSR_REGISTER
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, CUDA, flag );
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, CUDA, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, CUDA, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, CUDA, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -462,14 +444,22 @@ void CUSparseCSRUtils::registerKernels( bool deleteFlag )
 
 CUSparseCSRUtils::CUSparseCSRUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
 }
 
 CUSparseCSRUtils::~CUSparseCSRUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
 }
 
 CUSparseCSRUtils CUSparseCSRUtils::guard;    // guard variable for registration

@@ -41,14 +41,13 @@
 // internal scai libraries
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/tracing.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/mepr/Container.hpp>
 
-#include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {

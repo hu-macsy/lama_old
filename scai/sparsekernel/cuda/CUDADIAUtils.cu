@@ -52,7 +52,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
