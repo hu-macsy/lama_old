@@ -1228,70 +1228,61 @@ void MICELLUtils::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::check>( check, MIC, flag );
 
-    KernelRegistry::set<ELLKernelTrait::getRow<float, float> >( getRow, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::getRow<float, double> >( getRow, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::getRow<double, float> >( getRow, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::getRow<double, double> >( getRow, MIC, flag );
 
-    KernelRegistry::set<ELLKernelTrait::getValue<float> >( getValue, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::getValue<double> >( getValue, MIC, flag );
 
-    KernelRegistry::set<ELLKernelTrait::scaleValue<float, float> >( scaleValue, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::scaleValue<float, double> >( scaleValue, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::scaleValue<double, float> >( scaleValue, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::scaleValue<double, double> >( scaleValue, MIC, flag );
 
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, float> >( setCSRValues, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, double> >( setCSRValues, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, float> >( setCSRValues, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, double> >( setCSRValues, MIC, flag );
 
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, float> >( getCSRValues, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, double> >( getCSRValues, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, float> >( getCSRValues, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, double> >( getCSRValues, MIC, flag );
-
-    /*
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, float )
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, double )
-
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, compressIA, float )
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, compressIA, double )
-
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, compressValues, float )
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, compressValues, double )
-
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, computeIA, IndexType )
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeIA, IndexType )
-
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, computeValues, float )
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, computeValues, double )
-
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeValues, float )
-     LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeValues, double )
-     */
-
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
-
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<float> >( sparseGEMV, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<double> >( sparseGEMV, MIC, flag );
-
-    KernelRegistry::set<ELLKernelTrait::jacobi<float> >( jacobi, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::jacobi<double> >( jacobi, MIC, flag );
-
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC, flag );
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC, flag );
 
     /*
      LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, float )
      LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, double )
      */
+}
+
+void MICELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::MIC;
+    using kregistry::KernelRegistry;
+
+    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
+
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::check>( check, MIC, flag );
+}
+
+template<typename ValueType>
+void MICELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::MIC;
+    using kregistry::KernelRegistry;
+
+    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for MIC at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, MIC, flag );
+}
+
+template<typename ValueType, typename OtherValueType>
+void MICELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::MIC;
+    using kregistry::KernelRegistry;
+
+    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for MIC at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+
+    KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1300,14 +1291,26 @@ void MICELLUtils::registerKernels( bool deleteFlag )
 
 MICELLUtils::RegisterGuard::RegisterGuard()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 MICELLUtils::RegisterGuard::~RegisterGuard()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 MICELLUtils::RegisterGuard MICELLUtils::guard;    // guard variable for registration

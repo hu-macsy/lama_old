@@ -915,27 +915,17 @@ void CUDADIAUtils::normalGEVM(
 
 /* --------------------------------------------------------------------------- */
 
-void CUDADIAUtils::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void CUDADIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using kregistry::KernelRegistry;
     using common::context::CUDA;
+    using kregistry::KernelRegistry;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+    SCAI_LOG_INFO( logger, "register DIAUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
-
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                  \
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, CUDA, flag ); \
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, CUDA, flag ); \
-     
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
-
-#undef LAMA_DIA_UTILS_REGISTER
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, CUDA, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, CUDA, flag );
 
 }
 
@@ -945,14 +935,20 @@ void CUDADIAUtils::registerKernels( bool deleteFlag )
 
 CUDADIAUtils::CUDADIAUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
+
+    kregistry::instantiate( flag, ValueTypes() );
 }
 
 CUDADIAUtils::~CUDADIAUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
+
+    kregistry::instantiate( flag, ValueTypes() );
 }
 
 CUDADIAUtils CUDADIAUtils::guard;    // guard variable for registration

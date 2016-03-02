@@ -43,6 +43,8 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/ReductionOp.hpp>
 
+#include <scai/kregistry/Registrator.hpp>
+
 namespace scai
 {
 
@@ -142,7 +144,9 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    static void registerKernels( bool deleteFlag );
+    SCAI_DECLARE_REGISTRATOR( Registrator )
+    SCAI_DECLARE_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    SCAI_DECLARE_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
 
     /** Constructor for registration. */
 

@@ -87,7 +87,7 @@ private:
 
     /** Registration of methods  at kernel registry. */
 
-    SCAI_DECLARE_REGISTRATOR( ValueType )
+    SCAI_DECLARE_REGISTRATOR( RegistratorV, template<typename ValueType> )
 
     /** Constructor for registration. */
 

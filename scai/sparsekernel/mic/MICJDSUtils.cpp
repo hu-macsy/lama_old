@@ -45,6 +45,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -929,58 +930,47 @@ void MICJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void MICJDSUtils::registerKernels( bool deleteFlag )
+void MICJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "register JDS kernels for MIC in Kernel Registry" )
-
+    using common::context::MIC;
     using kregistry::KernelRegistry;
-    using common::context::MIC;        // context for which kernels will be added
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
+    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, MIC, flag );
-
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, MIC, flag );
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, MIC, flag );
-
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, MIC, flag );
+}
 
-    KernelRegistry::set<JDSKernelTrait::scaleValue<float, float> >( scaleValue, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<float, double> >( scaleValue, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<double, float> >( scaleValue, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<double, double> >( scaleValue, MIC, flag );
+template<typename ValueType>
+void MICJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::MIC;
+    using kregistry::KernelRegistry;
 
-    KernelRegistry::set<JDSKernelTrait::getRow<float, float> >( getRow, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getRow<float, double> >( getRow, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getRow<double, float> >( getRow, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getRow<double, double> >( getRow, MIC, flag );
+    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for MIC at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::getValue<float> >( getValue, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getValue<double> >( getValue, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, MIC, flag );
+}
 
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, float> >( setCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, double> >( setCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, float> >( setCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, double> >( setCSRValues, MIC, flag );
+template<typename ValueType, typename OtherValueType>
+void MICJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::MIC;
+    using kregistry::KernelRegistry;
 
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, float> >( getCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, double> >( getCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, float> >( getCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, double> >( getCSRValues, MIC, flag );
+    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for MIC at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
-
-    KernelRegistry::set<JDSKernelTrait::jacobi<float> >( jacobi, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::jacobi<double> >( jacobi, MIC, flag );
-
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -989,14 +979,26 @@ void MICJDSUtils::registerKernels( bool deleteFlag )
 
 MICJDSUtils::RegisterGuard::RegisterGuard()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 MICJDSUtils::RegisterGuard::~RegisterGuard()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 MICJDSUtils::RegisterGuard MICJDSUtils::guard;    // guard variable for registration

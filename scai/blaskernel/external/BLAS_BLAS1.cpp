@@ -314,7 +314,7 @@ ValueType BLAS_BLAS1::dot(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void BLAS_BLAS1::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
@@ -355,16 +355,16 @@ void BLAS_BLAS1::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::
 
 BLAS_BLAS1::BLAS_BLAS1()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_EXT_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_REPLACE, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_REPLACE, ValueTypes() );
 }
 
 BLAS_BLAS1::~BLAS_BLAS1()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_EXT_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

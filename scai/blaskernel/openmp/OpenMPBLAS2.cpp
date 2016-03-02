@@ -286,7 +286,7 @@ void OpenMPBLAS2::gemv(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPBLAS2::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
@@ -302,16 +302,16 @@ void OpenMPBLAS2::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 OpenMPBLAS2::OpenMPBLAS2()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 OpenMPBLAS2::~OpenMPBLAS2()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

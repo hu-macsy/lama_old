@@ -150,7 +150,7 @@ void MICBLAS3::gemm(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICBLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::MIC;
     using kregistry::KernelRegistry;
@@ -166,16 +166,16 @@ void MICBLAS3::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::Ke
 
 MICBLAS3::RegisterGuard::RegisterGuard()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_MIC> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 MICBLAS3::RegisterGuard::~RegisterGuard()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_MIC> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 MICBLAS3::RegisterGuard MICBLAS3::guard;    // guard variable for registration

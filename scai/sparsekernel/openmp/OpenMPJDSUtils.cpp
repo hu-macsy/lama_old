@@ -39,6 +39,7 @@
 
 // internal scai libraries
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/tracing.hpp>
 
 #include <scai/common/OpenMP.hpp>
@@ -49,9 +50,8 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/mepr/Container.hpp>
 
-#include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -825,49 +825,49 @@ void OpenMPJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPJDSUtils::registerKernels( bool deleteFlag )
+void OpenMPJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::Host;      // context for registration
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
+    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, Host, flag );
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, Host, flag );
 
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, Host, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, Host, flag );
+}
 
-    // register for type pair ARITHMETIC_HOST_TYPE_iii, ARITHMETIC_HOST_TYPE_jjj
+template<typename ValueType>
+void OpenMPJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
 
-#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<JDSKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host, flag );              \
-    KernelRegistry::set<JDSKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, Host, flag );      \
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host, flag );  \
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );  \
+    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    // register for one value type ARITHMETIC_HOST_TYPE_iii and loop for second type
+    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, Host, flag );
+}
 
-#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                                    \
-    KernelRegistry::set<JDSKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, Host, flag );       \
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );   \
-    KernelRegistry::set<JDSKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );   \
-    KernelRegistry::set<JDSKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );           \
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, Host, flag );   \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                              \
-                     LAMA_JDS_UTILS2_REGISTER,                                                              \
-                     ARITHMETIC_HOST_TYPE_##I )                                                             \
+template<typename ValueType, typename OtherValueType>
+void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
+    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-#undef LAMA_JDS_UTILS_REGISTER
-#undef LAMA_JDS_UTILS2_REGISTER
-
+    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, Host, flag );              \
+    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, Host, flag );      \
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, Host, flag );  \
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, Host, flag );  \
 }
 
 /* --------------------------------------------------------------------------- */
@@ -876,14 +876,26 @@ void OpenMPJDSUtils::registerKernels( bool deleteFlag )
 
 OpenMPJDSUtils::OpenMPJDSUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 OpenMPJDSUtils::~OpenMPJDSUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

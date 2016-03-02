@@ -536,7 +536,7 @@ void OpenMPLAPACK::laswp(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPLAPACK::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPLAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
@@ -556,16 +556,16 @@ void OpenMPLAPACK::Registrator<ValueType>::initAndReg( kregistry::KernelRegistry
 
 OpenMPLAPACK::OpenMPLAPACK()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
 }
 
 OpenMPLAPACK::~OpenMPLAPACK()
 {
-    typedef common::mepr::Container<Registrator, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
 
-    common::mepr::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

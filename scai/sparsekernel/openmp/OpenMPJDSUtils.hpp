@@ -40,7 +40,7 @@
 #include <scai/lama/Scalar.hpp>
 
 // internal scai libraries
-#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/kregistry/Registrator.hpp>
 
 #include <scai/logging.hpp>
 
@@ -230,7 +230,9 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    static void registerKernels( bool deleteFlag );
+    SCAI_DECLARE_REGISTRATOR( Registrator )
+    SCAI_DECLARE_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    SCAI_DECLARE_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
 
     /** Constructor for registration. */
 

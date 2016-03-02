@@ -50,6 +50,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -2105,19 +2106,12 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCSRUtils::registerKernels( bool deleteFlag )
+void OpenMPCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    using common::context::Host;
     using kregistry::KernelRegistry;
-    using common::context::Host;       // context for registration
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE; 
-    }
-
-    // Instantations for IndexType, not done by ARITHMETIC_TYPE macros
+    SCAI_LOG_INFO( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, Host, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, Host, flag );
@@ -2127,36 +2121,44 @@ void OpenMPCSRUtils::registerKernels( bool deleteFlag )
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, Host, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, Host, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplyJA>( matrixMultiplyJA, Host, flag );
+}
 
-#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                                                             \
-    KernelRegistry::set<CSRKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );             \
+template<typename ValueType>
+void OpenMPCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
 
-#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                                                  \
-    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ARITHMETIC_HOST_TYPE_##I> >( convertCSR2CSC, Host, flag );         \
-    KernelRegistry::set<CSRKernelTrait::sortRowElements<ARITHMETIC_HOST_TYPE_##I> >( sortRowElements, Host, flag );       \
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, Host, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, Host, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, Host, flag );                             \
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<ARITHMETIC_HOST_TYPE_##I> >( matrixAdd, Host, flag );                   \
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ARITHMETIC_HOST_TYPE_##I> >( matrixMultiply, Host, flag );         \
-    KernelRegistry::set<CSRKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );                         \
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, Host, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ARITHMETIC_HOST_TYPE_##I> >( jacobiHaloWithDiag, Host, flag ); \
-    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, Host, flag );           \
-    KernelRegistry::set<CSRKernelTrait::countNonZeros<ARITHMETIC_HOST_TYPE_##I> >( countNonZeros, Host, flag );           \
-    KernelRegistry::set<CSRKernelTrait::compress<ARITHMETIC_HOST_TYPE_##I> >( compress, Host, flag );                     \
-                                                                                                                          \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                            \
-                     LAMA_CSR_UTILS2_REGISTER,                                                                            \
-                     ARITHMETIC_HOST_TYPE_##I )                                                                           \
+    SCAI_LOG_INFO( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::gemm<ValueType> >( gemm, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, Host, flag );
+}
 
-#undef LAMA_CSR_UTILS_REGISTER
-#undef LAMA_CSR_UTILS2_REGISTER
+template<typename ValueType, typename OtherValueType>
+void OpenMPCSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
 
+    SCAI_LOG_INFO( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2165,14 +2167,26 @@ void OpenMPCSRUtils::registerKernels( bool deleteFlag )
 
 OpenMPCSRUtils::OpenMPCSRUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 OpenMPCSRUtils::~OpenMPCSRUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

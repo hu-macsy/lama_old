@@ -45,6 +45,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/common/preprocessor.hpp>
@@ -477,43 +478,47 @@ void OpenMPCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCOOUtils::registerKernels( bool deleteFlag )
+void OpenMPCOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using namespace scai::kregistry;
     using common::context::Host;
+    using kregistry::KernelRegistry;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, Host, flag );
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, Host, flag );
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, Host, flag );
-
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, Host, flag );
-
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, Host, flag );     \
-    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag ); \
-    KernelRegistry::set<COOKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );       \
-
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );  \
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );  \
-    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );          \
-                                                                                                           \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                             \
-                     LAMA_COO_UTILS2_REGISTER,                                                             \
-                     ARITHMETIC_HOST_TYPE_##I )                                                            \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
-
-#undef LAMA_COO_UTILS_REGISTER
-#undef LAMA_COO_UTILS2_REGISTER
+    KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( OpenMPCOOUtils::hasDiagonalProperty, Host, flag );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( OpenMPCOOUtils::offsets2ia, Host, flag );
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( OpenMPCOOUtils::getCSRSizes, Host, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( OpenMPCOOUtils::setCSRData, Host, flag );
 }
+
+template<typename ValueType>
+void OpenMPCOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
+
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( OpenMPCOOUtils::normalGEMV, Host, flag );
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( OpenMPCOOUtils::normalGEVM, Host, flag );
+    KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( OpenMPCOOUtils::jacobi, Host, flag );
+}
+
+template<typename ValueType, typename OtherValueType>
+void OpenMPCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
+
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, Host, flag );
+    KernelRegistry::set<COOKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, Host, flag );
+    KernelRegistry::set<COOKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, Host, flag );
+}
+
 
 /* --------------------------------------------------------------------------- */
 /*    Constructor/Desctructor with registration                                */
@@ -521,14 +526,26 @@ void OpenMPCOOUtils::registerKernels( bool deleteFlag )
 
 OpenMPCOOUtils::OpenMPCOOUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 OpenMPCOOUtils::~OpenMPCOOUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

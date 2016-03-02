@@ -45,7 +45,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 namespace scai
 {
@@ -274,7 +274,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 {
     SCAI_REGION( "OpenMP.Utils.setVal" )
 
-    SCAI_LOG_DEBUG( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = "  
+    SCAI_LOG_DEBUG( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = "
                             << val << ", op = " << op )
 
     switch ( op )
@@ -447,7 +447,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
     SCAI_REGION( "OpenMP.Utils.set" )
 
     SCAI_LOG_DEBUG( logger,
-                    "set: out<" << TypeTraits<ValueType1>::id() << "[" << n << "]" 
+                    "set: out<" << TypeTraits<ValueType1>::id() << "[" << n << "]"
                     << ", op = " << op << "  in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
     switch ( op ) 
@@ -531,7 +531,7 @@ void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const Inde
     SCAI_REGION( "OpenMP.Utils.setGather" )
 
     SCAI_LOG_DEBUG( logger,
-                    "setGather: out<" << TypeTraits<ValueType1>::id() << ">[" << n << "]" 
+                    "setGather: out<" << TypeTraits<ValueType1>::id() << ">[" << n << "]"
                      << " = in<" << TypeTraits<ValueType2>::id() << ">[ indexes[" << n << "] ]" )
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -550,7 +550,7 @@ void OpenMPUtils::scatterVal( ValueType out[], const IndexType indexes[], const 
     SCAI_REGION( "OpenMP.Utils.scatterVal" )
 
     SCAI_LOG_DEBUG( logger,
-                    "scatterVal: out<" << TypeTraits<ValueType>::id() << ">" 
+                    "scatterVal: out<" << TypeTraits<ValueType>::id() << ">"
                      << "[ indexes[" << n << "] ]" << " = " << value )
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -569,7 +569,7 @@ void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const
     SCAI_REGION( "OpenMP.Utils.setScatter" )
 
     SCAI_LOG_DEBUG( logger,
-                    "setScatter: out<" << TypeTraits<ValueType1>::id() << ">" 
+                    "setScatter: out<" << TypeTraits<ValueType1>::id() << ">"
                      << "[ indexes[" << n << "] ]" << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -601,59 +601,54 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPUtils::registerKernels( bool deleteFlag )
+void OpenMPUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using namespace scai::kregistry;
     using common::context::Host;
+    using kregistry::KernelRegistry;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
- 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
-
-    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, Host, flag );
+    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, Host, flag );
+    kregistry::KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, common::context::Host, flag );
+}
 
-    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, Host, flag );
+template<typename ValueType>
+void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
 
-    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, Host, flag );
+    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, Host, flag );
+    // we keep the registrations for IndexType as we do not need conversions
 
-#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScale, Host, flag );     \
-    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setGather, Host, flag );   \
-    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScatter, Host, flag ); \
-    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_HOST_TYPE_##J> >( set, Host, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, Host, flag );
+}
 
-#define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
-    KernelRegistry::set<UtilKernelTrait::conj<ARITHMETIC_HOST_TYPE_##I> >( conj, Host, flag );                   \
-    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_HOST_TYPE_##I> >( reduce, Host, flag );               \
-    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_HOST_TYPE_##I> >( setVal, Host, flag );               \
-    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_HOST_TYPE_##I> >( setOrder, Host, flag );           \
-    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, Host, flag );           \
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, Host, flag ); \
-    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_HOST_TYPE_##I> >( isSorted, Host, flag );           \
-    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_HOST_TYPE_##I> >( invert, Host, flag );               \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                   \
-                     LAMA_UTILS2_REGISTER,                                                                       \
-                     ARITHMETIC_HOST_TYPE_##I )
+template<typename ValueType, typename OtherValueType>
+void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using common::context::Host;
+    using kregistry::KernelRegistry;
 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
+    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-#undef LAMA_UTILS_REGISTER
-#undef LAMA_UTILS2_REGISTER
+    // we keep the registrations for IndexType as we do not need conversions
+
+    KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, Host, flag );
 
 }
 
@@ -663,14 +658,27 @@ void OpenMPUtils::registerKernels( bool deleteFlag )
 
 OpenMPUtils::OpenMPUtils()
 {
-    bool deleteFlag = false;  
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    typedef common::mepr::ContainerV<RegistratorV, IndexType, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
+
 }
 
 OpenMPUtils::~OpenMPUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    typedef common::mepr::ContainerV<RegistratorV, IndexType, ARITHMETIC_HOST> ValueTypes;
+    typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
+
+    Registrator::initAndReg( flag );
+    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::instantiate( flag, MoreValueTypes() );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -150,13 +150,7 @@ private:
 
     /** structure that registers all methods at the kernel registry. */
 
-//        template<typename ValueType>
-//        struct Registrator
-//        {
-//            static void initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag );
-//        };
-
-    SCAI_DECLARE_REGISTRATOR( ValueType )
+    SCAI_DECLARE_REGISTRATOR( RegistratorV, template<typename ValueType> )
 
     /** Constructor for registration. */
 

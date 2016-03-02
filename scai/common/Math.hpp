@@ -104,6 +104,12 @@ struct Math
     /*
      * Computes the conjugated value of a given value
      */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int conj( const int& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long conj( const long& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long conj( const long long& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float conj( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double conj( const double& x );
@@ -168,6 +174,21 @@ long double Math::abs( const long double& x )
 }
 
 // -------------------------------- conj -----------------------------
+
+int Math::conj( const int& x )
+{
+    return x;
+}
+
+long Math::conj( const long& x )
+{
+    return x;
+}
+
+long long Math::conj( const long long& x )
+{
+    return x;
+}
 
 float Math::conj( const float& x )
 {
