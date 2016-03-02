@@ -100,6 +100,8 @@ namespace scalar
 
 MIC_CALLABLE_MEMBER const char* scalar2str( const scalar::ScalarType stype );
 
+MIC_CALLABLE_MEMBER scalar::ScalarType str2scalar( const char* str );
+
 } /* end namespace common */
 
 } /* end namespace scai */

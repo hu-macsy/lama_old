@@ -94,19 +94,8 @@ int main( int argc, char* argv[] )
 
     // use auto pointer so that matrix will be deleted at program exit
 
-    unique_ptr<Matrix> matrixPtr;
-    unique_ptr<Vector> rhsPtr;
-
-    if ( lamaconf.getValueType() == common::scalar::FLOAT )
-    {
-        matrixPtr.reset( lamaconf.createSparseMatrix<float>() );
-        rhsPtr.reset( new DenseVector<float>() );
-    }
-    else
-    {
-        matrixPtr.reset( lamaconf.createSparseMatrix<double>() );
-        rhsPtr.reset( new DenseVector<double>() );
-    }
+    unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
+    unique_ptr<Vector> rhsPtr( Vector::getDenseVector( matrixPtr->getValueType(), matrixPtr->getDistributionPtr() ) );
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;

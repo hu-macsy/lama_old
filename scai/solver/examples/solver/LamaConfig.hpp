@@ -95,13 +95,9 @@ public:
 
     const char* getSolverName( ) const;
 
-    /** Create a new sparse matrix of the desired matrix type. */
+    /** get a new matrix of the specified matrix format and value type. */
 
-    template<typename ValueType>
-    scai::lama::SparseMatrix<ValueType>* createSparseMatrix();
-
-    template<typename ValueType>
-    scai::lama::SparseMatrix<ValueType>* createSparseMatrix( const char* format );
+    scai::lama::Matrix* getMatrix();
 
     scai::hmemo::ContextPtr getContextPtr() const
     {
@@ -538,12 +534,6 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     }
 }
 
-template<typename ValueType>
-scai::lama::SparseMatrix<ValueType>* LamaConfig::createSparseMatrix()
-{
-    return createSparseMatrix<ValueType>( getFormat() );
-}
-
 const char* LamaConfig::getFormat( ) const
 {
     if ( mMatrixFormat == "" )
@@ -577,36 +567,12 @@ const char* LamaConfig::getSolverName( ) const
     }
 }
 
-template<typename ValueType>
-scai::lama::SparseMatrix<ValueType>* LamaConfig::createSparseMatrix( const char* format )
+scai::lama::Matrix* LamaConfig::getMatrix()
 {
-    if ( strcmp( format, "CSR" ) == 0 )
-    {
-        return new scai::lama::CSRSparseMatrix<ValueType>();
-    }
-    else if ( strcmp( format, "ELL" ) == 0 )
-    {
-        return new scai::lama::ELLSparseMatrix<ValueType>();
-    }
-    else if ( strcmp( format, "JDS" ) == 0 )
-    {
-        return new scai::lama::JDSSparseMatrix<ValueType>();
-    }
-    else if ( strcmp( format, "DIA" ) == 0 )
-    {
-        return new scai::lama::DIASparseMatrix<ValueType>();
-    }
-    else if ( strcmp( format, "COO" ) == 0 )
-    {
-        return new scai::lama::COOSparseMatrix<ValueType>();
-    }
-    else
-    {
-        std::string dformat = getFormat();
+    scai::lama::Format::MatrixStorageFormat matFormat = scai::lama::str2Format( getFormat() );
 
-        std::cerr << "createSparseMatrix: " << format << " not supported, take " << dformat;
+    scai::common::scalar::ScalarType matType = getValueType();
 
-        return createSparseMatrix<ValueType>( dformat.c_str() );
-    }
+    return scai::lama::Matrix::getMatrix( matFormat, matType );
 }
 
