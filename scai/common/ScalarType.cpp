@@ -39,7 +39,7 @@ namespace scai
 namespace common
 {
 
-MIC_CALLABLE_MEMBER const char* scalar2str( const scalar::ScalarType stype )
+const char* scalar2str( const scalar::ScalarType stype )
 {
     switch ( stype )
     {
@@ -73,6 +73,19 @@ MIC_CALLABLE_MEMBER const char* scalar2str( const scalar::ScalarType stype )
         default:
             return "Unknown";
     }
+}
+
+scalar::ScalarType str2scalar( const char* str ) 
+{
+    for ( int type = scalar::INDEX_TYPE; type < scalar::UNKNOWN; ++type )
+    {
+        if ( strcmp( scalar2str( scalar::ScalarType( type ) ), str ) == 0 )
+        {
+            return scalar::ScalarType( type );
+        }
+    }
+
+    return scalar::UNKNOWN;
 }
 
 namespace scalar
