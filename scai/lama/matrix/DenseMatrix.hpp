@@ -552,9 +552,9 @@ public:
      */
     virtual DenseMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method Matrix::getFormatType with covariant return type */
+    /* Implementation of pure method Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormatType() const
+    virtual Format::MatrixStorageFormat getFormat() const
     {
         return Format::DENSE;
     }

@@ -118,6 +118,7 @@ typedef std::pair<Format::MatrixStorageFormat, common::scalar::ScalarType> Matri
  */
 
 class COMMON_DLL_IMPORTEXPORT _MatrixStorage:
+    public Format,
     public common::Factory<MatrixStorageCreateKeyType, _MatrixStorage*>,
     public common::Printable
 {

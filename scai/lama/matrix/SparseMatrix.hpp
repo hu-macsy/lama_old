@@ -100,7 +100,6 @@ public:
     {
         return *mLocalData;
     }
-    ;
 
     /** Getter routine for halo part of the sparse matrix. */
 
@@ -108,7 +107,14 @@ public:
     {
         return *mHaloData;
     }
-    ;
+
+    /**
+     * @brief Implemementation of pure routine 
+     */
+    virtual Format::MatrixStorageFormat getFormat() const
+    {
+        return mLocalData->getFormat();
+    }
 
     /**
      * @brief Constructor of a replicated sparse matrix with global storage.
