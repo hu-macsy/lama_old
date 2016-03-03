@@ -92,7 +92,7 @@ set ( OPENMP_ARGS "" )
 set ( SCAI_BLAS_ARGS "" )
 
 get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
-message ( STATUS "all CACHE_VARS ${CACHE_VARS}")
+#message ( STATUS "all CACHE_VARS ${CACHE_VARS}")
 
 # always NOTFOUND ?!
 #get_cmake_property ( DEFINITION_VARS COMPILE_DEFINITIONS )
