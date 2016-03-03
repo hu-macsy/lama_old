@@ -31,10 +31,31 @@ namespace scai {
 
 namespace kregistry {
 
+namespace mepr {
+
 /*
  * Instantiate the Registrator for one template-parameter with different kind of ValueTypes
  * Currently up to 12 supported
  */
+
+template<template<typename> class R, typename TList> struct Registrator;
+
+template<template<typename> class R> struct Registrator<R,common::mepr::NullType>
+{
+    static void call( kregistry::KernelRegistry::KernelRegistryFlag ){}
+};
+
+template<template<typename> class R, typename H, typename T>
+struct Registrator< R, common::mepr::TypeList<H,T> >
+{
+    static void call( kregistry::KernelRegistry::KernelRegistryFlag flag )
+    {
+        R<H>::initAndReg( flag );
+        Registrator<R,T>::call( flag );
+    }
+};
+
+} /* end namespace mepr */
 
 template<template<typename> class R, typename T1>
 static void instantiate(

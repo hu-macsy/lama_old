@@ -169,16 +169,14 @@ void CUDABLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
 
 CUDABLAS2::CUDABLAS2()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+                    kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDABLAS2::~CUDABLAS2()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+                    kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 CUDABLAS2 CUDABLAS2::guard;    // guard variable for registration

@@ -228,15 +228,13 @@ void LAPACKe_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
 }
 
 LAPACKe_LAPACK::LAPACKe_LAPACK() {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_REPLACE, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 LAPACKe_LAPACK::~LAPACKe_LAPACK() {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

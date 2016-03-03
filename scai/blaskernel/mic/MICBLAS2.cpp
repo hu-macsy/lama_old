@@ -193,16 +193,14 @@ void MICBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
 
 MICBLAS2::RegisterGuard::RegisterGuard()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+                                kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 MICBLAS2::RegisterGuard::~RegisterGuard()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+                                kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 MICBLAS2::RegisterGuard MICBLAS2::guard;    // guard variable for registration

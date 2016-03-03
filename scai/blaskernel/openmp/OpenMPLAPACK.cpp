@@ -556,16 +556,14 @@ void OpenMPLAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistr
 
 OpenMPLAPACK::OpenMPLAPACK()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+                    kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPLAPACK::~OpenMPLAPACK()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+                    kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

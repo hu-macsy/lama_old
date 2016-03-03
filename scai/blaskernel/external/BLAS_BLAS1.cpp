@@ -355,16 +355,14 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 BLAS_BLAS1::BLAS_BLAS1()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_REPLACE, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                        kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS1::~BLAS_BLAS1()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_EXT_HOST> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

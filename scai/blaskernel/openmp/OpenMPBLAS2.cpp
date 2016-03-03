@@ -302,16 +302,14 @@ void OpenMPBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
 OpenMPBLAS2::OpenMPBLAS2()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ADD, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+                        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS2::~OpenMPBLAS2()
 {
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
-
-    kregistry::instantiate( kregistry::KernelRegistry::KERNEL_ERASE, ValueTypes() );
+    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+                        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */
