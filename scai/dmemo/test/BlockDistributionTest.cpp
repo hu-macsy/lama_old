@@ -45,7 +45,7 @@ struct BlockDistributionTestConfig
 {
     BlockDistributionTestConfig()
     {
-        comm = Communicator::getCommunicator();
+        comm = Communicator::getCommunicatorPtr();
         rank = comm->getRank();
         size = comm->getSize();
         blockSize = 17;

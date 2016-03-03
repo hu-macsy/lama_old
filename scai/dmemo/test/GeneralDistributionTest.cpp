@@ -46,7 +46,7 @@ struct GeneralDistributionTestConfig
 {
     GeneralDistributionTestConfig()
     {
-        comm = Communicator::getCommunicator();
+        comm = Communicator::getCommunicatorPtr();
         rank = comm->getRank();
         size = comm->getSize();
         elemsPerPartition = 10;

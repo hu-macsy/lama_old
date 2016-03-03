@@ -29,7 +29,7 @@ public:
         // overlap communication with local computation
 
         mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
-        mComm              = scai::dmemo::Communicator::getCommunicator();
+        mComm              = scai::dmemo::Communicator::getCommunicatorPtr();
         mContext           = scai::hmemo::Context::getHostPtr();
         mMaxIters          = 1000;
     }

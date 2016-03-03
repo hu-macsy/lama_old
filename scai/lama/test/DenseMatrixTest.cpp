@@ -744,7 +744,7 @@ void swapTest( )
 template<typename ValueType>
 void transposeTest( )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator(Communicator::MPI);  // MPI
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr(Communicator::MPI);  // MPI
     CSRSparseMatrix<ValueType> testMatrixA = TestSparseMatrices::n6m4MatrixD1<ValueType>();
     CSRSparseMatrix<ValueType> testMatrixB = TestSparseMatrices::n6m6Full<ValueType>();
     DenseMatrix<ValueType> matrixA(testMatrixA);

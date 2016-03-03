@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 {
     ContextPtr context   = Context::getContextPtr();
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     typedef double ValueType;
     BiCGstab BiCGstabSolver( "TestBiCGstab" );
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 BOOST_AUTO_TEST_CASE( testSolveWithIterationCount ) {
     typedef SCAI_TEST_TYPE ValueType;
     ContextPtr context = Context::getContextPtr();
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     LoggerPtr slogger( new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );

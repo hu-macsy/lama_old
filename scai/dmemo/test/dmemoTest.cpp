@@ -20,7 +20,7 @@ bool init_function()
 {
     try
     {
-        scai::dmemo::CommunicatorPtr comm = scai::dmemo::Communicator::getCommunicator();
+        scai::dmemo::CommunicatorPtr comm = scai::dmemo::Communicator::getCommunicatorPtr();
         return true;
     } 
     catch ( scai::common::Exception& ex )

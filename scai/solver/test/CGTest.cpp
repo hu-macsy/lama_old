@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 BOOST_AUTO_TEST_CASE( testSolveWithPreconditionMethod )
 {
     ContextPtr context = Context::getContextPtr();
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     std::vector<MatrixCreateKeyType> keys;
 

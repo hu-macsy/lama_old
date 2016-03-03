@@ -155,7 +155,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
     // Take the current default communicator
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicator();
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor
@@ -1488,7 +1488,7 @@ void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
         COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
     }
 
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
 
     allocate( dist );

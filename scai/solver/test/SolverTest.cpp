@@ -25,7 +25,7 @@ bool init_function()
 {
     try
     {
-        scai::dmemo::CommunicatorPtr testCommunicator = scai::dmemo::Communicator::getCommunicator();
+        scai::dmemo::CommunicatorPtr testCommunicator = scai::dmemo::Communicator::getCommunicatorPtr();
         // allow to set individual test context within a node
         scai::common::Settings::setRank( testCommunicator->getNodeRank() );
         scai::hmemo::ContextPtr testContext = scai::hmemo::Context::getContextPtr();
