@@ -39,7 +39,7 @@ namespace scai
 namespace common
 {
 
-const char* scalar2str( const scalar::ScalarType stype )
+const char* scalarType2str( const scalar::ScalarType stype )
 {
     switch ( stype )
     {
@@ -75,11 +75,11 @@ const char* scalar2str( const scalar::ScalarType stype )
     }
 }
 
-scalar::ScalarType str2scalar( const char* str ) 
+scalar::ScalarType str2ScalarType( const char* str ) 
 {
     for ( int type = scalar::INDEX_TYPE; type < scalar::UNKNOWN; ++type )
     {
-        if ( strcmp( scalar2str( scalar::ScalarType( type ) ), str ) == 0 )
+        if ( strcmp( scalarType2str( scalar::ScalarType( type ) ), str ) == 0 )
         {
             return scalar::ScalarType( type );
         }
@@ -112,7 +112,7 @@ bool isComplex( const ScalarType t )
 
 std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
 {
-    stream << scalar2str( object );
+    stream << scalarType2str( object );
     return stream;
 }
 

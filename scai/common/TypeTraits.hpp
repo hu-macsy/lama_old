@@ -98,7 +98,7 @@ public:
      */
     static inline const char* id()
     {
-        return scalar2str( scalar::UNKNOWN );
+        return scalarType2str( scalar::UNKNOWN );
     }
 };
 
@@ -134,7 +134,7 @@ public:
 
     static inline const char* id()
     {
-        return scalar2str( scalar::INDEX_TYPE );
+        return scalarType2str( scalar::INDEX_TYPE );
     }
 };
 
@@ -170,7 +170,7 @@ public:
 
     static inline const char* id()
     {
-        return scalar2str( scalar::LONG_DOUBLE );
+        return scalarType2str( scalar::LONG_DOUBLE );
     }
 };
 
@@ -205,7 +205,7 @@ public:
 
     static inline const char* id()
     {
-        return scalar2str( scalar::DOUBLE );
+        return scalarType2str( scalar::DOUBLE );
     }
 };
 
@@ -240,7 +240,7 @@ public:
 
     static inline const char* id()
     {
-        return scalar2str( stype );
+        return scalarType2str( stype );
     }
 };
 
@@ -313,7 +313,7 @@ public:
 
     static inline const char* id()
     {
-        return scalar2str( scalar::DOUBLE_COMPLEX );
+        return scalarType2str( scalar::DOUBLE_COMPLEX );
     }
 };
 
@@ -349,7 +349,7 @@ public:
 
     static inline const char* id()
     {
-        return scalar2str( stype );
+        return scalarType2str( stype );
     }
 };
 

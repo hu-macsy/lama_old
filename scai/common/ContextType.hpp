@@ -82,6 +82,7 @@ namespace context
     COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
 
     COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
+
 } /* end namespace context */
 
 } /* end namespace common */
