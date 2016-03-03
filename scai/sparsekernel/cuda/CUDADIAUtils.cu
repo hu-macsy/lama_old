@@ -939,7 +939,7 @@ CUDADIAUtils::CUDADIAUtils()
 
     typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
 
-    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDADIAUtils::~CUDADIAUtils()
@@ -948,7 +948,7 @@ CUDADIAUtils::~CUDADIAUtils()
 
     typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
 
-    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDADIAUtils CUDADIAUtils::guard;    // guard variable for registration

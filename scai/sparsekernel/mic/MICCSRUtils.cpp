@@ -1988,8 +1988,8 @@ MICCSRUtils::RegisterGuard::RegisterGuard()
     typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_MIC> MoreValueTypes;
 
     Registrator::initAndReg( flag );
-    kregistry::instantiate( flag, ValueTypes() );
-    kregistry::instantiate( flag, MoreValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_MIC_LIST, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICCSRUtils::RegisterGuard::~RegisterGuard()
@@ -2000,8 +2000,8 @@ MICCSRUtils::RegisterGuard::~RegisterGuard()
     typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_MIC> MoreValueTypes;
 
     Registrator::initAndReg( flag );
-    kregistry::instantiate( flag, ValueTypes() );
-    kregistry::instantiate( flag, MoreValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_MIC_LIST, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICCSRUtils::RegisterGuard MICCSRUtils::guard;    // guard variable for registration

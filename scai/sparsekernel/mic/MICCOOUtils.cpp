@@ -560,12 +560,9 @@ MICCOOUtils::RegisterGuard::RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
-    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_MIC> MoreValueTypes;
-
     Registrator::initAndReg( flag );
-    kregistry::instantiate( flag, ValueTypes() );
-    kregistry::instantiate( flag, MoreValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_MIC_LIST, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICCOOUtils::RegisterGuard::~RegisterGuard()
@@ -576,8 +573,8 @@ MICCOOUtils::RegisterGuard::~RegisterGuard()
     typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_MIC> MoreValueTypes;
 
     Registrator::initAndReg( flag );
-    kregistry::instantiate( flag, ValueTypes() );
-    kregistry::instantiate( flag, MoreValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_MIC_LIST, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICCOOUtils::RegisterGuard MICCOOUtils::guard;    // guard variable for registration

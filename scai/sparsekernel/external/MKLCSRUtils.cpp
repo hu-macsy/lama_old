@@ -173,7 +173,7 @@ void MKLCSRUtils::convertCSR2CSC(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using common::context::Host;
     using kregistry::KernelRegistry;
@@ -192,18 +192,14 @@ MKLCSRUtils::MKLCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
-
-    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call( flag );
 }
 
 MKLCSRUtils::~MKLCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_HOST> ValueTypes;
-
-    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

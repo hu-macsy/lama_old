@@ -446,20 +446,16 @@ CUSparseCSRUtils::CUSparseCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
-
     Registrator::initAndReg( flag );
-    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUSparseCSRUtils::~CUSparseCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_CUDA> ValueTypes;
-
     Registrator::initAndReg( flag );
-    kregistry::instantiate( flag, ValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUSparseCSRUtils CUSparseCSRUtils::guard;    // guard variable for registration
