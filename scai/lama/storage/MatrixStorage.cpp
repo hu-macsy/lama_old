@@ -375,7 +375,6 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     const HArray<ValueType>& rowValues,
     const ContextPtr preferredLoc )
 {
-    // ContextPtr loc = Context::getContextPtr( context::Host );
     const IndexType numRows = rowIA.size() - 1;
     const IndexType numValues = rowJA.size();
     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )

@@ -89,7 +89,7 @@ template<typename ValueType>
 ELLStorage<ValueType>::ELLStorage(
     const IndexType numRows,
     const IndexType numColumns,
-    const common::context::ContextType con /* = Context::Host */)
+    const Context::ContextType con /* = Context::Host */)
 
     : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValuesPerRow( 0 )
 {
@@ -1376,7 +1376,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == common::context::Host )
+    if( loc->getType() == Context::Host )
     {
         // execution as separate thread
 
@@ -1535,7 +1535,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
-    if ( loc->getType() == common::context::Host )
+    if ( loc->getType() == Context::Host )
     {
         // used later in OpenMP to generate a TaskSyncToken
 
