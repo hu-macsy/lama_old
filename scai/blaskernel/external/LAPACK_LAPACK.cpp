@@ -312,7 +312,8 @@ void LAPACK_LAPACK::laswp(const CBLAS_ORDER order, const IndexType N,
 void LAPACK_LAPACK::registerKernels(bool deleteFlag)
 {
 	using kregistry::KernelRegistry;
-	using common::context::Host;
+
+    const common::context::ContextType Host = common::context::Host;
 
 	KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE; // priority over OpenMPBLAS
 
