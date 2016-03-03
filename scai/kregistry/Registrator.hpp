@@ -38,14 +38,25 @@ namespace mepr {
  * Currently up to 12 supported
  */
 
-template<template<typename> class R, typename TList> struct Registrator;
+template<template<typename> class R, typename TList> struct RegistratorV;
 
-template<template<typename> class R> struct Registrator<R,common::mepr::NullType>
+template<template<typename> class R> struct RegistratorV<R,common::mepr::NullType>
 {
     static void call( kregistry::KernelRegistry::KernelRegistryFlag ){}
 };
 
 template<template<typename> class R, typename H, typename T>
+struct RegistratorV< R, common::mepr::TypeList<H,T> >
+{
+    static void call( kregistry::KernelRegistry::KernelRegistryFlag flag )
+    {
+        R<H>::initAndReg( flag );
+        RegistratorV<R,T>::call( flag );
+    }
+};
+
+
+template<template<typename,typename> class R, typename H, typename T>
 struct Registrator< R, common::mepr::TypeList<H,T> >
 {
     static void call( kregistry::KernelRegistry::KernelRegistryFlag flag )

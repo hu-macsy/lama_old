@@ -126,13 +126,13 @@ void CUDALAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 CUDALAPACK::CUDALAPACK()
 {
-    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
                         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDALAPACK::~CUDALAPACK()
 {
-    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
                         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

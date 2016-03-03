@@ -166,13 +166,13 @@ void MICBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
 
 MICBLAS3::RegisterGuard::RegisterGuard()
 {
-    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call(
                                 kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 MICBLAS3::RegisterGuard::~RegisterGuard()
 {
-    kregistry::mepr::Registrator<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call(
                                 kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
