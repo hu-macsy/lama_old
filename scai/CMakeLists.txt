@@ -249,7 +249,7 @@ ExternalProject_Add ( scai_sparsekernel
             )
 
 concatCacheArguments ( scai_dmemo "CACHE_ARGS" )
-message ( STATUS "dmemo CACHE_ARGS ${CACHE_ARGS}" )
+#message ( STATUS "dmemo CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_dmemo
             DEPENDS ${SCAI_DMEMO_INTERNAL_DEPS}
