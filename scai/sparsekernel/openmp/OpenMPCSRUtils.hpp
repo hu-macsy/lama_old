@@ -36,7 +36,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/kregistry/Registrator.hpp>
+#include <scai/kregistry/mepr/Registrator.hpp>
 
 #include <scai/logging.hpp>
 

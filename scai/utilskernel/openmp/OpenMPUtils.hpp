@@ -43,7 +43,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/ReductionOp.hpp>
 
-#include <scai/kregistry/Registrator.hpp>
+#include <scai/kregistry/mepr/Registrator.hpp>
 
 namespace scai
 {

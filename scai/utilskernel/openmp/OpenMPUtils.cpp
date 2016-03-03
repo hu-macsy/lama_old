@@ -660,12 +660,9 @@ OpenMPUtils::OpenMPUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
-    typedef common::mepr::ContainerV<RegistratorV, IndexType, ARITHMETIC_HOST> ValueTypes;
-    typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
-
     Registrator::initAndReg( flag );
-    kregistry::instantiate( flag, ValueTypes() );
-    kregistry::instantiate( flag, MoreValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_ARRAY_HOST_LIST, ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
 
 }
 
@@ -673,12 +670,9 @@ OpenMPUtils::~OpenMPUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    typedef common::mepr::ContainerV<RegistratorV, IndexType, ARITHMETIC_HOST> ValueTypes;
-    typedef common::mepr::ContainerVO<RegistratorVO, IndexType, ARITHMETIC_HOST> MoreValueTypes;
-
     Registrator::initAndReg( flag );
-    kregistry::instantiate( flag, ValueTypes() );
-    kregistry::instantiate( flag, MoreValueTypes() );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_ARRAY_HOST_LIST, ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

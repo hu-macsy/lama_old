@@ -97,7 +97,11 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
 
-#define ARITHMETIC_ARRAY TYPELIST_7( IndexType, float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble)
+
+#define ARITHMETIC_ARRAY_HOST_LIST TYPELIST_7( IndexType, float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble)
+#define ARITHMETIC_ARRAY_CUDA_LIST TYPELIST_5( IndexType, float, double, ComplexFloat, ComplexDouble )
+#define ARITHMETIC_ARRAY_MIC_LIST TYPELIST_5( IndexType, float, double, ComplexFloat, ComplexDouble )
+
 #define ARITHMETIC_HOST_LIST TYPELIST_6( float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble )
 #define ARITHMETIC_EXT_HOST_LIST TYPELIST_4( float, double, ComplexFloat, ComplexDouble )
 #define ARITHMETIC_CUDA_LIST TYPELIST_4( float, double, ComplexFloat, ComplexDouble )

@@ -40,7 +40,7 @@
 #include <scai/lama/Scalar.hpp>
 
 // internal scai libraries
-#include <scai/kregistry/Registrator.hpp>
+#include <scai/kregistry/mepr/Registrator.hpp>
 
 #include <scai/logging.hpp>
 

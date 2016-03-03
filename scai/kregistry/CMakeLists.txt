@@ -107,6 +107,7 @@ scai_project (
 add_subdirectory ( doc )
 add_subdirectory ( examples )
 add_subdirectory ( exception )
+add_subdirectory ( mepr )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )

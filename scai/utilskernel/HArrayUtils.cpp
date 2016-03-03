@@ -47,6 +47,8 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/preprocessor.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/mepr/Container.hpp>
 
 // std
 #include <iostream>
@@ -117,13 +119,134 @@ void HArrayUtils::setImpl(
     }
 }
 
+/*
+template<typename ValueType, typename T1>
+static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1> )
+{
+    if( common::getScalarType<T1>() ==  source.getValueType() )
+    {
+        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
+    }
+}
+
+template<typename ValueType, typename T1, typename T2=T1>
+static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2> )
+{
+    if( common::getScalarType<T1>() ==  source.getValueType() )
+    {
+        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
+    }
+    else
+    {
+        callMeNow( target, source, op, loc, common::mepr::Container<T2>() );
+    }
+}
+
+template<typename ValueType, typename T1, typename T2=T1, typename T3=T2>
+static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3> )
+{
+    if( common::getScalarType<T1>() ==  source.getValueType() )
+    {
+        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
+    }
+    else
+    {
+        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3>() );
+    }
+}
+
+template<typename ValueType, typename T1, typename T2=T1, typename T3=T2, typename T4=T3>
+static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3, T4> )
+{
+    if( common::getScalarType<T1>() ==  source.getValueType() )
+    {
+        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
+    }
+    else
+    {
+        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3, T4>() );
+    }
+}
+
+template<typename ValueType, typename T1, typename T2=T1, typename T3=T2, typename T4=T3, typename T5=T4>
+static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3, T4, T5> )
+{
+    if( common::getScalarType<T1>() ==  source.getValueType() )
+    {
+        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
+    }
+    else
+    {
+        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3, T4, T5>() );
+    }
+}
+
+template<typename ValueType, typename T1, typename T2=T1, typename T3=T2, typename T4=T3, typename T5=T4, typename T6=T5>
+static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3, T4, T5, T6> )
+{
+    if( common::getScalarType<T1>() ==  source.getValueType() )
+    {
+        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
+    }
+    else
+    {
+        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3, T4, T5, T6>() );
+    }
+}
+
+template<typename ValueType, typename T1, typename T2=T1, typename T3=T2, typename T4=T3, typename T5=T4, typename T6=T5, typename T7=T6>
+static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3, T4, T5, T6, T7> )
+{
+    if( common::getScalarType<T1>() ==  source.getValueType() )
+    {
+        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
+    }
+    else
+    {
+        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3, T4, T5, T6, T7>() );
+    }
+}
+*/
+
+namespace mepr {
+
+template<typename ValueType, typename TList> struct UtilsWrapper;
+
+template<typename ValueType> struct UtilsWrapper<ValueType,common::mepr::NullType>
+{
+    static void setImpl1( HArray<ValueType>&, const _HArray&, const common::reduction::ReductionOp, const ContextPtr ){}
+};
+
+template<typename ValueType, typename H, typename T>
+struct UtilsWrapper< ValueType, common::mepr::TypeList<H,T> >
+{
+    static void setImpl1( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc )
+    {
+        if( common::getScalarType<H>() ==  source.getValueType() )
+        {
+            HArrayUtils::setImpl( target, reinterpret_cast<const HArray<H>&>( source ), op, loc );
+        }
+        else
+        {
+            UtilsWrapper< ValueType, T >::setImpl1( target, source, op, loc );
+        }
+    }
+};
+
+} /* end namespace mepr */
+
 template<typename ValueType>
 void HArrayUtils::setImpl1( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc )
 {
-    common::scalar::ScalarType sourceType = source.getValueType();
+//    const common::scalar::ScalarType sourceType = source.getValueType();
 
     // Different types -> select for corresponding template routine
 
+//    callMeNow( target, source, op, loc, common::mepr::Container<IndexType, ARITHMETIC_HOST>() );
+
+    mepr::UtilsWrapper< ValueType, ARITHMETIC_ARRAY_HOST_LIST >::setImpl1( target, source, op, loc );
+
+    /*
     switch ( sourceType )
     {
         case common::scalar::INDEX_TYPE:
@@ -145,6 +268,7 @@ void HArrayUtils::setImpl1( HArray<ValueType>& target, const _HArray& source, co
 default        :
         COMMON_THROWEXCEPTION( "unsupported source type : " )
     }
+    */
 }
 
 void HArrayUtils::set( 

@@ -38,7 +38,7 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/kregistry/Registrator.hpp>
+#include <scai/kregistry/mepr/Registrator.hpp>
 
 #include <scai/common/SCAITypes.hpp>
 

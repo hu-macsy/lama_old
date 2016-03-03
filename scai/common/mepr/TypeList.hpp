@@ -15,7 +15,6 @@ struct TypeList
     typedef T tail;
 };
 
-
 #define TYPELIST_1( T1 ) common::mepr::TypeList<T1,common::mepr::NullType>
 #define TYPELIST_2( T1, T2 ) common::mepr::TypeList<T1,TYPELIST_1( T2 ) >
 #define TYPELIST_3( T1, T2, T3 ) common::mepr::TypeList<T1,TYPELIST_2( T2, T3 ) >
