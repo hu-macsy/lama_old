@@ -604,7 +604,8 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 void OpenMPUtils::registerKernels( bool deleteFlag )
 {
     using namespace scai::kregistry;
-    using common::context::Host;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
  
@@ -615,37 +616,37 @@ void OpenMPUtils::registerKernels( bool deleteFlag )
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, ctx, flag );
 
 #define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScale, Host, flag );     \
-    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setGather, Host, flag );   \
-    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScatter, Host, flag ); \
-    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_HOST_TYPE_##J> >( set, Host, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScale, ctx, flag );     \
+    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setGather, ctx, flag );   \
+    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScatter, ctx, flag ); \
+    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_HOST_TYPE_##J> >( set, ctx, flag );               \
 
 #define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
-    KernelRegistry::set<UtilKernelTrait::conj<ARITHMETIC_HOST_TYPE_##I> >( conj, Host, flag );                   \
-    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_HOST_TYPE_##I> >( reduce, Host, flag );               \
-    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_HOST_TYPE_##I> >( setVal, Host, flag );               \
-    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_HOST_TYPE_##I> >( setOrder, Host, flag );           \
-    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, Host, flag );           \
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, Host, flag ); \
-    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_HOST_TYPE_##I> >( isSorted, Host, flag );           \
-    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_HOST_TYPE_##I> >( invert, Host, flag );               \
+    KernelRegistry::set<UtilKernelTrait::conj<ARITHMETIC_HOST_TYPE_##I> >( conj, ctx, flag );                   \
+    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_HOST_TYPE_##I> >( reduce, ctx, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_HOST_TYPE_##I> >( setVal, ctx, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_HOST_TYPE_##I> >( setOrder, ctx, flag );           \
+    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx, flag );           \
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, ctx, flag ); \
+    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_HOST_TYPE_##I> >( isSorted, ctx, flag );           \
+    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_HOST_TYPE_##I> >( invert, ctx, flag );               \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                   \
                      LAMA_UTILS2_REGISTER,                                                                       \
                      ARITHMETIC_HOST_TYPE_##I )

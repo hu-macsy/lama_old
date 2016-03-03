@@ -480,7 +480,8 @@ void OpenMPCOOUtils::jacobi(
 void OpenMPCOOUtils::registerKernels( bool deleteFlag )
 {
     using namespace scai::kregistry;
-    using common::context::Host;
+
+    common::context::ContextType Host = common::context::Host;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 

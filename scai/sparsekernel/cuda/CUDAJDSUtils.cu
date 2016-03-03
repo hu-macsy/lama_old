@@ -2921,7 +2921,8 @@ void CUDAJDSUtils::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "set JDS routines for CUDA in Interface, delete = " << deleteFlag )
 
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
+
+    common::context::ContextType CUDA = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 

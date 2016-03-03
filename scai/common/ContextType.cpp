@@ -39,51 +39,47 @@ namespace scai
 namespace common
 {
 
-namespace context
-{
-
-std::ostream& operator<<( std::ostream& stream, const ContextType& type )
+const char* contextType2str( const context::ContextType& type )
 {
     switch ( type )
     {
-        case Host :
-            stream << "Host";
-            break;
+        case context::Host :
+            return "Host";
 
-        case CUDA :
-            stream << "CUDA";
-            break;
+        case context::CUDA :
+            return "CUDA";
 
-        case MIC :
-            stream << "MIC";
-            break;
+        case context::MIC :
+            return "MIC";
 
-        case OpenCL :
-            stream << "OpenCL";
-            break;
+        case context::OpenCL :
+            return "OpenCL";
 
-        case UserContext :
-            stream << "UserContext";
-            break;
+        case context::UserContext :
+            return "UserContext";
 
         default:
-            stream << "ContextType_" << (int) type;
+            return "UnknownContext";
     }
+}
 
+std::ostream& operator<<( std::ostream& stream, const context::ContextType& type )
+{
+    stream << contextType2str( type );
     return stream;
 }
 
 /* -----------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
+std::ostream& operator<<( std::ostream& stream, const context::AccessKind& kind )
 {
     switch ( kind )
     {
-        case Write :
+        case context::Write :
             stream << "Write";
             break;
 
-        case Read :
+        case context::Read :
             stream << "Read";
             break;
 
@@ -93,8 +89,6 @@ std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
 
     return stream;
 }
-
-} /* end namespace common */
 
 } /* end namespace context */
 

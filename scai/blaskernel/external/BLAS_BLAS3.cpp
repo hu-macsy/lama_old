@@ -137,7 +137,8 @@ void BLAS_BLAS3::gemm(
 void BLAS_BLAS3::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
-    using common::context::Host;
+
+    const common::context::ContextType Host = common::context::Host;
 
     // using BLAS wrappers might be disabled explicitly by environment variable
 

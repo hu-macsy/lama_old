@@ -410,7 +410,8 @@ void CUDABLAS3::gemm(
 void CUDABLAS3::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
+
+    const common::context::ContextType CUDA = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 

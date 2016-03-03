@@ -3295,7 +3295,8 @@ void CUDACSRUtils::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
 
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
+
+    common::context::ContextType CUDA = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 

@@ -55,14 +55,13 @@
 
 using namespace std;
 
-using scai::common::context::ContextType;
 using scai::common::shared_ptr;
 
 void contextInfo()
 {
     using namespace scai::hmemo;
 
-    vector<ContextType> values;  // supported context types
+    vector<Context::ContextType> values;  // supported context types
 
     Context::getCreateValues( values );
 

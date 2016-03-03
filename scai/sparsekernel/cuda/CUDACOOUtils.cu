@@ -722,7 +722,8 @@ void CUDACOOUtils::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "set COO routines for CUDA in Interface" )
 
     using namespace scai::kregistry;
-    using common::context::CUDA;
+
+    common::context::ContextType CUDA = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 

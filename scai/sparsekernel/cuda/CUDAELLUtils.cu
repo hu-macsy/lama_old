@@ -2231,7 +2231,7 @@ void CUDAELLUtils::registerKernels( bool deleteFlag )
 
     using kregistry::KernelRegistry;
 
-    using common::context::CUDA;
+    common::context::ContextType CUDA = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 

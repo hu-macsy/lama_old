@@ -693,7 +693,8 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 void CUDAUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
+
+    const common::context::ContextType CUDA = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
