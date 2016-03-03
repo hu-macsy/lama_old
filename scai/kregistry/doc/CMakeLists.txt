@@ -38,11 +38,12 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
     setIntersphinxInternalVariables()
+    # TODO: need to get rid of these extra links
     # set additional links to none dependent libs
-    set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/ )
-    set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tasking-${SCAI_TASKING_VERSION}/ )
-    set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/ )
-    configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
+    #set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/ )
+    #set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tasking-${SCAI_TASKING_VERSION}/ )
+    #set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/ )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
     
     # Add custom command for building the userdoc
     add_custom_command (
