@@ -526,7 +526,7 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 
     // Shape and distribution of matrix is not changed
 
-    const dmemo::Distribution& dist = matrix.getDistribution();
+    const dmemo::Distribution& dist = matrix.getRowDistribution();
 
     if( dist.getNumPartitions() == 1 )
     {
@@ -585,7 +585,7 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
     // The new matrix data has the same row distribution as the input
     // matrix, also take over the original column distribution
 
-    matrix.assign( localCSRStorage, matrix.getDistributionPtr(), matrix.getColDistributionPtr() ); // builds also halo
+    matrix.assign( localCSRStorage, matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() ); // builds also halo
 }
 
 /* ------------------------------------------------------------------------- */

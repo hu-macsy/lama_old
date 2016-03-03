@@ -32,40 +32,29 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+
+#include <scai/hmemo/Context.hpp>
+
+#include <scai/dmemo/BlockDistribution.hpp>
+
+#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/expression/VectorExpressions.hpp>
+#include <scai/lama/expression/MatrixVectorExpressions.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/solver/BiCGstab.hpp>
 #include <scai/solver/TrivialPreconditioner.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
-#include <scai/solver/criteria/ResidualThreshold.hpp>
-#include <scai/solver/logger/Timer.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
-
-#include <scai/lama/DenseVector.hpp>
-
-#include <scai/lama/matrix/ELLSparseMatrix.hpp>
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/matrix/JDSSparseMatrix.hpp>
-#include <scai/lama/matrix/DIASparseMatrix.hpp>
-#include <scai/lama/matrix/COOSparseMatrix.hpp>
-#include <scai/lama/matrix/DenseMatrix.hpp>
-
-#include <scai/lama/norm/MaxNorm.hpp>
-#include <scai/lama/norm/L2Norm.hpp>
-
-#include <scai/lama/matutils/MatrixCreator.hpp>
-
-#include <scai/lama/expression/VectorExpressions.hpp>
-#include <scai/lama/expression/MatrixVectorExpressions.hpp>
-
 #include <scai/solver/test/TestMacros.hpp>
 
-using namespace scai;
-using namespace lama;
-using namespace hmemo;
-using namespace solver;
 
-typedef boost::mpl::list<float,double> test_types;
+using namespace scai::hmemo;
+using namespace scai::dmemo;
+using namespace scai::lama;
+using namespace scai::solver;
 
 /* --------------------------------------------------------------------- */
 
@@ -77,8 +66,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BiCGstabTest" )
 
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
-    LoggerPtr slogger(
-        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+    LoggerPtr slogger( new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
     BOOST_CHECK_EQUAL( BiCGstabSolver.getId(), "BiCGstabTestSolver" );
@@ -106,6 +94,9 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 
 BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 {
+    ContextPtr context   = Context::getContextPtr();
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
     typedef double ValueType;
     BiCGstab BiCGstabSolver( "TestBiCGstab" );
 
@@ -113,11 +104,20 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
     const IndexType N2 = 4;
 
     CSRSparseMatrix<ValueType> coefficients;
+    coefficients.setContextPtr( context );
+
+    DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
+    DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
+    coefficients.redistribute( rowDist, colDist );
+
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N1, N2 );
 
-    const DenseVector<ValueType> rhs( coefficients.getLocalNumRows(), 1.0 );
+    DenseVector<ValueType> rhs( coefficients.getColDistributionPtr(), 1.0 );
+    rhs.setContextPtr( context );
 
     DenseVector<ValueType> solution( rhs );
+    solution.setContextPtr( context );
+    solution.redistribute( coefficients.getRowDistributionPtr() );
 
     BiCGstabSolver.initialize( coefficients );   // Not WORKING
 
@@ -128,14 +128,12 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 
 /*------------------------------------------------------------------------*/
 
-template<typename MatrixType>
-void testSolveWithPreconditionmethod( ContextPtr context )
-{
-    typedef typename MatrixType::MatrixValueType ValueType;
+BOOST_AUTO_TEST_CASE( testSolveWithIterationCount ) {
+    typedef SCAI_TEST_TYPE ValueType;
+    ContextPtr context = Context::getContextPtr();
+    CommunicatorPtr comm = Communicator::getCommunicator();
 
-    LoggerPtr slogger(
-        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
+    LoggerPtr slogger( new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
 
     const IndexType N1 = 40;
@@ -143,168 +141,81 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    CSRSparseMatrix<ValueType> helpcoefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-
-    // convert to the corresponding matrix type, keep distribution
-
-    MatrixType coefficients( helpcoefficients );
-    SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
-
+    CSRSparseMatrix<ValueType> coefficients;
     coefficients.setContextPtr( context );
+    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
+    SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
     SCAI_LOG_INFO( logger, "BiCGstabTest uses context = " << context->getType() );
 
-    DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
+    DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
+    DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
+    coefficients.redistribute( rowDist, colDist );
+
+    const ValueType solutionInitValue = 1.0;
+    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
+    // TODO: use constructor to set context
+    solution.setContextPtr( context );
+
+
+    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue+1.0 );
+    // TODO: use constructor to set context
+    exactSolution.setContextPtr( context );
+
     DenseVector<ValueType> rhs( coefficients * exactSolution );
 
-    IndexType expectedIterations = 300;
-    CriterionPtr criterion( new IterationCount( expectedIterations ) );
+    IndexType maxExpectedIterations = 300;
+    CriterionPtr criterion( new IterationCount( maxExpectedIterations ) );
     BiCGstabSolver.setStoppingCriterion( criterion );
+
+    // TODO: this should be tested for ALL solvers
+    // Solver has to be initialized before solve is called
+    //BOOST_CHECK_THROW ( {BiCGstabSolver.solve( solution, rhs );}, common::Exception );
+
+    BiCGstabSolver.initialize( coefficients );
+    BiCGstabSolver.solve( solution, rhs );
+
+    BOOST_CHECK( maxExpectedIterations == BiCGstabSolver.getIterationCount() );
+
+    DenseVector<ValueType> diff( solution - exactSolution );
+
+    Scalar s                  = maxNorm( diff );
+    ValueType realMaxNorm     = s.getValue<ValueType>();
+    ValueType expectedMaxNorm = 1E-4;
+
+    SCAI_LOG_INFO( logger, "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << realMaxNorm );
+
+    BOOST_CHECK( realMaxNorm < expectedMaxNorm );
+
+
+    // Test with preconditioner
 
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     BiCGstabSolver.setPreconditioner( preconditioner );
 
+    // TODO: this should be tested for ALL preconditioners
+    // Solver has to be initialized AFTER a preconditioner is set
+    //BOOST_CHECK_THROW ( {BiCGstabSolver.solve( solution, rhs );}, common::Exception );
+
     BiCGstabSolver.initialize( coefficients );
-    BiCGstabSolver.solve( solution, rhs );
 
-    BOOST_CHECK( expectedIterations >= BiCGstabSolver.getIterationCount() );
-
-    DenseVector<ValueType> diff( solution - exactSolution );
-    Scalar s = maxNorm( diff );
-    SCAI_LOG_INFO( logger,
-                   "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
-    typedef T ValueType;
-
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
-
-        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >();
-        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >();
-    }
-} 
-
-template<typename MatrixType>
-void testSolveWithoutPreconditionmethod( ContextPtr context )
-{
-    typedef typename MatrixType::MatrixValueType ValueType;
-
-        LoggerPtr slogger(
-        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
-    BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
-
-    const IndexType N1 = 40;
-    const IndexType N2 = 40;
-
-    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-
-
-    CSRSparseMatrix<ValueType> helpcoefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-
-    MatrixType coefficients( helpcoefficients );
-    SCAI_LOG_INFO( logger, "coefficient matrix = " << coefficients );
-
-    coefficients.setContextPtr( context );
-    SCAI_LOG_INFO( logger, "BiCGstabTest uses context = " << context->getType() );
-
-    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), 1.0 );
-
-    // Question: should be valid: rhs.getDistribution() == coefficients.getDistribution()
-
-    const DenseVector<ValueType> rhs( coefficients * exactSolution );
-
-    SCAI_LOG_INFO( logger, "rhs = " << rhs );
-
-    //initialize
-    IndexType expectedIterations = 300  ;
-    CriterionPtr criterion( new IterationCount( expectedIterations ) );
-    BiCGstabSolver.setStoppingCriterion( criterion );
-    BiCGstabSolver.initialize( coefficients );
+    solution = solutionInitValue;
 
     BiCGstabSolver.solve( solution, rhs );
 
-    BOOST_CHECK( expectedIterations >= BiCGstabSolver.getIterationCount() );
+    BOOST_CHECK( maxExpectedIterations == BiCGstabSolver.getIterationCount() );
 
-    DenseVector<ValueType> diff( solution - exactSolution );
-    Scalar s = maxNorm( diff );
-    SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-	BOOST_CHECK_SMALL( s.getValue<ValueType>(), common::TypeTraits<ValueType>::small() );
-}
+    diff = solution - exactSolution;
 
-/* --------------------------------------------------------------------- */
+    s               = maxNorm( diff );
+    realMaxNorm     = s.getValue<ValueType>();
+    expectedMaxNorm = 1E-4;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types ) {
+    SCAI_LOG_INFO( logger, "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << realMaxNorm );
 
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< COOSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< DenseMatrix<ValueType> >( context );
+    BOOST_CHECK( realMaxNorm < expectedMaxNorm );
 
-        // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DenseMatrix<T> >();
-        // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DIASparseMatrix<T> >();
-    }
-}
+    // TODO: Check that iteration count WITH preconditioner is lower than WITHOUT preconditioner
 
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, ValueType, test_types )
-{
-    const IndexType n = 3;
-    const IndexType numValues = 5;
-    IndexType ia[] = { 0, 2, 3, 5 };
-    IndexType ja[] = { 0, 2, 1, 1, 2 };
-    ValueType matrixValues[] = { 1.0, 2.0, 1.0, 2.0, 1.0 };
-    const utilskernel::LArray<IndexType> matrixIA( n + 1, ia );
-    const utilskernel::LArray<IndexType> matrixJA( numValues, ja );
-    const utilskernel::LArray<ValueType> mValues( numValues, matrixValues );
-    CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( n, n, numValues, matrixIA, matrixJA, mValues );
-    dmemo::DistributionPtr dist( new dmemo::NoDistribution( n ) );
-    CSRSparseMatrix<ValueType> matrix( *csrStorage, dist, dist );
-    ValueType vectorValues[] = { 0.3f, 0.7f, 3.1416f };
-    const utilskernel::LArray<ValueType> vValues ( n, vectorValues );
-    DenseVector<ValueType> rhs( n, 0.0 );
-    rhs.setValues( vValues );
-    ValueType vectorValues2[] = {  -3.183185307179586, 0.7, 1.741592653589793 };
-    const utilskernel::LArray<ValueType> vValues2( n, vectorValues2 );
-    DenseVector<ValueType> exactSolution( n, 0.0 );
-    exactSolution.setValues( vValues2 );
-    DenseVector<ValueType> solution( n, 0.0 );
-    //initialize
-    IndexType expectedIterations = 10;
-    CriterionPtr criterion( new IterationCount( expectedIterations ) );
-    BiCGstab bicgstabSolver( "BiCGstabTestSolver" );
-    bicgstabSolver.setStoppingCriterion( criterion );
-    bicgstabSolver.initialize( matrix );
-    bicgstabSolver.solve( solution, rhs );
-    BOOST_CHECK( expectedIterations >= bicgstabSolver.getIterationCount() );
-
-	SCAI_LOG_INFO( logger, "number of iterations " << bicgstabSolver.getIterationCount() );
-
-    DenseVector<ValueType> diff( solution - exactSolution );
-    Scalar s = maxNorm( diff );
-    SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-   // BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
-//	BOOST_CHECK_SMALL( s.getValue<ValueType>(), eps<ValueType>() );
-	BOOST_CHECK_SMALL( s.getValue<ValueType>(), ValueType(1e-4) );
 }
 
 /* --------------------------------------------------------------------- */

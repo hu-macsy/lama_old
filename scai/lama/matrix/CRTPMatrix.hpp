@@ -119,13 +119,13 @@ public:
         {
             // we inherit the row distribution of this matrix to result
 
-            result.allocate( getDistributionPtr() );
+            result.allocate( getRowDistributionPtr() );
 
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
         SCAI_ASSERT_EQ_ERROR( x.getDistribution(), getColDistribution(), "mismatch distribution" )
-        SCAI_ASSERT_EQ_ERROR( y.getDistribution(), getDistribution(), "mismatch distribution" )
+        SCAI_ASSERT_EQ_ERROR( y.getDistribution(), getRowDistribution(), "mismatch distribution" )
 
         const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
         const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
@@ -166,12 +166,12 @@ public:
         {
             // we inherit the row distribution of this matrix to result
 
-            result.allocate( getDistributionPtr() );
+            result.allocate( getRowDistributionPtr() );
 
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
-        SCAI_ASSERT_EQ_ERROR( x.getDistribution(), getDistribution(), "" )
+        SCAI_ASSERT_EQ_ERROR( x.getDistribution(), getRowDistribution(), "" )
         SCAI_ASSERT_EQ_ERROR( y.getDistribution(), getColDistribution(), "" )
 
         const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
@@ -231,7 +231,7 @@ public:
 
         // on a replicated matrix each processor can fill the row by its own
 
-        if ( getDistribution().isReplicated() )
+        if ( getRowDistribution().isReplicated() )
         {
             SCAI_LOG_INFO( logger, "get local row " << globalRowIndex )
             static_cast<const Derived*>( this )->getLocalRow( *typedRow, globalRowIndex );
@@ -240,11 +240,11 @@ public:
         {
             // on a distributed matrix, owner fills row and broadcasts it
 
-            const dmemo::Communicator& comm = getDistribution().getCommunicator();
+            const dmemo::Communicator& comm = getRowDistribution().getCommunicator();
 
             // owner fills the row
 
-            IndexType localRowIndex = getDistribution().global2local( globalRowIndex );
+            IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
     
             IndexType owner = 0;
     

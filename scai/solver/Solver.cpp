@@ -110,6 +110,8 @@ void Solver::solve( Vector& solution, const Vector& rhs )
 {
     SCAI_REGION( "Solver.solve" )
 
+    SCAI_ASSERT( getConstRuntime().mInitialized, "Solver not initialized, solve cannot be called" )
+
     if( getConstRuntime().mSolveInit )
     {
         SCAI_LOG_DEBUG( logger, "Previous initialization of 'solve'-process found! Will be overridden!" )
@@ -127,10 +129,10 @@ void Solver::solveInit( Vector& solution, const Vector& rhs )
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), runtime.mRhs->size(), "mismatch: #rows of matrix, rhs" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getDistribution(), runtime.mRhs->getDistribution(), "mismatch: matrix row dist, rhs dist" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
 
     runtime.mSolveInit = true;
 }

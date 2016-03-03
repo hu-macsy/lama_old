@@ -89,8 +89,8 @@ void testSolveWithPreconditionmethod()
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-    DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
+    DenseVector<ValueType> solution( coefficients.getRowDistributionPtr(), 1.0 );
+    const DenseVector<ValueType> exactSolution( coefficients.getRowDistributionPtr(), 2.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
     IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, test_types )
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
-    const DenseVector<ValueType> rhs( coefficients.getDistributionPtr(), 2.0 );
+    const DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 2.0 );
     gmresSolver.initialize( coefficients );
     gmresSolver.solve( solution, rhs );
     BOOST_CHECK_EQUAL( gmresSolver.getIterationCount(), 1 );

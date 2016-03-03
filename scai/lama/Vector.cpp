@@ -178,7 +178,7 @@ Vector& Vector::operator=( const Expression_MV& expression )
 
     // due to alias of result/vector2 resize already here
 
-    allocate( expression.getArg1().getDistributionPtr() );
+    allocate( expression.getArg1().getRowDistributionPtr() );
 
     return *this = tempExpression;
 }
@@ -237,7 +237,7 @@ Vector& Vector::operator=( const Expression_SMV& expression )
 
         const Matrix& matrix = expression.getArg2().getArg1();
 
-        DistributionPtr dist = matrix.getDistributionPtr();
+        DistributionPtr dist = matrix.getRowDistributionPtr();
 
         allocate( dist );
 

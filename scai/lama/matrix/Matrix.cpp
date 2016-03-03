@@ -630,7 +630,7 @@ Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistri
 
 MatrixCreateKeyType Matrix::getCreateValue() const
 {
-    return MatrixCreateKeyType( getFormatType(), getValueType() );
+    return MatrixCreateKeyType( getFormat(), getValueType() );
 }
 
 } /* end namespace lama */

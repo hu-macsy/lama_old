@@ -117,8 +117,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( testDefaultCriterionSet, ValueType, test_types )
     const IndexType N2 = 4;
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-    const DenseVector<ValueType> rhs( coefficients.getNumRows(), 1.0 );
-    DenseVector<ValueType> solution( coefficients.getNumRows(), 1.0 );
+    const DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
+    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
     DenseVector<ValueType> exactSolution( solution );
     amg.setMaxLevels( 2 );
     amg.initialize( coefficients );

@@ -101,16 +101,13 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     if( !runtime.mDiagonalTimesRhs.get() )
     {
-        runtime.mDiagonalTimesRhs.reset(
-            Vector::getDenseVector( coefficients.getValueType(), coefficients.getDistributionPtr() ) );
-
+        runtime.mDiagonalTimesRhs.reset( coefficients.newDenseVector() );
         SCAI_LOG_DEBUG( logger, "Created diagonalTimesRhs vector = " << *runtime.mDiagonalTimesRhs )
     }
 
     SCAI_LOG_DEBUG( logger, "Diagonal property of coefficients: " << coefficients.hasDiagonalProperty() )
 
     coefficients.getDiagonal( *runtime.mDiagonalTimesRhs );
-    runtime.mDiagonalTimesRhs->setContextPtr( coefficients.getContextPtr() );
     SCAI_LOG_DEBUG( logger, "Got diagonalTimesRhs = " << *runtime.mDiagonalTimesRhs )
     runtime.mDiagonalTimesRhs->invert();
     SCAI_LOG_DEBUG( logger, "Inverted diagonalTimesRhs = " << *runtime.mDiagonalTimesRhs )
@@ -127,7 +124,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     SCAI_LOG_DEBUG( logger, "Create diagonal matrix" )
     runtime.mDiagonalInverted.reset( coefficients.newMatrix() ); // zero matrix with same storage type
-    runtime.mDiagonalInverted->setIdentity( coefficients.getDistributionPtr() );
+    runtime.mDiagonalInverted->setIdentity( coefficients.getRowDistributionPtr() );
     SCAI_LOG_DEBUG( logger, "identity diagonal matrix = " << *runtime.mDiagonalInverted )
     runtime.mDiagonalInverted->inheritAttributes( coefficients );
 

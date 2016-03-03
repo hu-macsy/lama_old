@@ -98,42 +98,25 @@ void QMR::initialize( const Matrix& coefficients )
     QMRRuntime& runtime = getRuntime();
 
     runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
-    common::scalar::ScalarType type = coefficients.getValueType();
 
     runtime.mTransposeA.reset( coefficients.newMatrix() );
     runtime.mTransposeA->assignTranspose( coefficients );
     runtime.mTransposeA->conj();
 
-    runtime.mVecD.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecP.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecQ.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecS.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );    
-    runtime.mVecV.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecW.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecY.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );    /*preconditioning 1*/ 
-    runtime.mVecZ.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) ); 
-    runtime.mVecPT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecWT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecYT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecZT.reset( Vector::getDenseVector( type, coefficients.getDistributionPtr() ) );
-   
-
-    runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecQ->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecS->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecV->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecY->setContextPtr( coefficients.getContextPtr() );      /*preconditioning 1*/ 
-    runtime.mVecZ->setContextPtr( coefficients.getContextPtr() ); 
-    runtime.mVecVT->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecWT->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecYT->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecZT->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecPT->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecD.reset( coefficients.newDenseVector() );
+    runtime.mVecP.reset( coefficients.newDenseVector() );
+    runtime.mVecQ.reset( coefficients.newDenseVector() );
+    runtime.mVecS.reset( coefficients.newDenseVector() );
+    runtime.mVecV.reset( coefficients.newDenseVector() );
+    runtime.mVecW.reset( coefficients.newDenseVector() );
+    runtime.mVecY.reset( coefficients.newDenseVector() );  // preconditioning 1
+    runtime.mVecZ.reset( coefficients.newDenseVector() );
+    runtime.mVecPT.reset( coefficients.newDenseVector() );
+    runtime.mVecVT.reset( coefficients.newDenseVector() );
+    runtime.mVecWT.reset( coefficients.newDenseVector() );
+    runtime.mVecYT.reset( coefficients.newDenseVector() );
+    runtime.mVecZT.reset( coefficients.newDenseVector() );
 }
-
 
 void QMR::solveInit( Vector& solution, const Vector& rhs )
 {
@@ -142,30 +125,10 @@ void QMR::solveInit( Vector& solution, const Vector& rhs )
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
-    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
-    }
-
-    if ( runtime.mCoefficients->getNumColumns() != solution.size() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
-    }
-
-    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
-    }
-
-    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
-    }
-
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
 
     // Initialize
     this->getResidual();
