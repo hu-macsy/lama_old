@@ -1,3 +1,21 @@
+all: makeAll EXECUTABLE
+
+clean: makeAllClean
+
+DIRS = cuda \
+	   mic
+
+makeAll:
+	for dir in $(DIRS); do \
+		( if [ -d $$dir ]; then ( cd $$dir; make; ); fi ) \
+	done;
+
+makeAllClean:
+	for dir in $(DIRS); do \
+		( if [ -d $$dir ]; then ( cd $$dir; make clean; ); fi ) \
+	done;
+
+
 include make.inc
 
 INCLUDE_FLAGS = -I${SCAI_BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include

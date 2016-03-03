@@ -61,5 +61,9 @@ prepareExamplesMakeInc()
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
     
 #install examples
-install ( FILES ${EXAMPLE_FILES} ${HEADER} Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc
+install ( FILES ${EXAMPLE_FILES} ${HEADER} ${CMAKE_CURRENT_BINARY_DIR}/make.inc
           DESTINATION ${PROJECT_EXAMPLE_DIR}/spy )
+
+# install Makefile
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
+         "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/spy/Makefile" COPYONLY )

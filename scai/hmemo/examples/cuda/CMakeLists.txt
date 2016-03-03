@@ -41,18 +41,24 @@ foreach ( executable CUSparseExample CUBlasExample MemBandwidth Prefetch Allocat
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES_CUDA ${EXAMPLE_FILES_CUDA} ${executable}.cpp ) 
-    set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA} ${executable}.exe" )
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
 foreach ( executable Example1 Example2 Devices CUDABenchContext AliasProblem )
     cuda_add_executable( ${executable}.exe ${executable}.cu )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES_CUDA ${EXAMPLE_FILES_CUDA} ${executable}.cu )
-    set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA} ${executable}.exe" )
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
-## install examples
-install ( FILES ${EXAMPLE_FILES_CUDA} DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
-install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
+# configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
+prepareExamplesMakeInc()
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 
-set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA}" PARENT_SCOPE )
+## install examples
+install ( FILES ${EXAMPLE_FILES_CUDA} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
+
+# install Makefile
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
+				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/cuda/Makefile" COPYONLY )

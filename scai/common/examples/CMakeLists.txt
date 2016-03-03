@@ -48,6 +48,8 @@ target_link_libraries( Module ${PROJECT_NAME} )
 add_library( DummyModule SHARED DummyModule.cpp )
 set ( EXAMPLE_FILES ${EXAMPLE_FILES} DummyModule.cpp )
 
+set ( EXAMPLE_MODULES "Module.so DummyModule.so" ) # for make.inc
+
 foreach ( executable ExceptionDemo CriticalRegion Barrier 
           DemoFactory DemoFactory1 DemoPointer UseModule TimePrecision 
           DemoComplex DemoTypeTrait DemoSettings DemoMath DemoFunction BenchPointers )
@@ -57,6 +59,7 @@ foreach ( executable ExceptionDemo CriticalRegion Barrier
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
+# copy run_all.sh
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 # configure make.inc for examples
@@ -65,6 +68,12 @@ prepareExamplesMakeInc()
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 
 ## install examples
-install ( FILES ${EXAMPLE_FILES} DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
 install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
+
+message ( STATUS "CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}" )
+message ( STATUS "PROJECT_EXAMPLE_DIR ${PROJECT_EXAMPLE_DIR}" )
+
+# install Makefile
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in"
+				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/Makefile" COPYONLY )

@@ -48,5 +48,9 @@ configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${
 configure_file( GenMatrices.py GenMatrices.py COPYONLY )
 
 #install examples
-install ( FILES ${EXAMPLE_FILES} ${HEADER} Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc GenMatrices.py MultiBench.py README.txt
+install ( FILES ${EXAMPLE_FILES} ${HEADER} ${CMAKE_CURRENT_BINARY_DIR}/make.inc GenMatrices.py MultiBench.py README.txt
 		  DESTINATION ${PROJECT_EXAMPLE_DIR}/solver )
+
+# install Makefile
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
+				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/solver/Makefile" COPYONLY )
