@@ -71,24 +71,24 @@ template<typename ValueType> class CSRStorage;
  *
  *  Note: operator<< is implemented for this type and should be adapted in case of modifications.
  */
-namespace Format
+struct Format
 {
 
 typedef enum
 {
-    DENSE, //!< Dense, all elements are stored
-    CSR, //!< Compressed Sparse Row
-    ELL, //!< ELLPack
-    DIA, //!< Diagonal
-    JDS, //!< Jagged Diagonal Storage
-    COO, //!< Coordinate list
+    DENSE,    //!< Dense, all elements are stored
+    CSR,      //!< Compressed Sparse Row
+    ELL,      //!< ELLPack
+    DIA,      //!< Diagonal
+    JDS,      //!< Jagged Diagonal Storage
+    COO,      //!< Coordinate list
     ASSEMBLY, //!<  Matrix storage used for assembling of values
     UNDEFINED //!<  Default value
 } MatrixStorageFormat;
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat& storageFormat );
+}; /* end struct Format */
 
-} /* end namespace Format */
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageFormat& storageFormat );
 
 COMMON_DLL_IMPORTEXPORT const char* format2Str( const Format::MatrixStorageFormat storageFormat );
 
