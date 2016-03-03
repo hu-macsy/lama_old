@@ -918,7 +918,8 @@ void CUDADIAUtils::normalGEVM(
 void CUDADIAUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
+
+    common::context::ContextType ctx = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
@@ -930,8 +931,8 @@ void CUDADIAUtils::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
 #define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                  \
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, CUDA, flag ); \
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, CUDA, flag ); \
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx, flag ); \
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx, flag ); \
      
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
 

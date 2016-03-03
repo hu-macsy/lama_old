@@ -33,7 +33,7 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
-    CommunicatorPtr comm( Communicator::getCommunicator() );
+    CommunicatorPtr comm( Communicator::getCommunicatorPtr() );
     DistributionPtr dist( new BlockDistribution( size, comm ) );
     m.redistribute( dist, dist );
 

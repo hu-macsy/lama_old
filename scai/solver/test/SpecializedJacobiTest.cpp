@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 {
     typedef double ValueType;
     ContextPtr context = Context::getContextPtr();
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     SpecializedJacobi sjacobi( "TestJacobi" );
     const IndexType N1 = 4;
@@ -182,7 +182,7 @@ template<typename MatrixType>
 void testSolveMethod( std::string solverId, ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     std::string id = solverId;
     LoggerPtr slogger(

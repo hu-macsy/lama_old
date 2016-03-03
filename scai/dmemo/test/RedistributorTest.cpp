@@ -51,7 +51,7 @@ struct RedistributorTestConfig
 {
     RedistributorTestConfig()
     {
-        comm = Communicator::getCommunicator();
+        comm = Communicator::getCommunicatorPtr();
     }
 
     ~RedistributorTestConfig()

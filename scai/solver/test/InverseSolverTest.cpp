@@ -75,7 +75,7 @@ template<typename MatrixType>
 void testSolveMethod( ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
 

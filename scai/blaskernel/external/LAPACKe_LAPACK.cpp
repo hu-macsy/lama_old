@@ -215,7 +215,8 @@ int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 
 void LAPACKe_LAPACK::registerKernels(bool deleteFlag) {
 	using kregistry::KernelRegistry;
-	using common::context::Host;
+
+    const common::context::ContextType Host = common::context::Host;
 
 	KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE; // priority over OpenMPBLAS
 

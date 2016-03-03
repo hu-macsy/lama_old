@@ -338,7 +338,8 @@ void BLAS_BLAS1::registerKernels( bool deleteFlag )
     // REGISTER1: give these routines priority in case of overriding
 
     using kregistry::KernelRegistry;
-    using common::context::Host;
+
+    const common::context::ContextType Host = common::context::Host;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
 

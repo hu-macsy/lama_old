@@ -409,7 +409,8 @@ void OpenMPDenseUtils::scaleRows(
 void OpenMPDenseUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
-    using common::context::Host;
+
+    common::context::ContextType Host = common::context::Host;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 

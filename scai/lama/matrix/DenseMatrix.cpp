@@ -575,7 +575,7 @@ bool DenseMatrix<ValueType>::hasScalaPack()
 
     typename blaskernel::BLASKernelTrait::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
 
     return inverse != NULL;
 

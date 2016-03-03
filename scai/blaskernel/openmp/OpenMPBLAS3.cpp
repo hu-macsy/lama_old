@@ -362,7 +362,8 @@ void OpenMPBLAS3::gemm(
 void OpenMPBLAS3::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
-    using common::context::Host;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
 
@@ -373,8 +374,8 @@ void OpenMPBLAS3::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                           \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, Host, flag ); \
+#define LAMA_BLAS3_REGISTER(z, I, _)                                                          \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx, flag ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 

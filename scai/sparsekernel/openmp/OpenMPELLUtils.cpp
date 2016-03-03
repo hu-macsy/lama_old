@@ -1234,7 +1234,8 @@ void OpenMPELLUtils::sparseGEVM(
 void OpenMPELLUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
-    using common::context::Host;      // context for registration
+
+    common::context::ContextType Host = common::context::Host;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 

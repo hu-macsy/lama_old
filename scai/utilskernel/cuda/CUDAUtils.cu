@@ -693,7 +693,8 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 void CUDAUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
@@ -704,37 +705,37 @@ void CUDAUtils::registerKernels( bool deleteFlag )
 
     SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
 
-    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<IndexType> >( absMaxDiffVal, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<IndexType> >( absMaxDiffVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, ctx, flag );
 
-#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScale, CUDA, flag );     \
-    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setGather, CUDA, flag );   \
-    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScatter, CUDA, flag ); \
-    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, CUDA, flag );               \
+#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                       \
+    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScale, ctx, flag );     \
+    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setGather, ctx, flag );   \
+    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScatter, ctx, flag ); \
+    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, ctx, flag );               \
      
-#define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
-    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_CUDA_TYPE_##I> >( reduce, CUDA, flag );               \
-    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_CUDA_TYPE_##I> >( setVal, CUDA, flag );               \
-    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_CUDA_TYPE_##I> >( setOrder, CUDA, flag );           \
-    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, CUDA, flag );           \
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxDiffVal, CUDA, flag ); \
-    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_CUDA_TYPE_##I> >( isSorted, CUDA, flag );           \
-    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_CUDA_TYPE_##I> >( invert, CUDA, flag );               \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                                   \
-                     LAMA_UTILS2_REGISTER,                                                                       \
-                     ARITHMETIC_CUDA_TYPE_##I )                                                                  \
+#define LAMA_UTILS_REGISTER(z, I, _)                                                                            \
+    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_CUDA_TYPE_##I> >( reduce, ctx, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_CUDA_TYPE_##I> >( setVal, ctx, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_CUDA_TYPE_##I> >( setOrder, ctx, flag );           \
+    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, ctx, flag );           \
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxDiffVal, ctx, flag ); \
+    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_CUDA_TYPE_##I> >( isSorted, ctx, flag );           \
+    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_CUDA_TYPE_##I> >( invert, ctx, flag );               \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                                  \
+                     LAMA_UTILS2_REGISTER,                                                                      \
+                     ARITHMETIC_CUDA_TYPE_##I )                                                                 \
      
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
 

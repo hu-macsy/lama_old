@@ -430,7 +430,8 @@ void CUSparseCSRUtils::registerKernels( bool deleteFlag )
     // REGISTER1: overwrites previous settings
 
     using kregistry::KernelRegistry;
-    using common::context::CUDA;
+
+    common::context::ContextType CUDA = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
 

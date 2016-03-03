@@ -288,7 +288,8 @@ void OpenMPBLAS2::gemv(
 void OpenMPBLAS2::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
-    using common::context::Host;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
 
@@ -300,7 +301,7 @@ void OpenMPBLAS2::registerKernels( bool deleteFlag )
     }
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                          \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, Host, flag ); \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx, flag ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 

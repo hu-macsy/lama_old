@@ -74,7 +74,7 @@ struct P_CGTestConfig
 {
     P_CGTestConfig()
     {
-        comm = Communicator::getCommunicator();
+        comm = Communicator::getCommunicatorPtr();
     }
 
     ~P_CGTestConfig()

@@ -73,7 +73,7 @@ typedef boost::mpl::list<float, double> test_types;
 
 BOOST_AUTO_TEST_CASE( basicTest )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( basicTest )
 
 BOOST_AUTO_TEST_CASE( computeOwnersTest )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
 BOOST_AUTO_TEST_CASE( allocatePlanTest )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
 
 BOOST_AUTO_TEST_CASE( bcastStringTest )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE( bcastStringTest )
 
 BOOST_AUTO_TEST_CASE( buildHaloTest )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -457,7 +457,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -539,7 +539,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -582,7 +582,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -626,7 +626,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -684,7 +684,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -730,7 +730,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 
@@ -796,7 +796,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     BOOST_REQUIRE( comm );
 

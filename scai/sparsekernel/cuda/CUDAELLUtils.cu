@@ -2231,7 +2231,7 @@ void CUDAELLUtils::registerKernels( bool deleteFlag )
 
     using kregistry::KernelRegistry;
 
-    using common::context::CUDA;
+    common::context::ContextType ctx = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
@@ -2240,30 +2240,30 @@ void CUDAELLUtils::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::check>( check, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
 
-#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                                                       \
-    KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, CUDA, flag );             \
-    KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, CUDA, flag );     \
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, CUDA, flag ); \
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, CUDA, flag ); \
+#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                                                      \
+    KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx, flag );             \
+    KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx, flag );     \
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx, flag ); \
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx, flag ); \
      
-#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                                        \
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, CUDA, flag );               \
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, CUDA, flag );       \
-    KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, CUDA, flag );           \
-    KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, CUDA, flag ); \
-                                                                                                                \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                                  \
-                     LAMA_ELL_UTILS2_REGISTER,                                                                  \
-                     ARITHMETIC_CUDA_TYPE_##I )                                                                 \
+#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                                       \
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx, flag );       \
+    KernelRegistry::set<ELLKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx, flag );       \
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, ctx, flag );       \
+    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, ctx, flag );       \
+    KernelRegistry::set<ELLKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx, flag );               \
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx, flag );       \
+    KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx, flag );           \
+    KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, ctx, flag ); \
+                                                                                                               \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                                 \
+                     LAMA_ELL_UTILS2_REGISTER,                                                                 \
+                     ARITHMETIC_CUDA_TYPE_##I )                                                                \
      
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
 

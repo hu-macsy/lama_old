@@ -78,7 +78,7 @@ struct P_SpecializedJacobiTestConfig
             new CommonLogger( "<Jacobi>: ", LogLevel::completeInformation, LoggerWriteBehaviour::toConsoleOnly ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
-        comm = Communicator::getCommunicator();
+        comm = Communicator::getCommunicatorPtr();
     }
 
     ~P_SpecializedJacobiTestConfig()

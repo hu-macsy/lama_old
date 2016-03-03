@@ -47,7 +47,7 @@ struct GenBlockDistributionTestConfig
 {
     GenBlockDistributionTestConfig()
     {
-        comm = Communicator::getCommunicator();
+        comm = Communicator::getCommunicatorPtr();
         size = comm->getSize();
         rank = comm->getRank();
         globalSize = size * ( size + 1 );
