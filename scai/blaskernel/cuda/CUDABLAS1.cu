@@ -518,7 +518,7 @@ void CUDABLAS1::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
 
-    const common::context::ContextType CUDA = common::context::CUDA;
+    const common::context::ContextType ctx = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
@@ -531,16 +531,16 @@ void CUDABLAS1::registerKernels( bool deleteFlag )
 
     // register for one CUDA type: ARITHMETIC_CUDA_TYPE_xxx
 
-#define LAMA_BLAS1_REGISTER(z, I, _)                                                              \
-    KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_CUDA_TYPE_##I> >( scal, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_CUDA_TYPE_##I> >( nrm2, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_CUDA_TYPE_##I> >( asum, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_CUDA_TYPE_##I> >( iamax, CUDA, flag );  \
-    KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_CUDA_TYPE_##I> >( swap, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_CUDA_TYPE_##I> >( copy, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_CUDA_TYPE_##I> >( axpy, CUDA, flag );    \
-    KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_CUDA_TYPE_##I> >( dot, CUDA, flag );      \
-    KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, CUDA, flag );      \
+#define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
+    KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_CUDA_TYPE_##I> >( scal, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_CUDA_TYPE_##I> >( nrm2, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_CUDA_TYPE_##I> >( asum, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_CUDA_TYPE_##I> >( iamax, ctx, flag );  \
+    KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_CUDA_TYPE_##I> >( swap, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_CUDA_TYPE_##I> >( copy, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_CUDA_TYPE_##I> >( axpy, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_CUDA_TYPE_##I> >( dot, ctx, flag );      \
+    KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, ctx, flag );      \
 
     // loop over all supported CUDA types
 

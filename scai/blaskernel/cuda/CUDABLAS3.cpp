@@ -411,7 +411,7 @@ void CUDABLAS3::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
 
-    const common::context::ContextType CUDA = common::context::CUDA;
+    const common::context::ContextType ctx = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
@@ -423,7 +423,7 @@ void CUDABLAS3::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry" )
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                                            \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, CUDA, flag );  \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, ctx, flag );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 

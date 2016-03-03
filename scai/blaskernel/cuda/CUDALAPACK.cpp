@@ -107,7 +107,7 @@ void CUDALAPACK::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
 
-    const common::context::ContextType CUDA = common::context::CUDA;
+    const common::context::ContextType ctx = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
@@ -117,7 +117,7 @@ void CUDALAPACK::registerKernels( bool deleteFlag )
     }
 
 #define CUDA_LAPACK_REGISTER(z, I, _)                                                             \
-    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_CUDA_TYPE_##I> >( laswp, CUDA, flag );  \
+    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_CUDA_TYPE_##I> >( laswp, ctx, flag );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, CUDA_LAPACK_REGISTER, _ )
 

@@ -156,7 +156,7 @@ void CUDABLAS2::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
 
-    const common::context::ContextType CUDA = common::context::CUDA;
+    const common::context::ContextType ctx = common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
@@ -170,7 +170,7 @@ void CUDABLAS2::registerKernels( bool deleteFlag )
     // register for one CUDA type: ARITHMETIC_CUDA_TYPE_xxx
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                            \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, CUDA, flag );  \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, ctx, flag );   \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
