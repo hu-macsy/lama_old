@@ -80,11 +80,12 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
     const IndexType N2 = 4;
 
     CSRSparseMatrix<ValueType> coefficients;
+
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N1, N2 );
 
-    const DenseVector<ValueType> rhs( coefficients.getLocalNumRows(), 1.0 );
+    const DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
 
-    DenseVector<ValueType> solution( rhs );
+    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
 
     TFQMRSolver.initialize( coefficients );   // Not WORKING
 

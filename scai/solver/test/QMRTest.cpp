@@ -52,7 +52,7 @@
 
 #include <scai/lama/norm/MaxNorm.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
- 
+
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -115,12 +115,12 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N1, N2 );
 
-    const DenseVector<ValueType> rhs( coefficients.getLocalNumRows(), 1.0 );
+    // Be careful: coefficients is a distributed matrix
 
-    DenseVector<ValueType> solution( rhs );
+    const DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
+    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
 
-    QMRSolver.initialize( coefficients );   // Not WORKING
-
+    QMRSolver.initialize( coefficients );
     QMRSolver.solve( solution, rhs );
 
     BOOST_CHECK_EQUAL( QMRSolver.getIterationCount(), 1 );
@@ -133,7 +133,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
     LoggerPtr slogger(
-        new CommonLogger( "<QMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly) );
+        new CommonLogger( "<QMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
     QMR QMRSolver( "QMRTestSolver", slogger );
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -145,17 +145,19 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
     coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "QMRTest uses context = " << context->getType() );
+
     DenseVector<ValueType> solution( coefficients.getRowDistributionPtr(), 1.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getRowDistributionPtr(), 2.0 );
+    const DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), 2.0 );
+
     DenseVector<ValueType> rhs( coefficients * exactSolution );
     IndexType expectedIterations = 5;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     QMRSolver.setStoppingCriterion( criterion );
- 
+
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     //preconditioner->initialize(coefficients);
-    QMRSolver.setPreconditioner( preconditioner );
-    
+    //QMRSolver.setPreconditioner( preconditioner );
+
     QMRSolver.initialize( coefficients );
     QMRSolver.solve( solution, rhs );
     BOOST_CHECK_EQUAL( expectedIterations, QMRSolver.getIterationCount() );
@@ -166,30 +168,27 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types )
+{
+
     typedef T ValueType;
 
-    CONTEXTLOOP() 
-    {
-        GETCONTEXT( context );
-        testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
+    ContextPtr context = Context::getContextPtr();
 
-        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >();
-        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >();
-    }
-} 
+    testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
+}
 
 template<typename MatrixType>
 void testSolveWithoutPreconditionmethod( ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
 
-        LoggerPtr slogger(
+    LoggerPtr slogger(
         new CommonLogger( "<QMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     QMR QMRSolver( "QMRTestSolver", slogger );
@@ -226,26 +225,22 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-	BOOST_CHECK_SMALL( s.getValue<ValueType>(), common::TypeTraits<ValueType>::small() );
+    BOOST_CHECK_SMALL( s.getValue<ValueType>(), common::TypeTraits<ValueType>::small() );
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
+{
 
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< COOSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< DenseMatrix<ValueType> >( context );
+    ContextPtr context = Context::getContextPtr();
 
-        // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DenseMatrix<T> >();
-        // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DIASparseMatrix<T> >();
-    }
+    testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionmethod< COOSparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionmethod< DIASparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionmethod< DenseMatrix<ValueType> >( context );
 }
 
 /* --------------------------------------------------------------------- */
@@ -281,14 +276,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, ValueType, test_types )
     QMRSolver.solve( solution, rhs );
     BOOST_CHECK( expectedIterations >= QMRSolver.getIterationCount() );
 
-	SCAI_LOG_INFO( logger, "number of iterations " << QMRSolver.getIterationCount() );
+    SCAI_LOG_INFO( logger, "number of iterations " << QMRSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-   // BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
-//	BOOST_CHECK_SMALL( s.getValue<ValueType>(), eps<ValueType>() );
-	BOOST_CHECK_SMALL( s.getValue<ValueType>(), ValueType(1e-4) );
+    // BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
+//  BOOST_CHECK_SMALL( s.getValue<ValueType>(), eps<ValueType>() );
+    BOOST_CHECK_SMALL( s.getValue<ValueType>(), ValueType( 1e-4 ) );
 }
 
 /* --------------------------------------------------------------------- */
