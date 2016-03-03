@@ -32,11 +32,11 @@
 ###
 
 
-if ( METIS_FOUND OR PARMETIS_FOUND )
+if    ( USE_GRAPHPARTIONING AND ( METIS_FOUND OR PARMETIS_FOUND ) )
     set ( MetisDistributionTest MetisDistributionTest )
-else( METIS_FOUND OR PARMETIS_FOUND )
+else  ( USE_GRAPHPARTIONING AND ( METIS_FOUND OR PARMETIS_FOUND ) )
     set ( MetisDistributionTest )
-endif ( METIS_FOUND OR PARMETIS_FOUND )
+endif ( USE_GRAPHPARTIONING AND ( METIS_FOUND OR PARMETIS_FOUND ) )
 
 ### set this dir as lama source dir ###
 
