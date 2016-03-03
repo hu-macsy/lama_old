@@ -92,7 +92,7 @@ set ( OPENMP_ARGS "" )
 set ( SCAI_BLAS_ARGS "" )
 
 get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
-#message ( STATUS "all CACHE_VARS ${CACHE_VARS}")
+message ( STATUS "all CACHE_VARS ${CACHE_VARS}")
 
 # always NOTFOUND ?!
 #get_cmake_property ( DEFINITION_VARS COMPILE_DEFINITIONS )
@@ -106,7 +106,7 @@ foreach    ( CACHE_VAR ${CACHE_VARS} )
 	check_whitelist ( CACHE_VAR "${BOOST_WHITELIST}" "BOOST_ARGS" )
 	check_whitelist ( CACHE_VAR "${CUDA_WHITELIST}" "CUDA_ARGS" )
 	check_whitelist ( CACHE_VAR "${GPI2_WHITELIST}" "GPI2_ARGS" )
-	check_whitelist ( CACHE_VAR "${GRAPHPARTIONING_WHITELIST}" "GRAPHPARTIONING_ARGS" )
+	check_whitelist ( CACHE_VAR "${GRAPHPARTITIONING_WHITELIST}" "GRAPHPARTITIONING_ARGS" )
 	check_whitelist ( CACHE_VAR "${MIC_WHITELIST}" "MIC_ARGS" )    
 	check_whitelist ( CACHE_VAR "${MPI_WHITELIST}" "MPI_ARGS" )
 	check_whitelist ( CACHE_VAR "${OPENMP_WHITELIST}" "OPENMP_ARGS" )
@@ -120,7 +120,7 @@ endforeach ( CACHE_VAR ${CACHE_VARS} )
 #message ( STATUS "Passed BOOST_ARGS ${BOOST_ARGS}" )
 #message ( STATUS "Passed CUDA_ARGS ${CUDA_ARGS}" )
 #message ( STATUS "Passed GPI2_ARGS ${GPI_ARGS}" )
-#message ( STATUS "Passed GRAPHPARTIONING_ARGS ${GRAPHPARTIONING_ARGS}" )
+#message ( STATUS "Passed GRAPHPARTIONING_ARGS ${GRAPHPARTITIONING_ARGS}" )
 #message ( STATUS "Passed MIC_ARGS ${MIC_ARGS}" )
 #message ( STATUS "Passed MPI_ARGS ${MPI_ARGS}" )
 #message ( STATUS "Passed OPENMP_ARGS ${OPENMP_ARGS}" )
@@ -249,7 +249,7 @@ ExternalProject_Add ( scai_sparsekernel
             )
 
 concatCacheArguments ( scai_dmemo "CACHE_ARGS" )
-#message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
+message ( STATUS "dmemo CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_dmemo
             DEPENDS ${SCAI_DMEMO_INTERNAL_DEPS}
