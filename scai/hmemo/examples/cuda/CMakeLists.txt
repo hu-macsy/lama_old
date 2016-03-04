@@ -35,19 +35,23 @@
 #   - include_directories are taken over from project
 #
 
+#empty EXAMPLE_FILES and EXAMPLE_EXECUTES in subdir
+set ( EXAMPLE_FILES "" )
+set ( EXAMPLE_EXECUTABLES "" )
+
 string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
 
 foreach ( executable CUSparseExample CUBlasExample MemBandwidth Prefetch Allocate )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES_CUDA ${EXAMPLE_FILES_CUDA} ${executable}.cpp ) 
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
 foreach ( executable Example1 Example2 Devices CUDABenchContext AliasProblem )
     cuda_add_executable( ${executable}.exe ${executable}.cu )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES_CUDA ${EXAMPLE_FILES_CUDA} ${executable}.cu )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cu )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
@@ -57,7 +61,7 @@ prepareExamplesMakeInc()
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 
 ## install examples
-install ( FILES ${EXAMPLE_FILES_CUDA} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
+install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
 
 # install Makefile
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
