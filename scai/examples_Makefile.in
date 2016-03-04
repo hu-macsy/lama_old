@@ -10,13 +10,14 @@ endif
 
 INCLUDE_FLAGS = -I${SCAI_ROOT}/include ${BOOST_INCLUDE} ${CUDA_INCLUDE}
 
-LD_FLAGS = ${SCAI_LD_FLAGS} -Wl,-rpath=${SCAI_ROOT}/lib 
+LD_FLAGS = ${SCAI_LD_FLAGS} -Wl,-rpath=${SCAI_ROOT}/lib:${SCAI_CUDA_LIBRARY_PATH}
 
 EXECUTABLE: ${EXECUTABLES} ${MODULES}
 
 .SUFFIXES:
 
 .SUFFIXES: .cpp .o
+.SUFFIXES: .cu .o
 .SUFFIXES: .o .exe
 .SUFFIXES: .o .so
 
@@ -28,6 +29,9 @@ EXECUTABLE: ${EXECUTABLES} ${MODULES}
 
 .cpp.o:
 	${CXX} -fPIC ${CXX_FLAGS} ${SCAI_DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
+
+.cu.o:
+	${CXX_CUDA} ${CXX_CUDA_FLAGS} ${SCAI_DEFINES} ${INCLUDE_FLAGS} -c $*.cu
 
 clean:
 	rm -rf *.exe *.o *.so *.frm *.frv *.amg *.vec *.trace *.ct *.time
