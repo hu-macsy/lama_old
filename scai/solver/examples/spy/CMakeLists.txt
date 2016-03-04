@@ -55,6 +55,8 @@ endif ()
 
 mark_as_advanced( PNG_LIBRARY PNG_INCLUDE_DIR )
 
+set ( ADDITIONAL_EXAMPLE_LINK_LIBRARIES png )
+
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )
 prepareExamplesMakeInc()
