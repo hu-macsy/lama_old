@@ -48,11 +48,11 @@ endforeach ( executable )
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )
 prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 
 ## install examples
 install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/mic )
 
 # install Makefile
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in"
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
 				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/mic/Makefile" COPYONLY )
