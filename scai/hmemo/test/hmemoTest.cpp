@@ -22,7 +22,8 @@
 
 // one time registration of MockContext required via guard variable
 
-scai::hmemo::Context::Register<MockContext>::RegisterGuard scai::hmemo::Context::Register<MockContext>::registerGuard;
+template scai::hmemo::Context::Register<MockContext>::RegisterGuard 
+    scai::hmemo::Context::Register<MockContext>::registerGuard;
 
 /** The init function returns true if it can get the specified context. */
 
