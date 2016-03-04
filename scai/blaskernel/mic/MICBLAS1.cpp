@@ -551,7 +551,8 @@ void MICBLAS1::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "register BLAS1 kernels for MIC in Kernel Registry" )
 
     using kregistry::KernelRegistry;
-    using common::context::MIC;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
@@ -561,15 +562,15 @@ void MICBLAS1::registerKernels( bool deleteFlag )
     }
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
-        KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_MIC_TYPE_##I> >( scal, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_MIC_TYPE_##I> >( nrm2, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_MIC_TYPE_##I> >( asum, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_MIC_TYPE_##I> >( iamax, MIC, flag );  \
-        KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_MIC_TYPE_##I> >( swap, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_MIC_TYPE_##I> >( copy, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_MIC_TYPE_##I> >( axpy, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_MIC_TYPE_##I> >( dot, MIC, flag );      \
-    	KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_MIC_TYPE_##I> >( sum, MIC, flag );
+        KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_MIC_TYPE_##I> >( scal, ctx, flag );    \
+        KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_MIC_TYPE_##I> >( nrm2, ctx, flag );    \
+        KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_MIC_TYPE_##I> >( asum, ctx, flag );    \
+        KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_MIC_TYPE_##I> >( iamax, ctx, flag );  \
+        KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_MIC_TYPE_##I> >( swap, ctx, flag );    \
+        KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_MIC_TYPE_##I> >( copy, ctx, flag );    \
+        KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_MIC_TYPE_##I> >( axpy, ctx, flag );    \
+        KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_MIC_TYPE_##I> >( dot, ctx, flag );      \
+    	KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_MIC_TYPE_##I> >( sum, ctx, flag );
 
         BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 

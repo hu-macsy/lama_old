@@ -181,7 +181,8 @@ void MICBLAS2::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "register BLAS2 kernels for MIC in Kernel Registry" )
 
     using kregistry::KernelRegistry;
-    using common::context::MIC;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
@@ -191,7 +192,7 @@ void MICBLAS2::registerKernels( bool deleteFlag )
     }
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                        \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_MIC_TYPE_##I> >( gemv, MIC, flag ); \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_MIC_TYPE_##I> >( gemv, ctx, flag ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 

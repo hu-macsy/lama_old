@@ -42,6 +42,7 @@
 
 // std
 #include <map>
+#include <cctype>
 
 namespace scai
 {
@@ -169,7 +170,7 @@ ContextPtr Context::getContextPtr()
 
         for ( std::string::iterator p = ctx_string.begin(); ctx_string.end() != p; ++p )
         {
-            *p = toupper( *p );
+            *p = static_cast<std::string::value_type>( toupper( *p ) );
         }
 
         if ( ctx_string == "CUDA" )

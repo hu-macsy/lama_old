@@ -934,7 +934,9 @@ void MICJDSUtils::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "register JDS kernels for MIC in Kernel Registry" )
 
     using kregistry::KernelRegistry;
-    using common::context::MIC;        // context for which kernels will be added
+
+    // context for which kernels will be added
+    const common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
@@ -943,44 +945,44 @@ void MICJDSUtils::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::scaleValue<float, float> >( scaleValue, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<float, double> >( scaleValue, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<double, float> >( scaleValue, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<double, double> >( scaleValue, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<float, float> >( scaleValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<float, double> >( scaleValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<double, float> >( scaleValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<double, double> >( scaleValue, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::getRow<float, float> >( getRow, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getRow<float, double> >( getRow, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getRow<double, float> >( getRow, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getRow<double, double> >( getRow, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<float, float> >( getRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<float, double> >( getRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<double, float> >( getRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<double, double> >( getRow, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::getValue<float> >( getValue, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getValue<double> >( getValue, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getValue<float> >( getValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValue<double> >( getValue, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, float> >( setCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, double> >( setCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, float> >( setCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, double> >( setCSRValues, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, float> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, double> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, float> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, double> >( setCSRValues, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, float> >( getCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, double> >( getCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, float> >( getCSRValues, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, double> >( getCSRValues, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, float> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, double> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, float> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, double> >( getCSRValues, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<float> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<double> >( normalGEMV, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::jacobi<float> >( jacobi, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::jacobi<double> >( jacobi, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobi<float> >( jacobi, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobi<double> >( jacobi, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC, flag );
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<float> >( jacobiHalo, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<double> >( jacobiHalo, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

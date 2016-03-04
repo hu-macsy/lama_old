@@ -520,7 +520,8 @@ void MICCOOUtils::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "register COO kernels for MIC in Kernel Registry" )
 
     using kregistry::KernelRegistry;
-    using common::context::MIC;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
@@ -529,29 +530,29 @@ void MICCOOUtils::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, MIC, flag );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
 
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, MIC, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );
 
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, MIC, flag );
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx, flag );
 
     // ToDo: routine does not work yet
 
-    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, float> >( getCSRValuesS, MIC, flag );
-    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, double> >( getCSRValuesS, MIC, flag );
-    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, float> >( getCSRValuesS, MIC, flag );
-    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, double> >( getCSRValuesS, MIC, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, float> >( getCSRValuesS, ctx, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, double> >( getCSRValuesS, ctx, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, float> >( getCSRValuesS, ctx, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, double> >( getCSRValuesS, ctx, flag );
 
     // ToDo: jacobi does not work yet
 
-    // KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, MIC, flag );
-    // KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, MIC, flag );
+    // KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, ctx, flag );
+    // KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, ctx, flag );
 
 #define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, MIC, flag );     \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx, flag );     \
 
 #define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, MIC, flag );  \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx, flag );  \
                                                                                                            \
     BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT,                                                             \
                      LAMA_COO_UTILS2_REGISTER,                                                             \
