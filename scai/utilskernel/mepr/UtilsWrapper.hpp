@@ -38,6 +38,7 @@ template<typename ValueType> struct UtilsWrapperT<ValueType,common::mepr::NullTy
     static void setImpl( hmemo::HArray<ValueType>&, const hmemo::_HArray&, const common::reduction::ReductionOp, const hmemo::ContextPtr ){}
     static void gatherImpl( hmemo::HArray<ValueType>&, const hmemo::_HArray&, const hmemo::HArray<IndexType>& ){}
     static void setScalarImpl( hmemo::_HArray&, const ValueType, const common::reduction::ReductionOp, const hmemo::ContextPtr ){}
+    static void setValImpl( hmemo::_HArray&, const IndexType, const ValueType ){}
 };
 
 template<> struct UtilsWrapper<common::mepr::NullType>
@@ -86,6 +87,18 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H,T> >
         else
         {
             UtilsWrapperT< ValueType, T >::setScalarImpl( target, value, op, ctx );
+        }
+    }
+
+    static void setValImpl( hmemo::_HArray& target, const IndexType index, const ValueType val )
+    {
+        if( common::getScalarType<H>() ==  target.getValueType() )
+        {
+            HArrayUtils::setValImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), index, val );
+        }
+        else
+        {
+            UtilsWrapperT< ValueType, T >::setValImpl( target, index, val );
         }
     }
 };

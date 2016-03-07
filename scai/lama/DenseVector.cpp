@@ -658,7 +658,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 
     // get function pointers, do not use fallbacks here
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
     static LAMAKernel<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
     static LAMAKernel<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
 

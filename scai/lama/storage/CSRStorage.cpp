@@ -272,7 +272,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
     mNumValues = mNumRows;
 
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
     {
         ContextPtr loc = setOrder.getValidContext( this->getContextPtr() );
@@ -985,7 +985,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
         nrow = getValue[loc]( ia.get(), i + 1 ) - n1;
     }
 
-    static LAMAKernel<UtilKernelTrait::setVal<OtherType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<OtherType, OtherType> > setVal;
     static LAMAKernel<UtilKernelTrait::setScatter<OtherType, ValueType> > setScatter;
 
     /// ContextPtr loc = Context::getHostPtr();
