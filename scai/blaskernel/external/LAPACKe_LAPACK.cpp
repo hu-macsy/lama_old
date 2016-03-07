@@ -213,7 +213,6 @@ int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-<<<<<<< HEAD
 template<typename ValueType>
 void LAPACKe_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
