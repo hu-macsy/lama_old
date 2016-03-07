@@ -42,6 +42,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Constants.hpp>
+#include <scai/common/Complex.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/OpenMP.hpp>
@@ -269,23 +270,26 @@ ValueType OpenMPUtils::reduce( const ValueType array[], const IndexType n, const
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
+template<typename ValueType, typename OtherValueType>
+void OpenMPUtils::setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op )
 {
     SCAI_REGION( "OpenMP.Utils.setVal" )
 
     SCAI_LOG_DEBUG( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = "
                             << val << ", op = " << op )
 
+    ValueType value = static_cast<ValueType>( val );
     switch ( op )
     {
         case common::reduction::COPY :
         {
-            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-            for ( IndexType i = 0; i < n; i++ )
+            #pragma omp parallel
             {
-                array[i] = val;
+                #pragma omp for schedule(SCAI_OMP_SCHEDULE)
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    array[i] = value;
+                }
             }
             break;
         }
@@ -297,10 +301,9 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             }
 
             #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
             for ( IndexType i = 0; i < n; i++ )
             {
-                array[i] += val;
+                array[i] += value;
             }
             break;
         }
@@ -322,7 +325,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
     
                 for ( IndexType i = 0; i < n; i++ )
                 {
-                    array[i] *= val;
+                    array[i] *= value;
                 }
             }
             break;
@@ -624,7 +627,6 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, Host, flag );
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, Host, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, Host, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, Host, flag );
@@ -645,6 +647,7 @@ void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
 
     // we keep the registrations for IndexType as we do not need conversions
 
+    KernelRegistry::set<UtilKernelTrait::setVal<ValueType, OtherValueType> >( setVal, Host, flag );
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, Host, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, Host, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, Host, flag );

@@ -171,8 +171,8 @@ ValueType MICUtils::reduce( const ValueType array[], const IndexType n, const co
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
+template<typename ValueType, typename OtherValueType>
+void MICUtils::setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op )
 {
     SCAI_LOG_DEBUG( logger, "setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
@@ -188,12 +188,13 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
             {
                 ValueType* array = static_cast<ValueType*>( arrayPtr );
+                ValueType value = static_cast<ValueType>( *valPtr );
 
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
-                    array[i] = *valPtr;
+                    array[i] = value;
                 }
             }
 
@@ -210,12 +211,13 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
                 #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
                 {
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
+                    ValueType value = static_cast<ValueType>( *valPtr );
 
                     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
                     for ( IndexType i = 0; i < n; i++ )
                     {
-                        array[i] += *valPtr;
+                        array[i] *= value;
                     }
                 }
             }
@@ -239,12 +241,13 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
                 #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1], op )
                 {
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
+                    ValueType value = static_cast<ValueType>( *valPtr );
 
                     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
                     for ( IndexType i = 0; i < n; i++ )
                     {
-                        array[i] *= *valPtr;
+                        array[i] *= value;
                     }
                 }
             }

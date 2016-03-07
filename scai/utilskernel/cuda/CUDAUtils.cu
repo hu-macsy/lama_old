@@ -301,8 +301,8 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common:
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
+template<typename ValueType, typename OtherValueType>
+void CUDAUtils::setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op )
 {
     using namespace thrust::placeholders;
 
@@ -313,14 +313,15 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
     if ( n > 0 )
     {
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
+        ValueType value = static_cast<ValueType>( val );
 
         switch ( op ) 
         {
             case common::reduction::COPY:
-                thrust::fill( data, data + n, val );
+                thrust::fill( data, data + n, value );
                 break;
             case common::reduction::ADD:
-                thrust::for_each( data, data + n,  _1 += val);
+                thrust::for_each( data, data + n,  _1 += value);
                 break;
             case common::reduction::MULT:
                 {
@@ -330,7 +331,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
                     }
                     else
                     {
-                        thrust::for_each( data, data + n,  _1 *= val);
+                        thrust::for_each( data, data + n,  _1 *= value );
                     }
                 }
                 break;
@@ -713,7 +714,6 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, CUDA, flag );
 //    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, CUDA, flag );
@@ -734,6 +734,7 @@ void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry:
 
     // we keep the registrations for IndexType as we do not need conversions
 
+    KernelRegistry::set<UtilKernelTrait::setVal<ValueType, OtherValueType> >( setVal, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, CUDA, flag );

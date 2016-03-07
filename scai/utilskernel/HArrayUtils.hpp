@@ -84,24 +84,36 @@ public:
         const common::reduction::ReductionOp op, 
         hmemo::ContextPtr context );
 
-    template<typename ValueType1,typename ValueType2>
+//    template<typename ValueType1,typename ValueType2>
+//    static void gather(
+//        hmemo::HArray<ValueType1>& target,
+//        const hmemo::HArray<ValueType2>& source,
+//        const hmemo::HArray<IndexType>& index );
+
     static void gather(
+        hmemo::_HArray& target,
+        const hmemo::_HArray& source,
+        const hmemo::HArray<IndexType>& index );
+
+    template<typename ValueType1,typename ValueType2>
+    static void gatherImpl(
         hmemo::HArray<ValueType1>& target,
         const hmemo::HArray<ValueType2>& source,
         const hmemo::HArray<IndexType>& index );
 
     template<typename ValueType1>
     static void setScalar( 
-        hmemo::HArray<ValueType1>& target,
-        const ValueType1 value, 
+        hmemo::_HArray& target,
+        const ValueType1 value,
         const common::reduction::ReductionOp op, hmemo::ContextPtr context )
         __attribute__( ( noinline ) );
 
-//    static void setScalar(
-//        hmemo::_HArray& target,
-//        const Scalar& value,
-//        const common::reduction::ReductionOp op,
-//        hmemo::ContextPtr context );
+    template<typename ValueType1, typename ValueType2>
+    static void setScalarImpl(
+        hmemo::HArray<ValueType1>& target,
+        const ValueType2 value,
+        const common::reduction::ReductionOp op, hmemo::ContextPtr context )
+        __attribute__( ( noinline ) );
 
     /** This method sets a single value in a heterogeneous array.
      *
@@ -148,9 +160,6 @@ public:
     static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc );
 
 private:
-
-    template<typename ValueType>
-    static void setImpl1( hmemo::HArray<ValueType>& target, const hmemo::_HArray& source, const common::reduction::ReductionOp op, hmemo::ContextPtr context );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
