@@ -20,6 +20,7 @@ Beside some only header libraries, the following *compiled* libraries are used b
 
   - **thread** (portable C++ multi-threading, mandatory)
   - **unit_test_framework** and **regex** (program and full unit testing, recommended)
+
 .. - **program_options** (easy access to options of a program call, optional)
 
 Many linux installations provide an actual release of Boost and if Boost is installed, the LAMA configuration should
@@ -45,6 +46,7 @@ Via ccmake you can verify that the Boost variables needed for LAMA have correct 
     Boost_SYSTEM_LIBRARY              <path/to/boost/installation>/lib/libboost_system.so
     Boost_THREAD_LIBRARY              <path/to/boost/installation>/lib/libboost_thread.so
     Boost_UNIT_TEST_FRAMEWORK_LIBRARY <path/to/boost/installation>/lib/libboost_unit_test_framework.so
+    
 ..    Boost_PROGRAM_OPTIONS_LIBRARY     <path/to/boost/installation>/lib/libboost_program_options.so
 
 

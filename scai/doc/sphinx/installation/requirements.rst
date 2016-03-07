@@ -2,7 +2,7 @@ Software Prerequisites
 ----------------------
 
 For the installation of LAMA you will need some general software packages. In the following sections we list the
-:ref:`required <required>`, :ref:`recommended <recommended>` and :ref:`optional <optional> software for building LAMA.
+:ref:`required <required>`, :ref:`recommended <recommended>` and :ref:`optional <optional>` software for building LAMA.
 
 For installing dependencies please refer to the precise project pages. On linux it is the prefered way to install via the package manager of your system. But also custom build should be no problem. On Windows you need to download the package from the precise page and install it on your machine. You get precise help to explicitly tell LAMA the installation path of the individual packages in seperate chapters if they are not found implicitly.
 
@@ -76,9 +76,7 @@ For optional features you may also install the following:
 - Doxygen
 
   - Needed to build the API documentation.
-.. (also here__).
-.. __ https://
-  
+ 
 .. - ScaLAPack
 
 ..   - Needed for Distributed Memory Parallel LU-Decomposition.
