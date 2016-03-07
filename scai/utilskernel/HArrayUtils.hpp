@@ -101,11 +101,8 @@ public:
     template<typename ValueType>
     static void setVal( hmemo::_HArray& target, const IndexType index, const ValueType val );
 
-    template<typename ValueType, typename OtherValueType>
-    static void setValImpl( hmemo::HArray<ValueType>& target, const IndexType index, const OtherValueType val );
-
     template<typename ValueType>
-    static ValueType getVal( const hmemo::HArray<ValueType>& array, const IndexType index );
+    static ValueType getVal( const hmemo::_HArray& array, const IndexType index );
 
     /** Scaled assignment on HArray.
      *
@@ -136,7 +133,6 @@ public:
     template<typename ValueType>
     static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc );
 
-private:
     /*
      * Implementation of functions
      */
@@ -160,6 +156,18 @@ private:
         const common::reduction::ReductionOp op, hmemo::ContextPtr context )
         __attribute__( ( noinline ) );
 
+    template<typename ValueType, typename OtherValueType>
+    static void setValImpl(
+        hmemo::HArray<ValueType>& target,
+        const IndexType index,
+        const OtherValueType val );
+
+    template<typename ValueType, typename OtherValueType>
+    static ValueType getValImpl(
+        const hmemo::HArray<OtherValueType>& array,
+        const IndexType index );
+
+private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 

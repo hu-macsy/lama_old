@@ -246,7 +246,14 @@ void HArrayUtils::setValImpl( HArray<ValueType>& target, const IndexType index, 
 }
 
 template<typename ValueType>
-ValueType HArrayUtils::getVal( const HArray<ValueType>& array, const IndexType index )
+ValueType HArrayUtils::getVal( const _HArray& array, const IndexType index )
+{
+    ValueType val = mepr::UtilsWrapperT< ValueType, ARITHMETIC_ARRAY_HOST_LIST>::getValImpl( array, index );
+    return val;
+}
+
+template<typename ValueType, typename OtherValueType>
+ValueType HArrayUtils::getValImpl( const HArray<OtherValueType>& array, const IndexType index )
 {
     SCAI_ASSERT_DEBUG( index < array.size(), "index = " << index << " out of range for array = " << array );
 
@@ -254,15 +261,17 @@ ValueType HArrayUtils::getVal( const HArray<ValueType>& array, const IndexType i
 
     ContextPtr loc = array.getValidContext();
 
-    static LAMAKernel<UtilKernelTrait::getValue<ValueType> > getValue;
+    static LAMAKernel<UtilKernelTrait::getValue<OtherValueType> > getValue;
 
     loc = getValue.getValidContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<ValueType> rArray( array, loc );
+    ReadAccess<OtherValueType> rArray( array, loc );
 
-    return getValue[loc]( rArray.get(), index );
+    OtherValueType val = getValue[loc]( rArray.get(), index );
+
+    return static_cast<ValueType>( val );
 }
 
 template<typename ValueType>
@@ -360,9 +369,10 @@ void HArrayUtils::conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefL
 template void HArrayUtils::setVal( hmemo::_HArray& , const IndexType , IndexType );
 template void HArrayUtils::setVal( hmemo::_HArray& , const IndexType , float );
 template void HArrayUtils::setVal( hmemo::_HArray& , const IndexType , double );
+template IndexType HArrayUtils::getVal( const hmemo::_HArray& , const IndexType );
 template void HArrayUtils::setScalar( hmemo::_HArray& , const IndexType , const common::reduction::ReductionOp op, const ContextPtr ctx );
 
-template IndexType HArrayUtils::getVal( const hmemo::HArray<IndexType>& , const IndexType );
+//template IndexType HArrayUtils::getVal( const hmemo::HArray<IndexType>& , const IndexType );
 
 template void HArrayUtils::assignScaled(
     hmemo::HArray<IndexType>& ,
@@ -385,11 +395,6 @@ template void HArrayUtils::assignScaled(
     void HArrayUtils::conj(                                                         \
             HArray<ARITHMETIC_HOST_TYPE_##I>& target,                            \
             ContextPtr loc );                                                       \
-                                                                                    \
-    template                                                                        \
-    ARITHMETIC_HOST_TYPE_##I HArrayUtils::getVal(                                   \
-            const HArray<ARITHMETIC_HOST_TYPE_##I>&,                               \
-            const IndexType );                                                      \
                                                                                     \
     template                                                                        \
     void HArrayUtils::assignScaled(                                              \
