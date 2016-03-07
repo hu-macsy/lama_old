@@ -40,16 +40,12 @@ namespace scai
 namespace solver
 {
 
-using lama::Matrix;
-using lama::Vector;
-using lama::Scalar;
-
 SolutionProxy::SolutionProxy()
     : mIsDirty( true )
 {
 }
 
-SolutionProxy::SolutionProxy( Vector* const solution )
+SolutionProxy::SolutionProxy( lama::Vector* const solution )
     : mSolution( solution ), mIsDirty( true )
 {
 }
@@ -58,17 +54,17 @@ SolutionProxy::~SolutionProxy()
 {
 }
 
-const Vector& SolutionProxy::getConstReference() const
+const lama::Vector& SolutionProxy::getConstReference() const
 {
     return ( *mSolution );
 }
 
-Vector& SolutionProxy::operator*()
+lama::Vector& SolutionProxy::operator*()
 {
     return getReference();
 }
 
-void SolutionProxy::operator=( Vector* const newVector )
+void SolutionProxy::operator=( lama::Vector* const newVector )
 {
     setDirty( true );
     mSolution = newVector;
@@ -84,18 +80,18 @@ void SolutionProxy::setDirty( bool isDirty )
     mIsDirty = isDirty;
 }
 
-Vector& SolutionProxy::getReference()
+lama::Vector& SolutionProxy::getReference()
 {
     setDirty( true );
     return *mSolution;
 }
 
-Vector* SolutionProxy::create()
+lama::Vector* SolutionProxy::create()
 {
-    return Vector::create( mSolution->getCreateValue() );
+    return lama::Vector::create( mSolution->getCreateValue() );
 }
 
-void SolutionProxy::swap( Vector*& other )
+void SolutionProxy::swap( lama::Vector*& other )
 {
     setDirty( true );
     std::swap( other, mSolution );

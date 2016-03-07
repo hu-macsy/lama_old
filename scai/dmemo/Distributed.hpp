@@ -67,11 +67,13 @@ public:
 
     inline DistributionPtr getDistributionPtr() const;
 
+    // TODO: document globalRowIndexes
     /** This method returns connectivity information that will be used to repartition with Metis.
      *
-     *  @param[out] ia offsets for ja array, size is localSize+1
-     *  @param[out] ja connectivities, for elem i it is ja[ia[i]], ..., ja[ia[i+1]-1]
-     *  @param[out] vwgt are weights, size is localSize
+     *  @param[out] ia               offsets for ja array, size is localSize+1
+     *  @param[out] ja               connectivities, for elem i it is ja[ia[i]], ..., ja[ia[i+1]-1]
+     *  @param[out] vwgt             are weights, size is localSize
+     *  @param[out] globalRowIndexes 
      *
      *  Note: the size of the ja array is given get getCSRGraphSize()
      */

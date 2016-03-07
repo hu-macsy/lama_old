@@ -44,14 +44,13 @@ SCAI_LOG_DEF_LOGGER( OmegaSolver::logger, "Solver.IterativeSolver.OmegaSolver" )
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
 OmegaSolver::OmegaSolver( const std::string& id )
     : IterativeSolver( id ), mOmega( 0.5 )
 {
 }
 
-OmegaSolver::OmegaSolver( const std::string& id, const Scalar omega )
+OmegaSolver::OmegaSolver( const std::string& id, const lama::Scalar omega )
     : IterativeSolver( id ), mOmega( omega )
 {
 }
@@ -61,7 +60,7 @@ OmegaSolver::OmegaSolver( const std::string& id, LoggerPtr logger )
 {
 }
 
-OmegaSolver::OmegaSolver( const std::string& id, const Scalar omega, LoggerPtr logger )
+OmegaSolver::OmegaSolver( const std::string& id, const lama::Scalar omega, LoggerPtr logger )
     : IterativeSolver( id, logger ), mOmega( omega )
 {
 }
@@ -89,12 +88,12 @@ void OmegaSolver::initialize( const Matrix& coefficients )
     IterativeSolver::initialize( coefficients );
 }
 
-void OmegaSolver::setOmega( const Scalar omega )
+void OmegaSolver::setOmega( const lama::Scalar omega )
 {
     mOmega = omega;
 }
 
-Scalar OmegaSolver::getOmega() const
+lama::Scalar OmegaSolver::getOmega() const
 {
     return mOmega;
 }

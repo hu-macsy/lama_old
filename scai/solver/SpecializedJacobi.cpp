@@ -69,7 +69,7 @@ SpecializedJacobi::SpecializedJacobi( const std::string& id, LoggerPtr logger )
 {
 }
 
-SpecializedJacobi::SpecializedJacobi( const std::string & id, Scalar omega )
+SpecializedJacobi::SpecializedJacobi( const std::string & id, lama::Scalar omega )
     : OmegaSolver( id, omega )
 {
 }

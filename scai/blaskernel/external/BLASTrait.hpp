@@ -1,5 +1,5 @@
 /**
- * @file BLASTrait.cpp
+ * @file BLASTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2015
