@@ -63,7 +63,7 @@
 
 typedef boost::mpl::list<
         BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, SCAI_TYPE, _ )
-        mpl_::na
+        boost::mpl::na
 > scai_arithmetic_test_types;
 
 #undef SCAI_TYPE
@@ -76,7 +76,7 @@ typedef boost::mpl::list<
 
 typedef boost::mpl::list<
         BOOST_PP_REPEAT( ARRAY_TYPE_CNT, SCAI_TYPE, _ )
-        mpl_::na
+        boost::mpl::na
 > scai_array_test_types;
 
 #undef SCAI_TYPE
