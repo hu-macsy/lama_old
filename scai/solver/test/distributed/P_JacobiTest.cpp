@@ -72,7 +72,7 @@ struct P_JacobiTestConfig
 {
     P_JacobiTestConfig()
     {
-        mComm = Communicator::getCommunicator();
+        mComm = Communicator::getCommunicatorPtr();
     }
 
     ~P_JacobiTestConfig()

@@ -517,20 +517,21 @@ ValueType CUDABLAS1::dot(
 template<typename ValueType>
 void CUDABLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register BLAS1 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( CUDABLAS1::sum, CUDA, flag );
-    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( CUDABLAS1::scal, CUDA, flag );
-    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( CUDABLAS1::nrm2, CUDA, flag );
-    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( CUDABLAS1::asum, CUDA, flag );
-    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( CUDABLAS1::iamax, CUDA, flag );
-    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( CUDABLAS1::swap, CUDA, flag );
-    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( CUDABLAS1::copy, CUDA, flag );
-    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( CUDABLAS1::axpy, CUDA, flag );
-    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( CUDABLAS1::dot, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( CUDABLAS1::sum, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( CUDABLAS1::scal, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( CUDABLAS1::nrm2, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( CUDABLAS1::asum, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( CUDABLAS1::iamax, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( CUDABLAS1::swap, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( CUDABLAS1::copy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( CUDABLAS1::axpy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( CUDABLAS1::dot, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

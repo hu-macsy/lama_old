@@ -80,11 +80,12 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
     const IndexType N2 = 4;
 
     CSRSparseMatrix<ValueType> coefficients;
+
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N1, N2 );
 
-    const DenseVector<ValueType> rhs( coefficients.getLocalNumRows(), 1.0 );
+    const DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
 
-    DenseVector<ValueType> solution( rhs );
+    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
 
     TFQMRSolver.initialize( coefficients );   // Not WORKING
 
@@ -121,8 +122,8 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "TFQMRTest uses context = " << context->getType() );
 
-    DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
+    DenseVector<ValueType> solution( coefficients.getRowDistributionPtr(), 1.0 );
+    const DenseVector<ValueType> exactSolution( coefficients.getRowDistributionPtr(), 2.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
 
     IndexType expectedIterations = 200;
@@ -190,7 +191,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), 1.0 );
 
-    // Question: should be valid: rhs.getDistribution() == coefficients.getDistribution()
+    // Question: should be valid: rhs.getRowDistribution() == coefficients.getRowDistribution()
 
     const DenseVector<ValueType> rhs( coefficients * exactSolution );
 

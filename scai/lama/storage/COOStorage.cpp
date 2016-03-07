@@ -413,6 +413,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
     {
         static LAMAKernel<COOKernelTrait::offsets2ia> offsets2ia;
 
+        ContextPtr loc = offsets2ia.getValidContext( this->getContextPtr() );
+
         ReadAccess<IndexType> csrIA( ia, loc );
         WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
 
@@ -423,6 +425,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
     {
         static LAMAKernel<COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
+
+        ContextPtr loc = setCSRData.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
@@ -435,6 +439,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
     {
         static LAMAKernel<COOKernelTrait::setCSRData<ValueType, OtherValueType> > setCSRData;
+
+        ContextPtr loc = setCSRData.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<OtherValueType> csrValues( values, loc );

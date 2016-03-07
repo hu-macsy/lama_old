@@ -606,52 +606,53 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 
 void OpenMPUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    kregistry::KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, common::context::Host, flag );
+    kregistry::KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
 }
 
 template<typename ValueType>
 void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    // we keep the registrations for IndexType as we do not need conversions
-
-    KernelRegistry::set<UtilKernelTrait::setVal<ValueType, OtherValueType> >( setVal, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, Host, flag );
-    KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<ValueType, OtherValueType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
 
 }
 

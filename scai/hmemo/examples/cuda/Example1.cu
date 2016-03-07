@@ -14,8 +14,6 @@
 using namespace scai;
 using namespace scai::hmemo;
 
-namespace context = common::context;
-
 SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 
 template<typename ValueType>
@@ -62,8 +60,8 @@ void add( ValueType* array, const IndexType n )
 
 int main()
 {
-    std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
-    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
+    std::cout << "try to get " << Context::CUDA << " context from factory" << std::endl;
+    ContextPtr cudaContext = Context::getContextPtr( Context::CUDA );
     SCAI_ASSERT( cudaContext, "NULL context" )
     std::cout << "cudaContext = " << *cudaContext << std::endl;
 
@@ -71,8 +69,8 @@ int main()
     SCAI_ASSERT( cudaMemory, "NULL memory" )
     std::cout << "cudaMemory = " << *cudaMemory << std::endl;
 
-    std::cout << "try to get " << context::Host << " context from factory" << std::endl;
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    std::cout << "try to get " << Context::Host << " context from factory" << std::endl;
+    ContextPtr hostContext = Context::getContextPtr( Context::Host );
     SCAI_ASSERT( hostContext, "NULL context" )
     std::cout << "hostContext = " << *hostContext << std::endl;
 

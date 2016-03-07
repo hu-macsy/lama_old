@@ -232,7 +232,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
     {
         Matrix::checkSettings();
 
-        SCAI_ASSERT_EQUAL_ERROR( getDistribution().getLocalSize(), mLocalData->getNumRows() )
+        SCAI_ASSERT_EQUAL_ERROR( getRowDistribution().getLocalSize(), mLocalData->getNumRows() )
         SCAI_ASSERT_EQUAL_ERROR( mHaloData->getNumRows(), mLocalData->getNumRows() )
 
         mLocalData->check( "check for consistency" );
@@ -247,7 +247,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 
     // use communicator for global reduction to make sure that all processors return same value.
 
-    consistencyErrors = getDistribution().getCommunicator().sum( consistencyErrors );
+    consistencyErrors = getRowDistribution().getCommunicator().sum( consistencyErrors );
 
     return 0 == consistencyErrors;
 }
@@ -383,7 +383,7 @@ void SparseMatrix<ValueType>::assign( const Matrix& matrix )
         // convert dense matrix to a sparse matrix
 
         DistributionPtr colDist = matrix.getColDistributionPtr();
-        DistributionPtr rowDist = matrix.getDistributionPtr();
+        DistributionPtr rowDist = matrix.getRowDistributionPtr();
 
         Matrix::setDistributedMatrix( rowDist, colDist );
 
@@ -422,15 +422,15 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
     // assign matrix properties
 
-    Matrix::setDistributedMatrix( matrix.getColDistributionPtr(), matrix.getDistributionPtr() );
+    Matrix::setDistributedMatrix( matrix.getColDistributionPtr(), matrix.getRowDistributionPtr() );
 
-    if( getDistribution().isReplicated() && getColDistribution().isReplicated() )
+    if( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
         mLocalData->assignTranspose( matrix.getLocalStorage() );
-        mHaloData->allocate( getDistribution().getLocalSize(), mNumColumns );
+        mHaloData->allocate( getRowDistribution().getLocalSize(), mNumColumns );
         mHalo.clear();
     }
-    else if( getDistribution().isReplicated() )
+    else if( getRowDistribution().isReplicated() )
     {
         COMMON_THROWEXCEPTION( "transpose not supported for replicated matrices with distributed columns" )
     }
@@ -474,7 +474,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         // send all other processors the number of columns
 
-        const Communicator& comm = getDistribution().getCommunicator();
+        const Communicator& comm = getRowDistribution().getCommunicator();
 
         // Use communication plans of halo in inverse manner to send col sizes
 
@@ -493,7 +493,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         // Before send of JA: translate back the local (row) indexes to global indexes
 
         {
-            const Distribution& dist = matrix.getDistribution();
+            const Distribution& dist = matrix.getRowDistribution();
             const IndexType nJA = sendJA.size();
 
             WriteAccess<IndexType> ja( sendJA, contextPtr );
@@ -525,7 +525,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         const HArray<IndexType>& rowIndexes = matrixHalo.getProvidesIndexes();
 
-        const IndexType mNumLocalRows = getDistribution().getLocalSize();
+        const IndexType mNumLocalRows = getRowDistribution().getLocalSize();
 
         {
             // allocate rowSizes as offset array to avoid reallocation
@@ -563,7 +563,7 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
         SCAI_LOG_INFO( logger, "copy/convert assign sparse matrix = " << matrix )
     }
 
-    Matrix::setDistributedMatrix( matrix.getDistributionPtr(), matrix.getColDistributionPtr() );
+    Matrix::setDistributedMatrix( matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() );
 
     mLocalData->assign( matrix.getLocalStorage() );
 
@@ -715,7 +715,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
     // Save the current distribution of this matrix; use shared pointers to avoid freeing
 
-    DistributionPtr oldRowDistributionPtr = getDistributionPtr();
+    DistributionPtr oldRowDistributionPtr = getRowDistributionPtr();
     DistributionPtr oldColDistributionPtr = getColDistributionPtr();
 
     // Set the new distributions
@@ -725,7 +725,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
     // Handle all cases where we do not have to join the local/halo data of matrix
 
-    if( getDistribution() == *oldRowDistributionPtr && getColDistribution() == *oldColDistributionPtr )
+    if( getRowDistribution() == *oldRowDistributionPtr && getColDistribution() == *oldColDistributionPtr )
     {
         SCAI_LOG_INFO( logger, "row/column distribution are same" )
         return;
@@ -789,11 +789,11 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
     // Note: asssign the other data fitting to the distribution of this matrix
 
     SCAI_ASSERT_EQUAL_DEBUG( otherDist->getLocalSize(), otherLocalData.getNumRows() )
-    SCAI_ASSERT_EQUAL_DEBUG( otherDist->getGlobalSize(), getDistribution().getGlobalSize() )
+    SCAI_ASSERT_EQUAL_DEBUG( otherDist->getGlobalSize(), getRowDistribution().getGlobalSize() )
 
     SCAI_ASSERT_EQUAL_ERROR( otherLocalData.getNumColumns(), getColDistribution().getGlobalSize() )
 
-    if( *otherDist == getDistribution() )
+    if( *otherDist == getRowDistribution() )
     {
         SCAI_LOG_INFO( logger, "same row distribution, assign local" )
 
@@ -809,10 +809,10 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
         // just split the global replicated data according to
         // column + row distribution of this matrix
 
-        otherLocalData.splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), getDistributionPtr().get() );
+        otherLocalData.splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), getRowDistributionPtr().get() );
 
     }
-    else if( getDistribution().isReplicated() )
+    else if( getRowDistribution().isReplicated() )
     {
         SCAI_LOG_INFO( logger, "Replication of distributed matrix storage: " << otherLocalData )
 
@@ -828,7 +828,7 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
     {
         SCAI_LOG_INFO( logger, "assign is redistribute of distributed matrix" )
 
-        Redistributor redistributor( getDistributionPtr(), otherDist );
+        Redistributor redistributor( getRowDistributionPtr(), otherDist );
 
         SCAI_LOG_INFO( logger,
                        "Redistributor available: source halo = " << redistributor.getHaloSourceSize() << " target halo = " << redistributor.getHaloTargetSize() )
@@ -890,7 +890,7 @@ void SparseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const In
 template<typename ValueType>
 void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 {
-    if( getDistribution() != getColDistribution() )
+    if( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
     }
@@ -899,7 +899,7 @@ void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 
     mLocalData->getDiagonal( localDiagonal );
 
-    diagonal.resize( getDistributionPtr() ); // Give the diagonal the right distribution
+    diagonal.allocate( getRowDistributionPtr() ); // Give the diagonal the right distribution
     diagonal.setValues( localDiagonal ); // Copy values, sizes will fit
 }
 
@@ -908,12 +908,12 @@ void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 template<typename ValueType>
 void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
 {
-    if( getDistribution() != getColDistribution() )
+    if( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
     }
 
-    if( getDistribution() != diagonal.getDistribution() )
+    if( getRowDistribution() != diagonal.getDistribution() )
     {
         COMMON_THROWEXCEPTION( diagonal << ": distribution does not fit row distribution of matrix" )
     }
@@ -932,7 +932,7 @@ void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
 template<typename ValueType>
 void SparseMatrix<ValueType>::setDiagonal( Scalar value )
 {
-    if( getDistribution() != getColDistribution() )
+    if( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
@@ -945,11 +945,7 @@ void SparseMatrix<ValueType>::setDiagonal( Scalar value )
 template<typename ValueType>
 void SparseMatrix<ValueType>::scale( const Vector& scaling )
 {
-    if( scaling.getDistribution() != getDistribution() )
-    {
-        COMMON_THROWEXCEPTION(
-            scaling << ": scale vector distribution does not fit matrix row distribution " << getDistribution() );
-    }
+    SCAI_ASSERT_EQUAL( scaling.getDistribution(), getRowDistribution(), "distribution mismatch" )
 
     HArray<ValueType> localValues;
 
@@ -1095,7 +1091,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
 
     // already verified
 
-    SCAI_ASSERT_EQUAL_DEBUG( A.getDistribution(), B.getDistribution() )
+    SCAI_ASSERT_EQUAL_DEBUG( A.getRowDistribution(), B.getRowDistribution() )
     SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
 
     if( !B.getColDistribution().isReplicated() )
@@ -1105,7 +1101,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
 
     // Now we can do it completly locally
 
-    Matrix::setDistributedMatrix( A.getDistributionPtr(), A.getColDistributionPtr() );
+    Matrix::setDistributedMatrix( A.getRowDistributionPtr(), A.getColDistributionPtr() );
 
     mLocalData->matrixPlusMatrix( alpha, *A.mLocalData, beta, *B.mLocalData );
 
@@ -1136,19 +1132,17 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
     // already verified
 
-    SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getDistribution() )
+    SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getRowDistribution() )
 
     if( beta != scai::common::constants::ZERO )
     {
-        SCAI_ASSERT_ERROR( C.getDistribution() == A.getDistribution(),
-                           "Row distribution must be " << A.getDistribution() << ": " << C )
-        SCAI_ASSERT_ERROR( C.getColDistribution() == B.getColDistribution(),
-                           "Col distribution must be " << B.getColDistribution() << ": " << C )
+        SCAI_ASSERT_EQ_ERROR( C.getRowDistribution(), A.getRowDistribution(), "distribution/size mismatch" ) 
+        SCAI_ASSERT_EQ_ERROR( C.getColDistribution(), B.getColDistribution(), "distribution/size mismatch" )
     }
 
     // Now we can do it completly locally
 
-    Matrix::setDistributedMatrix( A.getDistributionPtr(), B.getColDistributionPtr() );
+    Matrix::setDistributedMatrix( A.getRowDistributionPtr(), B.getColDistributionPtr() );
 
     SCAI_LOG_DEBUG( logger, "before matrixTimesMatrix" )
     mLocalData->matrixTimesMatrix( alpha, *A.mLocalData, *B.mLocalData, beta, *C.mLocalData );
@@ -1162,7 +1156,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
         // get all needed rows of B, communication plan given by halo schedule of A
 
-        haloB.exchangeHalo( A.getHalo(), B.getLocalStorage(), A.getDistribution().getCommunicator() );
+        haloB.exchangeHalo( A.getHalo(), B.getLocalStorage(), A.getRowDistribution().getCommunicator() );
 
         // local = alpha * A_local * B_local + alpha * A_halo * B_halo + C_local
 
@@ -1284,7 +1278,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
         const HArray<ValueType>& localX,
         const HArray<ValueType>& localY )> addF ) const
 {
-    DistributionPtr rowDist = getDistributionPtr();
+    DistributionPtr rowDist = getRowDistributionPtr();
     DistributionPtr colDist = getColDistributionPtr();
     const Communicator& comm = rowDist->getCommunicator();
     IndexType numParts = comm.getSize();
@@ -1530,7 +1524,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         const HArray<ValueType>& localX,
         const HArray<ValueType>& localY )> addF ) const
 {
-    DistributionPtr rowDist = getDistributionPtr();
+    DistributionPtr rowDist = getRowDistributionPtr();
     DistributionPtr colDist = getColDistributionPtr();
     const Communicator& comm = rowDist->getCommunicator();
     IndexType numParts = comm.getSize();
@@ -1850,17 +1844,17 @@ void SparseMatrix<ValueType>::matrixTimesVectorNImpl(
 
     // currently only available for replicated matrices
 
-    SCAI_ASSERT( getDistribution().isReplicated(), *this << ": must be replicated" )
+    SCAI_ASSERT( getRowDistribution().isReplicated(), *this << ": must be replicated" )
     SCAI_ASSERT( getColDistribution().isReplicated(), *this << ": must be replicated" )
 
-    SCAI_ASSERT( x.getDistribution().isReplicated(), x << ": must be replicated" )
+    SCAI_ASSERT( x.getRowDistribution().isReplicated(), x << ": must be replicated" )
     SCAI_ASSERT( x.getColDistribution().isReplicated(), x << ": must be replicated" )
 
     // no alias
 
     SCAI_ASSERT_DEBUG( &result != &x, "alias of result and X not supported" )
 
-    result.allocate( getDistributionPtr(), x.getColDistributionPtr() );
+    result.allocate( getRowDistributionPtr(), x.getColDistributionPtr() );
 
     SCAI_LOG_INFO( logger, "result (allocated) : " << result )
 
@@ -1897,13 +1891,13 @@ void SparseMatrix<ValueType>::matrixTimesVector(
     {
         // we inherit the row distribution of this matrix to result
 
-        result.resize( getDistributionPtr() );
+        result.allocate( getRowDistributionPtr() );
 
-        // no more to check: result.size() == mNumRows, getDistribution() == result.getDistribution()
+        // no more to check: result.size() == mNumRows, getRowDistribution() == result.getRowDistribution()
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getColDistribution() )
-    SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getRowDistribution() )
 
     const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
     const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
@@ -1944,12 +1938,12 @@ void SparseMatrix<ValueType>::vectorTimesMatrix(
     {
         // we inherit the column distribution of this matrix to result
 
-        result.resize( getColDistributionPtr() );
+        result.allocate( getColDistributionPtr() );
 
-        // no more to check: result.size() == mNumColumns, getDistribution() == result.getColDistribution()
+        // no more to check: result.size() == mNumColumns, getRowDistribution() == result.getColDistribution()
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getRowDistribution() )
     SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getColDistribution() )
 
     const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
@@ -1996,7 +1990,7 @@ Scalar SparseMatrix<ValueType>::l1Norm() const
     myValue += mHaloData->l1Norm();
 
 
-    const Communicator& comm = getDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getCommunicator();
 
     ValueType allValue = comm.sum( myValue );
 
@@ -2017,7 +2011,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
     tmp = mHaloData->l2Norm();
 	myValue += tmp * tmp;
 
-    const Communicator& comm = getDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getCommunicator();
 
     ValueType allValue = comm.sum( myValue );
 
@@ -2043,7 +2037,7 @@ Scalar SparseMatrix<ValueType>::maxNorm() const
         myMax = myMaxHalo;
     }
  
-    const Communicator& comm = getDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getCommunicator();
  
     ValueType allMax = comm.max( myMax );
 
@@ -2062,7 +2056,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
 
     SCAI_REGION( "Mat.Sp.maxDiffNorm" )
 
-    if( ( getDistribution() == other.getDistribution() ) && getColDistribution().isReplicated()
+    if( ( getRowDistribution() == other.getRowDistribution() ) && getColDistribution().isReplicated()
             && other.getColDistribution().isReplicated() && ( getValueType() == other.getValueType() ) )
     {
         const SparseMatrix<ValueType>* typedOther = dynamic_cast<const SparseMatrix<ValueType>*>( &other );
@@ -2077,7 +2071,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     else
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
-        SparseMatrix<ValueType> typedOther( other, getDistributionPtr(), getColDistributionPtr() );
+        SparseMatrix<ValueType> typedOther( other, getRowDistributionPtr(), getColDistributionPtr() );
         return maxDiffNormImpl( typedOther );
     }
 }
@@ -2089,13 +2083,13 @@ ValueType SparseMatrix<ValueType>::maxDiffNormImpl( const SparseMatrix<ValueType
 {
     // implementation only supported for same row distributions, replicated columns
 
-    SCAI_ASSERT_EQUAL_ERROR( getDistribution(), other.getDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), other.getRowDistribution() )
     SCAI_ASSERT_ERROR( getColDistribution().isReplicated(), *this << ": not replicated column dist" )
     SCAI_ASSERT_ERROR( other.getColDistribution().isReplicated(), other << ": not replicated column dist" )
 
     ValueType myMaxDiff = mLocalData->maxDiffNorm( other.getLocalStorage() );
 
-    const Communicator& comm = getDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getCommunicator();
 
     ValueType allMaxDiff = comm.max( myMaxDiff );
 
@@ -2133,7 +2127,7 @@ IndexType SparseMatrix<ValueType>::getLocalNumColumns() const
 template<typename ValueType>
 IndexType SparseMatrix<ValueType>::getNumValues() const
 {
-    return getDistribution().getCommunicator().sum( getPartitialNumValues() );
+    return getRowDistribution().getCommunicator().sum( getPartitialNumValues() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2149,7 +2143,7 @@ IndexType SparseMatrix<ValueType>::getPartitialNumValues() const
 template<typename ValueType>
 Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
-    const Distribution& distributionRow = getDistribution();
+    const Distribution& distributionRow = getRowDistribution();
     const Distribution& distributionCol = getColDistribution();
     SCAI_LOG_TRACE( logger, "this(" << i << "," << j << ")" )
     ValueType myValue = static_cast<ValueType>(0.0);
@@ -2194,7 +2188,7 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << getTypeName() << "( size = " << mNumRows << " x " << mNumColumns << ", local = " << *mLocalData
-           << ", halo = " << *mHaloData << ", rowdist = " << getDistribution() << ", coldist = "
+           << ", halo = " << *mHaloData << ", rowdist = " << getRowDistribution() << ", coldist = "
            << getColDistribution() << ")";
 }
 
@@ -2221,14 +2215,14 @@ void SparseMatrix<ValueType>::wait() const
 template<typename ValueType>
 bool SparseMatrix<ValueType>::hasDiagonalProperty() const
 {
-    if( getDistribution() != getColDistribution() )
+    if( getRowDistribution() != getColDistribution() )
     {
         return false;
     }
 
     bool localDiagProperty = mLocalData->hasDiagonalProperty();
 
-    bool globalDiagProperty = getDistribution().getCommunicator().all( localDiagProperty );
+    bool globalDiagProperty = getRowDistribution().getCommunicator().all( localDiagProperty );
 
     return globalDiagProperty;
 }
@@ -2238,7 +2232,7 @@ bool SparseMatrix<ValueType>::hasDiagonalProperty() const
 template<typename ValueType>
 void SparseMatrix<ValueType>::resetDiagonalProperty()
 {
-    if( getDistribution() != getColDistribution() )
+    if( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "diagonal property not possible " )
     }
@@ -2285,7 +2279,7 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::copy() const
 
     SparseMatrix<ValueType>* newSparseMatrix =
 
-        new SparseMatrix<ValueType>( newLocalData, newHaloData, mHalo, getDistributionPtr(), getColDistributionPtr() );
+        new SparseMatrix<ValueType>( newLocalData, newHaloData, mHalo, getRowDistributionPtr(), getColDistributionPtr() );
 
     SCAI_LOG_INFO( logger, "copy is " << *newSparseMatrix )
 
@@ -2299,7 +2293,7 @@ void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 {
     allocate( dist, dist );
 
-    const IndexType localNumRows = getDistributionPtr()->getLocalSize();
+    const IndexType localNumRows = getRowDistributionPtr()->getLocalSize();
 
     mLocalData->setIdentity( localNumRows );
     mHaloData->allocate( localNumRows, 0 );
@@ -2380,7 +2374,7 @@ size_t SparseMatrix<ValueType>::getMemoryUsage() const
 {
     size_t memoryUsage = mLocalData->getMemoryUsage() + mHaloData->getMemoryUsage();
 
-    return getDistribution().getCommunicator().sum( memoryUsage );
+    return getRowDistribution().getCommunicator().sum( memoryUsage );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2394,11 +2388,11 @@ void SparseMatrix<ValueType>::writeToFile1(
     const File::IndexDataType indexDataTypeIA /* = LONG */,
     const File::IndexDataType indexDataTypeJA /* = LONG */) const
 {
-    if( getDistribution().isReplicated() && getColDistribution().isReplicated() )
+    if( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
         // make sure that only one processor writes to file
 
-        const Communicator& comm = getDistribution().getCommunicator();
+        const Communicator& comm = getRowDistribution().getCommunicator();
 
         if( comm.getRank() == 0 )
         {
@@ -2414,7 +2408,7 @@ void SparseMatrix<ValueType>::writeToFile1(
     {
         SCAI_LOG_INFO( logger, "write distributed matrix" )
 
-        const Communicator& comm = getDistribution().getCommunicator();
+        const Communicator& comm = getRowDistribution().getCommunicator();
 
         // as diagonal element is first one we can identify the global id of each row by the column index
 
@@ -2452,7 +2446,7 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     SCAI_REGION( "Mat.Sp.readFromFile" )
 
     // Take the current default communicator
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor

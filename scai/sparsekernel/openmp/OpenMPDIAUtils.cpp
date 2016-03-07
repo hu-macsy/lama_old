@@ -543,29 +543,31 @@ void OpenMPDIAUtils::jacobi(
 template<typename ValueType>
 void OpenMPDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<DIAKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, Host, flag );
-    KernelRegistry::set<DIAKernelTrait::absMaxVal<ValueType> >( absMaxVal, Host, flag );
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, Host, flag );
-    KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, Host, flag );
+    KernelRegistry::set<DIAKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, Host, flag );
+    KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

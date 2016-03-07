@@ -2108,57 +2108,60 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 
 void OpenMPCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
 
-    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiplyJA>( matrixMultiplyJA, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplyJA>( matrixMultiplyJA, ctx, flag );
 }
 
 template<typename ValueType>
 void OpenMPCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::gemm<ValueType> >( gemm, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, Host, flag );
-    KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::gemm<ValueType> >( gemm, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void OpenMPCSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

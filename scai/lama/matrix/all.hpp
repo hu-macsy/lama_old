@@ -31,6 +31,7 @@
  * @since 1.0.0
  */
 
+#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/SparseMatrix.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>

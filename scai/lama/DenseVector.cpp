@@ -74,8 +74,6 @@ using utilskernel::LArray;
 using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
 
-namespace context = scai::common::context;
-
 using namespace hmemo;
 using namespace dmemo;
 
@@ -157,7 +155,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
     // Take the current default communicator
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicator();
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor
@@ -282,7 +280,7 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector(
     const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression ) //Expression_SMV_SV
 
-                : Vector( expression.getArg1().getArg2().getArg1().getDistributionPtr(),
+                : Vector( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
                           expression.getArg1().getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -308,7 +306,7 @@ DenseVector<ValueType>::DenseVector(
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression )
 
-                : Vector( expression.getArg2().getArg1().getDistributionPtr(),
+                : Vector( expression.getArg2().getArg1().getRowDistributionPtr(),
                           expression.getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -332,7 +330,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Vector,M
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression<Matrix,Vector,Times>& expression )
-                : Vector( expression.getArg1().getDistributionPtr(), expression.getArg1().getContextPtr() )
+                : Vector( expression.getArg1().getRowDistributionPtr(), expression.getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( A * x )" )
@@ -454,7 +452,7 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     if( localIndex != nIndex )
     {
-        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+        ContextPtr contextPtr = Context::getHostPtr();
 
         ReadAccess<ValueType> localAccess( mLocalValues, contextPtr );
 
@@ -472,7 +470,7 @@ Scalar DenseVector<ValueType>::min() const
 {
     //TODO: need a interface function for this
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     ReadAccess<ValueType> readLocalValues( mLocalValues, contextPtr );
  
@@ -808,7 +806,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 
     if( x.getDistribution() != getDistribution() || x.size() != size() )
     {
-        resize( x.getDistributionPtr() );
+        allocate( x.getDistributionPtr() );
     }
 
     if( typeid( *this ) == typeid( x ) && typeid( *this ) == typeid( y ) )
@@ -1012,7 +1010,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         HArray<ValueType> newLocalValues;
 
-        ContextPtr hostContext = Context::getContextPtr( context::Host );
+        ContextPtr hostContext = Context::getHostPtr();
 
         {
             const IndexType newSize = distribution->getLocalSize();
@@ -1045,7 +1043,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         HArray<ValueType> globalValues;
 
-        ContextPtr hostContext = Context::getContextPtr( context::Host );
+        ContextPtr hostContext = Context::getHostPtr();
 
         {
             ReadAccess<ValueType> localData( mLocalValues, hostContext );
@@ -1072,16 +1070,6 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         setDistributionPtr( distribution );
     }
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DenseVector<ValueType>::resizeImpl()
-{
-    // resize array with local values
-
-    mLocalValues.resize( getDistribution().getLocalSize() );
 }
 
 /* -- IO ------------------------------------------------------------------- */
@@ -1247,7 +1235,7 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
         COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + fullFilename + "' could not be reopened." )
     }
 
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
@@ -1314,7 +1302,7 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
     outFile.write( &nnu );
     outFile.write( &dataTypeSize );
 
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
@@ -1377,7 +1365,7 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 {
     IndexType numRows = size();
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     ReadAccess<ValueType> dataRead( mLocalValues, contextPtr );
 
@@ -1405,7 +1393,7 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 template<typename ValueType>
 void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file ) const
 {
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     std::fstream outFile( file.c_str(), std::ios::out );
 
@@ -1422,7 +1410,7 @@ void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file
 template<typename ValueType>
 void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fileName )
 {
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     std::ifstream inFile( fileName.c_str(), std::ios::in );
 
@@ -1500,7 +1488,7 @@ void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
         COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
     }
 
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
 
     allocate( dist );

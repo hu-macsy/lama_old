@@ -312,16 +312,15 @@ void LAPACK_LAPACK::laswp(const CBLAS_ORDER order, const IndexType N,
 template<typename ValueType>
 void LAPACK_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
-    using kregistry::KernelRegistry;
+	using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register lapack wrapper routines for Host at kernel registry" )
+    const common::context::ContextType ctx = common::context::Host;
 
-    KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( LAPACK_LAPACK::getrf, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACK_LAPACK::getri, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( LAPACK_LAPACK::getinv, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( LAPACK_LAPACK::tptrs, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( LAPACK_LAPACK::laswp, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( LAPACK_LAPACK::getrf, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACK_LAPACK::getri, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( LAPACK_LAPACK::getinv, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( LAPACK_LAPACK::tptrs, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( LAPACK_LAPACK::laswp, ctx, flag );
 }
 	/* --------------------------------------------------------------------------- */
 	/*    Static initialiazion at program start                                    */

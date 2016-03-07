@@ -5,7 +5,7 @@
 using namespace scai;
 using namespace scai::kregistry;
 
-namespace context = scai::common::context;
+using scai::common::context;
 
 static double add1( const double x )
 {

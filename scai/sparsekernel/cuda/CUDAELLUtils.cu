@@ -2227,49 +2227,52 @@ void CUDAELLUtils::jacobiHalo(
 
 void CUDAELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, CUDA, flag );
 }
 
 template<typename ValueType>
 void CUDAELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::normalGEVM<ValueType> >( normalGEVM, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void CUDAELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, CUDA, flag );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

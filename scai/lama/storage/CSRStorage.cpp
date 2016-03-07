@@ -502,14 +502,14 @@ void CSRStorage<ValueType>::buildRowIndexes()
         return;
     }
 
-    if( getContextPtr()->getType() != common::context::Host )
+    if( getContextPtr()->getType() != Context::Host )
     {
         SCAI_LOG_INFO( logger, "CSRStorage: build row indices is currently only implemented on host" )
     }
 
     // This routine is only available on the Host
 
-    ContextPtr loc = Context::getContextPtr( common::context::Host );
+    ContextPtr loc = Context::getHostPtr();
 
     ReadAccess<IndexType> csrIA( mIa, loc );
 
@@ -1734,7 +1734,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
     const ContextPtr loc = normalGEVM.getValidContext( sparseGEVM, this->getContextPtr() );
 
-    if ( loc->getType() == common::context::MaxContext )
+    if ( loc->getType() == Context::MaxContext )
     {
         // execution as separate thread
 
@@ -2168,7 +2168,7 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are CSR" )
 
 //    // TODO: just temporary, MAKE loc const again!
-//    loc = Context::getContextPtr( context::Host );
+//    loc = Context::getContextPtr( Context::Host );
 
     static LAMAKernel<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
     static LAMAKernel<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;

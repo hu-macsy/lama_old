@@ -57,7 +57,7 @@ typedef void ( *VoidFunction )();
  *  where the function pointer might be NULL for unsupported context
  */
 
-class _ContextFunction
+class _ContextFunction : public common::context
 {
 public:
 
@@ -71,12 +71,12 @@ public:
 
     void assign( const _ContextFunction& other );
 
-    inline VoidFunction get( common::context::ContextType ctx ) const
+    inline VoidFunction get( ContextType ctx ) const
     {
         return mContextFuncArray[ ctx ];
     }
 
-    inline void set( common::context::ContextType ctx, VoidFunction fn )
+    inline void set( ContextType ctx, VoidFunction fn )
     {
         mContextFuncArray[ ctx ] = fn;
     }
@@ -98,19 +98,19 @@ public:
 
     std::string printIt() const;
 
-    common::context::ContextType validContext( common::context::ContextType preferedCtx );
+    common::context::ContextType validContext( ContextType preferedCtx );
 
-    common::context::ContextType validContext( const _ContextFunction& other, common::context::ContextType preferedCtx );
+    ContextType validContext( const _ContextFunction& other, ContextType preferedCtx );
 
-    common::context::ContextType validContext( const _ContextFunction& other1, 
+    ContextType validContext( const _ContextFunction& other1, 
                                       const _ContextFunction& other2, 
-                                      common::context::ContextType preferedCtx );
+                                      ContextType preferedCtx );
 
 protected:
 
     // array with function pointer for each context
 
-    VoidFunction mContextFuncArray[common::context::MaxContext];
+    VoidFunction mContextFuncArray[MaxContext];
 };
 
 /* --------------------------------------------------------------------------- *
@@ -136,14 +136,14 @@ public:
 
     // provide typed get
 
-    FunctionType get( common::context::ContextType ctx ) const
+    FunctionType get( ContextType ctx ) const
     {
         return ( FunctionType ) mContextFuncArray[ ctx ];
     }
 
     // provide typed set
 
-    void set( common::context::ContextType ctx, FunctionType fn )
+    void set( ContextType ctx, FunctionType fn )
     {
         mContextFuncArray[ ctx ] = ( VoidFunction ) fn;
     }

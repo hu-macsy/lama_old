@@ -474,14 +474,15 @@ void MICDIAUtils::jacobi(
 template<typename ValueType>
 void MICDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for MIC at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, MIC, flag );
-    KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, MIC, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

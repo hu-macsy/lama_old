@@ -105,6 +105,7 @@ scai_project (
 
     HEADERS                  # .hpp only
 
+        LAMAKernel
         LArray
         LArrayRef
         UtilKernelTrait

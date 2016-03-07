@@ -414,10 +414,24 @@ void CUSparseCSRUtils::matrixMultiply(
 
 void CUSparseCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register CSRUtils CUSparse-routines for CUDA at kernel registry [" << flag << "]" )
+    bool useCUSparse = true;
+
+    // using CUSparse for CSR might be disabled explicitly by environment variable
+
+    common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
+
+    if ( !useCUSparse )
+    {
+        return;
+    }
+
+    // REGISTER1: overwrites previous settings
+
+    common::context::ContextType CUDA = common::context::CUDA;
+
+    SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, CUDA, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, CUDA, flag );

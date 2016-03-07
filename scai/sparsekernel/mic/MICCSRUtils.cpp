@@ -1932,49 +1932,59 @@ ValueType MICCSRUtils::absMaxDiffVal(
 
 void MICCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register CSSUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, MIC, flag );
-
-    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
 }
 
 template<typename ValueType>
 void MICCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register CSSUtils OpenMP-routines for MIC at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
+
+    /*
+      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx, flag );
+      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx, flag );
+
+      KernelRegistry::set<CSRKernelTrait::sortRowElements<float> >( sortRowElements, ctx, flag );
+      KernelRegistry::set<CSRKernelTrait::sortRowElements<double> >( sortRowElements, ctx, flag );
+     */
 }
 
 template<typename ValueType, typename OtherValueType>
 void MICCSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register CSSUtils OpenMP-routines for MIC at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 /* --------------------------------------------------------------------------- */
 /*    Static initialization with registration                                  */

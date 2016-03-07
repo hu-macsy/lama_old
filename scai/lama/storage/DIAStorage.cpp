@@ -1074,7 +1074,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == common::context::Host )
+    if( loc->getType() == Context::Host )
     {
         // execution as separate thread
 

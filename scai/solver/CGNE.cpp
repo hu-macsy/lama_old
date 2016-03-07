@@ -80,48 +80,32 @@ void CGNE::initialize( const Matrix& coefficients ){
     IterativeSolver::initialize(coefficients);
     CGNERuntime& runtime = getRuntime();
 
-    common::scalar::ScalarType type = coefficients.getValueType();
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;                  //CAREFUL: No abstract type
 
     runtime.mTransposedMat.reset( coefficients.newMatrix() );
     runtime.mTransposedMat->assignTranspose( coefficients );
     runtime.mTransposedMat->conj();
     
-    runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    
-    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
+    // get runtime vector with same type / row distribution / context as coefficients
+
+    runtime.mVecP.reset( coefficients.newDenseVector() );
+    runtime.mVecZ.reset( coefficients.newDenseVector() );
 }
 
 
-void CGNE::solveInit( Vector& solution, const Vector& rhs ){
+void CGNE::solveInit( Vector& solution, const Vector& rhs )
+{
     CGNERuntime& runtime = getRuntime();
 
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
+    SCAI_ASSERT( runtime.mCoefficients, "solver not initialized" )
 
-    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() ){
-        COMMON_THROWEXCEPTION(
-            "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
-    }
-
-    if ( runtime.mCoefficients->getNumColumns() != solution.size() ){
-        COMMON_THROWEXCEPTION(
-            "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
-    }
-
-    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() ){
-        COMMON_THROWEXCEPTION(
-            "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
-    }
-
-    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() ){
-        COMMON_THROWEXCEPTION(
-            "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
-    }
-
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "size mismatch" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "size mismatch" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "distribution mismatch" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "distribution mismatch" )
 
     // Initialize
     this->getResidual();   

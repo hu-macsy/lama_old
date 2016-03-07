@@ -94,17 +94,10 @@ void CG::initialize( const Matrix& coefficients )
     runtime.mPScalar = 0.0;
     
     runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
-    common::scalar::ScalarType type = coefficients.getValueType();
 
-    runtime.mP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mQ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-
-    // 'force' vector operations to be computed at the same location where coefficients reside
-
-    runtime.mP->setContextPtr( coefficients.getContextPtr() );
-    runtime.mQ->setContextPtr( coefficients.getContextPtr() );
-    runtime.mZ->setContextPtr( coefficients.getContextPtr() );
+    runtime.mP.reset( coefficients.newDenseVector() );
+    runtime.mQ.reset( coefficients.newDenseVector() );
+    runtime.mZ.reset( coefficients.newDenseVector() );
 }
 
 void CG::iterate()

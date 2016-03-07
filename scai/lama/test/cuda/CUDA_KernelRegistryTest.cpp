@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getKernelTest, ValueType, test_types )
 {
     // This test checks that CUDA routines have been registered correctly and are accessible
 
-    ContextPtr context = Context::getContextPtr( scai::common::context::CUDA );
+    ContextPtr context = Context::getContextPtr( Context::CUDA );
 
     {
         LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;

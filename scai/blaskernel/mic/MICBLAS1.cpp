@@ -549,20 +549,20 @@ void MICBLAS1::sum(
 template<typename ValueType>
 void MICBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
 
+    const common::context::ContextType ctx = common::context::MIC;
     SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( MICBLAS1::scal, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( MICBLAS1::nrm2, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( MICBLAS1::asum, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( MICBLAS1::iamax, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( MICBLAS1::swap, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( MICBLAS1::copy, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( MICBLAS1::axpy, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( MICBLAS1::dot, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( MICBLAS1::sum, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( MICBLAS1::scal, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( MICBLAS1::nrm2, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( MICBLAS1::asum, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( MICBLAS1::iamax, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( MICBLAS1::swap, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( MICBLAS1::copy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( MICBLAS1::axpy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( MICBLAS1::dot, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( MICBLAS1::sum, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

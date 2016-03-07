@@ -1235,57 +1235,60 @@ void OpenMPELLUtils::sparseGEVM(
 
 void OpenMPELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::check>( check, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
 
-    KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::matrixAddSizes>( matrixAddSizes, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
 }
 
 template<typename ValueType>
 void OpenMPELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<ELLKernelTrait::absMaxVal<ValueType> >( absMaxVal, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::compressIA<ValueType> >( compressIA, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::compressValues<ValueType> >( compressValues, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::matrixAdd<ValueType> >( matrixAdd, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::normalGEVM<ValueType> >( normalGEVM, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::compressIA<ValueType> >( compressIA, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::compressValues<ValueType> >( compressValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void OpenMPELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, Host, flag );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

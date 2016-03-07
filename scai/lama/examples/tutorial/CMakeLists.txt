@@ -33,12 +33,18 @@
 foreach ( executable blas1 matrix scalar simple vector )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES_TUTORIAL ${EXAMPLE_FILES_TUTORIAL} ${executable}.cpp ) 
-    set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL} ${executable}.exe" )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
-#install examples
-install ( FILES ${EXAMPLE_FILES_TUTORIAL} DESTINATION ${PROJECT_EXAMPLE_DIR}/tutorial )
-install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR}/tutorial )
+# configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
+prepareExamplesMakeInc()
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 
-set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL}" PARENT_SCOPE )
+#install examples
+install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/tutorial )
+
+# install Makefile
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
+				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/tutorial/Makefile" COPYONLY )

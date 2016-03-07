@@ -33,7 +33,19 @@
 foreach ( executable task0 task1a task1b task2 task2a task3 task4 task5 )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_EXECUTABLES_LECTURE "${EXAMPLE_EXECUTABLES_LECTURE} ${executable}.exe" )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
-set ( EXAMPLE_EXECUTABLES_LECTURE "${EXAMPLE_EXECUTABLES_LECTURE}" PARENT_SCOPE )
+# configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
+prepareExamplesMakeInc()
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+
+#install examples
+install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc gr_30_30.mtx log_config
+		  DESTINATION ${PROJECT_EXAMPLE_DIR}/lecture )
+
+# install Makefile
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
+				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/lecture/Makefile" COPYONLY )

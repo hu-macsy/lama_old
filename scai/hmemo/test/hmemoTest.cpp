@@ -13,11 +13,17 @@
 #include <boost/test/unit_test_suite.hpp>
 
 #include <scai/hmemo.hpp>
+#include <scai/hmemo/test/MockContext.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <scai/logging.hpp>
 
 #include <iostream>
+
+// one time registration of MockContext required via guard variable
+
+template scai::hmemo::Context::Register<MockContext>::RegisterGuard 
+    scai::hmemo::Context::Register<MockContext>::registerGuard;
 
 /** The init function returns true if it can get the specified context. */
 

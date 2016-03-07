@@ -91,21 +91,12 @@ void MINRES::initialize( const Matrix& coefficients ){
     runtime.mS = 0.0;
     runtime.mSNew = 0.0;
 
-    common::scalar::ScalarType type = coefficients.getValueType();
-    
-    runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVOld.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecVNew.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecPOld.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecPNew.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-
-    runtime.mVecV->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecVOld->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecVNew->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecPOld->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecPNew->setContextPtr(coefficients.getContextPtr());
+    runtime.mVecV.reset( coefficients.newDenseVector() );
+    runtime.mVecVOld.reset( coefficients.newDenseVector() );
+    runtime.mVecVNew.reset( coefficients.newDenseVector() );
+    runtime.mVecP.reset( coefficients.newDenseVector() );
+    runtime.mVecPOld.reset( coefficients.newDenseVector() );
+    runtime.mVecPNew.reset( coefficients.newDenseVector() );
 }
 
 void MINRES::solveInit( Vector& solution, const Vector& rhs ){
@@ -114,29 +105,12 @@ void MINRES::solveInit( Vector& solution, const Vector& rhs ){
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
-    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() ){
-        COMMON_THROWEXCEPTION(
-            "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
-    }
-
-    if ( runtime.mCoefficients->getNumColumns() != solution.size() ){
-        COMMON_THROWEXCEPTION(
-            "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
-    }
-
-    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() ){
-        COMMON_THROWEXCEPTION(
-            "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
-    }
-
-    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() ){
-        COMMON_THROWEXCEPTION(
-            "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
-    }
-
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
 
     // Initialize
-
 
     this->getResidual();   
     *runtime.mVecVNew = *runtime.mResidual; 

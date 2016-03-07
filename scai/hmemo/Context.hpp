@@ -88,6 +88,7 @@ class COMMON_DLL_IMPORTEXPORT Context:
   
     public  common::Factory1<common::context::ContextType, int, ContextPtr>,
     public  common::Printable,
+    public  common::context,
     private common::NonCopyable
 {
 public:
@@ -96,7 +97,7 @@ public:
 
     /** Method to get the type of the context. */
 
-    common::context::ContextType getType() const;
+    ContextType getType() const;
 
     /** @brief  Predicate to check in a context whether a certain memory class can be used.
      *
@@ -179,7 +180,7 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContextPtr( const common::context::ContextType type, int deviceNr = -1 );
+    static ContextPtr getContextPtr( const ContextType type, int deviceNr = -1 );
 
     /** @brief get context as set by SCAI_CONTEXT and SCAI_DEVICE 
      *
@@ -201,17 +202,17 @@ public:
      * @param[in] type  is the type of context that is wanted
      * @return          if a context of the passed type is available
      */
-    static bool hasContext( const common::context::ContextType type );
+    static bool hasContext( const ContextType type );
 
 protected:
 
     /** Default constructor, can only be called by base classes. */
 
-    Context( common::context::ContextType type );
+    Context( ContextType type );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    common::context::ContextType mContextType;
+    ContextType mContextType;
 
     mutable bool mUseZeroCopy;   //!< if true getMemoryPtr() returns HostMemory
 
@@ -222,12 +223,12 @@ protected:
     mutable int mLine;//!< Line number where context has been enabled
 };
 
-inline common::context::ContextType Context::getType() const
+inline Context::ContextType Context::getType() const
 {
     return mContextType;
 }
 
-inline bool Context::hasContext( const common::context::ContextType type )
+inline bool Context::hasContext( const ContextType type )
 {
     return canCreate( type );
 }

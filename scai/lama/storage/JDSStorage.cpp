@@ -1067,7 +1067,7 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 {
     ContextPtr loc = getContextPtr();
 
-    if ( loc->getType() == common::context::MaxContext )
+    if ( loc->getType() == Context::MaxContext )
     {
         // workaround as common::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
@@ -1178,7 +1178,7 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
-    if ( loc->getType() == common::context::Host )
+    if ( loc->getType() == Context::Host )
     {
         // workaround as common::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
@@ -1332,7 +1332,7 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
-    if ( loc->getType() == common::context::Host )
+    if ( loc->getType() == Context::Host )
     {
         // On host we start directly a new task, avoids pushing accesses
 

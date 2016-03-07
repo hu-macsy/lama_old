@@ -73,7 +73,7 @@ void printUsage( const char* prog_name )
 
 int main( int argc, char* argv[] )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     int myRank = comm->getRank();
 
@@ -149,7 +149,7 @@ int main( int argc, char* argv[] )
 
     MatrixCreator<double>::buildPoisson( m, dimension, stencilType, dimX, dimY, dimZ );
 
-    DenseVector<double> lhs( m.getDistributionPtr(), 1.0 );
+    DenseVector<double> lhs( m.getRowDistributionPtr(), 1.0 );
     DenseVector<double> rhs( m * lhs );
 
     cout << "m = " << m << endl;

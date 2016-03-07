@@ -52,7 +52,6 @@ using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;
 
 using namespace hmemo;
-namespace context = common::context;
 
 typedef boost::mpl::list<double, float> test_types;
 
@@ -92,8 +91,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CUDAContextTest" );
 BOOST_AUTO_TEST_CASE( getContextTest )
 {
     // Test will take the default CUDA device
-    ContextPtr cudaContext1 = Context::getContextPtr( context::CUDA );
-    ContextPtr cudaContext2 = Context::getContextPtr( context::CUDA );
+    ContextPtr cudaContext1 = Context::getContextPtr( Context::CUDA );
+    ContextPtr cudaContext2 = Context::getContextPtr( Context::CUDA );
     // Two queries for the same context should deliver same pointer
     BOOST_CHECK( cudaContext1.get() == cudaContext2.get() );
 }
@@ -103,7 +102,7 @@ BOOST_AUTO_TEST_CASE( getContextTest )
 BOOST_AUTO_TEST_CASE( allocateTest )
 {
     HArray<int> ctxArray; // default, not allocated at all
-    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
+    ContextPtr cudaContext = Context::getContextPtr( Context::CUDA );
     {
         WriteAccess<int> array( ctxArray, cudaContext );
         array.resize( 10 );
@@ -117,7 +116,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 
 BOOST_AUTO_TEST_CASE ( releaseTest )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( Context::Host );
 
     HArray<IndexType> ctxArray; // default, not allocated at all
     ReadAccess<IndexType> readTestAccess( ctxArray, contextPtr );
@@ -148,7 +147,7 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
 
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( Context::Host );
 
     HArray<IndexType> ctxArray; // default, not allocated at all
     {
@@ -173,8 +172,8 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 BOOST_AUTO_TEST_CASE( asyncTest )
 {
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
-    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( Context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( Context::CUDA );
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;
@@ -205,8 +204,8 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
 BOOST_AUTO_TEST_CASE( syncTest )
 {
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
-    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( Context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( Context::CUDA );
 
     const IndexType n = 100;
     const float value = 1.4;

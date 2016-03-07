@@ -213,18 +213,20 @@ int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
+<<<<<<< HEAD
 template<typename ValueType>
 void LAPACKe_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
-    using kregistry::KernelRegistry;
+	using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register lapack wrapper routines for Host at kernel registry" )
 
-    KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( LAPACKe_LAPACK::getrf, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACKe_LAPACK::getri, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( LAPACKe_LAPACK::getinv, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( LAPACKe_LAPACK::tptrs, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( LAPACKe_LAPACK::getrf, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACKe_LAPACK::getri, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( LAPACKe_LAPACK::getinv, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( LAPACKe_LAPACK::tptrs, ctx, flag );
 }
 
 LAPACKe_LAPACK::LAPACKe_LAPACK() {

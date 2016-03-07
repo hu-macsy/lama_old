@@ -375,7 +375,6 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     const HArray<ValueType>& rowValues,
     const ContextPtr preferredLoc )
 {
-    // ContextPtr loc = Context::getContextPtr( context::Host );
     const IndexType numRows = rowIA.size() - 1;
     const IndexType numValues = rowJA.size();
     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
@@ -1408,16 +1407,11 @@ BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 #undef LAMA_MATRIX_STORAGE_INSTANTIATE
 #undef LAMA_MATRIX_STORAGE2_INSTANTIATE
 
-namespace Format
-{
-
-std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat& storageFormat )
+std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageFormat& storageFormat )
 {
     stream << scai::lama::format2Str( storageFormat );
     return stream;
 }
-
-} /* end namespace Format */
 
 } /* end namespace lama */
 

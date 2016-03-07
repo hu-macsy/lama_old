@@ -208,7 +208,8 @@ void MICMKLCSRUtils::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "register some CSR kernels implemented by MKL for MIC in Kernel Registry" )
 
     using kregistry::KernelRegistry;
-    using common::context::MIC;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 

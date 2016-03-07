@@ -1,0 +1,41 @@
+include make.inc
+
+ifdef SCAI_BOOST_INCLUDE_DIR
+    BOOST_INCLUDE = -I${SCAI_BOOST_INCLUDE_DIR}
+endif
+
+ifdef SCAI_CUDA_INCLUDE_DIR
+    CUDA_INCLUDE = -I${SCAI_CUDA_INCLUDE_DIR}
+endif
+
+INCLUDE_FLAGS = -I${SCAI_ROOT}/include ${BOOST_INCLUDE} ${CUDA_INCLUDE}
+
+ifdef ADDITIONAL_EXAMPLE_LINK_LIBRARIES
+	LINK_LIBRARY = -l${ADDITIONAL_EXAMPLE_LINK_LIBRARIES}
+endif
+
+LD_FLAGS = ${SCAI_LD_FLAGS} ${LINK_LIBRARY} -Wl,-rpath=${SCAI_ROOT}/lib:${SCAI_CUDA_LIBRARY_PATH}
+
+EXECUTABLE: ${EXECUTABLES} ${MODULES}
+
+.SUFFIXES:
+
+.SUFFIXES: .cpp .o
+.SUFFIXES: .cu .o
+.SUFFIXES: .o .exe
+.SUFFIXES: .o .so
+
+.o.exe: 
+	${CXX} -o $*.exe $*.o ${LD_FLAGS}
+
+.o.so:
+	${CXX} -o lib$*.so $*.o ${LD_FLAGS} -shared
+
+.cpp.o:
+	${CXX} -fPIC ${CXX_FLAGS} ${SCAI_DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
+
+.cu.o:
+	${CXX_CUDA} ${CXX_CUDA_FLAGS} ${SCAI_DEFINES} ${INCLUDE_FLAGS} -c $*.cu
+
+clean:
+	rm -rf *.exe *.o *.so *.frm *.frv *.amg *.vec *.trace *.ct *.time

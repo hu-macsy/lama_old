@@ -137,8 +137,9 @@ void BLAS_BLAS3::gemm(
 template<typename ValueType>
 void BLAS_BLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     bool useBLAS = false;
     int level = 0;
@@ -160,7 +161,7 @@ void BLAS_BLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
     SCAI_LOG_INFO( logger, "register BLAS3 wrapper routines for Host at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( BLAS_BLAS3::gemm, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( BLAS_BLAS3::gemm, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
