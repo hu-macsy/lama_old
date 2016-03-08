@@ -40,6 +40,7 @@
 
 #include <scai/logging.hpp>
 #include <scai/common/ReductionOp.hpp>
+#include <scai/common/mepr/TemplateSpecifier.hpp>
 
 namespace scai
 {
@@ -169,6 +170,14 @@ public:
 
 private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    SCAI_DECLARE_TEMPLATESPECIFIER( SpecifierV, template<typename ValueType> )
+
+    HArrayUtils();
+    ~HArrayUtils(){}
+    HArrayUtils( const HArrayUtils& );
+
+    static HArrayUtils guard;
 };
 
 } /* end namespace utilskernel */
