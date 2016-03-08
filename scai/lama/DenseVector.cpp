@@ -42,6 +42,9 @@
 
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/FileType.hpp>
+#include <scai/lama/io/IOUtils.hpp>
+
+#include <scai/lama/mepr/IOWrapper.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -59,7 +62,6 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/Constants.hpp>
-#include <scai/common/preprocessor.hpp>
 
 // std
 #include <ostream>
@@ -1306,58 +1308,18 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
 
     ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
-    switch ( dataType )
+    if( dataType == common::scalar::INTERNAL )
     {
-
-#define LAMA_WRITE_XDR_CASE( z, I, _ )                                                                     \
-        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                         \
-            writeDataToXDRFile<ARITHMETIC_HOST_TYPE_##I, ValueType>( outFile, dataRead.get(), numRows );   \
-            break;                                                                                         \
-
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_WRITE_XDR_CASE, _ )
-
-#undef LAMA_WRITE_XDR_CASE
-
-        case common::scalar::INTERNAL:
-            writeDataToXDRFile<ValueType, ValueType>( outFile, dataRead.get(), numRows );
-            break;
-
-        case common::scalar::PATTERN:
-            break;
-
-        default:
-            COMMON_THROWEXCEPTION( "unsupported file data type = " << dataType )
+        IOUtils<ValueType, ValueType>::writeXDR( outFile, dataRead.get(), numRows );
+    }
+    else
+    {
+        mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeXDR( dataType, outFile, dataRead.get(), numRows );
     }
 
     outFile.write( &nnu );
     outFile.write( &dataTypeSize );
     outFile.close();
-}
-
-template<typename FileType,typename DataType>
-static void writeBinaryData( std::fstream& outFile, const DataType data[], const IndexType n )
-{
-    if( typeid(FileType) == typeid(DataType) )
-    {
-        // no type conversion needed
-
-        outFile.write( reinterpret_cast<const char*>( data ), sizeof(DataType) * n );
-        outFile.flush();
-        return;
-    }
-
-    // allocate buffer for type conversion
-
-    scoped_array<FileType> buffer( new FileType[n] );
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        buffer[i] = static_cast<FileType>( data[i] );
-    }
-
-    outFile.write( reinterpret_cast<const char*>( buffer.get() ), sizeof(FileType) * n );
-    outFile.flush();
-    return;
 }
 
 template<typename ValueType>
@@ -1369,24 +1331,13 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 
     ReadAccess<ValueType> dataRead( mLocalValues, contextPtr );
 
-    switch( type )
+    if( type == common::scalar::INTERNAL )
     {
-
-#define LAMA_WRITE_CASE( z, I, _ )                                                                      \
-        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                      \
-            writeBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType>( outFile, dataRead.get(), numRows );   \
-            break;                                                                                      \
-
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_WRITE_CASE, _ )
-
-#undef LAMA_WRITE_CASE
-
-        case common::scalar::INTERNAL:
-            writeBinaryData<ValueType,ValueType>( outFile, dataRead.get(), numRows );
-            break;
-
-        default:
-            COMMON_THROWEXCEPTION( "unsupported file data type = " << type )
+        IOUtils<ValueType, ValueType>::writeBinary( outFile, dataRead.get(), numRows );
+    }
+    else
+    {
+        mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeBinary( type, outFile, dataRead.get(), numRows );
     }
 }
 
@@ -1582,27 +1533,13 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     WriteOnlyAccess<ValueType> writeData( mLocalValues, nnu );
 
-    switch( fileType )
+    if( fileType == common::scalar::INTERNAL )
     {
-        case common::scalar::INTERNAL:
-            readXDRData<ValueType,ValueType>( inFile, writeData.get(), nnu );
-            break;
-
-#define LAMA_READ_XDR_CASE( z, I, _ )                                                          \
-        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype:                              \
-            readXDRData<ARITHMETIC_HOST_TYPE_##I, ValueType>( inFile, writeData.get(), nnu );  \
-            break;                                                                             \
-
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_READ_XDR_CASE, _ )
-
-#undef LAMA_READ_XDR_CASE
-
-        case common::scalar::PATTERN:
-            // that might be okay
-            break;
-
-        default:
-            COMMON_THROWEXCEPTION( "Invalid data type size of vector data." )
+        IOUtils<ValueType, ValueType>::readXDR( inFile, writeData.get(), nnu );
+    }
+    else
+    {
+        mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readXDR( fileType, inFile, writeData.get(), nnu );
     }
 
     // Validate Header
@@ -1636,24 +1573,13 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
 
     WriteOnlyAccess<ValueType> writeData( mLocalValues, n );
 
-    switch( type )
+    if( type == common::scalar::INTERNAL )
     {
-
-#define LAMA_READ_BIN_CASE( z, I, _ )                                                                   \
-        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                      \
-            FileIO::readBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType>( inFile, writeData.get(), n );  \
-            break;                                                                                      \
-
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_READ_BIN_CASE, _ )
-
-#undef LAMA_READ_BIN_CASE
-
-        case common::scalar::INTERNAL:
-            FileIO::readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );
-            break;
-
-        default:
-            COMMON_THROWEXCEPTION( "unsupported file data type = " << type )
+        FileIO::readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );
+    }
+    else
+    {
+        mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readBinary( type, inFile, writeData.get(), n );
     }
 }
 

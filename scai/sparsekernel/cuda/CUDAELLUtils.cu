@@ -2236,7 +2236,7 @@ void CUDAELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelReg
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::check>( check, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
 }
 
 template<typename ValueType>
