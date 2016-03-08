@@ -34,6 +34,7 @@ scai_project(
 
     HEADERS
 
+        TemplateSpecifier
         TypeList
 
 

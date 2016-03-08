@@ -48,7 +48,6 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Constants.hpp>
-#include <scai/common/preprocessor.hpp>
 #include <scai/common/ScalarType.hpp>
 
 // std
@@ -364,50 +363,25 @@ void HArrayUtils::conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefL
     }
 }
 
-// template instantiation for the supported data types
+template<typename ValueType>
+void HArrayUtils::SpecifierV<ValueType>::specify()
+{
+    using common::mepr::TemplateSpecifier;
 
-template void HArrayUtils::setVal( hmemo::_HArray& , const IndexType , IndexType );
-template void HArrayUtils::setVal( hmemo::_HArray& , const IndexType , float );
-template void HArrayUtils::setVal( hmemo::_HArray& , const IndexType , double );
-template IndexType HArrayUtils::getVal( const hmemo::_HArray& , const IndexType );
-template void HArrayUtils::setScalar( hmemo::_HArray& , const IndexType , const common::reduction::ReductionOp op, const ContextPtr ctx );
+    TemplateSpecifier::set( HArrayUtils::setVal<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::getVal<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::setScalar<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::assignScaled<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::scale<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::conj<ValueType> );
+}
 
-//template IndexType HArrayUtils::getVal( const hmemo::HArray<IndexType>& , const IndexType );
+HArrayUtils::HArrayUtils()
+{
+    common::mepr::TemplateSpecifierV<SpecifierV, ARITHMETIC_ARRAY_HOST_LIST>::call();
+}
 
-template void HArrayUtils::assignScaled(
-    hmemo::HArray<IndexType>& ,
-    const IndexType ,
-    const HArray<IndexType>& ,
-    hmemo::ContextPtr  );
-
-/** Macro instantiates operations that have also type conversion */
-
-/** Macro instantiates operations for supported arithmetic types */
-
-#define HARRAY_UTILS_INSTANTIATE(z, I, _)                                       \
-    template                                                                        \
-    void HArrayUtils::scale(                                                         \
-            HArray<ARITHMETIC_HOST_TYPE_##I>& array,                                 \
-            const ARITHMETIC_HOST_TYPE_##I beta,                                     \
-            ContextPtr prefLoc );                                                   \
-                                                                                    \
-    template                                                                        \
-    void HArrayUtils::conj(                                                         \
-            HArray<ARITHMETIC_HOST_TYPE_##I>& target,                            \
-            ContextPtr loc );                                                       \
-                                                                                    \
-    template                                                                        \
-    void HArrayUtils::assignScaled(                                              \
-            HArray<ARITHMETIC_HOST_TYPE_##I>& result,                            \
-            const ARITHMETIC_HOST_TYPE_##I beta,                                    \
-            const HArray<ARITHMETIC_HOST_TYPE_##I>& y,                           \
-            ContextPtr loc );                                                       \
-                                                                                    \
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, HARRAY_UTILS_INSTANTIATE, _ )
-
-#undef HARRAY_UTILS2_INSTANTIATE
-#undef HARRAY_UTILS_INSTANTIATE
+HArrayUtils HArrayUtils::guard;
 
 } /* end namespace utilskernel */
 
