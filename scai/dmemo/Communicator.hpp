@@ -136,7 +136,7 @@ public:
      *  More convenient than Factory::create that throws Exception
      */
 
-    static CommunicatorPtr getCommunicator( const CommunicatorKind& type );
+    static CommunicatorPtr getCommunicatorPtr( const CommunicatorKind& type );
 
     /** Get communicator from the factory.
      *
@@ -147,7 +147,7 @@ public:
      *   - if not specified take the default one
      */
 
-    static CommunicatorPtr getCommunicator();
+    static CommunicatorPtr getCommunicatorPtr();
 
     /** Get a default communicator from the factory.
      *
@@ -157,7 +157,7 @@ public:
      *   - take if available in this order: MPI, GPI, NO
      */
 
-    static CommunicatorPtr getDefaultCommunicator();
+    static CommunicatorPtr getDefaultCommunicatorPtr();
 
     /** Enumeration type for supported thread safety levels. */
 

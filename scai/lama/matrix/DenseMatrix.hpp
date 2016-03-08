@@ -552,9 +552,9 @@ public:
      */
     virtual DenseMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method Matrix::getFormatType with covariant return type */
+    /* Implementation of pure method Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormatType() const
+    virtual Format::MatrixStorageFormat getFormat() const
     {
         return Format::DENSE;
     }
@@ -570,8 +570,8 @@ public:
     using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getNumRows;
     using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getNumColumns;
 
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getDistribution;
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getDistributionPtr;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getRowDistribution;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getRowDistributionPtr;
     using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getColDistribution;
     using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getColDistributionPtr;
 
@@ -713,7 +713,7 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 
     // inherit size and distributions
 
-    Matrix::setDistributedMatrix( other.getDistributionPtr(), other.getColDistributionPtr() );
+    Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
 
     mData.resize( other.mData.size() );
 

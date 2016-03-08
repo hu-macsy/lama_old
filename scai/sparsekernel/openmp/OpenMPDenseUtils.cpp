@@ -409,35 +409,37 @@ void OpenMPDenseUtils::scaleRows(
 template<typename ValueType>
 void OpenMPDenseUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<DenseKernelTrait::nonZeroValues<ValueType> >( nonZeroValues, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::setValue<ValueType> >( setValue, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::scaleValue<ValueType> >( scaleValue, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ValueType> >( setDiagonalValue, Host, flag );
+    KernelRegistry::set<DenseKernelTrait::nonZeroValues<ValueType> >( nonZeroValues, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::setValue<ValueType> >( setValue, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::scaleValue<ValueType> >( scaleValue, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ValueType> >( setDiagonalValue, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::copyDenseValues<ValueType, OtherValueType> >( copyDenseValues, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::getDiagonal<ValueType, OtherValueType> >( getDiagonal, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::setDiagonal<ValueType, OtherValueType> >( setDiagonal, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::getRow<ValueType, OtherValueType> >( getRow, Host, flag );
-    KernelRegistry::set<DenseKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, Host, flag );
+    KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::copyDenseValues<ValueType, OtherValueType> >( copyDenseValues, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::getDiagonal<ValueType, OtherValueType> >( getDiagonal, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::setDiagonal<ValueType, OtherValueType> >( setDiagonal, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -301,8 +301,8 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common:
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
+template<typename ValueType, typename OtherValueType>
+void CUDAUtils::setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op )
 {
     using namespace thrust::placeholders;
 
@@ -313,14 +313,15 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
     if ( n > 0 )
     {
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
+        ValueType value = static_cast<ValueType>( val );
 
         switch ( op ) 
         {
             case common::reduction::COPY:
-                thrust::fill( data, data + n, val );
+                thrust::fill( data, data + n, value );
                 break;
             case common::reduction::ADD:
-                thrust::for_each( data, data + n,  _1 += val);
+                thrust::for_each( data, data + n,  _1 += value);
                 break;
             case common::reduction::MULT:
                 {
@@ -330,7 +331,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
                     }
                     else
                     {
-                        thrust::for_each( data, data + n,  _1 *= val);
+                        thrust::for_each( data, data + n,  _1 *= value );
                     }
                 }
                 break;
@@ -692,52 +693,67 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 
 void CUDAUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    kregistry::KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, common::context::CUDA, flag );
+    kregistry::KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
+
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, ctx, flag );
+
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx, flag );
+
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<IndexType> >( absMaxDiffVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx, flag );
+
+    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, ctx, flag );
 }
 
 template<typename ValueType>
 void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, CUDA, flag );
 //    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    // we keep the registrations for IndexType as we do not need conversions
-
-    KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<ValueType, OtherValueType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -134,56 +134,74 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     std::string id = solverId;
     LoggerPtr slogger(
         new CommonLogger( solverId, LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly) );
+
     DefaultJacobi jacobiSolver( "JacobiTest", slogger );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     CSRSparseMatrix<ValueType> matrix( system.coefficients );
     MatrixType coefficients( matrix );
     SCAI_LOG_INFO( logger, "coefficient matrix = " << coefficients );
     coefficients.setContextPtr( context );
+
     SCAI_LOG_INFO( logger, "JacobiTest uses context = " << context->getType() );
-    const DenseVector<ValueType> rhs( system.rhs );
+
+    DenseVector<ValueType> rhs( system.rhs );
+    rhs.setContextPtr( context );
+
     DenseVector<ValueType> solution( system.coefficients.getNumRows(), static_cast<ValueType>( 2.1 ) );
+    solution.setContextPtr( context );
+
     DenseVector<ValueType> exactSolution( system.solution );
+    exactSolution.setContextPtr( context );
+
     jacobiSolver.initialize( system.coefficients );
     CriterionPtr criterion( new IterationCount( 120 ) );
     jacobiSolver.setStoppingCriterion( criterion );
     jacobiSolver.solve( solution, rhs );
+
     DenseVector<ValueType> diff( solution - exactSolution );
+    diff.setContextPtr( context );
+
     L2Norm l2Norm;
     Scalar norm = l2Norm( diff );
     BOOST_CHECK( norm.getValue<ValueType>() < 1e-1 );
     //bad omega
     //test for even iterations
+
     DenseVector<ValueType> solutionA( system.coefficients.getNumRows(), 1.0 );
+    solutionA.setContextPtr( context );
+
     DefaultJacobi jacobiSolverA( "JacobiTest solver 2" );
     jacobiSolverA.initialize( coefficients );
     jacobiSolverA.setOmega( 0.5 );
     jacobiSolverA.solve( solutionA, rhs );
     jacobiSolverA.solve( solutionA, rhs ); //twice
+
     DenseVector<ValueType> solutionB( system.coefficients.getNumRows(), 1.0 );
+    solutionB.setContextPtr( context );
+
     DefaultJacobi jacobiSolverB( "JacobiTest solver 2" );
     CriterionPtr criterionB( new IterationCount( 2 ) );
     jacobiSolverB.setStoppingCriterion( criterionB );
     jacobiSolverB.initialize( coefficients );
     jacobiSolverB.setOmega( 0.5 );
     jacobiSolverB.solve( solutionB, rhs );
+
     DenseVector<ValueType> diffAB( solutionA - solutionB );
+    diffAB.setContextPtr( context );
+
     Scalar l2norm = l2Norm( diffAB );
     BOOST_CHECK( l2norm.getValue<ValueType>() < 1e-5 );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveMethod<CSRSparseMatrix<ValueType> >( "<JacobiCSR> ", context );
-        testSolveMethod<ELLSparseMatrix<ValueType> >( "<JacobiELL> ", context );
-        testSolveMethod<JDSSparseMatrix<ValueType> >( "<JacobiJDS>", context );
-        testSolveMethod<DIASparseMatrix<ValueType> >( "<JacobiDIA>", context );
-        testSolveMethod<COOSparseMatrix<ValueType> >( "<JacobiCOO> ", context );
-        testSolveMethod<DenseMatrix<ValueType> >( "<JacobiDense>", context );
-    }
+    ContextPtr context = Context::getContextPtr();
+    testSolveMethod<CSRSparseMatrix<ValueType> >( "<JacobiCSR> ", context );
+    testSolveMethod<ELLSparseMatrix<ValueType> >( "<JacobiELL> ", context );
+    testSolveMethod<JDSSparseMatrix<ValueType> >( "<JacobiJDS>", context );
+    testSolveMethod<DIASparseMatrix<ValueType> >( "<JacobiDIA>", context );
+    testSolveMethod<COOSparseMatrix<ValueType> >( "<JacobiCOO> ", context );
+    testSolveMethod<DenseMatrix<ValueType> >( "<JacobiDense>", context );
 }
 
 /* ------------------------------------------------------------------------- */

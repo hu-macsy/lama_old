@@ -569,22 +569,22 @@ void OpenMPBLAS1::sum(
 template<typename ValueType>
 void OpenMPBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
-
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( OpenMPBLAS1::scal, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( OpenMPBLAS1::nrm2, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( OpenMPBLAS1::asum, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( OpenMPBLAS1::iamax, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( OpenMPBLAS1::swap, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( OpenMPBLAS1::copy, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( OpenMPBLAS1::axpy, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( OpenMPBLAS1::dot, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( OpenMPBLAS1::sum, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( OpenMPBLAS1::scal, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( OpenMPBLAS1::nrm2, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( OpenMPBLAS1::asum, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( OpenMPBLAS1::iamax, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( OpenMPBLAS1::swap, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( OpenMPBLAS1::copy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( OpenMPBLAS1::axpy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( OpenMPBLAS1::dot, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( OpenMPBLAS1::sum, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

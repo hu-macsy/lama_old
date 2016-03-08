@@ -62,12 +62,10 @@ BOOST_AUTO_TEST_CASE( getContextText )
 
 BOOST_AUTO_TEST_CASE( useContextTest )
 {
-    using namespace common::context;  // make enum ContextType visible
-
     SCAI_LOG_DEF_LOGGER( logger, "Test" )
 
-    ContextPtr userContext  = Context::getContextPtr( UserContext, 1 );
-    ContextPtr hostContext  = Context::getContextPtr( Host );
+    ContextPtr userContext  = Context::getContextPtr( Context::UserContext, 1 );
+    ContextPtr hostContext  = Context::getContextPtr( Context::Host );
     ContextPtr testContext  = Context::getContextPtr();
 
     SCAI_LOG_INFO( logger, "testContext = " << *testContext << ", userContext = " << *userContext );

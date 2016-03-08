@@ -50,6 +50,10 @@ ReadAccess            Template class for read access on HArray
 WriteAccess           Template class for write access on HArray
 =================     ================================================================================
 
+********
+Contents
+********
+
 .. toctree::
    :titlesonly:
    :maxdepth: 2

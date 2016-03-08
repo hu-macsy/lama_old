@@ -40,7 +40,7 @@ int main()
 
     // get the default communicator (usually MPI if it has been enabled, or set by SCAI_COMMUNICATOR
 
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     IndexType size = 71;
 

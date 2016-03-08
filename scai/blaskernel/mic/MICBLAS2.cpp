@@ -179,12 +179,13 @@ void MICBLAS2::gemv(
 template<typename ValueType>
 void MICBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register BLAS2 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( MICBLAS2::gemv, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( MICBLAS2::gemv, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

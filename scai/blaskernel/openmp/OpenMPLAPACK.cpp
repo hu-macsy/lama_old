@@ -538,16 +538,17 @@ void OpenMPLAPACK::laswp(
 template<typename ValueType>
 void OpenMPLAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register LAPACK OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( OpenMPLAPACK::getrf, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( OpenMPLAPACK::getri, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( OpenMPLAPACK::getinv, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( OpenMPLAPACK::tptrs, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( OpenMPLAPACK::laswp, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( OpenMPLAPACK::getrf, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( OpenMPLAPACK::getri, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( OpenMPLAPACK::getinv, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( OpenMPLAPACK::tptrs, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( OpenMPLAPACK::laswp, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

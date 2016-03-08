@@ -152,12 +152,11 @@ void MICBLAS3::gemm(
 template<typename ValueType>
 void MICBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register BLAS3 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
+    const common::context::ContextType ctx = common::context::MIC;
 
-    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( MICBLAS3::gemm, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( MICBLAS3::gemm, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

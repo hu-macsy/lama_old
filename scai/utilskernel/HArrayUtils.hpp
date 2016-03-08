@@ -77,31 +77,17 @@ public:
         const common::reduction::ReductionOp op,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
-    template<typename ValueType1,typename ValueType2>
-    static void setImpl( 
-        hmemo::HArray<ValueType1>& target, 
-        const hmemo::HArray<ValueType2>& source, 
-        const common::reduction::ReductionOp op, 
-        hmemo::ContextPtr context );
-
-    template<typename ValueType1,typename ValueType2>
     static void gather(
-        hmemo::HArray<ValueType1>& target,
-        const hmemo::HArray<ValueType2>& source,
+        hmemo::_HArray& target,
+        const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& index );
 
     template<typename ValueType1>
     static void setScalar( 
-        hmemo::HArray<ValueType1>& target,
-        const ValueType1 value, 
+        hmemo::_HArray& target,
+        const ValueType1 value,
         const common::reduction::ReductionOp op, hmemo::ContextPtr context )
         __attribute__( ( noinline ) );
-
-//    static void setScalar(
-//        hmemo::_HArray& target,
-//        const Scalar& value,
-//        const common::reduction::ReductionOp op,
-//        hmemo::ContextPtr context );
 
     /** This method sets a single value in a heterogeneous array.
      *
@@ -113,10 +99,10 @@ public:
      */
 
     template<typename ValueType>
-    static void setVal( hmemo::HArray<ValueType>& target, const IndexType index, ValueType val );
+    static void setVal( hmemo::_HArray& target, const IndexType index, const ValueType val );
 
     template<typename ValueType>
-    static ValueType getVal( const hmemo::HArray<ValueType>& array, const IndexType index );
+    static ValueType getVal( const hmemo::_HArray& array, const IndexType index );
 
     /** Scaled assignment on HArray.
      *
@@ -147,11 +133,41 @@ public:
     template<typename ValueType>
     static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc );
 
+    /*
+     * Implementation of functions
+     */
+    template<typename ValueType1,typename ValueType2>
+    static void setImpl(
+        hmemo::HArray<ValueType1>& target,
+        const hmemo::HArray<ValueType2>& source,
+        const common::reduction::ReductionOp op,
+        hmemo::ContextPtr context );
+
+    template<typename ValueType1,typename ValueType2>
+    static void gatherImpl(
+        hmemo::HArray<ValueType1>& target,
+        const hmemo::HArray<ValueType2>& source,
+        const hmemo::HArray<IndexType>& index );
+
+    template<typename ValueType1, typename ValueType2>
+    static void setScalarImpl(
+        hmemo::HArray<ValueType1>& target,
+        const ValueType2 value,
+        const common::reduction::ReductionOp op, hmemo::ContextPtr context )
+        __attribute__( ( noinline ) );
+
+    template<typename ValueType, typename OtherValueType>
+    static void setValImpl(
+        hmemo::HArray<ValueType>& target,
+        const IndexType index,
+        const OtherValueType val );
+
+    template<typename ValueType, typename OtherValueType>
+    static ValueType getValImpl(
+        const hmemo::HArray<OtherValueType>& array,
+        const IndexType index );
+
 private:
-
-    template<typename ValueType>
-    static void setImpl1( hmemo::HArray<ValueType>& target, const hmemo::_HArray& source, const common::reduction::ReductionOp op, hmemo::ContextPtr context );
-
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 

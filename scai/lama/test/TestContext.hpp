@@ -45,12 +45,12 @@ namespace lama_test
 class TestContext
 {
 public:
-    static hmemo::ContextPtr getContext( const common::context::ContextType type );
+    static hmemo::ContextPtr getContext( const hmemo::Context::ContextType type );
 private:
     TestContext();
     virtual ~TestContext();
 
-    static std::map<common::context::ContextType, hmemo::ContextPtr> contexts;
+    static std::map<hmemo::Context::ContextType, hmemo::ContextPtr> contexts;
 };
 
 } /* end namespace lama_test */

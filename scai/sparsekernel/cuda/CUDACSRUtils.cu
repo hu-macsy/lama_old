@@ -3292,50 +3292,53 @@ void CUDACSRUtils::matrixMultiply(
 
 void CUDACSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
+    const common::context::ContextType ctx = common::context::CUDA;
 
-    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, CUDA, flag );
+    SCAI_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
 
-    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, CUDA, flag );
+    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+
+    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
 }
 
 template<typename ValueType>
 void CUDACSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, CUDA, flag );
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, CUDA, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

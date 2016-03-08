@@ -36,12 +36,12 @@
 #pragma once
 
 // base classes
-#include <scai/lama/LArray.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 namespace scai
 {
 
-namespace lama
+namespace utilskernel
 {
 
 /**
@@ -93,7 +93,7 @@ LArrayRef<ValueType>::LArrayRef( IndexType size, ValueType* pointer )
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
-    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
+    hmemo::ContextData& host = mContextDataManager[ hmemo::HostMemory::getIt() ];
     host.setRef( pointer, size * mValueSize );
 
     mSize = size;
@@ -112,7 +112,7 @@ LArrayRef<ValueType>::LArrayRef( IndexType size, const ValueType* pointer )
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
-    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
+    hmemo::ContextData& host = mContextDataManager[ hmemo::HostMemory::getIt() ];
 
     // dealing with const references in ContextData is not supported
 
@@ -125,6 +125,6 @@ LArrayRef<ValueType>::LArrayRef( IndexType size, const ValueType* pointer )
     mSize = size;
 }
 
-} /* end namespace lama */
+} /* end namespace utilskernel */
 
 } /* end namespace scai */

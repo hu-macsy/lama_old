@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
 
     Distribution::getCreateValues( values );
 
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( local2GlobalTest )
 
     Distribution::getCreateValues( values );
 
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
 
     Distribution::getCreateValues( values );
 
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
     Distribution::getCreateValues( values );
 
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( printDistributionVector )
 
     Distribution::getCreateValues( values );
 
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     for ( size_t i = 0; i < values.size(); ++i )
     {

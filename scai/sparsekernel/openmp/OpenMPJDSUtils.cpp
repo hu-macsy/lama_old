@@ -827,47 +827,50 @@ void OpenMPJDSUtils::jacobiHalo(
 
 void OpenMPJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, Host, flag );
-    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
 
-    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, Host, flag );
-    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
 }
 
 template<typename ValueType>
 void OpenMPJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, Host, flag );
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
-    KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, Host, flag );
-    KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, Host, flag );
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, Host, flag );              \
-    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, Host, flag );      \
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, Host, flag );  \
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, Host, flag );  \
+    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );              \
+    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );      \
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );  \
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );  \
 }
 
 /* --------------------------------------------------------------------------- */

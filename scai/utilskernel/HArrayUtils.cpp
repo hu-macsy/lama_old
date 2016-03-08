@@ -38,6 +38,8 @@
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 
+#include <scai/utilskernel/mepr/UtilsWrapper.hpp>
+
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
@@ -48,7 +50,6 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/preprocessor.hpp>
 #include <scai/common/ScalarType.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 // std
 #include <iostream>
@@ -75,6 +76,33 @@ void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextP
     }
 
     set( target, source, common::reduction::COPY, validLoc );
+}
+
+void HArrayUtils::set(
+    _HArray& target,
+    const _HArray& source,
+    const common::reduction::ReductionOp op,
+    const ContextPtr loc )
+{
+    ContextPtr validLoc = loc;
+
+    if ( !validLoc )
+    {
+        if ( op == common::reduction::COPY )
+        {
+            // if no context is given we assign where source has a valid copy available
+
+            validLoc = source.getValidContext();
+        }
+        else
+        {
+            // if no context is given we reduce where target has a valid copy available
+
+            validLoc = target.getValidContext();
+        }
+    }
+
+    mepr::UtilsWrapper<ARITHMETIC_ARRAY_HOST_LIST>::setImpl( target, source, op, validLoc );
 }
 
 template<typename ValueType1,typename ValueType2>
@@ -119,211 +147,23 @@ void HArrayUtils::setImpl(
     }
 }
 
-/*
-template<typename ValueType, typename T1>
-static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1> )
+void HArrayUtils::gather(
+    _HArray& target,
+    const _HArray& source,
+    const HArray<IndexType>& indexes )
 {
-    if( common::getScalarType<T1>() ==  source.getValueType() )
-    {
-        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
-    }
-}
+    SCAI_REGION( "HArray.gather" )
 
-template<typename ValueType, typename T1, typename T2=T1>
-static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2> )
-{
-    if( common::getScalarType<T1>() ==  source.getValueType() )
-    {
-        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
-    }
-    else
-    {
-        callMeNow( target, source, op, loc, common::mepr::Container<T2>() );
-    }
-}
-
-template<typename ValueType, typename T1, typename T2=T1, typename T3=T2>
-static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3> )
-{
-    if( common::getScalarType<T1>() ==  source.getValueType() )
-    {
-        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
-    }
-    else
-    {
-        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3>() );
-    }
-}
-
-template<typename ValueType, typename T1, typename T2=T1, typename T3=T2, typename T4=T3>
-static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3, T4> )
-{
-    if( common::getScalarType<T1>() ==  source.getValueType() )
-    {
-        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
-    }
-    else
-    {
-        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3, T4>() );
-    }
-}
-
-template<typename ValueType, typename T1, typename T2=T1, typename T3=T2, typename T4=T3, typename T5=T4>
-static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3, T4, T5> )
-{
-    if( common::getScalarType<T1>() ==  source.getValueType() )
-    {
-        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
-    }
-    else
-    {
-        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3, T4, T5>() );
-    }
-}
-
-template<typename ValueType, typename T1, typename T2=T1, typename T3=T2, typename T4=T3, typename T5=T4, typename T6=T5>
-static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3, T4, T5, T6> )
-{
-    if( common::getScalarType<T1>() ==  source.getValueType() )
-    {
-        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
-    }
-    else
-    {
-        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3, T4, T5, T6>() );
-    }
-}
-
-template<typename ValueType, typename T1, typename T2=T1, typename T3=T2, typename T4=T3, typename T5=T4, typename T6=T5, typename T7=T6>
-static void callMeNow( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc, common::mepr::Container<T1, T2, T3, T4, T5, T6, T7> )
-{
-    if( common::getScalarType<T1>() ==  source.getValueType() )
-    {
-        HArrayUtils::setImpl( target, reinterpret_cast<const HArray<T1>&>( source ), op, loc );
-    }
-    else
-    {
-        callMeNow( target, source, op, loc, common::mepr::Container<T2, T3, T4, T5, T6, T7>() );
-    }
-}
-*/
-
-namespace mepr {
-
-template<typename ValueType, typename TList> struct UtilsWrapper;
-
-template<typename ValueType> struct UtilsWrapper<ValueType,common::mepr::NullType>
-{
-    static void setImpl1( HArray<ValueType>&, const _HArray&, const common::reduction::ReductionOp, const ContextPtr ){}
-};
-
-template<typename ValueType, typename H, typename T>
-struct UtilsWrapper< ValueType, common::mepr::TypeList<H,T> >
-{
-    static void setImpl1( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc )
-    {
-        if( common::getScalarType<H>() ==  source.getValueType() )
-        {
-            HArrayUtils::setImpl( target, reinterpret_cast<const HArray<H>&>( source ), op, loc );
-        }
-        else
-        {
-            UtilsWrapper< ValueType, T >::setImpl1( target, source, op, loc );
-        }
-    }
-};
-
-} /* end namespace mepr */
-
-template<typename ValueType>
-void HArrayUtils::setImpl1( HArray<ValueType>& target, const _HArray& source, const common::reduction::ReductionOp op, const ContextPtr loc )
-{
-//    const common::scalar::ScalarType sourceType = source.getValueType();
-
-    // Different types -> select for corresponding template routine
-
-//    callMeNow( target, source, op, loc, common::mepr::Container<IndexType, ARITHMETIC_HOST>() );
-
-    mepr::UtilsWrapper< ValueType, ARITHMETIC_ARRAY_HOST_LIST >::setImpl1( target, source, op, loc );
-
-    /*
-    switch ( sourceType )
-    {
-        case common::scalar::INDEX_TYPE:
-            setImpl( target, dynamic_cast<const HArray<IndexType>&>( source ), op, loc );
-            break;
-
-        // for all the other arithmetic types we use BOOST_PP_REPEAT to loop over supported types
-
-#define HARRAY_SET( z, I, _ )                                                                             \
-                                                                                                          \
-        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                        \
-            setImpl( target, dynamic_cast<const HArray<ARITHMETIC_HOST_TYPE_##I>& >( source ), op, loc ); \
-            break;                                                                                        \
-
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, HARRAY_SET, _ )
-
-#undef HARRAY_SET
-
-default        :
-        COMMON_THROWEXCEPTION( "unsupported source type : " )
-    }
-    */
-}
-
-void HArrayUtils::set( 
-    _HArray& target, 
-    const _HArray& source, 
-    const common::reduction::ReductionOp op, 
-    const ContextPtr loc )
-{
-    ContextPtr validLoc = loc;
-
-    if ( !validLoc )
-    {
-        if ( op == common::reduction::COPY )
-        {
-            // if no context is given we assign where source has a valid copy available
-
-            validLoc = source.getValidContext();
-        }
-        else
-        {
-            // if no context is given we reduce where target has a valid copy available
-
-            validLoc = target.getValidContext();
-        }
-    }
-
-    switch ( target.getValueType() )
-    {
-        case common::scalar::INDEX_TYPE:
-            setImpl1( dynamic_cast<HArray<IndexType>&>( target ), source, op, validLoc );
-            break;
-
-        // for all the other arithmetic types we use BOOST_PP_REPEAT to loop over supported types
-
-#define HARRAY_SET1( z, I, _ )                                                                      \
-        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                         \
-            setImpl1( dynamic_cast<HArray< ARITHMETIC_HOST_TYPE_##I>& >( target ), source, op, validLoc ); \
-            break;
-
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, HARRAY_SET1, _ )
-
-#undef HARRAY_SET1
-
-default        :
-        COMMON_THROWEXCEPTION( "unsupported target type : " << target.getValueType() )
-    }
+    mepr::UtilsWrapper<ARITHMETIC_ARRAY_HOST_LIST>::gatherImpl( target, source, indexes );
 }
 
 template<typename ValueType1,typename ValueType2>
-void HArrayUtils::gather(
+void HArrayUtils::gatherImpl(
     HArray<ValueType1>& target,
     const HArray<ValueType2>& source,
     const HArray<IndexType>& indexes )
 {
-    SCAI_REGION( "HArray.gather" )
+    SCAI_REGION( "HArray.gatherImpl" )
 
     // choose location for the operation where source array is currently valid
 
@@ -346,9 +186,15 @@ void HArrayUtils::gather(
 }
 
 template<typename ValueType>
-void HArrayUtils::setScalar( HArray<ValueType>& target, const ValueType value, const common::reduction::ReductionOp op, ContextPtr prefContext )
+void HArrayUtils::setScalar( _HArray& target, const ValueType value, const common::reduction::ReductionOp op, ContextPtr prefContext )
 {
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    mepr::UtilsWrapperT< ValueType, ARITHMETIC_ARRAY_HOST_LIST>::setScalarImpl( target, value, op, prefContext );
+}
+
+template<typename ValueType, typename OtherValueType>
+void HArrayUtils::setScalarImpl( HArray<ValueType>& target, const OtherValueType value, const common::reduction::ReductionOp op, ContextPtr prefContext )
+{
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, OtherValueType> > setVal;
 
     ContextPtr context = setVal.getValidContext( prefContext );
 
@@ -372,55 +218,24 @@ void HArrayUtils::setScalar( HArray<ValueType>& target, const ValueType value, c
     }
 }
 
-/*
-void HArrayUtils::setScalar( hmemo::_HArray& target, const Scalar& value, const common::reduction::ReductionOp op, hmemo::ContextPtr context )
-{
-    common::scalar::ScalarType arrayType = target.getValueType();
-
-    switch( arrayType )
-    {
-        case common::scalar::INDEX_TYPE :
-        {
-            HArray<IndexType>& typedTarget = dynamic_cast<HArray<IndexType>&>( target );
-            setScalar( typedTarget, value.getValue<IndexType>(), op, context );
-            break;
-        }
-
-        // for all supported arithmetic types generate it
-
-#define HARRAY_SET_SCALAR( z, I, _ )                                                              \
-        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                \
-        {                                                                                         \
-            HArray<ARITHMETIC_HOST_TYPE_##I>& typedTarget =                                       \
-                    dynamic_cast<HArray<ARITHMETIC_HOST_TYPE_##I>&>( target );                    \
-            setScalar( typedTarget, value.getValue<ARITHMETIC_HOST_TYPE_##I>(), op, context );    \
-            break;                                                                                \
-        }
-        
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, HARRAY_SET_SCALAR, _ )
-
-#undef HARRAY_SET_SCALAR
-
-        default :
-        {
-            COMMON_THROWEXCEPTION( target << ": setScalar for value type " << arrayType << " not supported" )
-        }
-    }
-}
-*/
-
 template<typename ValueType>
-void HArrayUtils::setVal( HArray<ValueType>& target, const IndexType index, ValueType val )
+void HArrayUtils::setVal( _HArray& target, const IndexType index, const ValueType val )
 {
     SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
 
+    mepr::UtilsWrapperT< ValueType, ARITHMETIC_ARRAY_HOST_LIST>::setValImpl( target, index, val );
+}
+
+template<typename ValueType, typename OtherValueType>
+void HArrayUtils::setValImpl( HArray<ValueType>& target, const IndexType index, const OtherValueType val )
+{
     ContextPtr loc = target.getValidContext();   // preferred location where to fill
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, OtherValueType> > setVal;
 
     loc = setVal.getValidContext( loc );
 
-    SCAI_LOG_INFO( logger, "setVal<" << common::TypeTraits<ValueType>::id() << ">[" << index 
+    SCAI_LOG_INFO( logger, "setVal<" << common::TypeTraits<ValueType>::id() << ">[" << index
                            << "] = " << val << " @ " << *loc )
 
     WriteAccess<ValueType> wTarget( target, loc );
@@ -431,7 +246,14 @@ void HArrayUtils::setVal( HArray<ValueType>& target, const IndexType index, Valu
 }
 
 template<typename ValueType>
-ValueType HArrayUtils::getVal( const HArray<ValueType>& array, const IndexType index )
+ValueType HArrayUtils::getVal( const _HArray& array, const IndexType index )
+{
+    ValueType val = mepr::UtilsWrapperT< ValueType, ARITHMETIC_ARRAY_HOST_LIST>::getValImpl( array, index );
+    return val;
+}
+
+template<typename ValueType, typename OtherValueType>
+ValueType HArrayUtils::getValImpl( const HArray<OtherValueType>& array, const IndexType index )
 {
     SCAI_ASSERT_DEBUG( index < array.size(), "index = " << index << " out of range for array = " << array );
 
@@ -439,15 +261,17 @@ ValueType HArrayUtils::getVal( const HArray<ValueType>& array, const IndexType i
 
     ContextPtr loc = array.getValidContext();
 
-    static LAMAKernel<UtilKernelTrait::getValue<ValueType> > getValue;
+    static LAMAKernel<UtilKernelTrait::getValue<OtherValueType> > getValue;
 
     loc = getValue.getValidContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<ValueType> rArray( array, loc );
+    ReadAccess<OtherValueType> rArray( array, loc );
 
-    return getValue[loc]( rArray.get(), index );
+    OtherValueType val = getValue[loc]( rArray.get(), index );
+
+    return static_cast<ValueType>( val );
 }
 
 template<typename ValueType>
@@ -466,7 +290,7 @@ void HArrayUtils::assignScaled(
     {
         // result := 0
 
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( prefLoc );
 
@@ -485,7 +309,7 @@ void HArrayUtils::assignScaled(
 
         // result := beta * result, use setVal, op == MULL
 
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( prefLoc );
 
@@ -542,11 +366,13 @@ void HArrayUtils::conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefL
 
 // template instantiation for the supported data types
 
-template void HArrayUtils::setVal( hmemo::HArray<IndexType>& , const IndexType , IndexType );
+template void HArrayUtils::setVal( hmemo::_HArray& , const IndexType , IndexType );
+template void HArrayUtils::setVal( hmemo::_HArray& , const IndexType , float );
+template void HArrayUtils::setVal( hmemo::_HArray& , const IndexType , double );
+template IndexType HArrayUtils::getVal( const hmemo::_HArray& , const IndexType );
+template void HArrayUtils::setScalar( hmemo::_HArray& , const IndexType , const common::reduction::ReductionOp op, const ContextPtr ctx );
 
-template void HArrayUtils::setScalar( HArray<IndexType>& target, const IndexType value, const common::reduction::ReductionOp op, ContextPtr prefContext );
-
-template IndexType HArrayUtils::getVal( const hmemo::HArray<IndexType>& , const IndexType );
+//template IndexType HArrayUtils::getVal( const hmemo::HArray<IndexType>& , const IndexType );
 
 template void HArrayUtils::assignScaled(
     hmemo::HArray<IndexType>& ,
@@ -554,34 +380,11 @@ template void HArrayUtils::assignScaled(
     const HArray<IndexType>& ,
     hmemo::ContextPtr  );
 
-template void HArrayUtils::gather(
-    hmemo::HArray<IndexType>& ,
-    const hmemo::HArray<IndexType>& ,
-    const hmemo::HArray<IndexType>& );
-
 /** Macro instantiates operations that have also type conversion */
-
-#define HARRAY_UTILS2_INSTANTIATE(z, J, TYPE)                                   \
-    template                                                                        \
-    void HArrayUtils::gather(                                                    \
-            HArray<TYPE>& target,                                                \
-            const HArray<ARITHMETIC_HOST_TYPE_##J>& source,                      \
-            const HArray<IndexType>& indexes );                                  \
 
 /** Macro instantiates operations for supported arithmetic types */
 
 #define HARRAY_UTILS_INSTANTIATE(z, I, _)                                       \
-    template                                                                        \
-    void HArrayUtils::setVal(                                                    \
-            HArray<ARITHMETIC_HOST_TYPE_##I>& target,                            \
-            const IndexType index,                                                  \
-            ARITHMETIC_HOST_TYPE_##I val );                                         \
-                                                                                    \
-    template                                                                        \
-    void HArrayUtils::setScalar( HArray<ARITHMETIC_HOST_TYPE_##I>& target,          \
-            const ARITHMETIC_HOST_TYPE_##I value,                                   \
-            const common::reduction::ReductionOp op,                                \
-            ContextPtr prefContext );                                               \
     template                                                                        \
     void HArrayUtils::scale(                                                         \
             HArray<ARITHMETIC_HOST_TYPE_##I>& array,                                 \
@@ -594,19 +397,12 @@ template void HArrayUtils::gather(
             ContextPtr loc );                                                       \
                                                                                     \
     template                                                                        \
-    ARITHMETIC_HOST_TYPE_##I HArrayUtils::getVal(                                   \
-            const HArray<ARITHMETIC_HOST_TYPE_##I>&,                               \
-            const IndexType );                                                      \
-                                                                                    \
-    template                                                                        \
     void HArrayUtils::assignScaled(                                              \
             HArray<ARITHMETIC_HOST_TYPE_##I>& result,                            \
             const ARITHMETIC_HOST_TYPE_##I beta,                                    \
             const HArray<ARITHMETIC_HOST_TYPE_##I>& y,                           \
             ContextPtr loc );                                                       \
                                                                                     \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                      \
-                     HARRAY_UTILS2_INSTANTIATE, ARITHMETIC_HOST_TYPE_##I )
 
 BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, HARRAY_UTILS_INSTANTIATE, _ )
 

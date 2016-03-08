@@ -51,7 +51,7 @@ namespace common
  *        a new Context.
  */
 
-namespace context
+struct context
 {
     /** Enumeration type for the supported contexts. The type is used to select
      *  the appropriate code that will be used for the computations in the context.
@@ -79,10 +79,12 @@ namespace context
         MaxAccessKind //!<  internal use for dimension of arrays
     } AccessKind;
 
-    COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
 
-    COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
-} /* end namespace context */
+}; /* end struct context */
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const context::ContextType& type );
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const context::AccessKind& kind );
 
 } /* end namespace common */
 

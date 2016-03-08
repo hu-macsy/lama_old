@@ -171,8 +171,8 @@ ValueType MICUtils::reduce( const ValueType array[], const IndexType n, const co
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
+template<typename ValueType, typename OtherValueType>
+void MICUtils::setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op )
 {
     SCAI_LOG_DEBUG( logger, "setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
@@ -188,12 +188,13 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
             {
                 ValueType* array = static_cast<ValueType*>( arrayPtr );
+                ValueType value = static_cast<ValueType>( *valPtr );
 
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
-                    array[i] = *valPtr;
+                    array[i] = value;
                 }
             }
 
@@ -210,12 +211,13 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
                 #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
                 {
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
+                    ValueType value = static_cast<ValueType>( *valPtr );
 
                     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
                     for ( IndexType i = 0; i < n; i++ )
                     {
-                        array[i] += *valPtr;
+                        array[i] *= value;
                     }
                 }
             }
@@ -239,12 +241,13 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
                 #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1], op )
                 {
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
+                    ValueType value = static_cast<ValueType>( *valPtr );
 
                     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
                     for ( IndexType i = 0; i < n; i++ )
                     {
-                        array[i] *= *valPtr;
+                        array[i] *= value;
                     }
                 }
             }
@@ -735,7 +738,8 @@ void MICUtils::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
 
     using kregistry::KernelRegistry;
-    using common::context::MIC;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
@@ -746,35 +750,35 @@ void MICUtils::registerKernels( bool deleteFlag )
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setScatter<int, int> >( setScatter, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<int, int> >( setGather, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::set<int, int> >( set, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<int, int> >( setScatter, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<int, int> >( setGather, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::set<int, int> >( set, ctx, flag );
 
 
 #define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_MIC_TYPE_##J> >( setScale, MIC, flag );     \
-    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_MIC_TYPE_##J> >( setGather, MIC, flag );   \
-    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_MIC_TYPE_##J> >( setScatter, MIC, flag ); \
-    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_MIC_TYPE_##J> >( set, MIC, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_MIC_TYPE_##J> >( setScale, ctx, flag );     \
+    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_MIC_TYPE_##J> >( setGather, ctx, flag );   \
+    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_MIC_TYPE_##J> >( setScatter, ctx, flag ); \
+    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_MIC_TYPE_##J> >( set, ctx, flag );               \
 
 #define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
-    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_MIC_TYPE_##I> >( reduce, MIC, flag );               \
-    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_MIC_TYPE_##I> >( setVal, MIC, flag );               \
-    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_MIC_TYPE_##I> >( setOrder, MIC, flag );           \
-    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_MIC_TYPE_##I> >( getValue, MIC, flag );           \
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_MIC_TYPE_##I> >( absMaxDiffVal, MIC, flag ); \
-    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_MIC_TYPE_##I> >( isSorted, MIC, flag );           \
-    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_MIC_TYPE_##I> >( invert, MIC, flag );               \
+    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_MIC_TYPE_##I> >( reduce, ctx, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_MIC_TYPE_##I> >( setVal, ctx, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_MIC_TYPE_##I> >( setOrder, ctx, flag );           \
+    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_MIC_TYPE_##I> >( getValue, ctx, flag );           \
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_MIC_TYPE_##I> >( absMaxDiffVal, ctx, flag ); \
+    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_MIC_TYPE_##I> >( isSorted, ctx, flag );           \
+    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_MIC_TYPE_##I> >( invert, ctx, flag );               \
     BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT,                                                                   \
                      LAMA_UTILS2_REGISTER,                                                                       \
                      ARITHMETIC_MIC_TYPE_##I )

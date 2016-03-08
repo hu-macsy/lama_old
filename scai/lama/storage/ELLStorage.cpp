@@ -89,7 +89,7 @@ template<typename ValueType>
 ELLStorage<ValueType>::ELLStorage(
     const IndexType numRows,
     const IndexType numColumns,
-    const common::context::ContextType con /* = Context::Host */)
+    const Context::ContextType con /* = Context::Host */)
 
     : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValuesPerRow( 0 )
 {
@@ -101,7 +101,7 @@ ELLStorage<ValueType>::ELLStorage(
 
     // Initialization requires correct values for the IA array with 0
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
 
     WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
 
@@ -272,7 +272,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
     mNumValuesPerRow = 1;
 
     {
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -297,7 +297,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
     // extra block caused by differnt types of setVal()
     {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -632,7 +632,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "setDiagonalImpl # value = " << value )
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -832,7 +832,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // Intialize array mIA with 0
 
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( getContextPtr() );
 
@@ -1376,7 +1376,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == common::context::Host )
+    if( loc->getType() == Context::Host )
     {
         // execution as separate thread
 
@@ -1535,7 +1535,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
-    if ( loc->getType() == common::context::Host )
+    if ( loc->getType() == Context::Host )
     {
         // used later in OpenMP to generate a TaskSyncToken
 

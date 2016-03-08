@@ -518,38 +518,55 @@ void MICCOOUtils::jacobi(
 
 void MICCOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, MIC, flag );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx, flag );
 }
 
 template<typename ValueType>
 void MICCOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::MIC;
     using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    const common::context::ContextType ctx = common::context::MIC;
 
-    KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, MIC, flag );
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
+            << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
+
+    // ToDo: routine does not work yet
+
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, float> >( getCSRValuesS, ctx, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, double> >( getCSRValuesS, ctx, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, float> >( getCSRValuesS, ctx, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, double> >( getCSRValuesS, ctx, flag );
+
+    // ToDo: jacobi does not work yet
+
+    // KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, ctx, flag );
+    // KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, ctx, flag );
+
+
 }
 
 /* --------------------------------------------------------------------------- */

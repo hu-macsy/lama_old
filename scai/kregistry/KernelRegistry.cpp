@@ -35,7 +35,7 @@
 namespace scai
 {
 
-using common::context::ContextType;
+using common::context;
 
 namespace kregistry
 {
@@ -53,7 +53,7 @@ KernelRegistry* KernelRegistry::mInstance;
 
 /* -----------------------------------------------------------------------------*/
 
-void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, ContextType ctx, VoidFunction fn, bool replace )
+void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, context::ContextType ctx, VoidFunction fn, bool replace )
 {
     SCAI_LOG_INFO( logger, "register ctx = " << ctx << " with " << key )
 
@@ -104,7 +104,7 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, Cont
 
 /* -----------------------------------------------------------------------------*/
 
-void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, ContextType ctx, VoidFunction fn )
+void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, context::ContextType ctx, VoidFunction fn )
 {
     // can cause serious segmentation violoation in case of unregister after destructo of KernelMap
 

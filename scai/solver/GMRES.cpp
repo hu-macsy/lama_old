@@ -195,43 +195,12 @@ void GMRES::initialize( const Matrix& coefficients )
 
     runtime.mV = new std::vector<Vector*>( mKrylovDim + 1, 0 );
 
-    switch ( coefficients.getValueType() )
-    {
-        case common::scalar::FLOAT:
-        {
-
-            ( *runtime.mV )[0] = new DenseVector<float>( coefficients.getDistributionPtr() );
-
-            runtime.mW = new DenseVector<float>( coefficients.getDistributionPtr() );
-            runtime.mT = new DenseVector<float>( coefficients.getDistributionPtr() );
-            runtime.mX0 = new DenseVector<float>( coefficients.getDistributionPtr() );
-
-            break;
-        }
-
-        case common::scalar::DOUBLE:
-        {
-            ( *runtime.mV )[0] = new DenseVector<double>( coefficients.getDistributionPtr() );
-
-            runtime.mW = new DenseVector<double>( coefficients.getDistributionPtr() );
-            runtime.mT = new DenseVector<double>( coefficients.getDistributionPtr() );
-            runtime.mX0 = new DenseVector<double>( coefficients.getDistributionPtr() );
-
-            break;
-        }
-
-        default:
-        {
-            COMMON_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
-        }
-    }
-
     // 'force' vector operations to be computed at the same location where coefficients reside
 
-    ( *runtime.mV )[0]->setContextPtr( coefficients.getContextPtr() );
-    runtime.mW->setContextPtr( coefficients.getContextPtr() );
-    runtime.mT->setContextPtr( coefficients.getContextPtr() );
-    runtime.mX0->setContextPtr( coefficients.getContextPtr() );
+    ( *runtime.mV )[0] = coefficients.newDenseVector();
+    runtime.mW = coefficients.newDenseVector();
+    runtime.mT = coefficients.newDenseVector();
+    runtime.mX0 = coefficients.newDenseVector();
 
     totalIterationTime = 0.0;
     totalPreconditionerTime = 0.0;
@@ -285,28 +254,7 @@ void GMRES::iterate()
     if ( !( *runtime.mV )[krylovIndex + 1] )
     {
         SCAI_REGION( "Solver.GMRES.setMV" )
-
-        switch ( A.getValueType() )
-        {
-            case common::scalar::FLOAT:
-            {
-                ( *runtime.mV )[krylovIndex + 1] = new DenseVector<float>( A.getDistributionPtr() );
-                break;
-            }
-
-            case common::scalar::DOUBLE:
-            {
-                ( *runtime.mV )[krylovIndex + 1] = new DenseVector<double>( A.getDistributionPtr() );
-                break;
-            }
-
-            default:
-            {
-                COMMON_THROWEXCEPTION( "Unsupported ValueType " << A.getValueType() )
-            }
-        }
-
-        ( *runtime.mV )[krylovIndex + 1]->setContextPtr( A.getContextPtr() );
+        ( *runtime.mV )[krylovIndex + 1] = A.newDenseVector();
     }
 
     // initialize in case of GMRES start/restart

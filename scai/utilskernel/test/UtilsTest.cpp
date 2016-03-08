@@ -66,7 +66,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayTest" )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
 {
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( testContext );
 
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 {
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( testContext );
 

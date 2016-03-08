@@ -103,12 +103,18 @@ std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kin
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector* Vector::createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
+Vector* Vector::getVector( const VectorFormat format, const common::scalar::ScalarType valueType )
+{
+    VectorCreateKeyType vectype( format, valueType );
+    return Vector::create( vectype );
+}
+
+Vector* Vector::getDenseVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
 {
     VectorCreateKeyType vectype( Vector::DENSE, valueType );
     Vector* v = Vector::create( vectype );
 
-    v->resize( distribution );
+    v->allocate( distribution );
     return v;
 }
 
@@ -162,7 +168,7 @@ Vector& Vector::operator=( const Expression_MV& expression )
     SCAI_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * matrix * vector1 + 0.0 * this" )
 
     // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
-    // but be careful: this might not be resized correctly, so we do it here
+    // but be careful: this might not be allocated correctly, so we do it here
 
     const Expression_SMV exp1( Scalar( 1.0 ), expression );
 
@@ -172,7 +178,7 @@ Vector& Vector::operator=( const Expression_MV& expression )
 
     // due to alias of result/vector2 resize already here
 
-    resize( expression.getArg1().getDistributionPtr() );
+    allocate( expression.getArg1().getRowDistributionPtr() );
 
     return *this = tempExpression;
 }
@@ -192,7 +198,7 @@ Vector& Vector::operator=( const Expression_VM& expression )
 
     // due to alias of result/vector2 resize already here
 
-    resize( expression.getArg1().getDistributionPtr() );
+    allocate( expression.getArg1().getDistributionPtr() );
 
     return *this = tempExpression;
 }
@@ -231,9 +237,9 @@ Vector& Vector::operator=( const Expression_SMV& expression )
 
         const Matrix& matrix = expression.getArg2().getArg1();
 
-        DistributionPtr dist = matrix.getDistributionPtr();
+        DistributionPtr dist = matrix.getRowDistributionPtr();
 
-        resize( dist );
+        allocate( dist );
 
         // values remain uninitialized as we assume that 0.0 * this (undefined) will
         // never be executed as an operation
@@ -264,7 +270,7 @@ Vector& Vector::operator=( const Expression_SVM& expression )
 
         DistributionPtr dist = matrix.getColDistributionPtr();
 
-        resize( dist );
+        allocate( dist );
 
         // values remain uninitialized as we assume that 0.0 * this (undefined) will
         // never be executed as an operation
@@ -463,12 +469,6 @@ void Vector::setContextPtr( ContextPtr context )
 void Vector::prefetch() const
 {
     prefetch( mContext );
-}
-
-void Vector::resize( DistributionPtr distributionPtr )
-{
-    setDistributionPtr( distributionPtr );
-    resizeImpl();
 }
 
 /* ---------------------------------------------------------------------------------- */

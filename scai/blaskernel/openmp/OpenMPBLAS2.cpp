@@ -288,12 +288,13 @@ void OpenMPBLAS2::gemv(
 template<typename ValueType>
 void OpenMPBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register BLAS2 OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    const common::context::ContextType ctx = common::context::Host;
 
-    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( OpenMPBLAS2::gemv, Host, flag );
+    SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
+
+    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( OpenMPBLAS2::gemv, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

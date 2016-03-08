@@ -362,12 +362,13 @@ void OpenMPBLAS3::gemm(
 template<typename ValueType>
 void OpenMPBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
 
-    SCAI_LOG_INFO( logger, "register BLAS3 OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    const common::context::ContextType ctx = common::context::Host;
 
-    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( OpenMPBLAS3::gemm, Host, flag );
+    SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
+
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( OpenMPBLAS3::gemm, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

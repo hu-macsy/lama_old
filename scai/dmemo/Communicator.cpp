@@ -79,7 +79,7 @@ std::ostream& operator<<( std::ostream& stream, const _Communicator::Communicato
 
 SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
-CommunicatorPtr Communicator::getCommunicator( const CommunicatorKind& type )
+CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorKind& type )
 {
     SCAI_LOG_TRACE( logger, "Get communicator of type " << type )
 
@@ -91,11 +91,11 @@ CommunicatorPtr Communicator::getCommunicator( const CommunicatorKind& type )
     {
         SCAI_LOG_WARN( logger, "could not get communicator " << type << ", take default one" )
 
-        return getDefaultCommunicator();
+        return getDefaultCommunicatorPtr();
     }
 }
 
-CommunicatorPtr Communicator::getDefaultCommunicator()
+CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
 {
     // try MPI communicator for default
 
@@ -116,7 +116,7 @@ CommunicatorPtr Communicator::getDefaultCommunicator()
     return create( NO );
 }
 
-CommunicatorPtr Communicator::getCommunicator()
+CommunicatorPtr Communicator::getCommunicatorPtr()
 {
     std::string comm;
 
@@ -130,23 +130,23 @@ CommunicatorPtr Communicator::getCommunicator()
 
         if ( comm == "MPI" )
         {
-            return getCommunicator( MPI );
+            return getCommunicatorPtr( MPI );
         }
 
         if ( comm == "GPI" )
         {
-            return getCommunicator( GPI );
+            return getCommunicatorPtr( GPI );
         }
 
         if ( comm == "NO" )
         {
-            return getCommunicator( NO );
+            return getCommunicatorPtr( NO );
         }
 
         COMMON_THROWEXCEPTION( "SCAI_COMMUNICATOR=" << comm << ", unknown communicator type" )
     }
 
-    return getDefaultCommunicator();
+    return getDefaultCommunicatorPtr();
 }
 
 Communicator::Communicator( const CommunicatorKind& type )

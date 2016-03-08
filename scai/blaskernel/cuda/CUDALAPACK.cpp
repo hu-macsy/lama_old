@@ -112,12 +112,13 @@ void CUDALAPACK::laswp(
 template<typename ValueType>
 void CUDALAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register LAPACK routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( CUDALAPACK::laswp, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( CUDALAPACK::laswp, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -77,7 +77,7 @@ static void bench( IndexType size, double fillRate )
 
     timeHost = Walltime::get() - timeHost;
 
-    ContextPtr gpu = Context::getContextPtr( scai::common::context::CUDA );
+    ContextPtr gpu = Context::getContextPtr( Context::CUDA );
 
     a.setContextPtr( gpu );
     b.setContextPtr( gpu );

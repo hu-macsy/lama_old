@@ -95,9 +95,9 @@ void BiCG::initialize( const Matrix& coefficients )
 
     common::scalar::ScalarType type = coefficients.getValueType();
 
-    runtime.mP2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mQ2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mZ2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mP2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
+    runtime.mQ2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
+    runtime.mZ2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
 
     runtime.mTransposeA->assignTranspose( coefficients );
     runtime.mTransposeA->conj();

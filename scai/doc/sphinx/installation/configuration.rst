@@ -92,6 +92,7 @@ Especially for changing the C++ compiler please see the subpage, because there i
 .. toctree::
    :titlesonly:
 
+   configuration/cmake
    configuration/c++
    configuration/boost
    configuration/blas

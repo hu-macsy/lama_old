@@ -46,7 +46,7 @@ struct CyclicDistributionTestConfig
 {
     CyclicDistributionTestConfig()
     {
-        comm = Communicator::getCommunicator();
+        comm = Communicator::getCommunicatorPtr();
         size = comm->getSize();
         rank = comm->getRank();
         chunkSize = size;

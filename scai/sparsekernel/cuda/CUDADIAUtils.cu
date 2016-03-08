@@ -918,14 +918,15 @@ void CUDADIAUtils::normalGEVM(
 template<typename ValueType>
 void CUDADIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
 
     SCAI_LOG_INFO( logger, "register DIAUtils CUDA-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, CUDA, flag );
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, CUDA, flag );
+    const common::context::ContextType ctx = common::context::CUDA;
+
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
 
 }
 

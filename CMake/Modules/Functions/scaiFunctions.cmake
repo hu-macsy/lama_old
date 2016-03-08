@@ -64,9 +64,25 @@ macro    ( addInternalAndExternalLinkLibraries )
 endmacro ( addInternalAndExternalLinkLibraries )
 
 macro    ( setIntersphinxInternalVariables )
+	## set PROJECT_DOC_DIR's
 	foreach    ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
 	    string ( TOUPPER ${module} upper_module )
 	    string ( SUBSTRING ${module} 5 -1 MODULE_SURNAME )
 	    set ( ${upper_module}_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-${MODULE_SURNAME}-${${upper_module}_VERSION}/ )
 	endforeach ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
+
+	## set intersphinx mapping string
+	foreach    ( PACKAGE_TO_FIND ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
+		string ( TOUPPER ${PACKAGE_TO_FIND} UPPER_PACKAGE_TO_FIND )
+		string ( SUBSTRING ${PACKAGE_TO_FIND} 5 -1 MODULE_SURNAME )
+		if    ( MAPPING ) ##append
+    		set ( MAPPING "${MAPPING},\n 'scai${MODULE_SURNAME}': ('${${UPPER_PACKAGE_TO_FIND}_DOC_DIR}', None)" )
+    	else  ( MAPPING ) ##start
+    		set ( MAPPING "'scai${MODULE_SURNAME}': ('${${UPPER_PACKAGE_TO_FIND}_DOC_DIR}', None)" )
+    	endif ( MAPPING )
+	endforeach ( PACKAGE_TO_FIND ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
+
+	if    ( MAPPING )
+		set ( INTERSPHINX_MAPPING "intersphinx_mapping = { ${MAPPING} }")
+	endif ( MAPPING )
 endmacro ( setIntersphinxInternalVariables )

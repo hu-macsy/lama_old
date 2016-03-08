@@ -33,12 +33,13 @@
 # Try to find OpenMP compile and link flags for the OpenMP example
 
 # LogLevels example, here we compile also LOG_TRACE macros
+set ( SCAI_LOGGING_LEVEL TRACE ) # also needed in prepareExamplesMakeInc for make.inc
 
 add_executable( LogLevels.exe LogLevels.cpp )
 set ( EXAMPLE_FILES ${EXAMPLE_FILES} LogLevels.cpp )
 set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} LogLevels.exe" )
 target_link_libraries( LogLevels.exe ${PROJECT_NAME} )
-set_target_properties( LogLevels.exe PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_TRACE )
+set_target_properties( LogLevels.exe PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_${SCAI_LOGGING_LEVEL} )
 
 # ThreadTest example, here we need the Boost Thread library
 
@@ -64,10 +65,18 @@ else  ( OPENMP_FOUND )
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
 endif ( OPENMP_FOUND )
 
+# copy run_all.sh
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
+# configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
+prepareExamplesMakeInc()
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+
 ## install examples
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-install ( FILES ${EXAMPLE_FILES} DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES config Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc config DESTINATION ${PROJECT_EXAMPLE_DIR} )
 install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
+
+# install Makefile
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in"
+				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/Makefile" COPYONLY )

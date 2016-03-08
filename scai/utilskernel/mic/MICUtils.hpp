@@ -77,8 +77,8 @@ public:
 
     /** MIC implementation for UtilKernelTrait::Setter::setVal */
 
-    template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
+    template<typename ValueType, typename OtherValueType>
+    static void setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op );
 
     /** MIC implementation for UtilKernelTrait::Setter::setOrder */
 

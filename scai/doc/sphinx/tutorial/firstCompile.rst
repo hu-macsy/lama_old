@@ -1,6 +1,8 @@
 Compilation and Execution of LAMA Programs on Linux Systems
 -----------------------------------------------------------
 
+.. TODO: needs update
+
 The environment variable LAMA_ROOT refers the directory of your LAMA installation::
 
     export LAMA_ROOT=<installation/directory>
@@ -68,5 +70,3 @@ Now the output should be as follows::
     L1 norm of v = 8.8
 
 Congratulations, your first LAMA program is running.
-
-:download:`Download Linux Makefile <../../../lama/examples/tutorial/Makefile>`

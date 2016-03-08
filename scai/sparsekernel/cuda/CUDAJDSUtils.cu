@@ -2916,47 +2916,49 @@ void CUDAJDSUtils::sparseGEVM(
 
 void CUDAJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, CUDA, flag );
-    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, CUDA, flag );
-
-    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, CUDA, flag );
-    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, CUDA, flag );
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
 }
 
 template<typename ValueType>
 void CUDAJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, CUDA, flag );
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, CUDA, flag );
-    KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, CUDA, flag );
-    KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, CUDA, flag );
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, CUDA, flag );
+    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, CUDA, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, CUDA, flag );
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, CUDA, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, CUDA, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

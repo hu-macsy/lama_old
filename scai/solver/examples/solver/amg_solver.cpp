@@ -145,19 +145,8 @@ int main( int argc, char* argv[] )
 
     // use auto pointer so that matrix will be deleted at program exit
 
-    unique_ptr<Matrix> matrixPtr;
-    unique_ptr<Vector> rhsPtr;
-
-    if ( lamaconf.getValueType() == common::scalar::FLOAT )
-    {
-        matrixPtr.reset( lamaconf.createSparseMatrix<float>() );
-        rhsPtr.reset( new DenseVector<float>() );
-    }
-    else
-    {
-        matrixPtr.reset( lamaconf.createSparseMatrix<double>() );
-        rhsPtr.reset( new DenseVector<double>() );
-    }
+    MatrixPtr matrixPtr( lamaconf.getMatrix() );
+    VectorPtr rhsPtr( matrixPtr->newDenseVector() );
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
@@ -185,7 +174,7 @@ int main( int argc, char* argv[] )
     unique_ptr<Vector> solutionPtr( rhs.newVector() );
     Vector& solution = *solutionPtr;
 
-    solution.resize( rhs.getDistributionPtr() );
+    solution.allocate( rhs.getDistributionPtr() );
     solution = 0.0;   // intialize of a vector
 
     double stop = Walltime::get();  // stop timing for reading

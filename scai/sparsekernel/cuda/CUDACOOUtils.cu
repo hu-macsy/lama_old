@@ -719,38 +719,42 @@ void CUDACOOUtils::setCSRData(
 
 void CUDACOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( CUDACOOUtils::offsets2ia, CUDA, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( CUDACOOUtils::setCSRData, CUDA, flag );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( CUDACOOUtils::offsets2ia, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( CUDACOOUtils::setCSRData, ctx, flag );
 }
 
 template<typename ValueType>
 void CUDACOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, CUDA, flag );
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( CUDACOOUtils::normalGEVM, CUDA, flag );
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( CUDACOOUtils::normalGEVM, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( CUDACOOUtils::setCSRData, CUDA, flag );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( CUDACOOUtils::setCSRData, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

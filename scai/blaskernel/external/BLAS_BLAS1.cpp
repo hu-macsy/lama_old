@@ -316,8 +316,9 @@ ValueType BLAS_BLAS1::dot(
 template<typename ValueType>
 void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::Host;
 
     bool useBLAS = false;
     int level = 0;
@@ -339,14 +340,14 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
     SCAI_LOG_INFO( logger, "register BLAS1 wrapper routines for Host at kernel registry" )
 
-    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( BLAS_BLAS1::scal, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( BLAS_BLAS1::nrm2, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( BLAS_BLAS1::asum, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( BLAS_BLAS1::iamax, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( BLAS_BLAS1::swap, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( BLAS_BLAS1::copy, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( BLAS_BLAS1::axpy, Host, flag );
-    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( BLAS_BLAS1::dot, Host, flag );
+    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( BLAS_BLAS1::scal, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( BLAS_BLAS1::nrm2, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( BLAS_BLAS1::asum, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( BLAS_BLAS1::iamax, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( BLAS_BLAS1::swap, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( BLAS_BLAS1::copy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( BLAS_BLAS1::axpy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( BLAS_BLAS1::dot, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -48,24 +48,7 @@ typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
-static CommunicatorPtr comm;
-
-struct P_NormTestConfig
-{
-    P_NormTestConfig()
-    {
-        comm = Communicator::getCommunicator();
-    }
-
-    ~P_NormTestConfig()
-    {
-        comm = CommunicatorPtr();
-    }
-};
-
-/* --------------------------------------------------------------------- */
-
-BOOST_FIXTURE_TEST_SUITE( P_NormTest, P_NormTestConfig );
+BOOST_TEST_SUITE( NormTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.P_NormTest" );
 
@@ -73,9 +56,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.P_NormTest" );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
+    ContextPtr context = Context::getContextPtr();
+    CommunicatorPtr comm = Communicator::getCommunicator();
 
         for ( IndexType size = 0; size < 4; ++size )
         {
@@ -103,7 +85,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, ValueType, test_types )
 
             BOOST_CHECK_CLOSE( maxNorm.getValue<ValueType>(), expectedMaxNorm, 1 );
         }
-    }
 }
 
 /* --------------------------------------------------------------------- */
