@@ -52,6 +52,7 @@
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/common/macros/throw.hpp>
+#include <scai/common/mepr/TemplateSpecifier.hpp>
 
 // std
 #include <fstream>

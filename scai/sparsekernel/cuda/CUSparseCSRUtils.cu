@@ -416,40 +416,28 @@ void CUSparseCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::Kerne
 {
     using kregistry::KernelRegistry;
 
-    bool useCUSparse = true;
-
-    // using CUSparse for CSR might be disabled explicitly by environment variable
-
-    common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
-
-    if ( !useCUSparse )
-    {
-        return;
-    }
-
-    // REGISTER1: overwrites previous settings
-
-    common::context::ContextType CUDA = common::context::CUDA;
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, CUDA, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
 }
 
 template<typename ValueType>
 void CUSparseCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::CUDA;
     using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, CUDA, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, CUDA, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -460,16 +448,30 @@ CUSparseCSRUtils::CUSparseCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    bool useCUSparse = true;
+
+    common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
+
+    if ( useCUSparse )
+    {
+        Registrator::initAndReg( flag );
+        kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    }
 }
 
 CUSparseCSRUtils::~CUSparseCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    bool useCUSparse = true;
+
+    common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
+
+    if ( useCUSparse )
+    {
+        Registrator::initAndReg( flag );
+        kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    }
 }
 
 CUSparseCSRUtils CUSparseCSRUtils::guard;    // guard variable for registration
