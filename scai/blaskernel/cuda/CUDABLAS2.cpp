@@ -40,7 +40,7 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 // internal scai libraries
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/TypeTraits.hpp>
@@ -49,7 +49,6 @@
 #include <scai/common/preprocessor.hpp>
 
 using namespace scai::tasking;
-using namespace scai::hmemo;
 
 namespace scai
 {

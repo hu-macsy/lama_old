@@ -35,7 +35,7 @@
 
 // local library
 #include <scai/hmemo/cuda/CUDAHostMemory.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/hmemo/ContextAccess.hpp>
 

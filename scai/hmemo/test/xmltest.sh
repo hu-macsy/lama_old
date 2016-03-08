@@ -51,6 +51,6 @@ then
     ./hmemoTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoCUDATest.xml
     #Running CUDA tests
     echo "Running dedicated CUDA test"
-    cuda/CUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CUDATest.xml
+    cuda/hmemoCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CUDATest.xml
 fi
 

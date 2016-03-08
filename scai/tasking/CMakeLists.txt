@@ -108,8 +108,17 @@ scai_project (
 )
 
 ## add subdirectories
+
+if ( CUDA_FOUND AND USE_CUDA )
+    add_subdirectory ( cuda )
+endif ( CUDA_FOUND AND USE_CUDA )
+
 add_subdirectory ( doc )
 add_subdirectory ( examples )
+
+if ( FOUND_BOOST_TEST AND BUILD_TEST )
+    add_subdirectory ( test )
+endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )

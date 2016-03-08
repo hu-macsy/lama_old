@@ -40,7 +40,7 @@
 
 // internal scai library
 #include <scai/utilskernel/cuda/CUDAUtils.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
@@ -71,7 +71,6 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using namespace scai::hmemo;
 using scai::tasking::CUDAStreamSyncToken;
 
 namespace scai

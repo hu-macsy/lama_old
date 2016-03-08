@@ -34,12 +34,12 @@
 #include <scai/hmemo/cuda/CUDAContext.hpp>
 #include <scai/hmemo/cuda/CUDAHostMemory.hpp>
 #include <scai/hmemo/cuda/CUDAMemory.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/hmemo/ContextAccess.hpp>
 
 // internal scai libraries
-#include <scai/tasking/TaskSyncToken.hpp>
+
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/assert.hpp>
@@ -309,21 +309,25 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
 
 CUDAStreamSyncToken* CUDAContext::getComputeSyncToken() const
 {
-    return new CUDAStreamSyncToken( shared_from_this(), mComputeStream );
+    // ToDo: A possible problem might be that this CUDAContext is deleted before 
+    // synchronization has taken place. Solution: add a dummy routine where 
+    // one argument is bind to this context.
+
+    return new CUDAStreamSyncToken( mCUcontext, mComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 SyncToken* CUDAContext::getSyncToken() const
 {
-    return new CUDAStreamSyncToken( shared_from_this(), mComputeStream );
+    return new CUDAStreamSyncToken( mCUcontext, mComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 {
-    return new CUDAStreamSyncToken( shared_from_this(), mTransferStream );
+    return new CUDAStreamSyncToken( mCUcontext, mTransferStream );
 }
 
 /* ----------------------------------------------------------------------------- */
