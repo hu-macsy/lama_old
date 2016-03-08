@@ -41,6 +41,13 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running tests serial
-echo "Running serial tests"
+# Running common tests (only Host)
+
+echo "Running common tests"
 ./CommonTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CommonTest.xml
+
+# Running common CUDA tests
+
+echo "Running common tests for CUDA"
+./cuda/CommonCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CommonCUDATest.xml
+

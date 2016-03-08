@@ -35,45 +35,11 @@
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
+#include <scai/common/test/cuda/CUDATestFix.hpp>
 #include <scai/common/test/cuda/CUDAKernel.hpp>
 
 #include <iostream>
 
-using namespace scai;
-
-/* --------------------------------------------------------------------- */
-
-struct CUDAFix
-{   
-    CUDAFix()
-    {
-        std::cout << "Init cuda" << std::endl;
-
-        unsigned int flags = 0;    // must be set to zero
-
-        SCAI_CUDA_DRV_CALL( cuInit( flags ), "cuInit failed, probably no GPU devices available" )
-
-        int deviceNr = 0;
-        
-        SCAI_CUDA_DRV_CALL( cuDeviceGet( &mCUdevice, deviceNr ), "cuDeviceGet device " << deviceNr );
-        
-        SCAI_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
-                            "cuCtxCreate for " << deviceNr )
-        
-        CUcontext tmp; // temporary for last context, not necessary to save it
-
-        SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
-    }
-
-    ~CUDAFix()
-    {
-        SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "push context failed" );
-        SCAI_CUDA_DRV_CALL( cuCtxDestroy( mCUcontext ), "cuCtxDestroy failed" )
-    }
-
-    CUdevice mCUdevice;
-    CUcontext mCUcontext;
-};
 
 /* --------------------------------------------------------------------- */
 
@@ -116,6 +82,8 @@ BOOST_AUTO_TEST_CASE( accessTest )
 
         SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
     }
+
+    // checkt that access is released at end of previous scope
 
     BOOST_CHECK_THROW( 
         {
