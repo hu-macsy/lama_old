@@ -418,7 +418,8 @@ void HArrayUtils::conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefL
 
 template void HArrayUtils::setVal( hmemo::HArray<IndexType>& , const IndexType , IndexType );
 
-template void HArrayUtils::setScalar( hmemo::HArray<IndexType>& target, const IndexType value, const common::reduction::ReductionOp op, hmemo::ContextPtr prefContext );
+template void HArrayUtils::setScalar( hmemo::HArray<IndexType>& target, const IndexType value,
+                                      const common::reduction::ReductionOp op, hmemo::ContextPtr prefContext );
 
 template IndexType HArrayUtils::getVal( const hmemo::HArray<IndexType>& , const IndexType );
 

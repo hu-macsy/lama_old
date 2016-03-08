@@ -94,7 +94,8 @@ public:
     static void setScalar( 
         hmemo::HArray<ValueType1>& target,
         const ValueType1 value, 
-        const common::reduction::ReductionOp op, hmemo::ContextPtr context )
+        const common::reduction::ReductionOp op,
+        hmemo::ContextPtr prefContext )
         __attribute__( ( noinline ) );
 
 //    static void setScalar(

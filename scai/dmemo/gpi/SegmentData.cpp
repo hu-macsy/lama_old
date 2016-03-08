@@ -87,7 +87,7 @@ void SegmentData<T>::reserve( const IndexType size )
 }
 
 template<typename T>
-SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size, T data[] )
+SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size, T* data )
 {
     mComm = comm;  // GPI communicator not really needed
 
