@@ -25,30 +25,25 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMakeLists of common/cuda
+ # @brief CMake configuration file for cuda memory tests
  # @author Thomas Brandes
- # @date 09.06.2015
+ # @date 16.06.2015
 ###
-
-if    ( CUDA_FOUND AND USE_CUDA )
-    set ( CUDACLASSES CUDAError CUDASettings CUDATexture CUDAAccess )
-    set ( CUDAHEADERS CUDATexVector )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-# add source and header files to the current project
 
 scai_project (
 
-    CLASSES
+    SOURCES
 
-        ${CUDACLASSES}        
+        CommonCUDATest
+        CUDAAccessTest
+ 
+    CUDA_SOURCES
 
-    HEADERS
-
-        launchHelper
-        CUDACallable
-        
-        ${CUDAHEADERS}
-
-    ADD_PARENT_SCOPE
+        CUDAKernel
 )
+
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+
+cuda_add_executable ( CommonCUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
+
+target_link_libraries ( CommonCUDATest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_common )

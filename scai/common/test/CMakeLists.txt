@@ -42,6 +42,10 @@ add_executable ( CommonTest ${CXX_SOURCES} )
 
 target_link_libraries ( CommonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
+if    ( CUDA_FOUND AND USE_CUDA )
+    add_subdirectory ( cuda )
+endif ( CUDA_FOUND AND USE_CUDA )
+
 file ( GLOB LOCAL_HEADERS "*.hpp" )
 
 install ( FILES ${LOCAL_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR}/test )
