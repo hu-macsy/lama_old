@@ -66,41 +66,47 @@ using namespace scai::hmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE( SORTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.SORTest" )
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( CtorTest )
+BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    LoggerPtr slogger(
-        new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+    LoggerPtr slogger( new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+
     SOR sorSolver( "SORTestSolver", slogger );
     BOOST_CHECK_EQUAL( sorSolver.getId(), "SORTestSolver" );
+
     SOR sorSolver2( "SORTestSolver2" );
     BOOST_CHECK_EQUAL( sorSolver2.getId(), "SORTestSolver2" );
+
     SOR sorSolver3( sorSolver2 );
     BOOST_CHECK_EQUAL( sorSolver3.getId(), "SORTestSolver2" );
     BOOST_CHECK( sorSolver3.getPreconditioner() == 0 );
+
     SOR sorSolver4( "SORTestSolver4", 0.05, slogger );
     BOOST_CHECK_EQUAL( sorSolver4.getOmega(), 0.05 );
     BOOST_CHECK_EQUAL( sorSolver4.getId(), "SORTestSolver4" );
+
     SOR sorSolver5( "sorSolver5" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner", slogger ) );
     sorSolver5.setPreconditioner( preconditioner );
+
     IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     sorSolver5.setStoppingCriterion( criterion );
+
     SOR sorSolver6( sorSolver5 );
     BOOST_CHECK_EQUAL( sorSolver6.getId(), sorSolver5.getId() );
     BOOST_CHECK_EQUAL( sorSolver6.getOmega(), sorSolver5.getOmega() );
     BOOST_CHECK_EQUAL( sorSolver6.getPreconditioner()->getId(), sorSolver5.getPreconditioner()->getId() );
 }
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_CASE( SOROmegaSetandGetTest )
 {
@@ -110,7 +116,7 @@ BOOST_AUTO_TEST_CASE( SOROmegaSetandGetTest )
     BOOST_CHECK_EQUAL( sor.getOmega().getValue<double>(), omega.getValue<double>() );
 }
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 //testsolve has stoppingCriterion ResidualThreshold
 template<typename MatrixType>
@@ -146,22 +152,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveOmega, ValueType, test_types )
     testSolveOmegaMethod< COOSparseMatrix<ValueType> >( 0.20 );
 }
 
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( writeAtTest )
-{
-    SOR sor( "SORTest", 0.05 );
-    LAMA_WRITEAT_TEST( sor );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( copyTest )
-{
-    SOR sorSolver1( "SORTestSolver" );
-    SolverPtr solverptr = sorSolver1.copy();
-    BOOST_CHECK_EQUAL( solverptr->getId(), "SORTestSolver" );
-}
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END();

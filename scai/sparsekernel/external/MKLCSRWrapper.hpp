@@ -8,7 +8,7 @@
 #pragma once
 
 // internal scai libraries
-#include <scai/lama/openmp/MKLCSRTrait.hpp>
+#include <scai/sparsekernel/external/MKLCSRTrait.hpp>
 
 // extern
 #include <mkl_spblas.h>

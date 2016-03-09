@@ -68,7 +68,7 @@ using namespace scai::dmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 struct SpecializedJacobiTestConfig
 {
@@ -95,7 +95,7 @@ BOOST_FIXTURE_TEST_SUITE( SpecializedJacobiTest, SpecializedJacobiTestConfig )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.SpecializedJacobiTest" )
 
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_CASE( testGetId )
 {
@@ -103,34 +103,40 @@ BOOST_AUTO_TEST_CASE( testGetId )
     BOOST_CHECK_EQUAL( 0, ( *mJacobiFloat ).getId().compare( "SpecializedJacobiTest float solver" ) );
 }
 
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( CtorTest )
+BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    LoggerPtr slogger(
-        new CommonLogger( "<SJ>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+    LoggerPtr slogger( new CommonLogger( "<SJ>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+
     SpecializedJacobi sjSolver( "SJTestSolver", slogger );
     BOOST_CHECK_EQUAL( sjSolver.getId(), "SJTestSolver" );
+
     SpecializedJacobi sjSolver2( "SJTestSolver2" );
     BOOST_CHECK_EQUAL( sjSolver2.getId(), "SJTestSolver2" );
+
     SpecializedJacobi sjSolver3( sjSolver2 );
     BOOST_CHECK_EQUAL( sjSolver3.getId(), "SJTestSolver2" );
     BOOST_CHECK( sjSolver3.getPreconditioner() == 0 );
+
     SpecializedJacobi sjSolver4( "sjSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     sjSolver4.setPreconditioner( preconditioner );
+
     IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     sjSolver4.setStoppingCriterion( criterion );
+
     SpecializedJacobi sjSolver5( sjSolver4 );
     BOOST_CHECK_EQUAL( sjSolver5.getId(), sjSolver4.getId() );
     BOOST_CHECK_EQUAL( sjSolver5.getPreconditioner()->getId(), sjSolver4.getPreconditioner()->getId() );
+
     SpecializedJacobi sjSolver6( "sjSolver6", 0.05, slogger );
     BOOST_CHECK_EQUAL( sjSolver6.getId(), "sjSolver6" );
     BOOST_CHECK_EQUAL( sjSolver6.getOmega(), 0.05 );
 }
 
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_CASE( testSetAndGetOmega )
 {
@@ -140,43 +146,7 @@ BOOST_AUTO_TEST_CASE( testSetAndGetOmega )
     BOOST_CHECK_EQUAL( 0.8f, ( *mJacobiFloat ).getOmega().getValue<float>() );
 }
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
-{
-    typedef double ValueType;
-    ContextPtr context = Context::getContextPtr();
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    SpecializedJacobi sjacobi( "TestJacobi" );
-    const IndexType N1 = 4;
-    const IndexType N2 = 4;
-
-    CSRSparseMatrix<ValueType> coefficients;
-    coefficients.setContextPtr( context );
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-
-    DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
-    coefficients.redistribute( dist, dist );
-
-    DenseVector<ValueType> rhs( coefficients.getNumRows(), 1.0 );
-    rhs.setContextPtr( context );
-    rhs.redistribute( coefficients.getRowDistributionPtr() );
-
-    DenseVector<ValueType> solution( coefficients.getNumRows(), 1.0 );
-    solution.setContextPtr( context );
-    solution.redistribute( coefficients.getColDistributionPtr() );
-
-    DenseVector<ValueType> exactSolution( solution );
-    exactSolution.setContextPtr( context );
-    exactSolution.redistribute( coefficients.getColDistributionPtr() );
-
-    sjacobi.initialize( coefficients );
-    sjacobi.solve( solution, rhs );
-    BOOST_CHECK_EQUAL( sjacobi.getIterationCount(), 1 );
-}
-
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 template<typename MatrixType>
 void testSolveMethod( std::string solverId, ContextPtr context )
@@ -267,22 +237,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
     //testSolveMethod<DenseMatrix<ValueType> >( "<JacobiDense>", context );
 }
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( writeAtTest )
-{
-    SpecializedJacobi sjacobi( "TestJacobi" );
-    LAMA_WRITEAT_TEST( sjacobi );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( copyTest )
-{
-    SpecializedJacobi sjSolver1( "SpecJacobiTestSolver" );
-    SolverPtr solverptr = sjSolver1.copy();
-    BOOST_CHECK_EQUAL( solverptr->getId(), "SpecJacobiTestSolver" );
-}
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END();

@@ -100,6 +100,7 @@ public:
         common::shared_ptr<lama::Vector> mQ2;
         common::shared_ptr<lama::Vector> mZ2;
         lama::Scalar mPScalar2;
+        lama::Scalar mEps;
         mutable common::shared_ptr<lama::Vector> mResidual2;
     };
 
@@ -130,6 +131,8 @@ public:
 protected:
 
     virtual void iterate();
+
+    void print(lama::Vector& vec, size_t n);
 
     /**
      *  @brief own implementation of Printable::writeAt

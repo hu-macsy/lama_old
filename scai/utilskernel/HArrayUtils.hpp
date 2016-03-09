@@ -94,7 +94,8 @@ public:
     static void setScalar( 
         hmemo::HArray<ValueType1>& target,
         const ValueType1 value, 
-        const common::reduction::ReductionOp op, hmemo::ContextPtr context )
+        const common::reduction::ReductionOp op,
+        hmemo::ContextPtr prefContext )
         __attribute__( ( noinline ) );
 
 //    static void setScalar(
@@ -105,7 +106,7 @@ public:
 
     /** This method sets a single value in a heterogeneous array.
      *
-     *  @param[in,out] array  Harray where a value to set
+     *  @param[in,out] target  Harray where a value to set
      *  @param[in]     index  position to set ( 0 <= index < target.size() )
      *  @param[in]     val    value to set
      *

@@ -42,6 +42,8 @@
 // local scai libraries
 #include <scai/hmemo/HArray.hpp>
 
+#include <scai/logging.hpp>
+
 namespace scai
 {
 
@@ -421,7 +423,7 @@ private:
 
     void print() const;
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+    SCAI_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
 
 public:
 

@@ -48,7 +48,6 @@
 #include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>

@@ -41,7 +41,6 @@ namespace scai
 {
 
 using tasking::Task;
-using common::function;
 using common::shared_ptr;
 
 namespace tasking
@@ -49,7 +48,7 @@ namespace tasking
 
 SCAI_LOG_DEF_LOGGER( TaskSyncToken::logger, "SyncToken.TaskSyncToken" )
 
-TaskSyncToken::TaskSyncToken( function<void()> routine, int numOmpThreads ) :
+TaskSyncToken::TaskSyncToken( common::function<void()> routine, int numOmpThreads ) :
 
     mTask( new Task( routine, numOmpThreads ) )
 
@@ -63,7 +62,7 @@ TaskSyncToken::TaskSyncToken()
     // empty task token
 }
 
-void TaskSyncToken::run( function<void()> routine, int numOmpThreads /* = 0 */ )
+void TaskSyncToken::run( common::function<void()> routine, int numOmpThreads /* = 0 */ )
 {
     mTask = shared_ptr<Task>( new Task( routine, numOmpThreads ) );
 

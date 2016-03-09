@@ -32,116 +32,50 @@
  **/
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 
 #include <scai/solver/SimpleAMG.hpp>
-#include <scai/solver/logger/Timer.hpp>
-#include <scai/solver/logger/CommonLogger.hpp>
+#include <scai/solver/TrivialPreconditioner.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
+#include <scai/solver/logger/CommonLogger.hpp>
 
-#include <scai/lama/DenseVector.hpp>
-#include <scai/lama/matrix/ELLSparseMatrix.hpp>
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/matrix/JDSSparseMatrix.hpp>
-#include <scai/lama/matrix/DIASparseMatrix.hpp>
-#include <scai/lama/matrix/COOSparseMatrix.hpp>
-#include <scai/lama/matrix/DenseMatrix.hpp>
-
-#include <scai/lama/norm/MaxNorm.hpp>
-
-#include <scai/lama/matutils/MatrixCreator.hpp>
-
-#include <scai/lama/expression/VectorExpressions.hpp>
-
-#include <scai/lama/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
 
-typedef boost::mpl::list<float, double> test_types;
-
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE( SimpleAMGTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.SimpleAMGTest" )
 
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
-template<typename MatrixType>
-void solverTestMethod( ContextPtr context )
+BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    typedef typename MatrixType::MatrixValueType ValueType;
-    LoggerPtr consoleLogger(
-        new CommonLogger( "<SimpleAMG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
-    DenseVector<ValueType> solution( system.coefficients.getNumRows(), 0.0 );
-    const DenseVector<ValueType> rhs( system.rhs );
-    const DenseVector<ValueType> refSolution( system.solution );
-    MatrixType coefficients( system.coefficients );
-    coefficients.setContextPtr( context );
-    SCAI_LOG_INFO( logger, "SimpleAMGTest uses context = " << context->getType() );
-    SimpleAMG amg( "AMGTest solver", consoleLogger );
-    CriterionPtr minCriterion( new IterationCount( 10 ) );
-    amg.setStoppingCriterion( minCriterion );
-    amg.setMaxLevels( 2 );
-    amg.initialize( coefficients );
-    amg.solve( solution, rhs );
-    DenseVector<ValueType> diff( solution - refSolution );
-    Scalar maxDiff = maxNorm( diff );
-    BOOST_CHECK( maxDiff.getValue<ValueType>() < 1e-5 );
+    LoggerPtr slogger( new CommonLogger( "<SimpleAMG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+
+    SimpleAMG SimpleAMGSolver( "SimpleAMGSolver", slogger );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver.getId(), "SimpleAMGSolver" );
+
+    SimpleAMG SimpleAMGSolver2( "SimpleAMGSolver2" );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver2.getId(), "SimpleAMGSolver2" );
+
+    SimpleAMG SimpleAMGSolver3( SimpleAMGSolver2 );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver3.getId(), "SimpleAMGSolver2" );
+    BOOST_CHECK( SimpleAMGSolver3.getPreconditioner() == 0 );
+
+    SimpleAMG SimpleAMGSolver4( "SimpleAMGSolver4" );
+    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
+    SimpleAMGSolver4.setPreconditioner( preconditioner );
+
+    CriterionPtr criterion( new IterationCount( 10 ) );
+    SimpleAMGSolver4.setStoppingCriterion( criterion );
+
+    SimpleAMG SimpleAMGSolver5( SimpleAMGSolver4 );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver5.getId(), SimpleAMGSolver4.getId() );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver5.getPreconditioner()->getId(), SimpleAMGSolver4.getPreconditioner()->getId() );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( solverTest, ValueType, test_types )
-{
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        solverTestMethod<CSRSparseMatrix<ValueType> >( context );
-        solverTestMethod<ELLSparseMatrix<ValueType> >( context );
-        solverTestMethod<JDSSparseMatrix<ValueType> >( context );
-        solverTestMethod<COOSparseMatrix<ValueType> >( context );
-        solverTestMethod<DIASparseMatrix<ValueType> >( context );
-        solverTestMethod<DenseMatrix<ValueType> >( context );
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE ( testDefaultCriterionSet, ValueType, test_types )
-{
-    SimpleAMG amg( "SimpleAMG" );
-    const IndexType N1 = 4;
-    const IndexType N2 = 4;
-    CSRSparseMatrix<ValueType> coefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-    const DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
-    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
-    DenseVector<ValueType> exactSolution( solution );
-    amg.setMaxLevels( 2 );
-    amg.initialize( coefficients );
-    amg.solve( solution, rhs );
-    BOOST_CHECK_EQUAL( amg.getIterationCount(), 1 );
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( writeAtTest )
-{
-    SimpleAMG amg( "SimpleAMG" );
-    LAMA_WRITEAT_TEST( amg );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( copyTest )
-{
-    SimpleAMG amgSolver1( "AMGTestSolver" );
-    SolverPtr solverptr = amgSolver1.copy();
-    BOOST_CHECK_EQUAL( solverptr->getId(), "AMGTestSolver" );
-}
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END();

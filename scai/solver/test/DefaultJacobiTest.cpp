@@ -1,5 +1,5 @@
 /**
- * @file JacobiTest.cpp
+ * @file DefaultJacobiTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class JacobiTest.cpp
+ * @brief Contains the implementation of the class DefaultJacobi.cpp
  * @author: Alexander Büchel, Matthias Makulla
  * @date 22.02.2012
  * @since 1.0.0
@@ -39,6 +39,7 @@
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/logger/Timer.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
+#include <scai/solver/TrivialPreconditioner.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 
@@ -64,7 +65,7 @@ using namespace scai::hmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 struct JacobiTestConfig
 {
@@ -89,25 +90,37 @@ struct JacobiTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( JacobiTest, JacobiTestConfig )
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.JacobiTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.DefaultJacobiTest" )
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, test_types )
+BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    DefaultJacobi jacobi( "TestJacobi" );
-    const IndexType N1 = 4;
-    const IndexType N2 = 4;
-    CSRSparseMatrix<ValueType> coefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-    const DenseVector<ValueType> rhs( coefficients.getLocalNumRows(), 1.0 );
-    DenseVector<ValueType> solution( rhs );
-    jacobi.initialize( coefficients );
-    jacobi.solve( solution, rhs );
-    BOOST_CHECK_EQUAL( jacobi.getIterationCount(), 1 );
+    LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+
+    DefaultJacobi DefaultJacobiSolver( "DefaultJacobiSolver", slogger );
+    BOOST_CHECK_EQUAL( DefaultJacobiSolver.getId(), "DefaultJacobiSolver" );
+
+    DefaultJacobi DefaultJacobiSolver2( "DefaultJacobiSolver2" );
+    BOOST_CHECK_EQUAL( DefaultJacobiSolver2.getId(), "DefaultJacobiSolver2" );
+
+    DefaultJacobi DefaultJacobiSolver3( DefaultJacobiSolver2 );
+    BOOST_CHECK_EQUAL( DefaultJacobiSolver3.getId(), "DefaultJacobiSolver2" );
+    BOOST_CHECK( DefaultJacobiSolver3.getPreconditioner() == 0 );
+
+    DefaultJacobi DefaultJacobiSolver4( "DefaultJacobiSolver4" );
+    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
+    DefaultJacobiSolver4.setPreconditioner( preconditioner );
+
+    CriterionPtr criterion( new IterationCount( 10 ) );
+    DefaultJacobiSolver4.setStoppingCriterion( criterion );
+
+    DefaultJacobi DefaultJacobiSolver5( DefaultJacobiSolver4 );
+    BOOST_CHECK_EQUAL( DefaultJacobiSolver5.getId(), DefaultJacobiSolver4.getId() );
+    BOOST_CHECK_EQUAL( DefaultJacobiSolver5.getPreconditioner()->getId(), DefaultJacobiSolver4.getPreconditioner()->getId() );
 }
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_CASE( testSetAndGetOmega )
 {
@@ -117,7 +130,7 @@ BOOST_AUTO_TEST_CASE( testSetAndGetOmega )
     BOOST_CHECK_EQUAL( 0.8f, ( *mJacobiFloat ).getOmega().getValue<float>() );
 }
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_CASE( testGetId )
 {
@@ -125,7 +138,7 @@ BOOST_AUTO_TEST_CASE( testGetId )
     BOOST_CHECK_EQUAL( 0, ( *mJacobiFloat ).getId().compare( "JacobiTest float solver" ) );
 }
 
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 template<typename MatrixType>
 void testSolveMethod( std::string solverId, ContextPtr context )
@@ -204,22 +217,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
     testSolveMethod<DenseMatrix<ValueType> >( "<JacobiDense>", context );
 }
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( writeAtTest )
-{
-    DefaultJacobi jacobiSolver( "JacobiTest" );
-    LAMA_WRITEAT_TEST( jacobiSolver );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( copyTest )
-{
-    DefaultJacobi jacobiSolver1( "JacobiTestSolver" );
-    SolverPtr solverptr = jacobiSolver1.copy();
-    BOOST_CHECK_EQUAL( solverptr->getId(), "JacobiTestSolver" );
-}
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END();

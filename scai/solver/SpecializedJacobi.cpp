@@ -69,7 +69,7 @@ SpecializedJacobi::SpecializedJacobi( const std::string& id, LoggerPtr logger )
 {
 }
 
-SpecializedJacobi::SpecializedJacobi( const std::string & id, Scalar omega )
+SpecializedJacobi::SpecializedJacobi( const std::string & id, lama::Scalar omega )
     : OmegaSolver( id, omega )
 {
 }
@@ -140,17 +140,6 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
             getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
     }
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
-}
-void SpecializedJacobi::solve( Vector& solution, const Vector& rhs )
-{
-    if( getConstRuntime().mSolveInit )
-    {
-        SCAI_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overriden!" )
-    }
-
-    solveInit( solution, rhs );
-    solveImpl();
-    solveFinalize();
 }
 
 void SpecializedJacobi::solveInit( Vector& solution, const Vector& rhs )

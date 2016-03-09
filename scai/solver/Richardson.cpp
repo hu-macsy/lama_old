@@ -50,20 +50,16 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( Richardson::logger, "Solver.Richardson" )
 
-using lama::Matrix;
-using lama::Vector;
-using lama::Scalar;
-
 Richardson::Richardson( const std::string& id )
-    : OmegaSolver( id, ( Scalar ) - 1.0 ) {}
+    : OmegaSolver( id, ( lama::Scalar ) - 1.0 ) {}
 
-Richardson::Richardson( const std::string& id, const Scalar omega )
+Richardson::Richardson( const std::string& id, const lama::Scalar omega )
     : OmegaSolver( id, omega ) {}
 
 Richardson::Richardson( const std::string& id, LoggerPtr logger )
-    : OmegaSolver( id , ( Scalar ) - 1.0, logger ) {}
+    : OmegaSolver( id , ( lama::Scalar ) - 1.0, logger ) {}
 
-Richardson::Richardson( const std::string& id, const Scalar omega, LoggerPtr logger )
+Richardson::Richardson( const std::string& id, const lama::Scalar omega, LoggerPtr logger )
     : OmegaSolver( id, omega, logger ) {}
 
 Richardson::Richardson( const Richardson& other )
@@ -80,7 +76,7 @@ Richardson::RichardsonRuntime::~RichardsonRuntime() {}
 
 
 
-void Richardson::initialize( const Matrix& coefficients )
+void Richardson::initialize( const lama::Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
 
@@ -89,19 +85,19 @@ void Richardson::initialize( const Matrix& coefficients )
     if ( mOmega == -1.0 )
     {
         lama::L2Norm n;
-        Scalar bound = 2.0 / n.apply( coefficients );
+        lama::Scalar bound = 2.0 / n.apply( coefficients );
         mOmega = ( 2.0 / 3.0 * bound );
     }
 }
 
-void Richardson::solveInit( Vector& solution, const Vector& rhs )
+void Richardson::solveInit( lama::Vector& solution, const lama::Vector& rhs )
 {
     RichardsonRuntime& runtime = getRuntime();
 
     //Check if oldSolution already exists, if not create copy of solution
     if ( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution.reset( Vector::create( solution.getCreateValue() ) );
+        runtime.mOldSolution.reset( lama::Vector::create( solution.getCreateValue() ) );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
@@ -130,16 +126,16 @@ void Richardson::iterate()
 
     DataType omega = mOmega.getValue<DataType>();
 
-    const Vector& rhs = *runtime.mRhs;
-    const Matrix& A = *runtime.mCoefficients;
+    const lama::Vector& rhs = *runtime.mRhs;
+    const lama::Matrix& A = *runtime.mCoefficients;
     //swap old solution and solution pointer begin
-    Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
-    Vector* ptr_solution = &( *runtime.mSolution );
+    lama::Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
+    lama::Vector* ptr_solution = &( *runtime.mSolution );
 
     runtime.mProxyOldSolution = ptr_solution;
     runtime.mSolution = ptr_OldSolution;
 
-    const Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
+    const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
 
     lama::DenseVector<T> x = A * oldSolution;
     *runtime.mSolution = rhs - x;

@@ -37,8 +37,6 @@
 namespace scai
 {
 
-using namespace common;
-
 namespace kregistry
 {
 
@@ -49,7 +47,7 @@ _ContextFunction:: _ContextFunction()
 
 void _ContextFunction::clear()
 {
-    for ( int i = 0; i < context::MaxContext; ++i )
+    for ( int i = 0; i < common::context::MaxContext; ++i )
     {
         mContextFuncArray[i] =  NULL;
     }
@@ -62,33 +60,33 @@ _ContextFunction::_ContextFunction( const _ContextFunction& other )
 
 void _ContextFunction::assign( const _ContextFunction& other )
 {
-    for ( int i = 0; i < context::MaxContext; ++i )
+    for ( int i = 0; i < common::context::MaxContext; ++i )
     {
         mContextFuncArray[i] =  other.mContextFuncArray[i];
     }
 }
 
-context::ContextType _ContextFunction::validContext( context::ContextType preferedCtx )
+common::context::ContextType _ContextFunction::validContext( common::context::ContextType preferedCtx )
 {
     if ( mContextFuncArray[preferedCtx] != NULL )
     {
         return preferedCtx;
     }
 
-    for ( int i = 0; i < context::MaxContext; ++i )
+    for ( int i = 0; i < common::context::MaxContext; ++i )
     {
         if ( mContextFuncArray[i] != NULL )
         {
-            return static_cast<context::ContextType>( i );
+            return static_cast<common::context::ContextType>( i );
         }
     }
 
     // throw exception
 
-    return static_cast<context::ContextType>( context::MaxContext );
+    return static_cast<context::ContextType>( common::context::MaxContext );
 }
 
-context::ContextType _ContextFunction::validContext( const _ContextFunction& other, context::ContextType preferedCtx )
+common::context::ContextType _ContextFunction::validContext( const _ContextFunction& other, common::context::ContextType preferedCtx )
 {
     if ( mContextFuncArray[preferedCtx] != NULL && other.mContextFuncArray[preferedCtx] != NULL )
     {
@@ -97,17 +95,17 @@ context::ContextType _ContextFunction::validContext( const _ContextFunction& oth
         return preferedCtx;
     }
 
-    for ( int i = 0; i < context::MaxContext; ++i )
+    for ( int i = 0; i < common::context::MaxContext; ++i )
     {
         if ( mContextFuncArray[i] != NULL && other.mContextFuncArray[i] != NULL )
         {
-            return static_cast<context::ContextType>( i );
+            return static_cast<common::context::ContextType>( i );
         }
     }
 
     // throw exception
 
-    return static_cast<ContextType>( context::MaxContext );
+    return static_cast<ContextType>( common::context::MaxContext );
 }
 
 _ContextFunction::ContextType _ContextFunction::validContext( 
@@ -123,7 +121,7 @@ _ContextFunction::ContextType _ContextFunction::validContext(
         return preferedCtx;
     }
 
-    for ( int i = 0; i < context::MaxContext; ++i )
+    for ( int i = 0; i < common::context::MaxContext; ++i )
     {
         if ( mContextFuncArray[i] != NULL && other1.mContextFuncArray[i] != NULL && other2.mContextFuncArray[i] )
         {
@@ -133,14 +131,14 @@ _ContextFunction::ContextType _ContextFunction::validContext(
 
     // throw exception
 
-    return static_cast<ContextType>( context::MaxContext );
+    return static_cast<ContextType>( common::context::MaxContext );
 }
 
 std::string _ContextFunction::printIt() const
 {
     std::ostringstream msg;
 
-    for ( int i = 0; i < context::MaxContext; ++i )
+    for ( int i = 0; i < common::context::MaxContext; ++i )
     {
         if ( mContextFuncArray[i] != NULL )
         {
