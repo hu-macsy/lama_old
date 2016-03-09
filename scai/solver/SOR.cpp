@@ -72,10 +72,9 @@ SOR::SOR( const std::string& id )
 }
 
 //TODO check for 0 < omega < 2
-SOR::SOR( const std::string& id, const Scalar omega )
-    :
+SOR::SOR( const std::string& id, const lama::Scalar omega )
 //constructor for SOR with relaxation factor omega
-    OmegaSolver( id, omega )
+    : OmegaSolver( id, omega )
 {
 }
 
@@ -84,7 +83,7 @@ SOR::SOR( const std::string& id, LoggerPtr logger )
 {
 }
 
-SOR::SOR( const std::string& id, const Scalar omega, LoggerPtr logger )
+SOR::SOR( const std::string& id, const lama::Scalar omega, LoggerPtr logger )
     : OmegaSolver( id, omega, logger )
 {
 }

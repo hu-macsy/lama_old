@@ -126,8 +126,9 @@ public:
     /**
      * @brief Create a HArray of size n and initialize it with one value.
      *
-     * @param[in] n     the size of the HArray to create
-     * @param[in] value the value to initialize the container contens with
+     * @param[in] n       the size of the HArray to create
+     * @param[in] value   the value to initialize the container contens with
+     * @param[in] context the location the HArray should be located first
      *
      * HArray( const IndexType n ) creates a HArray of size n, allocates Host memory and fills the Host memory with
      * the passed value.
@@ -139,6 +140,7 @@ public:
      *
      * @param[in] n      the size of the HArray to create
      * @param[in] values host values
+     * @param[in] context the location the HArray should be located first
      *
      * Note: the data is directly copied and the array can have no incarnation on Host
      */

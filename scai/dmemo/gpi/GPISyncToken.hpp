@@ -62,9 +62,11 @@ class COMMON_DLL_IMPORTEXPORT GPISyncToken: public tasking::SyncToken
 {
 public:
 
+    // TODO: doxy docu
     /** Constructor for an GPI synchronization token.
      *
-     *  \param nRequests is the number of requests to be allocated
+     *  @param segId 
+     *  @param numNotifications 
      *
      *  Each pending send and receive will have its own request.
      */

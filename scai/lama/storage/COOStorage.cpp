@@ -37,13 +37,10 @@
 // internal scai libraries
 #include <scai/sparsekernel/COOKernelTrait.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/sparsekernel/openmp/OpenMPCOOUtils.hpp>
-#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 

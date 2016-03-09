@@ -51,16 +51,12 @@ SCAI_LOG_DEF_LOGGER( DefaultJacobi::logger, "Jacobi.DefaultJacobi" )
 
 using namespace hmemo;
 
-using lama::Matrix;
-using lama::Vector;
-using lama::Scalar;
-
 DefaultJacobi::DefaultJacobi( const std::string& id )
     : OmegaSolver( id )
 {
 }
 
-DefaultJacobi::DefaultJacobi( const std::string& id, const Scalar omega )
+DefaultJacobi::DefaultJacobi( const std::string& id, const lama::Scalar omega )
     : OmegaSolver( id, omega )
 {
 }
@@ -70,7 +66,7 @@ DefaultJacobi::DefaultJacobi( const std::string& id, LoggerPtr logger )
 {
 }
 
-DefaultJacobi::DefaultJacobi( const std::string& id, const Scalar omega, LoggerPtr logger )
+DefaultJacobi::DefaultJacobi( const std::string& id, const lama::Scalar omega, LoggerPtr logger )
     : OmegaSolver( id, omega, logger )
 {
 }
@@ -93,7 +89,7 @@ DefaultJacobi::DefaultJacobiRuntime::~DefaultJacobiRuntime()
 {
 }
 
-void DefaultJacobi::initialize( const Matrix& coefficients )
+void DefaultJacobi::initialize( const lama::Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
 
@@ -133,7 +129,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
 
-    runtime.mOldSolution.reset( Vector::create( runtime.mDiagonalTimesRhs->getCreateValue() ) );
+    runtime.mOldSolution.reset( lama::Vector::create( runtime.mDiagonalTimesRhs->getCreateValue() ) );
     runtime.mOldSolution->setContextPtr( runtime.mDiagonalTimesRhs->getContextPtr() );
 
     OmegaSolver::initialize( coefficients );
@@ -141,7 +137,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     SCAI_LOG_DEBUG( logger, "Initialization performed" )
 }
 
-void DefaultJacobi::solve( Vector& solution, const Vector& rhs )
+void DefaultJacobi::solve( lama::Vector& solution, const lama::Vector& rhs )
 {
     if( getConstRuntime().mSolveInit )
     {
@@ -153,14 +149,14 @@ void DefaultJacobi::solve( Vector& solution, const Vector& rhs )
     solveFinalize();
 }
 
-void DefaultJacobi::solveInit( Vector& solution, const Vector& rhs )
+void DefaultJacobi::solveInit( lama::Vector& solution, const lama::Vector& rhs )
 {
     DefaultJacobiRuntime& runtime = getRuntime();
 
     //Check if oldSolution already exists, if not create copy of solution
     if( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution.reset( Vector::create( solution.getCreateValue() ) );
+        runtime.mOldSolution.reset( lama::Vector::create( solution.getCreateValue() ) );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
@@ -200,8 +196,8 @@ void DefaultJacobi::iterate()
     DefaultJacobiRuntime& runtime = getRuntime();
 
     //swap old solution and solution pointer begin
-    Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
-    Vector* ptr_solution = &( *runtime.mSolution );
+    lama::Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
+    lama::Vector* ptr_solution = &( *runtime.mSolution );
 
     runtime.mProxyOldSolution = ptr_solution;
     runtime.mSolution = ptr_OldSolution;
@@ -209,7 +205,7 @@ void DefaultJacobi::iterate()
     //swap end now m_proxOldSolution holds the solution of the last iteration
     //and m_solution will be the output of the current iteration
 
-    const Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
+    const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
 
     SCAI_LOG_DEBUG( logger, " mSolution  =  mDiagonalTimesRhs -  mDiagonalTimesLU * oldSolution " )
     *runtime.mSolution = *runtime.mDiagonalTimesRhs - *runtime.mDiagonalTimesLU * oldSolution;

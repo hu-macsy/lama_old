@@ -53,8 +53,6 @@
 // std
 #include <iostream>
 
-using namespace scai::hmemo;
-
 namespace scai
 {
 
@@ -63,9 +61,9 @@ namespace utilskernel
 
 SCAI_LOG_DEF_LOGGER( HArrayUtils::logger, "HArrayUtils" )
 
-void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextPtr loc /* = ContextPtr() */)
+void HArrayUtils::assign( hmemo::_HArray& target, const hmemo::_HArray& source, const hmemo::ContextPtr loc /* = ContextPtr() */)
 {
-    ContextPtr validLoc = loc;
+    hmemo::ContextPtr validLoc = loc;
 
     if( !validLoc )
     {
@@ -78,12 +76,12 @@ void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextP
 }
 
 void HArrayUtils::set(
-    _HArray& target,
-    const _HArray& source,
+    hmemo::_HArray& target,
+    const hmemo::_HArray& source,
     const common::reduction::ReductionOp op,
-    const ContextPtr loc )
+    const hmemo::ContextPtr loc )
 {
-    ContextPtr validLoc = loc;
+    hmemo::ContextPtr validLoc = loc;
 
     if ( !validLoc )
     {
@@ -106,10 +104,10 @@ void HArrayUtils::set(
 
 template<typename ValueType1,typename ValueType2>
 void HArrayUtils::setImpl(
-    HArray<ValueType1>& target,
-    const HArray<ValueType2>& source,
+    hmemo::HArray<ValueType1>& target,
+    const hmemo::HArray<ValueType2>& source,
     const common::reduction::ReductionOp op,
-    const ContextPtr prefContext )
+    const hmemo::ContextPtr prefContext )
 {
     // verify that dynamic cast operations went okay before
 
@@ -120,7 +118,7 @@ void HArrayUtils::setImpl(
 
     static LAMAKernel<UtilKernelTrait::set<ValueType1, ValueType2> > set;
 
-    ContextPtr loc = set.getValidContext( prefContext );
+    hmemo::ContextPtr loc = set.getValidContext( prefContext );
 
     const IndexType n = source.size();
 
@@ -128,8 +126,8 @@ void HArrayUtils::setImpl(
 
     if ( op == common::reduction::COPY )
     {
-        WriteOnlyAccess<ValueType1> targetVals( target, loc, n );
-        ReadAccess<ValueType2> sourceVals( source, loc );
+        hmemo::WriteOnlyAccess<ValueType1> targetVals( target, loc, n );
+        hmemo::ReadAccess<ValueType2> sourceVals( source, loc );
 
         // Implemenation of set @ loc is available
 
@@ -137,8 +135,8 @@ void HArrayUtils::setImpl(
     }
     else
     {
-        WriteAccess<ValueType1> targetVals( target, loc );
-        ReadAccess<ValueType2> sourceVals( source, loc );
+        hmemo::WriteAccess<ValueType1> targetVals( target, loc );
+        hmemo::ReadAccess<ValueType2> sourceVals( source, loc );
 
         // Implemenation of set @ loc is available
 
@@ -147,20 +145,19 @@ void HArrayUtils::setImpl(
 }
 
 void HArrayUtils::gather(
-    _HArray& target,
-    const _HArray& source,
-    const HArray<IndexType>& indexes )
+    hmemo::_HArray& target,
+    const hmemo::_HArray& source,
+    const hmemo::HArray<IndexType>& indexes )
 {
     SCAI_REGION( "HArray.gather" )
-
     mepr::UtilsWrapper<ARITHMETIC_ARRAY_HOST_LIST>::gatherImpl( target, source, indexes );
 }
 
 template<typename ValueType1,typename ValueType2>
 void HArrayUtils::gatherImpl(
-    HArray<ValueType1>& target,
-    const HArray<ValueType2>& source,
-    const HArray<IndexType>& indexes )
+    hmemo::HArray<ValueType1>& target,
+    const hmemo::HArray<ValueType2>& source,
+    const hmemo::HArray<IndexType>& indexes )
 {
     SCAI_REGION( "HArray.gatherImpl" )
 
@@ -168,16 +165,16 @@ void HArrayUtils::gatherImpl(
 
     static LAMAKernel<UtilKernelTrait::setGather<ValueType1, ValueType2> > setGather;
 
-    ContextPtr context = setGather.getValidContext( source.getValidContext() );
+    hmemo::ContextPtr context = setGather.getValidContext( source.getValidContext() );
 
     const IndexType n = indexes.size();
 
-    WriteOnlyAccess<ValueType1> wTarget( target, context, n );
+    hmemo::WriteOnlyAccess<ValueType1> wTarget( target, context, n );
 
     SCAI_CONTEXT_ACCESS( context )
 
-    ReadAccess<ValueType2> rSource( source, context );
-    ReadAccess<IndexType> rIndexes( indexes, context );
+    hmemo::ReadAccess<ValueType2> rSource( source, context );
+    hmemo::ReadAccess<IndexType> rIndexes( indexes, context );
 
     //  target[i] = source[ indexes[i] ]
 
@@ -185,17 +182,25 @@ void HArrayUtils::gatherImpl(
 }
 
 template<typename ValueType>
-void HArrayUtils::setScalar( _HArray& target, const ValueType value, const common::reduction::ReductionOp op, ContextPtr prefContext )
+void HArrayUtils::setScalar(
+    hmemo::_HArray& target,
+    const ValueType value,
+    const common::reduction::ReductionOp op,
+    hmemo::ContextPtr prefContext )
 {
     mepr::UtilsWrapperT< ValueType, ARITHMETIC_ARRAY_HOST_LIST>::setScalarImpl( target, value, op, prefContext );
 }
 
 template<typename ValueType, typename OtherValueType>
-void HArrayUtils::setScalarImpl( HArray<ValueType>& target, const OtherValueType value, const common::reduction::ReductionOp op, ContextPtr prefContext )
+void HArrayUtils::setScalarImpl(
+    hmemo::HArray<ValueType>& target,
+    const OtherValueType value,
+    const common::reduction::ReductionOp op,
+    hmemo::ContextPtr prefContext )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType, OtherValueType> > setVal;
 
-    ContextPtr context = setVal.getValidContext( prefContext );
+    hmemo::ContextPtr context = setVal.getValidContext( prefContext );
 
     const IndexType n = target.size();
 
@@ -205,20 +210,23 @@ void HArrayUtils::setScalarImpl( HArray<ValueType>& target, const OtherValueType
     {
         // Note: very important is to specify the size n here as it might not have been allocated
 
-        WriteOnlyAccess<ValueType> wTarget( target, context, n );
+        hmemo::WriteOnlyAccess<ValueType> wTarget( target, context, n );
         SCAI_CONTEXT_ACCESS( context )
         setVal[context]( wTarget.get(), n, value, op );
     }
     else
     {
-        WriteAccess<ValueType> wTarget( target, context );
+        hmemo::WriteAccess<ValueType> wTarget( target, context );
         SCAI_CONTEXT_ACCESS( context )
         setVal[context]( wTarget.get(), n, value, op );
     }
 }
 
 template<typename ValueType>
-void HArrayUtils::setVal( _HArray& target, const IndexType index, const ValueType val )
+void HArrayUtils::setVal(
+    hmemo::_HArray& target,
+    const IndexType index,
+    const ValueType val )
 {
     SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
 
@@ -226,9 +234,12 @@ void HArrayUtils::setVal( _HArray& target, const IndexType index, const ValueTyp
 }
 
 template<typename ValueType, typename OtherValueType>
-void HArrayUtils::setValImpl( HArray<ValueType>& target, const IndexType index, const OtherValueType val )
+void HArrayUtils::setValImpl(
+    hmemo::HArray<ValueType>& target,
+    const IndexType index,
+    const OtherValueType val )
 {
-    ContextPtr loc = target.getValidContext();   // preferred location where to fill
+    hmemo::ContextPtr loc = target.getValidContext();   // preferred location where to fill
 
     static LAMAKernel<UtilKernelTrait::setVal<ValueType, OtherValueType> > setVal;
 
@@ -237,7 +248,7 @@ void HArrayUtils::setValImpl( HArray<ValueType>& target, const IndexType index, 
     SCAI_LOG_INFO( logger, "setVal<" << common::TypeTraits<ValueType>::id() << ">[" << index
                            << "] = " << val << " @ " << *loc )
 
-    WriteAccess<ValueType> wTarget( target, loc );
+    hmemo::WriteAccess<ValueType> wTarget( target, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -245,20 +256,24 @@ void HArrayUtils::setValImpl( HArray<ValueType>& target, const IndexType index, 
 }
 
 template<typename ValueType>
-ValueType HArrayUtils::getVal( const _HArray& array, const IndexType index )
+ValueType HArrayUtils::getVal(
+    const hmemo::_HArray& array,
+    const IndexType index )
 {
     ValueType val = mepr::UtilsWrapperT< ValueType, ARITHMETIC_ARRAY_HOST_LIST>::getValImpl( array, index );
     return val;
 }
 
 template<typename ValueType, typename OtherValueType>
-ValueType HArrayUtils::getValImpl( const HArray<OtherValueType>& array, const IndexType index )
+ValueType HArrayUtils::getValImpl(
+    const hmemo::HArray<OtherValueType>& array,
+    const IndexType index )
 {
     SCAI_ASSERT_DEBUG( index < array.size(), "index = " << index << " out of range for array = " << array );
 
     // get the data from a valid context, avoids any memory copy.
 
-    ContextPtr loc = array.getValidContext();
+    hmemo::ContextPtr loc = array.getValidContext();
 
     static LAMAKernel<UtilKernelTrait::getValue<OtherValueType> > getValue;
 
@@ -266,7 +281,7 @@ ValueType HArrayUtils::getValImpl( const HArray<OtherValueType>& array, const In
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<OtherValueType> rArray( array, loc );
+    hmemo::ReadAccess<OtherValueType> rArray( array, loc );
 
     OtherValueType val = getValue[loc]( rArray.get(), index );
 
@@ -275,10 +290,10 @@ ValueType HArrayUtils::getValImpl( const HArray<OtherValueType>& array, const In
 
 template<typename ValueType>
 void HArrayUtils::assignScaled(
-    HArray<ValueType>& result,
+    hmemo::HArray<ValueType>& result,
     const ValueType beta,
-    const HArray<ValueType>& y,
-    ContextPtr prefLoc )
+    const hmemo::HArray<ValueType>& y,
+    hmemo::ContextPtr prefLoc )
 {
     const IndexType n = y.size();  // determines size of result
 
@@ -291,9 +306,9 @@ void HArrayUtils::assignScaled(
 
         static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
-        ContextPtr loc = setVal.getValidContext( prefLoc );
+        hmemo::ContextPtr loc = setVal.getValidContext( prefLoc );
 
-        WriteOnlyAccess<ValueType> wResult( result, loc, n );
+        hmemo::WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -310,9 +325,9 @@ void HArrayUtils::assignScaled(
 
         static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
-        ContextPtr loc = setVal.getValidContext( prefLoc );
+        hmemo::ContextPtr loc = setVal.getValidContext( prefLoc );
 
-        WriteAccess<ValueType> wResult( result, loc );
+        hmemo::WriteAccess<ValueType> wResult( result, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -327,12 +342,12 @@ void HArrayUtils::assignScaled(
         
         static LAMAKernel<UtilKernelTrait::setScale<ValueType, ValueType> > setScale;
 
-        ContextPtr loc = setScale.getValidContext( prefLoc );
+        hmemo::ContextPtr loc = setScale.getValidContext( prefLoc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        ReadAccess<ValueType> rY( y, loc );
-        WriteOnlyAccess<ValueType> wResult( result, loc, n );
+        hmemo::ReadAccess<ValueType> rY( y, loc );
+        hmemo::WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
         setScale[loc]( wResult.get(), beta, rY.get(), n );
     }
@@ -353,11 +368,11 @@ void HArrayUtils::conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefL
     {
         static LAMAKernel<UtilKernelTrait::conj<ValueType> > conj;
 
-        ContextPtr loc = conj.getValidContext( prefLoc );
+        hmemo::ContextPtr loc = conj.getValidContext( prefLoc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteAccess<ValueType> values( array, loc );
+        hmemo::WriteAccess<ValueType> values( array, loc );
 
         conj[loc]( values.get(), n );
     }

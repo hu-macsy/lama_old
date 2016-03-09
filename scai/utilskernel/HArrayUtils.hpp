@@ -92,7 +92,7 @@ public:
 
     /** This method sets a single value in a heterogeneous array.
      *
-     *  @param[in,out] array  Harray where a value to set
+     *  @param[in,out] target  Harray where a value to set
      *  @param[in]     index  position to set ( 0 <= index < target.size() )
      *  @param[in]     val    value to set
      *

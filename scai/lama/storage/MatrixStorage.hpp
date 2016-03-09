@@ -510,7 +510,7 @@ protected:
 
     hmemo::ContextPtr mContext;//!< preferred context for the storage
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+    SCAI_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
 
 protected:
 

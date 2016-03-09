@@ -32,15 +32,16 @@
  */
 
 // hpp
-#include <scai/lama/openmp/MKLCSRUtils.hpp>
+#include <scai/sparsekernel/external/MKLCSRUtils.hpp>
 
 // local library
-#include <scai/lama/openmp/OpenMPUtils.hpp>
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
-#include <scai/lama/openmp/MKLCSRTrait.hpp>
-#include <scai/lama/openmp/MKLCSRWrapper.hpp>
+#include <scai/sparsekernel/openmp/OpenMPUtils.hpp>
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+ 
+#include <scai/sparsekernel/external/MKLCSRTrait.hpp>
+#include <scai/sparsekernel/external/MKLCSRWrapper.hpp>
 
-#include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
 
