@@ -90,6 +90,7 @@ void BiCG::initialize( const Matrix& coefficients )
     CG::initialize( coefficients );
     BiCGRuntime& runtime = getRuntime();
 
+    runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
     runtime.mPScalar2 = 0.0;
     runtime.mTransposeA.reset( coefficients.newMatrix() );
 
@@ -134,6 +135,7 @@ void BiCG::iterate()
     Vector& q2 = *runtime.mQ2;
     Vector& z = *runtime.mZ;
     Vector& z2 = *runtime.mZ2;
+    Scalar& eps = runtime.mEps;
 
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
@@ -152,6 +154,8 @@ void BiCG::iterate()
 // Instead of solving P * z2 = residual2 we need to solve P^H * z2 = residual2
 // where P is the preconditioner
         mPreconditioner->solve( z2, residual2 );
+        // print(residual,4);
+        // print(residual2,4);
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
@@ -166,9 +170,10 @@ void BiCG::iterate()
     }
     else
     {
-        Scalar beta = Scalar( 0 );
+        Scalar beta = Scalar( 0.0 );
 
-        if ( lastPScalar != Scalar( 0 ) )
+
+        if ( abs(lastPScalar) > eps )
         {
             beta = pScalar / lastPScalar;
         }
@@ -193,9 +198,9 @@ void BiCG::iterate()
     const Scalar pqProd = p2.dotProduct( q );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if ( pqProd == Scalar( 0 ) )
+    if ( abs(pqProd) < eps )
     {
-         alpha = Scalar( 0 );
+         alpha = Scalar( 0.0 );
     }
     else
     {
@@ -233,23 +238,25 @@ const Vector& BiCG::getResidual2() const
     SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
 
     //mLogger->logMessage(LogLevel::completeInformation,"Request for residual received.\n");
-
-    if( !runtime.mResidual2.get() )
-    {
-        SCAI_LOG_DEBUG( logger, "calculating residual of = " << runtime.mSolution.getConstReference() )
+    SCAI_LOG_DEBUG( logger, "calculating residual of = " << runtime.mSolution.getConstReference() )
 
         //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");
+    mLogger->startTimer( "ResidualTimer" );
+    *runtime.mResidual2 = *runtime.mRhs;
+    *runtime.mResidual2 -= ( *runtime.mTransposeA ) * runtime.mSolution.getConstReference() ;
 
-        mLogger->startTimer( "ResidualTimer" );
-        *runtime.mResidual2 = *runtime.mRhs,
-        *runtime.mResidual2 -= ( *runtime.mTransposeA ) * runtime.mSolution.getConstReference() ;
-
-        mLogger->stopTimer( "ResidualTimer" );
-        mLogger->logTime( "ResidualTimer", LogLevel::completeInformation, "Revaluation of residual took [s]: " );
-        mLogger->stopAndResetTimer( "ResidualTimer" );
-    }
+    mLogger->stopTimer( "ResidualTimer" );
+    mLogger->logTime( "ResidualTimer", LogLevel::completeInformation, "Revaluation of residual took [s]: " );
+    mLogger->stopAndResetTimer( "ResidualTimer" );
 
     return ( *runtime.mResidual2 );
+}
+
+void BiCG::print(lama::Vector& vec, size_t n){
+    std::cout<<"\n";
+    for(size_t i=0;i<n;++i)
+        std::cout<<vec(i)<<" ";
+    std::cout<<"\n";
 }
 
 SolverPtr BiCG::copy()
