@@ -1,5 +1,5 @@
 /**
- * @file CUDAAccess.hpp
+ * @file CUDADevice.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,15 +25,16 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Help class to access and release a CUDA device
- * @author Thomas Brandes
- * @date 04.05.2013
- * @since 1.0.0
- */
+ * @brief Class for a CUDA device
+ * @author: Thomas Brandes
+ * @date 08.03.2016
+ **/
 
 #pragma once
 
 #include <cuda.h>
+
+#include <scai/common/NonCopyable.hpp>
 
 namespace scai
 {
@@ -41,37 +42,43 @@ namespace scai
 namespace common
 {
 
-class CUDADevice;
+/* --------------------------------------------------------------------- */
 
-/** This class accesses a CUDA context with the constructor and
- *  releases it with the destructor.
- * 
- *  It guarantees that accesses will also be released in case of exceptions.
- *
- *  Acccesing and releasing a CUDA context is necessary to make it possible
- *  that another thread can also use the same device.
- */
-
-class CUDAAccess
-{
+class CUDADevice : private NonCopyable
+{   
 
 public:
 
-    /** The constructor will access the corresponding CUDA context. */
+    CUDADevice( int deviceNr = -1 );
 
-    CUDAAccess( CUcontext ctx );
+    ~CUDADevice();
 
-    CUDAAccess( CUDADevice& dev );
+    CUcontext getCUcontext() const
+    {
+        return mCUcontext;
+    }
 
-    /** The destructor will release the corresponding CUDA context. */
+    CUdevice getDevice() const
+    {
+        return mCUdevice;
+    }
 
-    ~CUDAAccess();
+    int getDeviceNr() const
+    {
+        return mDeviceNr;
+    }
+
+    // const char* getName() const;
 
 private:
 
     CUcontext mCUcontext;
+
+    CUdevice mCUdevice;
+
+    int mDeviceNr;
 };
 
-} /* end namespace common */
+}  // namespace common
 
-} /* end namespace scai */
+}  // namespace scai

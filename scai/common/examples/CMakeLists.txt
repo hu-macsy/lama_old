@@ -59,6 +59,10 @@ foreach ( executable ExceptionDemo CriticalRegion Barrier
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
+if    ( CUDA_FOUND AND USE_CUDA )
+    add_subdirectory ( cuda )
+endif ( CUDA_FOUND AND USE_CUDA )
+
 # copy run_all.sh
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 

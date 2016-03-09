@@ -31,6 +31,7 @@
  */
 
 #include <scai/common/cuda/CUDAAccess.hpp>
+#include <scai/common/cuda/CUDADevice.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -41,6 +42,11 @@ namespace common
 {
 
 CUDAAccess::CUDAAccess( CUcontext ctx ) : mCUcontext( ctx )  
+{
+    SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "could not push context" )
+}
+
+CUDAAccess::CUDAAccess( CUDADevice& dev ) : mCUcontext( dev.getCUcontext() )  
 {
     SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "could not push context" )
 }

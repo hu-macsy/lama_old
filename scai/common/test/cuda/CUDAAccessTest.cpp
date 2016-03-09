@@ -32,10 +32,10 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <scai/common/cuda/CUDADevice.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
-#include <scai/common/test/cuda/CUDATestFix.hpp>
 #include <scai/common/test/cuda/CUDAKernel.hpp>
 
 #include <iostream>
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_SUITE( CommonCUDATest );
 
 BOOST_AUTO_TEST_CASE( accessTest )
 {
-    CUDAFix myCuda;
+    scai::common::CUDADevice myCuda;
 
     const int N = 100;
 
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE( accessTest )
     {
         // create an access for CUDA calls 
 
-        scai::common::CUDAAccess tmpAccess( myCuda.mCUcontext );
+        scai::common::CUDAAccess tmpAccess( myCuda );
 
         SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
     

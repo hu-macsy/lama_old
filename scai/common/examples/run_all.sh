@@ -56,3 +56,29 @@ if [ $count -ne $i ]; then
     echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
     exit 1
 fi
+
+if [ -d $MYDIR/cuda ];
+then
+
+    cd $MYDIR/cuda
+
+    # build examples
+    make
+
+    # reset counter for CUDA examples
+    i=0
+
+    # run CUDA examples
+    RUN 1 cuda/CUDADeviceExample.exe
+    RUN 1 cuda/CUDAExample.exe
+
+    # check if there are unkown examples
+    count=`ls -l -la $MYDIR/cuda/*.exe | wc -l`
+    if [ $count -ne $i ]; then
+        echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
+        exit 1
+    fi
+
+    cd ..
+
+fi

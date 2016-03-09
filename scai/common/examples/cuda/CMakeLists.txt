@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file common/examples/cuda/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,36 +25,40 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for common examples
+ # @brief CMake configuration file for common CUDA examples
  # @author Thomas Brandes
  # @date 16.06.2015
 ###
 
-# ThreadTest example
+#empty EXAMPLE_FILES and EXAMPLE_EXECUTES in subdir
 
-foreach    ( executable ThreadPoolTest BenchTasking Token )
-   add_executable( ${executable}.exe ${executable}.cpp )
-   target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-   set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-   set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+set ( EXAMPLE_FILES "" )
+set ( EXAMPLE_EXECUTABLES "" )
+
+string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
+
+foreach ( executable CUDADeviceExample)
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-# copy run_all.sh
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+foreach ( executable CUDAExample )
+    cuda_add_executable( ${executable}.exe ${executable}.cu )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cu )
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+endforeach ( executable )
 
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )
 prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 
 ## install examples
-install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
 
 # install Makefile
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in"
-				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/Makefile" COPYONLY )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
+				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/cuda/Makefile" COPYONLY )

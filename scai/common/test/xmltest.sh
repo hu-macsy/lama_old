@@ -48,6 +48,8 @@ echo "Running common tests"
 
 # Running common CUDA tests
 
-echo "Running common tests for CUDA"
-./cuda/CommonCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CommonCUDATest.xml
-
+if [ -d cuda ];
+then
+    echo "Running common tests for CUDA"
+    ./cuda/CommonCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CommonCUDATest.xml
+fi

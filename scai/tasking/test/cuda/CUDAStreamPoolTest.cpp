@@ -1,5 +1,5 @@
 /**
- * @file CUDATestFix.hpp
+ * @file CUDAStreamPool.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,51 +25,57 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Fixture for CUDA Tests
+ * @brief Test of class CUDAStreamPool
  * @author: Thomas Brandes
  * @date 08.03.2016
  **/
 
-#pragma once
+#include <boost/test/unit_test.hpp>
 
-#include <scai/common/Settings.hpp>
-
+#include <scai/common/cuda/CUDADevice.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
+#include <scai/common/exception/Exception.hpp>
+
+#include <scai/tasking/cuda/CUDAStreamPool.hpp>
+#include <scai/tasking/test/cuda/CUDAKernel.hpp>
+
+#include <iostream>
+
 using namespace scai;
+using namespace tasking;
 
 /* --------------------------------------------------------------------- */
 
-struct CUDAFix
-{   
-    CUDAFix()
-    {
-        unsigned int flags = 0;    // must be set to zero
+BOOST_AUTO_TEST_SUITE( CUDAStreamPoolTest );
 
-        SCAI_CUDA_DRV_CALL( cuInit( flags ), "cuInit failed, probably no GPU devices available" )
+/* --------------------------------------------------------------------- */
 
-        int deviceNr = 0;  // take this as default
+BOOST_AUTO_TEST_CASE( constructorTest )
+{
+    common::CUDADevice myCuda;
 
-        scai::common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );  // can be set
-        
-        SCAI_CUDA_DRV_CALL( cuDeviceGet( &mCUdevice, deviceNr ), "cuDeviceGet device " << deviceNr );
-        
-        SCAI_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
-                            "cuCtxCreate for " << deviceNr )
-        
-        CUcontext tmp; // temporary for last context, not necessary to save it
+    CUDAStreamPool& pool = CUDAStreamPool::getPool( myCuda.getCUcontext() );
 
-        SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
-    }
+    CUstream stream1 = pool.reserveStream( true );
+    CUstream stream2 = pool.reserveStream( false );
 
-    ~CUDAFix()
-    {
-        SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "push context failed" );
-        SCAI_CUDA_DRV_CALL( cuCtxDestroy( mCUcontext ), "cuCtxDestroy failed" )
-    }
+    pool.releaseStream( stream1 );
 
-    CUdevice mCUdevice;
-    CUcontext mCUcontext;
-};
+    BOOST_CHECK_THROW(
+        {
+            pool.releaseStream( stream1 );
+        }, common::Exception );
+
+    pool.releaseStream( stream2 );
+ 
+    // release the whole pool
+
+    CUDAStreamPool::freePool( myCuda.getCUcontext() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();
 

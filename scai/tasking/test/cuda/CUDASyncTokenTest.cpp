@@ -35,9 +35,10 @@
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
-#include <scai/common/test/cuda/CUDATestFix.hpp>
+#include <scai/common/cuda/CUDADevice.hpp>
 
 #include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamPool.hpp>
 
 #include <scai/tasking/test/cuda/CUDAKernel.hpp>
 
@@ -54,9 +55,9 @@ BOOST_AUTO_TEST_SUITE( CUDASyncTokenTest );
 
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
-    CUDAFix myCuda;
+    common::CUDADevice myCuda;
 
-    common::CUDAAccess cudaAccess( myCuda.mCUcontext );
+    common::CUDAAccess cudaAccess( myCuda );
 
     CUstream stream;
 
@@ -65,7 +66,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     SCAI_CUDA_DRV_CALL( cuStreamCreate( &stream, flags ), "cuStreamCreate failed" )
 
     {
-        CUDAStreamSyncToken token( myCuda.mCUcontext, stream );
+        CUDAStreamSyncToken token( myCuda.getCUcontext(), stream );
     }
 
     SCAI_CUDA_DRV_CALL( cuStreamDestroy( stream ), "cuStreamDestroy for compute failed" );
@@ -77,9 +78,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
 BOOST_AUTO_TEST_CASE( asyncTest )
 {
-    CUDAFix myCuda;
+    common::CUDADevice myCuda;
 
-    common::CUDAAccess cudaAccess( myCuda.mCUcontext );
+    common::CUDAAccess cudaAccess( myCuda );
 
     const int N = 100000;
 
@@ -98,7 +99,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     float* fpointer = reinterpret_cast<float*>( pointer );
 
     {
-        CUDAStreamSyncToken token( myCuda.mCUcontext, stream );
+        CUDAStreamSyncToken token( myCuda.getCUcontext(), stream );
 
         // launch kernel asynchronously
 
@@ -112,6 +113,10 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
 
     SCAI_CUDA_DRV_CALL( cuStreamDestroy( stream ), "cuStreamDestroy for compute failed" );
+
+    // with CUDA device destructor the pool should be freed 
+
+    CUDAStreamPool::freePool( myCuda.getCUcontext() );
 }
 
 /* ------------------------------------------------------------------------- */

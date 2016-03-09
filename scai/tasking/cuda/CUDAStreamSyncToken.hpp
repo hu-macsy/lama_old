@@ -38,11 +38,6 @@
 // base classes
 #include <scai/tasking/SyncToken.hpp>
 
-// internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
-#include <scai/common/shared_ptr.hpp>
-
 // CUDA
 #include <cuda.h>
 #include <cuda_runtime.h> /* no diagnostic for this one */
@@ -72,9 +67,7 @@ public:
      *  A pointer to the CUDA context is required to enable/disable it.
      */
 
-    CUDAStreamSyncToken( CUcontext context, CUstream stream );
-
-    CUDAStreamSyncToken( CUcontext, CUstream stream, CUevent event );
+    CUDAStreamSyncToken( CUcontext context, bool computeFlag = true );
 
     void setEvent( CUevent event )
     {
@@ -111,7 +104,7 @@ private:
 
     CUcontext mCUcontext; // needed for synchronization
 
-    const CUstream mStream;
+    CUstream mStream;
 
     CUevent mEvent;
 };

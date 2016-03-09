@@ -40,6 +40,7 @@
 // internal scai libraries
 
 #include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamPool.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/assert.hpp>
@@ -61,6 +62,7 @@ cublasHandle_t CUDAContext_cublasHandle = 0;
 using common::Thread;
 using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;
+using tasking::CUDAStreamPool;
 
 namespace hmemo
 {
@@ -73,59 +75,57 @@ int CUDAContext::currentDeviceNr = -1;
 
 int CUDAContext::numUsedDevices = 0;
 
-
 /**  constructor  *********************************************************/
 
 CUDAContext::CUDAContext( int deviceNr ) : 
 
     Context( common::context::CUDA ), 
-    mDeviceNr( deviceNr )
+    CUDADevice( deviceNr )
 
 {
     SCAI_LOG_DEBUG( logger, "construct CUDAContext, device nr = = " << deviceNr )
 
     // Note: logging is safe as CUDA context is always created after static initializations
 
-    if ( numUsedDevices == 0 )
-    {
-        unsigned int flags = 0;    // must be set to zero
-        SCAI_CUDA_DRV_CALL( cuInit( flags ), "cuInit failed, probably no GPU devices available" )
+    currentDeviceNr = getDeviceNr();
+
+    numUsedDevices++;
+
+    { 
+        enable( __FILE__, __LINE__ );
+
+        // cudaDeviceProp properties;
+        // cudaGetDeviceProperties( &properties, mCUdevice );
+        // feature might be important to indicate that we can use CUDAHostMemory on device
+        // SCAI_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
+
+        char deviceName[256];
+
+        SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, getDevice() ), "cuDeviceGetName" );
+
+        mDeviceName = deviceName; // save it as string member variable for output
+
+        SCAI_LOG_DEBUG( logger, "got device " << mDeviceName )
+
+        SCAI_CUSPARSE_CALL( cusparseCreate( &CUDAContext_cusparseHandle ),
+                            "Initialization of CUSparse library: cusparseCreate" );
+    
+        SCAI_LOG_INFO( logger, "Initialized: cuSparse " << CUDAContext_cusparseHandle )
+    
+        SCAI_CUBLAS_CALL( cublasCreate( &CUDAContext_cublasHandle ), "Initialization of CUBlas library: cublasCreate" );
+    
+        SCAI_LOG_INFO( logger, "Initialized: cuBLAS " << CUDAContext_cublasHandle )
+    
+        mOwnerThread = Thread::getSelf(); // thread that can use the context
+
+        disable( __FILE__, __LINE__ );
     }
 
-    currentDeviceNr = deviceNr;
-    numUsedDevices++;
-    Context::enable( __FILE__, __LINE__ );
-    SCAI_CUDA_DRV_CALL( cuDeviceGet( &mCUdevice, mDeviceNr ), "cuDeviceGet device " << mDeviceNr );
-
-    cudaDeviceProp properties;
-    cudaGetDeviceProperties( &properties, mCUdevice );
-
-    // feature might be important to indicate that we can use CUDAHostMemory on device
-    // SCAI_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
-
-
-    char deviceName[256];
-    SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, mCUdevice ), "cuDeviceGetName" );
-    mDeviceName = deviceName; // save it as string member variable for output
-    SCAI_LOG_DEBUG( logger, "got device " << mDeviceName )
-    SCAI_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
-                        "cuCtxCreate for " << *this )
-    SCAI_CUSPARSE_CALL( cusparseCreate( &CUDAContext_cusparseHandle ),
-                        "Initialization of CUSparse library: cusparseCreate" );
-
-    SCAI_LOG_INFO( logger, "Initialized: cuSparse " << CUDAContext_cusparseHandle )
-
-    SCAI_CUBLAS_CALL( cublasCreate( &CUDAContext_cublasHandle ), "Initialization of CUBlas library: cublasCreate" );
-
-    SCAI_LOG_INFO( logger, "Initialized: cuBLAS " << CUDAContext_cublasHandle )
-
-    int flags = 0; // must be 0 by specification of CUDA driver API
-    SCAI_CUDA_DRV_CALL( cuStreamCreate( &mTransferStream, flags ), "cuStreamCreate for transfer failed" )
-    SCAI_CUDA_DRV_CALL( cuStreamCreate( &mComputeStream, flags ), "cuStreamCreate for compute failed" );
-    mOwnerThread = Thread::getSelf(); // thread that can use the context
-    disable( __FILE__, __LINE__ );
     // count used devices to shutdown CUDA if no more device is used
+
     SCAI_LOG_INFO( logger, *this << " constructed by thread " << mOwnerThread << ", now disabled" )
+
+    CUDAStreamPool::getPool( getCUcontext() );
 }
 
 /**  destructor   *********************************************************/
@@ -138,7 +138,7 @@ CUDAContext::~CUDAContext()
 
     // context must be valid before streams are destroyed
 
-    CUresult res = cuCtxPushCurrent( mCUcontext );
+    CUresult res = cuCtxPushCurrent( getCUcontext() );
 
     if ( res == CUDA_ERROR_DEINITIALIZED )
     {
@@ -152,12 +152,7 @@ CUDAContext::~CUDAContext()
         return;
     }
 
-    SCAI_LOG_DEBUG( logger, "pushed context: synchronize/destroy compute stream" )
-    SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mComputeStream ), "cuStreamSynchronize for compute failed" )
-    SCAI_CUDA_DRV_CALL( cuStreamDestroy( mComputeStream ), "cuStreamDestroy for compute failed" );
-    SCAI_LOG_DEBUG( logger, "synchronize/destroy transfer stream" )
-    SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mTransferStream ), "cuStreamSynchronize for transfer failed" )
-    SCAI_CUDA_DRV_CALL( cuStreamDestroy( mTransferStream ), "cuStreamDestroy for transfer failed" );
+    CUDAStreamPool::freePool( getCUcontext() );
 
     if ( !numUsedDevices )
     {
@@ -190,13 +185,12 @@ CUDAContext::~CUDAContext()
         }
     }
 
-    SCAI_LOG_DEBUG( logger, "destroy cuda context" )
-    // do not do it if CUDA tracing is enabled
-    SCAI_CUDA_DRV_CALL( cuCtxDestroy( mCUcontext ), "cuCtxDestroy failed" )
+    CUcontext tmp; // temporary for last context, not necessary to save it
+    SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
 
     // if we are current device, set it back to -1
 
-    if ( currentDeviceNr == mDeviceNr )
+    if ( currentDeviceNr == getDeviceNr() )
     {
         currentDeviceNr = -1;
     }
@@ -246,7 +240,7 @@ MemoryPtr CUDAContext::getHostMemoryPtr() const
 
 void CUDAContext::writeAt( std::ostream& stream ) const
 {
-    stream << "CUDAContext(" << mDeviceNr << ": " << mDeviceName << ")";
+    stream << "CUDAContext(" << getDeviceNr() << ": " << mDeviceName << ")";
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -266,9 +260,9 @@ void CUDAContext::enable( const char* file, int line ) const
 {
     SCAI_LOG_DEBUG( logger, *this << ": enable by thread = " << Thread::getSelf() )
     Context::enable( file, line ); // call routine of base class
-    SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "could not push context for " << *this )
+    SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( getCUcontext() ), "could not push context for " << *this )
 //    lama_init0_cuda ();  // otherwise some properties of device might be wrong
-    currentDeviceNr = mDeviceNr;
+    currentDeviceNr = getDeviceNr();
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -285,7 +279,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
 
         SCAI_ASSERT( otherCUDAMem, "serious type mismatch" )
 
-        canUse = otherCUDAMem->getDeviceNr() == mDeviceNr;
+        canUse = otherCUDAMem->getDeviceNr() == getDeviceNr();
     }
 
     // Zero-Copy: we can use CUDA Host memory 
@@ -296,7 +290,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
 
         SCAI_ASSERT( otherCUDAHostMem, "serious type mismatch" )
 
-        canUse = otherCUDAHostMem->getCUDAContext().getDeviceNr() == mDeviceNr;
+        canUse = otherCUDAHostMem->getCUDAContext().getDeviceNr() == getDeviceNr();
     }
 
     SCAI_LOG_DEBUG( logger, *this << ": " << ( canUse ? "can use " : "can't use " )
@@ -313,21 +307,21 @@ CUDAStreamSyncToken* CUDAContext::getComputeSyncToken() const
     // synchronization has taken place. Solution: add a dummy routine where 
     // one argument is bind to this context.
 
-    return new CUDAStreamSyncToken( mCUcontext, mComputeStream );
+    return new CUDAStreamSyncToken( getCUcontext(), true );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 SyncToken* CUDAContext::getSyncToken() const
 {
-    return new CUDAStreamSyncToken( mCUcontext, mComputeStream );
+    return new CUDAStreamSyncToken( getCUcontext(), true );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 {
-    return new CUDAStreamSyncToken( mCUcontext, mTransferStream );
+    return new CUDAStreamSyncToken( getCUcontext(), false );
 }
 
 /* ----------------------------------------------------------------------------- */

@@ -35,6 +35,7 @@ scai_project (
     SOURCES
 
         taskingCUDATest
+        CUDAStreamPoolTest
         CUDASyncTokenTest
  
     CUDA_SOURCES

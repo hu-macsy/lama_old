@@ -1,5 +1,5 @@
 ###
- # @file tasking/cuda/CMakeLists.txt
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,20 +25,33 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMakeLists of tasking/cuda
+ # @brief CMake configuration file for taskig CUDA examples
  # @author Thomas Brandes
- # @date 09.06.2015
+ # @date 08.03.2016
 ###
 
-### add sources and headers to parent scope ###
+#empty EXAMPLE_FILES and EXAMPLE_EXECUTES in subdir
 
-scai_project( 
+set ( EXAMPLE_FILES "" )
+set ( EXAMPLE_EXECUTABLES "" )
 
-   CLASSES 
+string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
 
-       CUDAStreamPool
-       CUDAStreamSyncToken 
+foreach ( executable BenchStream )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+endforeach ( executable )
 
-   ADD_PARENT_SCOPE
-)
+# configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
+prepareExamplesMakeInc()
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 
+## install examples
+install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
+
+# install Makefile
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
+				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/cuda/Makefile" COPYONLY )
