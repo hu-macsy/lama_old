@@ -82,6 +82,24 @@ public:
     template<typename ValueType>
     static scai::lama::CSRSparseMatrix<ValueType> symmNotPosDefMatrix();
 
+    /**
+     * @brief Creates a sparse undsymmetric and positive definite matrix in CSR format.
+     *
+     *
+     * This matrix is a unsymmetric and postive definite matrix. Since positive-
+     * definiteness is defined on symmetric square matrices we say a n-dim square
+     * matrix A is postive definite if x^t * A * x > 0 for all n-dim vectors x, x!=0,
+     * where x^t denotes the transposition of the vector x. It is the system matrix of a
+     * P1FEM discretatization of the stationary diffusion convection equation on the unit 
+     * square.   
+     * It can be used to test convergence for the following methods: splitting methods
+     * Doesn't work for: krylow methods
+     *
+     *
+     */
+    template<typename ValueType>
+    static scai::lama::CSRSparseMatrix<ValueType> notSymmPosDefMatrix();
+
     /** 
      * @brief Creates a sparse, NOT symmetric and NOT positive-definite matrix in CSR format.
      *
@@ -140,6 +158,16 @@ scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::symmNotPosDefMatrix()
 {
     std::string prefix = scai::test::Configuration::getPath();
     std::string inputFile = prefix + "/bfwb398.mtx";
+
+    scai::lama::CSRSparseMatrix<double> matrix(inputFile);
+    return matrix;
+}
+
+template<typename ValueType>
+scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::notSymmPosDefMatrix()
+{
+    std::string prefix = scai::test::Configuration::getPath();
+    std::string inputFile = prefix + "/p1femdiffusionconvection.mtx";
 
     scai::lama::CSRSparseMatrix<double> matrix(inputFile);
     return matrix;
