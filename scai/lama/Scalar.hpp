@@ -118,7 +118,6 @@ public:
     /**
      * @brief Constructor of scalar for each supported arithmetic type.
      */
-
 #define LAMA_SCALAR_METHODS(z, I, _ )                                        \
     inline Scalar( const ARITHMETIC_HOST_TYPE_##I value ) : mValue( value )  \
     {                                                                        \

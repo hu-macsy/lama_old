@@ -178,8 +178,8 @@ int main()
   // Computes (x,y) <- (alpha * x + beta * y, -beta * x + alpha * y)
   //
 
-  float alpha = 1.1f;
-  float beta = 2.3f;
+  lama::Scalar alpha( 1.1f );
+  lama::Scalar beta( 2.3f );
   lama_vec1 = alpha * lama_vec1 + beta * lama_vec2;
   lama_vec2 = -beta * lama_vec1 + alpha * lama_vec2;
 

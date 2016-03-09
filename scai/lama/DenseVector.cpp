@@ -496,7 +496,7 @@ Scalar DenseVector<ValueType>::min() const
             localMin = std::min( localMin, myLocalMin );
         }
     }
-    return getDistribution().getCommunicator().min( localMin );
+    return Scalar( getDistribution().getCommunicator().min( localMin ) );
 }
 
 template<typename ValueType>
@@ -514,7 +514,7 @@ Scalar DenseVector<ValueType>::max() const
 
     ValueType localMax = reduce[loc]( localValues.get(), localValues.size(), common::reduction::MAX );
 
-    return getDistribution().getCommunicator().max( localMax );
+    return Scalar( getDistribution().getCommunicator().max( localMax ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -551,7 +551,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
         localL1Norm = asum[loc]( nnu, read.get(), 1 );
     }
 
-    return getDistribution().getCommunicator().sum( localL1Norm );
+    return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -582,7 +582,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
 
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
-    return sqrt( globalDotProduct );
+    return Scalar( common::Math::sqrt( globalDotProduct ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -615,7 +615,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
                    comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm 
                    << ", max norm global = " << globalMaxNorm )
 
-    return globalMaxNorm;
+    return Scalar( globalMaxNorm );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -896,7 +896,7 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
 
-        return dotProduct;
+        return Scalar( dotProduct );
     }
 
     COMMON_THROWEXCEPTION(
