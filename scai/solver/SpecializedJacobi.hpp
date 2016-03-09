@@ -64,8 +64,6 @@ public:
 
     virtual void initialize( const lama::Matrix& coefficients );
 
-    virtual void solve( lama::Vector& rhs, const lama::Vector& solution );
-
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
 
     virtual void solveFinalize();
