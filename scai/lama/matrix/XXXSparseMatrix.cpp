@@ -382,17 +382,26 @@ MatrixCreateKeyType XXXSparseMatrix<ValueType>::createValue()
     return MatrixCreateKeyType( Format::XXX, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string XXXSparseMatrix<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("XXXSparseMatrix<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* XXXSparseMatrix<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
 #define LAMA_XXX_SPARSE_MATRIX_INSTANTIATE(z, I, _)                               \
-                                                                                  \
-    template<>                                                                    \
-    const char* XXXSparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()             \
-    {                                                                             \
-        return "XXXSparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">"; \
-    }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT XXXSparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 

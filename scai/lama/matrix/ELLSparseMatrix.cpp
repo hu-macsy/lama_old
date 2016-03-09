@@ -382,17 +382,26 @@ MatrixCreateKeyType ELLSparseMatrix<ValueType>::createValue()
     return MatrixCreateKeyType( Format::ELL, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string ELLSparseMatrix<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("ELLSparseMatrix<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* ELLSparseMatrix<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
 #define LAMA_ELL_SPARSE_MATRIX_INSTANTIATE(z, I, _)                               \
-                                                                                  \
-    template<>                                                                    \
-    const char* ELLSparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()             \
-    {                                                                             \
-        return "ELLSparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">"; \
-    }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT ELLSparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 

@@ -198,8 +198,8 @@ void assignmentMultiplicationTest( logging::Logger& logger )
     IndexType n = 4;
     //4x4 * 4x4
     {
-        const Scalar s = 2.0;
-        const Scalar t = 1.0;
+        const Scalar s( 2.0 );
+        const Scalar t( 1.0 );
         ValueType values[] =
         {
             2.0f, 0.0f, 0.0f, 0.0f,
@@ -290,8 +290,8 @@ void assignmentMultiplicationTest( logging::Logger& logger )
         mat1.setRawDenseData( 4, 4, values );
         DenseMatrix<ValueType> matrixRes( mat1 );
         ValueType j = 2.0;
-        Scalar s = 2.0;
-        Scalar t = 4.0;
+        Scalar s ( 2.0 );
+        Scalar t ( 4.0 );
         SCAI_LOG_INFO( logger, "matrixRes = j (" << j << ") * mat1 = " << mat1 );
         matrixRes = j * mat1;
         SCAI_LOG_INFO( logger, "matrixRes = " << matrixRes );

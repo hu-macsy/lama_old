@@ -382,17 +382,26 @@ MatrixCreateKeyType CSRSparseMatrix<ValueType>::createValue()
     return MatrixCreateKeyType( Format::CSR, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string CSRSparseMatrix<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("CSRSparseMatrix<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* CSRSparseMatrix<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
 #define LAMA_CSR_SPARSE_MATRIX_INSTANTIATE(z, I, _)                               \
-                                                                                  \
-    template<>                                                                    \
-    const char* CSRSparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()             \
-    {                                                                             \
-        return "CSRSparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">"; \
-    }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT CSRSparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 

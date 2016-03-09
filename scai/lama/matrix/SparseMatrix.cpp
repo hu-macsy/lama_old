@@ -1995,7 +1995,7 @@ Scalar SparseMatrix<ValueType>::l1Norm() const
 
     SCAI_LOG_INFO( logger, "l1 norm: local value = " << myValue << ", value = " << allValue )
 
-    return allValue;
+    return Scalar( allValue );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2020,7 +2020,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
 
-    return allValue;
+    return Scalar( allValue );
 }
 
 template<typename ValueType>
@@ -2042,7 +2042,7 @@ Scalar SparseMatrix<ValueType>::maxNorm() const
 
     SCAI_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )
 
-    return allMax;
+    return Scalar( allMax );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2060,7 +2060,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     {
         const SparseMatrix<ValueType>* typedOther = dynamic_cast<const SparseMatrix<ValueType>*>( &other );
         SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
-        return maxDiffNormImpl( *typedOther );
+        return Scalar( maxDiffNormImpl( *typedOther ) );
     }
     else if( !getColDistribution().isReplicated() )
     {
@@ -2071,7 +2071,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
         SparseMatrix<ValueType> typedOther( other, getRowDistributionPtr(), getColDistributionPtr() );
-        return maxDiffNormImpl( typedOther );
+        return Scalar( maxDiffNormImpl( typedOther ) );
     }
 }
 
@@ -2479,16 +2479,26 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     }
 }
 
+template<typename ValueType>
+std::string SparseMatrix<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("SparseMatrix<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* SparseMatrix<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
 #define LAMA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                                     \
-    template<>                                                                      \
-    const char* SparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
-    {                                                                               \
-        return "SparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I>) ">";     \
-    }                                                                               \
                                                                                     \
     template class COMMON_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 

@@ -382,17 +382,26 @@ MatrixCreateKeyType JDSSparseMatrix<ValueType>::createValue()
     return MatrixCreateKeyType( Format::JDS, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string JDSSparseMatrix<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("JDSSparseMatrix<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* JDSSparseMatrix<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
 #define LAMA_JDS_SPARSE_MATRIX_INSTANTIATE(z, I, _)                               \
-                                                                                  \
-    template<>                                                                    \
-    const char* JDSSparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()             \
-    {                                                                             \
-        return "JDSSparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">"; \
-    }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT JDSSparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 

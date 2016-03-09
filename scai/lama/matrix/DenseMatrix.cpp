@@ -1668,7 +1668,7 @@ Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 
     SCAI_LOG_TRACE( logger, "My value is " << myValue << " starting sum reduction to produce final result." )
 
-    return comm.sum( myValue );
+    return Scalar( comm.sum( myValue ) );
 }
 
 template<typename ValueType>
@@ -2021,7 +2021,7 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with B matrix" )
     }
-    else if ( res == Cp && beta != 0.0 )
+    else if ( res == Cp && beta.getValue<ValueType>() != 0.0 )
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with C matrix" )
     }
@@ -2066,7 +2066,7 @@ Scalar DenseMatrix<ValueType>::maxNorm() const
 
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    return comm.max( myMaxDiff );
+    return Scalar( comm.max( myMaxDiff ) );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2085,7 +2085,7 @@ Scalar DenseMatrix<ValueType>::l1Norm() const
         mySum += mData[i]->l1Norm();
     }
 
-    return comm.sum( mySum );
+    return Scalar( comm.sum( mySum ) );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2106,7 +2106,7 @@ Scalar DenseMatrix<ValueType>::l2Norm() const
         mySum += tmp * tmp;
     }
 
-    return sqrt( comm.sum( mySum ) );
+    return Scalar( common::Math::sqrt( comm.sum( mySum ) ) );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2126,13 +2126,13 @@ Scalar DenseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     {
         const DenseMatrix<ValueType>* typedOther = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
         SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
-        return maxDiffNormImpl( *typedOther );
+        return Scalar( maxDiffNormImpl( *typedOther ) );
     }
     else
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
         DenseMatrix<ValueType> typedOther( other, getRowDistributionPtr(), getColDistributionPtr() );
-        return maxDiffNormImpl( typedOther );
+        return Scalar( maxDiffNormImpl( typedOther ) );
     }
 }
 

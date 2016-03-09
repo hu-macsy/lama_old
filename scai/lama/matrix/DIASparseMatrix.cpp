@@ -382,17 +382,26 @@ MatrixCreateKeyType DIASparseMatrix<ValueType>::createValue()
     return MatrixCreateKeyType( Format::DIA, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string DIASparseMatrix<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("DIASparseMatrix<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* DIASparseMatrix<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
 #define LAMA_DIA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                               \
-                                                                                  \
-    template<>                                                                    \
-    const char* DIASparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()             \
-    {                                                                             \
-        return "DIASparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">"; \
-    }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT DIASparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 
