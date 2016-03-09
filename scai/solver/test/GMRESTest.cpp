@@ -32,167 +32,50 @@
  **/
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 
 #include <scai/solver/test/TestMacros.hpp>
 
 #include <scai/solver/GMRES.hpp>
 #include <scai/solver/TrivialPreconditioner.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
-#include <scai/solver/criteria/ResidualThreshold.hpp>
-#include <scai/solver/logger/Timer.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
 
-#include <scai/lama/DenseVector.hpp>
-
-#include <scai/lama/matrix/ELLSparseMatrix.hpp>
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/matrix/JDSSparseMatrix.hpp>
-#include <scai/lama/matrix/DIASparseMatrix.hpp>
-#include <scai/lama/matrix/COOSparseMatrix.hpp>
-#include <scai/lama/matrix/DenseMatrix.hpp>
-
-#include <scai/lama/norm/MaxNorm.hpp>
-#include <scai/lama/norm/L2Norm.hpp>
-
-#include <scai/lama/matutils/MatrixCreator.hpp>
-
-#include <scai/lama/expression/VectorExpressions.hpp>
-#include <scai/lama/expression/MatrixVectorExpressions.hpp>
-
 using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
 
-typedef boost::mpl::list<float, double> test_types;
-
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE( GMRESTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.GMRESTest" )
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
-template<typename MatrixType>
-void testSolveWithPreconditionmethod()
+BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    typedef typename MatrixType::MatrixValueType ValueType;
-//    LoggerPtr slogger( new CommonLogger(
-//        "<GMRES>: ",
-//        lama::LogLevel::solverInformation,
-//        lama::LoggerWriteBehaviour::toConsoleOnly ) );
-    GMRES gmresSolver( "GMRESTestSolver"/*, slogger*/ );
-    const IndexType N1 = 4;
-    const IndexType N2 = 4;
-    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-    CSRSparseMatrix<ValueType> coefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-    DenseVector<ValueType> solution( coefficients.getRowDistributionPtr(), 1.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getRowDistributionPtr(), 2.0 );
-    DenseVector<ValueType> rhs( coefficients * exactSolution );
-    IndexType expectedIterations = 10;
-    CriterionPtr criterion( new IterationCount( expectedIterations ) );
-    gmresSolver.setStoppingCriterion( criterion );
+    LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+
+    GMRES GMRESSolver( "GMRESSolver", slogger );
+    BOOST_CHECK_EQUAL( GMRESSolver.getId(), "GMRESSolver" );
+
+    GMRES GMRESSolver2( "GMRESSolver2" );
+    BOOST_CHECK_EQUAL( GMRESSolver2.getId(), "GMRESSolver2" );
+
+    GMRES GMRESSolver3( GMRESSolver2 );
+    BOOST_CHECK_EQUAL( GMRESSolver3.getId(), "GMRESSolver2" );
+    BOOST_CHECK( GMRESSolver3.getPreconditioner() == 0 );
+
+    GMRES GMRESSolver4( "GMRESSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    gmresSolver.setPreconditioner( preconditioner );
-    gmresSolver.initialize( coefficients );
-    gmresSolver.solve( solution, rhs );
-    BOOST_CHECK_EQUAL( expectedIterations, gmresSolver.getIterationCount() );
-    DenseVector<ValueType> diff( solution - exactSolution );
-    Scalar s = maxNorm( diff );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
-}
+    GMRESSolver4.setPreconditioner( preconditioner );
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr(); // default communicator
-    testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >();
-    testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >();
-    testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >();
-    testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >();
-
-// ToDo: these tests do not run with multiple processors
-
-    if ( comm->getSize() <= 1 )
-    {
-        testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >();
-        testSolveWithPreconditionmethod< DenseMatrix<ValueType> >();
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
-template<typename MatrixType>
-void testSolveWithoutPreconditionmethod()
-{
-    typedef typename MatrixType::MatrixValueType ValueType;
-    const IndexType N1 = 4;
-    const IndexType N2 = 4;
-    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-//    LoggerPtr slogger( new CommonLogger(
-//        "<GMRES>: ",
-//        lama::LogLevel::solverInformation,
-//        lama::LoggerWriteBehaviour::toConsoleOnly ) );
-    GMRES gmresSolver( "GMRESTestSolver"/*, slogger */ );
-    CSRSparseMatrix<ValueType> helpcoefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-    MatrixType coefficients( helpcoefficients );
-    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
-    const DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), 1.0 );
-    const DenseVector<ValueType> rhs( coefficients * exactSolution );
-    //initialize
     CriterionPtr criterion( new IterationCount( 10 ) );
-    gmresSolver.setStoppingCriterion( criterion );
-    gmresSolver.initialize( coefficients );
-    gmresSolver.solve( solution, rhs );
-    IndexType expectedIterations = 10;
-    BOOST_CHECK_EQUAL( expectedIterations, gmresSolver.getIterationCount() );
-    DenseVector<ValueType> diff( solution - exactSolution );
-    Scalar s = maxNorm( diff );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
+    GMRESSolver4.setStoppingCriterion( criterion );
+
+    GMRES GMRESSolver5( GMRESSolver4 );
+    BOOST_CHECK_EQUAL( GMRESSolver5.getId(), GMRESSolver4.getId() );
+    BOOST_CHECK_EQUAL( GMRESSolver5.getPreconditioner()->getId(), GMRESSolver4.getPreconditioner()->getId() );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr(); // default one
-    testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >();
-    testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >();
-    testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >();
-    testSolveWithoutPreconditionmethod< COOSparseMatrix<ValueType> >();
-
-// ToDo: these tests do not run with multiple processors
-
-    if ( comm->getSize() <= 1 )
-    {
-        testSolveWithoutPreconditionmethod< DIASparseMatrix<ValueType> >();
-        testSolveWithoutPreconditionmethod< DenseMatrix<ValueType> >();
-    }
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, test_types )
-{
-    const IndexType N1 = 4;
-    const IndexType N2 = 4;
-    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-    GMRES gmresSolver( "GMRESTestSolver" );
-    CSRSparseMatrix<ValueType> coefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
-    const DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 2.0 );
-    gmresSolver.initialize( coefficients );
-    gmresSolver.solve( solution, rhs );
-    BOOST_CHECK_EQUAL( gmresSolver.getIterationCount(), 1 );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( writeAtTest )
-{
-    GMRES gmresSolver( "GMRESTestSolver" );
-    LAMA_WRITEAT_TEST( gmresSolver );
-}
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END();

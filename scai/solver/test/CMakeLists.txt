@@ -42,18 +42,19 @@ scai_project (
 	SOURCES
 
     	BiCGstabTest
-        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is not supported
+    	BiCGTest
         CGTest
         # not yet: CGNETest
         CGNRTest
-        # CGSTest: This test fails: testSolve, result not < 1E-4
+        CGSTest
         CommonLoggerTest
         CriterionTest
+        DefaultJacobiTest
         FileLoggerTest
         GMRESTest
         InverseSolverTest
         IterationCountTest
-        JacobiTest
+        IterativeSolverTest
         MINRESTest
         QMRTest
         ResidualStagnationTest
@@ -62,6 +63,7 @@ scai_project (
         SimpleAMGTest
         SolutionProxyTest
         SolverTest
+        SolverTest1
         SORTest
         SpecializedJacobiTest
         TFQMRTest
