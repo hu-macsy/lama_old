@@ -34,6 +34,7 @@
 
 set ( EXAMPLE_FILES "" )
 set ( EXAMPLE_EXECUTABLES "" )
+set ( EXAMPLE_MODULES "" ) # for make.inc
 
 string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
 
