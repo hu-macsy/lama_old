@@ -23,7 +23,7 @@ class IOUtils
 public:
 
     template<typename FileType, typename DataType>
-    static void readXDR( XDRFileStream& inFile, DataType* data, const IndexType n );
+    static void readXDR( XDRFileStream& inFile, DataType* data, const IndexType n, const IndexType offset = 0 );
 
     template<typename FileType, typename DataType>
     static void writeXDR( XDRFileStream& outFile, const DataType* data, const IndexType n, const IndexType offset = 0 );
@@ -33,9 +33,9 @@ public:
 };
 
 template<typename FileType, typename DataType>
-void IOUtils::readXDR( XDRFileStream& inFile, DataType* data, const IndexType n )
+void IOUtils::readXDR( XDRFileStream& inFile, DataType* data, const IndexType n, const IndexType offset )
 {
-    if( typeid(FileType) == typeid(DataType) )
+    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
     {
         // no type conversion needed
 
@@ -51,7 +51,7 @@ void IOUtils::readXDR( XDRFileStream& inFile, DataType* data, const IndexType n 
 
     for( IndexType i = 0; i < n; i++ )
     {
-        data[i] = static_cast<DataType>( buffer[i] );
+        data[i] = static_cast<DataType>( buffer[i] + offset );
     }
 }
 

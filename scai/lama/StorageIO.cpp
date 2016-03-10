@@ -252,56 +252,6 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
 /* -------------------------------------------------------------------------- */
 
-template<typename FileType,typename DataType,int offset>
-static void writeData( XDRFileStream& outFile, const DataType data[], const IndexType n )
-{
-    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
-    {
-        // no type conversion needed
-
-        outFile.write( data, n );
-        return;
-    }
-
-    // allocate buffer for type conversion
-
-    FileType* buffer = new FileType[n];
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        buffer[i] = static_cast<FileType>( data[i] + offset );
-    }
-
-    outFile.write( buffer, n );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename FileType,typename DataType,int offset>
-static void readData( XDRFileStream& inFile, DataType data[], const IndexType n )
-{
-    if( ( offset == 0 ) && ( typeid( FileType ) == typeid( DataType ) ) )
-    {
-        // no type conversion needed
-
-        inFile.read( data, n );
-        return;
-    }
-
-    // allocate buffer for type conversion
-
-    FileType* buffer = new FileType[n];
-
-    inFile.read( buffer, n ); // read data as required file type
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        data[i] = static_cast<DataType>( buffer[i] + offset );
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
 template<typename ValueType>
 void StorageIO<ValueType>::writeCSRToXDRFile(
     const HArray<IndexType>& csrIA,
@@ -427,15 +377,15 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     if( sizeof(IndexType) == indexDataTypeSizeIA )
     {
-        readData<IndexType,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
+        IOUtils::readXDR<IndexType,IndexType>( xdrFile, m_ia, numRows + 1, -1 );
     }
     else if( indexDataTypeSizeIA == sizeof( int ) )
     {
-        readData<int,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
+        IOUtils::readXDR<int,IndexType>( xdrFile, m_ia, numRows + 1, -1 );
     }
     else if( indexDataTypeSizeIA == sizeof( long ) )
     {
-        readData<long,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
+        IOUtils::readXDR<long,IndexType>( xdrFile, m_ia, numRows + 1, -1 );
     }
     else
     {
@@ -466,15 +416,15 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     if( sizeof(IndexType) == indexDataTypeSizeJA )
     {
-        readData<IndexType,IndexType,0>( xdrFile, m_ja.get(), numValues );
+        IOUtils::readXDR<IndexType,IndexType>( xdrFile, m_ja.get(), numValues );
     }
     else if( indexDataTypeSizeJA == sizeof( long ) )
     {
-        readData<long,IndexType,0>( xdrFile, m_ja.get(), numValues );
+        IOUtils::readXDR<long,IndexType>( xdrFile, m_ja.get(), numValues );
     }
     else if( indexDataTypeSizeJA == sizeof( int ) )
     {
-        readData<int,IndexType,0>( xdrFile, m_ja.get(), numValues );
+        IOUtils::readXDR<int,IndexType>( xdrFile, m_ja.get(), numValues );
     }
     else
     {
@@ -501,17 +451,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
-#define LAMA_IO_READ( z, I, _ )                                                                \
-    if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )                                  \
-    {                                                                                          \
-        readData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( xdrFile, m_data.get(), numValues );  \
-    }                                                                                          \
-    else                                                                                       \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_IO_READ, _ )
-
-#undef LAMA_IO_READ
-
+    if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readXDR( dataTypeSize, xdrFile, m_data.get(), numValues ) )
+    {
+        SCAI_LOG_TRACE( logger, "read xdr file")
+    }
+    else
     {
         COMMON_THROWEXCEPTION( "Invalid data type size in file " + fileName )
     }
