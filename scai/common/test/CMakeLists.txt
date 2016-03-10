@@ -34,6 +34,7 @@ set ( CXX_SOURCES
       commonTest.cpp
       FactoryTest.cpp  
       SettingsTest.cpp  
+      WalltimeTest.cpp  
 )
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
