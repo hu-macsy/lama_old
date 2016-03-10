@@ -18,20 +18,22 @@ namespace scai
 namespace lama
 {
 
-template<typename FileType, typename DataType>
 class IOUtils
 {
 public:
 
+    template<typename FileType, typename DataType>
     static void readXDR( XDRFileStream& inFile, DataType* data, const IndexType n );
 
+    template<typename FileType, typename DataType>
     static void writeXDR( XDRFileStream& outFile, const DataType* data, const IndexType n );
 
+    template<typename FileType, typename DataType>
     static void writeBinary( std::fstream& outFile, const DataType data[], const IndexType n );
 };
 
 template<typename FileType, typename DataType>
-void IOUtils<FileType, DataType>::readXDR( XDRFileStream& inFile, DataType* data, const IndexType n )
+void IOUtils::readXDR( XDRFileStream& inFile, DataType* data, const IndexType n )
 {
     if( typeid(FileType) == typeid(DataType) )
     {
@@ -54,7 +56,7 @@ void IOUtils<FileType, DataType>::readXDR( XDRFileStream& inFile, DataType* data
 }
 
 template<typename FileType, typename DataType>
-void IOUtils<FileType, DataType>::writeXDR( XDRFileStream& outFile, const DataType* data, const IndexType n )
+void IOUtils::writeXDR( XDRFileStream& outFile, const DataType* data, const IndexType n )
 {
     if( typeid(FileType) == typeid(DataType) )
     {
@@ -75,7 +77,7 @@ void IOUtils<FileType, DataType>::writeXDR( XDRFileStream& outFile, const DataTy
 }
 
 template<typename FileType,typename DataType>
-void IOUtils<FileType, DataType>::writeBinary( std::fstream& outFile, const DataType data[], const IndexType n )
+void IOUtils::writeBinary( std::fstream& outFile, const DataType data[], const IndexType n )
 {
     if( typeid(FileType) == typeid(DataType) )
     {

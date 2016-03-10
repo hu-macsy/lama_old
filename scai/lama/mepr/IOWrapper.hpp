@@ -41,7 +41,7 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
     {
         if( dataType == common::getScalarType<H>() )
         {
-            IOUtils<H,ValueType>::readXDR( in, data, n );
+            IOUtils::readXDR<H,ValueType>( in, data, n );
         }
         else
         {
@@ -53,7 +53,7 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
     {
         if( dataType == common::getScalarType<H>() )
         {
-            IOUtils<H,ValueType>::writeXDR( out, data, n );
+            IOUtils::writeXDR<H,ValueType>( out, data, n );
         }
         else
         {
@@ -77,7 +77,7 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
     {
         if( dataType == common::getScalarType<H>() )
         {
-            IOUtils<H,ValueType>::writeBinary( out, data, n );
+            IOUtils::writeBinary<H,ValueType>( out, data, n );
         }
         else
         {
