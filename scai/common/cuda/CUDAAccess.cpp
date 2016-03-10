@@ -46,7 +46,7 @@ CUDAAccess::CUDAAccess( CUcontext ctx ) : mCUcontext( ctx )
     SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "could not push context" )
 }
 
-CUDAAccess::CUDAAccess( CUDADevice& dev ) : mCUcontext( dev.getCUcontext() )  
+CUDAAccess::CUDAAccess( const CUDADevice& dev ) : mCUcontext( dev.getCUcontext() )  
 {
     SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "could not push context" )
 }

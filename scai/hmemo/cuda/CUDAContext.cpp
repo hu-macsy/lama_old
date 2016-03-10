@@ -101,7 +101,7 @@ CUDAContext::CUDAContext( int deviceNr ) :
 
         char deviceName[256];
 
-        SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, getDevice() ), "cuDeviceGetName" );
+        SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, getCUdevice() ), "cuDeviceGetName" );
 
         mDeviceName = deviceName; // save it as string member variable for output
 
@@ -125,7 +125,7 @@ CUDAContext::CUDAContext( int deviceNr ) :
 
     SCAI_LOG_INFO( logger, *this << " constructed by thread " << mOwnerThread << ", now disabled" )
 
-    CUDAStreamPool::getPool( getCUcontext() );
+    CUDAStreamPool::getPool( *this );  // guarantees allocation
 }
 
 /**  destructor   *********************************************************/
@@ -152,7 +152,7 @@ CUDAContext::~CUDAContext()
         return;
     }
 
-    CUDAStreamPool::freePool( getCUcontext() );
+    CUDAStreamPool::freePool( *this );
 
     if ( !numUsedDevices )
     {
@@ -307,21 +307,21 @@ CUDAStreamSyncToken* CUDAContext::getComputeSyncToken() const
     // synchronization has taken place. Solution: add a dummy routine where 
     // one argument is bind to this context.
 
-    return new CUDAStreamSyncToken( getCUcontext(), true );
+    return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::ComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 SyncToken* CUDAContext::getSyncToken() const
 {
-    return new CUDAStreamSyncToken( getCUcontext(), true );
+    return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::ComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 {
-    return new CUDAStreamSyncToken( getCUcontext(), false );
+    return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::TransferStream );
 }
 
 /* ----------------------------------------------------------------------------- */

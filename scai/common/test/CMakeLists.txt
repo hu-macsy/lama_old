@@ -31,16 +31,16 @@
 ###
 
 set ( CXX_SOURCES
-      CommonTest.cpp
+      commonTest.cpp
       FactoryTest.cpp  
       SettingsTest.cpp  
 )
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-add_executable ( CommonTest ${CXX_SOURCES} )
+add_executable ( commonTest ${CXX_SOURCES} )
 
-target_link_libraries ( CommonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( commonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )

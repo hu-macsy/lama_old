@@ -32,9 +32,15 @@
 
 #pragma once
 
-#include <cuda.h>
+// for dll_import
+#include <scai/common/config.hpp>
+
 
 #include <scai/common/NonCopyable.hpp>
+#include <scai/common/function.hpp>
+
+#include <cuda.h>
+#include <vector>
 
 namespace scai
 {
@@ -44,31 +50,50 @@ namespace common
 
 /* --------------------------------------------------------------------- */
 
-class CUDADevice : private NonCopyable
+class COMMON_DLL_IMPORTEXPORT CUDADevice : private NonCopyable
 {   
 
 public:
 
-    CUDADevice( int deviceNr = -1 );
+    /** Constructor will check for a CUDA device and create a context for it 
+     *
+     *  @param[in] deviceNr is the number of the device to access
+     *  @throws Exception if the device cannot be accessed
+     */
+
+    CUDADevice( int deviceNr );
+
+    /** Destructor destroys the CUDA context used for the device.
+     *
+     *  Be careful: all allocated resources on the device should have been freed before.
+     */
 
     ~CUDADevice();
+
+    /** Getter for the CUcontext to be used for CUDA driver API operations. */
 
     CUcontext getCUcontext() const
     {
         return mCUcontext;
     }
 
-    CUdevice getDevice() const
+    /** Getter for the CUdevice to be used for CUDA driver API operations. */
+
+    CUdevice getCUdevice() const
     {
         return mCUdevice;
     }
+
+    /** Getter for the number of the device. */
 
     int getDeviceNr() const
     {
         return mDeviceNr;
     }
 
-    // const char* getName() const;
+    /** Add a routine to be called with destructor */
+
+    void addShutdown( common::function<void()> routine );
 
 private:
 
@@ -77,6 +102,8 @@ private:
     CUdevice mCUdevice;
 
     int mDeviceNr;
+
+    std::vector< common::function<void()> > mShutdownFunctions;
 };
 
 }  // namespace common

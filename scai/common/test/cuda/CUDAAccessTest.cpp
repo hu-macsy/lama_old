@@ -36,6 +36,8 @@
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
+#include <scai/common/Settings.hpp>
+
 #include <scai/common/test/cuda/CUDAKernel.hpp>
 
 #include <iostream>
@@ -49,7 +51,11 @@ BOOST_AUTO_TEST_SUITE( CommonCUDATest );
 
 BOOST_AUTO_TEST_CASE( accessTest )
 {
-    scai::common::CUDADevice myCuda;
+    int nr = 0;
+
+    scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
+
+    scai::common::CUDADevice myCuda( nr );
 
     const int N = 100;
 

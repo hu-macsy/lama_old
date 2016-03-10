@@ -1,5 +1,5 @@
 /**
- * @file CUDSyncTokenTest.cpp
+ * @file CUDADeviceTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,95 +25,71 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test of class CUDASyncToken
+ * @brief Test of class CUDADevice
  * @author: Thomas Brandes
  * @date 08.03.2016
  **/
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/cuda/CUDAAccess.hpp>
+#include <scai/common/cuda/CUDADevice.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
-#include <scai/common/cuda/CUDADevice.hpp>
 #include <scai/common/Settings.hpp>
 
-#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
-#include <scai/tasking/cuda/CUDAStreamPool.hpp>
-
-#include <scai/tasking/test/cuda/CUDAKernel.hpp>
+#include <scai/common/test/cuda/CUDAKernel.hpp>
+#include <scai/common/bind.hpp>
 
 #include <iostream>
 
-using namespace scai;
-using namespace tasking;
+
+static void inc( int* val ) 
+{
+    *val += 1;
+}
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CUDASyncTokenTest );
+BOOST_AUTO_TEST_SUITE( CUDADeviceTest );
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
-    int deviceNr = 0;
+    int nr = 0;
 
-    common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
+    scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
-    common::CUDADevice myCuda( deviceNr );
+    scai::common::CUDADevice myCuda( nr );
 
-    common::CUDAAccess cudaAccess( myCuda );
-
-    {
-        CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::TransferStream );
-
-        // wait is done implicitly at end of this scope
-    }
-
-    CUDAStreamPool::freePool( myCuda );
+    BOOST_CHECK_EQUAL( nr, myCuda.getDeviceNr() );
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( asyncTest )
+BOOST_AUTO_TEST_CASE( shutdownTest )
 {
-    int deviceNr = 0;
+    int nr = 0;
 
-    common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
+    int val = 0;
 
-    common::CUDADevice myCuda( deviceNr );
-
-    common::CUDAAccess cudaAccess( myCuda );
-
-    const int N = 100000;
-
-    CUdeviceptr pointer = 0;
-
-    size_t size = sizeof( float ) * N;
-
-    SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
-
-    float* fpointer = reinterpret_cast<float*>( pointer );
+    scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
     {
-        CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::ComputeStream );
+        scai::common::CUDADevice myCuda( nr );
 
-        // launch kernel asynchronously
+        myCuda.addShutdown( scai::common::bind( &inc, &val ) );
 
-        init( fpointer, N, 3.0 );
+        BOOST_CHECK_EQUAL( 0, val );
 
-        // wait is done here implicitly
+        myCuda.addShutdown( scai::common::bind( &inc, &val ) );
+
+        // shutdown routine will only be called with destructor
     }
 
-    float s = sum( fpointer, N );
+    // inc should have been called twice by destructor
 
-    BOOST_CHECK_CLOSE( 3.0f * N, s, 0.01 );
-
-    SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
-
-    // with CUDA device destructor the pool should be freed 
-
-    CUDAStreamPool::freePool( myCuda );
+    BOOST_CHECK_EQUAL( 2, val );
 }
 
 /* ------------------------------------------------------------------------- */

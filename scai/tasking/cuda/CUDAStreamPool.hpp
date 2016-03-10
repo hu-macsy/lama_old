@@ -32,9 +32,10 @@
 #pragma once
 
 #include <scai/common/config.hpp>
-#include <scai/logging.hpp>
 
-#include <cuda.h>
+#include <scai/common/cuda/CUDADevice.hpp>
+
+#include <scai/logging.hpp>
 
 namespace scai
 {
@@ -42,20 +43,30 @@ namespace scai
 namespace tasking
 {
 
+struct streamtype
+{
+    typedef enum
+    {
+        ComputeStream,
+        TransferStream
+
+    } StreamType;
+};
+
 /** For each CUDA device/context there will be some streams available 
  *  that can be used for asynchronous computations and memory transfers.
  *
  *  The advantage of the pool is that create/destroy of the stream is only called once.
  */
 
-class COMMON_DLL_IMPORTEXPORT CUDAStreamPool
+class COMMON_DLL_IMPORTEXPORT CUDAStreamPool : public streamtype
 
 {
 public:
 
     /** Get a stream of the pool, either for compute or memory transfer */
 
-    CUstream reserveStream( bool computeFlag ); 
+    CUstream reserveStream( StreamType type ); 
 
     /** Release a stream, no more used. */
 
@@ -66,14 +77,14 @@ public:
      *  A new pool will might be created if not available.
      */
 
-    static CUDAStreamPool& getPool( CUcontext context );
+    static CUDAStreamPool& getPool( const common::CUDADevice& cuda );
 
     /** Release the stream pool for a CUDA context. 
      *
      *  @throws an exception if not all streams have been released.
      */
 
-    static void freePool( CUcontext context );
+    static void freePool( const common::CUDADevice& cuda );
 
 private:
 
@@ -81,13 +92,12 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    CUcontext mCUcontext; 
+    const common::CUDADevice& mCUDA;   
 
-    /** Construct a pool of streams for a given CUDA context. */
+    /** Construct a pool of streams for a given CUDA device. */
 
-    CUDAStreamPool( CUcontext context );
+    CUDAStreamPool( const common::CUDADevice& cuda );
     ~CUDAStreamPool();
-
 
     CUstream mTransferStream;
     CUstream mComputeStream;

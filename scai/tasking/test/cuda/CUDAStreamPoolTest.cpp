@@ -37,6 +37,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Settings.hpp>
 
 #include <scai/tasking/cuda/CUDAStreamPool.hpp>
 #include <scai/tasking/test/cuda/CUDAKernel.hpp>
@@ -54,12 +55,16 @@ BOOST_AUTO_TEST_SUITE( CUDAStreamPoolTest );
 
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
-    common::CUDADevice myCuda;
+    int deviceNr = 0;
 
-    CUDAStreamPool& pool = CUDAStreamPool::getPool( myCuda.getCUcontext() );
+    common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
 
-    CUstream stream1 = pool.reserveStream( true );
-    CUstream stream2 = pool.reserveStream( false );
+    common::CUDADevice myCuda( deviceNr );
+
+    CUDAStreamPool& pool = CUDAStreamPool::getPool( myCuda );
+
+    CUstream stream1 = pool.reserveStream( CUDAStreamPool::ComputeStream );
+    CUstream stream2 = pool.reserveStream( CUDAStreamPool::TransferStream );
 
     pool.releaseStream( stream1 );
 
@@ -72,7 +77,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
  
     // release the whole pool
 
-    CUDAStreamPool::freePool( myCuda.getCUcontext() );
+    CUDAStreamPool::freePool( myCuda );
 }
 
 /* ------------------------------------------------------------------------- */

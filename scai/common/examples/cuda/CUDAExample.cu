@@ -20,8 +20,6 @@ float sum( const float array[], const int n )
 
     float result = thrust::reduce( data, data + n, zero, thrust::plus<float>() );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     return result;
 }
 
@@ -43,7 +41,11 @@ int main( int argc, const char** argv )
 
     Settings::parseArgs( argc, argv );
 
-    CUDADevice device;
+    int nr = 0;   // take this as default
+
+    Settings::getEnvironment( nr, "SCAI_DEVICE" );
+
+    CUDADevice device( nr );
 
     std::cout << "CUDA device available." << std::endl;
 
