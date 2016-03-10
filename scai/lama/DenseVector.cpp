@@ -1312,9 +1312,13 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
     {
         IOUtils::writeXDR<ValueType, ValueType>( outFile, dataRead.get(), numRows );
     }
+    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeXDR( dataType, outFile, dataRead.get(), numRows ) )
+    {
+        SCAI_LOG_DEBUG( logger, "write through IOWrapper" )
+    }
     else
     {
-        mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeXDR( dataType, outFile, dataRead.get(), numRows );
+        SCAI_LOG_DEBUG( logger, "write to XDR not possible, no valid type found" )
     }
 
     outFile.write( &nnu );
