@@ -62,15 +62,36 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     common::CUDADevice myCuda( deviceNr );
 
-    common::CUDAAccess cudaAccess( myCuda );
-
     {
         CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::TransferStream );
 
         // wait is done implicitly at end of this scope
     }
+}
 
-    CUDAStreamPool::freePool( myCuda );
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( destructorTest )
+{
+    int deviceNr = 0;
+
+    common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
+
+    BOOST_CHECK_THROW(
+        {
+            common::CUDADevice myCuda( deviceNr );
+
+            {
+                new CUDAStreamSyncToken( myCuda, CUDAStreamSyncToken::TransferStream );
+        
+                // Note: token not freed, no synchronization, no release
+            }
+
+            // destructor of device will free the stream pool and detect the unreleased token
+
+        }, common::Exception );
+
+     // Note: there might be an additional ERROR logging message at the end of the test run
 }
 
 /* --------------------------------------------------------------------- */
@@ -110,10 +131,6 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     BOOST_CHECK_CLOSE( 3.0f * N, s, 0.01 );
 
     SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
-
-    // with CUDA device destructor the pool should be freed 
-
-    CUDAStreamPool::freePool( myCuda );
 }
 
 /* ------------------------------------------------------------------------- */

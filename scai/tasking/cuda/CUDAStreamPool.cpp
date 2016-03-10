@@ -35,6 +35,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/bind.hpp>
 
 #include <map>
 
@@ -89,6 +90,10 @@ void CUDAStreamPool::releaseStream( CUstream stream )
         mTransferReservations--;
 
         SCAI_LOG_INFO( logger, "released transfer stream " << mTransferStream << ", #reservations = " << mTransferReservations )
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "CUstream " << stream << " not of this stream pool." )
     }
 }
 
@@ -164,6 +169,10 @@ CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDADevice& cuda )
         // Pool must be freed before cuda is destroyed 
         // solution: Add shutdown routine to the CUDA device
 
+        common::CUDADevice& cuda1 = const_cast< common::CUDADevice& >( cuda );
+
+        cuda1.addShutdown( common::bind( &CUDAStreamPool::freePool, common::cref( cuda ) ) );
+
         return *pool;
     }
     else
@@ -176,6 +185,8 @@ CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDADevice& cuda )
 
 void CUDAStreamPool::freePool( const common::CUDADevice& cuda )
 {
+    SCAI_LOG_INFO( logger, "freePool: pool for CUDA device " << cuda.getDeviceNr() )
+
     PoolMap& poolMap = getPoolMap();
 
     PoolMap::iterator it = poolMap.find( cuda.getCUcontext() );
@@ -188,7 +199,7 @@ void CUDAStreamPool::freePool( const common::CUDADevice& cuda )
     }
     else
     {
-        SCAI_LOG_INFO( logger, "freePool: pool for CUDA device " << cuda.getDeviceNr() << " never created" )
+        SCAI_LOG_INFO( logger, "freePool: pool for CUDA device " << cuda.getDeviceNr() << " released twice or never created" )
     }
 }
 

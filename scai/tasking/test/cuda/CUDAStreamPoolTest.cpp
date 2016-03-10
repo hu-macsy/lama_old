@@ -74,10 +74,6 @@ BOOST_AUTO_TEST_CASE( constructorTest )
         }, common::Exception );
 
     pool.releaseStream( stream2 );
- 
-    // release the whole pool
-
-    CUDAStreamPool::freePool( myCuda );
 }
 
 /* ------------------------------------------------------------------------- */
