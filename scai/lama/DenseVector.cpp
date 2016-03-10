@@ -1310,7 +1310,7 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
 
     if( dataType == common::scalar::INTERNAL )
     {
-        IOUtils<ValueType, ValueType>::writeXDR( outFile, dataRead.get(), numRows );
+        IOUtils::writeXDR<ValueType, ValueType>( outFile, dataRead.get(), numRows );
     }
     else
     {
@@ -1333,7 +1333,7 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 
     if( type == common::scalar::INTERNAL )
     {
-        IOUtils<ValueType, ValueType>::writeBinary( outFile, dataRead.get(), numRows );
+        IOUtils::writeBinary<ValueType, ValueType>( outFile, dataRead.get(), numRows );
     }
     else
     {
@@ -1535,7 +1535,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     if( fileType == common::scalar::INTERNAL )
     {
-        IOUtils<ValueType, ValueType>::readXDR( inFile, writeData.get(), nnu );
+        IOUtils::readXDR<ValueType, ValueType>( inFile, writeData.get(), nnu );
     }
     else
     {
