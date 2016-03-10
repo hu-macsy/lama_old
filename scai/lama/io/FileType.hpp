@@ -39,6 +39,7 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/preprocessor.hpp>
+#include <scai/common/mepr/ScalarTypeHelper.hpp>
 
 namespace scai
 {
@@ -126,17 +127,15 @@ enum IndexDataType
 template<typename ValueType>
 long getDataTypeSize( const common::scalar::ScalarType dataType )
 {
+    long s = common::mepr::ScalarTypeHelper<ARITHMETIC_HOST_LIST>::sizeOf( dataType );
+
+    if( s != 0 )
+    {
+        return s;
+    }
+
     switch( dataType )
     { 
-
-#define LAMA_FILE_CASE( z, I, _ )                                        \
-        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :       \
-            return sizeof( ARITHMETIC_HOST_TYPE_##I );                  \
-
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_FILE_CASE, _ )
-
-#undef LAMA_FILE_CASE
-
         case common::scalar::INTERNAL:
             return sizeof( ValueType );
 
@@ -166,23 +165,7 @@ common::scalar::ScalarType getDataType( const long dataTypeSize )
         return common::scalar::PATTERN;
     }
 
-#define LAMA_DATA_CASE( z, I, _ )                                       \
-    else if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )      \
-    {                                                                   \
-        return common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype;     \
-    }                                                                   \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DATA_CASE, _ )
-
-#undef LAMA_DATA_CASE
-
-    // Note: some branches are never called as 
-    //       sizeof( ARITHMTIC_HOST_TYPE_k ) == sizeof( ARITHMETIC_HOST_TYPE_j) is possible
-
-    else
-    {
-        return common::scalar::UNKNOWN;
-    }
+    return common::mepr::ScalarTypeHelper<ARITHMETIC_HOST_LIST>::getBySize( dataTypeSize );
 }
 
 static inline

@@ -40,6 +40,7 @@ struct IOWrapper<ValueType, common::mepr::NullType>
     static bool writeXDR( const long, XDRFileStream&, const ValueType*, const IndexType, const IndexType ) { return false; }
     static bool readBinary( const long, std::fstream&, ValueType*, const IndexType, const IndexType ){ return false; }
     static bool writeBinary( const long, std::fstream&, const ValueType*, const IndexType, const IndexType ){ return false; }
+
 };
 
 template<typename ValueType, typename H, typename T>
