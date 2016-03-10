@@ -50,9 +50,9 @@ SCAI_LOG_DEF_LOGGER( CUDAStreamPool::logger, "CUDAStreamPool" )
 
 /* -----------------------------------------------------------------------------*/
 
-CUstream CUDAStreamPool::reserveStream( bool computeFlag )
+CUstream CUDAStreamPool::reserveStream( const StreamType type )
 {
-    if ( computeFlag )
+    if ( type == ComputeStream )
     {
         mComputeReservations++;
 
@@ -94,11 +94,11 @@ void CUDAStreamPool::releaseStream( CUstream stream )
 
 /* -----------------------------------------------------------------------------*/
 
-CUDAStreamPool::CUDAStreamPool( CUcontext context ) : mCUcontext( context )
+CUDAStreamPool::CUDAStreamPool( const common::CUDADevice& cuda ) : mCUDA( cuda )
 {
-    SCAI_LOG_INFO( logger, "CUDAStreamPool( context = " << mCUcontext << " )" )
+    SCAI_LOG_INFO( logger, "CUDAStreamPool( device = " << mCUDA.getDeviceNr() << " )" )
 
-    common::CUDAAccess tmpAccess( mCUcontext ); 
+    common::CUDAAccess tmpAccess( mCUDA ); 
 
     int flags = 0; // must be 0 by specification of CUDA driver API
 
@@ -113,9 +113,9 @@ CUDAStreamPool::CUDAStreamPool( CUcontext context ) : mCUcontext( context )
 
 CUDAStreamPool::~CUDAStreamPool()
 {
-    SCAI_LOG_INFO( logger, "~CUDAStreamPool( context = " << mCUcontext << " )" )
+    SCAI_LOG_INFO( logger, "~CUDAStreamPool( device = " << mCUDA.getDeviceNr() << " )" )
 
-    common::CUDAAccess tmpAccess( mCUcontext ); 
+    common::CUDAAccess tmpAccess( mCUDA ); 
 
     // No exceptions in destructor !!
 
@@ -146,20 +146,24 @@ static PoolMap& getPoolMap()
 
 /* -----------------------------------------------------------------------------*/
 
-CUDAStreamPool& CUDAStreamPool::getPool( CUcontext context )
+CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDADevice& cuda )
 {
     PoolMap& poolMap = getPoolMap();
 
-    PoolMap::iterator it = poolMap.find( context );
+    PoolMap::iterator it = poolMap.find( cuda.getCUcontext() );
    
     if ( it == poolMap.end() )
     {
-        CUDAStreamPool* pool = new CUDAStreamPool( context );
+        CUDAStreamPool* pool = new CUDAStreamPool( cuda );
 
         // map takes ownership of pool 
 
-        poolMap.insert( std::pair<CUcontext, CUDAStreamPool*>( context, pool) );
+        poolMap.insert( std::pair<CUcontext, CUDAStreamPool*>( cuda.getCUcontext(), pool) );
   
+        // ATTENTION / pitfall
+        // Pool must be freed before cuda is destroyed 
+        // solution: Add shutdown routine to the CUDA device
+
         return *pool;
     }
     else
@@ -170,11 +174,11 @@ CUDAStreamPool& CUDAStreamPool::getPool( CUcontext context )
 
 /* -----------------------------------------------------------------------------*/
 
-void CUDAStreamPool::freePool( CUcontext context )
+void CUDAStreamPool::freePool( const common::CUDADevice& cuda )
 {
     PoolMap& poolMap = getPoolMap();
 
-    PoolMap::iterator it = poolMap.find( context );
+    PoolMap::iterator it = poolMap.find( cuda.getCUcontext() );
 
     if ( it != poolMap.end() )
     {
@@ -184,7 +188,7 @@ void CUDAStreamPool::freePool( CUcontext context )
     }
     else
     {
-        SCAI_LOG_INFO( logger, "freePool: pool for context " << context << " never created" )
+        SCAI_LOG_INFO( logger, "freePool: pool for CUDA device " << cuda.getDeviceNr() << " never created" )
     }
 }
 

@@ -35,8 +35,11 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// base classes
+// used classes
+
 #include <scai/tasking/SyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamPool.hpp>
+#include <scai/common/cuda/CUDADevice.hpp>
 
 // CUDA
 #include <cuda.h>
@@ -54,7 +57,7 @@ namespace tasking
 
 /** Class that sycnchronizes with a CUDA stream. */
 
-class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public SyncToken
+class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public SyncToken, public streamtype
 
 {
 public:
@@ -67,7 +70,7 @@ public:
      *  A pointer to the CUDA context is required to enable/disable it.
      */
 
-    CUDAStreamSyncToken( CUcontext context, bool computeFlag = true );
+    CUDAStreamSyncToken( const common::CUDADevice& cuda, const StreamType type );
 
     void setEvent( CUevent event )
     {
@@ -102,7 +105,7 @@ public:
 
 private:
 
-    CUcontext mCUcontext; // needed for synchronization
+    const common::CUDADevice& mCUDA;   // needed for synchronization
 
     CUstream mStream;
 

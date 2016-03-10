@@ -24,7 +24,11 @@ int main( int argc, const char** argv )
 
     const int N_USES = 100000;   // number of stream uses
 
-    CUDADevice device;  
+    int deviceNr = 0;
+
+    Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
+
+    CUDADevice device( deviceNr );  
 
     CUDAAccess access( device );
 
@@ -42,17 +46,15 @@ int main( int argc, const char** argv )
 
     t0 =  Walltime::get();
 
-    CUDAStreamPool& pool = CUDAStreamPool::getPool( device.getCUcontext() );
+    CUDAStreamPool& pool = CUDAStreamPool::getPool( device );
 
     for ( int i = 0; i < N_USES; ++i )
     {
-        bool computeFlag = true;  // use of stream does not really matter here
-
-        CUstream str = pool.reserveStream( computeFlag );
+        CUstream str = pool.reserveStream( CUDAStreamSyncToken::ComputeStream );
         pool.releaseStream( str );
     }
 
-    CUDAStreamPool::freePool( device.getCUcontext() );
+    CUDAStreamPool::freePool( device );
 
     double t2 =  Walltime::get() - t0;
 
@@ -60,8 +62,7 @@ int main( int argc, const char** argv )
 
     for ( int i = 0; i < N_USES; ++i )
     {
-        bool computeFlag = true;  // use of stream does not really matter here
-        CUDAStreamSyncToken( device.getCUcontext(), computeFlag );
+        CUDAStreamSyncToken( device, CUDAStreamSyncToken::ComputeStream );
     }
 
     double t3 =  Walltime::get() - t0;

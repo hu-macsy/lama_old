@@ -44,22 +44,26 @@
 namespace scai
 {
 
+using common::CUDADevice;
+using common::CUDAAccess;
+
 namespace tasking
 {
 
-CUDAStreamSyncToken::CUDAStreamSyncToken( CUcontext cudaContext, bool computeFlag )
+CUDAStreamSyncToken::CUDAStreamSyncToken( const CUDADevice& cuda, const StreamType type ) : mCUDA( cuda )
 {
-    mCUcontext = cudaContext;
-    mStream = CUDAStreamPool::getPool( cudaContext ).reserveStream( computeFlag );
+    // take a CUDA stream from a pool, that might be allocated at first use
+
+    mStream = CUDAStreamPool::getPool( mCUDA ).reserveStream( type );
     mEvent = 0;
-    SCAI_LOG_DEBUG( logger, "StreamSyncToken for " << cudaContext << " generated, stream = " << mStream )
+    SCAI_LOG_DEBUG( logger, "StreamSyncToken for " << mCUDA.getDeviceNr() << " generated, stream = " << mStream )
 }
 
 CUDAStreamSyncToken::~CUDAStreamSyncToken()
 {
     wait();
 
-    CUDAStreamPool::getPool( mCUcontext ).releaseStream( mStream );
+    CUDAStreamPool::getPool( mCUDA ).releaseStream( mStream );
 }
 
 void CUDAStreamSyncToken::wait()
@@ -72,7 +76,7 @@ void CUDAStreamSyncToken::wait()
     SCAI_LOG_DEBUG( logger, "wait on CUDA stream synchronization" )
 
     {
-        common::CUDAAccess tmpAccess( mCUcontext );
+        common::CUDAAccess tmpAccess( mCUDA );
 
         if ( mEvent != 0 )
         {
@@ -112,7 +116,7 @@ bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 {
     SCAI_ASSERT( stopEvent != 0, "probe on invalid event" )
 
-    common::CUDAAccess tmpAccess ( mCUcontext );
+    common::CUDAAccess tmpAccess ( mCUDA );
 
     CUresult result = cuEventQuery( stopEvent );
 
@@ -126,7 +130,7 @@ bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 
 bool CUDAStreamSyncToken::queryEvent( const CUevent event ) const
 {
-    common::CUDAAccess cudaAccess ( mCUcontext );
+    common::CUDAAccess cudaAccess ( mCUDA );
 
     CUresult result = cuEventQuery( event );
 
@@ -140,7 +144,7 @@ bool CUDAStreamSyncToken::queryEvent( const CUevent event ) const
 
 void CUDAStreamSyncToken::synchronizeEvent( const CUevent event ) const
 {
-    common::CUDAAccess cudaAccess ( mCUcontext );
+    common::CUDAAccess cudaAccess ( mCUDA );
 
     SCAI_CUDA_DRV_CALL( cuEventSynchronize( event ), "cuEventSynchronize failed for CUevent " << event << '.' )
 }

@@ -36,6 +36,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/Settings.hpp>
 
 #include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/tasking/cuda/CUDAStreamPool.hpp>
@@ -55,30 +56,32 @@ BOOST_AUTO_TEST_SUITE( CUDASyncTokenTest );
 
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
-    common::CUDADevice myCuda;
+    int deviceNr = 0;
+
+    common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
+
+    common::CUDADevice myCuda( deviceNr );
 
     common::CUDAAccess cudaAccess( myCuda );
 
-    CUstream stream;
-
-    int flags = 0; // must be 0 by specification of CUDA driver API
-
-    SCAI_CUDA_DRV_CALL( cuStreamCreate( &stream, flags ), "cuStreamCreate failed" )
-
     {
-        CUDAStreamSyncToken token( myCuda.getCUcontext(), stream );
+        CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::TransferStream );
+
+        // wait is done implicitly at end of this scope
     }
 
-    SCAI_CUDA_DRV_CALL( cuStreamDestroy( stream ), "cuStreamDestroy for compute failed" );
-
-    // wait is done implicitly
+    CUDAStreamPool::freePool( myCuda );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( asyncTest )
 {
-    common::CUDADevice myCuda;
+    int deviceNr = 0;
+
+    common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
+
+    common::CUDADevice myCuda( deviceNr );
 
     common::CUDAAccess cudaAccess( myCuda );
 
@@ -88,22 +91,18 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
     size_t size = sizeof( float ) * N;
 
-    CUstream stream;
-
-    int flags = 0; // must be 0 by specification of CUDA driver API
-
-    SCAI_CUDA_DRV_CALL( cuStreamCreate( &stream, flags ), "cuStreamCreate failed" )
-
     SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
 
     float* fpointer = reinterpret_cast<float*>( pointer );
 
     {
-        CUDAStreamSyncToken token( myCuda.getCUcontext(), stream );
+        CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::ComputeStream );
 
         // launch kernel asynchronously
 
         init( fpointer, N, 3.0 );
+
+        // wait is done here implicitly
     }
 
     float s = sum( fpointer, N );
@@ -112,11 +111,9 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
     SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
 
-    SCAI_CUDA_DRV_CALL( cuStreamDestroy( stream ), "cuStreamDestroy for compute failed" );
-
     // with CUDA device destructor the pool should be freed 
 
-    CUDAStreamPool::freePool( myCuda.getCUcontext() );
+    CUDAStreamPool::freePool( myCuda );
 }
 
 /* ------------------------------------------------------------------------- */
