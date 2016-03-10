@@ -61,7 +61,7 @@ public:
 
     CUDAAccess( CUcontext ctx );
 
-    CUDAAccess( CUDADevice& dev );
+    CUDAAccess( const CUDADevice& dev );
 
     /** The destructor will release the corresponding CUDA context. */
 

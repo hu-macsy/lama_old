@@ -1,5 +1,5 @@
 /**
- * @file CUDAAccessTest.cpp
+ * @file CUDADeviceTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test of class CUDAAccess
+ * @brief Test of class CUDADevice
  * @author: Thomas Brandes
  * @date 08.03.2016
  **/
@@ -33,23 +33,28 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/cuda/CUDADevice.hpp>
-#include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
 
 #include <scai/common/test/cuda/CUDAKernel.hpp>
+#include <scai/common/bind.hpp>
 
 #include <iostream>
 
 
+static void inc( int* val ) 
+{
+    *val += 1;
+}
+
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CommonCUDATest );
+BOOST_AUTO_TEST_SUITE( CUDADeviceTest );
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( accessTest )
+BOOST_AUTO_TEST_CASE( constructorTest )
 {
     int nr = 0;
 
@@ -57,45 +62,34 @@ BOOST_AUTO_TEST_CASE( accessTest )
 
     scai::common::CUDADevice myCuda( nr );
 
-    const int N = 100;
+    BOOST_CHECK_EQUAL( nr, myCuda.getDeviceNr() );
+}
 
-    CUdeviceptr pointer = 0;
+/* --------------------------------------------------------------------- */
 
-    size_t size = sizeof( float ) * N;
+BOOST_AUTO_TEST_CASE( shutdownTest )
+{
+    int nr = 0;
 
-    // driver call without access must throw exception
+    int val = 0;
 
-    BOOST_CHECK_THROW( 
-        {
-            SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
-        }, 
-        scai::common::Exception )
+    scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
     {
-        // create an access for CUDA calls 
+        scai::common::CUDADevice myCuda( nr );
 
-        scai::common::CUDAAccess tmpAccess( myCuda );
+        myCuda.addShutdown( scai::common::bind( &inc, &val ) );
 
-        SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
-    
-        float* fpointer = reinterpret_cast<float*>( pointer );
-    
-        init( fpointer, N, 3.0 );
+        BOOST_CHECK_EQUAL( 0, val );
 
-        float s = sum( fpointer, N );
+        myCuda.addShutdown( scai::common::bind( &inc, &val ) );
 
-        BOOST_CHECK_CLOSE( 3.0f * N, s, 0.01 );
-
-        SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
+        // shutdown routine will only be called with destructor
     }
 
-    // checkt that access is released at end of previous scope
+    // inc should have been called twice by destructor
 
-    BOOST_CHECK_THROW( 
-        {
-            SCAI_CHECK_CUDA_ACCESS
-        }, 
-        scai::common::Exception )
+    BOOST_CHECK_EQUAL( 2, val );
 }
 
 /* ------------------------------------------------------------------------- */

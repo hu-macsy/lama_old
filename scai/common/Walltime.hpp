@@ -36,7 +36,6 @@
 #include <scai/common/config.hpp>
 
 // std
-#include <string>
 #include <stdint.h>
 
 namespace scai
@@ -44,6 +43,8 @@ namespace scai
 
 namespace common
 {
+
+/** Make a common defintion for 8-byte integer as uint64_t can be implementation specific. */
 
 typedef uint64_t INTEGER_8;
 

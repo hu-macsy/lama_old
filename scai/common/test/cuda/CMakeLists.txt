@@ -34,8 +34,9 @@ scai_project (
 
     SOURCES
 
-        CommonCUDATest
+        commonCUDATest
         CUDAAccessTest
+        CUDADeviceTest
  
     CUDA_SOURCES
 
@@ -44,6 +45,6 @@ scai_project (
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-cuda_add_executable ( CommonCUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
+cuda_add_executable ( commonCUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
 
-target_link_libraries ( CommonCUDATest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_common )
+target_link_libraries ( commonCUDATest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_common )

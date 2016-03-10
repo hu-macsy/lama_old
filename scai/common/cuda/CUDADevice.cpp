@@ -32,8 +32,6 @@
 
 #include <scai/common/cuda/CUDADevice.hpp>
 
-#include <scai/common/Settings.hpp>
-
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -56,24 +54,13 @@ CUDADevice::CUDADevice( int deviceNr )
         unsigned int flags = 0;    // must be set to zero
 
         SCAI_CUDA_DRV_CALL( cuInit( flags ), "cuInit failed, probably no GPU devices available" )
-        cudaInitialized = 1;
+        cudaInitialized = true;
     }
 
-    // can be set
+    mDeviceNr = deviceNr;   // no alternative is taken here
 
-    if ( deviceNr < 0 )
-    {
-        mDeviceNr = 0;
-        scai::common::Settings::getEnvironment( mDeviceNr, "SCAI_DEVICE" );
-    }
-    else
-    {
-        mDeviceNr = deviceNr;
-    }
-        
-    // now use mDeviceNr 
-
-    SCAI_CUDA_DRV_CALL( cuDeviceGet( &mCUdevice, mDeviceNr ), "cuDeviceGet device " << mDeviceNr );
+    SCAI_CUDA_DRV_CALL( cuDeviceGet( &mCUdevice, mDeviceNr ), 
+                        "cuDeviceGet device = " << mDeviceNr << " failed, probably not available" );
         
     SCAI_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
                         "cuCtxCreate for " << mDeviceNr )
@@ -83,8 +70,17 @@ CUDADevice::CUDADevice( int deviceNr )
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
 }
 
+/* --------------------------------------------------------------------- */
+
 CUDADevice::~CUDADevice()
 {
+    // call added shutdown routines
+
+    for ( size_t i = 0; i < mShutdownFunctions.size(); ++i )
+    {
+        mShutdownFunctions[i]();
+    }
+
     // do not throw exceptions in destructor
 
     CUresult res = cuCtxPushCurrent( mCUcontext );
@@ -109,8 +105,15 @@ CUDADevice::~CUDADevice()
         std::cerr << "Error: destroy context for device " << mDeviceNr << " failed." << std::endl;
         return;
     }
+}
 
-    return;
+/* --------------------------------------------------------------------- */
+
+/* ----------------------------------------------------------------------- */
+
+void CUDADevice::addShutdown( common::function<void()> routine )
+{
+    mShutdownFunctions.push_back( routine );
 }
 
 }  // namespace common
