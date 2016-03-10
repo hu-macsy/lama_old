@@ -26,7 +26,7 @@ public:
     static void readXDR( XDRFileStream& inFile, DataType* data, const IndexType n );
 
     template<typename FileType, typename DataType>
-    static void writeXDR( XDRFileStream& outFile, const DataType* data, const IndexType n );
+    static void writeXDR( XDRFileStream& outFile, const DataType* data, const IndexType n, const IndexType offset = 0 );
 
     template<typename FileType, typename DataType>
     static void writeBinary( std::fstream& outFile, const DataType data[], const IndexType n, const IndexType offset = 0 );
@@ -56,9 +56,9 @@ void IOUtils::readXDR( XDRFileStream& inFile, DataType* data, const IndexType n 
 }
 
 template<typename FileType, typename DataType>
-void IOUtils::writeXDR( XDRFileStream& outFile, const DataType* data, const IndexType n )
+void IOUtils::writeXDR( XDRFileStream& outFile, const DataType* data, const IndexType n, const IndexType offset )
 {
-    if( typeid(FileType) == typeid(DataType) )
+    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
     {
         outFile.write( data, n ); // no conversion needed
         return;
@@ -70,7 +70,7 @@ void IOUtils::writeXDR( XDRFileStream& outFile, const DataType* data, const Inde
 
     for( IndexType i = 0; i < n; i++ )
     {
-        buffer[i] = static_cast<FileType>( data[i] );
+        buffer[i] = static_cast<FileType>( data[i] + offset );
     }
 
     outFile.write( buffer.get(), n );

@@ -335,15 +335,15 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
 
     if( indexDataTypeSizeIA == sizeof( IndexType ) )
     {
-        writeData<IndexType,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
+        IOUtils::writeXDR<IndexType,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
     }
     else if( indexDataTypeSizeIA == sizeof( long ) )
     {
-        writeData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
+        IOUtils::writeXDR<long,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
     }
     else if( indexDataTypeSizeIA == sizeof ( int ) )
     {
-        writeData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
+        IOUtils::writeXDR<int,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
     }
 
     outFile.write( &indexDataTypeSizeIA );
@@ -356,15 +356,15 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
 
     if( indexDataTypeSizeJA == sizeof(IndexType) )
     {
-        writeData<IndexType,IndexType,0>( outFile, jaRead.get(), numValues );
+        IOUtils::writeXDR<IndexType,IndexType>( outFile, jaRead.get(), numValues );
     }
     else if( indexDataTypeSizeJA == sizeof(long) )
     {
-        writeData<long,IndexType,0>( outFile, jaRead.get(), numValues );
+        IOUtils::writeXDR<long,IndexType>( outFile, jaRead.get(), numValues );
     }
     else if( indexDataTypeSizeJA == sizeof(int) )
     {
-        writeData<int,IndexType,0>( outFile, jaRead.get(), numValues );
+        IOUtils::writeXDR<int,IndexType>( outFile, jaRead.get(), numValues );
     }
 
     outFile.write( &indexDataTypeSizeJA );
@@ -375,18 +375,16 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
 
     if ( dataTypeSize == sizeof( ValueType ) )
     {
-        writeData<ValueType, ValueType, 0>( outFile, dataRead.get(), numValues );
+        IOUtils::writeXDR<ValueType, ValueType>( outFile, dataRead.get(), numValues );
     }
-
-#define LAMA_IO_WRITE( z, I, _ )                                                                    \
-    else if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )                                  \
-    {                                                                                               \
-        writeData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( outFile, dataRead.get(), numValues );    \
-    }                                                                                               \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_IO_WRITE, _ )
-
-#undef LAMA_IO_WRITE
+    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeXDR( dataTypeSize, outFile, dataRead.get(), numValues ) )
+    {
+        SCAI_LOG_INFO( logger, "writeXDR conversion neeeded" )
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "no matching type found" )
+    }
 
     outFile.write( &dataTypeSize );
     outFile.write( &numValues );
