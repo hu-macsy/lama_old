@@ -31,7 +31,9 @@ struct IOWrapper<ValueType, common::mepr::NullType>
     static bool readXDR( const common::scalar::ScalarType, XDRFileStream&, ValueType*, const IndexType ) { return false; }
     static bool writeXDR( const common::scalar::ScalarType, XDRFileStream&, const ValueType*, const IndexType ) { return false; }
     static bool readBinary( const common::scalar::ScalarType, std::fstream&, ValueType*, const IndexType ) { return false; }
-    static bool writeBinary( const common::scalar::ScalarType, std::fstream&, const ValueType*, const IndexType ) { return false; }
+    static bool writeBinary( const common::scalar::ScalarType, std::fstream&, const ValueType*, const IndexType, const IndexType ) { return false; }
+
+    static bool writeBinary( const long, std::fstream&, const ValueType*, const IndexType, const IndexType ){ return false; }
 };
 
 template<typename ValueType, typename H, typename T>
@@ -76,16 +78,33 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
         }
     }
 
-    static bool writeBinary( const common::scalar::ScalarType dataType, std::fstream& out, const ValueType* data, const IndexType n )
+    static bool writeBinary( const common::scalar::ScalarType dataType, std::fstream& out, const ValueType* data, const IndexType n, const IndexType offset = 0 )
     {
         if( dataType == common::getScalarType<H>() )
         {
-            IOUtils::writeBinary<H,ValueType>( out, data, n );
+            IOUtils::writeBinary<H,ValueType>( out, data, n, offset );
             return true;
         }
         else
         {
-            return IOWrapper<ValueType, T>::writeBinary( dataType, out, data, n );
+            return IOWrapper<ValueType, T>::writeBinary( dataType, out, data, n, offset );
+        }
+    }
+
+    /*
+     *
+     */
+
+    static bool writeBinary( const long dataTypeSize, std::fstream& out, const ValueType* data, const IndexType n, const IndexType offset = 0 )
+    {
+        if( dataTypeSize == sizeof( H ) )
+        {
+            IOUtils::writeBinary<H, ValueType>( out, data, n, offset );
+            return true;
+        }
+        else
+        {
+            return IOWrapper<ValueType, T>::writeBinary( dataTypeSize, out, data, n, offset );
         }
     }
 };

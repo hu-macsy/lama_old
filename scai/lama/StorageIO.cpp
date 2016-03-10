@@ -40,6 +40,8 @@
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
+#include <scai/lama/io/IOUtils.hpp>
+#include <scai/lama/mepr/IOWrapper.hpp>
 
 
 // internal scai libraries
@@ -169,32 +171,6 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
 }
 
 /* -------------------------------------------------------------------------- */
-
-template<typename FileType,typename DataType,int offset>
-static void writeBinaryData( std::fstream& outFile, const DataType data[], const IndexType n )
-{
-    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
-    {
-        // no type conversion needed
-
-        outFile.write( reinterpret_cast<const char*>( data ), sizeof(DataType) * n );
-        outFile.flush();
-        return;
-    }
-
-    // allocate buffer for type conversion and/or adding offset
-
-    scoped_array<FileType> buffer( new FileType[n] );
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        buffer[i] = static_cast<FileType>( data[i] + offset );
-    }
-
-    outFile.write( reinterpret_cast<const char*>( buffer.get() ), sizeof(FileType) * n );
-    outFile.flush();
-    return;
-}
 
 /** Help function to determine size of file with CSR data of certain value type
  *
@@ -596,11 +572,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     if( indexDataTypeSizeIA == sizeof( int ) || sizeof(long) == sizeof( int ) )
     {
-        writeBinaryData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
+        IOUtils::writeBinary<int,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
     }
     else if( indexDataTypeSizeIA == sizeof( long ) )
     {
-        writeBinaryData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
+        IOUtils::writeBinary<long,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
     }
     else
     {
@@ -611,28 +587,18 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     if( indexDataTypeSizeJA == sizeof( int ) || sizeof(long) == sizeof( int ) )
     {
-        writeBinaryData<int,IndexType,1>( outFile, jaRead.get(), numValues );
+        IOUtils::writeBinary<int,IndexType>( outFile, jaRead.get(), numValues, 1 );
     }
     else if( indexDataTypeSizeJA == sizeof( long ) )
     {
-        writeBinaryData<long,IndexType,1>( outFile, jaRead.get(), numValues );
+        IOUtils::writeBinary<long,IndexType>( outFile, jaRead.get(), numValues, 1 );
     }
     else
     {
         COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
     }
 
-#define LAMA_WRITE_BIN( z, I, _ )                                                                       \
-    if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )                                           \
-    {                                                                                                   \
-        writeBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( outFile, dataRead.get(), numValues );  \
-    }                                                                                                   \
-    else                                                                                                \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_WRITE_BIN, _ )
-
-#undef LAMA_WRITE_BIN
-
+    if( !mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeBinary( dataTypeSize, outFile, dataRead.get(), numValues ))
     {
         COMMON_THROWEXCEPTION( "unknown data type size  = " << dataTypeSize << " for values." )
     }
