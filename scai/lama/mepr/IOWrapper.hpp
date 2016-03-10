@@ -33,6 +33,10 @@ struct IOWrapper<ValueType, common::mepr::NullType>
     static bool readBinary( const common::scalar::ScalarType, std::fstream&, ValueType*, const IndexType ) { return false; }
     static bool writeBinary( const common::scalar::ScalarType, std::fstream&, const ValueType*, const IndexType, const IndexType ) { return false; }
 
+    /*
+     *
+     */
+    static bool readBinary( const long, std::fstream&, ValueType*, const IndexType, const IndexType ){ return false; }
     static bool writeBinary( const long, std::fstream&, const ValueType*, const IndexType, const IndexType ){ return false; }
 };
 
@@ -94,6 +98,18 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
     /*
      *
      */
+    static bool readBinary( const long expectedSize, std::fstream& in, ValueType* data, const IndexType n, const IndexType offset = 0 )
+    {
+        if( expectedSize == sizeof( H ) )
+        {
+            FileIO::readBinaryData<H, ValueType>( in, data, n, offset );
+            return true;
+        }
+        else
+        {
+            return IOWrapper<ValueType, T>::readBinary( expectedSize, in, data, n, offset );
+        }
+    }
 
     static bool writeBinary( const long dataTypeSize, std::fstream& out, const ValueType* data, const IndexType n, const IndexType offset = 0 )
     {

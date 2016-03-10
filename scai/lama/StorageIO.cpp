@@ -217,14 +217,14 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     // read offset array IA
 
-    FileIO::readBinaryData<IndexType,IndexType, -1>( inFile, ia.get(), numRows + 1 );
+    FileIO::readBinaryData<IndexType,IndexType>( inFile, ia.get(), numRows + 1, -1 );
 
     IndexType numValues = ia[numRows];
 
     WriteOnlyAccess<IndexType> ja( csrJA, numValues );
     WriteOnlyAccess<ValueType> values( csrValues, numValues );
 
-    FileIO::readBinaryData<IndexType,IndexType, -1>( inFile, ja.get(), numValues );
+    FileIO::readBinaryData<IndexType,IndexType>( inFile, ja.get(), numValues, -1 );
 
     // now we can calculate the expected size
 
@@ -233,21 +233,12 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
     if ( expectedSize == actualSize )
     {
         SCAI_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() << ", no conversion" )
-        FileIO::readBinaryData<ValueType,ValueType,0>( inFile, values.get(), numValues );
+        FileIO::readBinaryData<ValueType,ValueType>( inFile, values.get(), numValues );
     }
-
-#define LAMA_BIN_READ(  z, I, _ )                                                                                   \
-    else if ( actualSize == expectedCSRFileSize<ARITHMETIC_HOST_TYPE_##I>( numRows, numValues ) )                   \
-    {                                                                                                               \
-        SCAI_LOG_WARN( logger, "read binary data of type " << common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::id()    \
-                               << ", conversion to " << csrValues.getValueType() )                                  \
-        FileIO::readBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( inFile, values.get(), numValues );          \
-    }                                                                                                               \
- 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BIN_READ, _ )
-
-#undef LAMA_BIN_READ
-
+    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readBinary( actualSize, inFile, values.get(), numValues ))
+    {
+        SCAI_LOG_WARN( logger, "read binary data of different type, conversion done" )
+    }
     else
     {
         COMMON_THROWEXCEPTION(

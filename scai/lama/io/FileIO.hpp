@@ -69,20 +69,18 @@ public:
     /** Reading binary data with implicit conversion from FileDataType to UserDataType */
 
     template<typename FileDataType,typename UserDataType>
-    static void readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n );
+    static void readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n, const IndexType offset = 0 );
 
     /** Reading binary data with implicit conversion from FileDataType to UserDataType and adding offset */
 
-    template<typename FileDataType,typename UserDataType,int offset>
-    static void readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n );
 };
 
 /* -------------------------------------------------------------------------- */
 
 template<typename FileDataType,typename UserDataType>
-void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n )
+void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n, const IndexType offset )
 {
-    if( typeid(FileDataType) == typeid(UserDataType) )
+    if( ( offset == 0 ) && ( typeid(FileDataType) == typeid(UserDataType) ) )
     {
         // no type conversion needed
 
@@ -98,29 +96,8 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
 
         for( IndexType i = 0; i < n; i++ )
         {
-            data[i] = static_cast<UserDataType>( buffer[i] );
+            data[i] = static_cast<UserDataType>( buffer[i] + offset );
         }
-    }
-}
-
-template<typename FileDataType,typename UserDataType,int offset>
-void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n )
-{
-    if( offset == 0 )
-    {
-        readBinaryData<FileDataType,UserDataType>( inFile, data, n );
-        return;
-    }
-
-    // allocate buffer for type conversion and/or adding offset
-
-    common::scoped_array<FileDataType> buffer( new FileDataType[n] );
-
-    inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileDataType) * n );
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        data[i] = static_cast<UserDataType>( buffer[i] + offset );
     }
 }
 
