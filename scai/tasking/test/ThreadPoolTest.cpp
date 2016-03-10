@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE( waitTest )
         for ( int j = 0; j < thread_configs; ++j )
         {
             std::vector<int> x( ntasks );  // array with result for each task
-            std::vector<shared_ptr<ThreadTask> > tasks( ntasks );
+            std::vector<shared_ptr<ThreadPoolTask> > tasks( ntasks );
             ThreadPool pool( thread_sizes[j] );
 
             for ( int i = 0; i < ntasks; i++ )
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE( singleTest )
         int resultThread;
         int resultMaster;
 
-        shared_ptr<ThreadTask> task = pool.schedule( bind( &work, i, ref( resultThread ) ) );
+        shared_ptr<ThreadPoolTask> task = pool.schedule( bind( &work, i, ref( resultThread ) ) );
 
         // Master thread does something and then waits
         rnd = ( rnd + 19 ) % 17;

@@ -32,7 +32,7 @@
 
 # ThreadTest example
 
-foreach    ( executable ThreadPoolTest BenchTasking Token )
+foreach    ( executable DemoThreadPool DemoTask BenchTasking Token )
    add_executable( ${executable}.exe ${executable}.cpp )
    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )

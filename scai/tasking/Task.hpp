@@ -135,7 +135,7 @@ private:
 
     static ThreadPool& getThreadPool();
 
-    common::shared_ptr<ThreadTask> mTask;
+    common::shared_ptr<ThreadPoolTask> mTask;
 };
 
 } /* end namespace tasking */
