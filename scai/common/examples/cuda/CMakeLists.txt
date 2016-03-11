@@ -38,7 +38,7 @@ set ( EXAMPLE_MODULES "" ) # for make.inc
 
 string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
 
-foreach ( executable CUDADeviceExample)
+foreach ( executable CUDADeviceExample CUBLASExample1 CUBLASExample2 )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 

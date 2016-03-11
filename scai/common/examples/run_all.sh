@@ -71,6 +71,8 @@ then
     # run CUDA examples
     RUN 1 cuda/CUDADeviceExample.exe
     RUN 1 cuda/CUDAExample.exe
+    RUN 1 cuda/CUBLASExample1.exe
+    RUN 1 cuda/CUBLASExample2.exe
 
     # check if there are unkown examples
     count=`ls -l -la $MYDIR/cuda/*.exe | wc -l`

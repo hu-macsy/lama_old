@@ -65,9 +65,18 @@ CUDADevice::CUDADevice( int deviceNr )
     SCAI_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
                         "cuCtxCreate for " << mDeviceNr )
         
+    SCAI_CUBLAS_CALL( cublasCreate( &mcuBLASHandle ), "Initialization of cuBLAS library" );
+
     CUcontext tmp; // temporary for last context, not necessary to save it
 
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
+}
+
+/* --------------------------------------------------------------------- */
+
+cublasHandle_t CUDADevice::getcuBLASHandle() const
+{
+    return mcuBLASHandle;
 }
 
 /* --------------------------------------------------------------------- */
@@ -98,6 +107,20 @@ CUDADevice::~CUDADevice()
         return;
     }
 
+    // Be careful: cublasDestroy should be called within the current CUDA context
+
+    if ( mcuBLASHandle )
+    {
+        cublasStatus_t error = cublasDestroy( mcuBLASHandle );
+
+        if ( error != CUBLAS_STATUS_SUCCESS )
+        {
+            std::cerr << "Warn: could not destroy cublas handle, status = " << error << std::endl;
+        }
+
+        mcuBLASHandle = 0;
+    }
+
     res = cuCtxDestroy( mCUcontext );
 
     if ( res != CUDA_SUCCESS )
@@ -106,8 +129,6 @@ CUDADevice::~CUDADevice()
         return;
     }
 }
-
-/* --------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------- */
 

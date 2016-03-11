@@ -45,7 +45,7 @@
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CommonCUDATest );
+BOOST_AUTO_TEST_SUITE( CUDAAccessTest );
 
 /* --------------------------------------------------------------------- */
 
@@ -96,6 +96,38 @@ BOOST_AUTO_TEST_CASE( accessTest )
             SCAI_CHECK_CUDA_ACCESS
         }, 
         scai::common::Exception )
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( getCurrentDeviceTest )
+{
+    using namespace scai::common;
+
+    int nr = 0;
+
+    Settings::getEnvironment( nr, "SCAI_DEVICE" );
+
+    CUDADevice myCuda( nr );
+
+    BOOST_CHECK_THROW( 
+        {
+            CUDAAccess::getCurrentCUDADevice();
+        }, 
+        Exception );
+
+    {
+        CUDAAccess access( myCuda );
+        const CUDADevice& current = CUDAAccess::getCurrentCUDADevice();
+        BOOST_CHECK_EQUAL( &myCuda, &current );
+    }
+
+    BOOST_CHECK_THROW( 
+        {
+            CUDAAccess::getCurrentCUDADevice();
+        }, 
+        Exception );
+
 }
 
 /* ------------------------------------------------------------------------- */

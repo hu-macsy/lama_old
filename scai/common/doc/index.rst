@@ -87,5 +87,6 @@ Common Classes for CUDA
    :titlesonly:
    :maxdepth: 2
 
+   CUDAError
    CUDADevice
    CUDAAccess

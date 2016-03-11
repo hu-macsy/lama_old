@@ -57,19 +57,23 @@ class CUDAAccess
 
 public:
 
-    /** The constructor will access the corresponding CUDA context. */
-
-    CUDAAccess( CUcontext ctx );
+    /** The constructor enables the corresponding CUDA context. */
 
     CUDAAccess( const CUDADevice& dev );
 
-    /** The destructor will release the corresponding CUDA context. */
+    /** The destructor disables the corresponding CUDA context. */
 
     ~CUDAAccess();
+
+    /** This static method returns the device currently accessed. */
+
+    static const CUDADevice& getCurrentCUDADevice();
 
 private:
 
     CUcontext mCUcontext;
+
+    const CUDADevice* mSaveDevice;  // save the device accessed before
 };
 
 } /* end namespace common */

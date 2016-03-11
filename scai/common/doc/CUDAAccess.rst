@@ -24,7 +24,8 @@ It should be disabled after these other CUDA calls.
     ...
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( ... ), "" )
 
-The class CUDAAccess has been introduced to make sure that a context is always disabled by
+The class CUDAAccess has been introduced to make sure that a context is always enabled
+by the constructor and disabled by
 the destructor of the corresponding access object.
 
 .. code-block:: c++
@@ -50,6 +51,26 @@ the destructor of the corresponding access object.
     {
         CUDAAccess access( device );
         SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
+    }
+
+When a device is accessed via CUDAAccess, it is possible to query for the currently accessed device.
+By this way, the latest accessed device is always available globally.
+
+.. code-block:: c++
+
+    void sub()
+    {
+        // query the currently accessed device
+
+        const CUDADevice& device = CUDAAccess::getCurrentCUDADevice();
+        std::cout << "actual device is " << device.getDeviceNr() << std::endl;
+    }
+
+    ....
+
+    {
+        CUDAAccess access( device );
+        sub();                        // device is not be passed as argument
     }
 
 A complete CUDA example is this one:

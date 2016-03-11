@@ -11,7 +11,7 @@ When the first CUDADevice object is created, CUDA will also be initialized.
 .. literalinclude:: ../examples/cuda/CUDADeviceExample.cpp
 
 In the above example a CUDA device is created where the number of the device
-can have been set via the environment variable ``SCAI_DEVICE``.
+can be set via the environment variable ``SCAI_DEVICE``.
 
  * the getter method getCUcontext returns the CUDA context structure
  * the getter method getCUdevice returns the CUDA device structure
@@ -37,3 +37,4 @@ corresponding context. Otherwise it is undefined on which device e.g.
 a memory allocation or a kernel launch is done. 
 
 Note: LAMA itself will always use only one context on one device.
+

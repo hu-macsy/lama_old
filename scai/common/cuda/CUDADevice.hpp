@@ -40,6 +40,8 @@
 #include <scai/common/function.hpp>
 
 #include <cuda.h>
+#include <cublas_v2.h>
+
 #include <vector>
 
 namespace scai
@@ -84,13 +86,17 @@ public:
         return mCUdevice;
     }
 
+    /** Getter for the cuBLAS handle, will be created with first use */
+
+    cublasHandle_t getcuBLASHandle() const;
+
     /** Getter for the number of the device. */
 
     int getDeviceNr() const
     {
         return mDeviceNr;
     }
-
+    
     /** Add a routine to be called with destructor */
 
     void addShutdown( common::function<void()> routine );
@@ -102,6 +108,8 @@ private:
     CUdevice mCUdevice;
 
     int mDeviceNr;
+
+    cublasHandle_t mcuBLASHandle;
 
     std::vector< common::function<void()> > mShutdownFunctions;
 };
