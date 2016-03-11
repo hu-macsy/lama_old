@@ -185,8 +185,8 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
     ContextPtr context = Context::getContextPtr();
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    const IndexType N1 = 40;
-    const IndexType N2 = 40;
+    const IndexType N1 = 10;
+    const IndexType N2 = 10;  
 
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
 
     DenseVector<ValueType> rhs( coefficients * exactSolution );
 
-    IndexType maxExpectedIterations = 300;
+    IndexType maxExpectedIterations = 3000;
     CriterionPtr criterion( new IterationCount( maxExpectedIterations ) );
 
     // Get all available solvers
@@ -232,6 +232,7 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
 
         iterativeSolver->setStoppingCriterion( criterion );
         iterativeSolver->initialize( coefficients );
+        solution = solutionInitValue;
         iterativeSolver->solve( solution, rhs );
 
         DenseVector<ValueType> diff( solution - exactSolution );
@@ -255,9 +256,7 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
         //BOOST_CHECK_THROW ( {iterativeSolver->solve( solution, rhs );}, scai::common::Exception );
 
         iterativeSolver->initialize( coefficients );
-
         solution = solutionInitValue;
-
         iterativeSolver->solve( solution, rhs );
 
         BOOST_CHECK( maxExpectedIterations == iterativeSolver->getIterationCount() );
@@ -271,7 +270,7 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
         SCAI_LOG_INFO( logger, "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << realMaxNorm );
 
 //      TODO: Currently not working!
-//        BOOST_CHECK( realMaxNorm < expectedMaxNorm );
+        // BOOST_CHECK( realMaxNorm < expectedMaxNorm );
     }
 }
 
