@@ -33,6 +33,7 @@
 set ( CXX_SOURCES
       taskingTest.cpp
       ThreadPoolTest.cpp  
+      TaskSyncTokenTest.cpp  
 ) 
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )

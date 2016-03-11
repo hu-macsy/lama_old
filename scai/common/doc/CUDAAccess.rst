@@ -1,8 +1,18 @@
 CUDAAccess
 ==========
 
-When a CUDA context has been created with a CUDA device it has been disabled and must
+Before calling most of the CUDA driver or CUDA runtime routines, a CUDA context must
+be set globally. This context is not an explicit argument. Especially the launching
+of CUDA kernels requires an active CUDA context.
+
+Applications that use only one CUDA device with the same thread (most likely the
+main thread) use always the same context and do not have to disable or enable it
+But when switching between different devices or different threads, the context has to 
+be disabled (pop routine) and another one has to be enabled (push routine).
+
+When a CUDA context has been created via the constructor of a CUDADevice it has been disabled and must
 be enabled explicitly via a push routine before further CUDA calls can be executed.
+It should be disabled after these other CUDA calls.
 
 .. code-block:: c++
 
@@ -13,9 +23,6 @@ be enabled explicitly via a push routine before further CUDA calls can be execut
     SCAI_CUDA_DRV_CALL( cuMemAlloc( .. ), "" )
     ...
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( ... ), "" )
-
-Most CUDA applications do not use these push and pop context routines but they are mandatory
-if another thread will use the same device within one application.
 
 The class CUDAAccess has been introduced to make sure that a context is always disabled by
 the destructor of the corresponding access object.

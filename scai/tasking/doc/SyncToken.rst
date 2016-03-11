@@ -17,10 +17,20 @@ Here is a typical example of its use:
    token->wait();  // sychronize, i.e. wait for completion of the asychronous task
 
 The wait operation can be called explicitly, but the synchronization is also done
-implicitly with the destructor of the token.
+implicitly by the destructor of the token.
 
-It is recommended to use a smart pointer for the token to guarantee that the task is 
-really completed.
+.. code-block:: c++
+
+   SyncToken* token = new DerivedSyncToken( .... );  
+
+   ...
+
+   delete token;   // implicit synchronization
+
+It is recommended to use a smart pointer for the token to guarantee that the
+destructor of the object is called and the synchronization is really done.
+Furthermore, the SyncToken object might call other cleanup routines whose
+calls are mandatory.
 
 .. code-block:: c++
 
