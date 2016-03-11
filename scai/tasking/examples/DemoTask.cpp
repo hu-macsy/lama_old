@@ -12,6 +12,8 @@
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 
+#include <unistd.h>
+
 using namespace scai::common;
 using namespace scai::tasking;
 
