@@ -67,9 +67,18 @@ CUDADevice::CUDADevice( int deviceNr )
         
     SCAI_CUBLAS_CALL( cublasCreate( &mcuBLASHandle ), "Initialization of cuBLAS library" );
 
+    SCAI_CUSPARSE_CALL( cusparseCreate( &mcuSparseHandle ), "Initialization of cuBLAS library" );
+
     CUcontext tmp; // temporary for last context, not necessary to save it
 
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
+}
+
+/* --------------------------------------------------------------------- */
+
+cusparseHandle_t CUDADevice::getcuSparseHandle() const
+{
+    return mcuSparseHandle;
 }
 
 /* --------------------------------------------------------------------- */
@@ -119,6 +128,20 @@ CUDADevice::~CUDADevice()
         }
 
         mcuBLASHandle = 0;
+    }
+
+    // Be careful: cusparseDestroy should be called within the current CUDA context
+
+    if ( mcuSparseHandle )
+    {
+        cusparseStatus_t error = cusparseDestroy( mcuSparseHandle );
+
+        if ( error != CUSPARSE_STATUS_SUCCESS )
+        {
+            std::cerr << "Warn: could not destroy cusparse handle, status = " << error << std::endl;
+        }
+
+        mcuSparseHandle = 0;
     }
 
     res = cuCtxDestroy( mCUcontext );

@@ -6,10 +6,6 @@
 #include <scai/common/Settings.hpp>
 #include <iostream>
 
-
-#include <thrust/device_vector.h>
-#include <thrust/fill.h>
-
 /* --------------------------------------------------------------------- */
 
 using namespace scai;
@@ -19,6 +15,8 @@ using namespace common;
 
 float* myAllocate( float hostdata[], int N )
 {
+    // allocate memory on the accessed device and copy host data to it
+
     CUdeviceptr pointer = 0;
 
     size_t size = sizeof( float ) * N;

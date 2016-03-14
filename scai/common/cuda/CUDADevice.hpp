@@ -41,6 +41,7 @@
 
 #include <cuda.h>
 #include <cublas_v2.h>
+#include <cusparse.h>
 
 #include <vector>
 
@@ -90,6 +91,10 @@ public:
 
     cublasHandle_t getcuBLASHandle() const;
 
+    /** Getter for the cuSparse handle, will be created with first use */
+
+    cusparseHandle_t getcuSparseHandle() const;
+
     /** Getter for the number of the device. */
 
     int getDeviceNr() const
@@ -110,6 +115,8 @@ private:
     int mDeviceNr;
 
     cublasHandle_t mcuBLASHandle;
+
+    cusparseHandle_t mcuSparseHandle;
 
     std::vector< common::function<void()> > mShutdownFunctions;
 };
