@@ -97,6 +97,31 @@ void MINRES::initialize( const Matrix& coefficients ){
     runtime.mVecP.reset( coefficients.newDenseVector() );
     runtime.mVecPOld.reset( coefficients.newDenseVector() );
     runtime.mVecPNew.reset( coefficients.newDenseVector() );
+
+    // runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
+    switch(coefficients.getValueType()){
+        case common::scalar::FLOAT:
+            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
+            break;
+        case common::scalar::DOUBLE:
+            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
+            break;
+        case common::scalar::LONG_DOUBLE:
+            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
+            break;
+        case common::scalar::COMPLEX:
+            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
+            break;
+        case common::scalar::DOUBLE_COMPLEX:
+            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
+            break;
+        case common::scalar::LONG_DOUBLE_COMPLEX:
+            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
+            break;    
+        default:
+        SCAI_LOG_INFO(logger,"Valuetype not supported");
+        break;
+    }
 }
 
 void MINRES::solveInit( Vector& solution, const Vector& rhs ){
@@ -137,7 +162,8 @@ void MINRES::Lanczos(){
     Scalar& betaNew = runtime.mBetaNew;
     Scalar& beta = runtime.mBeta;
     
-    lama::L2Norm norm;
+    Scalar& eps = runtime.mEps;
+    lama::L2Norm norm; 
     
     beta=betaNew;
 
@@ -147,7 +173,12 @@ void MINRES::Lanczos(){
     alpha = vecV.dotProduct(vecVNew);
     vecVNew = vecVNew - alpha*vecV;
     betaNew = norm.apply(vecVNew);
-    vecVNew = vecVNew/betaNew;
+    if(abs(betaNew) < eps || 1.0/abs(betaNew) < eps){
+        vecVNew = Scalar(0.0);
+    }
+    else{
+        vecVNew = vecVNew/betaNew;
+    }   
 
 }	
 
@@ -163,6 +194,8 @@ void MINRES::applyGivensRotation(){
     Scalar& beta = runtime.mBeta;
     Scalar& betaNew = runtime.mBetaNew;
     Scalar rho1, rho2, rho3;
+
+    Scalar& eps = runtime.mEps;
     //Old Givens-rotation
     cOld = c;
     c=cNew;
@@ -176,10 +209,22 @@ void MINRES::applyGivensRotation(){
     Scalar tau, nu;
     //New Givens-rotation
     tau = abs(rho3)+betaNew;
-    nu = tau * sqrt((rho3/tau)*(rho3/tau) + (betaNew/tau)*(betaNew/tau));
-    cNew = rho3 / nu;
-    sNew = betaNew / nu;
-    rho3 = nu;
+
+    if(abs(tau) < eps || 1.0/abs(tau) < eps){
+        nu = 1.0;
+        rho3 = 1.0;
+        cNew = 0.0;
+        sNew = 0.0;
+    }
+    else{
+        nu = tau * sqrt((rho3/tau)*(rho3/tau) + (betaNew/tau)*(betaNew/tau));
+        cNew = rho3 / nu;
+        sNew = betaNew / nu;
+        rho3 = nu; 
+        
+    }
+
+
 
     Vector& vecP = *runtime.mVecP;
     Vector& vecPOld = *runtime.mVecPOld;
