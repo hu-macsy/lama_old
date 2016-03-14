@@ -382,13 +382,13 @@ bool CUDAMemory::canCopyFrom( const Memory& other ) const
 
     if ( otherType == memtype::HostMemory )
     {
-        // CUDADevice -> Host is supported
+        // CUDACtx -> Host is supported
 
         supported = true;
     }
     else if ( otherType == memtype::CUDAHostMemory )
     {
-        // CUDADevice -> CUDA Host is supported
+        // CUDACtx -> CUDA Host is supported
         // Note: slower but okay if CUDA Host memory does not belong to this device 
 
         supported = true;

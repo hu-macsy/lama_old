@@ -99,7 +99,7 @@ void CUDAStreamPool::releaseStream( CUstream stream )
 
 /* -----------------------------------------------------------------------------*/
 
-CUDAStreamPool::CUDAStreamPool( const common::CUDADevice& cuda ) : mCUDA( cuda )
+CUDAStreamPool::CUDAStreamPool( const common::CUDACtx& cuda ) : mCUDA( cuda )
 {
     SCAI_LOG_INFO( logger, "CUDAStreamPool( device = " << mCUDA.getDeviceNr() << " )" )
 
@@ -151,7 +151,7 @@ static PoolMap& getPoolMap()
 
 /* -----------------------------------------------------------------------------*/
 
-CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDADevice& cuda )
+CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDACtx& cuda )
 {
     PoolMap& poolMap = getPoolMap();
 
@@ -169,7 +169,7 @@ CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDADevice& cuda )
         // Pool must be freed before cuda is destroyed 
         // solution: Add shutdown routine to the CUDA device
 
-        common::CUDADevice& cuda1 = const_cast< common::CUDADevice& >( cuda );
+        common::CUDACtx& cuda1 = const_cast< common::CUDACtx& >( cuda );
 
         cuda1.addShutdown( common::bind( &CUDAStreamPool::freePool, common::cref( cuda ) ) );
 
@@ -183,7 +183,7 @@ CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDADevice& cuda )
 
 /* -----------------------------------------------------------------------------*/
 
-void CUDAStreamPool::freePool( const common::CUDADevice& cuda )
+void CUDAStreamPool::freePool( const common::CUDACtx& cuda )
 {
     SCAI_LOG_INFO( logger, "freePool: pool for CUDA device " << cuda.getDeviceNr() )
 

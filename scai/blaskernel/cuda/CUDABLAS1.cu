@@ -46,6 +46,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -56,8 +57,6 @@ using scai::common::TypeTraits;
 
 namespace scai
 {
-
-extern cublasHandle_t CUDAContext_cublasHandle;
 
 namespace blaskernel
 {
@@ -139,16 +138,12 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
 {
     SCAI_REGION( "CUDA.BLAS1.scal" )
 
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
-
-    if( incX == 0 )
+    if ( incX == 0 )
     {
         return;
     }
 
     SCAI_LOG_DEBUG( logger, "scal<" << TypeTraits<ValueType>::id() << "> of x[" << n << "], alpha = " << alpha )
-
-    SCAI_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
 
@@ -161,19 +156,23 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::scal set stream" );
+    // note: SCAI_CHECK_CUDA_ACCESS not required due to getCurrentCUDACtx
 
-    CUBLASWrapper<ValueType>::scal(  static_cast<BLASIndexType>(n), alpha, x_d,  static_cast<BLASIndexType>(incX)  );
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
+
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::scal set stream" );
+
+    CUBLASWrapper<ValueType>::scal( handle, n, alpha, x_d,  incX );
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         SCAI_CHECK_CUDA_ERROR
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::scal set stream" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS1::scal set stream" );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -184,8 +183,6 @@ template<typename ValueType>
 ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.nrm2" )
-
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( incX <= 0 )
     {
@@ -207,9 +204,11 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX )
 
     // Note: we have to switch cublas Stream, this might be done globally later
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::nrm2 set stream" );
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
-    ValueType res = CUBLASWrapper<ValueType>::nrm2(  static_cast<BLASIndexType>(n) , x_d,  static_cast<BLASIndexType>(incX)  );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::nrm2 set stream" );
+
+    ValueType res = CUBLASWrapper<ValueType>::nrm2( handle, n , x_d, incX );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -219,7 +218,7 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX )
         SCAI_CHECK_CUDA_ERROR
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::nrm2 set stream null" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS1::nrm2 set stream null" );
 
     return res;
 }
@@ -232,8 +231,6 @@ template<typename ValueType>
 ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.asum" )
-
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( incX <= 0 )
     {
@@ -253,9 +250,11 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::asum set stream" );
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
-    ValueType res = CUBLASWrapper<ValueType>::asum(  static_cast<BLASIndexType>(n) , x_d,  static_cast<BLASIndexType>(incX)  );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::asum set stream" );
+
+    ValueType res = CUBLASWrapper<ValueType>::asum( handle, n , x_d,  incX  );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -265,7 +264,8 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
         SCAI_CHECK_CUDA_ERROR
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::asum set stream NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS1::asum set stream NULL" );
+
     return res;
 }
 
@@ -277,8 +277,6 @@ template<typename ValueType>
 IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.iamax" )
-
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     SCAI_LOG_DEBUG( logger, "iamax<" << TypeTraits<ValueType>::id() << "> of x[" << n << "]" )
 
@@ -293,9 +291,11 @@ IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const Index
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUABLAS1::iamax set stream" );
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
-    IndexType iamax = CUBLASWrapper<ValueType>::iamax(  static_cast<BLASIndexType>(n) , x_d,  static_cast<BLASIndexType>(incX) );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUABLAS1::iamax set stream" );
+
+    IndexType iamax = CUBLASWrapper<ValueType>::iamax( handle, n , x_d, incX );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -305,7 +305,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const Index
         SCAI_CHECK_CUDA_ERROR
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::iamax set stream NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS1::iamax set stream NULL" );
     return iamax ? iamax - 1 : 0;
 }
 
@@ -322,8 +322,6 @@ void CUDABLAS1::swap(
     const IndexType incY )
 {
     SCAI_REGION( "CUDA.BLAS1.swap" )
-
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -343,9 +341,11 @@ void CUDABLAS1::swap(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS::swap set stream" );
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
-    CUBLASWrapper<ValueType>::swap(  static_cast<BLASIndexType>(n) , x_d,  static_cast<BLASIndexType>(incX) , y_d,  static_cast<BLASIndexType>(incY)  );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS::swap set stream" );
+
+    CUBLASWrapper<ValueType>::swap( handle, n , x_d,  incX , y_d,  incY );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -355,7 +355,7 @@ void CUDABLAS1::swap(
         SCAI_CHECK_CUDA_ERROR
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUADABLAS1::swap set stream NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUADABLAS1::swap set stream NULL" );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -371,8 +371,6 @@ void CUDABLAS1::copy(
     IndexType incY )
 {
     SCAI_REGION( "CUDA.BLAS1.copy" )
-
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -392,9 +390,11 @@ void CUDABLAS1::copy(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::copy set stream" );
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
-    CUBLASWrapper<ValueType>::copy(  static_cast<BLASIndexType>(n) , x_d,  static_cast<BLASIndexType>(incX) , y_d,  static_cast<BLASIndexType>(incY) );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::copy set stream" );
+
+    CUBLASWrapper<ValueType>::copy( handle, n , x_d,  incX, y_d, incY );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -404,7 +404,7 @@ void CUDABLAS1::copy(
         SCAI_CHECK_CUDA_ERROR
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::copy set stream NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS1::copy set stream NULL" );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -421,8 +421,6 @@ void CUDABLAS1::axpy(
     const int incY )
 {
     SCAI_REGION( "CUDA.BLAS1.axpy" )
-
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -442,9 +440,11 @@ void CUDABLAS1::axpy(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::axpy set stream" );
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
-    CUBLASWrapper<ValueType>::axpy(  static_cast<BLASIndexType>(n) , alpha, x_d,  static_cast<BLASIndexType>(incX) , y_d,  static_cast<BLASIndexType>(incY) );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::axpy set stream" );
+
+    CUBLASWrapper<ValueType>::axpy( handle, n , alpha, x_d,  incX, y_d,  incY );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -454,7 +454,7 @@ void CUDABLAS1::axpy(
         SCAI_CHECK_CUDA_ERROR
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::axpy set stream NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS1::axpy set stream NULL" );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -470,8 +470,6 @@ ValueType CUDABLAS1::dot(
     IndexType incY )
 {
     SCAI_REGION( "CUDA.BLAS1.dot" )
-
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     SCAI_LOG_DEBUG( logger,
                     "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", incX = " << incX << ", incY = " << incY << ", x_d = " << x_d << ", y_d = " << y_d )
@@ -492,10 +490,11 @@ ValueType CUDABLAS1::dot(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::dot set stream" );
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
-    ValueType res = CUBLASWrapper<ValueType>::dot(  static_cast<BLASIndexType>(n) , x_d,  static_cast<BLASIndexType>(incX) , y_d,
-    		static_cast<BLASIndexType>(incY)  );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::dot set stream" );
+
+    ValueType res = CUBLASWrapper<ValueType>::dot( handle, n , x_d,  incX , y_d, incY );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -505,7 +504,7 @@ ValueType CUDABLAS1::dot(
         SCAI_CHECK_CUDA_ERROR
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::dot set stream NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS1::dot set stream NULL" );
     return res;
 }
 

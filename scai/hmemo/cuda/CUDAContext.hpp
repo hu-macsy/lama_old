@@ -36,7 +36,7 @@
 
 // base classes
 #include <scai/hmemo/Context.hpp>
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 
 // local library
 #include <scai/common/Thread.hpp>
@@ -82,7 +82,7 @@ class COMMON_DLL_IMPORTEXPORT CUDAContext:
     public Context, 
     public Context::Register<CUDAContext>,
     public common::enable_shared_from_this<CUDAContext>,
-    public common::CUDADevice
+    public common::CUDACtx
 {
 
 public:
@@ -144,6 +144,8 @@ public:
 
     static ContextPtr create( int deviceNr );
 
+    using common::CUDACtx::getcuBLASHandle;
+
 protected:
 
     /**
@@ -171,9 +173,7 @@ private:
 
     common::Thread::Id mOwnerThread;
 
-    static int currentDeviceNr; //!< number of device currently set for CUDA
-
-    static int numUsedDevices; //!< total number of used devices
+    // static int numUsedDevices; //!< total number of used devices
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

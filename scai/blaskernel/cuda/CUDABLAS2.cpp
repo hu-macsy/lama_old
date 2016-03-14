@@ -46,7 +46,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/common/mepr/Container.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 
 using namespace scai::tasking;
 
@@ -54,8 +54,6 @@ namespace scai
 {
 
 using common::TypeTraits;
-
-extern cublasHandle_t CUDAContext_cublasHandle;
 
 namespace blaskernel
 {
@@ -83,11 +81,10 @@ void CUDABLAS2::gemv(
     ValueType* const y,
     const IndexType incy )
 {
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 	typedef CUBLASTrait::BLASTrans BLASTrans;
 
-	BLASIndexType order_m = m;
-	BLASIndexType order_n = n;
+	IndexType order_m = m;
+	IndexType order_n = n;
 //    char trans_char = ' ';
 	BLASTrans trans_char;
 
@@ -129,13 +126,15 @@ void CUDABLAS2::gemv(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
+
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ),
                       "CUDABLAS2::gemv set cublas kernel stream = " << stream );
 
     SCAI_LOG_INFO( logger,
                    "gemv<" << TypeTraits<ValueType>::id() << "> with cuBLAS: m = " << order_m << " x " << order_n )
 
-    CUBLASWrapper<ValueType>::gemv( trans_char,  order_m ,  order_n , alpha, A,  static_cast<BLASIndexType>(lda), x,  static_cast<BLASIndexType>(incx) , beta, y,  static_cast<BLASIndexType>(incy) );
+    CUBLASWrapper<ValueType>::gemv( handle, trans_char,  order_m ,  order_n , alpha, A,  lda, x, incx , beta, y, incy );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -144,7 +143,7 @@ void CUDABLAS2::gemv(
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS2::gemv set stream NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS2::gemv set stream NULL" );
 }
 
 /* --------------------------------------------------------------------------- */

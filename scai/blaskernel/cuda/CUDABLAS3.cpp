@@ -44,6 +44,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/mepr/Container.hpp>
@@ -53,8 +54,6 @@ namespace scai
 
 using namespace tasking;
 using common::TypeTraits;
-
-extern cublasHandle_t CUDAContext_cublasHandle;
 
 /* ---------------------------------------------------------------------------------------*/
 namespace blaskernel
@@ -82,7 +81,6 @@ void CUDABLAS3::gemm(
     ValueType* const C,
     const IndexType ldc )
 {
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 	typedef CUBLASTrait::BLASTrans BLASTrans;
 
 	BLASTrans transA_char = CUBLAS_OP_N;
@@ -90,10 +88,10 @@ void CUDABLAS3::gemm(
 
     //Swap matrix if RowMajor Order
 
-    const BLASIndexType lda_call = ( order == CblasRowMajor ) ? ldb : lda;
-    const BLASIndexType ldb_call = ( order == CblasRowMajor ) ? lda : ldb;
-    const BLASIndexType m_call = ( order == CblasRowMajor ) ? n : m;
-    const BLASIndexType n_call = ( order == CblasRowMajor ) ? m : n;
+    const IndexType lda_call = ( order == CblasRowMajor ) ? ldb : lda;
+    const IndexType ldb_call = ( order == CblasRowMajor ) ? lda : ldb;
+    const IndexType m_call = ( order == CblasRowMajor ) ? n : m;
+    const IndexType n_call = ( order == CblasRowMajor ) ? m : n;
     const ValueType* const A_call = ( order == CblasRowMajor ) ? B : A;
     const ValueType* const B_call = ( order == CblasRowMajor ) ? A : B;
 
@@ -138,12 +136,14 @@ void CUDABLAS3::gemm(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
+
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ),
                       "CUDABLAS3::gemm set cublas kernel stream = " << stream );
 
     SCAI_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
 
-    CUBLASWrapper<ValueType>::gemm( transA_char, transB_char,  m_call ,  n_call ,  k , alpha, A_call,  lda_call , B_call,  ldb_call , beta, C,
+    CUBLASWrapper<ValueType>::gemm( handle, transA_char, transB_char,  m_call ,  n_call ,  k , alpha, A_call,  lda_call , B_call,  ldb_call , beta, C,
     		ldc );
 
     // No error check here possible as kernel is started asynchronously in any case
@@ -153,7 +153,7 @@ void CUDABLAS3::gemm(
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS3::gemm set stream to NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS3::gemm set stream to NULL" );
 }
 
 /** trsm */
