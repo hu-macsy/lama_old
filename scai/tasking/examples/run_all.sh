@@ -34,7 +34,8 @@ i=0
 
 # run examples
 RUN 1 BenchTasking.exe
-RUN 1 ThreadPoolTest.exe
+RUN 1 DemoThreadPool.exe
+RUN 1 DemoTask.exe
 RUN 1 Token.exe
 
 

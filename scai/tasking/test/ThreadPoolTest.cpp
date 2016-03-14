@@ -30,6 +30,8 @@
  * @date 13.07.2015
  */
 
+#include <boost/test/unit_test.hpp>
+
 #include <scai/tracing.hpp>
 #include <scai/tasking/ThreadPool.hpp>
 
@@ -38,8 +40,6 @@
 
 using namespace scai::common;
 using namespace scai::tasking;
-
-SCAI_LOG_DEF_LOGGER( logger, "Test.ThreadPoolTest" )
 
 /** Maximal number of threads in the pool. */
 
@@ -55,13 +55,10 @@ static const int WORKLOAD = 1000000;
 
 /* ----------------------------------------------------------------------- */
 
-void work( const int in, int& out )
+static void work( const int in, int& out )
 {
     out = in;
     int factor = in % 4 + 1;
-    std::ostringstream regionName;
-    regionName << "work_" << factor;
-    SCAI_REGION( regionName.str().c_str() )
 
     // just do some stupid work, workload depends on in
 
@@ -84,10 +81,17 @@ void work( const int in, int& out )
 
 /* --------------------------------------------------------------------- */
 
-void runTest()
+BOOST_AUTO_TEST_SUITE( ThreadPoolTest )
+
+/* --------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.ThreadPoolTest" )
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( runTest )
 {
     SCAI_LOG_INFO( logger, "runTest" );
-    SCAI_REGION( "runTest" )
     int thread_sizes[] = POOL_SIZES;
     int thread_configs = sizeof( thread_sizes ) / sizeof( int );
     int task_sizes[] = TASK_SIZES;
@@ -99,8 +103,6 @@ void runTest()
 
         for ( int j = 0; j < thread_configs; ++j )
         {
-            SCAI_REGION_N( "PoolRun", thread_sizes[j] * 100 + ntasks )
-
             std::vector<int> x ( ntasks );
 
             {
@@ -119,7 +121,7 @@ void runTest()
 
             for ( int i = 0; i < ntasks; i++ )
             {
-                // BOOST_CHECK_EQUAL( i, x[i] );
+                BOOST_CHECK_EQUAL( i, x[i] );
             }
         }
     }
@@ -127,10 +129,9 @@ void runTest()
 
 /* --------------------------------------------------------------------- */
 
-void waitTest()
+BOOST_AUTO_TEST_CASE( waitTest )
 {
     SCAI_LOG_INFO( logger, "waitTest" );
-    SCAI_REGION( "waitTest" )
     int thread_sizes[] = POOL_SIZES;
     int thread_configs = sizeof( thread_sizes ) / sizeof( int );
     int task_sizes[] = TASK_SIZES;
@@ -142,9 +143,8 @@ void waitTest()
 
         for ( int j = 0; j < thread_configs; ++j )
         {
-            SCAI_REGION_N( "PoolWait", thread_sizes[j] * 100 + ntasks )
             std::vector<int> x( ntasks );  // array with result for each task
-            std::vector<shared_ptr<ThreadTask> > tasks( ntasks );
+            std::vector<shared_ptr<ThreadPoolTask> > tasks( ntasks );
             ThreadPool pool( thread_sizes[j] );
 
             for ( int i = 0; i < ntasks; i++ )
@@ -156,7 +156,7 @@ void waitTest()
             for ( int i = 0; i < ntasks; i++ )
             {
                 pool.wait( tasks[i] );
-                // BOOST_CHECK_EQUAL( i, x[i] );
+                BOOST_CHECK_EQUAL( i, x[i] );
             }
         }
     }
@@ -164,11 +164,10 @@ void waitTest()
 
 /* --------------------------------------------------------------------- */
 
-void singleTest()
+BOOST_AUTO_TEST_CASE( singleTest )
 {
     SCAI_LOG_THREAD( "main:singleTest" )
 
-    SCAI_REGION( "singleTest" )
     SCAI_LOG_INFO( logger, "singleTest" );
     // Extensive test of a thread pool with one thread
     // Should verify that master never misses a notify at wait
@@ -182,22 +181,17 @@ void singleTest()
         int resultThread;
         int resultMaster;
 
-        shared_ptr<ThreadTask> task = pool.schedule( bind( &work, i, ref( resultThread ) ) );
+        shared_ptr<ThreadPoolTask> task = pool.schedule( bind( &work, i, ref( resultThread ) ) );
 
         // Master thread does something and then waits
         rnd = ( rnd + 19 ) % 17;
         work( i + rnd, ref( resultMaster ) );
-        // BOOST_CHECK_EQUAL( i + rnd, resultMaster );
+        BOOST_CHECK_EQUAL( i + rnd, resultMaster );
         pool.wait( task );
-        // BOOST_CHECK_EQUAL( i, resultThread );
+        BOOST_CHECK_EQUAL( i, resultThread );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-int main()
-{
-    singleTest();
-    runTest();
-    waitTest();
-}
+BOOST_AUTO_TEST_SUITE_END();

@@ -31,50 +31,44 @@
  */
 
 // hpp
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 
-// local library
-#include <scai/hmemo/cuda/CUDAContext.hpp>
-#include <scai/hmemo/ContextAccess.hpp>
+#include <scai/tasking/cuda/CUDAStreamPool.hpp>
 
 // internal scai libraries
+
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
 namespace scai
 {
 
+using common::CUDADevice;
+using common::CUDAAccess;
+
 namespace tasking
 {
 
-CUDAStreamSyncToken::CUDAStreamSyncToken( hmemo::CUDAContextPtr cudaContext, CUstream stream ) : 
-
-    mCUDAContext( cudaContext ), 
-    mStream( stream ), 
-    mEvent( 0 )
-
+CUDAStreamSyncToken::CUDAStreamSyncToken( const CUDADevice& cuda, const StreamType type ) : mCUDA( cuda )
 {
-    SCAI_LOG_DEBUG( logger, "StreamSyncToken for " << *cudaContext << " generated, stream = " << stream )
-}
+    // take a CUDA stream from a pool, that might be allocated at first use
 
-CUDAStreamSyncToken::CUDAStreamSyncToken( hmemo::CUDAContextPtr cudaContext, CUstream stream, CUevent event ) : 
-
-    mCUDAContext( cudaContext ), 
-    mStream( stream ), 
-    mEvent( event )
-{
-    SCAI_LOG_DEBUG( logger,
-                    "StreamSyncToken for " << *cudaContext << " generated" << ", event = " << event << ", stream = " << stream )
+    mStream = CUDAStreamPool::getPool( mCUDA ).reserveStream( type );
+    mEvent = 0;
+    SCAI_LOG_DEBUG( logger, "StreamSyncToken for " << mCUDA.getDeviceNr() << " generated, stream = " << mStream )
 }
 
 CUDAStreamSyncToken::~CUDAStreamSyncToken()
 {
     wait();
+
+    CUDAStreamPool::getPool( mCUDA ).releaseStream( mStream );
 }
 
 void CUDAStreamSyncToken::wait()
 {
-    if( isSynchronized() )
+    if ( isSynchronized() )
     {
         return;
     }
@@ -82,11 +76,9 @@ void CUDAStreamSyncToken::wait()
     SCAI_LOG_DEBUG( logger, "wait on CUDA stream synchronization" )
 
     {
-        // SCAI_REGION( "CUDA.streamSynchronize" )
+        common::CUDAAccess tmpAccess( mCUDA );
 
-        SCAI_CONTEXT_ACCESS( mCUDAContext )
-
-        if( mEvent != 0 )
+        if ( mEvent != 0 )
         {
             SCAI_CUDA_DRV_CALL( cuEventSynchronize( mEvent ), "cuEventSynchronize( " << mEvent << " ) failed." )
             SCAI_CUDA_DRV_CALL( cuEventDestroy( mEvent ), "cuEventDestroy( " << mEvent << " ) failed." );
@@ -95,11 +87,11 @@ void CUDAStreamSyncToken::wait()
         else
         {
             SCAI_LOG_DEBUG( logger, "synchronize with stream " << mStream );
-            SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mStream ), "cuStreamSynchronize( " << mStream <<" ) failed." );
+            SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mStream ), "cuStreamSynchronize( " << mStream << " ) failed." );
             SCAI_LOG_DEBUG( logger, "synchronized with stream " << mStream );
         }
 
-        // // finally called functions might also need the context, e.g. unbindTexture
+        // finally called functions might also need the context, e.g. unbindTexture
 
         setSynchronized();
     }
@@ -107,7 +99,7 @@ void CUDAStreamSyncToken::wait()
 
 bool CUDAStreamSyncToken::probe() const
 {
-    if( isSynchronized() )
+    if ( isSynchronized() )
     {
         return true;
     }
@@ -117,18 +109,18 @@ bool CUDAStreamSyncToken::probe() const
 
 cudaStream_t CUDAStreamSyncToken::getCUDAStream() const
 {
-    return (cudaStream_t) mStream;
+    return ( cudaStream_t ) mStream;
 }
 
 bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 {
     SCAI_ASSERT( stopEvent != 0, "probe on invalid event" )
 
-    SCAI_CONTEXT_ACCESS( mCUDAContext )
+    common::CUDAAccess tmpAccess ( mCUDA );
 
     CUresult result = cuEventQuery( stopEvent );
 
-    if( result != CUDA_SUCCESS && result != CUDA_ERROR_NOT_READY )
+    if ( result != CUDA_SUCCESS && result != CUDA_ERROR_NOT_READY )
     {
         SCAI_CUDA_DRV_CALL( result, "cuEventQuery failed for CUevent " << stopEvent << '.' );
     }
@@ -138,13 +130,13 @@ bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 
 bool CUDAStreamSyncToken::queryEvent( const CUevent event ) const
 {
-    SCAI_CONTEXT_ACCESS( mCUDAContext )
+    common::CUDAAccess cudaAccess ( mCUDA );
 
     CUresult result = cuEventQuery( event );
 
-    if( result != CUDA_SUCCESS || result != CUDA_ERROR_NOT_READY )
+    if ( result != CUDA_SUCCESS || result != CUDA_ERROR_NOT_READY )
     {
-        SCAI_CUDA_DRV_CALL( result, "cuEventQuery failed for CUevent "<<event<<'.' );
+        SCAI_CUDA_DRV_CALL( result, "cuEventQuery failed for CUevent " << event << '.' );
     }
 
     return result == CUDA_SUCCESS;
@@ -152,14 +144,15 @@ bool CUDAStreamSyncToken::queryEvent( const CUevent event ) const
 
 void CUDAStreamSyncToken::synchronizeEvent( const CUevent event ) const
 {
-    SCAI_CONTEXT_ACCESS( mCUDAContext )
-    SCAI_CUDA_DRV_CALL( cuEventSynchronize( event ), "cuEventSynchronize failed for CUevent "<<event<<'.' )
+    common::CUDAAccess cudaAccess ( mCUDA );
+
+    SCAI_CUDA_DRV_CALL( cuEventSynchronize( event ), "cuEventSynchronize failed for CUevent " << event << '.' )
 }
 
 CUDAStreamSyncToken* CUDAStreamSyncToken::getCurrentSyncToken()
 {
     SyncToken* syncToken = SyncToken::getCurrentSyncToken();
-   
+
     if ( syncToken == NULL )
     {
         return NULL;
@@ -179,8 +172,8 @@ CUDAStreamSyncToken* CUDAStreamSyncToken::getCurrentSyncToken()
     // But might not be too serious so probably NULL results in synchronous execution
 
     return cudaStreamSyncToken;
-}   
+}
 
-} /* end namespace hmemo */
+} /* end namespace tasking */
 
 } /* end namespace scai */

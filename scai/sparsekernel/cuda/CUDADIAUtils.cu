@@ -39,7 +39,7 @@
 
 
 // internal scai library
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
@@ -58,7 +58,6 @@
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 
-using namespace scai::hmemo;
 using namespace scai::tasking;
 
 namespace scai

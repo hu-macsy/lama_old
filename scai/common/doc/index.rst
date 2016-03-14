@@ -78,3 +78,15 @@ OpenMP                  Dummy routines if OpenMP is disabled
    SmartPointers
    Function
    OpenMP
+
+***********************
+Common Classes for CUDA
+***********************
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 2
+
+   CUDAError
+   CUDADevice
+   CUDAAccess

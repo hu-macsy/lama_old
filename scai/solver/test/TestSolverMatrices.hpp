@@ -35,8 +35,9 @@
 #include <memory>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
-#include <scai/common/unique_ptr.hpp>
 
+#include <scai/common/unique_ptr.hpp>
+#include <scai/common/TypeTraits.hpp>
 /**
  * @brief The class TestSolverMatrices provides test matrices that
  *        are needed by the solver tests.
@@ -82,6 +83,24 @@ public:
     template<typename ValueType>
     static scai::lama::CSRSparseMatrix<ValueType> symmNotPosDefMatrix();
 
+    /**
+     * @brief Creates a sparse undsymmetric and positive definite matrix in CSR format.
+     *
+     *
+     * This matrix is a unsymmetric and postive definite matrix. Since positive-
+     * definiteness is defined on symmetric square matrices we say a n-dim square
+     * matrix A is postive definite if x^t * A * x > 0 for all n-dim vectors x, x!=0,
+     * where x^t denotes the transposition of the vector x. It is the system matrix of a
+     * P1FEM discretatization of a stationary diffusion convection equation on the unit 
+     * square.   
+     * It can be used to test convergence for the following methods: splitting methods
+     * Doesn't work for: krylow methods
+     *
+     *  @param[out] matrix in CSR format
+     */
+    template<typename ValueType>
+    static scai::lama::CSRSparseMatrix<ValueType> notSymmPosDefMatrix();
+
     /** 
      * @brief Creates a sparse, NOT symmetric and NOT positive-definite matrix in CSR format.
      *
@@ -122,6 +141,20 @@ public:
     template<typename ValueType>
     static scai::lama::CSRSparseMatrix<ValueType> hilbertMatrix(const IndexType dim);
 
+    /**
+     * @ Creates a complex valued matrix in CSR format.
+     * 
+     * This matrix is complex, sparse, symmetric, not hermitian and indefinite. It is
+     * the system matrix of the P1FEM discretization of some helmholtz equation on the 
+     * unit square equipped with some obstacles.
+     * It can be used to test convergence of some krylow methods which don't assume a
+     * hermitian matrix like: GMRES (complex not supported yet), BiCG, BiCGstab
+     * 
+     * 
+     *  @param[out] matrix in CSR format
+     */
+    template<typename ValueType>
+    static scai::lama::CSRSparseMatrix<ValueType> complexSymmNotHermitIndefMatrix();
 };
 
 template<typename ValueType>
@@ -140,6 +173,16 @@ scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::symmNotPosDefMatrix()
 {
     std::string prefix = scai::test::Configuration::getPath();
     std::string inputFile = prefix + "/bfwb398.mtx";
+
+    scai::lama::CSRSparseMatrix<double> matrix(inputFile);
+    return matrix;
+}
+
+template<typename ValueType>
+scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::notSymmPosDefMatrix()
+{
+    std::string prefix = scai::test::Configuration::getPath();
+    std::string inputFile = prefix + "/p1femdiffusionconvection.mtx";
 
     scai::lama::CSRSparseMatrix<double> matrix(inputFile);
     return matrix;
@@ -170,5 +213,34 @@ scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::hilbertMatrix(const I
 
     scai::lama::CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData(dim,dim,values);
+    return matrix;
+}
+
+
+template<typename ValueType>
+scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::complexSymmNotHermitIndefMatrix()
+{
+    bool isComplex;
+    switch ( scai::common::TypeTraits<ValueType>::stype )
+    {
+        case scai::common::scalar::DOUBLE_COMPLEX:
+        case scai::common::scalar::COMPLEX:
+        case scai::common::scalar::LONG_DOUBLE_COMPLEX :
+
+            isComplex = true;
+            break;
+
+        default:
+            isComplex = false;
+    }
+
+        if ( isComplex == false )
+    {
+        COMMON_THROWEXCEPTION( "ValueType is not complex")
+    }
+
+    std::string prefix = scai::test::Configuration::getPath();
+    std::string inputFile = prefix + "/p1femhelmholtz.mtx";
+    scai::lama::CSRSparseMatrix<double> matrix(inputFile);
     return matrix;
 }

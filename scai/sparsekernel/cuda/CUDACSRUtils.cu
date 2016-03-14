@@ -45,7 +45,7 @@
 #include <scai/hmemo/Memory.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/tracing.hpp>
 

@@ -39,7 +39,7 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/lama/norm/MaxNorm.hpp>
+#include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 
@@ -154,7 +154,7 @@ void CGS::iterate(){
 
     const Scalar& eps = runtime.mEps;
     Scalar& normRes = runtime.mNormRes;
-	lama::MaxNorm norm;
+	lama::L2Norm norm;
 
 
 

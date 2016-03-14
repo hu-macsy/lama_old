@@ -39,7 +39,7 @@
 #include <scai/blaskernel/cuda/CUBLASWrapper.hpp>
 
 // internal scai library
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 
@@ -48,12 +48,10 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/mepr/Container.hpp>
 
-using namespace scai::tasking;
-using namespace scai::hmemo;
-
 namespace scai
 {
 
+using namespace tasking;
 using common::TypeTraits;
 
 extern cublasHandle_t CUDAContext_cublasHandle;

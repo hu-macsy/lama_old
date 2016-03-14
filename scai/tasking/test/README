@@ -1,0 +1,13 @@
+README for tasking/test
+=====================
+
+Executable: taskingTest
+
+Run it:
+
+    taskingTest 
+
+The following functionalities are tested:
+
+ - ThreadPoolTest  -> tests a pool of threads
+

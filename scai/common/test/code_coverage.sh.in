@@ -52,13 +52,27 @@ cd ..
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
-# Running tests serial
+# Running common tests
 echo "Running serial tests"
-./CommonTest >/dev/null
+./commonTest >/dev/null
 if [ $? -ne 0 ]
 then
-	echo "ERROR in CommonTest"
+	echo "ERROR in commonTest"
 	error_count=$(($error_count + $?))
+fi
+
+if [ -d cuda ];
+then
+    #Running common CUDA tests
+    cd cuda
+    echo "Running common CUDA tests"
+    ./commonCUDATest >/dev/null
+    if [ $? -ne 0 ]
+    then
+        echo "ERROR in commonCudaTest"
+        error_count=$(($error_count + $?))
+    fi
+    cd ..
 fi
 
 cd ${dirname}

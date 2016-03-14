@@ -32,6 +32,8 @@ Contents
    :maxdepth: 2
    
    SyncToken
-   TaskSyncToken
    ThreadPool
-
+   Task
+   TaskSyncToken
+   CUDAStreamPool
+   CUDAStreamSyncToken

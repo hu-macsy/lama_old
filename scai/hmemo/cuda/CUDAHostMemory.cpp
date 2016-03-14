@@ -36,11 +36,13 @@
 #include <scai/hmemo/cuda/CUDAHostMemory.hpp>
 
 // local library
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/hmemo/ContextAccess.hpp>
 
 // internal scai libraries
+
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
+
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/macros/assert.hpp>

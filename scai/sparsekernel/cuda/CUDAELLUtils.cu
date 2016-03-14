@@ -39,7 +39,7 @@
 
 // internal scai library
 #include <scai/utilskernel/cuda/CUDAUtils.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
@@ -74,8 +74,6 @@
 
 // boost
 
-using namespace scai::hmemo;
-
 namespace scai
 {
 
@@ -83,7 +81,6 @@ using common::TypeTraits;
 using common::CUDASettings;
 using tasking::CUDAStreamSyncToken;
 using utilskernel::CUDAUtils;
-
 
 namespace sparsekernel
 {

@@ -37,7 +37,7 @@
 
 #include <scai/tasking/Task.hpp>
 
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/hmemo/cuda/CUDAContext.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>

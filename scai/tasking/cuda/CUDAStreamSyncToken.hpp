@@ -35,13 +35,11 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// base classes
-#include <scai/tasking/SyncToken.hpp>
+// used classes
 
-// internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
-
-#include <scai/common/shared_ptr.hpp>
+#include <scai/tasking/cuda/CUDAStreamPool.hpp>
+#include <scai/common/cuda/CUDADevice.hpp>
 
 // CUDA
 #include <cuda.h>
@@ -54,19 +52,12 @@
 namespace scai
 {
 
-namespace hmemo
-{
-    class CUDAContext;
-
-    typedef common::shared_ptr<const CUDAContext> CUDAContextPtr;
-}
-
 namespace tasking
 {
 
 /** Class that sycnchronizes with a CUDA stream. */
 
-class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public SyncToken
+class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public SyncToken, public streamtype
 
 {
 public:
@@ -79,9 +70,7 @@ public:
      *  A pointer to the CUDA context is required to enable/disable it.
      */
 
-    CUDAStreamSyncToken( hmemo::CUDAContextPtr context, CUstream stream );
-
-    CUDAStreamSyncToken( hmemo::CUDAContextPtr context, CUstream stream, CUevent event );
+    CUDAStreamSyncToken( const common::CUDADevice& cuda, const StreamType type );
 
     void setEvent( CUevent event )
     {
@@ -116,9 +105,9 @@ public:
 
 private:
 
-    hmemo::CUDAContextPtr mCUDAContext; // needed for synchronization
+    const common::CUDADevice& mCUDA;   // needed for synchronization
 
-    const CUstream mStream;
+    CUstream mStream;
 
     CUevent mEvent;
 };

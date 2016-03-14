@@ -54,6 +54,8 @@
 
 #include <scai/dmemo/BlockDistribution.hpp>
 
+#include <scai/solver/logger/CommonLogger.hpp>
+
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -61,73 +63,32 @@ using namespace scai::dmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
-#define LAMA_TO_TEXT( t ) #t
-
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE( InverseSolverTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.InverseSolverTest" )
 
-/* --------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
-template<typename MatrixType>
-void testSolveMethod( ContextPtr context )
+BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    typedef typename MatrixType::MatrixValueType ValueType;
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
-    EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
+    InverseSolver InverseSolverSolver( "InverseSolverSolver", slogger );
+    BOOST_CHECK_EQUAL( InverseSolverSolver.getId(), "InverseSolverSolver" );
 
-    MatrixType coefficients( system.coefficients );
-    coefficients.setContextPtr( context );
+    InverseSolver InverseSolverSolver2( "InverseSolverSolver2" );
+    BOOST_CHECK_EQUAL( InverseSolverSolver2.getId(), "InverseSolverSolver2" );
 
-    DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
-    coefficients.redistribute( dist, dist );
-
-    DenseVector<ValueType> solution( system.coefficients.getNumRows(), 0.0 );
-    solution.setContextPtr( context );
-    solution.redistribute( coefficients.getColDistributionPtr() );
-
-    DenseVector<ValueType> reference( system.solution );
-    reference.setContextPtr( context );
-    reference.redistribute( coefficients.getColDistributionPtr() );
-
-    SCAI_LOG_INFO( logger, "InverseSolverTest uses context = " << context->getType() );
-    DenseVector<ValueType> rhs( system.rhs );
-    rhs.setContextPtr( context );
-    rhs.redistribute( coefficients.getRowDistributionPtr() );
-
-    InverseSolver inverseSolver( "InverseSolverTest solver" );
-    inverseSolver.initialize( coefficients );
-    inverseSolver.solve( solution, rhs );
-
-    DenseVector<ValueType> diff( reference - solution );
-    diff.setContextPtr( context );
-    diff.redistribute( coefficients.getColDistributionPtr() );
-
-    Scalar maxDiff = maxNorm( diff );
-    BOOST_CHECK( maxDiff.getValue<ValueType>() < 1E-6 );
+    InverseSolver InverseSolverSolver3( InverseSolverSolver2 );
+    BOOST_CHECK_EQUAL( InverseSolverSolver3.getId(), "InverseSolverSolver2" );
 }
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest, ValueType, test_types )
-{
-    ContextPtr context = Context::getContextPtr();
-    testSolveMethod< DenseMatrix<ValueType> >( context );
-    testSolveMethod< CSRSparseMatrix<ValueType> >( context );
-    testSolveMethod< ELLSparseMatrix<ValueType> >( context );
-    testSolveMethod< JDSSparseMatrix<ValueType> >( context );
-    testSolveMethod< COOSparseMatrix<ValueType> >( context );
-    //TODO: DIA crashs
-    //testSolveMethod< DIASparseMatrix<ValueType> >( context );
-}
-
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, test_types )
 {
-    EquationHelper::EquationSystem<ValueType> system =
-        EquationHelper::get4x4SystemA<ValueType>();
+    EquationHelper::EquationSystem<ValueType> system = EquationHelper::get4x4SystemA<ValueType>();
     const IndexType n = 4;
     DenseVector<ValueType> solution( n, 1.0 );
     DenseVector<ValueType> solution2( n, 1.0 );
@@ -158,22 +119,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, test_types )
     }
 }
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( writeAtTest )
-{
-    InverseSolver inverseSolver( "InverseSolverTest solver" );
-    LAMA_WRITEAT_TEST( inverseSolver );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( copyTest )
-{
-    InverseSolver inverseSolver1( "InverseSolver" );
-    SolverPtr solverptr = inverseSolver1.copy();
-    BOOST_CHECK_EQUAL( solverptr->getId(), "InverseSolver" );
-}
-/* ------------------------------------------------------------------------- */
+// ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END();

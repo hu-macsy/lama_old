@@ -36,6 +36,7 @@
 
 // base classes
 #include <scai/hmemo/Context.hpp>
+#include <scai/common/cuda/CUDADevice.hpp>
 
 // local library
 #include <scai/common/Thread.hpp>
@@ -80,7 +81,8 @@ class COMMON_DLL_IMPORTEXPORT CUDAContext:
 
     public Context, 
     public Context::Register<CUDAContext>,
-    public common::enable_shared_from_this<CUDAContext>
+    public common::enable_shared_from_this<CUDAContext>,
+    public common::CUDADevice
 {
 
 public:
@@ -102,11 +104,6 @@ public:
      *  @brief Implementation of Context::getLocalMemory for this class.
      */
     virtual MemoryPtr getLocalMemoryPtr() const;
-
-    int getDeviceNr() const
-    {
-        return mDeviceNr;
-    }
 
     /** 
      *  @brief Implementation of Context::canUseMemory for this class. 
@@ -136,13 +133,6 @@ public:
 
     virtual tasking::SyncToken* getSyncToken() const;
 
-    // Using this context might require accessing the context
-
-    CUcontext getCUcontext() const
-    {
-        return mCUcontext;
-    }
-
     /** This routine is required for Register in Context Factory. */
 
     static common::context::ContextType createValue() 
@@ -166,24 +156,16 @@ protected:
      * the environment variable SCAI_DEVICE. If this variabe is not set,
      * it will take device 0 as default.
      */
+
     CUDAContext( int device );
 
 private:
 
-    CUcontext mCUcontext; //!< data structure for context
-
     mutable common::weak_ptr<class Memory> mMemory;     //!< memory management for this devie
     mutable common::weak_ptr<class Memory> mHostMemory; //!< preferred host memory
 
-    int mDeviceNr; //!< number of device for this context
-
-    CUdevice mCUdevice; //!< data structure for device
-
-    CUstream mTransferStream; //!< stream for memory transfers
-    CUstream mComputeStream; //!< stream for asynchronous computations
-
-//    cublasHandle_t   mCublasHandle;   //!< handle to cublas library
-//    cusparseHandle_t mCusparseHandle; //!< handle to cusparse library
+    //    cublasHandle_t   mCublasHandle;   //!< handle to cublas library
+    //    cusparseHandle_t mCusparseHandle; //!< handle to cusparse library
 
     std::string mDeviceName; //!< name set during initialization
 

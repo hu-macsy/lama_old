@@ -63,7 +63,7 @@ typedef unsigned int TaskId;
  *  shared pointer so that ownership never matters.
  */
 
-struct COMMON_DLL_IMPORTEXPORT ThreadTask
+struct COMMON_DLL_IMPORTEXPORT ThreadPoolTask
 {
     enum TaskState
     {
@@ -85,14 +85,14 @@ struct COMMON_DLL_IMPORTEXPORT ThreadTask
 
     /** Create a new task as a shared pointer */
 
-    static common::shared_ptr<ThreadTask> create(
+    static common::shared_ptr<ThreadPoolTask> create(
         common::function<void()> work,
         unsigned int taskId,
         int numOmpThreads = 0 );
 };
 
 /** Class that defines a pool of threads that will execute scheduled tasks
- (see ThreadTask).
+ (see ThreadPoolTask).
 
  The main advantage of this class is that creation of running threads is
  only done once. Non-busy threads will wait on notification for new tasks.
@@ -118,11 +118,16 @@ public:
      *  @return shared pointer for the task
      */
 
-    common::shared_ptr<ThreadTask> schedule( common::function<void()> work, int numOmpThreads = 0 );
+    int size() const
+    {
+        return mMaxSize;
+    }
+
+    common::shared_ptr<ThreadPoolTask> schedule( common::function<void()> work, int numOmpThreads = 0 );
 
     /** Wait on completion of a task. */
 
-    void wait( common::shared_ptr<ThreadTask> task );
+    void wait( common::shared_ptr<ThreadPoolTask> task );
 
     /** Wait on completion of all scheduled tasks */
 
@@ -157,7 +162,7 @@ private:
     common::scoped_array<common::Thread> mThreads;    // worker threads of this pool
     common::scoped_array<ThreadData> mThreadArgs;     // arguments for each worker thread
 
-    std::queue<common::shared_ptr<ThreadTask> > mTaskQueue;
+    std::queue<common::shared_ptr<ThreadPoolTask> > mTaskQueue;
 
     common::Thread::Condition mNotifyFinished;// notify about finished tasks
     common::Thread::Condition mNotifyTask;// notify about new task

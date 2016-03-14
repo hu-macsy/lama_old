@@ -32,12 +32,16 @@
 
 # ThreadTest example
 
-foreach    ( executable ThreadPoolTest BenchTasking Token )
+foreach    ( executable DemoThreadPool DemoTask BenchTasking Token )
    add_executable( ${executable}.exe ${executable}.cpp )
    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
+
+if    ( CUDA_FOUND AND USE_CUDA )
+    add_subdirectory ( cuda )
+endif ( CUDA_FOUND AND USE_CUDA )
 
 # copy run_all.sh
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )

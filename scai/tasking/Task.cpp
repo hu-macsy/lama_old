@@ -36,6 +36,7 @@
 // internal scai libraries
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/Settings.hpp>
 
 // std
 #include <limits>
@@ -54,9 +55,13 @@ common::shared_ptr<ThreadPool> Task::theThreadPool;
 
 ThreadPool& Task::getThreadPool()
 {
+    int poolSize = 1;
+
+    common::Settings::getEnvironment( poolSize, "SCAI_THREADPOOL_SIZE" );
+
     if ( !theThreadPool )
     {
-        theThreadPool.reset( new ThreadPool( 1 ) );
+        theThreadPool.reset( new ThreadPool( poolSize ) );
     }
 
     return *theThreadPool;
@@ -112,7 +117,7 @@ void Task::synchronize()
 
 bool Task::probe() const
 {
-    return ThreadTask::FINISHED == mTask->mState;
+    return ThreadPoolTask::FINISHED == mTask->mState;
 }
 
 /* ------------------------------------------------------------------------- */

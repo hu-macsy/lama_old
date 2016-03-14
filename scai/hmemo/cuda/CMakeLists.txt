@@ -39,7 +39,6 @@ scai_project(
        CUDAContext 
        CUDAMemory 
        CUDAHostMemory 
-       CUDAStreamSyncToken 
 
    ADD_PARENT_SCOPE
 )

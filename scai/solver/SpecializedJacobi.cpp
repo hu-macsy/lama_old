@@ -141,17 +141,6 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
     }
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
 }
-void SpecializedJacobi::solve( Vector& solution, const Vector& rhs )
-{
-    if( getConstRuntime().mSolveInit )
-    {
-        SCAI_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overriden!" )
-    }
-
-    solveInit( solution, rhs );
-    solveImpl();
-    solveFinalize();
-}
 
 void SpecializedJacobi::solveInit( Vector& solution, const Vector& rhs )
 {

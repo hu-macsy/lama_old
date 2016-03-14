@@ -56,12 +56,12 @@ SCAI_LOG_DEF_LOGGER( ThreadPool::logger, "ThreadPool" )
 
 /* ------------------------------------------------------------------------- */
 
-shared_ptr<ThreadTask> ThreadTask::create(
+shared_ptr<ThreadPoolTask> ThreadPoolTask::create(
     function<void()> work,
     unsigned int taskId,
     int numOmpThreads /* = 0 */ )
 {
-    shared_ptr<ThreadTask> task = shared_ptr<ThreadTask>( new ThreadTask() );
+    shared_ptr<ThreadPoolTask> task = shared_ptr<ThreadPoolTask>( new ThreadPoolTask() );
 
     task->mWork = work;
 
@@ -113,7 +113,7 @@ ThreadPool::ThreadPool( int size )
 
 /* ------------------------------------------------------------------------- */
 
-shared_ptr<ThreadTask> ThreadPool::schedule( function<void()> work, int numOmpThreads /* = 0 */ )
+shared_ptr<ThreadPoolTask> ThreadPool::schedule( function<void()> work, int numOmpThreads /* = 0 */ )
 {
     SCAI_REGION( "ThreadPool::schedule" )
     Thread::Id thisThread = Thread::getSelf();
@@ -128,13 +128,13 @@ shared_ptr<ThreadTask> ThreadPool::schedule( function<void()> work, int numOmpTh
         }
     }
 
-    shared_ptr<ThreadTask> task = ThreadTask::create( work, mTaskId++, numOmpThreads );
+    shared_ptr<ThreadPoolTask> task = ThreadPoolTask::create( work, mTaskId++, numOmpThreads );
 
     if ( isRecursiveTask )
     {
         SCAI_LOG_WARN( logger, "Executing recursive taks synchronously to avoid deadlocks." )
         work();
-        task->mState = ThreadTask::FINISHED;
+        task->mState = ThreadPoolTask::FINISHED;
         return task;
     }
 
@@ -142,7 +142,7 @@ shared_ptr<ThreadTask> ThreadPool::schedule( function<void()> work, int numOmpTh
 
     mTaskQueue.push( task );
     SCAI_LOG_DEBUG( logger, "Added task " << task->mTaskId << " to task queue" )
-    task->mState = ThreadTask::QUEUED;
+    task->mState = ThreadPoolTask::QUEUED;
 
     //  notifiy one waiting worker
 
@@ -153,7 +153,7 @@ shared_ptr<ThreadTask> ThreadPool::schedule( function<void()> work, int numOmpTh
 
 /* ------------------------------------------------------------------------- */
 
-void ThreadPool::wait( shared_ptr<ThreadTask> task )
+void ThreadPool::wait( shared_ptr<ThreadPoolTask> task )
 {
     if ( !task )
     {
@@ -162,11 +162,11 @@ void ThreadPool::wait( shared_ptr<ThreadTask> task )
 
     SCAI_LOG_DEBUG( logger, "wait on task id = " << task->mTaskId << ", state = " << task->mState )
 
-    while ( task->mState != ThreadTask::FINISHED )
+    while ( task->mState != ThreadPoolTask::FINISHED )
     {
         Thread::ScopedLock lock( mNotifyFinishMutex );
 
-        if ( task->mState != ThreadTask::FINISHED )
+        if ( task->mState != ThreadPoolTask::FINISHED )
         {
             // wait on signal for a finishing thread
             // Attention: do not output here, as worker thread might finish and notify before wait
@@ -195,7 +195,7 @@ void ThreadPool::worker( int id )
 
     while ( true )
     {
-        shared_ptr<ThreadTask> task;
+        shared_ptr<ThreadPoolTask> task;
 
         // pick up a new task if available
 
@@ -235,7 +235,7 @@ void ThreadPool::worker( int id )
             SCAI_LOG_DEBUG( logger,
                             "worker thread " << id << " runs task " << task->mTaskId << " with " << task->ompThreads << " OMP threads" )
 
-            task->mState = ThreadTask::RUNNING;
+            task->mState = ThreadPoolTask::RUNNING;
 
             if ( task->ompThreads != ompThreads )
             {
@@ -260,7 +260,7 @@ void ThreadPool::worker( int id )
 
             Thread::ScopedLock lock( mNotifyFinishMutex );
 
-            task->mState = ThreadTask::FINISHED;
+            task->mState = ThreadPoolTask::FINISHED;
 
             SCAI_LOG_DEBUG( logger, "worker thread " << id << " finished task " << task->mTaskId )
 
@@ -282,7 +282,7 @@ void ThreadPool::shutdown()
     SCAI_LOG_INFO( logger, "shut down " << mMaxSize << " threads, "
                    << mTaskQueue.size() << " tasks in queue" )
 
-    shared_ptr<ThreadTask> shutdownTask; // NULL pointer
+    shared_ptr<ThreadPoolTask> shutdownTask; // NULL pointer
 
     {
         // lock access to the task queue before adding shutdown tasks
