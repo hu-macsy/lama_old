@@ -13,7 +13,7 @@ using namespace common;
 
 /* --------------------------------------------------------------------- */
 
-float* myAllocate( const CUDADevice& device, float hostdata[], int N )
+float* myAllocate( const CUDADevice& device, const float h_data[], int N )
 {
     CUDAAccess access( device );
 
@@ -25,20 +25,20 @@ float* myAllocate( const CUDADevice& device, float hostdata[], int N )
     SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, sizeof( float ) * N ), "cuMemAlloc( size = " << size << " ) failed." )
 
     // transfer host data
-    SCAI_CUDA_DRV_CALL( cuMemcpyHtoD( pointer, hostdata, size ), "tranfer host->device" )
+    SCAI_CUDA_DRV_CALL( cuMemcpyHtoD( pointer, h_data, size ), "tranfer host->device" )
 
     return reinterpret_cast<float*>( pointer );
 }
 
 /* --------------------------------------------------------------------- */
 
-void myFree( const CUDADevice& device, const float* data )
+void myFree( const CUDADevice& device, const float* d_data )
 {
     CUDAAccess access( device );
 
-    CUdeviceptr pointer = reinterpret_cast<CUdeviceptr>( data );
+    CUdeviceptr pointer = reinterpret_cast<CUdeviceptr>( d_data );
 
-    SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << data << " ) failed" )
+    SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << d_data << " ) failed" )
 }
 
 /* --------------------------------------------------------------------- */
@@ -83,7 +83,23 @@ int main( int argc, const char** argv )
 
     float dot = myDot( device, d_a, d_b, n );
 
-    std::cout << "Result = " << dot << std::endl;
+    std::cout << "dot product a = [ " ;
+    for ( int i = 0; i < n ; ++i )
+    {
+        std::cout << a[i] << " ";
+    }
+    std::cout << "] x b = [ " ;
+    for ( int i = 0; i < n ; ++i )
+    {
+        std::cout << b[i] << " ";
+    }
+    std::cout << "]  = " << dot;
+    float r = 0;
+    for ( int i = 0; i < n ; ++i )
+    {
+        r += a[i] * b[i];
+    }
+    std::cout << ", should be " << r << std::endl;
 
     // free memory
 
