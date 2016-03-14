@@ -50,7 +50,6 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 using namespace scai::tasking;
 using scai::common::TypeTraits;

@@ -51,7 +51,6 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 // CUDA
 #include <cuda.h>

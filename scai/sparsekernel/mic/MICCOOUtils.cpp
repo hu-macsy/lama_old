@@ -48,7 +48,6 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 // std
 #include <cmath>
@@ -585,9 +584,6 @@ MICCOOUtils::RegisterGuard::RegisterGuard()
 MICCOOUtils::RegisterGuard::~RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
-    typedef common::mepr::ContainerV<RegistratorV, ARITHMETIC_MIC> ValueTypes;
-    typedef common::mepr::ContainerVO<RegistratorVO, ARITHMETIC_MIC> MoreValueTypes;
 
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );

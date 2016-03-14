@@ -42,7 +42,6 @@
 // internal scai library
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 namespace scai
 {

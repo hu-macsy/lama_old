@@ -46,7 +46,6 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 // external
 #include <mkl_lapacke.h>

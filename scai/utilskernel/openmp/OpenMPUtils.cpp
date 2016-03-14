@@ -46,7 +46,6 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 namespace scai
 {

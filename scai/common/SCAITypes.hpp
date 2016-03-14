@@ -37,6 +37,7 @@
 
 #include <scai/common/Complex.hpp>
 #include <scai/common/mic/MICCallable.hpp>
+#include <scai/common/mepr/TypeList.hpp>
 
 // std
 #include <cstring>

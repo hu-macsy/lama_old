@@ -9,6 +9,9 @@ namespace common
 namespace mepr
 {
 
+/*
+ * NullType, used for termination
+ */
 class NullType {};
 
 template<typename H, typename T>
@@ -23,6 +26,12 @@ struct TypeList
 } /* end namespace common */
 
 } /* end namespace scai */
+
+/*
+ * Internal used macros for TypeList creation
+ *
+ * TYPELIST( NR, ... ) for usage. NR is the number of types
+ */
 
 #define TYPELIST_1( T1 ) scai::common::mepr::TypeList<T1,common::mepr::NullType>
 #define TYPELIST_2( T1, T2 ) scai::common::mepr::TypeList<T1,TYPELIST_1( T2 ) >

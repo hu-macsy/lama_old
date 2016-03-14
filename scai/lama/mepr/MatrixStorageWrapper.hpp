@@ -11,9 +11,15 @@ namespace lama {
 
 namespace mepr {
 
+/*
+ * Forward declaration
+ */
 template<typename ValueType, typename TList>
 struct MatrixStorageWrapper;
 
+/*
+ * Termination
+ */
 template<typename ValueType>
 struct MatrixStorageWrapper<ValueType, common::mepr::NullType>
 {
@@ -21,6 +27,9 @@ struct MatrixStorageWrapper<ValueType, common::mepr::NullType>
     { }
 };
 
+/*
+ * Step n
+ */
 template<typename ValueType, typename H, typename T>
 struct MatrixStorageWrapper<ValueType, common::mepr::TypeList<H, T> >
 {

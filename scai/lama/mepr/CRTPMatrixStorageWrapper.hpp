@@ -15,9 +15,15 @@ namespace lama {
 
 namespace mepr {
 
+/*
+ * Forward declaration
+ */
 template<typename Derived, typename TList>
 struct CRTPMatrixStorageWrapper;
 
+/*
+ * Termination
+ */
 template<typename Derived>
 struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
 {
@@ -62,6 +68,9 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
     { }
 };
 
+/*
+ * Step n
+ */
 template<typename Derived, typename H, typename T>
 struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
 {

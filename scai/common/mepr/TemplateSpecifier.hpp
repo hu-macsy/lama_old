@@ -30,6 +30,8 @@ public:
 };
 
 /*
+ * One template parameter
+ *
  * TemplateSpecifierV
  */
 
@@ -51,7 +53,10 @@ struct TemplateSpecifierV< R, common::mepr::TypeList<H,T> >
 };
 
 /*
+ * Two template parameters
+ *
  * _TemplateSpecifierVO
+ *   - just used internally
  */
 
 template<template<typename,typename> class R, typename ValueType, typename TList> struct _TemplateSpecifierVO;
@@ -80,6 +85,7 @@ struct _TemplateSpecifierVO< R, ValueType, common::mepr::TypeList<H,T> >
 
 /*
  * TemplateSpecifierVO
+ *   -  used for template specification
  */
 
 template<template<typename,typename> class R, typename TList1, typename TList2> struct TemplateSpecifierVO;

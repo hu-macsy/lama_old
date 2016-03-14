@@ -42,7 +42,6 @@
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 #include <scai/tracing.hpp>
 

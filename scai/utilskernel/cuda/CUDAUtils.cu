@@ -47,7 +47,6 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 // thrust
 #include <thrust/device_vector.h>

@@ -52,8 +52,6 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/mepr/Container.hpp>
-
 
 // std
 #include <set>

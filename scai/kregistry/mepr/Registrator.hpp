@@ -3,8 +3,6 @@
 // library
 #include <scai/kregistry/KernelRegistry.hpp>
 
-// internal scai libraries
-#include <scai/common/mepr/Container.hpp>
 
 /*
  * Declare Registrator inside a class

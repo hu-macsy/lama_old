@@ -60,7 +60,6 @@
 #include <scai/common/cuda/launchHelper.hpp>
 
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 // CUDA
 #include <cuda.h>

@@ -20,11 +20,13 @@ namespace lama {
 namespace mepr {
 
 /*
- * _RegistratorVO
+ * Forward declaration
  */
-
 template<typename ValueType, typename TList> struct IOWrapper;
 
+/*
+ * Termination
+ */
 template<typename ValueType>
 struct IOWrapper<ValueType, common::mepr::NullType>
 {
@@ -43,6 +45,9 @@ struct IOWrapper<ValueType, common::mepr::NullType>
 
 };
 
+/*
+ * Step n
+ */
 template<typename ValueType, typename H, typename T>
 struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
 {
@@ -153,35 +158,6 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
         }
     }
 };
-
-/*
- * RegistratorVO
- */
-
-//template<template<typename,typename> class R, typename ValueType, typename TList1, typename TList2> struct XDRWrapper;
-//
-//template<template<typename,typename> class R, typename ValueType >
-//struct XDRWrapper<R, ValueType, common::mepr::NullType, common::mepr::NullType >
-//{
-//    static void read( const common::scalar::ScalarType, XDRFileStream& , ValueType[], const IndexType ) {}
-//};
-//
-//template<template<typename,typename> class R, typename ValueType, typename TList >
-//struct XDRWrapper<R, ValueType, common::mepr::NullType, TList >
-//{
-//    static void read( const common::scalar::ScalarType, XDRFileStream& , ValueType[], const IndexType ) {}
-//};
-//
-//template<template<typename,typename> class R, typename ValueType, typename H1, typename T1, typename H2, typename T2>
-//struct XDRWrapper< R, ValueType, common::mepr::TypeList<H1,T1>, common::mepr::TypeList<H2, T2> >
-//{
-//    static void read( const common::scalar::ScalarType dataType, XDRFileStream& in, ValueType data[], const IndexType n )
-//    {
-//        IOWrapper<R, ValueType, H1, common::mepr::TypeList<H2,T2> >::read( dataType, in, data, n );
-//
-//        XDRWrapper<R, ValueType, T1, common::mepr::TypeList<H2,T2> >::read( dataType, in, data, n );
-//    }
-//};
 
 } /* end namespace mepr */
 

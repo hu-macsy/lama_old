@@ -17,9 +17,16 @@ namespace common {
 
 namespace mepr {
 
+/*
+ * Forward declartion
+ */
+
 template<typename TList>
 struct ScalarTypeHelper;
 
+/*
+ * Termination
+ */
 template<>
 struct ScalarTypeHelper<NullType>
 {
@@ -34,6 +41,9 @@ struct ScalarTypeHelper<NullType>
     }
 };
 
+/*
+ * Step n
+ */
 template<typename H, typename T>
 struct ScalarTypeHelper< TypeList<H,T> >
 {

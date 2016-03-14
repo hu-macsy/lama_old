@@ -25,19 +25,18 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMakeLists of kregistry/exception
+ # @brief CMakeLists of lama/mepr
  # @author Eric Schricker
- # @date 10.11.2015
+ # @date 14.03.2016
 ###
 
 scai_project(
 
     HEADERS
 
-        ScalarTypeHelper
-        TemplateSpecifier
-        TypeList
-
+        CRTPMatrixStorageWrapper
+        IOWrapper
+        MatrixStorageWrapper
 
     ADD_PARENT_SCOPE
 )

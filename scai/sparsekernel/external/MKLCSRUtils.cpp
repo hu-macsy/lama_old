@@ -52,7 +52,6 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 

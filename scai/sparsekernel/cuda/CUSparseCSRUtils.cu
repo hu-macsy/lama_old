@@ -49,7 +49,6 @@
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Constants.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 // CUDA
 #include <cuda.h>

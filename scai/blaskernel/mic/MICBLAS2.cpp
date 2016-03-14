@@ -45,7 +45,6 @@
 #include <scai/hmemo/mic/MICContext.hpp>
 
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/mepr/Container.hpp>
 
 // external
 #include <mkl_blas.h>
