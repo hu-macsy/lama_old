@@ -38,6 +38,7 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/StorageMethods.hpp>
+#include <scai/lama/mepr/MatrixStorageWrapper.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
@@ -1225,31 +1226,8 @@ void MatrixStorage<ValueType>::setDenseData(
     const ValueType epsilon )
 {
     mEpsilon = epsilon;
-    // const_cast required, is safe as we will create a const DenseStorageView
-    _HArray& mValues = const_cast<_HArray&>( values );
 
-    switch ( values.getValueType() )
-    {
-
-#define LAMA_DENSE_ASSIGN( z, I, _ )                                                                   \
-case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                             \
-{                                                                                                      \
-    HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                                                    \
-            dynamic_cast<HArray<ARITHMETIC_HOST_TYPE_##I>&>( mValues );                                \
-    const DenseStorageView<ARITHMETIC_HOST_TYPE_##I> denseStorage( typedValues, numRows, numColumns ); \
-    ARITHMETIC_HOST_TYPE_##I tmpEpsilon = static_cast<ARITHMETIC_HOST_TYPE_##I>( epsilon );            \
-    denseStorage.swapEpsilon( tmpEpsilon );                                                            \
-    assign( denseStorage );                                                                            \
-    break;                                                                                             \
-}
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_ASSIGN, _ )
-
-#undef LAMA_DENSE_ASSIGN
-
-        default        :
-            COMMON_THROWEXCEPTION( "Unsupported type for setting dense data: " << values.getValueType() )
-    }
+    mepr::MatrixStorageWrapper<ValueType, ARITHMETIC_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
 }
 
 /* ========================================================================= */
