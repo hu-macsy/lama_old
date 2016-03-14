@@ -32,7 +32,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( accessTest )
 
     scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
-    scai::common::CUDADevice myCuda( nr );
+    scai::common::CUDACtx myCuda( nr );
 
     const int N = 100;
 
@@ -108,23 +108,23 @@ BOOST_AUTO_TEST_CASE( getCurrentDeviceTest )
 
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
-    CUDADevice myCuda( nr );
+    CUDACtx myCuda( nr );
 
     BOOST_CHECK_THROW( 
         {
-            CUDAAccess::getCurrentCUDADevice();
+            CUDAAccess::getCurrentCUDACtx();
         }, 
         Exception );
 
     {
         CUDAAccess access( myCuda );
-        const CUDADevice& current = CUDAAccess::getCurrentCUDADevice();
+        const CUDACtx& current = CUDAAccess::getCurrentCUDACtx();
         BOOST_CHECK_EQUAL( &myCuda, &current );
     }
 
     BOOST_CHECK_THROW( 
         {
-            CUDAAccess::getCurrentCUDADevice();
+            CUDAAccess::getCurrentCUDACtx();
         }, 
         Exception );
 

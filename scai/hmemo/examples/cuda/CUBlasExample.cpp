@@ -97,7 +97,7 @@ int main()
 
         SCAI_CONTEXT_ACCESS( cuda )
 
-        const common::CUDADevice& dev = common::CUDAAccess::getCurrentCUDADevice();
+        const common::CUDACtx& dev = common::CUDAAccess::getCurrentCUDACtx();
 
         SCAI_CUBLAS_CALL( cublasSdot( dev.getcuBLASHandle(), n,
                                       rA.get(), 1, rB.get(), 1, &dot),

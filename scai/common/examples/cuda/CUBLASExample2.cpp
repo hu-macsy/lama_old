@@ -1,5 +1,5 @@
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -45,7 +45,7 @@ float myDot( float* d_a, float* d_b, int n )
 {
     float dot = 0.0;   // result argument
 
-    const CUDADevice& device = CUDAAccess::getCurrentCUDADevice();
+    const CUDACtx& device = CUDAAccess::getCurrentCUDACtx();
 
     SCAI_CUBLAS_CALL( cublasSdot( device.getcuBLASHandle(), n, d_a, 1, d_b, 1, &dot ),
                                   "cublasSDot for float" );
@@ -64,7 +64,7 @@ int main( int argc, const char** argv )
 
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
-    CUDADevice device( nr );
+    CUDACtx device( nr );
 
     float a[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
     float b[] = { 10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0 };

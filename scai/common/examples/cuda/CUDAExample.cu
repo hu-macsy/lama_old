@@ -1,5 +1,5 @@
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -45,7 +45,7 @@ int main( int argc, const char** argv )
 
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
-    CUDADevice device( nr );
+    CUDACtx device( nr );
 
     std::cout << "CUDA device available." << std::endl;
 

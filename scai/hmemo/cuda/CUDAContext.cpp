@@ -69,7 +69,7 @@ SCAI_LOG_DEF_LOGGER( CUDAContext::logger, "Context.CUDAContext" )
 CUDAContext::CUDAContext( int deviceNr ) : 
 
     Context( common::context::CUDA ), 
-    CUDADevice( deviceNr )
+    CUDACtx( deviceNr )
 
 {
     SCAI_LOG_DEBUG( logger, "construct CUDAContext, device nr = = " << deviceNr )

@@ -97,7 +97,7 @@ int main()
         ReadAccess<int> readcooIA( cooIA, cuda );
         WriteOnlyAccess<int> writecsrIA( csrIA, cuda, numRows + 1 );
 
-        const common::CUDADevice& dev = common::CUDAAccess::getCurrentCUDADevice();
+        const common::CUDACtx& dev = common::CUDAAccess::getCurrentCUDACtx();
 
         SCAI_CUSPARSE_CALL(
             cusparseXcoo2csr( dev.getcuSparseHandle(),
@@ -131,7 +131,7 @@ int main()
         WriteOnlyAccess<int> writecscIA( cscIA, cuda, numValues );
         WriteOnlyAccess<float> writecscValues( cscValues, cuda, numValues );
      
-        const common::CUDADevice& dev = common::CUDAAccess::getCurrentCUDADevice();
+        const common::CUDACtx& dev = common::CUDAAccess::getCurrentCUDACtx();
 
         SCAI_CUSPARSE_CALL(
             cusparseScsr2csc( dev.getcuSparseHandle(),

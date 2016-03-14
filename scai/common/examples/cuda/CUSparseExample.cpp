@@ -1,5 +1,5 @@
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -81,7 +81,7 @@ void myFree( T h_data[], const T* d_data , int N )
 
 void myCOO2CSR( int* d_csr_ia, const int* d_coo_ia, int numValues, int numRows )
 {
-    const CUDADevice& device = CUDAAccess::getCurrentCUDADevice();
+    const CUDACtx& device = CUDAAccess::getCurrentCUDACtx();
 
     std::cout << "cusparseXcoo2csr, #values = " << numValues << ", #rows = " << numRows << std::endl;
 
@@ -97,7 +97,7 @@ void myCSR2CSC( int* d_csc_ia, int* d_csc_ja, float* d_csc_values,
                 const int* d_csr_ia, const int* d_csr_ja, const float* d_csr_values,
                 int numRows, int numColumns, int numValues )
 {
-    const CUDADevice& device = CUDAAccess::getCurrentCUDADevice();
+    const CUDACtx& device = CUDAAccess::getCurrentCUDACtx();
 
     std::cout << "cusparseScsr2csc, size = " << numRows << " x " << numColumns << ", #values = " << numValues << std::endl;
 
@@ -121,7 +121,7 @@ int main( int argc, const char** argv )
 
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
-    CUDADevice device( nr );
+    CUDACtx device( nr );
 
     /***********************************************************************
      *  Definition of input data                                           *

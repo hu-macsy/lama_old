@@ -1,5 +1,5 @@
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -13,7 +13,7 @@ using namespace common;
 
 /* --------------------------------------------------------------------- */
 
-float* myAllocate( const CUDADevice& device, const float h_data[], int N )
+float* myAllocate( const CUDACtx& device, const float h_data[], int N )
 {
     CUDAAccess access( device );
 
@@ -32,7 +32,7 @@ float* myAllocate( const CUDADevice& device, const float h_data[], int N )
 
 /* --------------------------------------------------------------------- */
 
-void myFree( const CUDADevice& device, const float* d_data )
+void myFree( const CUDACtx& device, const float* d_data )
 {
     CUDAAccess access( device );
 
@@ -43,7 +43,7 @@ void myFree( const CUDADevice& device, const float* d_data )
 
 /* --------------------------------------------------------------------- */
 
-float myDot( const CUDADevice& device, float* d_a, float* d_b, int n )
+float myDot( const CUDACtx& device, float* d_a, float* d_b, int n )
 {
     CUDAAccess access( device );
 
@@ -66,7 +66,7 @@ int main( int argc, const char** argv )
 
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
-    CUDADevice device( nr );
+    CUDACtx device( nr );
 
     // here no CUDAAccess, is done individually within each function
 

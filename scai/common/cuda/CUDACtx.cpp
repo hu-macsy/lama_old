@@ -1,5 +1,5 @@
 /**
- * @file CUDADevice.cpp
+ * @file CUDACtx.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -30,7 +30,7 @@
  * @date 08.03.2016
  **/
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
@@ -47,7 +47,7 @@ static bool cudaInitialized = 0;
 
 /* --------------------------------------------------------------------- */
 
-CUDADevice::CUDADevice( int deviceNr )
+CUDACtx::CUDACtx( int deviceNr )
 {
     if ( !cudaInitialized )
     {
@@ -76,21 +76,21 @@ CUDADevice::CUDADevice( int deviceNr )
 
 /* --------------------------------------------------------------------- */
 
-cusparseHandle_t CUDADevice::getcuSparseHandle() const
+cusparseHandle_t CUDACtx::getcuSparseHandle() const
 {
     return mcuSparseHandle;
 }
 
 /* --------------------------------------------------------------------- */
 
-cublasHandle_t CUDADevice::getcuBLASHandle() const
+cublasHandle_t CUDACtx::getcuBLASHandle() const
 {
     return mcuBLASHandle;
 }
 
 /* --------------------------------------------------------------------- */
 
-CUDADevice::~CUDADevice()
+CUDACtx::~CUDACtx()
 {
     // call added shutdown routines
 
@@ -155,7 +155,7 @@ CUDADevice::~CUDADevice()
 
 /* ----------------------------------------------------------------------- */
 
-void CUDADevice::addShutdown( common::function<void()> routine )
+void CUDACtx::addShutdown( common::function<void()> routine )
 {
     mShutdownFunctions.push_back( routine );
 }

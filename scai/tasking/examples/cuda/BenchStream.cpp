@@ -1,7 +1,7 @@
 
 #include <scai/common/Walltime.hpp>
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -28,7 +28,7 @@ int main( int argc, const char** argv )
 
     Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
 
-    CUDADevice device( deviceNr );  
+    CUDACtx device( deviceNr );  
 
     CUDAAccess access( device );
 

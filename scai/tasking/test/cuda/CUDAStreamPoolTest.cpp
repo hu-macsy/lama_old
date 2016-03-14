@@ -32,7 +32,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
 
-    common::CUDADevice myCuda( deviceNr );
+    common::CUDACtx myCuda( deviceNr );
 
     CUDAStreamPool& pool = CUDAStreamPool::getPool( myCuda );
 

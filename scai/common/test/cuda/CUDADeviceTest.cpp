@@ -1,5 +1,5 @@
 /**
- * @file CUDADeviceTest.cpp
+ * @file CUDACtxTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,14 +25,14 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test of class CUDADevice
+ * @brief Test of class CUDACtx
  * @author: Thomas Brandes
  * @date 08.03.2016
  **/
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
@@ -50,7 +50,7 @@ static void inc( int* val )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CUDADeviceTest );
+BOOST_AUTO_TEST_SUITE( CUDACtxTest );
 
 /* --------------------------------------------------------------------- */
 
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
-    scai::common::CUDADevice myCuda( nr );
+    scai::common::CUDACtx myCuda( nr );
 
     BOOST_CHECK_EQUAL( nr, myCuda.getDeviceNr() );
 }
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( shutdownTest )
     scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
     {
-        scai::common::CUDADevice myCuda( nr );
+        scai::common::CUDACtx myCuda( nr );
 
         myCuda.addShutdown( scai::common::bind( &inc, &val ) );
 

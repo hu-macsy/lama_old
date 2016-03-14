@@ -156,9 +156,9 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    // note: SCAI_CHECK_CUDA_ACCESS not required due to getCurrentCUDADevice
+    // note: SCAI_CHECK_CUDA_ACCESS not required due to getCurrentCUDACtx
 
-    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuBLASHandle();
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::scal set stream" );
 
@@ -204,7 +204,7 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX )
 
     // Note: we have to switch cublas Stream, this might be done globally later
 
-    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuBLASHandle();
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::nrm2 set stream" );
 
@@ -250,7 +250,7 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
         stream = syncToken->getCUDAStream();
     }
 
-    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuBLASHandle();
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::asum set stream" );
 
@@ -291,7 +291,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const Index
         stream = syncToken->getCUDAStream();
     }
 
-    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuBLASHandle();
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUABLAS1::iamax set stream" );
 
@@ -341,7 +341,7 @@ void CUDABLAS1::swap(
         stream = syncToken->getCUDAStream();
     }
 
-    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuBLASHandle();
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS::swap set stream" );
 
@@ -390,7 +390,7 @@ void CUDABLAS1::copy(
         stream = syncToken->getCUDAStream();
     }
 
-    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuBLASHandle();
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::copy set stream" );
 
@@ -440,7 +440,7 @@ void CUDABLAS1::axpy(
         stream = syncToken->getCUDAStream();
     }
 
-    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuBLASHandle();
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::axpy set stream" );
 
@@ -490,7 +490,7 @@ ValueType CUDABLAS1::dot(
         stream = syncToken->getCUDAStream();
     }
 
-    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuBLASHandle();
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::dot set stream" );
 

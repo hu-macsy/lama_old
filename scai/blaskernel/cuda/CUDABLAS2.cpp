@@ -127,7 +127,7 @@ void CUDABLAS2::gemv(
         stream = syncToken->getCUDAStream();
     }
 
-    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuBLASHandle();
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ),
                       "CUDABLAS2::gemv set cublas kernel stream = " << stream );

@@ -1,5 +1,5 @@
 /**
- * @file CUDADevice.hpp
+ * @file CUDACtx.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -53,7 +53,7 @@ namespace common
 
 /* --------------------------------------------------------------------- */
 
-class COMMON_DLL_IMPORTEXPORT CUDADevice : private NonCopyable
+class COMMON_DLL_IMPORTEXPORT CUDACtx : private NonCopyable
 {   
 
 public:
@@ -64,14 +64,14 @@ public:
      *  @throws Exception if the device cannot be accessed
      */
 
-    CUDADevice( int deviceNr );
+    CUDACtx( int deviceNr );
 
     /** Destructor destroys the CUDA context used for the device.
      *
      *  Be careful: all allocated resources on the device should have been freed before.
      */
 
-    ~CUDADevice();
+    ~CUDACtx();
 
     /** Getter for the CUcontext to be used for CUDA driver API operations. */
 

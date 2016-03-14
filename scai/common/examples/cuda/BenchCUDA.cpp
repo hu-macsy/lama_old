@@ -10,7 +10,7 @@
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -29,7 +29,7 @@ int main( int argc, const char** argv )
     {
         // do not measure overhead for 1st allocation
 
-        CUDADevice dev( nr );
+        CUDACtx dev( nr );
     }
 
     double t0 = Walltime::get();
@@ -38,7 +38,7 @@ int main( int argc, const char** argv )
 
     for ( int i = 0; i < N_CONTEXT; ++i )
     {
-        CUDADevice dev( nr );
+        CUDACtx dev( nr );
     }
 
     double t1 = Walltime::get() - t0;
@@ -52,7 +52,7 @@ int main( int argc, const char** argv )
     t0 = Walltime::get();
 
     {
-        CUDADevice dev( nr );
+        CUDACtx dev( nr );
 
         for ( int i = 0; i < N_ACCESS; ++i )
         {
@@ -71,7 +71,7 @@ int main( int argc, const char** argv )
     t0 = Walltime::get();
 
     {
-        CUDADevice dev( nr );
+        CUDACtx dev( nr );
 
         for ( int i = 0; i < N_ACCESS; ++i )
         {

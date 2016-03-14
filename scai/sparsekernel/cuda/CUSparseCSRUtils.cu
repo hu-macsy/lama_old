@@ -93,9 +93,9 @@ void CUSparseCSRUtils::convertCSR2CSC(
         COMMON_THROWEXCEPTION("indextype mismatch");
     }
 
-    // note: SCAI_CHECK_CUDA_ACCESS not required due to getCurrentCUDADevice
+    // note: SCAI_CHECK_CUDA_ACCESS not required due to getCurrentCUDACtx
 
-    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuSparseHandle();
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
 
     CUSPARSEWrapper<ValueType>::csr2csc( handle,
                     numRows, numColumns, numValues,
@@ -158,7 +158,7 @@ void CUSparseCSRUtils::normalGEMV(
 
     SCAI_LOG_INFO( logger, "Start cusparseXcsrmv, stream = " << stream )
 
-    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuSparseHandle();
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
 
     CUSPARSEWrapper<ValueType>::csrmv( handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                        numRows, numColumns, nnz, &alpha, descrCSR,
@@ -216,7 +216,7 @@ IndexType CUSparseCSRUtils::matrixAddSizes(
 
     int nnzC;
 
-    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuSparseHandle();
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
 
     SCAI_CUSPARSE_CALL(
         cusparseXcsrgeamNnz( handle,
@@ -277,7 +277,7 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
                     << ", B is " << k << " x " << n << ", nnz = " << nnzB
                     << ", C = " << m << " x " << n )
 
-    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuSparseHandle();
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
 
     SCAI_CUSPARSE_CALL(
         cusparseXcsrgemmNnz( handle,
@@ -341,7 +341,7 @@ void CUSparseCSRUtils::matrixAdd(
 
     // cIA requires const_cast, but will not be modified
 
-    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuSparseHandle();
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
 
     CUSPARSEWrapper<ValueType>::csrgeam( handle,
                           numRows, numColumns,
@@ -401,7 +401,7 @@ void CUSparseCSRUtils::matrixMultiply(
         COMMON_THROWEXCEPTION( "cusparseMatrixMultiply only supports alpha = 1, but alpha = " << alpha )
     }
 
-    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDADevice().getcuSparseHandle();
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
 
     CUSPARSEWrapper<ValueType>::csrgemm( handle,
                           CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,

@@ -33,7 +33,7 @@
 
 #include <scai/common/config.hpp>
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 
 #include <scai/logging.hpp>
 
@@ -77,14 +77,14 @@ public:
      *  A new pool will might be created if not available.
      */
 
-    static CUDAStreamPool& getPool( const common::CUDADevice& cuda );
+    static CUDAStreamPool& getPool( const common::CUDACtx& cuda );
 
     /** Release the stream pool for a CUDA context. 
      *
      *  @throws an exception if not all streams have been released.
      */
 
-    static void freePool( const common::CUDADevice& cuda );
+    static void freePool( const common::CUDACtx& cuda );
 
 private:
 
@@ -92,11 +92,11 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    const common::CUDADevice& mCUDA;   
+    const common::CUDACtx& mCUDA;   
 
     /** Construct a pool of streams for a given CUDA device. */
 
-    CUDAStreamPool( const common::CUDADevice& cuda );
+    CUDAStreamPool( const common::CUDACtx& cuda );
     ~CUDAStreamPool();
 
     CUstream mTransferStream;
