@@ -37,6 +37,7 @@
 
 // base classes
 #include <scai/lama/storage/MatrixStorage.hpp>
+#include <scai/lama/mepr/CRTPWrapper.hpp>
 
 namespace scai
 {
@@ -99,32 +100,9 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::_HArray& values )
     {
-        common::scalar::ScalarType arrayType = values.getValueType();
-
-        switch ( arrayType )
-        {
-
-/** Call implementation routine with the type of the values array */
-
-#define LAMA_SET_CSR_CALL( z, I, _ )                                                      \
-case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                         \
-{                                                                                         \
-    const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                          \
-            dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( values );       \
-    static_cast<Derived*>( this )->setCSRDataImpl(                                        \
-            numRows, numColumns, numValues, ia, ja, typedValues, this->getContextPtr() ); \
-    break;                                                                                \
-}                                                                                         \
- 
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SET_CSR_CALL, _ )
-
-#undef LAMA_SET_CSR_CALL
-
-            default            :
-            {
-                COMMON_THROWEXCEPTION( *this << ": setCSRData with value type " << arrayType << " not supported" )
-            }
-        }
+        mepr::CRTPWrapper<Derived, ARITHMETIC_HOST_LIST>::setCSRDataImpl(
+                        static_cast<Derived*>( this ), numRows, numColumns,
+                        numValues, ia, ja, values, this->getContextPtr());
     }
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
@@ -141,60 +119,15 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
 
     void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
     {
-        common::scalar::ScalarType arrayType = csrValues.getValueType();
-
-        switch ( arrayType )
-        {
-#define LAMA_BUILD_CSR_CALL( z, I, _ )                                        \
-case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                \
-{                                                                             \
-    hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                        \
-            dynamic_cast<hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( csrValues );  \
-    static_cast<const Derived*>( this )->buildCSR(                            \
-            csrIA, &csrJA, &typedValues, this->getContextPtr() );             \
-    break;                                                                    \
-}
-
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BUILD_CSR_CALL, _ )
-
-#undef LAMA_BUILD_CSR_CALL
-
-            default:
-            {
-                COMMON_THROWEXCEPTION( *this << ": build CSR with value type " << arrayType << " not supported" )
-            }
-
-        }
-
+         mepr::CRTPWrapper<Derived, ARITHMETIC_HOST_LIST>::buildCSRDataImpl(
+                         static_cast<const Derived*>( this ), csrIA, csrJA, csrValues, this->getContextPtr() );
     }
 
     /** Get the i-th row of a storage as LAMA array. */
 
     void getRow( hmemo::_HArray& row, const IndexType irow ) const
     {
-        common::scalar::ScalarType arrayType = row.getValueType();
-
-        switch ( arrayType )
-        {
-#define LAMA_GET_ROW_CALL( z, I, _ )                                    \
-case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
-{                                                                       \
-    hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedRow =                     \
-            dynamic_cast<hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( row );  \
-    static_cast<const Derived*>( this )->getRowImpl( typedRow, irow );  \
-    break;                                                              \
-}
- 
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_GET_ROW_CALL, _ )
-
-#undef LAMA_GET_ROW_CALL
-
-            default:
-            {
-                COMMON_THROWEXCEPTION( "getRow for array of type " << arrayType << " not supported" )
-            }
-
-        }
+        mepr::CRTPWrapper<Derived, ARITHMETIC_HOST_LIST>::getRowImpl( static_cast<const Derived* const>( this ), row, irow );
     }
 
     void getDiagonal( hmemo::_HArray& diagonal ) const
@@ -204,27 +137,7 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
             COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
         }
 
-        common::scalar::ScalarType arrayType = diagonal.getValueType();
-
-        switch ( arrayType )
-        {
-#define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                   \
-case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
-{                                                                           \
-    hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
-            dynamic_cast<hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
-    static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );  \
-    break;                                                                  \
-}
- 
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
-
-#undef LAMA_GET_DIAGONAL_CALL
-
-            default:
-                COMMON_THROWEXCEPTION( "getDiagonal for array of type " << arrayType << " not supported" )
-
-        }
+        mepr::CRTPWrapper<Derived, ARITHMETIC_HOST_LIST>::getDiagonalImpl( static_cast<const Derived* const>( this ), diagonal );
     }
 
     void setDiagonal( const ValueType value )
@@ -251,26 +164,7 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
             COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
         }
 
-        common::scalar::ScalarType arrayType = diagonal.getValueType();
-
-        switch ( arrayType )
-        {
-#define LAMA_SET_DIAGONAL_CALL( z, I, _ )                                         \
-case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
-{                                                                                 \
-    const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
-            dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
-    static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );              \
-    break;                                                                        \
-}
- 
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SET_DIAGONAL_CALL, _ )
-
-#undef LAMA_SET_DIAGONAL_CALL
-
-            default:
-                COMMON_THROWEXCEPTION( "setDiagonal to array of type " << arrayType << " not supported" )
-        }
+        mepr::CRTPWrapper<Derived, ARITHMETIC_HOST_LIST>::setDiagonalVImpl( static_cast<Derived*>( this ), diagonal );
     }
 
     void scale( const ValueType value )
@@ -280,30 +174,11 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
 
     /** Polymorph implementation for MatrixStorage<ValueType>::scaleRows */
 
-    void scaleRows( const hmemo::_HArray& diagonal )
+    void scaleRows( const hmemo::_HArray& values )
     {
-        SCAI_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
+        SCAI_ASSERT_EQUAL_ERROR( this->getNumRows(), values.size() )
 
-        common::scalar::ScalarType arrayType = diagonal.getValueType();
-
-        switch ( arrayType )
-        {
-#define LAMA_SCALE_CALL( z, I, _ )                                                \
-case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
-{                                                                                 \
-    const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
-            dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
-    static_cast<Derived*>( this )->scaleImpl( typedDiagonal );                    \
-    break;                                                                        \
-}
- 
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SCALE_CALL, _ )
-
-#undef LAMA_SCALE_CALL
-
-            default:
-                COMMON_THROWEXCEPTION( "scale of type " << arrayType << " not supported" )
-        }
+        mepr::CRTPWrapper<Derived, ARITHMETIC_HOST_LIST>::scaleRowsImpl( static_cast<Derived*>( this ), values );
     }
 
     /** Implementation of MatrixStorage::getTypeName for derived class. */
