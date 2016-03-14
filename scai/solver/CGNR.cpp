@@ -85,8 +85,32 @@ void CGNR::initialize( const Matrix& coefficients )
     IterativeSolver::initialize( coefficients );
     CGNRRuntime& runtime = getRuntime();
 
-    runtime.mEps = std::numeric_limits<double>::epsilon() * 3; //CAREFUL: No abstract type
+    // runtime.mEps = std::numeric_limits<double>::epsilon() * 3; //CAREFUL: No abstract type
+    switch(coefficients.getValueType()){
+        case common::scalar::FLOAT:
+            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
+            break;
+        case common::scalar::DOUBLE:
+            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
+            break;
+        case common::scalar::LONG_DOUBLE:
+            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
+            break;
+        case common::scalar::COMPLEX:
+            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
+            break;
+        case common::scalar::DOUBLE_COMPLEX:
+            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
+            break;
+        case common::scalar::LONG_DOUBLE_COMPLEX:
+            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
+            break;    
+        default:
+        SCAI_LOG_INFO(logger,"Valuetype not supported");
 
+        break;
+    }
+    
     runtime.mTransposedMat.reset( coefficients.newMatrix() );
 
     runtime.mVecD.reset( coefficients.newDenseVector() );
@@ -145,7 +169,8 @@ void CGNR::iterate()
     vecW = A * vecD;
     Scalar normVecW = norm.apply( vecW );
     Scalar scalarProduct = vecZ.dotProduct(residual2);
-    if ( normVecW < eps )           //norm is small
+    
+    if ( normVecW < eps || 1.0/normVecW < eps )           //norm is small
     {
         alpha = 0.0;
     }
@@ -162,7 +187,7 @@ void CGNR::iterate()
     if(mPreconditioner != NULL) mPreconditioner->solve(vecZ,residual2);
     else vecZ = residual2;
     
-    if ( scalarProduct < eps )        //norm is small
+    if ( abs(scalarProduct) < eps || 1.0/abs(scalarProduct) < eps )        //norm is small
     {
         beta = 0.0;
     }
