@@ -35,16 +35,13 @@
 // include of CUDAContext implies include of cuBLAS, cuSPARSE
 
 #include <scai/hmemo/cuda/CUDAContext.hpp>
+
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 
 #include <iostream>
 
 SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
-
-namespace scai
-{
-	extern cusparseHandle_t CUDAContext_cusparseHandle;
-} /* end namespace scai */
 
 using namespace scai;
 using namespace hmemo;
@@ -100,8 +97,10 @@ int main()
         ReadAccess<int> readcooIA( cooIA, cuda );
         WriteOnlyAccess<int> writecsrIA( csrIA, cuda, numRows + 1 );
 
+        const common::CUDADevice& dev = common::CUDAAccess::getCurrentCUDADevice();
+
         SCAI_CUSPARSE_CALL(
-            cusparseXcoo2csr( CUDAContext_cusparseHandle,
+            cusparseXcoo2csr( dev.getcuSparseHandle(),
                               readcooIA.get(), numValues, numRows, 
                               writecsrIA.get(), 
                               CUSPARSE_INDEX_BASE_ZERO ),
@@ -132,8 +131,10 @@ int main()
         WriteOnlyAccess<int> writecscIA( cscIA, cuda, numValues );
         WriteOnlyAccess<float> writecscValues( cscValues, cuda, numValues );
      
+        const common::CUDADevice& dev = common::CUDAAccess::getCurrentCUDADevice();
+
         SCAI_CUSPARSE_CALL(
-            cusparseScsr2csc( CUDAContext_cusparseHandle,
+            cusparseScsr2csc( dev.getcuSparseHandle(),
                               numRows, numColumns, numValues,
                               readcsrValues.get(), readcsrIA.get(), readcsrJA.get(),
                               writecscValues.get(), writecscIA.get(), writecscJA.get(),

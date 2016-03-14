@@ -41,6 +41,7 @@
 #include <scai/hmemo/cuda/CUDAContext.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
@@ -56,10 +57,6 @@ using namespace hmemo;
 typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
-namespace scai
-{
-	extern cublasHandle_t CUDAContext_cublasHandle;
-} /* end namespace scai */
 
 static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToken )
 {
@@ -76,8 +73,10 @@ static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToke
 
     //std::cout << "scal( n = " << n << ", alpha = " << alpha << ", x[], inc_x = " << inc_x << std::endl;
 
-    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "scal set stream" );
-    SCAI_CUBLAS_CALL( cublasSscal( CUDAContext_cublasHandle, n, &alpha, x_d, inc_x ), "cublasSscal" );
+    const common::CUDADevice& dev = common::CUDAAccess::getCurrentCUDADevice();
+
+    SCAI_CUBLAS_CALL( cublasSetStream( dev.getcuBLASHandle(), stream ), "scal set stream" );
+    SCAI_CUBLAS_CALL( cublasSscal( dev.getcuBLASHandle(), n, &alpha, x_d, inc_x ), "cublasSscal" );
 }
 
 /* --------------------------------------------------------------------- */

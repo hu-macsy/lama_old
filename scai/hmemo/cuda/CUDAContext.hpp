@@ -144,6 +144,8 @@ public:
 
     static ContextPtr create( int deviceNr );
 
+    using common::CUDADevice::getcuBLASHandle;
+
 protected:
 
     /**
@@ -171,9 +173,7 @@ private:
 
     common::Thread::Id mOwnerThread;
 
-    static int currentDeviceNr; //!< number of device currently set for CUDA
-
-    static int numUsedDevices; //!< total number of used devices
+    // static int numUsedDevices; //!< total number of used devices
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
