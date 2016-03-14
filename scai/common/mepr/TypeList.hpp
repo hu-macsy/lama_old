@@ -32,3 +32,7 @@ struct TypeList
 #define TYPELIST_6( T1, T2, T3, T4, T5, T6 ) scai::common::mepr::TypeList<T1,TYPELIST_5( T2, T3, T4, T5, T6 ) >
 #define TYPELIST_7( T1, T2, T3, T4, T5, T6, T7 ) scai::common::mepr::TypeList<T1,TYPELIST_6( T2, T3, T4, T5, T6, T7 ) >
 #define TYPELIST_8( T1, T2, T3, T4, T5, T6, T7, T8 ) scai::common::mepr::TypeList<T1,TYPELIST_7( T2, T3, T4, T5, T6, T7, T8 ) >
+
+#define __TYPELIST( NR, ... ) TYPELIST_##NR( __VA_ARGS__ )
+#define _TYPELIST( NR, ... ) __TYPELIST( NR, __VA_ARGS__ )
+#define TYPELIST( NR, ... ) _TYPELIST( NR, __VA_ARGS__ )

@@ -59,14 +59,7 @@
 /*  arithmetic test types                                                           */
 /* -------------------------------------------------------------------------------- */
 
-#define SCAI_TYPE( z, I, _ ) ARITHMETIC_HOST_TYPE_##I ,
-
-typedef boost::mpl::list<
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, SCAI_TYPE, _ )
-        boost::mpl::na
-> scai_arithmetic_test_types;
-
-#undef SCAI_TYPE
+typedef boost::mpl::list<ARITHMETIC_HOST> scai_arithmetic_test_types;
 
 /* -------------------------------------------------------------------------------- */
 /*  array test types                                                                */
@@ -74,10 +67,7 @@ typedef boost::mpl::list<
 
 #define SCAI_TYPE( z, I, _ ) ARRAY_TYPE##I ,
 
-typedef boost::mpl::list<
-        BOOST_PP_REPEAT( ARRAY_TYPE_CNT, SCAI_TYPE, _ )
-        boost::mpl::na
-> scai_array_test_types;
+typedef boost::mpl::list<ARITHMETIC_ARRAY_HOST> scai_array_test_types;
 
 #undef SCAI_TYPE
 

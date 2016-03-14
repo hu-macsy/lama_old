@@ -97,23 +97,33 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
 
+/*
+ * Kernel
+ */
 
-#define ARITHMETIC_ARRAY_HOST_LIST TYPELIST_7( IndexType, float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble)
-#define ARITHMETIC_ARRAY_CUDA_LIST TYPELIST_5( IndexType, float, double, ComplexFloat, ComplexDouble )
-#define ARITHMETIC_ARRAY_MIC_LIST TYPELIST_5( IndexType, float, double, ComplexFloat, ComplexDouble )
-
-#define ARITHMETIC_HOST_LIST TYPELIST_6( float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble )
-#define ARITHMETIC_EXT_HOST_LIST TYPELIST_4( float, double, ComplexFloat, ComplexDouble )
-#define ARITHMETIC_CUDA_LIST TYPELIST_4( float, double, ComplexFloat, ComplexDouble )
-#define ARITHMETIC_MIC_LIST TYPELIST_4( float, double, ComplexFloat, ComplexDouble )
-
-#define ARITHMETIC_HOST float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble
-
+#define ARITHMETIC_HOST     float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble
 #define ARITHMETIC_EXT_HOST float, double, ComplexFloat, ComplexDouble
+#define ARITHMETIC_CUDA     float, double, ComplexFloat, ComplexDouble
+#define ARITHMETIC_MIC      float, double
 
-#define ARITHMETIC_CUDA float, double, ComplexFloat, ComplexDouble
+#define ARITHMETIC_HOST_LIST TYPELIST( 6, ARITHMETIC_HOST )
+#define ARITHMETIC_EXT_HOST_LIST TYPELIST( 4, ARITHMETIC_EXT_HOST )
+#define ARITHMETIC_CUDA_LIST TYPELIST( 4, ARITHMETIC_CUDA )
+#define ARITHMETIC_MIC_LIST TYPELIST( 2, ARITHMETIC_MIC )
 
-#define ARITHMETIC_MIC float, double
+/*
+ * Array
+ */
+
+#define ARITHMETIC_ARRAY_HOST IndexType, ARITHMETIC_HOST
+#define ARITHMETIC_ARRAY_CUDA IndexType, ARITHMETIC_CUDA
+#define ARITHMETIC_ARRAY_MIC  IndexType, ARITHMETIC_MIC
+
+#define ARITHMETIC_ARRAY_HOST_LIST TYPELIST( 7, ARITHMETIC_ARRAY_HOST )
+#define ARITHMETIC_ARRAY_CUDA_LIST TYPELIST( 5, ARITHMETIC_ARRAY_CUDA )
+#define ARITHMETIC_ARRAY_MIC_LIST TYPELIST( 5, ARITHMETIC_ARRAY_MIC )
+
+
 
 /** Number of supported types used in REPEAT macros */
 #ifdef SCAI_COMPLEX_SUPPORTED
