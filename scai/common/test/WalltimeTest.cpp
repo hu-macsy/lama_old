@@ -35,6 +35,8 @@
 
 #include <scai/common/Walltime.hpp>
 
+#include <unistd.h>
+
 BOOST_AUTO_TEST_CASE( WalltimeTest )
 {
     using scai::common::Walltime;
