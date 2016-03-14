@@ -51,10 +51,10 @@ static common::ThreadPrivatePtr<const CUDACtx> currentCUDACtx;
 
 void CUDAAccess::enable( const CUDACtx& dev )
 {
-    if ( currentCUDACtx.get() != NULL )
-    {
-        std::cout << "WARN: enable of CUDA context while other context is set" << std::endl;
-    }
+    // if ( currentCUDACtx.get() != NULL )
+    // {
+    //     std::cout << "WARN: enable of CUDA context while other context is set" << std::endl;
+    // }
 
     SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( dev.getCUcontext() ), "could not push context" )
 
