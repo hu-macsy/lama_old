@@ -14,6 +14,8 @@
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
+#include <iostream>
+
 using namespace scai::common;
 
 int main( int argc, const char** argv )
