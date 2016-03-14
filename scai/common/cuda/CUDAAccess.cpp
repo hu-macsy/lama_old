@@ -36,6 +36,8 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/Thread.hpp>
 
+#include <iostream>
+
 namespace scai
 {
 
@@ -47,20 +49,36 @@ namespace common
 
 static common::ThreadPrivatePtr<const CUDADevice> currentCUDADevice;
 
-CUDAAccess::CUDAAccess( const CUDADevice& dev ) : mCUcontext( dev.getCUcontext() )
+void CUDAAccess::enable( const CUDADevice& dev )
 {
-    SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "could not push context" )
+    if ( currentCUDADevice.get() != NULL )
+    {
+        std::cout << "WARN: enable of CUDA context while other context is set" << std::endl;
+    }
 
-    mSaveDevice = currentCUDADevice.get();
+    SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( dev.getCUcontext() ), "could not push context" )
 
     currentCUDADevice.set( &dev );
 }
 
-CUDAAccess::~CUDAAccess()
-{ 
+void CUDAAccess::disable()
+{
     CUcontext tmp; // temporary for last context, not necessary to save it
 
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
+
+    currentCUDADevice.set( NULL );
+}
+
+CUDAAccess::CUDAAccess( const CUDADevice& dev ) : mCUcontext( dev.getCUcontext() )
+{
+    mSaveDevice = currentCUDADevice.get();
+    enable( dev );
+}
+
+CUDAAccess::~CUDAAccess()
+{ 
+    disable();
 
     currentCUDADevice.set( mSaveDevice );
 }

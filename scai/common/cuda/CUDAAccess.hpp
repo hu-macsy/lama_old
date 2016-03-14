@@ -65,6 +65,10 @@ public:
 
     ~CUDAAccess();
 
+    static void enable( const CUDADevice& dev );
+
+    static void disable();
+
     /** This static method returns the device currently accessed. */
 
     static const CUDADevice& getCurrentCUDADevice();
