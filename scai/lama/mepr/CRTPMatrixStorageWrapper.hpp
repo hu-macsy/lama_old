@@ -16,10 +16,10 @@ namespace lama {
 namespace mepr {
 
 template<typename Derived, typename TList>
-struct CRTPWrapper;
+struct CRTPMatrixStorageWrapper;
 
 template<typename Derived>
-struct CRTPWrapper<Derived, common::mepr::NullType>
+struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
 {
     static void setCSRDataImpl(
         Derived*,
@@ -63,7 +63,7 @@ struct CRTPWrapper<Derived, common::mepr::NullType>
 };
 
 template<typename Derived, typename H, typename T>
-struct CRTPWrapper<Derived, common::mepr::TypeList<H,T> >
+struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
 {
     static void setCSRDataImpl(
         Derived* obj,
@@ -81,7 +81,7 @@ struct CRTPWrapper<Derived, common::mepr::TypeList<H,T> >
         }
         else
         {
-            CRTPWrapper<Derived, T>::setCSRDataImpl( obj, numRows, numColumns, numValues, ia, ja, values, ctx );
+            CRTPMatrixStorageWrapper<Derived, T>::setCSRDataImpl( obj, numRows, numColumns, numValues, ia, ja, values, ctx );
         }
     }
 
@@ -98,7 +98,7 @@ struct CRTPWrapper<Derived, common::mepr::TypeList<H,T> >
         }
         else
         {
-            CRTPWrapper<Derived, T>::buildCSRDataImpl( obj, csrIA, csrJA, csrValues, ctx );
+            CRTPMatrixStorageWrapper<Derived, T>::buildCSRDataImpl( obj, csrIA, csrJA, csrValues, ctx );
         }
     }
 
@@ -113,7 +113,7 @@ struct CRTPWrapper<Derived, common::mepr::TypeList<H,T> >
         }
         else
         {
-            CRTPWrapper<Derived, T>::getRowImpl( obj, row, irow );
+            CRTPMatrixStorageWrapper<Derived, T>::getRowImpl( obj, row, irow );
         }
     }
 
@@ -127,7 +127,7 @@ struct CRTPWrapper<Derived, common::mepr::TypeList<H,T> >
         }
         else
         {
-            CRTPWrapper<Derived, T>::getDiagonalImpl( obj, diagonal );
+            CRTPMatrixStorageWrapper<Derived, T>::getDiagonalImpl( obj, diagonal );
         }
     }
 
@@ -141,7 +141,7 @@ struct CRTPWrapper<Derived, common::mepr::TypeList<H,T> >
         }
         else
         {
-            CRTPWrapper<Derived, T>::setDiagonalVImpl( obj, diagonal );
+            CRTPMatrixStorageWrapper<Derived, T>::setDiagonalVImpl( obj, diagonal );
         }
     }
 
@@ -155,7 +155,7 @@ struct CRTPWrapper<Derived, common::mepr::TypeList<H,T> >
         }
         else
         {
-            CRTPWrapper<Derived, T>::scaleRowsImpl( obj, values );
+            CRTPMatrixStorageWrapper<Derived, T>::scaleRowsImpl( obj, values );
         }
     }
 };
