@@ -1,5 +1,5 @@
 /**
- * @file CUDADevice.cpp
+ * @file CUDACtx.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -30,7 +30,7 @@
  * @date 08.03.2016
  **/
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
@@ -47,7 +47,7 @@ static bool cudaInitialized = 0;
 
 /* --------------------------------------------------------------------- */
 
-CUDADevice::CUDADevice( int deviceNr )
+CUDACtx::CUDACtx( int deviceNr )
 {
     if ( !cudaInitialized )
     {
@@ -67,6 +67,8 @@ CUDADevice::CUDADevice( int deviceNr )
         
     SCAI_CUBLAS_CALL( cublasCreate( &mcuBLASHandle ), "Initialization of cuBLAS library" );
 
+    SCAI_CUSPARSE_CALL( cusparseCreate( &mcuSparseHandle ), "Initialization of cuBLAS library" );
+
     CUcontext tmp; // temporary for last context, not necessary to save it
 
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
@@ -74,14 +76,21 @@ CUDADevice::CUDADevice( int deviceNr )
 
 /* --------------------------------------------------------------------- */
 
-cublasHandle_t CUDADevice::getcuBLASHandle() const
+cusparseHandle_t CUDACtx::getcuSparseHandle() const
+{
+    return mcuSparseHandle;
+}
+
+/* --------------------------------------------------------------------- */
+
+cublasHandle_t CUDACtx::getcuBLASHandle() const
 {
     return mcuBLASHandle;
 }
 
 /* --------------------------------------------------------------------- */
 
-CUDADevice::~CUDADevice()
+CUDACtx::~CUDACtx()
 {
     // call added shutdown routines
 
@@ -121,6 +130,20 @@ CUDADevice::~CUDADevice()
         mcuBLASHandle = 0;
     }
 
+    // Be careful: cusparseDestroy should be called within the current CUDA context
+
+    if ( mcuSparseHandle )
+    {
+        cusparseStatus_t error = cusparseDestroy( mcuSparseHandle );
+
+        if ( error != CUSPARSE_STATUS_SUCCESS )
+        {
+            std::cerr << "Warn: could not destroy cusparse handle, status = " << error << std::endl;
+        }
+
+        mcuSparseHandle = 0;
+    }
+
     res = cuCtxDestroy( mCUcontext );
 
     if ( res != CUDA_SUCCESS )
@@ -132,7 +155,7 @@ CUDADevice::~CUDADevice()
 
 /* ----------------------------------------------------------------------- */
 
-void CUDADevice::addShutdown( common::function<void()> routine )
+void CUDACtx::addShutdown( common::function<void()> routine )
 {
     mShutdownFunctions.push_back( routine );
 }

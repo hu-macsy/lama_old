@@ -43,21 +43,14 @@
 #include <scai/tasking/cuda/CUDAStreamPool.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/macros/assert.hpp>
-
-// CUDA
-#include <cublas_v2.h>
-#include <cuda.h>
-#include <cusparse.h>
 
 // std
 #include <memory>
 
 namespace scai
 {
-
-cusparseHandle_t CUDAContext_cusparseHandle = 0;
-cublasHandle_t CUDAContext_cublasHandle = 0;
 
 using common::Thread;
 using tasking::SyncToken;
@@ -71,34 +64,19 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( CUDAContext::logger, "Context.CUDAContext" )
 
-int CUDAContext::currentDeviceNr = -1;
-
-int CUDAContext::numUsedDevices = 0;
-
 /**  constructor  *********************************************************/
 
 CUDAContext::CUDAContext( int deviceNr ) : 
 
     Context( common::context::CUDA ), 
-    CUDADevice( deviceNr )
+    CUDACtx( deviceNr )
 
 {
     SCAI_LOG_DEBUG( logger, "construct CUDAContext, device nr = = " << deviceNr )
 
     // Note: logging is safe as CUDA context is always created after static initializations
 
-    currentDeviceNr = getDeviceNr();
-
-    numUsedDevices++;
-
     { 
-        enable( __FILE__, __LINE__ );
-
-        // cudaDeviceProp properties;
-        // cudaGetDeviceProperties( &properties, mCUdevice );
-        // feature might be important to indicate that we can use CUDAHostMemory on device
-        // SCAI_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
-
         char deviceName[256];
 
         SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, getCUdevice() ), "cuDeviceGetName" );
@@ -106,26 +84,11 @@ CUDAContext::CUDAContext( int deviceNr ) :
         mDeviceName = deviceName; // save it as string member variable for output
 
         SCAI_LOG_DEBUG( logger, "got device " << mDeviceName )
-
-        SCAI_CUSPARSE_CALL( cusparseCreate( &CUDAContext_cusparseHandle ),
-                            "Initialization of CUSparse library: cusparseCreate" );
-    
-        SCAI_LOG_INFO( logger, "Initialized: cuSparse " << CUDAContext_cusparseHandle )
-    
-        SCAI_CUBLAS_CALL( cublasCreate( &CUDAContext_cublasHandle ), "Initialization of CUBlas library: cublasCreate" );
-    
-        SCAI_LOG_INFO( logger, "Initialized: cuBLAS " << CUDAContext_cublasHandle )
-    
-        mOwnerThread = Thread::getSelf(); // thread that can use the context
-
-        disable( __FILE__, __LINE__ );
     }
 
     // count used devices to shutdown CUDA if no more device is used
 
-    SCAI_LOG_INFO( logger, *this << " constructed by thread " << mOwnerThread << ", now disabled" )
-
-    CUDAStreamPool::getPool( *this );  // guarantees allocation
+    SCAI_LOG_INFO( logger, *this << " constructed, is disabled" )
 }
 
 /**  destructor   *********************************************************/
@@ -133,67 +96,6 @@ CUDAContext::CUDAContext( int deviceNr ) :
 CUDAContext::~CUDAContext()
 {
     SCAI_LOG_INFO( logger, "~CUDAContext: " << *this )
-
-    numUsedDevices--;
-
-    // context must be valid before streams are destroyed
-
-    CUresult res = cuCtxPushCurrent( getCUcontext() );
-
-    if ( res == CUDA_ERROR_DEINITIALIZED )
-    {
-        // this might happen with other software, e.g. VampirTrace
-        SCAI_LOG_WARN( logger, "CUDA driver already deinitialized" )
-        return;
-    }
-    else if ( res != CUDA_SUCCESS )
-    {
-        SCAI_LOG_ERROR( logger, "Could not push any more context for " << *this )
-        return;
-    }
-
-    CUDAStreamPool::freePool( *this );
-
-    if ( !numUsedDevices )
-    {
-        SCAI_LOG_DEBUG( logger, "no more devices in use -> shutdown cuda" )
-
-        if ( CUDAContext_cublasHandle )
-        {
-            cublasStatus_t error = cublasDestroy( CUDAContext_cublasHandle );
-
-            if ( error != CUBLAS_STATUS_SUCCESS )
-            {
-                SCAI_LOG_ERROR( logger, "Could not destroy cublas handle, status = " << error )
-            }
-
-            SCAI_LOG_INFO( logger, "cublas handle successfully destroyed" )
-            CUDAContext_cublasHandle = 0;
-        }
-
-        if ( CUDAContext_cusparseHandle )
-        {
-            cusparseStatus_t error = cusparseDestroy( CUDAContext_cusparseHandle );
-
-            if ( error != CUSPARSE_STATUS_SUCCESS )
-            {
-                SCAI_LOG_ERROR( logger, "Could not destroy cusparse handle, status = " << error )
-            }
-
-            SCAI_LOG_INFO( logger, "cusparse handle successfully destroyed" )
-            CUDAContext_cusparseHandle = 0;
-        }
-    }
-
-    CUcontext tmp; // temporary for last context, not necessary to save it
-    SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
-
-    // if we are current device, set it back to -1
-
-    if ( currentDeviceNr == getDeviceNr() )
-    {
-        currentDeviceNr = -1;
-    }
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -249,9 +151,7 @@ void CUDAContext::disable( const char* file, int line ) const
 {
     Context::disable( file, line ); // call routine of base class
     SCAI_LOG_DEBUG( logger, *this << ": disable by thread = " << Thread::getSelf() )
-    CUcontext tmp; // temporary for last context, not necessary to save it
-    SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
-    currentDeviceNr = -1;
+    common::CUDAAccess::disable();
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -260,9 +160,7 @@ void CUDAContext::enable( const char* file, int line ) const
 {
     SCAI_LOG_DEBUG( logger, *this << ": enable by thread = " << Thread::getSelf() )
     Context::enable( file, line ); // call routine of base class
-    SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( getCUcontext() ), "could not push context for " << *this )
-//    lama_init0_cuda ();  // otherwise some properties of device might be wrong
-    currentDeviceNr = getDeviceNr();
+    common::CUDAAccess::enable( *this );
 }
 
 /* ----------------------------------------------------------------------------- */

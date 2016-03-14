@@ -46,6 +46,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/preprocessor.hpp>
@@ -58,12 +59,6 @@ namespace scai
 {
 
 using tasking::CUDAStreamSyncToken;
-
-/* --------------------------------------------------------------------------- */
-/*     cusparse handle is needed, set by CUDAContext                           */
-/* --------------------------------------------------------------------------- */
-
-extern cusparseHandle_t CUDAContext_cusparseHandle;
 
 namespace sparsekernel
 {
@@ -98,7 +93,11 @@ void CUSparseCSRUtils::convertCSR2CSC(
         COMMON_THROWEXCEPTION("indextype mismatch");
     }
 
-    CUSPARSEWrapper<ValueType>::csr2csc( CUDAContext_cusparseHandle,
+    // note: SCAI_CHECK_CUDA_ACCESS not required due to getCurrentCUDACtx
+
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
+
+    CUSPARSEWrapper<ValueType>::csr2csc( handle,
                     numRows, numColumns, numValues,
                     csrValues, csrIA, csrJA,
                     cscValues, cscJA, cscIA,
@@ -159,15 +158,17 @@ void CUSparseCSRUtils::normalGEMV(
 
     SCAI_LOG_INFO( logger, "Start cusparseXcsrmv, stream = " << stream )
 
-    CUSPARSEWrapper<ValueType>::csrmv( CUDAContext_cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-                                        numRows, numColumns, nnz, &alpha, descrCSR,
-                                        csrValues, csrIA, csrJA, x, &beta, result );
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
+
+    CUSPARSEWrapper<ValueType>::csrmv( handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                       numRows, numColumns, nnz, &alpha, descrCSR,
+                                       csrValues, csrIA, csrJA, x, &beta, result );
 
     if ( syncToken )
     {
         // set back stream for cusparse
 
-        SCAI_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, 0 ),
+        SCAI_CUSPARSE_CALL( cusparseSetStream( handle, 0 ),
                             "cusparseSetStream" )
     }
     else
@@ -215,8 +216,10 @@ IndexType CUSparseCSRUtils::matrixAddSizes(
 
     int nnzC;
 
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
+
     SCAI_CUSPARSE_CALL(
-        cusparseXcsrgeamNnz( CUDAContext_cusparseHandle,
+        cusparseXcsrgeamNnz( handle,
                              numRows, numColumns,
                              descrCSR, nnzA, aIA, aJA,
                              descrCSR, nnzB, bIA, bJA,
@@ -274,8 +277,10 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
                     << ", B is " << k << " x " << n << ", nnz = " << nnzB
                     << ", C = " << m << " x " << n )
 
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
+
     SCAI_CUSPARSE_CALL(
-        cusparseXcsrgemmNnz( CUDAContext_cusparseHandle,
+        cusparseXcsrgemmNnz( handle,
                              CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
                              m, n, k,
                              descrCSR, nnzA, aIA, aJA,
@@ -336,7 +341,9 @@ void CUSparseCSRUtils::matrixAdd(
 
     // cIA requires const_cast, but will not be modified
 
-    CUSPARSEWrapper<ValueType>::csrgeam( CUDAContext_cusparseHandle,
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
+
+    CUSPARSEWrapper<ValueType>::csrgeam( handle,
                           numRows, numColumns,
                           &alpha, descrCSR, nnzA, aValues, aIA, aJA,
                           &beta, descrCSR, nnzB, bValues, bIA, bJA,
@@ -394,7 +401,9 @@ void CUSparseCSRUtils::matrixMultiply(
         COMMON_THROWEXCEPTION( "cusparseMatrixMultiply only supports alpha = 1, but alpha = " << alpha )
     }
 
-   CUSPARSEWrapper<ValueType>::csrgemm( CUDAContext_cusparseHandle,
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
+
+    CUSPARSEWrapper<ValueType>::csrgemm( handle,
                           CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
                           m, n, k,
                           descrCSR, nnzA, aValues, aIA, aJA,

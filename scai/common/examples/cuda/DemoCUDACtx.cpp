@@ -1,5 +1,5 @@
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
@@ -19,13 +19,13 @@ int main( int argc, const char** argv )
 
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
    
-    CUDADevice device( nr );
+    CUDACtx context( nr );
 
-    // Note: no context access required for queries of the device 
+    // Note: no context access required for queries of the device
 
     char deviceName[256];
 
-    SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, device.getCUdevice() ), "cuDeviceGetName" );
+    SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, context.getCUdevice() ), "cuDeviceGetName" );
 
-    std::cout << "Name of device = " << deviceName << std::endl;
+    std::cout << "CUDACtx( device = " << context.getDeviceNr() << " ), name of device = " << deviceName << std::endl;
 }

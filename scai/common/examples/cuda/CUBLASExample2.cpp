@@ -1,14 +1,10 @@
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <iostream>
-
-
-#include <thrust/device_vector.h>
-#include <thrust/fill.h>
 
 /* --------------------------------------------------------------------- */
 
@@ -17,8 +13,10 @@ using namespace common;
 
 /* --------------------------------------------------------------------- */
 
-float* myAllocate( float hostdata[], int N )
+float* myAllocate( const float h_data[], int N )
 {
+    // allocate memory on the accessed device and copy host data to it
+
     CUdeviceptr pointer = 0;
 
     size_t size = sizeof( float ) * N;
@@ -27,18 +25,18 @@ float* myAllocate( float hostdata[], int N )
     SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, sizeof( float ) * N ), "cuMemAlloc( size = " << size << " ) failed." )
 
     // transfer host data
-    SCAI_CUDA_DRV_CALL( cuMemcpyHtoD( pointer, hostdata, size ), "tranfer host->device" )
+    SCAI_CUDA_DRV_CALL( cuMemcpyHtoD( pointer, h_data, size ), "tranfer host->device" )
 
     return reinterpret_cast<float*>( pointer );
 }
 
 /* --------------------------------------------------------------------- */
 
-void myFree( const float* data )
+void myFree( const float* d_data )
 {
-    CUdeviceptr pointer = reinterpret_cast<CUdeviceptr>( data );
+    CUdeviceptr pointer = reinterpret_cast<CUdeviceptr>( d_data );
 
-    SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << data << " ) failed" )
+    SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << d_data << " ) failed" )
 }
 
 /* --------------------------------------------------------------------- */
@@ -47,7 +45,7 @@ float myDot( float* d_a, float* d_b, int n )
 {
     float dot = 0.0;   // result argument
 
-    const CUDADevice& device = CUDAAccess::getCurrentCUDADevice();
+    const CUDACtx& device = CUDAAccess::getCurrentCUDACtx();
 
     SCAI_CUBLAS_CALL( cublasSdot( device.getcuBLASHandle(), n, d_a, 1, d_b, 1, &dot ),
                                   "cublasSDot for float" );
@@ -66,7 +64,7 @@ int main( int argc, const char** argv )
 
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
 
-    CUDADevice device( nr );
+    CUDACtx device( nr );
 
     float a[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
     float b[] = { 10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0 };
@@ -83,7 +81,23 @@ int main( int argc, const char** argv )
 
     float dot = myDot( d_a, d_b, n );
 
-    std::cout << "Result = " << dot << std::endl;
+    std::cout << "dot product a = [ " ;
+    for ( int i = 0; i < n ; ++i )
+    {
+        std::cout << a[i] << " ";
+    }
+    std::cout << "] x b = [ " ;
+    for ( int i = 0; i < n ; ++i )
+    {
+        std::cout << b[i] << " ";
+    }
+    std::cout << "]  = " << dot;
+    float r = 0;
+    for ( int i = 0; i < n ; ++i )
+    {
+        r += a[i] * b[i];
+    }
+    std::cout << ", should be " << r << std::endl;
 
     // free memory
 

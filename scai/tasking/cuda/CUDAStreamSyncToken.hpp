@@ -39,7 +39,7 @@
 
 #include <scai/tasking/SyncToken.hpp>
 #include <scai/tasking/cuda/CUDAStreamPool.hpp>
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 
 // CUDA
 #include <cuda.h>
@@ -70,7 +70,7 @@ public:
      *  A pointer to the CUDA context is required to enable/disable it.
      */
 
-    CUDAStreamSyncToken( const common::CUDADevice& cuda, const StreamType type );
+    CUDAStreamSyncToken( const common::CUDACtx& cuda, const StreamType type );
 
     void setEvent( CUevent event )
     {
@@ -105,7 +105,7 @@ public:
 
 private:
 
-    const common::CUDADevice& mCUDA;   // needed for synchronization
+    const common::CUDACtx& mCUDA;   // needed for synchronization
 
     CUstream mStream;
 

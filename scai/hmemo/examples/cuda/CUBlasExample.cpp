@@ -36,16 +36,11 @@
 
 #include <scai/hmemo/cuda/CUDAContext.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 
 #include <iostream>
 
 SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
-
-namespace scai
-{
-	extern cublasHandle_t CUDAContext_cublasHandle;
-
-} /* end namespace scai */
 
 using namespace scai;
 using namespace hmemo;
@@ -102,7 +97,9 @@ int main()
 
         SCAI_CONTEXT_ACCESS( cuda )
 
-        SCAI_CUBLAS_CALL( cublasSdot( CUDAContext_cublasHandle, n,
+        const common::CUDACtx& dev = common::CUDAAccess::getCurrentCUDACtx();
+
+        SCAI_CUBLAS_CALL( cublasSdot( dev.getcuBLASHandle(), n,
                                       rA.get(), 1, rB.get(), 1, &dot),
                                       "cublasSDot<float>" );
   

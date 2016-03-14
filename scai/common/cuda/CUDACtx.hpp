@@ -1,5 +1,5 @@
 /**
- * @file CUDADevice.hpp
+ * @file CUDACtx.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -41,6 +41,7 @@
 
 #include <cuda.h>
 #include <cublas_v2.h>
+#include <cusparse.h>
 
 #include <vector>
 
@@ -52,7 +53,7 @@ namespace common
 
 /* --------------------------------------------------------------------- */
 
-class COMMON_DLL_IMPORTEXPORT CUDADevice : private NonCopyable
+class COMMON_DLL_IMPORTEXPORT CUDACtx : private NonCopyable
 {   
 
 public:
@@ -63,14 +64,14 @@ public:
      *  @throws Exception if the device cannot be accessed
      */
 
-    CUDADevice( int deviceNr );
+    CUDACtx( int deviceNr );
 
     /** Destructor destroys the CUDA context used for the device.
      *
      *  Be careful: all allocated resources on the device should have been freed before.
      */
 
-    ~CUDADevice();
+    ~CUDACtx();
 
     /** Getter for the CUcontext to be used for CUDA driver API operations. */
 
@@ -89,6 +90,10 @@ public:
     /** Getter for the cuBLAS handle, will be created with first use */
 
     cublasHandle_t getcuBLASHandle() const;
+
+    /** Getter for the cuSparse handle, will be created with first use */
+
+    cusparseHandle_t getcuSparseHandle() const;
 
     /** Getter for the number of the device. */
 
@@ -110,6 +115,8 @@ private:
     int mDeviceNr;
 
     cublasHandle_t mcuBLASHandle;
+
+    cusparseHandle_t mcuSparseHandle;
 
     std::vector< common::function<void()> > mShutdownFunctions;
 };

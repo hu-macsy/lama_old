@@ -88,5 +88,5 @@ Common Classes for CUDA
    :maxdepth: 2
 
    CUDAError
-   CUDADevice
+   CUDACtx
    CUDAAccess

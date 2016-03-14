@@ -44,13 +44,13 @@
 namespace scai
 {
 
-using common::CUDADevice;
+using common::CUDACtx;
 using common::CUDAAccess;
 
 namespace tasking
 {
 
-CUDAStreamSyncToken::CUDAStreamSyncToken( const CUDADevice& cuda, const StreamType type ) : mCUDA( cuda )
+CUDAStreamSyncToken::CUDAStreamSyncToken( const CUDACtx& cuda, const StreamType type ) : mCUDA( cuda )
 {
     // take a CUDA stream from a pool, that might be allocated at first use
 

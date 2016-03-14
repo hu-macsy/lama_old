@@ -31,10 +31,12 @@
  */
 
 #include <scai/common/cuda/CUDAAccess.hpp>
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/Thread.hpp>
+
+#include <iostream>
 
 namespace scai
 {
@@ -45,29 +47,45 @@ namespace common
 // The current CUDA device can be accessed globally, but should be thread-private
 // we can rely on the fact that thread-private variable is initialized with NULL 
 
-static common::ThreadPrivatePtr<const CUDADevice> currentCUDADevice;
+static common::ThreadPrivatePtr<const CUDACtx> currentCUDACtx;
 
-CUDAAccess::CUDAAccess( const CUDADevice& dev ) : mCUcontext( dev.getCUcontext() )
+void CUDAAccess::enable( const CUDACtx& dev )
 {
-    SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "could not push context" )
+    // if ( currentCUDACtx.get() != NULL )
+    // {
+    //     std::cout << "WARN: enable of CUDA context while other context is set" << std::endl;
+    // }
 
-    mSaveDevice = currentCUDADevice.get();
+    SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( dev.getCUcontext() ), "could not push context" )
 
-    currentCUDADevice.set( &dev );
+    currentCUDACtx.set( &dev );
 }
 
-CUDAAccess::~CUDAAccess()
-{ 
+void CUDAAccess::disable()
+{
     CUcontext tmp; // temporary for last context, not necessary to save it
 
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
 
-    currentCUDADevice.set( mSaveDevice );
+    currentCUDACtx.set( NULL );
 }
 
-const CUDADevice& CUDAAccess::getCurrentCUDADevice()
+CUDAAccess::CUDAAccess( const CUDACtx& dev ) : mCUcontext( dev.getCUcontext() )
 {
-    const CUDADevice* current = currentCUDADevice.get();
+    mSaveDevice = currentCUDACtx.get();
+    enable( dev );
+}
+
+CUDAAccess::~CUDAAccess()
+{ 
+    disable();
+
+    currentCUDACtx.set( mSaveDevice );
+}
+
+const CUDACtx& CUDAAccess::getCurrentCUDACtx()
+{
+    const CUDACtx* current = currentCUDACtx.get();
 
     SCAI_ASSERT( current, "Currently, no device is accessed" )
 

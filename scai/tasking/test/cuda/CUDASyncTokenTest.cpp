@@ -35,7 +35,7 @@
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
-#include <scai/common/cuda/CUDADevice.hpp>
+#include <scai/common/cuda/CUDACtx.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
 
-    common::CUDADevice myCuda( deviceNr );
+    common::CUDACtx myCuda( deviceNr );
 
     {
         CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::TransferStream );
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE( destructorTest )
 
     BOOST_CHECK_THROW(
         {
-            common::CUDADevice myCuda( deviceNr );
+            common::CUDACtx myCuda( deviceNr );
 
             {
                 new CUDAStreamSyncToken( myCuda, CUDAStreamSyncToken::TransferStream );
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
     common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
 
-    common::CUDADevice myCuda( deviceNr );
+    common::CUDACtx myCuda( deviceNr );
 
     common::CUDAAccess cudaAccess( myCuda );
 

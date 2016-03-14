@@ -41,7 +41,7 @@ namespace scai
 namespace common
 {
 
-class CUDADevice;
+class CUDACtx;
 
 /** This class accesses a CUDA context with the constructor and
  *  releases it with the destructor.
@@ -59,21 +59,25 @@ public:
 
     /** The constructor enables the corresponding CUDA context. */
 
-    CUDAAccess( const CUDADevice& dev );
+    CUDAAccess( const CUDACtx& dev );
 
     /** The destructor disables the corresponding CUDA context. */
 
     ~CUDAAccess();
 
+    static void enable( const CUDACtx& dev );
+
+    static void disable();
+
     /** This static method returns the device currently accessed. */
 
-    static const CUDADevice& getCurrentCUDADevice();
+    static const CUDACtx& getCurrentCUDACtx();
 
 private:
 
     CUcontext mCUcontext;
 
-    const CUDADevice* mSaveDevice;  // save the device accessed before
+    const CUDACtx* mSaveDevice;  // save the device accessed before
 };
 
 } /* end namespace common */
