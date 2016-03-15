@@ -2,8 +2,9 @@ CUDAAccess
 ==========
 
 Before calling most of the CUDA driver or CUDA runtime routines, a CUDA context must
-be set globally. This context is not an explicit argument. Especially the launching
-of CUDA kernels requires an active CUDA context.
+be enabled.  Especially the launching of CUDA kernels requires an active CUDA context.
+As this context is not an explicit argument it is set globally but thread-specific,
+i.e. different threads can have different context enabled. 
 
 Applications that use only one CUDA context with the same thread (most likely the
 main thread) use always the same context and do not have to disable or enable it
@@ -11,7 +12,7 @@ But when switching between different contexts or different threads, the context 
 be disabled (pop routine) and another one has to be enabled (push routine).
 
 When a CUDA context has been created via the constructor of a CUDACtx it has been disabled and must
-be enabled explicitly via a push routine before further CUDA calls can be executed.
+be enabled explicitly via a push routine of the CUDA driver API before further CUDA calls can be executed.
 It should be disabled after these other CUDA calls.
 
 .. code-block:: c++

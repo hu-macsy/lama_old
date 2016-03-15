@@ -40,6 +40,18 @@ complete standard BLAS library that delivers 6x to 17x faster performance than t
 When using the cuBLAS library, a handle must be created that is returned by an initialization routine
 (``cublasInit``). This handle must be passed in each call of a cuBLAS function.
 
+.. code-block:: c++
+
+    CUDACtx context( nr );
+
+    CUDAAccess access( context );
+
+    ...
+    float dot;
+    cublasHandle_t handle = context.getcuBLASHandle();
+    SCAI_CUBLAS_CALL( cublasSdot( getcuBLASHandle(), ..., &dot ), "cublasSDot for float" );
+
+
 cuSPARSE API
 ============
 
@@ -50,4 +62,20 @@ and is designed to be called from C and C++.
 Like for the cuBLAS library, a handle is created and returned by an initialization routine (``cusparseCreate``).
 This  handle must be passed to every cuSPARSE function.
 
+.. code-block:: c++
 
+    void sub( ... )
+    {
+        cusparseHandle_t handle = CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
+        SCAI_CUSPARSE_CALL( cusparseScsr2csc( handle, ... ), "csr2csc<float>" )
+    }
+
+    CUDACtx context( nr );
+    {
+        CUDAAccess access( context );
+        sub( ... );
+    }
+
+For an object of the class ``CUDACtx`` the method ``getcuSparseHandle`` returns the handle to be used
+for the corresponding context. The example demonstrates how this handle can be accessed globally in
+subroutines.
