@@ -32,9 +32,10 @@
 
 #pragma once
 
+// local libraries
 #include <scai/lama/io/IOUtils.hpp>
-#include <scai/lama/io/FileIO.hpp>
 
+// scai internal libraries
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 
@@ -106,7 +107,7 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
     {
         if( dataType == common::getScalarType<H>() )
         {
-            FileIO::readBinaryData<H, ValueType>( in, data, n );
+            IOUtils::readBinaryData<H, ValueType>( in, data, n );
             return true;
         }
         else
@@ -161,7 +162,7 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
     {
         if( expectedSize == sizeof( H ) )
         {
-            FileIO::readBinaryData<H, ValueType>( in, data, n, offset );
+            IOUtils::readBinaryData<H, ValueType>( in, data, n, offset );
             return true;
         }
         else

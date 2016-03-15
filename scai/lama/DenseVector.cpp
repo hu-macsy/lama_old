@@ -40,7 +40,6 @@
 #include <scai/lama/expression/Expression.hpp>
 #include <scai/lama/StorageIO.hpp>
 
-#include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/FileType.hpp>
 #include <scai/lama/io/IOUtils.hpp>
 
@@ -1579,7 +1578,7 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
 
     if( type == common::scalar::INTERNAL )
     {
-        FileIO::readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );
+        IOUtils::readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );
     }
     else
     {

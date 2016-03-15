@@ -38,8 +38,8 @@ scai_project (
     CLASSES
 
         mmio
-        FileIO
         XDRFileStream
+        IOUtils
 
     HEADERS
 

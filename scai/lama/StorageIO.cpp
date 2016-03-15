@@ -37,7 +37,6 @@
 #include <scai/lama/StorageIO.hpp>
 
 // local library
-#include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/IOUtils.hpp>
@@ -182,9 +181,9 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
  */
 
 template<typename ValueType>
-static FileIO::file_size_t expectedCSRFileSize( const IndexType numRows, const IndexType numValues )
+static IOUtils::file_size_t expectedCSRFileSize( const IndexType numRows, const IndexType numValues )
 {
-    FileIO::file_size_t size = sizeof(IndexType) * ( numRows + 1 ); // size of csrIA
+    IOUtils::file_size_t size = sizeof(IndexType) * ( numRows + 1 ); // size of csrIA
 
     size += sizeof(IndexType) * numValues; // size of csrJA
     size += sizeof(ValueType) * numValues; // size of csrValues
@@ -207,7 +206,7 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     SCAI_REGION( "StorageIO.readCSRFromBinaryFile" )
 
-    FileIO::file_size_t actualSize = FileIO::getFileSize( fileName.c_str() );
+    IOUtils::file_size_t actualSize = IOUtils::getFileSize( fileName.c_str() );
 
     SCAI_LOG_INFO( logger, "CSR binary file " << fileName << " has size = " << actualSize )
 
@@ -217,23 +216,23 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     // read offset array IA
 
-    FileIO::readBinaryData<IndexType,IndexType>( inFile, ia.get(), numRows + 1, -1 );
+    IOUtils::readBinaryData<IndexType,IndexType>( inFile, ia.get(), numRows + 1, -1 );
 
     IndexType numValues = ia[numRows];
 
     WriteOnlyAccess<IndexType> ja( csrJA, numValues );
     WriteOnlyAccess<ValueType> values( csrValues, numValues );
 
-    FileIO::readBinaryData<IndexType,IndexType>( inFile, ja.get(), numValues, -1 );
+    IOUtils::readBinaryData<IndexType,IndexType>( inFile, ja.get(), numValues, -1 );
 
     // now we can calculate the expected size
 
-    FileIO::file_size_t expectedSize = expectedCSRFileSize<ValueType>( numRows, numValues );
+    IOUtils::file_size_t expectedSize = expectedCSRFileSize<ValueType>( numRows, numValues );
 
     if ( expectedSize == actualSize )
     {
         SCAI_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() << ", no conversion" )
-        FileIO::readBinaryData<ValueType,ValueType>( inFile, values.get(), numValues );
+        IOUtils::readBinaryData<ValueType,ValueType>( inFile, values.get(), numValues );
     }
     else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readBinary( actualSize, inFile, values.get(), numValues ))
     {
