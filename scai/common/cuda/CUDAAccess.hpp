@@ -65,9 +65,9 @@ public:
 
     ~CUDAAccess();
 
-    static void enable( const CUDACtx& dev );
+    static const CUDACtx* enable( const CUDACtx& ctx );
 
-    static void disable();
+    static void disable( const CUDACtx* last );
 
     /** This static method returns the device currently accessed. */
 
