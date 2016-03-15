@@ -53,20 +53,23 @@ const CUDACtx* CUDAAccess::enable( const CUDACtx& ctx )
 {
     SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( ctx.getCUcontext() ), "could not push context" )
 
-    const CUDACtx* res = currentCUDACtx.get();
+    const CUDACtx* last = currentCUDACtx.get();
 
-    currentCUDACtx.set( &ctx );
+    currentCUDACtx.set( &ctx );  // make it available globally in thread-private variable
 
-    return res;
+    return last; 
 }
 
 void CUDAAccess::disable( const CUDACtx* last )
 {
-    CUcontext tmp; // temporary for last context, not necessary to save it
+    CUcontext tmp; // result variable for current context, not needed here
 
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
 
     currentCUDACtx.set( last );
+
+    // last != NULL -> current context is last->getCUcontext() 
+    // last == NULL -> current context is 0
 }
 
 CUDAAccess::CUDAAccess( const CUDACtx& ctx ) : mCUcontext( ctx.getCUcontext() )

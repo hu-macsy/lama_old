@@ -69,7 +69,7 @@ then
     i=0
 
     # run CUDA examples
-    RUN 1 cuda/CUDADeviceExample.exe
+    RUN 1 cuda/DemoCUDACtx.exe
     RUN 1 cuda/BenchCUDA.exe
     RUN 1 cuda/CUDAExample.exe
     RUN 1 cuda/CUBLASExample1.exe
