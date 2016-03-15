@@ -110,6 +110,8 @@ public:
     lama::Scalar mSOld;
     lama::Scalar mSNew;
     lama::Scalar mZeta;
+
+    lama::Scalar mEps;
     };
     /**
     * @brief Returns the complete configuration of the derived class

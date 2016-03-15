@@ -83,6 +83,24 @@ public:
     template<typename ValueType>
     static scai::lama::CSRSparseMatrix<ValueType> symmNotPosDefMatrix();
 
+    /** 
+     * @brief Creates a sparse, symmetric and indefinite matrix in CSR format.
+     *
+     * This matrix bcsstk22.mtx is real, sparse, symmetric, indefinite and not diagonal domainant.
+     * The moduli of the entries are of order 10^6.
+     *
+     * Currently (14.03.2016), this leads to NaN-entries for some iterative solvers like
+     * CGNR, GMRES, DefaultJacobi!!  
+     * 
+     * It can be used to test convergence for the following krylow methods:
+     * BiCG, BiCGstab, CG, CGS, MINRES, QMR
+     *
+     *
+     *  @param[out] matrix in CSR format
+     */
+    template<typename ValueType>
+    static scai::lama::CSRSparseMatrix<ValueType> symmInDefMatrix();
+
     /**
      * @brief Creates a sparse undsymmetric and positive definite matrix in CSR format.
      *
@@ -173,6 +191,16 @@ scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::symmNotPosDefMatrix()
 {
     std::string prefix = scai::test::Configuration::getPath();
     std::string inputFile = prefix + "/bfwb398.mtx";
+
+    scai::lama::CSRSparseMatrix<double> matrix(inputFile);
+    return matrix;
+}
+
+template<typename ValueType>
+scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::symmInDefMatrix()
+{
+    std::string prefix = scai::test::Configuration::getPath();
+    std::string inputFile = prefix + "/bcsstk22.mtx";
 
     scai::lama::CSRSparseMatrix<double> matrix(inputFile);
     return matrix;

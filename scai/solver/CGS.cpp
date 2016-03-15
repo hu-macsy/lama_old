@@ -85,8 +85,31 @@ void CGS::initialize( const Matrix& coefficients )
  	CGSRuntime& runtime = getRuntime();
 
     runtime.mNormRes = 1.0;
-    runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
-
+    // runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
+    switch(coefficients.getValueType()){
+        case common::scalar::FLOAT:
+            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
+            break;
+        case common::scalar::DOUBLE:
+            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
+            break;
+        case common::scalar::LONG_DOUBLE:
+            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
+            break;
+        case common::scalar::COMPLEX:
+            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
+            break;
+        case common::scalar::DOUBLE_COMPLEX:
+            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
+            break;
+        case common::scalar::LONG_DOUBLE_COMPLEX:
+            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
+            break;    
+        default:
+        SCAI_LOG_INFO(logger,"Valuetype not supported");
+        break;
+    }
+    
     runtime.mRes0.reset( coefficients.newDenseVector() );
     runtime.mVecT.reset( coefficients.newDenseVector() );
     runtime.mVecP.reset( coefficients.newDenseVector() );
