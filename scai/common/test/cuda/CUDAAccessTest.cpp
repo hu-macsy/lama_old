@@ -132,5 +132,40 @@ BOOST_AUTO_TEST_CASE( getCurrentDeviceTest )
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( stackAccessTest )
+{
+    using namespace scai::common;
+
+    int nr = 0;
+
+    Settings::getEnvironment( nr, "SCAI_DEVICE" );
+
+    // create 3 different contexts for one and the same device 
+
+    CUDACtx myCuda1( nr );
+    CUDACtx myCuda2( nr );
+    CUDACtx myCuda3( nr );
+
+    {
+        CUDAAccess access1( myCuda1 );
+
+        {
+            CUDAAccess access2( myCuda2 );
+
+            {
+                CUDAAccess access3( myCuda3 );
+            }
+
+            const CUDACtx& current = CUDAAccess::getCurrentCUDACtx();
+            BOOST_CHECK_EQUAL( &myCuda2, &current );
+        }
+
+        const CUDACtx& current = CUDAAccess::getCurrentCUDACtx();
+        BOOST_CHECK_EQUAL( &myCuda1, &current );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
 

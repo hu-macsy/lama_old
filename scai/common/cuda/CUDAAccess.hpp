@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Help class to access and release a CUDA device
+ * @brief Class to enable/disable access to a CUDA context
  * @author Thomas Brandes
  * @date 04.05.2013
  * @since 1.0.0
@@ -65,11 +65,25 @@ public:
 
     ~CUDAAccess();
 
-    static void enable( const CUDACtx& dev );
+    /** This method enables an object CUDACtx 
+     *
+     *  @param[in] ctx context that will be enabled
+     *  @returns   pointer to the last enabled context (can be NULL)
+     */
+    static const CUDACtx* enable( const CUDACtx& ctx );
 
-    static void disable();
+    /** This method disables the current context and resets the old one.
+     *
+     *  @param[in] last is pointer to the last context
+     */
+    static void disable( const CUDACtx* last );
 
-    /** This static method returns the device currently accessed. */
+    /** This static method returns the CUDACtx object currently accessed. 
+     *
+     *  @returns the currently set CUDACtx ( is thread-specific )
+     *  @throws Exception if no CUDACtx has been enabled before
+     *
+     */
 
     static const CUDACtx& getCurrentCUDACtx();
 

@@ -150,17 +150,19 @@ void CUDAContext::writeAt( std::ostream& stream ) const
 void CUDAContext::disable( const char* file, int line ) const
 {
     Context::disable( file, line ); // call routine of base class
-    SCAI_LOG_DEBUG( logger, *this << ": disable by thread = " << Thread::getSelf() )
-    common::CUDAAccess::disable();
+
+    SCAI_ASSERT( !contextStack.empty(), "call of disable without previous enable" )
+
+    common::CUDAAccess::disable( contextStack.top() );
+    contextStack.pop();
 }
 
 /* ----------------------------------------------------------------------------- */
 
 void CUDAContext::enable( const char* file, int line ) const
 {
-    SCAI_LOG_DEBUG( logger, *this << ": enable by thread = " << Thread::getSelf() )
     Context::enable( file, line ); // call routine of base class
-    common::CUDAAccess::enable( *this );
+    contextStack.push( common::CUDAAccess::enable( *this ) );
 }
 
 /* ----------------------------------------------------------------------------- */

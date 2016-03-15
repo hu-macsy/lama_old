@@ -50,6 +50,7 @@
 
 // std
 #include <string>
+#include <stack>
 
 namespace scai
 {
@@ -171,7 +172,7 @@ private:
 
     std::string mDeviceName; //!< name set during initialization
 
-    common::Thread::Id mOwnerThread;
+    mutable std::stack<const common::CUDACtx*> contextStack;
 
     // static int numUsedDevices; //!< total number of used devices
 
