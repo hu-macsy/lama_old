@@ -61,6 +61,8 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/macros/instantiate.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 // std
 #include <ostream>
@@ -1624,12 +1626,7 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_DENSE_VECTOR_INSTANTIATE(z, I, _)                                     \
-    template class COMMON_DLL_IMPORTEXPORT DenseVector<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_VECTOR_INSTANTIATE, _ )
-
-#undef LAMA_DENSE_VECTOR_INSTANTIATE
+SCAI_COMMON_INST_CLASS( DenseVector, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

@@ -34,7 +34,7 @@
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -401,13 +401,7 @@ const char* JDSSparseMatrix<ValueType>::typeName()
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-#define LAMA_JDS_SPARSE_MATRIX_INSTANTIATE(z, I, _)                               \
-                                                                                  \
-    template class COMMON_DLL_IMPORTEXPORT JDSSparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_JDS_SPARSE_MATRIX_INSTANTIATE, _ )
-
-#undef LAMA_JDS_SPARSE_MATRIX_INSTANTIATE
+SCAI_COMMON_INST_CLASS( JDSSparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

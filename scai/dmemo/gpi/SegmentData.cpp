@@ -38,7 +38,7 @@
 #include <scai/dmemo/gpi/GPIUtils.hpp>
 
 #include <scai/tracing.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instaniate.hpp>
 #include <scai/common/macros/assert.hpp>
 
 using namespace std;
@@ -178,12 +178,7 @@ template class COMMON_DLL_IMPORTEXPORT SegmentData<char> ;
 
 // generic template instantiation for the supported data types
 
-#define SCAI_SEGMENT_DATA_INSTANTIATE( z, I, _ )                         \
-template class COMMON_DLL_IMPORTEXPORT SegmentData<ARRAY_TYPE##I> ;
-
-BOOST_PP_REPEAT( ARRAY_TYPE_CNT, SCAI_SEGMENT_DATA_INSTANTIATE, _ )
-
-#undef SCAI_SEGMENT_DATA_INSTANTIATE
+SCAI_COMMON_INST_CLASS( SegmentData, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } // namespace dmemo
 

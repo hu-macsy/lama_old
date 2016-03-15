@@ -47,6 +47,7 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 using namespace scai::hmemo;
 
@@ -1438,29 +1439,42 @@ DenseStorage<ValueType>* DenseStorage<ValueType>::newMatrixStorage() const
    return storage.release();
 }
 
+template<typename ValueType>
+std::string DenseStorage<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("DenseStorage<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* DenseStorage<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
+template<typename ValueType>
+std::string DenseStorageView<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("DenseStorageView<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* DenseStorageView<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_DENSE_STORAGE_INSTANTIATE(z, I, _)                                         \
-    template<>                                                                          \
-    const char* DenseStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                      \
-    {                                                                                   \
-        return "DenseStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                \
-    }                                                                                   \
-    \
-    template<>                                                                          \
-    const char* DenseStorageView<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
-    {                                                                                   \
-        return "DenseStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                \
-    }                                                                                   \
-    \
-    template class COMMON_DLL_IMPORTEXPORT DenseStorage<ARITHMETIC_HOST_TYPE_##I> ;     \
-    template class COMMON_DLL_IMPORTEXPORT DenseStorageView<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_DENSE_STORAGE_INSTANTIATE
+SCAI_COMMON_INST_CLASS( DenseStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseStorageView, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

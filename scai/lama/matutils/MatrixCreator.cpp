@@ -40,7 +40,7 @@
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <cmath>
@@ -607,12 +607,7 @@ void MatrixCreator<ValueType>::buildRandom(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_MATRIX_CREATOR_INSTANTIATE(z, I, _)                                     \
-    template class COMMON_DLL_IMPORTEXPORT MatrixCreator<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_CREATOR_INSTANTIATE, _ )
-
-#undef LAMA_MATRIX_CREATOR_INSTANTIATE
+SCAI_COMMON_INST_CLASS( MatrixCreator, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

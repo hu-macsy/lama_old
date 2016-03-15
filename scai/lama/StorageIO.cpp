@@ -52,7 +52,7 @@
 
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -1303,12 +1303,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_STORAGE_IO_INSTANTIATE(z, I, _)                              \
-    template class COMMON_DLL_IMPORTEXPORT StorageIO<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_STORAGE_IO_INSTANTIATE, _ )
-
-#undef LAMA_STORAGE_IO_INSTANTIATE
+SCAI_COMMON_INST_CLASS( StorageIO, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 /* -------------------------------------------------------------------------- */
 

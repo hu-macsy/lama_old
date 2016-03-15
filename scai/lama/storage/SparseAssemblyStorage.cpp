@@ -41,7 +41,7 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -886,23 +886,26 @@ MatrixStorageCreateKeyType SparseAssemblyStorage<ValueType>::createValue()
     return MatrixStorageCreateKeyType( Format::ASSEMBLY, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string SparseAssemblyStorage<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("SparseAssemblyStorage<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* SparseAssemblyStorage<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializattions and instantiations                        */
 /* ========================================================================= */
 
-
-#define LAMA_ASSEMBLY_STORAGE_INSTANTIATE(z, I, _)                                           \
-    template<>                                                                               \
-    const char* SparseAssemblyStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
-    {                                                                                        \
-        return "SparseAssemblyStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";          \
-    }                                                                                        \
-                                                                                             \
-    template class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ASSEMBLY_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_ASSEMBLY_STORAGE_INSTANTIATE
+SCAI_COMMON_INST_CLASS( SparseAssemblyStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

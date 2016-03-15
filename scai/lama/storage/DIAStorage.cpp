@@ -57,6 +57,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 using namespace scai::hmemo;
 
@@ -1221,6 +1222,21 @@ _MatrixStorage* DIAStorage<ValueType>::create()
     return new DIAStorage<ValueType>();
 }
 
+template<typename ValueType>
+std::string DIAStorage<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("DIAStorage<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* DIAStorage<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
@@ -1233,18 +1249,7 @@ MatrixStorageCreateKeyType DIAStorage<ValueType>::createValue()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_DIA_STORAGE_INSTANTIATE(z, I, _)                                     \
-    template<>                                                                    \
-    const char* DIAStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
-    {                                                                             \
-        return "DIAStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";      \
-    }                                                                             \
-                                                                                  \
-    template class COMMON_DLL_IMPORTEXPORT DIAStorage<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DIA_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_DIA_STORAGE_INSTANTIATE
+SCAI_COMMON_INST_CLASS( DIAStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

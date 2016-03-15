@@ -524,6 +524,8 @@ private:
         const hmemo::HArray<ValueType>& y,
         bool async ) const;
 
+    static std::string initTypeName();
+
 public:
 
     // static create method that will be used to register at MatrixStorage factory

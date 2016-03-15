@@ -34,7 +34,7 @@
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
 
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -401,13 +401,7 @@ const char* COOSparseMatrix<ValueType>::typeName()
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-#define LAMA_COO_SPARSE_MATRIX_INSTANTIATE(z, I, _)                               \
-                                                                                  \
-    template class COMMON_DLL_IMPORTEXPORT COOSparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COO_SPARSE_MATRIX_INSTANTIATE, _ )
-
-#undef LAMA_COO_SPARSE_MATRIX_INSTANTIATE
+SCAI_COMMON_INST_CLASS( COOSparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

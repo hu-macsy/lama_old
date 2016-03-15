@@ -405,6 +405,8 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
+    static std::string initTypeName();
+
 public:
 
     // static create method that will be used to register at MatrixStorage factory

@@ -62,7 +62,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -1373,12 +1373,10 @@ bool MatrixStorage<ValueType>::checkSymmetry() const
 
 #define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                                      \
                                                                                       \
-    template class COMMON_DLL_IMPORTEXPORT MatrixStorage<ARITHMETIC_HOST_TYPE_##I> ;  \
-                                                                                      \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                        \
                      LAMA_MATRIX_STORAGE2_INSTANTIATE,                                \
                      ARITHMETIC_HOST_TYPE_##I )                                       \
-     
+
 
 BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 
@@ -1390,6 +1388,8 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
     stream << scai::lama::format2Str( storageFormat );
     return stream;
 }
+
+SCAI_COMMON_INST_CLASS( MatrixStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

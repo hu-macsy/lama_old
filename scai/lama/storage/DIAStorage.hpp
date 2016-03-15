@@ -396,6 +396,8 @@ private:
 
     static void setUsedDiagonal( bool upperDiagonalUsed[], bool lowerDiagonalUsed[], IndexType i, IndexType j );
 
+    static std::string initTypeName();
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
 
 public:

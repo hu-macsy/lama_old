@@ -373,6 +373,8 @@ private:
 
     void invertDense( const DenseStorageView<ValueType>& other );
 
+    static std::string initTypeName();
+
 public:
 
     // static create method that will be used to register at MatrixStorage factory
@@ -459,6 +461,8 @@ public:
 private:
 
     hmemo::HArray<ValueType> mDataArray; //!<  matrix values, size is mNumRows x mNumColumns
+
+    static std::string initTypeName();
 
 public:
 

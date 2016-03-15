@@ -55,7 +55,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // sqrt for all value types
 #include <cmath> 
@@ -1175,22 +1175,26 @@ MatrixStorageCreateKeyType COOStorage<ValueType>::createValue()
     return MatrixStorageCreateKeyType( Format::COO, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string COOStorage<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("COOStorage<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* COOStorage<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_COO_STORAGE_INSTANTIATE(z, I, _)                                     \
-    template<>                                                                    \
-    const char* COOStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
-    {                                                                             \
-        return "COOStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";      \
-    }                                                                             \
-                                                                                  \
-    template class COMMON_DLL_IMPORTEXPORT COOStorage<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COO_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_COO_STORAGE_INSTANTIATE
+SCAI_COMMON_INST_CLASS( COOStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

@@ -64,7 +64,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <cmath>
@@ -2498,13 +2498,7 @@ const char* SparseMatrix<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                                     \
-                                                                                    \
-    template class COMMON_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SPARSE_MATRIX_INSTANTIATE, _ )
-
-#undef LAMA_SPARSE_MATRIX_INSTANTIATE
+SCAI_COMMON_INST_CLASS( SparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 
