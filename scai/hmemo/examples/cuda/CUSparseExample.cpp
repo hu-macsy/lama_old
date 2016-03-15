@@ -94,6 +94,8 @@ int main()
     HArray<int> csrIA;
 
     {
+        SCAI_CONTEXT_ACCESS( cuda )
+
         ReadAccess<int> readcooIA( cooIA, cuda );
         WriteOnlyAccess<int> writecsrIA( csrIA, cuda, numRows + 1 );
 
