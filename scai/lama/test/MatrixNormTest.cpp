@@ -75,17 +75,14 @@ void l1NormTestMethod( ContextPtr context )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( l1NormTest, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        l1NormTestMethod< CSRSparseMatrix<ValueType> >( context );
-        l1NormTestMethod< ELLSparseMatrix<ValueType> >( context );
-        l1NormTestMethod< COOSparseMatrix<ValueType> >( context );
-        l1NormTestMethod< JDSSparseMatrix<ValueType> >( context );
-        l1NormTestMethod< DIASparseMatrix<ValueType> >( context );
-        l1NormTestMethod< DenseMatrix<ValueType> >( context );
-        l1NormTestMethod< DIASparseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr();
+
+    l1NormTestMethod< CSRSparseMatrix<ValueType> >( context );
+    l1NormTestMethod< ELLSparseMatrix<ValueType> >( context );
+    l1NormTestMethod< COOSparseMatrix<ValueType> >( context );
+    l1NormTestMethod< JDSSparseMatrix<ValueType> >( context );
+    l1NormTestMethod< DIASparseMatrix<ValueType> >( context );
+    l1NormTestMethod< DenseMatrix<ValueType> >( context );
 }
 
 template<typename MatrixType>
@@ -111,17 +108,14 @@ void l2NormTestMethod( ContextPtr context )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        l2NormTestMethod< CSRSparseMatrix<ValueType> >( context );
-        l2NormTestMethod< ELLSparseMatrix<ValueType> >( context );
-        l2NormTestMethod< COOSparseMatrix<ValueType> >( context );
-        l2NormTestMethod< JDSSparseMatrix<ValueType> >( context );
-        l2NormTestMethod< DIASparseMatrix<ValueType> >( context );
-        l2NormTestMethod< DenseMatrix<ValueType> >( context );
-        l2NormTestMethod< DIASparseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr();
+
+    l2NormTestMethod< CSRSparseMatrix<ValueType> >( context );
+    l2NormTestMethod< ELLSparseMatrix<ValueType> >( context );
+    l2NormTestMethod< COOSparseMatrix<ValueType> >( context );
+    l2NormTestMethod< JDSSparseMatrix<ValueType> >( context );
+    l2NormTestMethod< DIASparseMatrix<ValueType> >( context );
+    l2NormTestMethod< DenseMatrix<ValueType> >( context );
 }
 
 template<typename MatrixType>
@@ -147,17 +141,14 @@ void maxNormTestMethod( ContextPtr context )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( maxNormTest, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        maxNormTestMethod< CSRSparseMatrix<ValueType> >( context );
-        maxNormTestMethod< ELLSparseMatrix<ValueType> >( context );
-        maxNormTestMethod< COOSparseMatrix<ValueType> >( context );
-        maxNormTestMethod< JDSSparseMatrix<ValueType> >( context );
-        maxNormTestMethod< DIASparseMatrix<ValueType> >( context );
-        maxNormTestMethod< DenseMatrix<ValueType> >( context );
-        maxNormTestMethod< DIASparseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr();
+
+    maxNormTestMethod< CSRSparseMatrix<ValueType> >( context );
+    maxNormTestMethod< ELLSparseMatrix<ValueType> >( context );
+    maxNormTestMethod< COOSparseMatrix<ValueType> >( context );
+    maxNormTestMethod< JDSSparseMatrix<ValueType> >( context );
+    maxNormTestMethod< DIASparseMatrix<ValueType> >( context );
+    maxNormTestMethod< DenseMatrix<ValueType> >( context );
 }
 
 BOOST_AUTO_TEST_SUITE_END();

@@ -130,18 +130,16 @@ void testSolveMethod( ContextPtr loc )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( solveTest, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveMethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveMethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveMethod< JDSSparseMatrix<ValueType> >( context );
-        // @todo: does not work as DIA does not preserve diagonal property
-        // testSolveMethod< DIASparseMatrix<ValueType> >( context );
-        testSolveMethod< COOSparseMatrix<ValueType> >( context );
-        // @todo: not yet available: DenseMatrix = SparseMatrix
-        // testSolveMethod< DenseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr(); 
+
+    testSolveMethod< CSRSparseMatrix<ValueType> >( context );
+    testSolveMethod< ELLSparseMatrix<ValueType> >( context );
+    testSolveMethod< JDSSparseMatrix<ValueType> >( context );
+    // @todo: does not work as DIA does not preserve diagonal property
+    // testSolveMethod< DIASparseMatrix<ValueType> >( context );
+    testSolveMethod< COOSparseMatrix<ValueType> >( context );
+    // @todo: not yet available: DenseMatrix = SparseMatrix
+    // testSolveMethod< DenseMatrix<ValueType> >( context );
 }
 
 /* --------------------------------------------------------------------- */
@@ -262,15 +260,13 @@ void testSolve2Method( ContextPtr loc )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve2, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolve2Method< CSRSparseMatrix<ValueType> >( context );
-        testSolve2Method< ELLSparseMatrix<ValueType> >( context );
-        testSolve2Method< JDSSparseMatrix<ValueType> >( context );
-        // testSolve2Method< DIASparseMatrix<ValueType> >( context );
-        testSolve2Method< COOSparseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr(); 
+
+    testSolve2Method< CSRSparseMatrix<ValueType> >( context );
+    testSolve2Method< ELLSparseMatrix<ValueType> >( context );
+    testSolve2Method< JDSSparseMatrix<ValueType> >( context );
+    // testSolve2Method< DIASparseMatrix<ValueType> >( context );
+    testSolve2Method< COOSparseMatrix<ValueType> >( context );
 }
 
 /* --------------------------------------------------------------------- */

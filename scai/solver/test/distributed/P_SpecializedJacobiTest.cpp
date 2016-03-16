@@ -138,15 +138,13 @@ void testSolveMethod( ContextPtr loc )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveMethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveMethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveMethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveMethod< COOSparseMatrix<ValueType> >( context );
-        testSolveMethod< DIASparseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr();
+
+    testSolveMethod< CSRSparseMatrix<ValueType> >( context );
+    testSolveMethod< ELLSparseMatrix<ValueType> >( context );
+    testSolveMethod< JDSSparseMatrix<ValueType> >( context );
+    testSolveMethod< COOSparseMatrix<ValueType> >( context );
+    testSolveMethod< DIASparseMatrix<ValueType> >( context );
 }
 
 /* ------------------------------------------------------------------------- */
