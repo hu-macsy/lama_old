@@ -34,9 +34,7 @@
 #pragma once
 
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/hmemo/test/TestMacros.hpp>
-
-#include <scai/hmemo/Context.hpp>
+#include <scai/hmemo/test/ContextFix.hpp>
 
 /* --------------------------------------------------------------------- */
 /*     test types for BLAS ( S, D, C, Z )                                */

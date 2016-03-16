@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
         Solver* solver = Solver::create( values[i], "" );
 
-        LAMA_WRITEAT_TEST( *solver );
+        SCAI_COMMON_WRITEAT_TEST( *solver );
     }
 }
 

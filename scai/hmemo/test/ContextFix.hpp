@@ -1,5 +1,5 @@
 /**
- * @file TaskSyncTokenTest.cpp
+ * @file scai/hmemo/test/ContextFix.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,56 +25,42 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class TaskSyncTokenTest.
- * @author Alexander Büchel, Thomas Brandes
- * @date 02.02.2012
+ * @brief Test fixture for context 
+ * @author Thomas Brandes
+ * @date 15.03.2016
  * @since 1.0.0
  */
 
+#pragma once
+
+#include <scai/hmemo/Context.hpp>
+
 #include <boost/test/unit_test.hpp>
-
-#include <scai/tasking/TaskSyncToken.hpp>
-
-#include <scai/lama/test/TestMacros.hpp>
-#include <scai/common/bind.hpp>
-
-using namespace scai::tasking;
-using namespace scai::common;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( TaskSyncTokenTest )
-
-SCAI_LOG_DEF_LOGGER( logger, "Test.TaskSyncTokenTest" )
-
-/* ----------------------------------------------------------------------- */
-
-void threadMethod( const int in, int& out )
+/** Fixture to be used for BOOST_GLOBAL_FIXTURE     
+ *
+ *  provides access to testContext used as context at which tests should run
+ *
+ *  Purpose: use global Fixture avoids init/free of context device for each single test
+ *
+ *  Note: static variable ContextFix::testContext must be defined in cpp file.
+ */
+struct ContextFix
 {
-    out = in;
-}
+    ContextFix()
+    {   
+        testContext = scai::hmemo::Context::getContextPtr();
+        // BOOST_TEST_MESSAGE( "Setup ContextFix: test context = " << *testContext ); 
+    }
 
-/* ----------------------------------------------------------------------- */
+    ~ContextFix()
+    {
+        // BOOST_TEST_MESSAGE( "Teardown ContextFix" ); 
+        testContext.reset();
+    }
+    
+    static scai::hmemo::ContextPtr testContext;
+};
 
-BOOST_AUTO_TEST_CASE( runTest )
-{
-    int in = 1;
-    int out = 0;
-    //TODO: Check /*this*/
-    TaskSyncToken testToken( bind( &TaskSyncTokenTest::threadMethod, /*this,*/in, ref( out ) ) );
-    testToken.wait();
-    BOOST_CHECK_EQUAL( in, out );
-}
-
-/* ----------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( writeAtTest )
-{
-    int in = 1;
-    int out = 0;
-    TaskSyncToken testToken( bind( &TaskSyncTokenTest::threadMethod, /*this,*/in, ref( out ) ) );
-    LAMA_WRITEAT_TEST( testToken );
-}
-/* ----------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE_END();

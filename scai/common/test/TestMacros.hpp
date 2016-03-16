@@ -115,3 +115,21 @@ typedef boost::mpl::list<ARITHMETIC_ARRAY_HOST> scai_array_test_types;
 
 #endif
 
+/*
+ * @brief TestMacro SCAI_COMMON_WRITEAT_TEST( printable )
+ *
+ * This macro checks if a output will be created by writing an object
+ * into a stream. The length of this output must be greater than 0.
+ * This object must be inherited from class Printable.
+ *
+ * @param printable     object of type printable
+ */
+
+#define SCAI_COMMON_WRITEAT_TEST( printable )              \
+    {                                                      \
+        std::stringstream mStream;                         \
+        mStream << printable;                              \
+        std::string mString = mStream.str();               \
+        BOOST_CHECK( mString.length() > 0 );               \
+    }
+

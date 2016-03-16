@@ -134,17 +134,15 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionmethod< COOSparseMatrix<ValueType> >( context );
-        // @todo: does not work as DenseMatrix = SparseMatrix not supported yet
-        // testSolveWithoutPreconditionmethod< DenseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr();
+
+    testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionmethod< DIASparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionmethod< COOSparseMatrix<ValueType> >( context );
+    // @todo: does not work as DenseMatrix = SparseMatrix not supported yet
+    // testSolveWithoutPreconditionmethod< DenseMatrix<ValueType> >( context );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -204,16 +202,13 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr();
+    testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
 }
 
 /* ------------------------------------------------------------------------- */

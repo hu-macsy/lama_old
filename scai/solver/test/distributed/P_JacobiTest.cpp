@@ -138,16 +138,13 @@ void testSolveWithoutPreconditionMethod( ContextPtr loc )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveWithoutPreconditionMethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionMethod< ELLSparseMatrix<ValueType> >( context );
-        // testSolveWithoutPreconditionMethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionMethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithoutPreconditionMethod< COOSparseMatrix<ValueType> >( context );
-        // testSolveWithoutPreconditionMethod< DenseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr(); 
+    testSolveWithoutPreconditionMethod< CSRSparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionMethod< ELLSparseMatrix<ValueType> >( context );
+    // testSolveWithoutPreconditionMethod< DIASparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionMethod< JDSSparseMatrix<ValueType> >( context );
+    testSolveWithoutPreconditionMethod< COOSparseMatrix<ValueType> >( context );
+    // testSolveWithoutPreconditionMethod< DenseMatrix<ValueType> >( context );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -197,18 +194,15 @@ void testSolveWithPreconditionMethod( ContextPtr loc )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveWithPreconditionMethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionMethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionMethod< COOSparseMatrix<ValueType> >( context );
-        //@todo: DIA has problems with diagonal property after redistribute
-        // testSolveWithPreconditionMethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionMethod< JDSSparseMatrix<ValueType> >( context );
-        //@todo: Dense cannot be constructed by SparseMatrix
-        // testSolveWithPreconditionMethod< DenseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr(); 
+    testSolveWithPreconditionMethod< CSRSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionMethod< ELLSparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionMethod< COOSparseMatrix<ValueType> >( context );
+    //@todo: DIA has problems with diagonal property after redistribute
+    // testSolveWithPreconditionMethod< DIASparseMatrix<ValueType> >( context );
+    testSolveWithPreconditionMethod< JDSSparseMatrix<ValueType> >( context );
+    //@todo: Dense cannot be constructed by SparseMatrix
+    // testSolveWithPreconditionMethod< DenseMatrix<ValueType> >( context );
 }
 
 /* --------------------------------------------------------------------- */

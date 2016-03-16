@@ -41,9 +41,11 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running tests serial
-echo "Running serial tests"
-./lama_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/serial_tests.xml
+# Running tests for Host context
+
+echo "Running lama tests for Host context"
+./lamaTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaHostTest.xml
+
 if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
@@ -59,7 +61,10 @@ fi
 
 if [ -d cuda ];
 then
+    echo "Running lama tests for CUDA context"
+    ./lamaTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaCudaTest.xml
+
     #Running CUDA tests
-    echo "Running cuda tests"
+    echo "Running dedicated cuda tests"
     cuda/lama_cuda_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/cuda_tests.xml
 fi

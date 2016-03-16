@@ -34,9 +34,11 @@
 #pragma once
 
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/hmemo/test/TestMacros.hpp>
+#include <scai/common/macros/print_string.hpp>
+#include <scai/common/preprocessor.hpp>
+#include <scai/logging.hpp>
+#include <scai/hmemo/Context.hpp>
 #include <scai/kregistry/test/TestMacros.hpp>
-
 #include <scai/lama/Scalar.hpp>
 
 #include <boost/test/detail/unit_test_parameters.hpp>
@@ -109,24 +111,6 @@
 
 #define SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )                  \
     SCAI_CHECK_SCALAR_SMALL( x, ValueType, scai::common::TypeTraits<ValueType>::small() )
-
-/*
- * @brief HelperMacro LAMA_WRITEAT_TEST( printable )
- *
- * This macro checks if a output will be created by writing an object
- * into a stream. The length of this output must be greater than 0.
- * This object must be inherited from class Printable.
- *
- * @param printable     object of type printable
- */
-
-#define LAMA_WRITEAT_TEST( printable )                     \
-    {                                                      \
-        std::stringstream mStream;                         \
-        mStream << printable;                              \
-        std::string mString = mStream.str();               \
-        BOOST_CHECK( mString.length() > 0 );               \
-    }
 
 /*
  * log levels are defined in boost/test/detail/log_level.hpp
@@ -316,3 +300,54 @@
 #define LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( classname );                                                            \
     template<typename StorageType>                                                                                     \
     void classname<StorageType>::runTests()
+
+
+/** This macro runs method<ValueType>( context ) where ValueType is given by the I-th arithmetic Host Type
+ *  (skips the run for long double types on CUDA as not supported there).
+ *
+ *  KernelRegistryException is caught with a correpsonding warn message on logger
+ */
+
+#define LAMA_RUN_TEST(z, I, method )                                                                            \
+    try                                                                                                         \
+    {                                                                                                           \
+        if ( context->getType() == scai::common::context::CUDA                                                  \
+                               || context->getType() == scai::common::context::MIC )                            \
+        {                                                                                                       \
+            switch( scai::common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() )                                   \
+            {                                                                                                   \
+                case scai::common::scalar::LONG_DOUBLE:                                                         \
+                case scai::common::scalar::LONG_DOUBLE_COMPLEX:                                                 \
+                    return;                                                                                     \
+                default:                                                                                        \
+                     ;                                                                                          \
+             }                                                                                                  \
+        }                                                                                                       \
+        method<ARITHMETIC_HOST_TYPE_##I>( context );                                                            \
+    }                                                                                                           \
+    catch ( scai::kregistry::KernelRegistryException& )                                                         \
+    {                                                                                                           \
+        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
+                       << context->getType() << ", corresponding function not implemented yet."        )        \
+        return;                                                                                                 \
+    }
+
+/*
+ * @brief HelperMacro LAMA_AUTO_TEST_CASE_CT( name, classname )
+ *
+ * This macro creates a boost test auto case, which uses all possible contexts.
+ * The test case name is based on the name of the given test method.
+ *
+ * @param name          name of test method, which will invoke.
+ * @param classname     name of the given test class.
+*/
+#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                        \
+                                                                                                        \
+    BOOST_AUTO_TEST_CASE( name )                                                                        \
+    {                                                                                                   \
+            ContextPtr context = Context::getContextPtr();                                              \
+            const std::string lama_name = #name;                                                        \
+            const std::string lama_classname = #classname;                                              \
+            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_RUN_TEST, namespacename::classname::name )  \
+    }
+

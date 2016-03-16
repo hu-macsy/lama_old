@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     common::unique_ptr<ResidualThreshold> testcriterion( new ResidualThreshold() );
-    LAMA_WRITEAT_TEST( *testcriterion );
+    SCAI_COMMON_WRITEAT_TEST( *testcriterion );
 }
 /* --------------------------------------------------------------------- */
 
