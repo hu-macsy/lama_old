@@ -43,7 +43,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/loop.hpp>
 
 namespace scai
 {
@@ -187,10 +187,10 @@ void SpecializedJacobi::iterate()
 
     // for each supported arithmetic type we have to dynamic cast and instatiate typed version
 
-#define LAMA_TYPE_CAST( z, I, _)                                                                                  \
+#define SCAI_SOLVER_TYPE_CAST( _type )                                                                                  \
     {                                                                                                             \
-        const lama::SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseTypedCoefficients =                             \
-                dynamic_cast<const lama::SparseMatrix<ARITHMETIC_HOST_TYPE_##I>*>( getRuntime().mCoefficients );  \
+        const lama::SparseMatrix<_type>* sparseTypedCoefficients =                             \
+                reinterpret_cast<const lama::SparseMatrix<_type>*>( getRuntime().mCoefficients );  \
         if ( sparseTypedCoefficients )                                                                            \
                    {                                                                                              \
             iterateTyped( *sparseTypedCoefficients );                                                             \
@@ -198,9 +198,9 @@ void SpecializedJacobi::iterate()
         }                                                                                                         \
     }
 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_TYPE_CAST, _ )
+    SCAI_COMMON_TYPELOOP( ARITHMETIC_HOST_CNT, SCAI_SOLVER_TYPE_CAST, ARITHMETIC_HOST )
 
-#undef LAMA_TYPE_CAST
+#undef SCAI_SOLVER_TYPE_CAST
 
     // has already been check in initialize, but in any case
 
