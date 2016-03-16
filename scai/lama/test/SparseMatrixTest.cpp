@@ -553,7 +553,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 /* ----------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, writeAtTest )
-LAMA_WRITEAT_TEST( mMatrix );
+SCAI_COMMON_WRITEAT_TEST( mMatrix );
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ----------------------------------------------------------------------------- */

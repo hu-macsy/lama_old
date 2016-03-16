@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE( MiscTests )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     Scalar s = 2.0;
-    LAMA_WRITEAT_TEST( s );
+    SCAI_COMMON_WRITEAT_TEST( s );
 }
 
 /* --------------------------------------------------------------------- */

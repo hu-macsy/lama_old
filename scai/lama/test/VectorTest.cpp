@@ -685,7 +685,7 @@ BOOST_AUTO_TEST_CASE( VectorGetValueTypeTest )
 BOOST_AUTO_TEST_CASE( WriteAtTest )
 {
     DenseVector<double> v( 4, 0.0 );
-    LAMA_WRITEAT_TEST( v );
+    SCAI_COMMON_WRITEAT_TEST( v );
 }
 
 /* --------------------------------------------------------------------- */
@@ -930,7 +930,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, ValueType, test_types )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     DenseVector<double> vector( 4, 2.0 );
-    LAMA_WRITEAT_TEST( vector );
+    SCAI_COMMON_WRITEAT_TEST( vector );
 }
 /* --------------------------------------------------------------------- */
 

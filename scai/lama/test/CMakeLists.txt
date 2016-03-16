@@ -76,7 +76,6 @@ scai_project (
         ScalarTest
         SparseAssemblyStorageTest
         StorageIOTest
-        TaskSyncTokenTest
         VectorTest
     )
 
