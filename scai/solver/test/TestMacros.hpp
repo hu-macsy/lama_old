@@ -10,4 +10,5 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/hmemo/test/TestMacros.hpp>
 #include <scai/kregistry/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 #include <scai/solver/test/TestMacros.hpp>

@@ -17,11 +17,12 @@ can be set via the environment variable ``SCAI_DEVICE``.
  * the getter method getCUdevice returns the CUDA device structure
 
 Before any API routine of the CUDA driver or CUDA runtime is called 
-that requires a CUDA context argument, it should be made
+that requires a CUDA context being enabled, it should be made
 sure that the corresponding CUDA context is pushed before. 
 
-It is possible to use multiple CUDA devices in one application. Even the
-same CUDA device might be used logically twice in one application.
+It is possible to use multiple CUDA devices in one application each one with
+its own context. Even the same CUDA device might be used logically twice in one application
+by creating two contexts.
 
 .. code-block:: c++
 

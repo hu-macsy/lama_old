@@ -731,6 +731,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
 
     // Check without epsilon
     {
+        /* Input Matrix:     1  4  0  0  0     0  3  4  5  6
+                             2  5  0  0  8     1  3  4  5  6
+                             3  6  0  7  9     2  3  4  5  6
+
+           Output Matrix:    1  4  0  0        0  3  0  0 
+                             2  5  8  0        1  3  6  0  
+                             3  6  7  9        2  3  5  6
+        */
+
         ValueType valuesELLValues[] =
         { 1, 2, 3, 4, 5, 6, 0, 0, 0, 0, 0, 7, 0, 8, 9 };
         const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
@@ -749,6 +758,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
         const ValueType eps = 0.0;
         const IndexType numValues = 12;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
+
+        SCAI_LOG_INFO( logger, "compress ELL " << nELLValues )
 
         HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
         HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
@@ -772,6 +783,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
+            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i] 
+                                    << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
             BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
         }
@@ -820,6 +833,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
+            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i] 
+                                    << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
             BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
         }
@@ -867,6 +882,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
+            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i] 
+                                    << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
             BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
         }
@@ -1336,7 +1353,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
         HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
 
-        // output arrays
+        // output arrays, CValues, CJa 
 
         HArray<ValueType> CValues( testContext );
         HArray<IndexType> CJa( testContext );

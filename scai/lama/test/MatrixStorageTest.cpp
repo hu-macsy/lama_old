@@ -1169,7 +1169,8 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest )
+template<typename StorageType>                                                                                     \
+void MatrixStorageTest<StorageType>::runTests()
 {
     emptyTest();
     purgeTest();

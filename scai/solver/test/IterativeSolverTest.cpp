@@ -243,8 +243,7 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
 
         SCAI_LOG_INFO( logger, "maxNorm of diff = " << s << " = ( solution - exactSolution ) = " << realMaxNorm );
 
-        // TODO: currently not working!
-        //BOOST_CHECK( realMaxNorm < expectedMaxNorm );
+        BOOST_CHECK( realMaxNorm < expectedMaxNorm );
 
 
         // Test solve with preconditioner
@@ -269,80 +268,8 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
 
         SCAI_LOG_INFO( logger, "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << realMaxNorm );
 
-//      TODO: Currently not working!
-        // BOOST_CHECK( realMaxNorm < expectedMaxNorm );
+        BOOST_CHECK( realMaxNorm < expectedMaxNorm );
     }
 }
-
-
-/*
-std::vector<MatrixCreateKeyType> keys;
-
-Matrix::getCreateValues( keys );
-
-for ( size_t i = 0; i < keys.size(); ++i )
-{
-    if ( keys[i].first == Format::DENSE )
-    {
-        // does not matter, takes too much time
-        continue;
-    } */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//BOOST_AUTO_TEST_CASE( solveWithoutInitialization )
-//{
-//    typedef SCAI_TEST_TYPE ValueType;
-//
-//    // Some test data are required to call the solve method, we don't want to work with these data
-//    // therefore we do not need to set a context or a proper distribution here
-//    const IndexType N1 = 4;
-//    const IndexType N2 = 4;
-//
-//    CSRSparseMatrix<ValueType> coefficients;
-//    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-//
-//    const ValueType solutionInitValue = 1.0;
-//    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
-//
-//    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue+1.0 );
-//    DenseVector<ValueType> rhs( coefficients * exactSolution );
-//
-//    // Get all available solvers
-//    std::vector<std::string> values;
-//    Solver::getCreateValues( values );
-//
-//    const int numSolvers = (int)values.size();
-//    for(int i=0; i < numSolvers; i++){
-//        SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-//        Solver* solver = Solver::create( values[i], "" );
-//
-//
-//        SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-//        BiCGstabSolver.setPreconditioner( preconditioner );
-//    }
-//}
 
 BOOST_AUTO_TEST_SUITE_END();

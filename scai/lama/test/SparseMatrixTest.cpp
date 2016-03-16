@@ -584,7 +584,8 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 /* ----------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( SparseMatrixTest )
+template<typename StorageType>                                                                                     \
+void SparseMatrixTest<StorageType>::runTests()
 {
     clearTest();
     cTorTest();

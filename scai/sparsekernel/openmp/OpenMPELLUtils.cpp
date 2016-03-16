@@ -517,7 +517,9 @@ void OpenMPELLUtils::compressValues(
     IndexType newJA[],
     ValueType newValues[] )
 {
-    SCAI_LOG_INFO( logger, "compressValues with eps = " << eps )
+    SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows 
+                           << ", values/row = " << numValuesPerRow << " / " << newNumValuesPerRow 
+                           << ") with eps = " << eps )
 
     #pragma omp parallel
     {
@@ -540,6 +542,15 @@ void OpenMPELLUtils::compressValues(
                 IndexType newpos = ellindex( i, j - gap, numRows, newNumValuesPerRow );
                 newValues[newpos] = values[pos];
                 newJA[newpos] = JA[pos];
+            }
+
+            // fill up to top 
+ 
+            for (  IndexType j = IA[i] - gap; j < newNumValuesPerRow; j++ )
+            {
+                IndexType newpos = ellindex( i, j, numRows, newNumValuesPerRow );
+                newValues[newpos] = 0;
+                newJA[newpos] = 0;
             }
         }
     }
@@ -667,6 +678,15 @@ void OpenMPELLUtils::matrixMultiply(
                 jaIter++;
                 valuesIter++;
             }
+
+            // fill up to top 
+ 
+            for ( IndexType j = cSizes[i]; j < cNumValuesPerRow; j++ )
+            {
+                IndexType posC = ellindex( i, j, aNumRows, cNumValuesPerRow );
+                cJA[posC] = 0;
+                cValues[posC] = 0;
+            }
         }
     }
 }
@@ -790,6 +810,15 @@ void OpenMPELLUtils::matrixAdd(
                 cValues[posC] = ( *valuesIter ).second;
                 jaIter++;
                 valuesIter++;
+            }
+
+            // fill up to top 
+ 
+            for (  IndexType j = cSizes[i]; j < cNumValuesPerRow; j++ )
+            {
+                IndexType posC = ellindex( i, j, m, cNumValuesPerRow );
+                cJA[posC] = 0;
+                cValues[posC] = 0; 
             }
         }
     }
