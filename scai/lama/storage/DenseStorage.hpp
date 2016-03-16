@@ -331,6 +331,9 @@ public:
 
     void print() const;
 
+    template<typename OtherType>
+    void assignDenseStorageImpl( const DenseStorageView<OtherType>& otherDenseStorage );
+
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::assign;
     using MatrixStorage<ValueType>::getTypeName;
@@ -352,14 +355,13 @@ protected:
 
     virtual    bool checkDiagonalProperty() const;
 
+
 private:
 
     /** Disable default constructor. */
 
     DenseStorageView();
 
-    template<typename OtherType>
-    void assignDenseStorageImpl( const DenseStorageView<OtherType>& otherDenseStorage );
 
     /** Implementation of matrix times matrix for dense matrices. */
 

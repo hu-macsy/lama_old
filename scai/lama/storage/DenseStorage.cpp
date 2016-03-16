@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/storage/DenseStorage.hpp>
 
+// local libraries
+#include <scai/lama/mepr/DenseStorageViewWrapper.hpp>
+
 // internal scai libraries
 #include <scai/sparsekernel/DenseKernelTrait.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
@@ -1173,30 +1176,9 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
     {
         // more efficient solution for assigment of dense storage
 
-        common::scalar::ScalarType arrayType = other.getValueType();
-
-        switch ( arrayType )
+        if( mepr::DenseStorageViewWrapper<ValueType, ARITHMETIC_HOST_LIST>::assignImpl( *this, other ) )
         {
-
-#define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                \
-case TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                       \
-{                                                                                        \
-    const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>* otherTyped =                       \
-            dynamic_cast<const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>*>( &other );   \
-    SCAI_ASSERT_DEBUG( otherTyped, other << ": dynamic cast failed, should not happen" ) \
-    assignDenseStorageImpl( *otherTyped );                                               \
-    return;                                                                              \
-}                                                                                        \
- 
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ASSIGN_DENSE_CALL, _ )
-
-#undef LAMA_ASSIGN_DENSE_CALL
-
-            default            :
-
-                SCAI_LOG_INFO( logger, "unsupported  typed assign" )
-
-                // also take fallback call
+            return;
         }
     }
 

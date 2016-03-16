@@ -45,6 +45,8 @@
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/macros/instantiate.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -1192,10 +1194,4 @@ LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest )
 
 /* ------------------------------------------------------------------------- */
 
-#define LAMA_MATRIX_STORAGE_TEST_INSTANTIATE(z, I, _)                      \
-    template class MatrixStorageTest<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_TEST_INSTANTIATE, _ )
-
-#undef LAMA_MATRIX_STORAGE_INSTANTIATE
-
+SCAI_COMMON_INST_CLASS( MatrixStorageTest, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )

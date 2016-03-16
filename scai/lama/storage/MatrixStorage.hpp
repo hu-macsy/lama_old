@@ -40,6 +40,7 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
+#include <scai/common/mepr/TemplateSpecifier.hpp>
 #include <scai/common/Factory.hpp>
 
 // std
@@ -1113,25 +1114,6 @@ template<typename ValueType>
 MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixStorageCreateKeyType key )
 {
     return reinterpret_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
-}
-
-template<typename ValueType>
-template<typename OtherValueType>
-void MatrixStorage<ValueType>::setRawDenseData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const OtherValueType values[],
-    const ValueType epsilon )
-{
-    SCAI_ASSERT_ERROR( epsilon >= 0, "epsilon = " << epsilon << ", must not be negative" )
-    mEpsilon = epsilon;
-    // wrap all the data in a dense storage and make just an assign
-    SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )
-    hmemo::HArrayRef<OtherValueType> data( numRows * numColumns, values );
-    SCAI_LOG_INFO( logger, "use LAMA array ref: " << data << ", size = " << data.size() )
-    DenseStorageView<OtherValueType> denseStorage( data, numRows, numColumns );
-    assign( denseStorage ); // will internally use the value epsilon
-    SCAI_LOG_INFO( logger, *this << ": have set dense data " << numRows << " x " << numColumns )
 }
 
 } /* end namespace lama */
