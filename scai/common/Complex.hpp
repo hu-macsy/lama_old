@@ -1006,6 +1006,7 @@ long double Math::abs( const Complex<long double>& a )
 }
 
 // ------------------ Math::conj --------------------------------
+
 Complex<float> Math::conj( const Complex<float>& a )
 {
     return Complex<float>( a.real(), -a.imag() );
@@ -1017,6 +1018,40 @@ Complex<double> Math::conj( const Complex<double>& a )
 Complex<long double> Math::conj( const Complex<long double>& a )
 {
     return Complex<long double>( a.real(), -a.imag() );
+}
+
+// ------------------ Math::real --------------------------------
+
+float Math::real( const Complex<float>& a )
+{
+    return a.real();
+}
+
+double Math::real( const Complex<double>& a )
+{
+    return a.real();
+}
+
+long double Math::real( const Complex<long double>& a )
+{
+    return a.real();
+}
+
+// ------------------ Math::imag --------------------------------
+
+float Math::imag( const Complex<float>& a )
+{
+    return a.imag();
+}
+
+double Math::imag( const Complex<double>& a )
+{
+    return a.imag();
+}
+
+long double Math::imag( const Complex<long double>& a )
+{
+    return a.imag();
 }
 
 } /* end namespace common */
