@@ -1,5 +1,5 @@
 /**
- * @file scai/blaskernel/test/TestMacros.hpp
+ * @file scai/hmemo/test/ContextFix.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,22 +25,42 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Additional Macros used for testing of blaskernel with Boost Test.
- * @author Eric Schricker
- * @date 20.11.2015
- * @since 2.0.0
+ * @brief Test fixture for context 
+ * @author Thomas Brandes
+ * @date 15.03.2016
+ * @since 1.0.0
  */
 
 #pragma once
 
-#include <scai/common/test/TestMacros.hpp>
-#include <scai/hmemo/test/ContextFix.hpp>
+#include <scai/hmemo/Context.hpp>
+
+#include <boost/test/unit_test.hpp>
 
 /* --------------------------------------------------------------------- */
-/*     test types for BLAS ( S, D, C, Z )                                */
-/* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<float, double, ComplexFloat, ComplexDouble> blas_test_types;
+/** Fixture to be used for BOOST_GLOBAL_FIXTURE     
+ *
+ *  provides access to testContext used as context at which tests should run
+ *
+ *  Purpose: use global Fixture avoids init/free of context device for each single test
+ *
+ *  Note: static variable ContextFix::testContext must be defined in cpp file.
+ */
+struct ContextFix
+{
+    ContextFix()
+    {   
+        testContext = scai::hmemo::Context::getContextPtr();
+        // BOOST_TEST_MESSAGE( "Setup ContextFix: test context = " << *testContext ); 
+    }
 
-/* --------------------------------------------------------------------- */
+    ~ContextFix()
+    {
+        // BOOST_TEST_MESSAGE( "Teardown ContextFix" ); 
+        testContext.reset();
+    }
+    
+    static scai::hmemo::ContextPtr testContext;
+};
 

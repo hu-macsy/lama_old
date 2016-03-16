@@ -50,6 +50,7 @@
 #include <scai/lama/test/SparseMatrixTest.hpp>
 
 #include <scai/common/Settings.hpp>
+#include <scai/hmemo/test/ContextFix.hpp>
 
 #include <list>
 #include <string>

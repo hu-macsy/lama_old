@@ -84,8 +84,11 @@ void typeNameTest( )
 BOOST_AUTO_TEST_SUITE( COOSparseMatrixTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.COOSparseMatrixTest" )
+
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, COOSparseMatrixTest, scai::lama )
+
 LAMA_AUTO_TEST_CASE_T( typeNameTest, COOSparseMatrixTest )
+
 /* -------------------------------------------------------------------------------------------------------------------*/
 
 BOOST_AUTO_TEST_SUITE_END()
