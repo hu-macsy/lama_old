@@ -579,19 +579,13 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 {
     SCAI_REGION( "StorageIO.writeCSRToBinaryFile " )
 
-    ContextPtr host = Context::getHostPtr();
-
-    ReadAccess<IndexType> iaRead( csrIA, host );
-    ReadAccess<IndexType> jaRead( csrJA, host );
-    ReadAccess<ValueType> dataRead( csrValues, host );
-
     SCAI_LOG_INFO( logger, "writeCSRToBinaryFile ( " << amgFileName << ")" << ", #rows = " << csrIA.size()-1
                            << ", #values = " << csrJA.size() )
 
     BinaryStream outFile( amgFileName );
-    outFile.write<IndexType, IndexType>( iaRead.get(), csrIA.size(), 1 );
-    outFile.write<IndexType, IndexType>( jaRead.get(), csrJA.size(), 1 );
-    outFile.write<ValueType, ValueType>( dataRead.get(), csrValues.size(), 0 );
+    outFile.write<IndexType, IndexType>( csrIA, 1 );
+    outFile.write<IndexType, IndexType>( csrJA, 1 );
+    outFile.write<ValueType, ValueType>( csrValues, 0 );
     outFile.close();
 }
 
