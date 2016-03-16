@@ -1198,27 +1198,6 @@ void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& oth
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherValueType>
-void MatrixStorage<ValueType>::setRawDenseData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const OtherValueType values[],
-    const ValueType epsilon )
-{
-    SCAI_ASSERT_ERROR( epsilon >= 0, "epsilon = " << epsilon << ", must not be negative" )
-    mEpsilon = epsilon;
-    // wrap all the data in a dense storage and make just an assign
-    SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )
-    HArrayRef<OtherValueType> data( numRows * numColumns, values );
-    SCAI_LOG_INFO( logger, "use LAMA array ref: " << data << ", size = " << data.size() )
-    DenseStorageView<OtherValueType> denseStorage( data, numRows, numColumns );
-    assign( denseStorage ); // will internally use the value epsilon
-    SCAI_LOG_INFO( logger, *this << ": have set dense data " << numRows << " x " << numColumns )
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void MatrixStorage<ValueType>::setDenseData(
     const IndexType numRows,
     const IndexType numColumns,
@@ -1362,32 +1341,6 @@ bool MatrixStorage<ValueType>::checkSymmetry() const
 /* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */
-
-#define LAMA_MATRIX_STORAGE2_INSTANTIATE(z, J, TYPE )              \
-    template COMMON_DLL_IMPORTEXPORT                               \
-    void MatrixStorage<TYPE>::setRawDenseData(                     \
-            const IndexType numRows,                               \
-            const IndexType numColumns,                            \
-            const ARITHMETIC_HOST_TYPE_##J values[],               \
-            const TYPE );
-
-#define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                                      \
-                                                                                      \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                        \
-                     LAMA_MATRIX_STORAGE2_INSTANTIATE,                                \
-                     ARITHMETIC_HOST_TYPE_##I )                                       \
-
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_MATRIX_STORAGE_INSTANTIATE
-#undef LAMA_MATRIX_STORAGE2_INSTANTIATE
-
-std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageFormat& storageFormat )
-{
-    stream << scai::lama::format2Str( storageFormat );
-    return stream;
-}
 
 SCAI_COMMON_INST_CLASS( MatrixStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
