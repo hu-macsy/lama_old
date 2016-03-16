@@ -188,14 +188,14 @@ void SpecializedJacobi::iterate()
     // for each supported arithmetic type we have to dynamic cast and instatiate typed version
 
 #define SCAI_SOLVER_TYPE_CAST( _type )                                                                                  \
-    {                                                                                                             \
-        const lama::SparseMatrix<_type>* sparseTypedCoefficients =                             \
-                reinterpret_cast<const lama::SparseMatrix<_type>*>( getRuntime().mCoefficients );  \
-        if ( sparseTypedCoefficients )                                                                            \
-                   {                                                                                              \
-            iterateTyped( *sparseTypedCoefficients );                                                             \
-            return;                                                                                               \
-        }                                                                                                         \
+    {                                                                                               \
+        const lama::SparseMatrix<_type>* sparseTypedCoefficients =                                  \
+                dynamic_cast<const lama::SparseMatrix<_type>*>( getRuntime().mCoefficients );       \
+        if ( sparseTypedCoefficients )                                                              \
+        {                                                                                           \
+            iterateTyped( *sparseTypedCoefficients );                                               \
+            return;                                                                                 \
+        }                                                                                           \
     }
 
     SCAI_COMMON_TYPELOOP( ARITHMETIC_HOST_CNT, SCAI_SOLVER_TYPE_CAST, ARITHMETIC_HOST )
