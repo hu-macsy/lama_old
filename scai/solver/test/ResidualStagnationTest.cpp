@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     NormPtr maxNorm( new MaxNorm() );
     ResidualStagnation* testcriterion = new ResidualStagnation( maxNorm );
-    LAMA_WRITEAT_PTR_TEST( testcriterion );
+    LAMA_WRITEAT_TEST( *testcriterion );
 }
 /* --------------------------------------------------------------------- */
 

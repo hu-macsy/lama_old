@@ -124,8 +124,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    LAMA_WRITEAT_PTR_TEST( mCriterionDouble );
-    LAMA_WRITEAT_PTR_TEST( mCriterionFloat );
+    LAMA_WRITEAT_TEST( *mCriterionDouble );
+    LAMA_WRITEAT_TEST( *mCriterionFloat );
     std::stringstream mStream;
     mStream << mCriterionDouble;
     std::string mString = mStream.str();
