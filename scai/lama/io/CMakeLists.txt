@@ -36,7 +36,8 @@
 scai_project (
 
     CLASSES
-
+        
+        BinaryStream
         mmio
         FileIO
         XDRFileStream

@@ -37,6 +37,7 @@
 #include <scai/lama/StorageIO.hpp>
 
 // local library
+#include <scai/lama/io/BinaryStream.hpp>
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
@@ -572,9 +573,9 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     const HArray<IndexType>& csrJA,
     const HArray<ValueType>& csrValues,
     const std::string& amgFileName,
-    const long indexDataTypeSizeIA,
-    const long indexDataTypeSizeJA,
-    const long dataTypeSize )
+    const long /* indexDataTypeSizeIA */,
+    const long /* indexDataTypeSizeJA */,
+    const long /* dataTypeSize */ )
 {
     SCAI_REGION( "StorageIO.writeCSRToBinaryFile " )
 
@@ -584,59 +585,13 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     ReadAccess<IndexType> jaRead( csrJA, host );
     ReadAccess<ValueType> dataRead( csrValues, host );
 
-    IndexType numRows = csrIA.size() - 1;
-    IndexType numValues = csrJA.size();
+    SCAI_LOG_INFO( logger, "writeCSRToBinaryFile ( " << amgFileName << ")" << ", #rows = " << csrIA.size()-1
+                           << ", #values = " << csrJA.size() )
 
-    SCAI_LOG_INFO( logger,
-                   "writeCSRToBinaryFile ( " << amgFileName << ")" << ", #rows = " << numRows << ", #values = " << numValues )
-
-    std::fstream outFile( amgFileName.c_str(), std::ios::out | std::ios::binary );
-
-    // write ia, add offset 1
-
-    if( indexDataTypeSizeIA == sizeof( int ) || sizeof(long) == sizeof( int ) )
-    {
-        writeBinaryData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
-    }
-    else if( indexDataTypeSizeIA == sizeof( long ) )
-    {
-        writeBinaryData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of IA." )
-    }
-
-    // write m_ja
-
-    if( indexDataTypeSizeJA == sizeof( int ) || sizeof(long) == sizeof( int ) )
-    {
-        writeBinaryData<int,IndexType,1>( outFile, jaRead.get(), numValues );
-    }
-    else if( indexDataTypeSizeJA == sizeof( long ) )
-    {
-        writeBinaryData<long,IndexType,1>( outFile, jaRead.get(), numValues );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
-    }
-
-#define LAMA_WRITE_BIN( z, I, _ )                                                                       \
-    if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )                                           \
-    {                                                                                                   \
-        writeBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( outFile, dataRead.get(), numValues );  \
-    }                                                                                                   \
-    else                                                                                                \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_WRITE_BIN, _ )
-
-#undef LAMA_WRITE_BIN
-
-    {
-        COMMON_THROWEXCEPTION( "unknown data type size  = " << dataTypeSize << " for values." )
-    }
-
+    BinaryStream outFile( amgFileName );
+    outFile.write<IndexType, IndexType>( iaRead.get(), csrIA.size(), 1 );
+    outFile.write<IndexType, IndexType>( jaRead.get(), csrJA.size(), 1 );
+    outFile.write<ValueType, ValueType>( dataRead.get(), csrValues.size(), 0 );
     outFile.close();
 }
 
