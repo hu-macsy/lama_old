@@ -36,6 +36,7 @@
 
 // local library
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/mepr/DenseMatrixWrapper.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -56,7 +57,8 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 using namespace scai::hmemo;
 using namespace scai::dmemo;
@@ -873,21 +875,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
     {
         SCAI_LOG_INFO( logger, "copy dense matrix" )
 
-        switch ( other.getValueType() )
-        {
-
-#define LAMA_COPY_DENSE_CALL( z, I, _ )                                                        \
-case TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                              \
-    copyDenseMatrix( dynamic_cast<const DenseMatrix<ARITHMETIC_HOST_TYPE_##I>&>( other ) );    \
-    break;                                                                                     \
-     
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COPY_DENSE_CALL, _ )
-
-#undef LAMA_COPY_DENSE_CALL
-
-            default            :
-                COMMON_THROWEXCEPTION( "type of dense matrix not supported for assignment: " << other )
-        }
+        mepr::DenseMatrixWrapper<ValueType, ARITHMETIC_HOST_LIST>::assignDenseImpl( *this, other );
 
         return;
     }
@@ -895,30 +883,9 @@ case TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                              
     {
     	SCAI_LOG_INFO( logger, "copy sparse matrix")
 
-		switch( other.getValueType() )
-		{
+        mepr::DenseMatrixWrapper<ValueType, ARITHMETIC_HOST_LIST>::assignSparseImpl( *this, other );
 
-#define LAMA_COPY_SPARSE_CALL( z, I, _ )                                                       \
-        case TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                     \
-		{                                                                                      \
-			SCAI_LOG_TRACE( logger, "convert from SparseMatrix<"                               \
-                    << TypeTraits<ARITHMETIC_HOST_TYPE_##I>::id()                              \
-		            << "> to DenseMatrix<" << TypeTraits<ValueType>::id() << ">" )             \
-			const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseMatrix =                       \
-		        reinterpret_cast< const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* >( &other );   \
-			const CSRSparseMatrix<ValueType> tmp = *sparseMatrix;                              \
-			assignSparse( tmp );                                                               \
-			return;                                                                            \
-		}
-
-		BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COPY_SPARSE_CALL, _ )
-
-#undef LAMA_COPY_SPARSE_CALL
-
-		default:
-			COMMON_THROWEXCEPTION( "type of sparse matrix not supported --> " << other )
-
-		}
+    	return;
     }
 
 
@@ -1536,19 +1503,8 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
     {
 // Dense vector with this row distribution, so we do not need a temporary array
 
-#define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                            \
-    if ( diagonal.getValueType() == TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype )    \
-    {                                                                                \
-        DenseVector<ARITHMETIC_HOST_TYPE_##I>& denseDiagonal =                       \
-                dynamic_cast<DenseVector<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );    \
-        getDiagonalImpl( denseDiagonal );                                            \
-        return;                                                                      \
-    }
-     
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
-
-#undef LAMA_GET_DIAGONAL_CALL
-
+        mepr::DenseMatrixWrapper<ValueType, ARITHMETIC_HOST_LIST>::getDiagonalImpl( *this, diagonal );
+        return;
     }
 
 // Fallback solution with temporary arrays
@@ -2364,22 +2320,26 @@ const char* DenseMatrix<ValueType>::getTypeName() const
     return typeName();
 }
 
+template<typename ValueType>
+std::string DenseMatrix<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("DenseMatrix<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* DenseMatrix<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_DENSE_MATRIX_INSTANTIATE(z, I, _)                                  \
-    template<>                                                                  \
-    const char* DenseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()               \
-    {                                                                           \
-        return "DenseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                         \
-    }                                                                           \
-    \
-    template class COMMON_DLL_IMPORTEXPORT DenseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_MATRIX_INSTANTIATE, _ )
-
-#undef LAMA_DENSE_MATRIX_INSTANTIATE
+SCAI_COMMON_INST_CLASS( DenseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 
