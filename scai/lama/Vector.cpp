@@ -43,7 +43,6 @@
 
 // tracing
 #include <scai/tracing.hpp>
-#include <scai/common/preprocessor.hpp>
 
 // std
 #include <map>

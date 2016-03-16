@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
 
         Scalar s                  = maxNorm( diff );
         ValueType realMaxNorm     = s.getValue<ValueType>();
-        // ValueType expectedMaxNorm = 1E-4;
+        ValueType expectedMaxNorm = 1E-4;
 
         SCAI_LOG_INFO( logger, "maxNorm of diff = " << s << " = ( solution - exactSolution ) = " << realMaxNorm );
 
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
 
         s               = maxNorm( diff );
         realMaxNorm     = s.getValue<ValueType>();
-        //expectedMaxNorm = 1E-4;
+        expectedMaxNorm = 1E-4;
 
         SCAI_LOG_INFO( logger, "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << realMaxNorm );
 

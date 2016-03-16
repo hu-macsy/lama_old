@@ -45,7 +45,6 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
-#include <scai/common/preprocessor.hpp>
 #include <scai/common/macros/loop.hpp>
 
 // std
