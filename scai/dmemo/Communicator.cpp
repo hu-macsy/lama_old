@@ -851,45 +851,45 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
 // Instantiation of template methods for the supported types
 
-#define LAMA_COMMUNICATOR_INSTANTIATIONS( z, I, _ )                 \
-    \
+#define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     IndexType Communicator::shift0(                                 \
-            ARRAY_TYPE##I targetVals[],                             \
+            _type targetVals[],                                     \
             const IndexType maxTargetSize,                          \
-            const ARRAY_TYPE##I sourceVals[],                       \
+            const _type sourceVals[],                               \
             const IndexType sourceSize ) const;                     \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::shiftArray(                                  \
-            HArray<ARRAY_TYPE##I>& recvArray,                    \
-            const HArray<ARRAY_TYPE##I>& sendArray,              \
+            HArray<_type>& recvArray,                               \
+            const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \
-            HArray<ARRAY_TYPE##I>& recvArray,                    \
-            const HArray<ARRAY_TYPE##I>& sendArray,              \
+            HArray<_type>& recvArray,                               \
+            const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::updateHalo(                                  \
-            HArray<ARRAY_TYPE##I>& haloValues,                   \
-            const HArray<ARRAY_TYPE##I>& localValues,            \
+            HArray<_type>& haloValues,                              \
+            const HArray<_type>& localValues,                       \
             const Halo& halo ) const;                               \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::updateHaloAsync(                       \
-            HArray<ARRAY_TYPE##I>& haloValues,                   \
-            const HArray<ARRAY_TYPE##I>& localValues,            \
-            const Halo& halo ) const;                               \
+            HArray<_type>& haloValues,                              \
+            const HArray<_type>& localValues,                       \
+            const Halo& halo ) const;
      
 
 // instantiate methods for all supported data types
 
-BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_COMMUNICATOR_INSTANTIATIONS, _ )
+SCAI_COMMON_TYPELOOP( ARITHMETIC_ARRAY_HOST_CNT, SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, ARITHMETIC_ARRAY_HOST )
 
-#undef LAMA_COMMUNICATOR_INSTANTIATIONS
+#undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
 } /* end namespace dmemo */
 

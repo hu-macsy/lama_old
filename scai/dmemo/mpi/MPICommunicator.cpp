@@ -46,7 +46,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/loop.hpp>
 
 // std
 #include <iostream>
@@ -1017,17 +1017,6 @@ void MPICommunicator::writeAt( std::ostream& stream ) const
     stream << "MPI(" << mRank << ":" << mSize << ")";
 }
 
-// template instantiation for the supported array types
-
-#define LAMA_MPI_METHODS_INSTANTIATE(z, I, _)                         \
-    template COMMON_DLL_IMPORTEXPORT                                    \
-    void MPICommunicator::maxlocImpl(                                 \
-            ARRAY_TYPE##I &, IndexType&, PartitionId) const;
-
-BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_MPI_METHODS_INSTANTIATE, _ )
-
-#undef LAMA_MPI_METHODS_INSTANTIATE
-
 /* --------------------------------------------------------------- */
 
 static shared_ptr<const MPICommunicator> theMPICommunicator;
@@ -1069,6 +1058,19 @@ Communicator::CommunicatorKind MPICommunicator::createValue()
 {
     return MPI;
 }
+
+/* --------------------------------------------------------------- */
+
+// template instantiation for the supported array types
+
+#define SCAI_DMEMO_MPI_METHODS_INSTANTIATE( _type)                \
+    template COMMON_DLL_IMPORTEXPORT                              \
+    void MPICommunicator::maxlocImpl(                             \
+            _type &, IndexType&, PartitionId) const;
+
+SCAI_COMMON_TYPELOOP( ARITHMETIC_ARRAY_HOST_CNT, SCAI_DMEMO_MPI_METHODS_INSTANTIATE, ARITHMETIC_ARRAY_HOST )
+
+#undef SCAI_DMEMO_MPI_METHODS_INSTANTIATE
 
 } /* end namespace dmemo */
 
