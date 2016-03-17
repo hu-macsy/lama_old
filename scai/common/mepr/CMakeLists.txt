@@ -35,9 +35,10 @@ scai_project(
     HEADERS
 
         ScalarTypeHelper
-        TemplateSpecifier
         TypeList
 
+    CLASSES
+        TemplateSpecifier
 
     ADD_PARENT_SCOPE
 )

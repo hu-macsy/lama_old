@@ -34,6 +34,8 @@
 
 #include <scai/common/mepr/TypeList.hpp>
 
+#include <list>
+
 #define SCAI_DECLARE_TEMPLATESPECIFIER( name, ... )                                         \
     __VA_ARGS__                                                                             \
     struct name                                                                             \
@@ -51,7 +53,12 @@ class TemplateSpecifier
 {
 public:
     template<typename FunctionType>
-    static void set( FunctionType ) {}
+    static void set( FunctionType x)
+    {
+        theLastOne = ( void(*)() ) x;
+    }
+
+    static void (*theLastOne)();
 };
 
 /*
