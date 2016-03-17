@@ -42,7 +42,7 @@
 // internal scai libraris
 #include <scai/tasking/NoSyncToken.hpp>
 
-#include <scai/common/macros/loop.hpp>
+#include <scai/common/macros/typeloop.hpp>
 
 // std
 #include <vector>
