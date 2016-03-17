@@ -162,7 +162,7 @@ private:
 
     /** Register or unregister all kernel implementations of this class. */
 
-    SCAI_DECLARE_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
 
     /** Constructor for registration. */
 
