@@ -235,44 +235,6 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, emptyTest )
 }
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
-/* ========================================================================= */
-
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setIdentityTest )
-
-const IndexType n = 15;
-
-SCAI_LOG_INFO( logger, "setIdentity, uses n = " << n );
-
-mMatrixStorage.clear();
-
-mMatrixStorage.setIdentity( n );
-
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumRows() );
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumColumns() );
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumValues() );
-
-LArray<double> row;
-
-for ( IndexType i = 0; i < n; ++i )
-{
-    mMatrixStorage.getRow( row, i );
-    ReadAccess<double> rRow( row );
-
-    for ( IndexType j = 0; j < n; ++j )
-    {
-        if ( i == j )
-        {
-            BOOST_CHECK_EQUAL( 1.0, rRow[j] );
-        }
-        else
-        {
-            BOOST_CHECK_EQUAL( 0.0, rRow[j] );
-        }
-    }
-}
-
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setCSRDataTest )

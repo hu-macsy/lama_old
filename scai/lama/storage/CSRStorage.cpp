@@ -150,14 +150,7 @@ void CSRStorage<ValueType>::print() const
 template<typename ValueType>
 void CSRStorage<ValueType>::clear()
 {
-    mNumRows = 0;
-    mNumColumns = 0;
-
-    mIa.clear();
-    mJa.clear();
-    mValues.clear();
-
-    mDiagonalProperty = checkDiagonalProperty();
+    allocate( 0, 0 );   // sets everything correctly, ia array has one entry
 }
 
 /* --------------------------------------------------------------------------- */
@@ -626,15 +619,13 @@ IndexType CSRStorage<ValueType>::getNumValues() const
 template<typename ValueType>
 void CSRStorage<ValueType>::purge()
 {
-    mNumColumns = 0;
-    mNumRows = 0;
-    mNumValues = 0;
+    // delete all old values
 
     mIa.purge();
     mJa.purge();
     mValues.purge();
 
-    mDiagonalProperty = checkDiagonalProperty();
+    allocate( 0, 0 );   // sets everything correctly, ia array has one entry
 }
 
 /* --------------------------------------------------------------------------- */
