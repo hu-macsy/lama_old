@@ -370,45 +370,6 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, scaleTest )
-
-setDenseData( mMatrixStorage );
-
-DenseStorage<ValueType> tmp;
-
-setDenseData( tmp );
-
-mMatrixStorage.scale( 2.0 );
-
-for ( IndexType i = 0; i < mMatrixStorage.getNumRows(); ++i )
-{
-    for ( IndexType j = 0; j < mMatrixStorage.getNumColumns(); ++j )
-    {
-        SCAI_CHECK_CLOSE( 2.0 * tmp.getValue( i, j ),
-                          mMatrixStorage.getValue( i, j ), 1 );
-    }
-}
-
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ------------------------------------------------------------------------- */
-
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, normTest )
-
-setDenseData( mMatrixStorage );
-
-SCAI_LOG_INFO( logger, "maxNormTest, mMatrixStorage = " << mMatrixStorage )
-
-ValueType maxNorm = mMatrixStorage.maxNorm();
-
-ValueType expected = 9.3f; // maximal absolute value
-
-SCAI_CHECK_CLOSE( maxNorm, expected, 1 );
-
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ------------------------------------------------------------------------- */
-
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, vectorMultTest )
 
 setDenseData( mMatrixStorage );
@@ -1105,8 +1066,6 @@ void MatrixStorageTest<StorageType>::runTests()
     setCSRDataTest();
     buildCSRDataTest();
     diagonalTest();
-    scaleTest();
-    normTest();
     vectorMultTest();
     vectorTimesMatrixTest();
     numericalTest();

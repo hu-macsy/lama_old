@@ -109,15 +109,12 @@ public:
 
                 shared_ptr<MatrixStorage<ValueType> > typedStoragePtr( typedStorage );
 
-                this->push_back( typedStoragePtr );
-            }
-        }
+                if ( ctx )
+                {
+                    typedStoragePtr->setContextPtr( ctx );
+                }
 
-        if ( ctx )
-        {
-            for ( size_t i = 0; i < values.size(); ++i )
-            {
-                (*this)[i]->setContextPtr( ctx );
+                this->push_back( typedStoragePtr );
             }
         }
     }

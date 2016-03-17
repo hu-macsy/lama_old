@@ -45,7 +45,7 @@ static std::string storagetestclasses[] =
 
 static std::string storagetestmethods[] =
 {
-    "purgeTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
+    "purgeTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest",
     "vectorMultTest", "jacobiTest", "jacobiHaloTest", "matrixMultTest", "matrixMultTest1", "matrixAddTest"
     "inverseTest", "symmetryTest", "vectorTimesMatrixTest", "numericalTest"
 };
@@ -97,10 +97,6 @@ public:
     void diagonalTest();
 
     /** Test for virtual methods MatrixStorage<ValueType>::scale */
-
-    void scaleTest();
-
-    void normTest();
 
     void vectorMultTest();
 
@@ -173,8 +169,6 @@ private:
         COMMONTESTCASEINVOKER( testinstance, setCSRDataTest );              \
         COMMONTESTCASEINVOKER( testinstance, buildCSRDataTest );            \
         COMMONTESTCASEINVOKER( testinstance, diagonalTest );                \
-        COMMONTESTCASEINVOKER( testinstance, scaleTest );                   \
-        COMMONTESTCASEINVOKER( testinstance, normTest );                    \
         COMMONTESTCASEINVOKER( testinstance, vectorMultTest );              \
         COMMONTESTCASEINVOKER( testinstance, vectorTimesMatrixTest );       \
         COMMONTESTCASEINVOKER( testinstance, numericalTest );               \
