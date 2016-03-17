@@ -45,9 +45,9 @@ static std::string storagetestclasses[] =
 
 static std::string storagetestmethods[] =
 {
-    "purgeTest", "emptyTest", "setIdentityTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
+    "purgeTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
     "vectorMultTest", "jacobiTest", "jacobiHaloTest", "matrixMultTest", "matrixMultTest1", "matrixAddTest"
-    "writeAtTest", "inverseTest", "symmetryTest", "vectorTimesMatrixTest", "numericalTest"
+    "inverseTest", "symmetryTest", "vectorTimesMatrixTest", "numericalTest"
 };
 
 /** Test class for MatrixStorage<ValueType>.
@@ -81,14 +81,6 @@ public:
     /** Test for MatrixStorage<ValueType>::purge and MatrixStorage<ValueType>::getMemoryUsage */
 
     void purgeTest();
-
-    /** Test for MatrixStorage<ValueType>::hasDiagonalProperty() on empty matrx. */
-
-    void emptyTest();
-
-    /** Test for MatrixStorage<ValueType>::setIdentity. */
-
-    void setIdentityTest();
 
     /** Test for virtual method MatrixStorage<ValueType>::setCSRData. */
 
@@ -145,8 +137,6 @@ public:
 
     void runTests();
 
-    void writeAtTest();
-
     scai::lama::MatrixStorage<ValueType>& mMatrixStorage;
 
 private:
@@ -180,7 +170,6 @@ private:
 
 #define MATRIXSTORAGE_COMMONTESTCASES( testinstance )                   \
     {   COMMONTESTCASEINVOKER( testinstance, purgeTest );                   \
-        COMMONTESTCASEINVOKER( testinstance, setIdentityTest );             \
         COMMONTESTCASEINVOKER( testinstance, setCSRDataTest );              \
         COMMONTESTCASEINVOKER( testinstance, buildCSRDataTest );            \
         COMMONTESTCASEINVOKER( testinstance, diagonalTest );                \
@@ -193,5 +182,4 @@ private:
         COMMONTESTCASEINVOKER( testinstance, matrixMultTest );              \
         COMMONTESTCASEINVOKER( testinstance, matrixAddTest );               \
         COMMONTESTCASEINVOKER( testinstance, matrixMultTest1 );             \
-        COMMONTESTCASEINVOKER( testinstance, writeAtTest );                 \
         COMMONTESTCASEINVOKER( testinstance, inverseTest ); }

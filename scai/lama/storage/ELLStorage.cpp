@@ -89,19 +89,19 @@ template<typename ValueType>
 ELLStorage<ValueType>::ELLStorage(
     const IndexType numRows,
     const IndexType numColumns,
-    const common::context::ContextType con /* = Context::Host */)
+   ContextPtr context /* = Context::getHostPtr() */)
 
     : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValuesPerRow( 0 )
 {
     // TODO in other formats the last parameter is "const ContextPtr loc"
 
-    ContextPtr loc = Context::getContextPtr( con );
-
-    setContextPtr( loc );
+    setContextPtr( context );
 
     // Initialization requires correct values for the IA array with 0
 
     static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+
+    ContextPtr loc = setVal.getValidContext( context );
 
     WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
 

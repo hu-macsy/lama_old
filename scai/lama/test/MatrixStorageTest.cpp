@@ -212,31 +212,6 @@ void MatrixStorageTest<ValueType>::setDenseRandomInverse( MatrixStorage<ValueTyp
 
 /* ========================================================================= */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, emptyTest )
-{
-    SCAI_LOG_INFO( logger, "emptyTest" );
-    mMatrixStorage.clear();
-    // verify that empty matrix has diagonal property
-    BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
-    mMatrixStorage.allocate( 1, 1 );
-
-    if ( mMatrixStorage.getFormat() == Format::DENSE )
-    {
-        // only dense matrix keeps its diagonal property
-        BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
-    }
-    else
-    {
-        BOOST_CHECK( ! mMatrixStorage.hasDiagonalProperty() );
-    }
-
-    mMatrixStorage.purge();
-   BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
-}
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ------------------------------------------------------------------------- */
-
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setCSRDataTest )
 {
     SCAI_LOG_INFO( logger, "setCSRDataTest" )
@@ -1123,20 +1098,10 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, writeAtTest )
-
-SCAI_COMMON_WRITEAT_TEST( mMatrixStorage )
-
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ------------------------------------------------------------------------- */
-
 template<typename StorageType>                                                                                     \
 void MatrixStorageTest<StorageType>::runTests()
 {
-    emptyTest();
     purgeTest();
-    setIdentityTest();
     setCSRDataTest();
     buildCSRDataTest();
     diagonalTest();
@@ -1152,7 +1117,6 @@ void MatrixStorageTest<StorageType>::runTests()
     matrixMultTest1();
     inverseTest();
     symmetryTest();
-    writeAtTest();
 }
 
 /* ------------------------------------------------------------------------- */

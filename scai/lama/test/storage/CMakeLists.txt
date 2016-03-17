@@ -44,6 +44,14 @@ scai_project (
         AllStorageTest
         TypedStorageTest
 
+        COOStorageTest
+        CSRStorageTest
+        ELLStorageTest
+        DIAStorageTest
+        JDSStorageTest
+        SparseAssemblyStorageTest
+        DenseStorageTest
+
         lamaStorageTest
     )
 

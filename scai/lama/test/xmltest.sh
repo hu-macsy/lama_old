@@ -44,7 +44,12 @@ ERROR_LEVEL=test_suite
 # Running tests for Host context
 
 echo "Running lama tests for Host context"
+
 ./lamaTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaHostTest.xml
+
+echo "Running lama storage tests for Host context"
+
+./storage/lamaStorageTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaStorageHostTest.xml
 
 if [ -d distributed ];
 then
@@ -61,8 +66,12 @@ fi
 
 if [ -d cuda ];
 then
+
     echo "Running lama tests for CUDA context"
     ./lamaTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaCudaTest.xml
+
+    echo "Running lama storage tests for CUDA context"
+    ./storage/lamaStorageTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaStorageCudaTest.xml
 
     #Running CUDA tests
     echo "Running dedicated cuda tests"

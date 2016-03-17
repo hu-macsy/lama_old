@@ -42,7 +42,6 @@ scai_project (
         NormTest
         SparseMatrixHelper
         SparseMatrixTest
-        TestContext
     
     HEADERS
         
@@ -70,11 +69,9 @@ scai_project (
         L1NormTest
         L2NormTest
         MatrixNormTest
-        MatrixStorageConversionTest
         MatrixTest
         MaxNormTest
         ScalarTest
-        SparseAssemblyStorageTest
         StorageIOTest
         VectorTest
     )
