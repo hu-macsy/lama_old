@@ -64,6 +64,30 @@ void setDenseData( MatrixStorage<ValueType>& storage )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+template<typename ValueType>
+void setSymDenseData( MatrixStorage<ValueType>& storage )
+{
+    /* Matrix:     1  2  0  5
+     *             2  1  3  0 
+     *             0  3  1  4
+     *             5  0  4  2
+     */
+
+    const IndexType numRows = 4;
+    const IndexType numColumns = 4;
+ 
+    static ValueType values[] = { 1, 2, 0, 5, 2, 1, 3, 0, 0, 3, 1, 4, 5, 0, 4, 2 };
+
+    // just make sure that number of entries in values matches the matrix size
+    BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
+
+    ValueType eps = static_cast<ValueType>( 1E-5 );
+
+    storage.setRawDenseData( numRows, numColumns, values, eps );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_SUITE( TypedStorageTest );
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.TypedStorageTest" )
@@ -112,9 +136,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_arithmetic_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_arithmetic_test_types )
 {
-    DenseStorage<ValueType> tmp;
+    DenseStorage<ValueType> cmpStorage;
 
-    setDenseData( tmp );
+    setDenseData( cmpStorage );
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
 
@@ -124,9 +148,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_arithmetic_test_types 
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
 
-        SCAI_LOG_DEBUG( logger, "scaleTest, storage = " << storage << " @ " << *storage.getContextPtr() )
-
         setDenseData( storage );
+
+        SCAI_LOG_DEBUG( logger, "scaleTest, storage = " << storage << " @ " << *storage.getContextPtr() )
 
         storage.scale( 2.0 );  // should be executed on context
 
@@ -134,7 +158,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_arithmetic_test_types 
         {
             for ( IndexType j = 0; j < storage.getNumColumns(); ++j )
             {
-                BOOST_CHECK_EQUAL( 2.0 * tmp.getValue( i, j ), storage.getValue( i, j ) );
+                BOOST_CHECK_EQUAL( 2.0 * cmpStorage.getValue( i, j ), storage.getValue( i, j ) );
             }
         }
     }
@@ -142,5 +166,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_arithmetic_test_types 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( symmetryTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        setDenseData( storage );
+
+        SCAI_LOG_DEBUG( logger, "symmetryTest, storage = " << storage << " @ " << *storage.getContextPtr() )
+
+        BOOST_CHECK( !storage.checkSymmetry() );
+
+        setSymDenseData( storage );
+        BOOST_CHECK( storage.checkSymmetry() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END();

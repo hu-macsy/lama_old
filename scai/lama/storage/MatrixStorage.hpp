@@ -473,6 +473,8 @@ public:
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const = 0;
 
+    virtual bool checkSymmetry() const = 0;
+
 protected:
 
     /** Swaps this with other.
@@ -1024,7 +1026,7 @@ public:
      *
      * @return a boolean pointing out whether the matrix storage is symmetric or not.
      */
-    bool checkSymmetry() const;
+    virtual bool checkSymmetry() const;
 
 protected:
 

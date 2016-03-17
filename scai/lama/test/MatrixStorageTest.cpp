@@ -1033,29 +1033,6 @@ identity->setIdentity( mMatrixStorage.getNumRows() );
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
-/* ------------------------------------------------------------------------- */
-
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, symmetryTest )
-
-std::string prefix = scai::test::Configuration::getPath();
-CSRSparseMatrix<ValueType> sym( prefix + "/" + "nos6.mtx" );
-mMatrixStorage = sym.getLocalStorage();
-
-DenseStorage<ValueType> orig; // used for comparing results
-orig = mMatrixStorage;
-
-bool symmetry = sym.checkSymmetry();
-BOOST_CHECK_EQUAL( symmetry, true );
-
-CSRSparseMatrix<ValueType> asym( prefix + "/" + "impcol_b.mtx" );
-mMatrixStorage = asym.getLocalStorage();
-
-orig = mMatrixStorage;
-
-symmetry = asym.checkSymmetry();
-BOOST_CHECK_EQUAL( symmetry, false );
-
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
@@ -1075,7 +1052,6 @@ void MatrixStorageTest<StorageType>::runTests()
     matrixAddTest();
     matrixMultTest1();
     inverseTest();
-    symmetryTest();
 }
 
 /* ------------------------------------------------------------------------- */

@@ -47,7 +47,7 @@ static std::string storagetestmethods[] =
 {
     "purgeTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest",
     "vectorMultTest", "jacobiTest", "jacobiHaloTest", "matrixMultTest", "matrixMultTest1", "matrixAddTest"
-    "inverseTest", "symmetryTest", "vectorTimesMatrixTest", "numericalTest"
+    "inverseTest", "vectorTimesMatrixTest", "numericalTest"
 };
 
 /** Test class for MatrixStorage<ValueType>.
@@ -128,8 +128,6 @@ public:
     //void redistributeTest( const scai::lama::CommunicatorPtr comm );
 
     void inverseTest();
-
-    void symmetryTest();
 
     void runTests();
 
