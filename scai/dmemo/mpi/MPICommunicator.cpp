@@ -46,7 +46,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/macros/loop.hpp>
+#include <scai/common/macros/typeloop.hpp>
 
 // std
 #include <iostream>

@@ -40,17 +40,17 @@
  * Declare Registrator inside a class
  *
  * Functions without template-parameter
- * - SCAI_DECLARE_REGISTRATOR( Registrator )
+ * - SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
  *
  * Functions with one template-parameter
- * - SCAI_DECLARE_REGISTRATOR( RegistratorV, template<typename ValueType> )
+ * - SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
  *
  * Functions with two template-parameter
- * - SCAI_DECLARE_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+ * - SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
  *
  */
 
-#define SCAI_DECLARE_REGISTRATOR( name, ... )                                                     \
+#define SCAI_KREGISTRY_DECL_REGISTRATOR( name, ... )                                                     \
     __VA_ARGS__                                                                                   \
     struct name                                                                                   \
     {                                                                                             \

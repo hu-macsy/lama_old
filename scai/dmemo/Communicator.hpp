@@ -52,7 +52,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/macros/loop.hpp>
+#include <scai/common/macros/typeloop.hpp>
 
 // std
 #include <memory>

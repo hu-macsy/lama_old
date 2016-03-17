@@ -43,7 +43,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/macros/loop.hpp>
+#include <scai/common/macros/typeloop.hpp>
 
 namespace scai
 {
