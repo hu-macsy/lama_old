@@ -136,11 +136,11 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     {
         _MatrixStorage& storage = *allMatrixStorages[s];
     
-        std::ostringstream s;
+        std::ostringstream os;
 
-        s << storage;    // calls virtutal method writeAt for each storage class
+        os << storage;    // calls virtutal method writeAt for each storage class
 
-        BOOST_CHECK( s.str().length() > 0 ); 
+        BOOST_CHECK( os.str().length() > 0 ); 
     }
 }
 
