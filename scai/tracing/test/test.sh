@@ -542,24 +542,24 @@ fi
 # TODO: This does not work at the moment!
 
 ## Check if the tracing works with unnamed threads
-#make clean > /dev/null
-#make simple DEFINES="-DSCAI_TRACE_ON -DUNNAMED_THREADS" &> /dev/null
-#if [ $? -ne 0 ]; then
-#    echo "ERROR: Could not build executable! Tests are skipped!"
-#    errors=$(($errors + 1))
-#else
-#    prepareTestCase ct:time:threads
-#    
-#    checkCTFilesExist $numThreads
-#    if [ $ret -eq 0 ]; then
-#        checkCTFileContents simpleTracing.exe.ct $numThreads
-#    fi
-#    
-#    checkTimeFilesExist 1
-#    if [ $ret -eq 0 ]; then
-#        checkTimeFileContents simpleTracing.exe.time $numThreads
-#    fi
-#fi
+make clean > /dev/null
+make simple DEFINES="-DSCAI_TRACE_ON -DUNNAMED_THREADS" &> /dev/null
+if [ $? -ne 0 ]; then
+    echo "ERROR: Could not build executable! Tests are skipped!"
+    errors=$(($errors + 1))
+else
+    prepareTestCase ct:time:threads
+    
+    checkCTFilesExist $numThreads
+    if [ $ret -eq 0 ]; then
+        checkCTFileContents simpleTracing.exe.ct $numThreads
+    fi
+    
+    checkTimeFilesExist 1
+    if [ $ret -eq 0 ]; then
+        checkTimeFileContents simpleTracing.exe.time $numThreads
+   fi
+fi
 
 
 
