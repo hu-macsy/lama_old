@@ -425,9 +425,12 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
     if( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
+        SCAI_LOG_DEBUG( logger, "transpose local storage, input = " << matrix.getLocalStorage() )
         mLocalData->assignTranspose( matrix.getLocalStorage() );
-        mHaloData->allocate( getRowDistribution().getLocalSize(), mNumColumns );
+        SCAI_LOG_DEBUG( logger, "transposed local storage, is = " << *mLocalData )
+        mHaloData->allocate( getRowDistribution().getLocalSize(), 0 );
         mHalo.clear();
+        SCAI_LOG_DEBUG( logger, "transposed halo storage, is = " << *mHaloData )
     }
     else if( getRowDistribution().isReplicated() )
     {
