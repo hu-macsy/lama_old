@@ -24,57 +24,105 @@ MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
 # Common tests
 
 (
-    cd build/common/test
-    ./CommonTest
+    cd common/test
+    echo "### commonTest"
+    ./commonTest
+
+    if [ -d cuda ];
+    then
+        cd cuda
+        echo "### commonCUDATest"
+        ./commonCUDATest
+    fi
 )
 
 # Logging tests
 
 (
-    cd build/logging/test
+    cd logging/test
+    echo "### loggingTest"
     ./test.sh
+)
+
+# Tracing tests
+
+(
+    cd tracing/test
+    echo "### tracingTest"
+    ./test.sh
+)
+
+# Tasking tests
+
+(
+    cd tasking/test
+    echo "### taskingTest"
+    ./taskingTest
 )
 
 # HMemo tests
 
 (
-    cd build/hmemo/test
-    ./MemoryTest
+    cd hmemo/test
+    echo "### hmemoTest"
+    ./hmemoTest
+
+    (
+    if [ -d cuda ];
+    then
+        cd cuda
+        echo "### hmemoCUDATest"
+        ./hmemoCUDATest
+    fi
+    )
+    (
+    if [ -d mic ];
+    then
+        cd mic
+        echo "### hmemoMICTest"
+        ./hmemoMICTest
+    fi
+    )
 )
 
 # KRegistry tests
 
 (
-	cd build/kregistry/test
-	./KernelInterfaceTest
+	cd kregistry/test
+    echo "### kregistryTest"
+	./kregistryTest
 )
 
 # BLASKernel tests
 
 (
-	cd build/blaskernel/test
-	./BLASKernelTest
+	cd blaskernel/test
+    echo "### blaskernelTest"
+	./blaskernelTest
 )
 
 # UtilsKernel tests
 
 (
-	cd build/utilskernel/test
-	./UtilsKernelTest
+	cd utilskernel/test
+    echo "### utilsKernelTest"
+	./utilsKernelTest
 )
 
 # SparseKernel tests
 
 (
-	cd build/sparsekernel/test
-	./SparseKernelTest
+	cd sparsekernel/test
+    echo "### sparsekernelTest"
+	./sparsekernelTest
 )
 
 # DMemo tests
 
 (
-    cd build/dmemo/test
+    cd dmemo/test
     export SCAI_COMMUNICATOR=NO
+    echo "### dmemoTest"
     ./dmemoTest
     if [ "${MPI_FOUND}" != "" ]
     then
@@ -89,36 +137,42 @@ MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
 # LAMA tests
 
 (
-    cd build/lama/test
-    ./lama_test --log_level=test_suite | tee out.test
-    cd distributed
-    export SCAI_COMMUNICATOR=NO
-    ./lama_dist_test
-    if [ "${MPI_FOUND}" != "" ]
+    cd lama/test
+    echo "### lama_test"
+    ./lamaTest --log_level=test_suite | tee out.test
+    // TODO: should be removed
+    if [ -d distributed ]
     then
-        export SCAI_COMMUNICATOR=MPI
-        mpirun -np 1 ./lama_dist_test
-        mpirun -np 2 ./lama_dist_test
-        mpirun -np 3 ./lama_dist_test
-        mpirun -np 4 ./lama_dist_test
+        cd distributed
+        export SCAI_COMMUNICATOR=NO
+        ./lamaDistTest
+        if [ "${MPI_FOUND}" != "" ]
+        then
+            export SCAI_COMMUNICATOR=MPI
+            mpirun -np 1 ./lamaDistTest
+            mpirun -np 2 ./lamaDistTest
+            mpirun -np 3 ./lamaDistTest
+            mpirun -np 4 ./lamaDistTest
+        fi
     fi
 )
 
 # Solver tests
 
 ( 
-    cd build/solver/test
+    cd solver/test
+    echo "### solverTest"
     export SCAI_COMMUNICATOR=NO
-    ./SolverTest
+    ./solverTest
     cd distributed
     export SCAI_COMMUNICATOR=NO
-    ./SolverDistTest
+    ./solverDistTest
     if [ "${MPI_FOUND}" != "" ]
     then
         export SCAI_COMMUNICATOR=MPI
-        mpirun -np 1 ./SolverDistTest
-        mpirun -np 2 ./SolverDistTest
-        mpirun -np 3 ./SolverDistTest
-        mpirun -np 4 ./SolverDistTest
+        mpirun -np 1 ./solverDistTest
+        mpirun -np 2 ./solverDistTest
+        mpirun -np 3 ./solverDistTest
+        mpirun -np 4 ./solverDistTest
     fi
 )

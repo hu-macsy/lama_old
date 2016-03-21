@@ -47,9 +47,9 @@ include ( SCAIAssert )
 include ( SetCPPFlags )
 
 include ( CheckC++11 )
-#if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
-#endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
@@ -290,3 +290,7 @@ endif ( BUILD_DOC )
 
 ## add custom target distclean
 include ( DistClean )
+
+# copy in  scai_test.sh
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test.sh"
+                 "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )
