@@ -67,6 +67,14 @@ namespace dmemo
 const int MPICommunicator::defaultTag = 1;
 MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
+MPI_Op MPICommunicator::mMaxComplexFloat = 0;
+MPI_Op MPICommunicator::mMaxComplexDouble = 0;
+MPI_Op MPICommunicator::mMaxComplexLongDouble = 0;
+
+MPI_Op MPICommunicator::mMinComplexFloat = 0;
+MPI_Op MPICommunicator::mMinComplexDouble = 0;
+MPI_Op MPICommunicator::mMinComplexLongDouble = 0;
+
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type )
@@ -189,6 +197,41 @@ void MPICommunicator::initialize( int& argc, char** & argv )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for sum complex long double" )
     }
 
+    if ( mMaxComplexFloat == 0 )
+    {
+        MPI_Op_create( &max_operator<ComplexFloat>, true, &mMaxComplexFloat );
+        SCAI_LOG_DEBUG( logger, "MPI_Op_create for max complex float")
+    }
+
+    if ( mMaxComplexDouble == 0 )
+    {
+        MPI_Op_create( &max_operator<ComplexDouble>, true, &mMaxComplexDouble );
+        SCAI_LOG_DEBUG( logger, "MPI_Op_create for max complex double")
+    }
+
+    if ( mMaxComplexLongDouble == 0 )
+    {
+        MPI_Op_create( &max_operator<ComplexLongDouble>, true, &mMaxComplexLongDouble );
+        SCAI_LOG_DEBUG( logger, "MPI_Op_create for max complex long double")
+    }
+
+    if ( mMinComplexFloat == 0 )
+    {
+        MPI_Op_create( &min_operator<ComplexFloat>, true, &mMinComplexFloat );
+        SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex float")
+    }
+
+    if ( mMinComplexDouble == 0 )
+    {
+        MPI_Op_create( &min_operator<ComplexDouble>, true, &mMinComplexDouble );
+        SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex double")
+    }
+
+    if ( mMinComplexLongDouble == 0 )
+    {
+        MPI_Op_create( &min_operator<ComplexLongDouble>, true, &mMinComplexLongDouble );
+        SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex long double")
+    }
 #endif
 
     mCommWorld = MPI_COMM_WORLD;
@@ -222,6 +265,28 @@ void MPICommunicator::sum_complex_long_double( void* in, void* out, int* count,
     for ( int i = 0; i < *count; ++i )
     {
         b[i] += a[i];
+    }
+}
+
+template<typename ValueType>
+void MPICommunicator::max_operator( void* in, void *out, int *count, MPI_Datatype* UNUSED( dtype ) )
+{
+    ValueType* a = reinterpret_cast<ValueType*>( in );
+    ValueType* b = reinterpret_cast<ValueType*>( out );
+    for( IndexType i = 0; i < *count; ++i )
+    {
+        b[i] = a[i] > b[i] ? a[i] : b[i];
+    }
+}
+
+template<typename ValueType>
+void MPICommunicator::min_operator( void* in, void *out, int *count, MPI_Datatype* UNUSED( dtype ) )
+{
+    ValueType* a = reinterpret_cast<ValueType*>( in );
+    ValueType* b = reinterpret_cast<ValueType*>( out );
+    for( IndexType i = 0; i < *count; ++i )
+    {
+        b[i] = a[i] < b[i] ? a[i] : b[i];
     }
 }
 
@@ -733,11 +798,12 @@ ValueType MPICommunicator::minImpl( const ValueType value ) const
     SCAI_REGION( "Communicator.MPI.min" )
 
     MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Op opType = getMPIMin<ValueType>();
 
     ValueType globalMin; // no initialization needed, done in MPI call
 
     LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMin, 1, commType,
-                                         MPI_MIN, selectMPIComm() ), "MPI_Allreduce( MPI_MIN )" )
+                                         opType, selectMPIComm() ), "MPI_Allreduce( MPI_MIN )" )
     return globalMin;
 }
 
@@ -747,12 +813,13 @@ ValueType MPICommunicator::maxImpl( const ValueType value ) const
     SCAI_REGION( "Communicator.MPI.max" )
 
     MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Op opType = getMPIMax<ValueType>();
 
     ValueType globalMax; // no initialization needed, done in MPI call
 
     SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
 
-    LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMax, 1, commType, MPI_MAX,
+    LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMax, 1, commType, opType,
                                          selectMPIComm() ), "MPI_Allreduce( MPI_MAX )" )
 
     SCAI_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
