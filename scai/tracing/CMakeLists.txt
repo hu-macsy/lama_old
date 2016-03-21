@@ -112,8 +112,9 @@ scai_project (
 )
 
 ## add subdirectories
-add_subdirectory( doc )
+add_subdirectory ( doc )
 add_subdirectory ( examples )
+add_subdirectory ( macros )
 ## begin subdir test
 # prepare test
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
