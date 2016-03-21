@@ -150,8 +150,12 @@ void _MatrixStorage::swap( _MatrixStorage& other )
 
 void _MatrixStorage::_assignTranspose( const _MatrixStorage& other )
 {
+    // make it safe also for other == &this 
+
+    IndexType tmpNumRows = other.mNumRows;
     mNumRows = other.mNumColumns;
-    mNumColumns = other.mNumRows;
+    mNumColumns = tmpNumRows;
+
     mRowIndexes.clear();
     mCompressThreshold = other.mCompressThreshold;
     mDiagonalProperty = false;
