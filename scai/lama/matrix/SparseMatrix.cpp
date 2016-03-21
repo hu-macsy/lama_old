@@ -423,6 +423,8 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
     Matrix::setDistributedMatrix( matrix.getColDistributionPtr(), matrix.getRowDistributionPtr() );
 
+    // Be careful: do not use any more matrix.getRowDistributon or matrix.getColDistribution in case of alias
+
     if( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
         SCAI_LOG_DEBUG( logger, "transpose local storage, input = " << matrix.getLocalStorage() )
@@ -448,7 +450,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         mLocalData->assignTranspose( matrix.getLocalStorage() );
 
-        SCAI_LOG_INFO( logger, "local transposed = " << mLocalData )
+        SCAI_LOG_INFO( logger, "local transposed = " << *mLocalData )
 
         SCAI_LOG_INFO( logger, "halo transpose of " << matrix.getHaloStorage() )
 
@@ -495,7 +497,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         // Before send of JA: translate back the local (row) indexes to global indexes
 
         {
-            const Distribution& dist = matrix.getRowDistribution();
+            const Distribution& dist = getColDistribution();
             const IndexType nJA = sendJA.size();
 
             WriteAccess<IndexType> ja( sendJA, contextPtr );
