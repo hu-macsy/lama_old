@@ -30,8 +30,6 @@
  # @date 28.01.2016
 ###
 
-# ThreadTest example
-
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
 
 if    ( OPENMP_FOUND AND USE_OPENMP )
