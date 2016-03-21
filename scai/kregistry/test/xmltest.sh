@@ -43,4 +43,4 @@ ERROR_LEVEL=test_suite
 
 # Running tests serial
 echo "Running serial tests"
-./KernelInterfaceTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/KernelInterfaceTest.xml
+./kregistryTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/KernelInterfaceTest.xml

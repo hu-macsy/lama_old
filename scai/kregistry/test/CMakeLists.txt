@@ -40,9 +40,9 @@ set ( CXX_SOURCES
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-add_executable ( KernelInterfaceTest ${CXX_SOURCES} )
+add_executable ( kregistryTest ${CXX_SOURCES} )
 
-target_link_libraries ( KernelInterfaceTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( kregistryTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
         
 if ( USE_CODE_COVERAGE )
     configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)

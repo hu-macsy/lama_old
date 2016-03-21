@@ -1,5 +1,5 @@
 /**
- * @file tracing.hpp
+ * @file lama.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,11 +25,38 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of macros for tracing/profiling
- * @author Lauretta Schubert, Thomas Brandes
- * @date 12.08.2011
+ * @brief Include file that includes all other defintion files of this module.
+ *
+ * @author Eric Schricker
+ * @date 21.03.2016
  */
 
 #pragma once
 
-#include <scai/tracing/macros/tracing.hpp>
+#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Scalar.hpp>
+#include <scai/lama/StorageIO.hpp>
+#include <scai/lama/Vector.hpp>
+
+// Expressions
+#include <scai/lama/expression/all.hpp>
+
+// Matrices
+#include <scai/lama/matrix/all.hpp>
+
+// Matrixutils
+#include <scai/lama/matutils/MatrixCreator.hpp>
+
+// Norms
+#include <scai/lama/norm/all.hpp>
+
+// Storage
+#include <scai/lama/storage/COOStorage.hpp>
+#include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/lama/storage/DIAStorage.hpp>
+#include <scai/lama/storage/ELLStorage.hpp>
+#include <scai/lama/storage/JDSStorage.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
+#include <scai/lama/storage/MatrixStorage.hpp>
+#include <scai/lama/storage/SparseAssemblyStorage.hpp>
+#include <scai/lama/storage/StorageMethods.hpp>

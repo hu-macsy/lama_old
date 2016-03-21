@@ -62,11 +62,11 @@ if ( WIN32 )
 endif( WIN32 )
 
 ### add executable ###
-add_executable ( lama_cuda_test lama_cuda_test.cpp ${CXX_SOURCES} )
+add_executable ( lamaCUDATest lama_cuda_test.cpp ${CXX_SOURCES} )
 
 ### set target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lama_cuda_test ${PROJECT_NAME} )
+    target_link_libraries ( lamaCUDATest ${PROJECT_NAME} )
 else ( WIN32 )
-    target_link_libraries ( lama_cuda_test ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+    target_link_libraries ( lamaCUDATest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )

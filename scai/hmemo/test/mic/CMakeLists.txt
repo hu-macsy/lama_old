@@ -40,6 +40,6 @@ scai_project (
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-add_executable ( MICTest ${CXX_SOURCES} )
+add_executable ( hmemoMICTest ${CXX_SOURCES} )
 
-target_link_libraries ( MICTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_hmemo )
+target_link_libraries ( hmemoMICTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_hmemo )
