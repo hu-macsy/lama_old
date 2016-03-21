@@ -105,8 +105,8 @@ MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
 
 (
 	cd utilskernel/test
-    echo "### utilsKernelTest"
-	./utilsKernelTest
+    echo "### utilskernelTest"
+	./utilskernelTest
 )
 
 # SparseKernel tests

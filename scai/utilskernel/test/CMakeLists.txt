@@ -39,9 +39,9 @@ set ( CXX_SOURCES
 
 include_directories ( ${Boost_INCLUDE_DIR} )
 
-add_executable ( utilsKernelTest ${CXX_SOURCES} )
+add_executable ( utilskernelTest ${CXX_SOURCES} )
 
-target_link_libraries ( utilsKernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( utilskernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
 #if    ( CUDA_FOUND AND USE_CUDA )
 #    add_subdirectory ( cuda )
