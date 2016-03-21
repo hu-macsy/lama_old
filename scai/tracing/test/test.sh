@@ -548,7 +548,7 @@ if [ $? -ne 0 ]; then
     echo "ERROR: Could not build executable! Tests are skipped!"
     errors=$(($errors + 1))
 else
-    prepareTestCase ct:time:threads
+    prepareTestCase ct:time:thread
     
     checkCTFilesExist $numThreads
     if [ $ret -eq 0 ]; then
