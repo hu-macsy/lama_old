@@ -1,5 +1,5 @@
 ###
- # @file scai/lama/test/CMakeLists.txt
+ # @file scai/lama/test/matrix/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,54 +25,25 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief scai/lama/test/CMakeLists.txt
+ # @brief Build configuration for test of LAMA matrix classes
  # @author Jan Ecker
  # @date 03.04.2013
  # @since 1.0.0
 ###
 
-### set this dir as lama source dir ###
-
 scai_project ( 
 
     CLASSES
-
-       # Configuration
-        MatrixStorageTest
-        NormTest
-        SparseMatrixHelper
-        SparseMatrixTest
     
     HEADERS
-        
-        SameMatrixHelper
-        EquationHelper
-        TestMacros
-        TestSparseMatrices
 
+        Matrices
+        
     SOURCES
 
-        COOSparseMatrixTest
-        COOStorageTest
-        CSRSparseMatrixTest
-        CSRStorageTest
-        DenseMatrixTest
-        DenseMatrixTest1
-        DenseStorageTest
-        DerivedSparseMatrixTest
-        DIASparseMatrixTest
-        DIAStorageTest
-        ELLSparseMatrixTest
-        ELLStorageTest
-        JDSSparseMatrixTest
-        JDSStorageTest
-        L1NormTest
-        L2NormTest
-        MatrixTest
-        MaxNormTest
-        ScalarTest
-        StorageIOTest
-        VectorTest
+        AllMatrixTest
+
+        lamaMatrixTest
     )
 
 ### checks ####
@@ -83,23 +54,6 @@ endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 ### set include directories ###
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-if ( SCAI_BLAS_NAME STREQUAL "MKL" )
-    include_directories ( ${MKL_INCLUDE_DIRS} )
-endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
-
-### add subdirectories ###
-
-add_subdirectory ( storage )
-add_subdirectory ( matrix )
-
-if ( MPI_FOUND AND USE_MPI )
-    add_subdirectory ( distributed )
-endif ( MPI_FOUND AND USE_MPI )
-
-if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
- 
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
@@ -109,19 +63,11 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### add executeable ###
-add_executable ( lamaTest lamaTest.cpp ${CXX_SOURCES} )
+add_executable ( lamaMatrixTest ${CXX_SOURCES} )
 
 ### target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lamaTest ${PROJECT_NAME} )
+    target_link_libraries ( lamaMatrixTest ${PROJECT_NAME} )
 else ( WIN32 )
-    target_link_libraries ( lamaTest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+    target_link_libraries ( lamaMatrixTest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )
-
-### Copy the README and xmltest.sh file in build directory ### 
-file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
-
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
-endif ( USE_CODE_COVERAGE )
