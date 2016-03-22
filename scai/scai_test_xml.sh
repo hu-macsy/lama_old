@@ -8,28 +8,23 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-
 MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
 
 # Common tests
 
-(
-    cd common/test
-    echo "### commonTest"
-    ./commonTest
+echo "### commonTest"
+./common/test/commonTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/commonTest.xml
 
-    if [ -d cuda ];
-    then
-        cd cuda
-        echo "### commonCUDATest"
-        ./commonCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/commonTest.xml
-    fi
-)
+if [ -d cuda ];
+then
+    echo "### commonCUDATest"
+    ./common/test/cuda/commonCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/commonCUDATest.xml
+fi
 
 # Logging tests
 
 (
-    cd logging/test
+    cd logging/test/
     echo "### loggingTest"
     ./test.sh
 )
@@ -37,132 +32,98 @@ MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
 # Tracing tests
 
 (
-    cd tracing/test
+    cd tracing/test/
     echo "### tracingTest"
     ./test.sh
 )
 
 # Tasking tests
 
-(
-    cd tasking/test
-    echo "### taskingTest"
-    ./taskingTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/taskingTest.xml
-)
+echo "### taskingTest"
+./tasking/test/taskingTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/taskingTest.xml
 
 # HMemo tests
 
-(
-    cd hmemo/test
-    echo "### hmemoTest"
-    ./hmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoTest.xml
+echo "### hmemoTest"
+./hmemo/test/hmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoTest.xml
 
-    (
-    if [ -d cuda ];
-    then
-        cd cuda
-        echo "### hmemoCUDATest"
-        ./hmemoCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoCUDATest.xml
-    fi
-    )
-    (
-    if [ -d mic ];
-    then
-        cd mic
-        echo "### hmemoMICTest"
-        ./hmemoMICTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoMICTest.xml
-    fi
-    )
-)
+if [ -d cuda ];
+then
+    echo "### hmemoCUDATest"
+    ./hmemo/test/cuda/hmemoCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoCUDATest.xml
+fi
+
+if [ -d mic ];
+then
+    echo "### hmemoMICTest"
+    ./hmemo/test/mic/hmemoMICTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoMICTest.xml
+fi
 
 # KRegistry tests
 
-(
-	cd kregistry/test
-    echo "### kregistryTest"
-	./kregistryTest
-)
+echo "### kregistryTest"
+./kregistry/test/kregistryTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest.xml
 
 # BLASKernel tests
 
-(
-	cd blaskernel/test
-    echo "### blaskernelTest"
-	./blaskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest.xml
-)
+echo "### blaskernelTest"
+./blaskernel/test/blaskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest.xml
 
 # UtilsKernel tests
 
-(
-	cd utilskernel/test
-    echo "### utilskernelTest"
-	./utilskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/utilskernelTest.xml
-)
+echo "### utilskernelTest"
+./utilskernel/test/utilskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/utilskernelTest.xml
 
 # SparseKernel tests
 
-(
-	cd sparsekernel/test
-    echo "### sparsekernelTest"
-	./sparsekernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/sparsekernelTest.xml
-)
+echo "### sparsekernelTest"
+./sparsekernel/test/sparsekernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/sparsekernelTest.xml
 
 # DMemo tests
 
-(
-    cd dmemo/test
-    export SCAI_COMMUNICATOR=NO
-    echo "### dmemoTest"
-    ./dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest.xml
-    if [ "${MPI_FOUND}" != "" ]
-    then
-        export SCAI_COMMUNICATOR=MPI
-        mpirun -np 1 ./dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo1Test.xml
-        mpirun -np 2 ./dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo2Test.xml
-        mpirun -np 3 ./dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo3Test.xml
-        mpirun -np 4 ./dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo4Test.xml
-    fi
-)
+export SCAI_COMMUNICATOR=NO
+echo "### dmemoTest"
+./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest.xml
+if [ "${MPI_FOUND}" != "" ]
+then
+    export SCAI_COMMUNICATOR=MPI
+    mpirun -np 1 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo1Test.xml
+    mpirun -np 2 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo2Test.xml
+    mpirun -np 3 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo3Test.xml
+    mpirun -np 4 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo4Test.xml
+fi
 
 # LAMA tests
 
-(
-    cd lama/test
-    echo "### lama_test"
-    ./lamaTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaTest.xml
-    # TODO: should be removed
-    if [ -d distributed ]
-    then
-        cd distributed
-        export SCAI_COMMUNICATOR=NO
-        ./lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDistTest.xml
-        if [ "${MPI_FOUND}" != "" ]
-        then
-            export SCAI_COMMUNICATOR=MPI
-            mpirun -np 1 ./lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist1Test.xml
-            mpirun -np 2 ./lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist2Test.xml
-            mpirun -np 3 ./lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist3Test.xml
-            mpirun -np 4 ./lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist4Test.xml
-        fi
-    fi
-)
-
-# Solver tests
-
-( 
-    cd solver/test
-    echo "### solverTest"
+echo "### lama_test"
+./lama/test/lamaTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaTest.xml
+# TODO: should be removed
+if [ -d distributed ]
+then
     export SCAI_COMMUNICATOR=NO
-    ./solverTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverTest.xml
-    cd distributed
-    export SCAI_COMMUNICATOR=NO
-    ./solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDistTest.xml
+    ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDistTest.xml
     if [ "${MPI_FOUND}" != "" ]
     then
         export SCAI_COMMUNICATOR=MPI
-        mpirun -np 1 ./solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist1Test.xml
-        mpirun -np 2 ./solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist2Test.xml
-        mpirun -np 3 ./solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist3Test.xml
-        mpirun -np 4 ./solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist4Test.xml
+        mpirun -np 1 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist1Test.xml
+        mpirun -np 2 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist2Test.xml
+        mpirun -np 3 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist3Test.xml
+        mpirun -np 4 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist4Test.xml
     fi
-)
+fi
+
+# Solver tests
+
+echo "### solverTest"
+export SCAI_COMMUNICATOR=NO
+./solver/test/solverTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverTest.xml
+export SCAI_COMMUNICATOR=NO
+./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDistTest.xml
+if [ "${MPI_FOUND}" != "" ]
+then
+    export SCAI_COMMUNICATOR=MPI
+    mpirun -np 1 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist1Test.xml
+    mpirun -np 2 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist2Test.xml
+    mpirun -np 3 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist3Test.xml
+    mpirun -np 4 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist4Test.xml
+fi
