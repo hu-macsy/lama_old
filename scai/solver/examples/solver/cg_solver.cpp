@@ -56,7 +56,6 @@ using namespace std;
 using namespace scai::dmemo;
 using namespace scai::lama;
 using namespace scai::solver;
-using scai::common::unique_ptr;
 
 int main( int argc, char* argv[] )
 {
@@ -137,7 +136,7 @@ int main( int argc, char* argv[] )
 
     // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
+    scai::common::unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
     Vector& solution = *solutionPtr;
 
     int numRows = matrix.getNumRows();

@@ -1,17 +1,5 @@
-#!/bin/bash
-
+#!/bin/bash -e
 # This script runs all test of the SCAI projects
-
-# Skript to build all SCAI projects
-
-function checkErrorValue( ) {
-	$*
-	if [ "$?" -ne 0 ];
-	then
-		echo "Build Failed. Aborting..."
-		exit 1
-	fi
-}
 
 # Set some envirionment variables to disable warning/error message
 

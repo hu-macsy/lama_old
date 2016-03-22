@@ -16,6 +16,7 @@
 #include <scai/common/Printable.hpp>
 
 #include <cstring>
+#include <locale>
 
 /** Parameters to define LAMA behavior */
 
@@ -45,12 +46,13 @@ public:
     void setArg( const char* arg )
     {
         std::string val = arg;
+        std::locale loc;
 
         // make upper string for more convenience, e.g. Host is same as host or HOST
 
         for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
         {
-            *p = toupper( *p );
+            *p = std::toupper( *p, loc );
         }
 
         // make it upper case

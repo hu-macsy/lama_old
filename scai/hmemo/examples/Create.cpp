@@ -44,7 +44,6 @@
 
 using namespace std;
 using namespace scai::hmemo;
-using namespace scai::common;
 
 SCAI_LOG_DEF_LOGGER( logger, "CreateTest" )
 
@@ -62,7 +61,7 @@ int main()
 
     HArray<float> lamaArray ( N, 1.0 );
 
-    shared_ptr<HArray<float> > lamaArray1( HArray<float>::create( lamaArray.getValueType() ) );
+    scai::common::shared_ptr<HArray<float> > lamaArray1( HArray<float>::create( lamaArray.getValueType() ) );
 
     *lamaArray1 = lamaArray;
 
@@ -79,11 +78,11 @@ int main()
   
     std::cout << "Create finished" << std::endl;
 
-    shared_ptr<_HArray> lamaArray2( _HArray::create( scalar::FLOAT ) );
+    scai::common::shared_ptr<_HArray> lamaArray2( _HArray::create( scai::common::scalar::FLOAT ) );
 
     std::cout << "lamaArray2 = " << *lamaArray2 << std::endl;
 
-    shared_ptr<_HArray> lamaArray3( _HArray::create( scalar::DOUBLE ) );
+    scai::common::shared_ptr<_HArray> lamaArray3( _HArray::create( scai::common::scalar::DOUBLE ) );
 
     std::cout << "lamaArray3 = " << *lamaArray3 << std::endl;
 }

@@ -59,7 +59,6 @@ using namespace solver;
 using namespace std;
 
 using common::Walltime;
-using common::unique_ptr;
 
 void dummy( const LamaConfig& lamaconf )
 {
@@ -171,7 +170,7 @@ int main( int argc, char* argv[] )
 
     // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    unique_ptr<Vector> solutionPtr( rhs.newVector() );
+    scai::common::unique_ptr<Vector> solutionPtr( rhs.newVector() );
     Vector& solution = *solutionPtr;
 
     solution.allocate( rhs.getDistributionPtr() );
