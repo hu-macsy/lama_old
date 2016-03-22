@@ -140,7 +140,7 @@ MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
     cd lama/test
     echo "### lama_test"
     ./lamaTest --log_level=test_suite | tee out.test
-    // TODO: should be removed
+    # TODO: should be removed
     if [ -d distributed ]
     then
         cd distributed
