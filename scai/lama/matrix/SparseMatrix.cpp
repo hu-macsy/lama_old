@@ -2069,8 +2069,8 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     }
     else if( !getColDistribution().isReplicated() )
     {
-        // @todo handle maxDiffNorm on sparse matrices with column distribution
-        COMMON_THROWEXCEPTION( "maxDiffNorm not available: " << *this << " has column distribution" )
+        // take default implementation of base class
+        return Matrix::maxDiffNorm( other );
     }
     else
     {

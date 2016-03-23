@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/lama/test/matrix/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,37 +25,52 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMakeLists of common/test
- # @author Lauretta Schubert
- # @date 09.09.2015
+ # @brief Build configuration for test of LAMA matrix classes
+ # @author Jan Ecker
+ # @date 03.04.2013
+ # @since 1.0.0
 ###
 
-set ( CXX_SOURCES
-      commonTest.cpp
-      FactoryTest.cpp  
-      TypeTraitsTest.cpp  
-      SettingsTest.cpp  
-      WalltimeTest.cpp  
-)
+scai_project ( 
 
+    CLASSES
+    
+    HEADERS
+
+        Matrices
+        
+    SOURCES
+
+        AllMatrixTest
+        Redistribution
+
+        CSRSparseMatrixTest
+
+        lamaMatrixTest
+    )
+
+### checks ####
+if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
+   message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
+endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
+
+### set include directories ###
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
-add_executable ( commonTest ${CXX_SOURCES} )
+### add definitions ###
+add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
-target_link_libraries ( commonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+### add link directories ###
+if ( WIN32 )
+    link_directories ( ${Boost_LIBRARY_DIRS} )
+endif ( WIN32 )
 
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
+### add executeable ###
+add_executable ( lamaMatrixTest ${CXX_SOURCES} )
 
-file ( GLOB LOCAL_HEADERS "*.hpp" )
-
-install ( FILES ${LOCAL_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR}/test )
-
-### Copy the xmltest.sh file in build directory ### 
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
-
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
-endif ( USE_CODE_COVERAGE )
-
+### target link libraries ###
+if ( WIN32 )
+    target_link_libraries ( lamaMatrixTest ${PROJECT_NAME} )
+else ( WIN32 )
+    target_link_libraries ( lamaMatrixTest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+endif ( WIN32 )

@@ -52,7 +52,8 @@ set ( EXAMPLE_MODULES "Module.so DummyModule.so" ) # for make.inc
 
 foreach ( executable ExceptionDemo CriticalRegion Barrier 
           DemoFactory DemoFactory1 DemoPointer UseModule TimePrecision 
-          DemoComplex DemoTypeTrait DemoSettings DemoMath DemoFunction BenchPointers )
+          DemoComplex DemoTypeTrait DemoSettings DemoMath DemoFunction 
+          DemoMetaProgramming BenchPointers )
     add_executable ( ${executable}.exe ${executable}.cpp )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     target_link_libraries ( ${executable}.exe ${PROJECT_NAME} )

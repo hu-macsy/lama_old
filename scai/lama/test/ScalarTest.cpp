@@ -199,4 +199,6 @@ BOOST_AUTO_TEST_CASE( printTest )
     printtestmethod( "ComplexLongDouble", scalar::LONG_DOUBLE_COMPLEX );
 }
 
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

@@ -43,6 +43,7 @@ RUN 1 DemoMath.exe
 RUN 1 DemoPointer.exe
 RUN 1 DemoSettings.exe
 RUN 1 DemoTypeTrait.exe
+RUN 1 DemoMetaProgramming.exe
 RUN 1 ExceptionDemo.exe
 RUN 1 BenchPointers.exe
 RUN 1 TimePrecision.exe

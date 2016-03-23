@@ -102,6 +102,7 @@ scai_project (
         Thread
         Walltime
         LibModule
+        TypeTraits
 
     HEADERS                  # .hpp only
 
@@ -115,7 +116,6 @@ scai_project (
         preprocessor
         ReductionOp
         NonCopyable
-        TypeTraits
 )
 
 ## configure c++11/boost dependent sources

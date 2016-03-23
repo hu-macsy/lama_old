@@ -51,6 +51,10 @@ echo "Running lama storage tests for Host context"
 
 ./storage/lamaStorageTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaStorageHostTest.xml
 
+echo "Running lama matrix tests for Host context"
+
+./matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrixHostTest.xml
+
 if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
