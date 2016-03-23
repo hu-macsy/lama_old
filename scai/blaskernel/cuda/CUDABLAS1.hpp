@@ -41,6 +41,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 
+#include <scai/kregistry/mepr/Registrator.hpp>
+
 // CUDA
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
@@ -160,7 +162,7 @@ private:
 
     /** Register or unregister all kernel implementations of this class. */
 
-    static void registerKernels( bool deleteFlag );
+    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
 
     /** Constructor for registration. */
 

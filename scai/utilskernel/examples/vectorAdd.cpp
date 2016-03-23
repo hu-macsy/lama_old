@@ -29,7 +29,7 @@ int main(int, char**)
     int size = 10;
     hmemo::HArray<double> a, b, c;
 
-    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<double> > setVal;
+    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<double, double> > setVal;
     hmemo::ContextPtr loc = setVal.getValidContext( hmemo::Context::getContextPtr( common::context::Host ) );
 
     hmemo::WriteOnlyAccess<double> writeB( b, loc, size);

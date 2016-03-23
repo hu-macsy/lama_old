@@ -13,7 +13,7 @@
 #include <boost/test/unit_test_suite.hpp>
 
 #include <scai/hmemo.hpp>
-#include <scai/hmemo/test/TestMacros.hpp>
+#include <scai/hmemo/test/ContextFix.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <scai/logging.hpp>

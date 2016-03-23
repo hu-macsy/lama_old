@@ -584,6 +584,16 @@ public:
 
     void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
 
+    /** Copy a dense matrix with different data type; inherits sizes and distributions */
+
+    template<typename otherT>
+    void copyDenseMatrix( const DenseMatrix<otherT>& other );
+
+    /** Optimized implementation for dense vectors as diagonal. */
+
+    template<typename OtherT>
+    void getDiagonalImpl( DenseVector<OtherT>& diagonal ) const;
+
 protected:
 
     using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::mNumRows;
@@ -650,16 +660,6 @@ private:
         const DenseStorage<ValueType>& global,
         const dmemo::Distribution& rowDistribution );
 
-    /** Copy a dense matrix with different data type; inherits sizes and distributions */
-
-    template<typename otherT>
-    void copyDenseMatrix( const DenseMatrix<otherT>& other );
-
-    /** Optimized implementation for dense vectors as diagonal. */
-
-    template<typename OtherT>
-    void getDiagonalImpl( DenseVector<OtherT>& diagonal ) const;
-
     void redistributeRows( dmemo::DistributionPtr rowDistribution );
 
     /** Split the replicated columns into chunks according to the column distribution. */
@@ -685,6 +685,8 @@ private:
     void invertCyclic();
 
     void invertReplicated();
+
+    static std::string initTypeName();
 
 public:
 

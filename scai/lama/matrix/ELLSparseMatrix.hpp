@@ -250,6 +250,8 @@ private:
 
     common::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
 
+    static std::string initTypeName();
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 public:

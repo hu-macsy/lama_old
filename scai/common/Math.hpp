@@ -104,6 +104,12 @@ struct Math
     /*
      * Computes the conjugated value of a given value
      */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int conj( const int& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long conj( const long& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long conj( const long long& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float conj( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double conj( const double& x );
@@ -118,7 +124,43 @@ struct Math
     static inline MIC_CALLABLE_MEMBER Complex<long double> conj( const Complex<long double>& x );
 #endif
 
+    /*
+     * Getter for the real part
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double real( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double real( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double real( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER long double real( const Complex<long double>& x );
+#endif
+
+    /*
+     * Getter for the imag part
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float imag( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double imag( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double imag( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float imag( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double imag( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER long double imag( const Complex<long double>& x );
+#endif
+
 };
+
+// -------------------------------- sqrt ----------------------------
 
 float Math::sqrt( const float& x )
 {
@@ -169,6 +211,21 @@ long double Math::abs( const long double& x )
 
 // -------------------------------- conj -----------------------------
 
+int Math::conj( const int& x )
+{
+    return x;
+}
+
+long Math::conj( const long& x )
+{
+    return x;
+}
+
+long long Math::conj( const long long& x )
+{
+    return x;
+}
+
 float Math::conj( const float& x )
 {
     return x;
@@ -182,6 +239,40 @@ double Math::conj( const double& x )
 long double Math::conj( const long double& x )
 {
     return x;
+}
+
+// -------------------------------- real -----------------------------
+
+float Math::real( const float& x )
+{
+    return x;
+}
+
+double Math::real( const double& x )
+{
+    return x;
+}
+
+long double Math::real( const long double& x )
+{
+    return x;
+}
+
+// -------------------------------- imag -----------------------------
+
+float Math::imag( const float& )
+{
+    return 0;
+}
+
+double Math::imag( const double& )
+{
+    return 0;
+}
+
+long double Math::imag( const long double& )
+{
+    return 0;
 }
 
 } /* end namespace common */

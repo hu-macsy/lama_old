@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/storage/DenseStorage.hpp>
 
+// local libraries
+#include <scai/lama/mepr/DenseStorageViewWrapper.hpp>
+
 // internal scai libraries
 #include <scai/sparsekernel/DenseKernelTrait.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
@@ -47,6 +50,7 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 using namespace scai::hmemo;
 
@@ -584,7 +588,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( mContext );
 
@@ -699,7 +703,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( mContext );
 
@@ -933,7 +937,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     {
         // do not care at all about C as it might be any dummy, or aliased to result
 
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
         ContextPtr context = setVal.getValidContext( mContext );
 
@@ -1172,30 +1176,9 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
     {
         // more efficient solution for assigment of dense storage
 
-        common::scalar::ScalarType arrayType = other.getValueType();
-
-        switch ( arrayType )
+        if( mepr::DenseStorageViewWrapper<ValueType, ARITHMETIC_HOST_LIST>::assignImpl( *this, other ) )
         {
-
-#define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                \
-case TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                       \
-{                                                                                        \
-    const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>* otherTyped =                       \
-            dynamic_cast<const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>*>( &other );   \
-    SCAI_ASSERT_DEBUG( otherTyped, other << ": dynamic cast failed, should not happen" ) \
-    assignDenseStorageImpl( *otherTyped );                                               \
-    return;                                                                              \
-}                                                                                        \
- 
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ASSIGN_DENSE_CALL, _ )
-
-#undef LAMA_ASSIGN_DENSE_CALL
-
-            default            :
-
-                SCAI_LOG_INFO( logger, "unsupported  typed assign" )
-
-                // also take fallback call
+            return;
         }
     }
 
@@ -1438,29 +1421,42 @@ DenseStorage<ValueType>* DenseStorage<ValueType>::newMatrixStorage() const
    return storage.release();
 }
 
+template<typename ValueType>
+std::string DenseStorage<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("DenseStorage<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* DenseStorage<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
+template<typename ValueType>
+std::string DenseStorageView<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("DenseStorageView<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* DenseStorageView<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_DENSE_STORAGE_INSTANTIATE(z, I, _)                                         \
-    template<>                                                                          \
-    const char* DenseStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                      \
-    {                                                                                   \
-        return "DenseStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                \
-    }                                                                                   \
-    \
-    template<>                                                                          \
-    const char* DenseStorageView<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
-    {                                                                                   \
-        return "DenseStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                \
-    }                                                                                   \
-    \
-    template class COMMON_DLL_IMPORTEXPORT DenseStorage<ARITHMETIC_HOST_TYPE_##I> ;     \
-    template class COMMON_DLL_IMPORTEXPORT DenseStorageView<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_DENSE_STORAGE_INSTANTIATE
+SCAI_COMMON_INST_CLASS( DenseStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseStorageView, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

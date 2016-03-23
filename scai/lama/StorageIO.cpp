@@ -41,6 +41,8 @@
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
+#include <scai/lama/io/IOUtils.hpp>
+#include <scai/lama/mepr/IOWrapper.hpp>
 
 
 // internal scai libraries
@@ -52,7 +54,7 @@
 
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -171,32 +173,6 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
 
 /* -------------------------------------------------------------------------- */
 
-template<typename FileType,typename DataType,int offset>
-static void writeBinaryData( std::fstream& outFile, const DataType data[], const IndexType n )
-{
-    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
-    {
-        // no type conversion needed
-
-        outFile.write( reinterpret_cast<const char*>( data ), sizeof(DataType) * n );
-        outFile.flush();
-        return;
-    }
-
-    // allocate buffer for type conversion and/or adding offset
-
-    scoped_array<FileType> buffer( new FileType[n] );
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        buffer[i] = static_cast<FileType>( data[i] + offset );
-    }
-
-    outFile.write( reinterpret_cast<const char*>( buffer.get() ), sizeof(FileType) * n );
-    outFile.flush();
-    return;
-}
-
 /** Help function to determine size of file with CSR data of certain value type
  *
  *  @tparam ValueType type of matrix value, i.e. float or double
@@ -207,9 +183,9 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
  */
 
 template<typename ValueType>
-static FileIO::file_size_t expectedCSRFileSize( const IndexType numRows, const IndexType numValues )
+static IOUtils::file_size_t expectedCSRFileSize( const IndexType numRows, const IndexType numValues )
 {
-    FileIO::file_size_t size = sizeof(IndexType) * ( numRows + 1 ); // size of csrIA
+    IOUtils::file_size_t size = sizeof(IndexType) * ( numRows + 1 ); // size of csrIA
 
     size += sizeof(IndexType) * numValues; // size of csrJA
     size += sizeof(ValueType) * numValues; // size of csrValues
@@ -232,7 +208,7 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     SCAI_REGION( "StorageIO.readCSRFromBinaryFile" )
 
-    FileIO::file_size_t actualSize = FileIO::getFileSize( fileName.c_str() );
+    IOUtils::file_size_t actualSize = IOUtils::getFileSize( fileName.c_str() );
 
     SCAI_LOG_INFO( logger, "CSR binary file " << fileName << " has size = " << actualSize )
 
@@ -242,37 +218,28 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     // read offset array IA
 
-    FileIO::readBinaryData<IndexType,IndexType, -1>( inFile, ia.get(), numRows + 1 );
+    IOUtils::readBinaryData<IndexType,IndexType>( inFile, ia.get(), numRows + 1, -1 );
 
     IndexType numValues = ia[numRows];
 
     WriteOnlyAccess<IndexType> ja( csrJA, numValues );
     WriteOnlyAccess<ValueType> values( csrValues, numValues );
 
-    FileIO::readBinaryData<IndexType,IndexType, -1>( inFile, ja.get(), numValues );
+    IOUtils::readBinaryData<IndexType,IndexType>( inFile, ja.get(), numValues, -1 );
 
     // now we can calculate the expected size
 
-    FileIO::file_size_t expectedSize = expectedCSRFileSize<ValueType>( numRows, numValues );
+    IOUtils::file_size_t expectedSize = expectedCSRFileSize<ValueType>( numRows, numValues );
 
     if ( expectedSize == actualSize )
     {
         SCAI_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() << ", no conversion" )
-        FileIO::readBinaryData<ValueType,ValueType,0>( inFile, values.get(), numValues );
+        IOUtils::readBinaryData<ValueType,ValueType>( inFile, values.get(), numValues );
     }
-
-#define LAMA_BIN_READ(  z, I, _ )                                                                                   \
-    else if ( actualSize == expectedCSRFileSize<ARITHMETIC_HOST_TYPE_##I>( numRows, numValues ) )                   \
-    {                                                                                                               \
-        SCAI_LOG_WARN( logger, "read binary data of type " << common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::id()    \
-                               << ", conversion to " << csrValues.getValueType() )                                  \
-        FileIO::readBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( inFile, values.get(), numValues );          \
-    }                                                                                                               \
- 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BIN_READ, _ )
-
-#undef LAMA_BIN_READ
-
+    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readBinary( actualSize, inFile, values.get(), numValues ))
+    {
+        SCAI_LOG_WARN( logger, "read binary data of different type, conversion done" )
+    }
     else
     {
         COMMON_THROWEXCEPTION(
@@ -282,56 +249,6 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
     }
 
     inFile.close();
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename FileType,typename DataType,int offset>
-static void writeData( XDRFileStream& outFile, const DataType data[], const IndexType n )
-{
-    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
-    {
-        // no type conversion needed
-
-        outFile.write( data, n );
-        return;
-    }
-
-    // allocate buffer for type conversion
-
-    FileType* buffer = new FileType[n];
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        buffer[i] = static_cast<FileType>( data[i] + offset );
-    }
-
-    outFile.write( buffer, n );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename FileType,typename DataType,int offset>
-static void readData( XDRFileStream& inFile, DataType data[], const IndexType n )
-{
-    if( ( offset == 0 ) && ( typeid( FileType ) == typeid( DataType ) ) )
-    {
-        // no type conversion needed
-
-        inFile.read( data, n );
-        return;
-    }
-
-    // allocate buffer for type conversion
-
-    FileType* buffer = new FileType[n];
-
-    inFile.read( buffer, n ); // read data as required file type
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        data[i] = static_cast<DataType>( buffer[i] + offset );
-    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -369,15 +286,15 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
 
     if( indexDataTypeSizeIA == sizeof( IndexType ) )
     {
-        writeData<IndexType,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
+        IOUtils::writeXDR<IndexType,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
     }
     else if( indexDataTypeSizeIA == sizeof( long ) )
     {
-        writeData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
+        IOUtils::writeXDR<long,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
     }
     else if( indexDataTypeSizeIA == sizeof ( int ) )
     {
-        writeData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
+        IOUtils::writeXDR<int,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
     }
 
     outFile.write( &indexDataTypeSizeIA );
@@ -390,15 +307,15 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
 
     if( indexDataTypeSizeJA == sizeof(IndexType) )
     {
-        writeData<IndexType,IndexType,0>( outFile, jaRead.get(), numValues );
+        IOUtils::writeXDR<IndexType,IndexType>( outFile, jaRead.get(), numValues );
     }
     else if( indexDataTypeSizeJA == sizeof(long) )
     {
-        writeData<long,IndexType,0>( outFile, jaRead.get(), numValues );
+        IOUtils::writeXDR<long,IndexType>( outFile, jaRead.get(), numValues );
     }
     else if( indexDataTypeSizeJA == sizeof(int) )
     {
-        writeData<int,IndexType,0>( outFile, jaRead.get(), numValues );
+        IOUtils::writeXDR<int,IndexType>( outFile, jaRead.get(), numValues );
     }
 
     outFile.write( &indexDataTypeSizeJA );
@@ -409,18 +326,16 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
 
     if ( dataTypeSize == sizeof( ValueType ) )
     {
-        writeData<ValueType, ValueType, 0>( outFile, dataRead.get(), numValues );
+        IOUtils::writeXDR<ValueType, ValueType>( outFile, dataRead.get(), numValues );
     }
-
-#define LAMA_IO_WRITE( z, I, _ )                                                                    \
-    else if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )                                  \
-    {                                                                                               \
-        writeData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( outFile, dataRead.get(), numValues );    \
-    }                                                                                               \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_IO_WRITE, _ )
-
-#undef LAMA_IO_WRITE
+    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeXDR( dataTypeSize, outFile, dataRead.get(), numValues ) )
+    {
+        SCAI_LOG_INFO( logger, "writeXDR conversion neeeded" )
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "no matching type found" )
+    }
 
     outFile.write( &dataTypeSize );
     outFile.write( &numValues );
@@ -463,15 +378,15 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     if( sizeof(IndexType) == indexDataTypeSizeIA )
     {
-        readData<IndexType,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
+        IOUtils::readXDR<IndexType,IndexType>( xdrFile, m_ia, numRows + 1, -1 );
     }
     else if( indexDataTypeSizeIA == sizeof( int ) )
     {
-        readData<int,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
+        IOUtils::readXDR<int,IndexType>( xdrFile, m_ia, numRows + 1, -1 );
     }
     else if( indexDataTypeSizeIA == sizeof( long ) )
     {
-        readData<long,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
+        IOUtils::readXDR<long,IndexType>( xdrFile, m_ia, numRows + 1, -1 );
     }
     else
     {
@@ -502,15 +417,15 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     if( sizeof(IndexType) == indexDataTypeSizeJA )
     {
-        readData<IndexType,IndexType,0>( xdrFile, m_ja.get(), numValues );
+        IOUtils::readXDR<IndexType,IndexType>( xdrFile, m_ja.get(), numValues );
     }
     else if( indexDataTypeSizeJA == sizeof( long ) )
     {
-        readData<long,IndexType,0>( xdrFile, m_ja.get(), numValues );
+        IOUtils::readXDR<long,IndexType>( xdrFile, m_ja.get(), numValues );
     }
     else if( indexDataTypeSizeJA == sizeof( int ) )
     {
-        readData<int,IndexType,0>( xdrFile, m_ja.get(), numValues );
+        IOUtils::readXDR<int,IndexType>( xdrFile, m_ja.get(), numValues );
     }
     else
     {
@@ -537,17 +452,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
-#define LAMA_IO_READ( z, I, _ )                                                                \
-    if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )                                  \
-    {                                                                                          \
-        readData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( xdrFile, m_data.get(), numValues );  \
-    }                                                                                          \
-    else                                                                                       \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_IO_READ, _ )
-
-#undef LAMA_IO_READ
-
+    if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readXDR( dataTypeSize, xdrFile, m_data.get(), numValues ) )
+    {
+        SCAI_LOG_TRACE( logger, "read xdr file")
+    }
+    else
     {
         COMMON_THROWEXCEPTION( "Invalid data type size in file " + fileName )
     }
@@ -581,6 +490,56 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     SCAI_LOG_INFO( logger, "writeCSRToBinaryFile ( " << amgFileName << ")" << ", #rows = " << csrIA.size()-1
                            << ", #values = " << csrJA.size() )
+/*
+    ContextPtr host = Context::getHostPtr();
+
+    ReadAccess<IndexType> iaRead( csrIA, host );
+    ReadAccess<IndexType> jaRead( csrJA, host );
+    ReadAccess<ValueType> dataRead( csrValues, host );
+
+    IndexType numRows = csrIA.size() - 1;
+    IndexType numValues = csrJA.size();
+
+    SCAI_LOG_INFO( logger,
+                   "writeCSRToBinaryFile ( " << amgFileName << ")" << ", #rows = " << numRows << ", #values = " << numValues )
+
+    std::fstream outFile( amgFileName.c_str(), std::ios::out | std::ios::binary );
+
+    // write ia, add offset 1
+
+    if( indexDataTypeSizeIA == sizeof( int ) || sizeof(long) == sizeof( int ) )
+    {
+        IOUtils::writeBinary<int,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
+    }
+    else if( indexDataTypeSizeIA == sizeof( long ) )
+    {
+        IOUtils::writeBinary<long,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of IA." )
+    }
+
+    // write m_ja
+
+    if( indexDataTypeSizeJA == sizeof( int ) || sizeof(long) == sizeof( int ) )
+    {
+        IOUtils::writeBinary<int,IndexType>( outFile, jaRead.get(), numValues, 1 );
+    }
+    else if( indexDataTypeSizeJA == sizeof( long ) )
+    {
+        IOUtils::writeBinary<long,IndexType>( outFile, jaRead.get(), numValues, 1 );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
+    }
+
+    if( !mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeBinary( dataTypeSize, outFile, dataRead.get(), numValues ))
+    {
+        COMMON_THROWEXCEPTION( "unknown data type size  = " << dataTypeSize << " for values." )
+    }
+*/
 
     BinaryStream outFile( amgFileName );
     outFile.write<IndexType, IndexType>( csrIA, 1 );
@@ -1354,12 +1313,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_STORAGE_IO_INSTANTIATE(z, I, _)                              \
-    template class COMMON_DLL_IMPORTEXPORT StorageIO<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_STORAGE_IO_INSTANTIATE, _ )
-
-#undef LAMA_STORAGE_IO_INSTANTIATE
+SCAI_COMMON_INST_CLASS( StorageIO, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 /* -------------------------------------------------------------------------- */
 

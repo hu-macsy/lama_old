@@ -43,30 +43,19 @@
 
 #include <scai/common/test/Configuration.hpp>
 
+#include <scai/common/preprocessor.hpp>
+#include <scai/common/Math.hpp>
+#include <scai/common/TypeTraits.hpp>
+
 // boost
 #include <boost/assign/list_of.hpp>
-#include <scai/common/preprocessor.hpp>
 #include <boost/mpl/list.hpp>
-
-
-#include <boost/test/detail/unit_test_parameters.hpp>
-
-// std
-#include <string>
-#include <map>
 
 /* -------------------------------------------------------------------------------- */
 /*  arithmetic test types                                                           */
 /* -------------------------------------------------------------------------------- */
 
-#define SCAI_TYPE( z, I, _ ) ARITHMETIC_HOST_TYPE_##I ,
-
-typedef boost::mpl::list<
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, SCAI_TYPE, _ )
-        boost::mpl::na
-> scai_arithmetic_test_types;
-
-#undef SCAI_TYPE
+typedef boost::mpl::list<ARITHMETIC_HOST> scai_arithmetic_test_types;
 
 /* -------------------------------------------------------------------------------- */
 /*  array test types                                                                */
@@ -74,282 +63,42 @@ typedef boost::mpl::list<
 
 #define SCAI_TYPE( z, I, _ ) ARRAY_TYPE##I ,
 
-typedef boost::mpl::list<
-        BOOST_PP_REPEAT( ARRAY_TYPE_CNT, SCAI_TYPE, _ )
-        boost::mpl::na
-> scai_array_test_types;
+typedef boost::mpl::list<ARITHMETIC_ARRAY_HOST> scai_array_test_types;
 
 #undef SCAI_TYPE
+
+/* -------------------------------------------------------------------------------- */
+/*  Define one type used for test where only one ARITHMETIC TYPE is needed          */
+/* -------------------------------------------------------------------------------- */
 
 #define SCAI_TEST_TYPE ARITHMETIC_HOST_TYPE_0
 
 /* -------------------------------------------------------------------------------- */
 
 /*
- * log levels are defined in boost/test/detail/log_level.hpp
- */
-
-#define IF_LOG_LEVEL_IS_TEST_SUITE \
-	if ( boost::unit_test::runtime_config::log_level() == boost::unit_test::log_test_units )
-
-//template<typename ValueType>
-//inline scai::lama::Scalar scalarEps();
-//
-//template<>
-//inline scai::lama::Scalar scalarEps<float>()
-//{
-//    return scai::lama::Scalar( 1E-8f );
-//}
-//
-//template<>
-//inline scai::lama::Scalar scalarEps<double>()
-//{
-//    return scai::lama::Scalar( 1E-16 );
-//}
-
-/*
- * @brief HelperMacro SCAI_CHECK_SCALAR_CLOSE( x, y, type, percent_eps )
+ * @brief HelperMacro SCAI_CHECK_CLOSE( ValueType, x, y, tolerance )
  *
- * Extended macro BOOST_CHECK_CLOSE(left,right,procent_tolerance) from Boost.Test.
- * Checks if the difference between x and y is smaller then eps.
- * Transform Scalar into ValueType, calls BOOST_CHECK_CLOSE with ValueTypes.
+ * Extended macro BOOST_CHECK_CLOSE( x, y, tolerance) from Boost.Test.
+ * as it does not work for complex types
  *
+ * @param ValueType     value type to be used for check
  * @param x             Scalar
  * @param y             Scalar
- * @param type          value type to be used for check
  * @param percent_eps   Epsilon[%]
  *
  */
 
-#define SCAI_CHECK_CLOSE( x, y, tolerance ) 																	    \
-	{																											    \
-		ValueType diff = (x) - (y);																				    \
-		BOOST_CHECK( scai::common::Math::abs( diff ) < static_cast<ValueType>( tolerance ) ) ;		\
-	}
-
-/*
- * @brief HelperMacro LAMA_WRITEAT_TEST( printable )
- *
- * This macro checks if a output will be created by writing an object
- * into a stream. The length of this output must be greater than 0.
- * This object must be inherited from class Printable.
- *
- * @param printable     object of type printable
- */
-
-#define LAMA_WRITEAT_TEST( printable )                                                                                 \
-    {                                                                                                                  \
-        scai::common::Printable* p = dynamic_cast<scai::common::Printable*>( &printable );                             \
-        std::stringstream mStream;                                                                                     \
-        p->writeAt( mStream );                                                                                         \
-        std::string mString = mStream.str();                                                                           \
-        BOOST_CHECK( mString.length() > 0 );                                                                           \
+#define SCAI_CHECK_CLOSE( x, y, tolerance )                                                             \
+    {                                                                                                   \
+        BOOST_CHECK_CLOSE( scai::common::Math::real( x ), scai::common::Math::real( y ), tolerance );   \
+        BOOST_CHECK_CLOSE( scai::common::Math::imag( x ), scai::common::Math::imag( y ), tolerance ) ;  \
     }
 
-/*
- * @brief HelperMacro LAMA_WRITEAT_PTR_TEST( printable )
- *
- * This macro checks if a output will be created by writing an object
- * into a stream. The length of this output must be greater than 0.
- * This object must be a pointer to an object inherited from class
- * Printable.
- *
- * @param printable     pointer to an object of type printable
- */
-
-#define LAMA_WRITEAT_PTR_TEST( printable )         \
-    {                                              \
-        std::stringstream mStream;                 \
-        printable->writeAt( mStream );             \
-        std::string mString = mStream.str();       \
-        BOOST_CHECK( mString.length() > 0 );       \
-    }
-
-/*
- * @brief HelperMacro LAMA_AUTO_TEST_CASE_T( name, classname )
- *
- * This macro creates a small boost test auto case for all value types (without context).
- * The test case name is based on the name of the given test method.
- *
- * @param name          name of test method, which will invoke.
- * @param classname     name of the given test class.
- */
-#define LAMA_AUTO_TEST_CASE_T( name, classname)                                                                        \
-    BOOST_AUTO_TEST_CASE( name )                                                                                       \
-    {                                                                                                                  \
-        const std::string lama_name = #name;                                                                           \
-        const std::string lama_classname = #classname;                                                                 \
-        scai::lama::classname::name<float>( );                                                                         \
-        scai::lama::classname::name<double>( );                                                                        \
-    }
-
-/*
- * @brief HelperMacro LAMA_AUTO_TEST_CASE_T( name, classname )
- *
- * This macro creates a small boost test auto case for all value types (without context).
- * The test case name is based on the name of the given test method.
- *
- * @param name          name of test method, which will invoke.
- * @param classname     name of the given test class.
- */
-#define LAMA_AUTO_TEST_CASE_TL( name, classname)                                                                       \
-    BOOST_AUTO_TEST_CASE( name )                                                                                       \
-    {                                                                                                                  \
-        const std::string lama_name = #name;                                                                           \
-        const std::string lama_classname = #classname;                                                                 \
-        scai::lama::classname::name<float>( logger );                                                                  \
-        scai::lama::classname::name<double>( logger );                                                                 \
-    }
-
-    /*
-     * @brief HelperMacro COMMONTESTCASEINVOKER( object_name, method_name )
-     *
-     * This macro represents the invoke of a common used test method.
-     *
-     * @param object_name     name of the object, which consists the test method.
-     * @param method_name     name of method that will be called.
-     */
-
-#define COMMONTESTCASEINVOKER( object_name, method_name )            \
-    {                                                                \
-        if ( testcase == #method_name )                              \
-        {                                                            \
-        	try                                                      \
-            {                                                        \
-        		object_name.method_name();                           \
-            }                                                        \
-            catch(scai::common::UnsupportedException const& ex)      \
-            {                                                        \
-            	std::cout << "failed on " #method_name << std::endl; \
-            }                                                        \
-        }                                                            \
-	}
-
-    /*
-     * @brief HelperMacro COMMONTESTCASEINVOKER_TEMPLATE( object_name, method_name, ValueType )
-     *
-     * This macro represents the invoke of a common used test method.
-     *
-     * @param object_name     name of the object, which consists the test method.
-     * @param method_name     name of method that will be called.
-     */
-
-#define COMMONTESTCASEINVOKER_TEMPLATE( object_name, method_name, ValueType )   \
-    {                                                                           \
-		if ( testcase == #method_name )                                         \
-			object_name.method_name<ValueType>();                               \
-	}
-
-    /*
-     * @brief HelperMacro LAMA_COMMON_TEST_CASE_TM( classname, templatename, methodname )
-     *
-     * This macro creates a templated test method, which can be used by test cases.
-     *
-     * @param classname       name of the test class.
-     * @param templatename    name of a template.
-     * @param methodname      name of the test method, that will be created.
-     */
-#define LAMA_COMMON_TEST_CASE_TM( classname, templatename, methodname )                                                \
-    template<typename templatename>                                                                                    \
-    void classname::methodname()                                                                                       \
-    {                                                                                                                  \
-        const std::string lama_common_testcase_method = #methodname;                                                   \
-        IF_LOG_LEVEL_IS_TEST_SUITE                                                                                     \
-            BOOST_TEST_MESSAGE( "    Entering common test case \"" + lama_common_testcase_method + "\" " );            \
-        /*
-         * @brief HelperMacro LAMA_COMMON_TEST_CASE_TM_END()
-         *
-         * This macro closes this testmethod.
-         *
-         */
-#define LAMA_COMMON_TEST_CASE_TM_END();                                                                                \
-	IF_LOG_LEVEL_IS_TEST_SUITE                                                                                         \
-        BOOST_TEST_MESSAGE( "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                 \
-    }
-
-        /*
-         * @brief HelperMacro LAMA_COMMON_TEST_CASE( classname, methodname )
-         *
-         * This macro creates a test method, which is used by many test cases.
-         *
-         * @param classname       name of the test class.
-         * @param methodname      name of the test method, that will be created.
-         */
-#define LAMA_COMMON_TEST_CASE( classname, methodname )                                                                 \
-    void classname::methodname()                                                                                       \
-    {                                                                                                                  \
-        const std::string lama_common_testcase_method = #methodname;                                                   \
-        IF_LOG_LEVEL_IS_TEST_SUITE                                                                                     \
-            BOOST_TEST_MESSAGE( "    Entering common test case \"" + lama_common_testcase_method + "\" " );            \
-
-        /*
-         * @brief HelperMacro LAMA_COMMON_TEST_CASE_END()
-         *
-         * This macro closes this test method.
-         *
-         */
-#define LAMA_COMMON_TEST_CASE_END();                                                                                   \
-	IF_LOG_LEVEL_IS_TEST_SUITE                                                                                   	   \
-        BOOST_TEST_MESSAGE( "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                 \
-    }
-
-        /*
-         * @brief HelperMacro LAMA_COMMON_TEST_CASE_RUNNER( classname )
-         *
-         * This macro creates the runTests()-Method to invoke all common test methods.
-         *
-         */
-
-#define LAMA_COMMON_TEST_CASE_RUNNER( classname );                                                                     \
-    void classname::runTests()
-
-        /*
-         * @brief HelperMacro LAMA_COMMON_TEST_CASE( classname, templatename, methodname )
-         *
-         * This macro creates a test method, which is used by many test cases.
-         *
-         * @param classname       name of the test class.
-         * @param templatename    name of the template.
-         * @param methodname      name of the test method, that will be created.
-         */
-
-#define LAMA_COMMON_TEST_CASE_TEMPLATE( classname, templatename, methodname )                                          \
-    template<typename templatename>                                                                                    \
-    void classname<templatename>::methodname()                                                                         \
-    {                                                                                                                  \
-        std::string lama_common_testcase_method = #methodname;                                                         \
-        std::ostringstream omsg;                                                                                       \
-        omsg << scai::common::getScalarType<templatename>();                                                           \
-        std::string lama_common_testcase_template = omsg.str();                                                        \
-        IF_LOG_LEVEL_IS_TEST_SUITE                                                                                     \
-        {                                                                                                              \
-            SCAI_LOG_INFO( logger, "    Entering common test case \"" + lama_common_testcase_method + "<" +            \
-                           lama_common_testcase_template + ">\" " );                                                   \
-        }
-
-
-
-        /*
-         * @brief HelperMacro LAMA_COMMON_TEST_CASE_END()
-         *
-         * This macro closes this test method.
-         *
-         */
-#define LAMA_COMMON_TEST_CASE_TEMPLATE_END();                                                                    \
-		IF_LOG_LEVEL_IS_TEST_SUITE                                                                               \
-        	SCAI_LOG_INFO( logger, "    Leaving common test case \"" + lama_common_testcase_method + "\" " );    \
-    }
-
-        /*
-         * @brief HelperMacro LAMA_COMMON_TEST_CASE_RUNNER( classname )
-         *
-         * This macro creates the runTests()-Method to invoke all common test methods.
-         *
-         */
-
-#define LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( classname );                                                            \
-    template<typename StorageType>                                                                                     \
-    void classname<StorageType>::runTests()
+/* -------------------------------------------------------------------------------- */
+/*                                                                                  */
+/*      SCAI_CHECK_THROW   ->  replaces BOOST_CHECK_THROW                           */
+/*                                                                                  */
+/* -------------------------------------------------------------------------------- */
 
 #if defined(SCAI_ASSERT_LEVEL_OFF)
 
@@ -365,3 +114,22 @@ typedef boost::mpl::list<
     BOOST_CHECK_THROW( stmt, exception )
 
 #endif
+
+/*
+ * @brief TestMacro SCAI_COMMON_WRITEAT_TEST( printable )
+ *
+ * This macro checks if a output will be created by writing an object
+ * into a stream. The length of this output must be greater than 0.
+ * This object must be inherited from class Printable.
+ *
+ * @param printable     object of type printable
+ */
+
+#define SCAI_COMMON_WRITEAT_TEST( printable )              \
+    {                                                      \
+        std::stringstream mStream;                         \
+        mStream << printable;                              \
+        std::string mString = mStream.str();               \
+        BOOST_CHECK( mString.length() > 0 );               \
+    }
+

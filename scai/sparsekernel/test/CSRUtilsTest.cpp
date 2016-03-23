@@ -40,7 +40,6 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/hmemo/test/TestMacros.hpp>
 
 /*--------------------------------------------------------------------- */
 
@@ -61,7 +60,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
 
@@ -120,7 +119,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_arithmetic_tes
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
 
@@ -200,7 +199,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_arithmetic_t
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
 

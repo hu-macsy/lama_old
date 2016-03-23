@@ -47,7 +47,6 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/preprocessor.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -566,40 +565,25 @@ void OpenMPBLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPBLAS1::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void OpenMPBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
 
     const common::context::ContextType ctx = common::context::Host;
 
-    SCAI_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
+    SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    // KERNEL_ADD: these entries do not replace and can be replaced by other ones
-
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;  
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    // Loop over all support arithmetic types for Host
-
-#define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
-    KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx, flag );    \
-    KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx, flag );    \
-    KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx, flag );    \
-    KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx, flag );  \
-    KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx, flag );    \
-    KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx, flag );    \
-    KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx, flag );    \
-    KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx, flag );      \
-    KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, ctx, flag );      \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
-
-#undef LAMA_BLAS1_REGISTER
-
+    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( OpenMPBLAS1::scal, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( OpenMPBLAS1::nrm2, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( OpenMPBLAS1::asum, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( OpenMPBLAS1::iamax, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( OpenMPBLAS1::swap, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( OpenMPBLAS1::copy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( OpenMPBLAS1::axpy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( OpenMPBLAS1::dot, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( OpenMPBLAS1::sum, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -608,14 +592,14 @@ void OpenMPBLAS1::registerKernels( bool deleteFlag )
 
 OpenMPBLAS1::OpenMPBLAS1()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+                    kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS1::~OpenMPBLAS1()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+                        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

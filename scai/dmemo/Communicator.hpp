@@ -52,7 +52,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/typeloop.hpp>
 
 // std
 #include <memory>
@@ -484,104 +484,102 @@ public:
      */
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
 
-    /** @brief Expanded macro by BOOST_PP_REPEAT that defines all virtual routines for one type.
+    /** @brief Expanded macro by SCAI_COMMON_TYPELOOP that defines all virtual routines for one type.
      *
-     *  @param z next available repetition dimension
-     *  @param I is the actual instantation by BOOST_PP_REPEAT
-     *  @param _ remains unused here
+     *  @param _type is the used ValueType
      *
      *  Note: this macro is needed as virtual routines must not be templates
      */
 
-#define COMMUNICATOR_METHODS( z, I, _)                                    \
-    \
-    virtual void exchangeByPlan(                                          \
-            ARRAY_TYPE##I* const recvData,                                    \
-            const CommunicationPlan& recvPlan,                                \
-            const ARRAY_TYPE##I* const sendData,                              \
-            const CommunicationPlan& sendPlan ) const = 0;                    \
-    \
-    virtual tasking::SyncToken* exchangeByPlanAsync(                          \
-            ARRAY_TYPE##I* const recvData,                                    \
-            const CommunicationPlan& recvPlan,                                \
-            const ARRAY_TYPE##I* const sendData,                              \
-            const CommunicationPlan& sendPlan ) const = 0;                    \
-    \
-    virtual void bcast(                                                   \
-            ARRAY_TYPE##I val[],                                              \
-            const IndexType n,                                                \
-            const PartitionId root ) const = 0;                               \
-    \
-    virtual void all2allv(                                                \
-            ARRAY_TYPE##I* recvVal[],                                         \
-            IndexType recvCount[],                                            \
-            ARRAY_TYPE##I* sendVal[],                                        \
-            IndexType sendCount[] ) const = 0;                                \
-    \
-    virtual void scatter(                                                 \
-            ARRAY_TYPE##I myvals[],                                           \
-            const IndexType n,                                                \
-            const PartitionId root,                                           \
-            const ARRAY_TYPE##I allvals[] ) const = 0;                        \
-    \
-    virtual void scatterV(                                                \
-            ARRAY_TYPE##I myvals[],                                           \
-            const IndexType n,                                                \
-            const PartitionId root,                                           \
-            const ARRAY_TYPE##I allvals[],                                    \
-            const IndexType sizes[] ) const = 0;                              \
-    \
-    virtual void gather(                                                  \
-            ARRAY_TYPE##I allvals[],                                          \
-            const IndexType n,                                                \
-            const PartitionId root,                                           \
-            const ARRAY_TYPE##I myvals[] ) const = 0;                         \
-    \
-    virtual void gatherV(                                                 \
-            ARRAY_TYPE##I allvals[],                                          \
-            const IndexType n,                                                \
-            const PartitionId root,                                           \
-            const ARRAY_TYPE##I myvals[],                                     \
-            const IndexType sizes[] ) const = 0;                              \
-    \
-    virtual void swap(                                                    \
-            ARRAY_TYPE##I val[],                                              \
-            const IndexType n,                                                \
-            const PartitionId partner ) const = 0;                            \
-    \
-    virtual void maxloc(                                                  \
-            ARRAY_TYPE##I& val,                                               \
-            IndexType& location,                                              \
-            const PartitionId root ) const = 0;                               \
-    \
-    virtual ARRAY_TYPE##I min(                                            \
-            const ARRAY_TYPE##I value ) const = 0;                            \
-    \
-    virtual ARRAY_TYPE##I sum(                                            \
-            const ARRAY_TYPE##I value ) const = 0;                            \
-    \
-    virtual ARRAY_TYPE##I max(                                            \
-            const ARRAY_TYPE##I value ) const = 0;                            \
-    \
-    virtual IndexType shiftData(                                          \
-            ARRAY_TYPE##I newVals[],                                          \
-            const IndexType newSize,                                          \
-            const ARRAY_TYPE##I oldVals[],                                    \
-            const IndexType oldSize,                                          \
-            const int direction ) const = 0;                                  \
-    \
-    virtual tasking::SyncToken* shiftDataAsync(                               \
-            ARRAY_TYPE##I newVals[],                                          \
-            const ARRAY_TYPE##I oldVals[],                                    \
-            const IndexType size,                                             \
-            const int direction ) const = 0;                                  \
+#define SCAI_DMEMO_COMMUNICATOR_METHODS( _type )                            \
+                                                                            \
+    virtual void exchangeByPlan(                                            \
+            _type* const recvData,                                          \
+            const CommunicationPlan& recvPlan,                              \
+            const _type* const sendData,                                    \
+            const CommunicationPlan& sendPlan ) const = 0;                  \
+                                                                            \
+    virtual tasking::SyncToken* exchangeByPlanAsync(                        \
+            _type* const recvData,                                          \
+            const CommunicationPlan& recvPlan,                              \
+            const _type* const sendData,                                    \
+            const CommunicationPlan& sendPlan ) const = 0;                  \
+                                                                            \
+    virtual void bcast(                                                     \
+            _type val[],                                                    \
+            const IndexType n,                                              \
+            const PartitionId root ) const = 0;                             \
+                                                                            \
+    virtual void all2allv(                                                  \
+            _type* recvVal[],                                               \
+            IndexType recvCount[],                                          \
+            _type* sendVal[],                                               \
+            IndexType sendCount[] ) const = 0;                              \
+                                                                            \
+    virtual void scatter(                                                   \
+            _type myvals[],                                                 \
+            const IndexType n,                                              \
+            const PartitionId root,                                         \
+            const _type allvals[] ) const = 0;                              \
+                                                                            \
+    virtual void scatterV(                                                  \
+            _type myvals[],                                                 \
+            const IndexType n,                                              \
+            const PartitionId root,                                         \
+            const _type allvals[],                                          \
+            const IndexType sizes[] ) const = 0;                            \
+                                                                            \
+    virtual void gather(                                                    \
+            _type allvals[],                                                \
+            const IndexType n,                                              \
+            const PartitionId root,                                         \
+            const _type myvals[] ) const = 0;                               \
+                                                                            \
+    virtual void gatherV(                                                   \
+            _type allvals[],                                                \
+            const IndexType n,                                              \
+            const PartitionId root,                                         \
+            const _type myvals[],                                           \
+            const IndexType sizes[] ) const = 0;                            \
+                                                                            \
+    virtual void swap(                                                      \
+            _type val[],                                                    \
+            const IndexType n,                                              \
+            const PartitionId partner ) const = 0;                          \
+                                                                            \
+    virtual void maxloc(                                                    \
+            _type& val,                                                     \
+            IndexType& location,                                            \
+            const PartitionId root ) const = 0;                             \
+                                                                            \
+    virtual _type min(                                                      \
+            const _type value ) const = 0;                                  \
+                                                                            \
+    virtual _type sum(                                                      \
+            const _type value ) const = 0;                                  \
+                                                                            \
+    virtual _type max(                                                      \
+            const _type value ) const = 0;                                  \
+                                                                            \
+    virtual IndexType shiftData(                                            \
+            _type newVals[],                                                \
+            const IndexType newSize,                                        \
+            const _type oldVals[],                                          \
+            const IndexType oldSize,                                        \
+            const int direction ) const = 0;                                \
+                                                                            \
+    virtual tasking::SyncToken* shiftDataAsync(                             \
+            _type newVals[],                                                \
+            const _type oldVals[],                                          \
+            const IndexType size,                                           \
+            const int direction ) const = 0;
      
 
     // define communicator methods for all supported data types
 
-    BOOST_PP_REPEAT( ARRAY_TYPE_CNT, COMMUNICATOR_METHODS, _ )
+    SCAI_COMMON_TYPELOOP( ARITHMETIC_ARRAY_HOST_CNT, SCAI_DMEMO_COMMUNICATOR_METHODS, ARITHMETIC_ARRAY_HOST )
 
-#undef COMMUNICATOR_METHODS
+#undef SCAI_DMEMO_COMMUNICATOR_METHODS
 
     /**************************************************************************************
      *                                                                                    *

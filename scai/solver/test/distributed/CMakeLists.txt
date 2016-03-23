@@ -50,9 +50,9 @@ scai_project (
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../../res/testfiles" )
 
-add_executable ( SolverDistTest ${CXX_SOURCES} )
+add_executable ( solverDistTest ${CXX_SOURCES} )
 
-target_link_libraries ( SolverDistTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( solverDistTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
     
 file ( GLOB LOCAL_HEADERS "*.hpp" )
 

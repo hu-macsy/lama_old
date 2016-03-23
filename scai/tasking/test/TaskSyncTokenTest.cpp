@@ -34,8 +34,10 @@
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <memory>
 #include <scai/common/bind.hpp>
+#include <scai/common/test/TestMacros.hpp>
+
+#include <memory>
 
 using namespace scai::common;
 using namespace scai::tasking;
@@ -105,6 +107,21 @@ BOOST_AUTO_TEST_CASE( runTest )
 
         BOOST_CHECK_EQUAL( i, out );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( writeAtTest )
+{
+    int out = 0;
+
+    TaskSyncToken testToken( bind( &work, ref( out ), 1 ) );
+
+    SCAI_COMMON_WRITEAT_TEST( testToken );
+
+    testToken.wait();
+
+    BOOST_CHECK_EQUAL( 1, out );
 }
 
 /* --------------------------------------------------------------------- */

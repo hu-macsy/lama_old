@@ -68,9 +68,6 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
 
-// boost
-#include <boost/preprocessor.hpp>
-
 using scai::tasking::CUDAStreamSyncToken;
 
 namespace scai
@@ -2915,48 +2912,51 @@ void CUDAJDSUtils::sparseGEVM(
 
 /* --------------------------------------------------------------------------- */
 
-void CUDAJDSUtils::registerKernels( bool deleteFlag )
+void CUDAJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "set JDS routines for CUDA in Interface, delete = " << deleteFlag )
-
     using kregistry::KernelRegistry;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    const common::context::ContextType ctx = common::context::CUDA;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
+    SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
-
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
+}
 
-#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                                                       \
-    KernelRegistry::set<JDSKernelTrait::getRow<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getRow, ctx, flag );              \
-    KernelRegistry::set<JDSKernelTrait::scaleValue<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( scaleValue, ctx, flag );      \
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setCSRValues, ctx, flag );  \
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getCSRValues, ctx, flag );  \
-     
-#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                                   \
-    KernelRegistry::set<JDSKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, ctx, flag );       \
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx, flag );   \
-    KernelRegistry::set<JDSKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx, flag );   \
-    KernelRegistry::set<JDSKernelTrait::jacobi<ARITHMETIC_CUDA_TYPE_##I> >( jacobi, ctx, flag );           \
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ARITHMETIC_CUDA_TYPE_##I> >( jacobiHalo, ctx, flag );   \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                             \
-                     LAMA_JDS_UTILS2_REGISTER,                                                             \
-                     ARITHMETIC_CUDA_TYPE_##I )                                                            \
-     
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
+template<typename ValueType>
+void CUDAJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
 
-#undef LAMA_JDS_UTILS_REGISTER
-#undef LAMA_JDS_UTILS2_REGISTER
+    const common::context::ContextType ctx = common::context::CUDA;
 
+    SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
+}
+
+template<typename ValueType, typename OtherValueType>
+void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
+
+    SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2965,14 +2965,20 @@ void CUDAJDSUtils::registerKernels( bool deleteFlag )
 
 CUDAJDSUtils::CUDAJDSUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_CUDA_LIST, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDAJDSUtils::~CUDAJDSUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_CUDA_LIST, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDAJDSUtils CUDAJDSUtils::guard;    // guard variable for registration

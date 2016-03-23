@@ -45,7 +45,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/typeloop.hpp>
 
 // std
 #include <cstdio>
@@ -118,15 +118,13 @@ public:
     /**
      * @brief Constructor of scalar for each supported arithmetic type.
      */
+#define SCAI_LAMA_SCALAR_CONSTRUCTORS( type )                \
+    inline Scalar( const type value ) : mValue( value ) \
+    { }
 
-#define LAMA_SCALAR_METHODS(z, I, _ )                                        \
-    inline Scalar( const ARITHMETIC_HOST_TYPE_##I value ) : mValue( value )  \
-    {                                                                        \
-    }                                                                        \
+    SCAI_COMMON_TYPELOOP( ARITHMETIC_HOST_CNT, SCAI_LAMA_SCALAR_CONSTRUCTORS, ARITHMETIC_HOST )
 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SCALAR_METHODS, _ )
-
-#undef LAMA_SCALAR_METHODS
+#undef SCAI_LAMA_SCALAR_CONSTRUCTORS
 
     /**
      * @brief Releases all allocated resources.

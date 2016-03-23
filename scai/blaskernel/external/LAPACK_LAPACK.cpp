@@ -51,7 +51,6 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
 
 namespace scai {
 
@@ -309,28 +308,18 @@ void LAPACK_LAPACK::laswp(const CBLAS_ORDER order, const IndexType N,
 /*    Static registration of the LAPACK routines                               */
 /* --------------------------------------------------------------------------- */
 
-void LAPACK_LAPACK::registerKernels(bool deleteFlag)
+template<typename ValueType>
+void LAPACK_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
 	using kregistry::KernelRegistry;
 
-    const common::context::ContextType Host = common::context::Host;
+    const common::context::ContextType ctx = common::context::Host;
 
-	KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE; // priority over OpenMPBLAS
-
-	if (deleteFlag) {
-		flag = KernelRegistry::KERNEL_ERASE;
-	}
-
-#define LAMA_LAPACK_REGISTER(z, I, _)                                                               \
-    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, Host, flag );  \
-    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_HOST_TYPE_##I> >( laswp, Host, flag );
-
-	BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
-
-#undef LAMA_LAPACK_REGISTER
+    KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( LAPACK_LAPACK::getrf, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACK_LAPACK::getri, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( LAPACK_LAPACK::getinv, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( LAPACK_LAPACK::tptrs, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( LAPACK_LAPACK::laswp, ctx, flag );
 }
 	/* --------------------------------------------------------------------------- */
 	/*    Static initialiazion at program start                                    */
@@ -338,14 +327,14 @@ void LAPACK_LAPACK::registerKernels(bool deleteFlag)
 
 LAPACK_LAPACK::LAPACK_LAPACK()
 {
-	bool deleteFlag = false;
-	registerKernels(deleteFlag);
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 LAPACK_LAPACK::~LAPACK_LAPACK()
 {
-	bool deleteFlag = true;
-	registerKernels(deleteFlag);
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

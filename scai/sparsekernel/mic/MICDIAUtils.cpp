@@ -470,39 +470,18 @@ void MICDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void MICDIAUtils::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void MICDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "register DIA kernels for MIC in Kernel Registry" )
-
     using kregistry::KernelRegistry;
 
     const common::context::ContextType ctx = common::context::MIC;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+    SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for MIC at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    /*
-     LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float )
-     LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, double )
-
-     LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, float, float )
-     LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, float, double )
-     LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, double, float )
-     LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, double, double )
-
-     LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, float )
-     LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, double )
-     */
-
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<float> >( normalGEMV, ctx, flag );
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<double> >( normalGEMV, ctx, flag );
-
-    KernelRegistry::set<DIAKernelTrait::jacobi<float> >( jacobi, ctx, flag );
-    KernelRegistry::set<DIAKernelTrait::jacobi<double> >( jacobi, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -511,14 +490,18 @@ void MICDIAUtils::registerKernels( bool deleteFlag )
 
 MICDIAUtils::RegisterGuard::RegisterGuard()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICDIAUtils::RegisterGuard::~RegisterGuard()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICDIAUtils::RegisterGuard MICDIAUtils::guard;    // guard variable for registration

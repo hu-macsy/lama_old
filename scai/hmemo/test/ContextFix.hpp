@@ -1,5 +1,5 @@
 /**
- * @file TestContext.hpp
+ * @file scai/hmemo/test/ContextFix.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,34 +25,42 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief TestContext.hpp
- * @author Jiri Kraus
- * @date 12.04.2012
+ * @brief Test fixture for context 
+ * @author Thomas Brandes
+ * @date 15.03.2016
  * @since 1.0.0
  */
 
 #pragma once
 
-#include <map>
 #include <scai/hmemo/Context.hpp>
 
-namespace scai
-{
+#include <boost/test/unit_test.hpp>
 
-namespace lama_test
-{
+/* --------------------------------------------------------------------- */
 
-class TestContext
+/** Fixture to be used for BOOST_GLOBAL_FIXTURE     
+ *
+ *  provides access to testContext used as context at which tests should run
+ *
+ *  Purpose: use global Fixture avoids init/free of context device for each single test
+ *
+ *  Note: static variable ContextFix::testContext must be defined in cpp file.
+ */
+struct ContextFix
 {
-public:
-    static hmemo::ContextPtr getContext( const hmemo::Context::ContextType type );
-private:
-    TestContext();
-    virtual ~TestContext();
+    ContextFix()
+    {   
+        testContext = scai::hmemo::Context::getContextPtr();
+        // BOOST_TEST_MESSAGE( "Setup ContextFix: test context = " << *testContext ); 
+    }
 
-    static std::map<hmemo::Context::ContextType, hmemo::ContextPtr> contexts;
+    ~ContextFix()
+    {
+        // BOOST_TEST_MESSAGE( "Teardown ContextFix" ); 
+        testContext.reset();
+    }
+    
+    static scai::hmemo::ContextPtr testContext;
 };
 
-} /* end namespace lama_test */
-
-} /* end namespace scai */

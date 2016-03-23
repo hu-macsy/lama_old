@@ -34,7 +34,7 @@
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -382,23 +382,26 @@ MatrixCreateKeyType JDSSparseMatrix<ValueType>::createValue()
     return MatrixCreateKeyType( Format::JDS, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string JDSSparseMatrix<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("JDSSparseMatrix<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* JDSSparseMatrix<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-#define LAMA_JDS_SPARSE_MATRIX_INSTANTIATE(z, I, _)                               \
-                                                                                  \
-    template<>                                                                    \
-    const char* JDSSparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()             \
-    {                                                                             \
-        return "JDSSparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">"; \
-    }                                                                             \
-                                                                                  \
-    template class COMMON_DLL_IMPORTEXPORT JDSSparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_JDS_SPARSE_MATRIX_INSTANTIATE, _ )
-
-#undef LAMA_JDS_SPARSE_MATRIX_INSTANTIATE
+SCAI_COMMON_INST_CLASS( JDSSparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

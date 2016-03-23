@@ -45,7 +45,6 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
 
 // external
 #include <mkl_blas.h>
@@ -149,26 +148,14 @@ void MICBLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS3::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void MICBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "register BLAS3 kernels for MIC in Kernel Registry" )
-
     using kregistry::KernelRegistry;
 
     const common::context::ContextType ctx = common::context::MIC;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                           \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_MIC_TYPE_##I> >( gemm, ctx, flag );  \
-
-    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
-
-#undef LAMA_BLAS3_REGISTER
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( MICBLAS3::gemm, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -177,14 +164,14 @@ void MICBLAS3::registerKernels( bool deleteFlag )
 
 MICBLAS3::RegisterGuard::RegisterGuard()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+                                kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 MICBLAS3::RegisterGuard::~RegisterGuard()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+                                kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 MICBLAS3::RegisterGuard MICBLAS3::guard;    // guard variable for registration

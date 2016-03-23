@@ -36,11 +36,11 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// local library
-#include <scai/lama/Scalar.hpp>
-
 // internal scai libraries
+#include <scai/kregistry/mepr/Registrator.hpp>
+
 #include <scai/logging.hpp>
+
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
@@ -203,7 +203,9 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    static void registerKernels( bool deleteFlag );
+    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
+    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
 
     /** Helper class for (un) registration of kernel routines at static initialization. */
 

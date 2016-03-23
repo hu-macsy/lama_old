@@ -43,7 +43,7 @@
 #include <scai/common/macros/assert.hpp>
 
 #include <scai/tracing.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <algorithm>
@@ -680,12 +680,7 @@ void StorageMethods<ValueType>::joinCSR(
 
 /* -------------------------------------------------------------------------- */
 
-#define LAMA_STORAGE_METHODS_INSTANTIATE(z, I, _)                                     \
-    template class COMMON_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_STORAGE_METHODS_INSTANTIATE, _ )
-
-#undef LAMA_STORAGE_METHODS_INSTANTIATE
+SCAI_COMMON_INST_CLASS( StorageMethods, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 /* -------------------------------------------------------------------------- */
 

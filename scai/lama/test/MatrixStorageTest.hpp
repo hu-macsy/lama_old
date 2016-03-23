@@ -45,9 +45,9 @@ static std::string storagetestclasses[] =
 
 static std::string storagetestmethods[] =
 {
-    "purgeTest", "emptyTest", "setIdentityTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
+    "purgeTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest",
     "vectorMultTest", "jacobiTest", "jacobiHaloTest", "matrixMultTest", "matrixMultTest1", "matrixAddTest"
-    "writeAtTest", "inverseTest", "symmetryTest", "vectorTimesMatrixTest", "numericalTest"
+    "inverseTest", "vectorTimesMatrixTest", "numericalTest"
 };
 
 /** Test class for MatrixStorage<ValueType>.
@@ -82,14 +82,6 @@ public:
 
     void purgeTest();
 
-    /** Test for MatrixStorage<ValueType>::hasDiagonalProperty() on empty matrx. */
-
-    void emptyTest();
-
-    /** Test for MatrixStorage<ValueType>::setIdentity. */
-
-    void setIdentityTest();
-
     /** Test for virtual method MatrixStorage<ValueType>::setCSRData. */
 
     void setCSRDataTest();
@@ -105,10 +97,6 @@ public:
     void diagonalTest();
 
     /** Test for virtual methods MatrixStorage<ValueType>::scale */
-
-    void scaleTest();
-
-    void normTest();
 
     void vectorMultTest();
 
@@ -141,11 +129,7 @@ public:
 
     void inverseTest();
 
-    void symmetryTest();
-
     void runTests();
-
-    void writeAtTest();
 
     scai::lama::MatrixStorage<ValueType>& mMatrixStorage;
 
@@ -180,12 +164,9 @@ private:
 
 #define MATRIXSTORAGE_COMMONTESTCASES( testinstance )                   \
     {   COMMONTESTCASEINVOKER( testinstance, purgeTest );                   \
-        COMMONTESTCASEINVOKER( testinstance, setIdentityTest );             \
         COMMONTESTCASEINVOKER( testinstance, setCSRDataTest );              \
         COMMONTESTCASEINVOKER( testinstance, buildCSRDataTest );            \
         COMMONTESTCASEINVOKER( testinstance, diagonalTest );                \
-        COMMONTESTCASEINVOKER( testinstance, scaleTest );                   \
-        COMMONTESTCASEINVOKER( testinstance, normTest );                    \
         COMMONTESTCASEINVOKER( testinstance, vectorMultTest );              \
         COMMONTESTCASEINVOKER( testinstance, vectorTimesMatrixTest );       \
         COMMONTESTCASEINVOKER( testinstance, numericalTest );               \
@@ -193,5 +174,4 @@ private:
         COMMONTESTCASEINVOKER( testinstance, matrixMultTest );              \
         COMMONTESTCASEINVOKER( testinstance, matrixAddTest );               \
         COMMONTESTCASEINVOKER( testinstance, matrixMultTest1 );             \
-        COMMONTESTCASEINVOKER( testinstance, writeAtTest );                 \
         COMMONTESTCASEINVOKER( testinstance, inverseTest ); }

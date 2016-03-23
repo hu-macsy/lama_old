@@ -56,7 +56,7 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -89,19 +89,19 @@ template<typename ValueType>
 ELLStorage<ValueType>::ELLStorage(
     const IndexType numRows,
     const IndexType numColumns,
-    const common::context::ContextType con /* = Context::Host */)
+   ContextPtr context /* = Context::getHostPtr() */)
 
     : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValuesPerRow( 0 )
 {
     // TODO in other formats the last parameter is "const ContextPtr loc"
 
-    ContextPtr loc = Context::getContextPtr( con );
-
-    setContextPtr( loc );
+    setContextPtr( context );
 
     // Initialization requires correct values for the IA array with 0
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+
+    ContextPtr loc = setVal.getValidContext( context );
 
     WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
 
@@ -272,7 +272,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
     mNumValuesPerRow = 1;
 
     {
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -297,7 +297,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
     // extra block caused by differnt types of setVal()
     {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -632,7 +632,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "setDiagonalImpl # value = " << value )
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -832,7 +832,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // Intialize array mIA with 0
 
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( getContextPtr() );
 
@@ -2015,23 +2015,26 @@ MatrixStorageCreateKeyType ELLStorage<ValueType>::createValue()
     return MatrixStorageCreateKeyType( Format::ELL, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string ELLStorage<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("ELLStorage<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* ELLStorage<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_ELL_STORAGE_INSTANTIATE(z, I, _)                                     \
-                                                                                  \
-    template<>                                                                    \
-    const char* ELLStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
-    {                                                                             \
-        return "ELLStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";      \
-    }                                                                             \
-                                                                                  \
-    template class COMMON_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ELL_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_ELL_STORAGE_INSTANTIATE
+SCAI_COMMON_INST_CLASS( ELLStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

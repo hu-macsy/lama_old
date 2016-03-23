@@ -1,5 +1,5 @@
 /**
- * @file scai/lama/test/TestMacros.hpp
+ * @file scai/kregistry/test/TestMacros.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -34,24 +34,5 @@
 #pragma once
 
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/hmemo/test/TestMacros.hpp>
-
 #include <scai/kregistry/exception/KernelRegistryException.hpp>
-
-/*
- * Redefinition of SCAI_CHECK_CLOSE
- * works even if ValueType is unknown
- */
-
-#define LAMA_RUN_TESTL(z, I, method )                                                                  			\
-    try                                                                                                			\
-    {                                                                                                  			\
-        method<ARITHMETIC_HOST_TYPE_##I>( context, logger );                                           			\
-    }                                                                                                  			\
-    catch ( scai::kregistry::KernelRegistryException& )                                                			\
-    {                                                                                                  			\
-        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
-                       << context->getType() << ", corresponding function not implemented yet." );     			\
-        return;                                                                                        			\
-    }
 

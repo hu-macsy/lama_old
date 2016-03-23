@@ -54,7 +54,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 using namespace scai::hmemo;
 
@@ -95,7 +95,7 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
         return;
     }
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
     // make sure that for both context functions implementations are available at the chosen context
@@ -297,7 +297,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
     SCAI_LOG_INFO( logger, "setDiagonalImpl with value = " << value )
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -604,7 +604,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     mNumValues = mNumRows;
 
     {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -616,7 +616,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 
     }
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
     // get context where all implementations are available, if not on own context
@@ -879,7 +879,7 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // the arrays mIlg and mPerm need initialization
 
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
         static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
         ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
@@ -1714,22 +1714,26 @@ MatrixStorageCreateKeyType JDSStorage<ValueType>::createValue()
     return MatrixStorageCreateKeyType( Format::JDS, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string JDSStorage<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("JDSStorage<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* JDSStorage<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_JDS_STORAGE_INSTANTIATE(z, I, _)                                     \
-    template<>                                                                    \
-    const char* JDSStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
-    {                                                                             \
-        return "JDSStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                 \
-    }                                                                             \
-                                                                                  \
-    template class COMMON_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_JDS_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_JDS_STORAGE_INSTANTIATE
+SCAI_COMMON_INST_CLASS( JDSStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

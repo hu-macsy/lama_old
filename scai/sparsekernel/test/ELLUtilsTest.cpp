@@ -64,7 +64,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" )
 
 BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::countNonEmptyRowsBySizes> countNonEmptyRowsBySizes;
 
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
 
 BOOST_AUTO_TEST_CASE( setNonEmptyRowsBySizesTest )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::setNonEmptyRowsBySizes> setNonEmptyRowsBySizes;
 
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE( setNonEmptyRowsBySizesTest )
 
 BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
 
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
 
 BOOST_AUTO_TEST_CASE( checkTest )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::check> check;
 
@@ -282,7 +282,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
 {
     typedef float OtherValueType;
 
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::getRow<ValueType, OtherValueType> > getRow;
 
@@ -366,7 +366,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::getValue<ValueType> > getValue;
 
@@ -415,7 +415,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_t
 {
     typedef float OtherValueType;
 
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
 
@@ -461,7 +461,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test
 {
     typedef float OtherValueType;
 
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
 
@@ -526,7 +526,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test
 {
     typedef float OtherValueType;
 
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::setCSRValues<OtherValueType, ValueType> > setCSRValues;
 
@@ -590,7 +590,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test
 BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_types )
 
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<ELLKernelTrait::compressIA<ValueType> > compressIA;
 

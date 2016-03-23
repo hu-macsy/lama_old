@@ -52,7 +52,6 @@ using namespace scai;
 using namespace dmemo;
 using namespace lama;
 using namespace solver;
-using common::unique_ptr;
 
 /**
  *  Main program 
@@ -94,8 +93,8 @@ int main( int argc, char* argv[] )
 
     // use auto pointer so that matrix will be deleted at program exit
 
-    unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-    unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
+    scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
+    scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
@@ -141,7 +140,7 @@ int main( int argc, char* argv[] )
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
+    scai::common::unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
     Vector& solution = *solutionPtr;
 
     int numRows = inMatrix.getNumRows();
@@ -221,7 +220,7 @@ int main( int argc, char* argv[] )
                                          lamaconf.getLogLevel(),
                                          LoggerWriteBehaviour::toConsoleOnly ) );
 
-    common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName.str() ) );
+    scai::common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName.str() ) );
 
     IterativeSolver* itSolver = dynamic_cast<IterativeSolver*>( mySolver.get() );
 

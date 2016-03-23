@@ -397,7 +397,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    std::string theTypeName;
+    static std::string initTypeName();
 
 public:
 

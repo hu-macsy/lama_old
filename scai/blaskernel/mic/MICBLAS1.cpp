@@ -49,7 +49,6 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/preprocessor.hpp>
 #include <scai/common/OpenMP.hpp>
 
 // std
@@ -546,35 +545,23 @@ void MICBLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS1::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void MICBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "register BLAS1 kernels for MIC in Kernel Registry" )
-
     using kregistry::KernelRegistry;
 
     const common::context::ContextType ctx = common::context::MIC;
+    SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-#define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
-        KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_MIC_TYPE_##I> >( scal, ctx, flag );    \
-        KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_MIC_TYPE_##I> >( nrm2, ctx, flag );    \
-        KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_MIC_TYPE_##I> >( asum, ctx, flag );    \
-        KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_MIC_TYPE_##I> >( iamax, ctx, flag );  \
-        KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_MIC_TYPE_##I> >( swap, ctx, flag );    \
-        KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_MIC_TYPE_##I> >( copy, ctx, flag );    \
-        KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_MIC_TYPE_##I> >( axpy, ctx, flag );    \
-        KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_MIC_TYPE_##I> >( dot, ctx, flag );      \
-    	KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_MIC_TYPE_##I> >( sum, ctx, flag );
-
-        BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
-
-#undef LAMA_BLAS1_REGISTER
+    KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( MICBLAS1::scal, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( MICBLAS1::nrm2, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( MICBLAS1::asum, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<ValueType> >( MICBLAS1::iamax, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( MICBLAS1::swap, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( MICBLAS1::copy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( MICBLAS1::axpy, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( MICBLAS1::dot, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( MICBLAS1::sum, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -583,14 +570,14 @@ void MICBLAS1::registerKernels( bool deleteFlag )
 
 MICBLAS1::RegisterGuard::RegisterGuard()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 MICBLAS1::RegisterGuard::~RegisterGuard()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 MICBLAS1::RegisterGuard MICBLAS1::guard;    // guard variable for registration

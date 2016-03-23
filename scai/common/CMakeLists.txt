@@ -152,6 +152,7 @@ add_subdirectory ( doc )
 add_subdirectory ( examples )
 add_subdirectory ( exception )
 add_subdirectory ( macros )
+add_subdirectory ( mepr )
 add_subdirectory ( mic )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )

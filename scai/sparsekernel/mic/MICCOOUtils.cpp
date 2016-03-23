@@ -515,26 +515,43 @@ void MICCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICCOOUtils::registerKernels( bool deleteFlag )
+void MICCOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "register COO kernels for MIC in Kernel Registry" )
-
     using kregistry::KernelRegistry;
 
     const common::context::ContextType ctx = common::context::MIC;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
-
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );
-
     KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx, flag );
+}
+
+template<typename ValueType>
+void MICCOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::MIC;
+
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+}
+
+template<typename ValueType, typename OtherValueType>
+void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::MIC;
+
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
+            << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
 
     // ToDo: routine does not work yet
 
@@ -548,20 +565,7 @@ void MICCOOUtils::registerKernels( bool deleteFlag )
     // KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, ctx, flag );
     // KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, ctx, flag );
 
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx, flag );     \
 
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx, flag );  \
-                                                                                                           \
-    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT,                                                             \
-                     LAMA_COO_UTILS2_REGISTER,                                                             \
-                     ARITHMETIC_MIC_TYPE_##I )                                                            \
-
-    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
-
-#undef LAMA_COO_UTILS_REGISTER
-#undef LAMA_COO_UTILS2_REGISTER
 }
 
 /* --------------------------------------------------------------------------- */
@@ -570,14 +574,20 @@ void MICCOOUtils::registerKernels( bool deleteFlag )
 
 MICCOOUtils::RegisterGuard::RegisterGuard()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_MIC_LIST, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICCOOUtils::RegisterGuard::~RegisterGuard()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_MIC_LIST, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICCOOUtils::RegisterGuard MICCOOUtils::guard;    // guard variable for registration

@@ -55,6 +55,9 @@
 #include <scai/lama/test/SparseMatrixHelper.hpp>
 #include <scai/lama/test/SameMatrixHelper.hpp>
 
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
+
 using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
@@ -553,7 +556,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 /* ----------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, writeAtTest )
-LAMA_WRITEAT_TEST( mMatrix );
+SCAI_COMMON_WRITEAT_TEST( mMatrix );
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ----------------------------------------------------------------------------- */
@@ -581,7 +584,8 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 /* ----------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( SparseMatrixTest )
+template<typename StorageType>                                                                                     \
+void SparseMatrixTest<StorageType>::runTests()
 {
     clearTest();
     cTorTest();
@@ -595,15 +599,10 @@ LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( SparseMatrixTest )
 
 /* ----------------------------------------------------------------------------- */
 
-#define LAMA_SPARSE_TEST( z, I, _ )                                                \
-    template class SparseMatrixTest<CSRSparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
-    template class SparseMatrixTest<ELLSparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
-    template class SparseMatrixTest<JDSSparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
-    template class SparseMatrixTest<COOSparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
-    template class SparseMatrixTest<DIASparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
-    template class SparseMatrixTest<DenseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;      \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SPARSE_TEST, _ )
-
-#undef LAMA_SPARSE_TEST
+SCAI_COMMON_INST_CLASS_II( SparseMatrixTest, COOSparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS_II( SparseMatrixTest, CSRSparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS_II( SparseMatrixTest, DIASparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS_II( SparseMatrixTest, ELLSparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS_II( SparseMatrixTest, JDSSparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS_II( SparseMatrixTest, DenseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 

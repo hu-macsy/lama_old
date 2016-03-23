@@ -134,6 +134,12 @@ private:
     inline static MPI_Op getMPISum();
 
     template<typename ValueType>
+    inline static MPI_Op getMPIMin();
+
+    template<typename ValueType>
+    inline static MPI_Op getMPIMax();
+
+    template<typename ValueType>
     void bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const;
 
     template<typename ValueType>
@@ -246,6 +252,20 @@ protected:
 
     static void sum_complex_long_double( void* in, void* out, int* count,
                                          MPI_Datatype* dtype );
+
+    static MPI_Op mMaxComplexFloat;
+    static MPI_Op mMaxComplexDouble;
+    static MPI_Op mMaxComplexLongDouble;
+
+    template<typename ValueType>
+    static void max_operator( void* in, void *out, int *count, MPI_Datatype *dtype );
+
+    static MPI_Op mMinComplexFloat;
+    static MPI_Op mMinComplexDouble;
+    static MPI_Op mMinComplexLongDouble;
+
+    template<typename ValueType>
+    static void min_operator( void* in, void *out, int *count, MPI_Datatype *dtype );
 
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
 
@@ -379,7 +399,7 @@ inline MPI_Datatype MPICommunicator::getMPI2Type<int, int>()
 }
 
 /* ---------------------------------------------------------------------------------- */
-/*              getMPISum                                                           */
+/*              getMPISum                                                             */
 /* ---------------------------------------------------------------------------------- */
 
 
@@ -395,6 +415,70 @@ template<>
 inline MPI_Op MPICommunicator::getMPISum<ComplexLongDouble>()
 {
     return mSumComplexLongDouble;
+}
+
+#endif
+
+/* ---------------------------------------------------------------------------------- */
+/*              getMPIMax                                                             */
+/* ---------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline MPI_Op MPICommunicator::getMPIMax()
+{
+    return MPI_MAX;
+}
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+inline MPI_Op MPICommunicator::getMPIMax<ComplexFloat>()
+{
+    return mMaxComplexFloat;
+}
+
+template<>
+inline MPI_Op MPICommunicator::getMPIMax<ComplexDouble>()
+{
+    return mMaxComplexDouble;
+}
+
+template<>
+inline MPI_Op MPICommunicator::getMPIMax<ComplexLongDouble>()
+{
+    return mMaxComplexLongDouble;
+}
+
+#endif
+
+/* ---------------------------------------------------------------------------------- */
+/*              getMPIMin                                                             */
+/* ---------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline MPI_Op MPICommunicator::getMPIMin()
+{
+    return MPI_MIN;
+}
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+inline MPI_Op MPICommunicator::getMPIMin<ComplexFloat>()
+{
+    return mMinComplexFloat;
+}
+
+template<>
+inline MPI_Op MPICommunicator::getMPIMin<ComplexDouble>()
+{
+    return mMinComplexDouble;
+}
+
+template<>
+inline MPI_Op MPICommunicator::getMPIMin<ComplexLongDouble>()
+{
+    return mMinComplexLongDouble;
 }
 
 #endif

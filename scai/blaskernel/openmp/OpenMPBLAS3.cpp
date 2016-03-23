@@ -42,7 +42,6 @@
 
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -359,7 +358,8 @@ void OpenMPBLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPBLAS3::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void OpenMPBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
 
@@ -367,19 +367,7 @@ void OpenMPBLAS3::registerKernels( bool deleteFlag )
 
     SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                          \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx, flag ); \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
-
-#undef LAMA_BLAS3_REGISTER
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( OpenMPBLAS3::gemm, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -388,15 +376,13 @@ void OpenMPBLAS3::registerKernels( bool deleteFlag )
 
 OpenMPBLAS3::OpenMPBLAS3()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
-}
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+                        kregistry::KernelRegistry::KERNEL_ADD );}
 
 OpenMPBLAS3::~OpenMPBLAS3()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
-}
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+                        kregistry::KernelRegistry::KERNEL_ERASE );}
 
 /* --------------------------------------------------------------------------- */
 /*    Static variable to force registration during static initialization      */

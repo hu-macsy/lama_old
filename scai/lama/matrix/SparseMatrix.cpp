@@ -64,7 +64,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <cmath>
@@ -423,11 +423,16 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
     Matrix::setDistributedMatrix( matrix.getColDistributionPtr(), matrix.getRowDistributionPtr() );
 
+    // Be careful: do not use any more matrix.getRowDistributon or matrix.getColDistribution in case of alias
+
     if( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
+        SCAI_LOG_DEBUG( logger, "transpose local storage, input = " << matrix.getLocalStorage() )
         mLocalData->assignTranspose( matrix.getLocalStorage() );
-        mHaloData->allocate( getRowDistribution().getLocalSize(), mNumColumns );
+        SCAI_LOG_DEBUG( logger, "transposed local storage, is = " << *mLocalData )
+        mHaloData->allocate( getRowDistribution().getLocalSize(), 0 );
         mHalo.clear();
+        SCAI_LOG_DEBUG( logger, "transposed halo storage, is = " << *mHaloData )
     }
     else if( getRowDistribution().isReplicated() )
     {
@@ -445,7 +450,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         mLocalData->assignTranspose( matrix.getLocalStorage() );
 
-        SCAI_LOG_INFO( logger, "local transposed = " << mLocalData )
+        SCAI_LOG_INFO( logger, "local transposed = " << *mLocalData )
 
         SCAI_LOG_INFO( logger, "halo transpose of " << matrix.getHaloStorage() )
 
@@ -492,7 +497,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         // Before send of JA: translate back the local (row) indexes to global indexes
 
         {
-            const Distribution& dist = matrix.getRowDistribution();
+            const Distribution& dist = getColDistribution();
             const IndexType nJA = sendJA.size();
 
             WriteAccess<IndexType> ja( sendJA, contextPtr );
@@ -1995,7 +2000,7 @@ Scalar SparseMatrix<ValueType>::l1Norm() const
 
     SCAI_LOG_INFO( logger, "l1 norm: local value = " << myValue << ", value = " << allValue )
 
-    return allValue;
+    return Scalar( allValue );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2020,7 +2025,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
 
-    return allValue;
+    return Scalar( allValue );
 }
 
 template<typename ValueType>
@@ -2042,7 +2047,7 @@ Scalar SparseMatrix<ValueType>::maxNorm() const
 
     SCAI_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )
 
-    return allMax;
+    return Scalar( allMax );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2060,7 +2065,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     {
         const SparseMatrix<ValueType>* typedOther = dynamic_cast<const SparseMatrix<ValueType>*>( &other );
         SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
-        return maxDiffNormImpl( *typedOther );
+        return Scalar( maxDiffNormImpl( *typedOther ) );
     }
     else if( !getColDistribution().isReplicated() )
     {
@@ -2071,7 +2076,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
         SparseMatrix<ValueType> typedOther( other, getRowDistributionPtr(), getColDistributionPtr() );
-        return maxDiffNormImpl( typedOther );
+        return Scalar( maxDiffNormImpl( typedOther ) );
     }
 }
 
@@ -2479,22 +2484,26 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     }
 }
 
+template<typename ValueType>
+std::string SparseMatrix<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("SparseMatrix<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* SparseMatrix<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                                     \
-    template<>                                                                      \
-    const char* SparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
-    {                                                                               \
-        return "SparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I>) ">";     \
-    }                                                                               \
-                                                                                    \
-    template class COMMON_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SPARSE_MATRIX_INSTANTIATE, _ )
-
-#undef LAMA_SPARSE_MATRIX_INSTANTIATE
+SCAI_COMMON_INST_CLASS( SparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

@@ -47,7 +47,6 @@
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -405,27 +404,16 @@ void CUDABLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS3::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void CUDABLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
 
     const common::context::ContextType ctx = common::context::CUDA;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+    SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry" )
-
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                            \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, ctx, flag );  \
-
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
-
-#undef LAMA_BLAS3_REGISTER
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( CUDABLAS3::gemm, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -434,14 +422,14 @@ void CUDABLAS3::registerKernels( bool deleteFlag )
 
 CUDABLAS3::CUDABLAS3()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+                        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDABLAS3::~CUDABLAS3()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+                        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 CUDABLAS3 CUDABLAS3::guard;    // guard variable for registration

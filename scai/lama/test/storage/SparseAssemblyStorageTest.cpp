@@ -25,8 +25,8 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class SparseAssemblyStorageTest
- * @author Alexander Büchel
+ * @brief Test cases for SparseAssemblyStorage( only specific ones )
+ * @author Thomas Brandes
  * @date 12.03.2012
  * @since 1.0.0
  */
@@ -34,20 +34,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/storage/CSRStorage.hpp>
-#include <scai/lama/storage/ELLStorage.hpp>
-#include <scai/lama/storage/JDSStorage.hpp>
-#include <scai/lama/storage/DIAStorage.hpp>
-#include <scai/lama/storage/COOStorage.hpp>
-#include <scai/lama/storage/DenseStorage.hpp>
-
-#include <scai/lama/test/TestSparseMatrices.hpp>
-#include <scai/lama/test/MatrixStorageTest.hpp>
-
 #include <scai/lama/storage/SparseAssemblyStorage.hpp>
+#include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -57,22 +51,13 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.SparseAssemblyStorageTest" )
 
 typedef boost::mpl::list<float, double> ValueTypes;
 
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixStorageTestWithSparseAssemblyStorage, T, ValueTypes )
-{
-    SparseAssemblyStorage<T> assemblyStorage;
-    MatrixStorageTest<T> storageTest( assemblyStorage );
-    storageTest.runTests();
-}
-
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_arithmetic_test_types )
 {
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
-    SparseAssemblyStorage<T> assemblyStorage( numRows, numColumns );
+    SparseAssemblyStorage<ValueType> assemblyStorage( numRows, numColumns );
     BOOST_REQUIRE_EQUAL( numRows, assemblyStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, assemblyStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( 0, assemblyStorage.getNumValues() );
@@ -102,22 +87,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, T, ValueTypes )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, ValueType, scai_arithmetic_test_types )
 {
     const IndexType n = 10;
-    CSRStorage<T> csrStorage;
+    CSRStorage<ValueType> csrStorage;
     csrStorage.setIdentity( n );
-    SparseAssemblyStorage<T> assemblyStorage( n, n );
+    SparseAssemblyStorage<ValueType> assemblyStorage( n, n );
     #pragma omp parallel for
 
     for ( IndexType i = 0; i < n; ++i )
     {
         // Note: this test verifies also thread-safe use of LAMA arrays
         HArray<IndexType> ja;
-        HArray<T> values;
+        HArray<ValueType> values;
         {
             WriteOnlyAccess<IndexType> wJa( ja, 1 );
-            WriteOnlyAccess<T> wValues( values, 1 );
+            WriteOnlyAccess<ValueType> wValues( values, 1 );
             wJa[0] = i;
             wValues[0] = 1.0;
         }
@@ -144,6 +129,24 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = aStoragef.typeName();
     BOOST_CHECK_EQUAL( s, "SparseAssemblyStorage<float>" );
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
+{
+    SCAI_LOG_INFO( logger, "typeNameTest for SparseAssemblyStorage<" << common::TypeTraits<ValueType>::id() << ">" )
+
+    // context does not matter here, so runs for every context
+
+    std::string s1 = SparseAssemblyStorage<ValueType>::typeName();
+
+    std::string s2 = "SparseAssemblyStorage<" ;
+    s2 += common::TypeTraits<ValueType>::id();
+    s2 += ">";
+
+    BOOST_CHECK_EQUAL( s1, s2 );
+}
+
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

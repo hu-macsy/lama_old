@@ -331,6 +331,9 @@ public:
 
     void print() const;
 
+    template<typename OtherType>
+    void assignDenseStorageImpl( const DenseStorageView<OtherType>& otherDenseStorage );
+
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::assign;
     using MatrixStorage<ValueType>::getTypeName;
@@ -352,14 +355,13 @@ protected:
 
     virtual    bool checkDiagonalProperty() const;
 
+
 private:
 
     /** Disable default constructor. */
 
     DenseStorageView();
 
-    template<typename OtherType>
-    void assignDenseStorageImpl( const DenseStorageView<OtherType>& otherDenseStorage );
 
     /** Implementation of matrix times matrix for dense matrices. */
 
@@ -372,6 +374,8 @@ private:
     /** @brief invert only for DenseStorage. */
 
     void invertDense( const DenseStorageView<ValueType>& other );
+
+    static std::string initTypeName();
 
 public:
 
@@ -459,6 +463,8 @@ public:
 private:
 
     hmemo::HArray<ValueType> mDataArray; //!<  matrix values, size is mNumRows x mNumColumns
+
+    static std::string initTypeName();
 
 public:
 

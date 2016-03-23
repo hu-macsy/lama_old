@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     Criterion* boolcondition = new Criterion();
     CriterionPtr testcriterion = CriterionPtr( boolcondition );
-    LAMA_WRITEAT_PTR_TEST( testcriterion );
+    SCAI_COMMON_WRITEAT_TEST( *testcriterion );
 }
 /* ---------------------------------------------------------------------- */
 

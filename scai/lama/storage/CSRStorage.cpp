@@ -63,7 +63,7 @@
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -150,14 +150,7 @@ void CSRStorage<ValueType>::print() const
 template<typename ValueType>
 void CSRStorage<ValueType>::clear()
 {
-    mNumRows = 0;
-    mNumColumns = 0;
-
-    mIa.clear();
-    mJa.clear();
-    mValues.clear();
-
-    mDiagonalProperty = checkDiagonalProperty();
+    allocate( 0, 0 );   // sets everything correctly, ia array has one entry
 }
 
 /* --------------------------------------------------------------------------- */
@@ -272,7 +265,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
     mNumValues = mNumRows;
 
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
     {
         ContextPtr loc = setOrder.getValidContext( this->getContextPtr() );
@@ -626,15 +619,13 @@ IndexType CSRStorage<ValueType>::getNumValues() const
 template<typename ValueType>
 void CSRStorage<ValueType>::purge()
 {
-    mNumColumns = 0;
-    mNumRows = 0;
-    mNumValues = 0;
+    // delete all old values
 
     mIa.purge();
     mJa.purge();
     mValues.purge();
 
-    mDiagonalProperty = checkDiagonalProperty();
+    allocate( 0, 0 );   // sets everything correctly, ia array has one entry
 }
 
 /* --------------------------------------------------------------------------- */
@@ -658,7 +649,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
     OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), common::reduction::COPY  );
 
-    mDiagonalProperty = false;
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -985,7 +976,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
         nrow = getValue[loc]( ia.get(), i + 1 ) - n1;
     }
 
-    static LAMAKernel<UtilKernelTrait::setVal<OtherType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<OtherType, OtherType> > setVal;
     static LAMAKernel<UtilKernelTrait::setScatter<OtherType, ValueType> > setScatter;
 
     /// ContextPtr loc = Context::getHostPtr();
@@ -1124,22 +1115,34 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
 {
     SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
 
-    _MatrixStorage::_assignTranspose( other );
-
     // pass HArrays of this storage to build the values in it
 
-    if( &other == this )
+    if ( &other == this )
     {
+        SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose in place" )
+
         HArray<IndexType> tmpIA;
         HArray<IndexType> tmpJA;
         HArray<ValueType> tmpValues;
 
+        // do not change sizes before building CSC data
+
         other.buildCSCData( tmpIA, tmpJA, tmpValues );
-        swap( tmpIA, tmpJA, tmpValues );
+
+        // sizes must be set correctly BEFORE swap
+
+        _MatrixStorage::_assignTranspose( other );
+
+        swap( tmpIA, tmpJA, tmpValues );  // sets all other data correctly
     }
     else
     {
+        _MatrixStorage::_assignTranspose( other );
+
+        SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
+
         other.buildCSCData( mIa, mJa, mValues );
+
         mNumValues = mJa.size();
         mDiagonalProperty = checkDiagonalProperty();
         buildRowIndexes();
@@ -1148,7 +1151,6 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
     // actualize my member variables (class CSRStorage)
 
     check( "assignTranspose" );
-
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2499,31 +2501,26 @@ MatrixStorageCreateKeyType CSRStorage<ValueType>::createValue()
     return MatrixStorageCreateKeyType( Format::CSR, common::getScalarType<ValueType>() );
 }
 
+template<typename ValueType>
+std::string CSRStorage<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string("CSRStorage<") << common::getScalarType<ValueType>() << std::string(">");
+    return s.str();
+}
+
+template<typename ValueType>
+const char* CSRStorage<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
 /* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_CSR_STORAGE_INSTANTIATE(z, I, _)                                      \
-    template<>                                                                     \
-    const char* CSRStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                   \
-    {                                                                              \
-        return "CSRStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";       \
-    }                                                                              \
-                                                                                   \
-    template class COMMON_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_HOST_TYPE_##I> ;  \
-                                                                                   \
-    template void CSRStorage<ARITHMETIC_HOST_TYPE_##I>::setCSRDataSwap(            \
-            const IndexType numRows,                                               \
-            const IndexType numColumns,                                            \
-            const IndexType numValues,                                             \
-            HArray<IndexType>& ia,                                              \
-            HArray<IndexType>& ja,                                              \
-            HArray<ARITHMETIC_HOST_TYPE_##I>& values,                           \
-            const ContextPtr loc );                                                \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_CSR_STORAGE_INSTANTIATE
+SCAI_COMMON_INST_CLASS( CSRStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

@@ -39,8 +39,8 @@ scai_project (
         
         BinaryStream
         mmio
-        FileIO
         XDRFileStream
+        IOUtils
 
     HEADERS
 

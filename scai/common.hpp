@@ -32,18 +32,51 @@
 
 #pragma once
 
+#pragma message("It is not recommended to include whole common")
+
 #include <scai/common/bind.hpp>
+#include <scai/common/Complex.hpp>
 #include <scai/common/config.hpp>
-#include <scai/common/exception/Exception.hpp>
-#include <scai/common/Factory.hpp>
+#include <scai/common/Constants.hpp>
+#include <scai/common/ContextType.hpp>
 #include <scai/common/Factory1.hpp>
+#include <scai/common/Factory.hpp>
 #include <scai/common/function.hpp>
+#include <scai/common/LibModule.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/OpenMP.hpp>
+#include <scai/common/preprocessor.hpp>
 #include <scai/common/Printable.hpp>
+#include <scai/common/ReductionOp.hpp>
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/Settings.hpp>
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/Thread.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Walltime.hpp>
 #include <scai/common/weak_ptr.hpp>
+
+// CUDA
+#include <scai/common/cuda/CUDACallable.hpp>
+
+// Exceptions
+#include <scai/common/exception/AssertException.hpp>
+#include <scai/common/exception/Exception.hpp>
+#include <scai/common/exception/NotSupportedValueTypeException.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
+
+// Macros
+#include <scai/common/macros/assert.hpp>
+#include <scai/common/macros/inline.hpp>
+#include <scai/common/macros/instantiate.hpp>
+#include <scai/common/macros/print_string.hpp>
+#include <scai/common/macros/throw.hpp>
+#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/unique_name.hpp>
+#include <scai/common/macros/unused.hpp>
+
+// MIC
+#include <scai/common/mic/MICCallable.hpp>

@@ -41,13 +41,11 @@
 // internal scai libraries
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/tracing.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
-
-#include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -477,44 +475,50 @@ void OpenMPCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCOOUtils::registerKernels( bool deleteFlag )
+void OpenMPCOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
 
-    common::context::ContextType Host = common::context::Host;
+    common::context::ContextType ctx = common::context::Host;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, Host, flag );
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, Host, flag );
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, Host, flag );
-
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, Host, flag );
-
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, Host, flag );     \
-    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag ); \
-    KernelRegistry::set<COOKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );       \
-
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );  \
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );  \
-    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );          \
-                                                                                                           \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                             \
-                     LAMA_COO_UTILS2_REGISTER,                                                             \
-                     ARITHMETIC_HOST_TYPE_##I )                                                            \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
-
-#undef LAMA_COO_UTILS_REGISTER
-#undef LAMA_COO_UTILS2_REGISTER
+    KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( OpenMPCOOUtils::hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( OpenMPCOOUtils::offsets2ia, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( OpenMPCOOUtils::getCSRSizes, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( OpenMPCOOUtils::setCSRData, ctx, flag );
 }
+
+template<typename ValueType>
+void OpenMPCOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
+
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( OpenMPCOOUtils::normalGEMV, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( OpenMPCOOUtils::normalGEVM, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( OpenMPCOOUtils::jacobi, ctx, flag );
+}
+
+template<typename ValueType, typename OtherValueType>
+void OpenMPCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+
+    common::context::ContextType ctx = common::context::Host;
+
+    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
+}
+
 
 /* --------------------------------------------------------------------------- */
 /*    Constructor/Desctructor with registration                                */
@@ -522,14 +526,20 @@ void OpenMPCOOUtils::registerKernels( bool deleteFlag )
 
 OpenMPCOOUtils::OpenMPCOOUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_HOST_LIST, ARITHMETIC_HOST_LIST>::call( flag );
 }
 
 OpenMPCOOUtils::~OpenMPCOOUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_HOST_LIST, ARITHMETIC_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

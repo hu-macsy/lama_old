@@ -52,7 +52,6 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
@@ -914,28 +913,18 @@ void CUDADIAUtils::normalGEVM(
 
 /* --------------------------------------------------------------------------- */
 
-void CUDADIAUtils::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void CUDADIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    SCAI_LOG_INFO( logger, "register DIAUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+    const common::context::ContextType ctx = common::context::CUDA;
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
-
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                  \
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx, flag ); \
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx, flag ); \
-     
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
-
-#undef LAMA_DIA_UTILS_REGISTER
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
 
 }
 
@@ -945,14 +934,16 @@ void CUDADIAUtils::registerKernels( bool deleteFlag )
 
 CUDADIAUtils::CUDADIAUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDADIAUtils::~CUDADIAUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDADIAUtils CUDADIAUtils::guard;    // guard variable for registration

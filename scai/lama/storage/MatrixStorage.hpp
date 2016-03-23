@@ -40,6 +40,7 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
+#include <scai/common/mepr/TemplateSpecifier.hpp>
 #include <scai/common/Factory.hpp>
 
 // std
@@ -66,6 +67,7 @@ namespace lama
 {
 
 template<typename ValueType> class CSRStorage;
+template<typename ValueType> class DenseStorageView;
 
 /** Enumeration type for different matrix storage formats.
  *
@@ -470,6 +472,8 @@ public:
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const = 0;
+
+    virtual bool checkSymmetry() const = 0;
 
 protected:
 
@@ -1022,7 +1026,7 @@ public:
      *
      * @return a boolean pointing out whether the matrix storage is symmetric or not.
      */
-    bool checkSymmetry() const;
+    virtual bool checkSymmetry() const;
 
 protected:
 

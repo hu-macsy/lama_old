@@ -51,6 +51,9 @@
 #include <scai/lama/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
+#include <scai/common/unique_ptr.hpp>
+
+using namespace scai;
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -191,8 +194,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    ResidualThreshold* testcriterion = new ResidualThreshold();
-    LAMA_WRITEAT_PTR_TEST( testcriterion );
+    common::unique_ptr<ResidualThreshold> testcriterion( new ResidualThreshold() );
+    SCAI_COMMON_WRITEAT_TEST( *testcriterion );
 }
 /* --------------------------------------------------------------------- */
 

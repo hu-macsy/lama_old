@@ -1,5 +1,5 @@
 /**
- * @file lama_test.cpp
+ * @file lamaTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,16 +25,23 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class lama_test.
+ * @brief Contains the implementation of the class lamaTest.
  * @author: Alexander Büchel
  * @date 31.01.2012
  * @since 1.0.0
  **/
 
-#define BOOST_TEST_NO_MAIN
-#define BOOST_TEST_MODULE lama_test
+#ifndef BOOST_TEST_DYN_LINK
+    #define BOOST_TEST_DYN_LINK
+#endif
 
-#include <boost/test/included/unit_test.hpp>
+#define BOOST_TEST_MODULE lamaTest
+
+#define BOOST_TEST_NO_MAIN
+
+#include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test_suite.hpp>
+
 #include <boost/regex.hpp>
 
 /* Including all headerfiles of testcases */
@@ -42,12 +49,38 @@
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/lama/test/SparseMatrixTest.hpp>
 
+#include <scai/common/Settings.hpp>
+#include <scai/hmemo/test/ContextFix.hpp>
+
 #include <list>
 #include <string>
 #include <map>
 
 #include <cstdio>
 
+/* Use global fixture for context and define the static variable.
+ * Avoids expensive calls of reserve/release routines of the Context for each test.
+ */
+
+BOOST_GLOBAL_FIXTURE( ContextFix )
+
+scai::hmemo::ContextPtr ContextFix::testContext;
+
+/** The init function returns true if it can get the specified context. */
+
+bool init_function()
+{
+    try
+    {
+        scai::hmemo::ContextPtr ctx = scai::hmemo::Context::getContextPtr();
+        return true;
+    }
+    catch ( scai::common::Exception& ex )
+    {
+        std::cerr << "Could not get context for test: " << ex.what() << std::endl;
+        return false;
+    }
+}
 
 bool base_test_case = false;
 std::string testcase;
@@ -69,16 +102,7 @@ std::string testcase;
 
 int main( int argc, char* argv[] )
 {
-    bool result;
-    // If there is no value in environment variable LAMA_TEST_CONTEXT
-    // we set this value to *
-    char* context = getenv( "LAMA_TEST_CONTEXT" );
-
-    if ( context == NULL )
-    {
-        int replace = 1;
-        setenv( "LAMA_TEST_CONTEXT", "*", replace );
-    }
+    scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
     if ( argc > 1 )
     {
@@ -112,38 +136,8 @@ int main( int argc, char* argv[] )
             runtest_argument = iterator->second;
         }
 
-//        /* Find log_level in runtime parameters */
-//        iterator = runtime_arguments.find( "--log_level" );
-//
-//        if ( iterator != runtime_arguments.end() )
-//        {
-//            loglevel_argument = iterator->second;
-//        }
-
-//        char* loglevel_env = getenv( "BOOST_TEST_LOG_LEVEL" );
-//
-//        if ( loglevel_argument == "" && loglevel_env == NULL )
-//        {
-//            loglevel_argument = "";
-//        }
-//        else if ( loglevel_argument == "" && loglevel_env != NULL )
-//        {
-//            loglevel_argument = loglevel_env;
-//        }
-
-        /* Find specific context from the given runtime parameters.
-         * If the environment variable LAMA_TEST_CONTEXT is set before, it will be overwritten.
-         * Tests will run throw all available contexts, if there is neither a environment variable
-         * nor a runtime parameter. */
-        iterator = runtime_arguments.find( "--lama_test_context" );
-
-        if ( iterator != runtime_arguments.end() )
-        {
-            int replace = 1;
-            setenv( "LAMA_TEST_CONTEXT", iterator->second.c_str(), replace );
-        }
-
         //if a regular expression is used in a base test:
+
         int posasterix = runtest_argument.find( '*' );
 
         if ( posasterix != -1 )
@@ -251,6 +245,6 @@ int main( int argc, char* argv[] )
 
     /* Call main() from boost with new arguments */
     /* it is just allowed to invoke this method once */
-    result = boost::unit_test::unit_test_main( &init_unit_test_suite, argc, argv );
-    return result;
+
+    return boost::unit_test::unit_test_main( &init_function, argc, argv );
 }

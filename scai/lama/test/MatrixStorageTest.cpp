@@ -45,6 +45,8 @@
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/macros/instantiate.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -210,69 +212,6 @@ void MatrixStorageTest<ValueType>::setDenseRandomInverse( MatrixStorage<ValueTyp
 
 /* ========================================================================= */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, emptyTest )
-{
-    SCAI_LOG_INFO( logger, "emptyTest" );
-    mMatrixStorage.clear();
-    // verify that empty matrix has diagonal property
-    BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
-    mMatrixStorage.allocate( 1, 1 );
-
-    if ( mMatrixStorage.getFormat() == Format::DENSE )
-    {
-        // only dense matrix keeps its diagonal property
-        BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
-    }
-    else
-    {
-        BOOST_CHECK( ! mMatrixStorage.hasDiagonalProperty() );
-    }
-
-    mMatrixStorage.purge();
-   BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
-}
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ========================================================================= */
-
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setIdentityTest )
-
-const IndexType n = 15;
-
-SCAI_LOG_INFO( logger, "setIdentity, uses n = " << n );
-
-mMatrixStorage.clear();
-
-mMatrixStorage.setIdentity( n );
-
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumRows() );
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumColumns() );
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumValues() );
-
-LArray<double> row;
-
-for ( IndexType i = 0; i < n; ++i )
-{
-    mMatrixStorage.getRow( row, i );
-    ReadAccess<double> rRow( row );
-
-    for ( IndexType j = 0; j < n; ++j )
-    {
-        if ( i == j )
-        {
-            BOOST_CHECK_EQUAL( 1.0, rRow[j] );
-        }
-        else
-        {
-            BOOST_CHECK_EQUAL( 0.0, rRow[j] );
-        }
-    }
-}
-
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ------------------------------------------------------------------------- */
-
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setCSRDataTest )
 {
     SCAI_LOG_INFO( logger, "setCSRDataTest" )
@@ -427,45 +366,6 @@ mMatrixStorage.setDiagonalV( diag );
         BOOST_CHECK_EQUAL( s.getValue<ValueType>(), rDiag[i] );
     }
 }
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ------------------------------------------------------------------------- */
-
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, scaleTest )
-
-setDenseData( mMatrixStorage );
-
-DenseStorage<ValueType> tmp;
-
-setDenseData( tmp );
-
-mMatrixStorage.scale( 2.0 );
-
-for ( IndexType i = 0; i < mMatrixStorage.getNumRows(); ++i )
-{
-    for ( IndexType j = 0; j < mMatrixStorage.getNumColumns(); ++j )
-    {
-        SCAI_CHECK_CLOSE( 2.0 * tmp.getValue( i, j ),
-                          mMatrixStorage.getValue( i, j ), 1 );
-    }
-}
-
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ------------------------------------------------------------------------- */
-
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, normTest )
-
-setDenseData( mMatrixStorage );
-
-SCAI_LOG_INFO( logger, "maxNormTest, mMatrixStorage = " << mMatrixStorage )
-
-ValueType maxNorm = mMatrixStorage.maxNorm();
-
-ValueType expected = 9.3f; // maximal absolute value
-
-SCAI_CHECK_CLOSE( maxNorm, expected, 1 );
-
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
@@ -1133,50 +1033,16 @@ identity->setIdentity( mMatrixStorage.getNumRows() );
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
-/* ------------------------------------------------------------------------- */
-
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, symmetryTest )
-
-std::string prefix = scai::test::Configuration::getPath();
-CSRSparseMatrix<ValueType> sym( prefix + "/" + "nos6.mtx" );
-mMatrixStorage = sym.getLocalStorage();
-
-DenseStorage<ValueType> orig; // used for comparing results
-orig = mMatrixStorage;
-
-bool symmetry = sym.checkSymmetry();
-BOOST_CHECK_EQUAL( symmetry, true );
-
-CSRSparseMatrix<ValueType> asym( prefix + "/" + "impcol_b.mtx" );
-mMatrixStorage = asym.getLocalStorage();
-
-orig = mMatrixStorage;
-
-symmetry = asym.checkSymmetry();
-BOOST_CHECK_EQUAL( symmetry, false );
-
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, writeAtTest )
-
-LAMA_WRITEAT_TEST( mMatrixStorage )
-
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ------------------------------------------------------------------------- */
-
-LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest )
+template<typename StorageType>                                                                                     \
+void MatrixStorageTest<StorageType>::runTests()
 {
-    emptyTest();
     purgeTest();
-    setIdentityTest();
     setCSRDataTest();
     buildCSRDataTest();
     diagonalTest();
-    scaleTest();
-    normTest();
     vectorMultTest();
     vectorTimesMatrixTest();
     numericalTest();
@@ -1186,16 +1052,8 @@ LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest )
     matrixAddTest();
     matrixMultTest1();
     inverseTest();
-    symmetryTest();
-    writeAtTest();
 }
 
 /* ------------------------------------------------------------------------- */
 
-#define LAMA_MATRIX_STORAGE_TEST_INSTANTIATE(z, I, _)                      \
-    template class MatrixStorageTest<ARITHMETIC_HOST_TYPE_##I> ;
-
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_TEST_INSTANTIATE, _ )
-
-#undef LAMA_MATRIX_STORAGE_INSTANTIATE
-
+SCAI_COMMON_INST_CLASS( MatrixStorageTest, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )

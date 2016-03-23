@@ -42,7 +42,7 @@
 // internal scai libraris
 #include <scai/tasking/NoSyncToken.hpp>
 
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/typeloop.hpp>
 
 // std
 #include <vector>
@@ -96,132 +96,132 @@ public:
      const T allvals[], const IndexType sizes[] ) const;
      */
 
-#define CRTP_COMMUNICATOR_METHODS( z, I, _ )                                            \
-    \
-    virtual ARRAY_TYPE##I min( const ARRAY_TYPE##I value ) const                        \
-    {                                                                                   \
-        return static_cast<const Derived*>( this )->minImpl( value );                   \
-    }                                                                                   \
-    \
-    virtual void swap(                                                                  \
-            ARRAY_TYPE##I val[],                                                            \
+#define SCAI_DMEMO_CRTP_COMMUNICATOR_METHODS( _type )                                       \
+                                                                                            \
+    virtual _type min( const _type value ) const                                            \
+    {                                                                                       \
+        return static_cast<const Derived*>( this )->minImpl( value );                       \
+    }                                                                                       \
+                                                                                            \
+    virtual void swap(                                                                      \
+            _type val[],                                                                    \
             const IndexType n,                                                              \
             PartitionId partner ) const                                                     \
-    {                                                                                   \
-        static_cast<const Derived*>( this )->swapImpl( val, n, partner );               \
-    }                                                                                   \
-    \
-    virtual ARRAY_TYPE##I max( const ARRAY_TYPE##I value ) const                        \
-    {                                                                                   \
-        return static_cast<const Derived*>( this )->maxImpl( value );                   \
-    }                                                                                   \
-    \
-    virtual ARRAY_TYPE##I sum( const ARRAY_TYPE##I value ) const                        \
-    {                                                                                   \
-        return static_cast<const Derived*>( this )->sumImpl( value );                   \
-    }                                                                                   \
-    \
-    virtual void bcast( ARRAY_TYPE##I val[], const IndexType n, const PartitionId root ) const \
-    {                                                                                   \
-        static_cast<const Derived*>( this )->bcastImpl( val, n, root);                  \
-    }                                                                                   \
-    \
-    virtual void all2allv(ARRAY_TYPE##I* recvVal[],IndexType recvCount[],               \
-                          ARRAY_TYPE##I* sendVal[],                                       \
-                          IndexType sendCount[]) const                                \
-    {                                                                                   \
-        return static_cast<const Derived*>( this )->all2allvImpl(recvVal,recvCount,     \
-                sendVal,sendCount);                   \
-    }                                                                                   \
-    \
-    virtual void maxloc( ARRAY_TYPE##I& val, IndexType& location, PartitionId root ) const     \
-    {                                                                                   \
-        static_cast<const Derived*>( this )->maxlocImpl( val, location, root );         \
-    }                                                                                   \
-    \
-    /***************************************************************                    \
+    {                                                                                       \
+        static_cast<const Derived*>( this )->swapImpl( val, n, partner );                   \
+    }                                                                                       \
+                                                                                            \
+    virtual _type max( const _type value ) const                                            \
+    {                                                                                       \
+        return static_cast<const Derived*>( this )->maxImpl( value );                       \
+    }                                                                                       \
+                                                                                            \
+    virtual _type sum( const _type value ) const                                            \
+    {                                                                                       \
+        return static_cast<const Derived*>( this )->sumImpl( value );                       \
+    }                                                                                       \
+                                                                                            \
+    virtual void bcast( _type val[], const IndexType n, const PartitionId root ) const      \
+    {                                                                                       \
+        static_cast<const Derived*>( this )->bcastImpl( val, n, root);                      \
+    }                                                                                       \
+                                                                                            \
+    virtual void all2allv(_type* recvVal[],IndexType recvCount[],                           \
+                          _type* sendVal[],                                                 \
+                          IndexType sendCount[]) const                                      \
+    {                                                                                       \
+        return static_cast<const Derived*>( this )->all2allvImpl(recvVal,recvCount,         \
+                sendVal,sendCount);                                                         \
+    }                                                                                       \
+                                                                                            \
+    virtual void maxloc( _type& val, IndexType& location, PartitionId root ) const          \
+    {                                                                                       \
+        static_cast<const Derived*>( this )->maxlocImpl( val, location, root );             \
+    }                                                                                       \
+                                                                                            \
+    /***************************************************************                        \
          *  gather                                                     *                    \
          **************************************************************/                    \
-    \
-    virtual void gather( ARRAY_TYPE##I allvals[], const IndexType n,                    \
-                         const PartitionId root, const ARRAY_TYPE##I myvals[] ) const   \
-    {                                                                                   \
-        static_cast<const Derived*>( this )->gatherImpl( allvals, n, root, myvals );    \
-    }                                                                                   \
-    \
-    virtual void gatherV(                                                               \
-            ARRAY_TYPE##I allvals[], const IndexType n, const PartitionId root,             \
-            const ARRAY_TYPE##I myvals[], const IndexType sizes[] ) const                   \
-    {                                                                                   \
-        static_cast<const Derived*>( this )->gatherVImpl( allvals, n, root,             \
-                myvals, sizes );              \
-    }                                                                                   \
-    \
-    virtual void scatter( ARRAY_TYPE##I myvals[],                                       \
-                          const IndexType n,                                            \
-                          const PartitionId root,                                       \
-                          const ARRAY_TYPE##I allvals[] ) const                         \
-    {                                                                                   \
-        static_cast<const Derived*>( this )->scatterImpl( myvals, n, root, allvals );   \
-    }                                                                                   \
-    \
-    virtual void scatterV(                                                              \
-            ARRAY_TYPE##I myvals[],                                                         \
+                                                                                            \
+    virtual void gather( _type allvals[], const IndexType n,                                \
+                         const PartitionId root, const _type myvals[] ) const               \
+    {                                                                                       \
+        static_cast<const Derived*>( this )->gatherImpl( allvals, n, root, myvals );        \
+    }                                                                                       \
+                                                                                            \
+    virtual void gatherV(                                                                   \
+            _type allvals[], const IndexType n, const PartitionId root,                     \
+            const _type myvals[], const IndexType sizes[] ) const                           \
+    {                                                                                       \
+        static_cast<const Derived*>( this )->gatherVImpl( allvals, n, root,                 \
+                myvals, sizes );                                                            \
+    }                                                                                       \
+                                                                                            \
+    virtual void scatter( _type myvals[],                                                   \
+                          const IndexType n,                                                \
+                          const PartitionId root,                                           \
+                          const _type allvals[] ) const                                     \
+    {                                                                                       \
+        static_cast<const Derived*>( this )->scatterImpl( myvals, n, root, allvals );       \
+    }                                                                                       \
+                                                                                            \
+    virtual void scatterV(                                                                  \
+            _type myvals[],                                                                 \
             const IndexType n,                                                              \
             const PartitionId root,                                                         \
-            const ARRAY_TYPE##I allvals[],                                                  \
+            const _type allvals[],                                                          \
             const IndexType sizes[] ) const                                                 \
-    {                                                                                   \
-        static_cast<const Derived*>( this )->scatterVImpl( myvals, n, root,             \
-                allvals, sizes );            \
-    }                                                                                   \
-    \
-    virtual IndexType shiftData(                                                        \
-            ARRAY_TYPE##I recvVals[],                                                       \
+    {                                                                                       \
+        static_cast<const Derived*>( this )->scatterVImpl( myvals, n, root,                 \
+                allvals, sizes );                                                           \
+    }                                                                                       \
+                                                                                            \
+    virtual IndexType shiftData(                                                            \
+            _type recvVals[],                                                               \
             const IndexType recvSize,                                                       \
-            const ARRAY_TYPE##I sendVals[],                                                 \
+            const _type sendVals[],                                                         \
             const IndexType sendSize,                                                       \
             const int direction ) const                                                     \
-    {                                                                                   \
-        return this->shiftDataT( recvVals, recvSize, sendVals, sendSize, direction );   \
-    }                                                                                   \
-    \
-    virtual tasking::SyncToken* shiftDataAsync(                                                  \
-            ARRAY_TYPE##I recvVals[],                                                       \
-            const ARRAY_TYPE##I sendVals[],                                                 \
+    {                                                                                       \
+        return this->shiftDataT( recvVals, recvSize, sendVals, sendSize, direction );       \
+    }                                                                                       \
+                                                                                            \
+    virtual tasking::SyncToken* shiftDataAsync(                                             \
+            _type recvVals[],                                                               \
+            const _type sendVals[],                                                         \
             const IndexType size,                                                           \
             const int direction ) const                                                     \
-    {                                                                                   \
-        return this->shiftDataAsyncT( recvVals, sendVals, size, direction );            \
-    }                                                                                   \
-    virtual void exchangeByPlan( ARRAY_TYPE##I recvVals[],                              \
-                                 const CommunicationPlan& recvPlan,                     \
-                                 const ARRAY_TYPE##I sendVals[],                        \
-                                 const CommunicationPlan& sendPlan ) const              \
-    {                                                                                   \
-        static_cast<const Derived*>( this )->exchangeByPlanImpl( recvVals, recvPlan,    \
-                sendVals, sendPlan );  \
-    }                                                                                   \
-    \
-    /***************************************************************                    \
+    {                                                                                       \
+        return this->shiftDataAsyncT( recvVals, sendVals, size, direction );                \
+    }                                                                                       \
+    virtual void exchangeByPlan( _type recvVals[],                                          \
+                                 const CommunicationPlan& recvPlan,                         \
+                                 const _type sendVals[],                                    \
+                                 const CommunicationPlan& sendPlan ) const                  \
+    {                                                                                       \
+        static_cast<const Derived*>( this )->exchangeByPlanImpl( recvVals, recvPlan,        \
+                sendVals, sendPlan );                                                       \
+    }                                                                                       \
+                                                                                            \
+    /***************************************************************                        \
          *  exchangeByPlanAsync                                        *                    \
          **************************************************************/                    \
-    \
-    virtual tasking::SyncToken* exchangeByPlanAsync(                                             \
-            ARRAY_TYPE##I recvVals[],                                                       \
+                                                                                            \
+    virtual tasking::SyncToken* exchangeByPlanAsync(                                        \
+            _type recvVals[],                                                               \
             const CommunicationPlan& recvPlan,                                              \
-            const ARRAY_TYPE##I sendVals[],                                                 \
+            const _type sendVals[],                                                         \
             const CommunicationPlan& sendPlan ) const                                       \
-    {                                                                                   \
-        return static_cast<const Derived*>( this )->exchangeByPlanAsyncImpl(            \
-                recvVals, recvPlan, sendVals, sendPlan );                        \
+    {                                                                                       \
+        return static_cast<const Derived*>( this )->exchangeByPlanAsyncImpl(                \
+                recvVals, recvPlan, sendVals, sendPlan );                                   \
     }
 
     // define communicator methods for all supported data types
 
-    BOOST_PP_REPEAT( ARRAY_TYPE_CNT, CRTP_COMMUNICATOR_METHODS, _ )
+    SCAI_COMMON_TYPELOOP( ARITHMETIC_ARRAY_HOST_CNT, SCAI_DMEMO_CRTP_COMMUNICATOR_METHODS, ARITHMETIC_ARRAY_HOST )
 
-#undef CRTP_COMMUNICATOR_METHODS
+#undef SCAI_DMEMO_CRTP_COMMUNICATOR_METHODS
 
     virtual void bcast( char val[], const IndexType n, const PartitionId root ) const
     {

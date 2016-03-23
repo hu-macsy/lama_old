@@ -121,6 +121,7 @@ endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 add_subdirectory ( io )
 add_subdirectory ( matrix )
 add_subdirectory ( matutils )
+add_subdirectory ( mepr )
 
 add_subdirectory ( norm )
 add_subdirectory ( storage )

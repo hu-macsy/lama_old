@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
 {
     typedef float OtherValueType;
 
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
 
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<JDSKernelTrait::getValue<ValueType> > getValue;
 
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_t
 {
     typedef float OtherValueType;
 
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<JDSKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
 
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_t
 
 BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<JDSKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
 
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 
 BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<JDSKernelTrait::ilg2dlg> ilg2dlg;
 
@@ -384,7 +384,7 @@ BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 
 BOOST_AUTO_TEST_CASE( sortRowsTest )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<JDSKernelTrait::sortRows> sortRows;
 
@@ -441,7 +441,7 @@ BOOST_AUTO_TEST_CASE( sortRowsTest )
 
 BOOST_AUTO_TEST_CASE( setInversePermTest )
 {
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<JDSKernelTrait::setInversePerm> setInversePerm;
 
@@ -493,7 +493,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test
 {
     typedef float OtherValueType;
 
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
@@ -576,7 +576,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test
 {
     typedef float OtherValueType;
 
-    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr testContext = Context::getContextPtr();
 
     KernelTraitContextFunction<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
 

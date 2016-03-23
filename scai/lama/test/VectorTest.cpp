@@ -468,23 +468,22 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        AssignmentOpMatrixExpressionTestmethod< CSRSparseMatrix<ValueType> >( context );
-        AssignmentOpMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >( context );
-        AssignmentOpMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >( context );
-        AssignmentOpMatrixExpressionTestmethod< JDSSparseMatrix<ValueType> >( context );
-        AssignmentOpMatrixExpressionTestmethod< COOSparseMatrix<ValueType> >( context );
-        AssignmentOpMatrixExpressionTestmethod< DenseMatrix<ValueType> >( context );
-    }
+    ContextPtr context = Context::getContextPtr(); 
+
+    AssignmentOpMatrixExpressionTestmethod< CSRSparseMatrix<ValueType> >( context );
+    AssignmentOpMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >( context );
+    AssignmentOpMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >( context );
+    AssignmentOpMatrixExpressionTestmethod< JDSSparseMatrix<ValueType> >( context );
+    AssignmentOpMatrixExpressionTestmethod< COOSparseMatrix<ValueType> >( context );
+    AssignmentOpMatrixExpressionTestmethod< DenseMatrix<ValueType> >( context );
 }
 
 /* --------------------------------------------------------------------- */
 
-template<typename ValueType>
-void AssignmentVectorExpressionTestmethod( ContextPtr context )
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, test_types )
 {
+    ContextPtr context = Context::getContextPtr(); 
+
     IndexType n = 4;
     DenseVector<ValueType> vectorA( n, 3.0 );
     DenseVector<ValueType> vectorB( n, 5.0 );
@@ -538,77 +537,60 @@ void AssignmentVectorExpressionTestmethod( ContextPtr context )
     SCAI_CHECK_THROW( { DenseVector<ValueType> vec4( vec1 + 2.0 * vec2 ) ; }, Exception );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, test_types )
-{
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        AssignmentVectorExpressionTestmethod< ValueType >( context );
-        AssignmentVectorExpressionTestmethod< ValueType >( context );
-        AssignmentVectorExpressionTestmethod< ValueType >( context );
-        AssignmentVectorExpressionTestmethod< ValueType >( context );
-        AssignmentVectorExpressionTestmethod< ValueType >( context );
-        AssignmentVectorExpressionTestmethod< ValueType >( context );
-    }
-}
-
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        IndexType n = 4;
-        DenseVector<ValueType> vectorA( n, 3.0 );
-        DenseVector<ValueType> vectorB( n, 6.0 );
-        DenseVector<ValueType> vectorC( n, 12.0 );
-        vectorA.setContextPtr( context );
-        vectorB.setContextPtr( context );
-        vectorC.setContextPtr( context );
-        Scalar s = 2.0;
-        SCAI_LOG_INFO( logger, "vectorA *= 2.0" );
-        vectorA *= s;
-        verifySameVector<ValueType>( vectorA, vectorB );
-        vectorA = 6.0;
-        SCAI_LOG_INFO( logger, "vectorA += vectorB" );
-        vectorA += vectorB;
-        verifySameVector<ValueType>( vectorA, vectorC );
-        SCAI_LOG_INFO( logger, "vectorA -= vectorB" );
-        vectorA -= vectorB;
-        verifySameVector<ValueType>( vectorA, vectorB );
-        vectorA = 1.0;
-        vectorA += 5.0 * vectorA;
-        verifySameVector<ValueType>( vectorA, vectorB );
-        vectorA = 0.0;
-        vectorA += 2.0 * vectorB;
-        verifySameVector<ValueType>( vectorA, vectorC );
-        DenseVector<ValueType> vectorWrong( n + 1, 6 );
-        SCAI_LOG_INFO( logger, "vector(4) += vector(5) should fail" );
-        SCAI_CHECK_THROW(
-        {   vectorA += vectorWrong;}, Exception );
-    }
+    ContextPtr context = Context::getContextPtr(); 
+
+    IndexType n = 4;
+    DenseVector<ValueType> vectorA( n, 3.0 );
+    DenseVector<ValueType> vectorB( n, 6.0 );
+    DenseVector<ValueType> vectorC( n, 12.0 );
+    vectorA.setContextPtr( context );
+    vectorB.setContextPtr( context );
+    vectorC.setContextPtr( context );
+    Scalar s = 2.0;
+    SCAI_LOG_INFO( logger, "vectorA *= 2.0" );
+    vectorA *= s;
+    verifySameVector<ValueType>( vectorA, vectorB );
+    vectorA = 6.0;
+    SCAI_LOG_INFO( logger, "vectorA += vectorB" );
+    vectorA += vectorB;
+    verifySameVector<ValueType>( vectorA, vectorC );
+    SCAI_LOG_INFO( logger, "vectorA -= vectorB" );
+    vectorA -= vectorB;
+    verifySameVector<ValueType>( vectorA, vectorB );
+    vectorA = 1.0;
+    vectorA += 5.0 * vectorA;
+    verifySameVector<ValueType>( vectorA, vectorB );
+    vectorA = 0.0;
+    vectorA += 2.0 * vectorB;
+    verifySameVector<ValueType>( vectorA, vectorC );
+    DenseVector<ValueType> vectorWrong( n + 1, 6 );
+    SCAI_LOG_INFO( logger, "vector(4) += vector(5) should fail" );
+    SCAI_CHECK_THROW(
+        {   vectorA += vectorWrong;}, 
+        Exception );
 }
 
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, test_types )
 {
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        IndexType n = 4;
-        DenseVector<ValueType> v1( n, 4.0 );
-        DenseVector<ValueType> v2( n, 8.0 );
-        v1.setContextPtr( context );
-        v2.setContextPtr( context );
-        Scalar result = v1.dotProduct( v2 );
-        BOOST_CHECK_EQUAL( 128.0, result );
-        DenseVector<ValueType> v3( n, -2.0 );
-        DenseVector<ValueType> v4( n, 14.0 );
-        result = v3.dotProduct( v4 );
-        BOOST_CHECK_EQUAL( -112.0, result );
-    }
+    ContextPtr context = Context::getContextPtr(); 
+
+    IndexType n = 4;
+    DenseVector<ValueType> v1( n, 4.0 );
+    DenseVector<ValueType> v2( n, 8.0 );
+    v1.setContextPtr( context );
+    v2.setContextPtr( context );
+    Scalar result = v1.dotProduct( v2 );
+    BOOST_CHECK_EQUAL( 128.0, result );
+    DenseVector<ValueType> v3( n, -2.0 );
+    DenseVector<ValueType> v4( n, 14.0 );
+    result = v3.dotProduct( v4 );
+    BOOST_CHECK_EQUAL( -112.0, result );
 }
 
 /* --------------------------------------------------------------------- */
@@ -685,7 +667,7 @@ BOOST_AUTO_TEST_CASE( VectorGetValueTypeTest )
 BOOST_AUTO_TEST_CASE( WriteAtTest )
 {
     DenseVector<double> v( 4, 0.0 );
-    LAMA_WRITEAT_TEST( v );
+    SCAI_COMMON_WRITEAT_TEST( v );
 }
 
 /* --------------------------------------------------------------------- */
@@ -930,7 +912,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, ValueType, test_types )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     DenseVector<double> vector( 4, 2.0 );
-    LAMA_WRITEAT_TEST( vector );
+    SCAI_COMMON_WRITEAT_TEST( vector );
 }
 /* --------------------------------------------------------------------- */
 

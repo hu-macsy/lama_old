@@ -49,7 +49,6 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -134,48 +133,34 @@ void BLAS_BLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void BLAS_BLAS3::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void BLAS_BLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
 
-    const common::context::ContextType Host = common::context::Host;
+    const common::context::ContextType ctx = common::context::Host;
 
-    // using BLAS wrappers might be disabled explicitly by environment variable
-
+    bool useBLAS = false;
     int level = 0;
 
-    bool useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );
+    useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );
 
     if( !useBLAS || ( level <= 0 ) )
     {
         SCAI_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS not set or 0)" )
         return;
     }
-    else if( level > 2 )
+    else if( level > 3 )
     {
+        // only level 2 or level 3 wrappers might be used
         SCAI_LOG_INFO( logger,
                        "BLAS3 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS = " << level << ")" )
         return;
     }
 
-    SCAI_LOG_INFO( logger, "set BLAS3 wrapper routines for Host Context in Interface" )
+    SCAI_LOG_INFO( logger, "register BLAS3 wrapper routines for Host at kernel registry [" << flag << "]" )
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
-
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                           \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, Host, flag );  \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
-
-#undef LAMA_BLAS3_REGISTER
+    KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( BLAS_BLAS3::gemm, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -184,14 +169,14 @@ void BLAS_BLAS3::registerKernels( bool deleteFlag )
 
 BLAS_BLAS3::BLAS_BLAS3()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS3::~BLAS_BLAS3()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

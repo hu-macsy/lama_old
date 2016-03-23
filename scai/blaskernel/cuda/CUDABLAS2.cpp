@@ -47,7 +47,6 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
-#include <scai/common/preprocessor.hpp>
 
 using namespace scai::tasking;
 
@@ -151,29 +150,16 @@ void CUDABLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS2::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void CUDABLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
 
     const common::context::ContextType ctx = common::context::CUDA;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+    SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry" )
-
-    // register for one CUDA type: ARITHMETIC_CUDA_TYPE_xxx
-
-#define LAMA_BLAS2_REGISTER(z, I, _)                                                            \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, ctx, flag );   \
-
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
-
-#undef LAMA_BLAS2_REGISTER
+    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( CUDABLAS2::gemv, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -182,14 +168,14 @@ void CUDABLAS2::registerKernels( bool deleteFlag )
 
 CUDABLAS2::CUDABLAS2()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+                    kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDABLAS2::~CUDABLAS2()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+                    kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 CUDABLAS2 CUDABLAS2::guard;    // guard variable for registration

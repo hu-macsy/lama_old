@@ -42,6 +42,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ReductionOp.hpp>
 #include <scai/common/macros/assert.hpp>
+#include <scai/kregistry/mepr/Registrator.hpp>
 
 namespace scai
 {
@@ -66,8 +67,8 @@ public:
 
     /*  CUDA implementation of UtilKernelTrait::setVal  */
 
-    template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
+    template<typename ValueType, typename OtherValueType>
+    static void setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op );
 
     /*  CUDA implementation of UtilKernelTrait::setOrder  */
 
@@ -146,7 +147,9 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    static void registerKernels( bool deleteFlag );
+    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
+    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
 
     /** Constructor for registration. */
 

@@ -37,6 +37,7 @@
 
 #include <scai/common/Complex.hpp>
 #include <scai/common/mic/MICCallable.hpp>
+#include <scai/common/mepr/TypeList.hpp>
 
 // std
 #include <cstring>
@@ -96,6 +97,49 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 #define ARITHMETIC_HOST_TYPE_3 ComplexDouble
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
+
+/*
+ * Kernel
+ */
+
+#define ARITHMETIC_HOST_CNT 6
+#define ARITHMETIC_HOST     float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble
+
+#define ARITHMETIC_EXT_HOST_CNT 4
+#define ARITHMETIC_EXT_HOST float, double, ComplexFloat, ComplexDouble
+
+#define ARITHMETIC_CUDA_CNT 4
+#define ARITHMETIC_CUDA     float, double, ComplexFloat, ComplexDouble
+
+#define ARITHMETIC_MIC_CNT 2
+#define ARITHMETIC_MIC      float, double
+
+#define ARITHMETIC_HOST_LIST TYPELIST(     ARITHMETIC_HOST_CNT,     ARITHMETIC_HOST )
+#define ARITHMETIC_EXT_HOST_LIST TYPELIST( ARITHMETIC_EXT_HOST_CNT, ARITHMETIC_EXT_HOST )
+#define ARITHMETIC_CUDA_LIST TYPELIST(     ARITHMETIC_CUDA_CNT,     ARITHMETIC_CUDA )
+#define ARITHMETIC_MIC_LIST TYPELIST(      ARITHMETIC_MIC_CNT,      ARITHMETIC_MIC )
+
+/*
+ * Array
+ */
+
+#define ARITHMETIC_ARRAY_HOST_CNT 7
+#define ARITHMETIC_ARRAY_HOST     IndexType, ARITHMETIC_HOST
+
+#define ARITHMETIC_ARRAY_EXT_HOST_CNT 5
+#define ARITHMETIC_ARRAY_EXT_HOST IndexType, ARITHMETIC_EXT_HOST
+
+#define ARITHMETIC_ARRAY_CUDA_CNT 5
+#define ARITHMETIC_ARRAY_CUDA     IndexType, ARITHMETIC_CUDA
+
+#define ARITHMETIC_ARRAY_MIC_CNT 3
+#define ARITHMETIC_ARRAY_MIC      IndexType, ARITHMETIC_MIC
+
+#define ARITHMETIC_ARRAY_HOST_LIST TYPELIST( ARITHMETIC_ARRAY_HOST_CNT, ARITHMETIC_ARRAY_HOST )
+#define ARITHMETIC_ARRAY_CUDA_LIST TYPELIST( ARITHMETIC_ARRAY_CUDA_CNT, ARITHMETIC_ARRAY_CUDA )
+#define ARITHMETIC_ARRAY_MIC_LIST TYPELIST( ARITHMETIC_ARRAY_MIC_CNT, ARITHMETIC_ARRAY_MIC )
+
+
 
 /** Number of supported types used in REPEAT macros */
 #ifdef SCAI_COMPLEX_SUPPORTED

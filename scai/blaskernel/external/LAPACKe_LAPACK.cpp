@@ -46,7 +46,6 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
 
 // external
 #include <mkl_lapacke.h>
@@ -213,35 +212,29 @@ int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void LAPACKe_LAPACK::registerKernels(bool deleteFlag) {
+template<typename ValueType>
+void LAPACKe_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
 	using kregistry::KernelRegistry;
 
-    const common::context::ContextType Host = common::context::Host;
+    const common::context::ContextType ctx = common::context::Host;
 
-	KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE; // priority over OpenMPBLAS
+    SCAI_LOG_INFO( logger, "register lapack wrapper routines for Host at kernel registry" )
 
-	if (deleteFlag) {
-		flag = KernelRegistry::KERNEL_ERASE;
-	}
-
-#define LAMA_LAPACKE_REGISTER(z, I, _)                                      \
-    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, Host, flag );    \
-    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, Host, flag );    \
-
-	BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_LAPACKE_REGISTER, _ )
-
-#undef LAMA_LAPACKE_REGISTER
+    KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( LAPACKe_LAPACK::getrf, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACKe_LAPACK::getri, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( LAPACKe_LAPACK::getinv, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( LAPACKe_LAPACK::tptrs, ctx, flag );
 }
+
 LAPACKe_LAPACK::LAPACKe_LAPACK() {
-	bool deleteFlag = false;
-	registerKernels(deleteFlag);
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 LAPACKe_LAPACK::~LAPACKe_LAPACK() {
-	bool deleteFlag = true;
-	registerKernels(deleteFlag);
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

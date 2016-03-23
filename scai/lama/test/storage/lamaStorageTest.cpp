@@ -1,5 +1,5 @@
 /**
- * @file FileIO.cpp
+ * @file lamaStorageTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,46 +25,54 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of static IO routines for matrix storage
- * @author Thomas Brandes
- * @date 10.06.2013
- * @since 1.0.1
+ * @brief Main program for test of LAMA storage classes
+ * @author: Thomas Brandes
+ * @date 16.03.2016
+ **/
+
+#ifndef BOOST_TEST_DYN_LINK
+    #define BOOST_TEST_DYN_LINK
+#endif
+
+#define BOOST_TEST_MODULE lamaStorageTest
+
+#define BOOST_TEST_NO_MAIN
+
+#include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test_suite.hpp>
+
+#include <scai/hmemo/test/ContextFix.hpp>
+#include <scai/common/Settings.hpp>
+
+#include <cstdio>
+
+/* Use global fixture for context and define the static variable.
+ * Avoids expensive calls of reserve/release routines of the Context for each test.
  */
 
-// hpp
-#include <scai/lama/io/FileIO.hpp>
+BOOST_GLOBAL_FIXTURE( ContextFix )
 
-// internal scai libraries
-#include <scai/common/macros/assert.hpp>
+scai::hmemo::ContextPtr ContextFix::testContext;
 
-namespace scai
+/** The init function returns true if it can get the specified context. */
+
+bool init_function()
 {
-
-namespace lama
-{
-
-// Help function to get the size of a file
-
-FileIO::file_size_t FileIO::getFileSize( const char* filename )
-{
-    FILE* pFile = fopen( filename, "rb" );
-
-    file_size_t size = 0;
-
-    if( pFile == NULL )
+    try
     {
-        COMMON_THROWEXCEPTION( "File " << filename << " could not be opened" )
+        scai::hmemo::ContextPtr ctx = scai::hmemo::Context::getContextPtr();
+        return true;
     }
-    else
+    catch ( scai::common::Exception& ex )
     {
-        fseek( pFile, 0, SEEK_END ); // non-portable
-        size = ftell( pFile );
-        fclose( pFile );
+        std::cerr << "Could not get context for test: " << ex.what() << std::endl;
+        return false;
     }
-
-    return size;
 }
 
-} /* end namespace lama */
+int main( int argc, char* argv[] )
+{
+    scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
-} /* end namespace scai */
+    return boost::unit_test::unit_test_main( &init_function, argc, argv );
+}

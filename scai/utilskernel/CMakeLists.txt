@@ -125,6 +125,7 @@ endif ( CUDA_FOUND AND USE_CUDA )
 
 add_subdirectory ( examples )
 add_subdirectory ( doc )
+add_subdirectory ( mepr )
 
 if ( USE_MIC )
     add_subdirectory ( mic )

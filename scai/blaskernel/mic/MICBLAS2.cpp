@@ -45,7 +45,6 @@
 #include <scai/hmemo/mic/MICContext.hpp>
 
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
 
 // external
 #include <mkl_blas.h>
@@ -176,28 +175,16 @@ void MICBLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS2::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void MICBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "register BLAS2 kernels for MIC in Kernel Registry" )
-
     using kregistry::KernelRegistry;
 
     const common::context::ContextType ctx = common::context::MIC;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+    SCAI_LOG_INFO( logger, "register BLAS2 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
 
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-#define LAMA_BLAS2_REGISTER(z, I, _)                                                        \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_MIC_TYPE_##I> >( gemv, ctx, flag ); \
-
-    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
-
-#undef LAMA_BLAS2_REGISTER
-    // all other routines are not used in LAMA yet
+    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( MICBLAS2::gemv, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -206,14 +193,14 @@ void MICBLAS2::registerKernels( bool deleteFlag )
 
 MICBLAS2::RegisterGuard::RegisterGuard()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+                                kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 MICBLAS2::RegisterGuard::~RegisterGuard()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call(
+                                kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 MICBLAS2::RegisterGuard MICBLAS2::guard;    // guard variable for registration

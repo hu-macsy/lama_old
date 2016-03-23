@@ -671,7 +671,10 @@ private:
 
     void assignTransposeImpl ( const SparseMatrix<ValueType>& matrix );
 
+    static std::string initTypeName();
+
     mutable hmemo::HArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
+
 };
 
 } /* end namespace lama */

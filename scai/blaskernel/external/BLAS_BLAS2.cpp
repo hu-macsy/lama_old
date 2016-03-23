@@ -48,7 +48,6 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -155,47 +154,34 @@ void BLAS_BLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void BLAS_BLAS2::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void BLAS_BLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
 
-    const common::context::ContextType Host = common::context::Host;
+    const common::context::ContextType ctx = common::context::Host;
 
-    // using BLAS wrappers might be disabled explicitly by environment variable
-
+    bool useBLAS = false;
     int level = 0;
 
-    bool useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );
+    useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );
 
     if( !useBLAS || ( level <= 0 ) )
     {
         SCAI_LOG_INFO( logger, "BLAS2 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS not set or 0)" )
         return;
     }
-    else if( level > 2 )
+    else if( level > 1 )
     {
+        // only level 2 or level 3 wrappers might be used
         SCAI_LOG_INFO( logger,
                        "BLAS2 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS = " << level << ")" )
         return;
     }
 
-    SCAI_LOG_INFO( logger, "set BLAS2 wrapper routines for Host Context in Interface" )
+    SCAI_LOG_INFO( logger, "register BLAS2 wrapper routines for Host at kernel registry [" << flag << "]" )
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-#define LAMA_BLAS2_REGISTER(z, I, _)                                                        \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, Host, flag ); \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
-
-#undef LAMA_BLAS2_REGISTER
-
-    // all other routines are not used in LAMA yet
+    KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( BLAS_BLAS2::gemv, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -204,14 +190,14 @@ void BLAS_BLAS2::registerKernels( bool deleteFlag )
 
 BLAS_BLAS2::BLAS_BLAS2()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS2::~BLAS_BLAS2()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+                            kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

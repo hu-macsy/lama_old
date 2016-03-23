@@ -55,7 +55,6 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
-#include <scai/common/preprocessor.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
@@ -3290,22 +3289,13 @@ void CUDACSRUtils::matrixMultiply(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDACSRUtils::registerKernels( bool deleteFlag )
+void CUDACSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    SCAI_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
-
     using kregistry::KernelRegistry;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    const common::context::ContextType ctx = common::context::CUDA;
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
+    SCAI_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
 
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
@@ -3313,31 +3303,41 @@ void CUDACSRUtils::registerKernels( bool deleteFlag )
 
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
+}
 
-#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                                                  \
-    KernelRegistry::set<CSRKernelTrait::scaleRows<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( scaleRows, ctx, flag );   \
+template<typename ValueType>
+void CUDACSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
 
-#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                                                 \
-    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ARITHMETIC_CUDA_TYPE_##I> >( convertCSR2CSC, ctx, flag );         \
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ARITHMETIC_CUDA_TYPE_##I> >( sparseGEMV, ctx, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ARITHMETIC_CUDA_TYPE_##I> >( sparseGEVM, ctx, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<ARITHMETIC_CUDA_TYPE_##I> >( matrixAdd, ctx, flag );                   \
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ARITHMETIC_CUDA_TYPE_##I> >( matrixMultiply, ctx, flag );         \
-    KernelRegistry::set<CSRKernelTrait::jacobi<ARITHMETIC_CUDA_TYPE_##I> >( jacobi, ctx, flag );                         \
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ARITHMETIC_CUDA_TYPE_##I> >( jacobiHalo, ctx, flag );                 \
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ARITHMETIC_CUDA_TYPE_##I> >( jacobiHaloWithDiag, ctx, flag ); \
-                                                                                                                         \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                                           \
-                     LAMA_CSR_UTILS2_REGISTER,                                                                           \
-                     ARITHMETIC_CUDA_TYPE_##I )                                                                          \
+    const common::context::ContextType ctx = common::context::CUDA;
 
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
+    SCAI_LOG_INFO( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-#undef LAMA_CSR_UTILS_REGISTER
-#undef LAMA_CSR_UTILS2_REGISTER
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, ctx, flag );
+}
 
+template<typename ValueType, typename OtherValueType>
+void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+
+    const common::context::ContextType ctx = common::context::CUDA;
+
+    SCAI_LOG_INFO( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -3346,14 +3346,20 @@ void CUDACSRUtils::registerKernels( bool deleteFlag )
 
 CUDACSRUtils::CUDACSRUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_CUDA_LIST, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDACSRUtils::~CUDACSRUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    Registrator::initAndReg( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_CUDA_LIST, ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDACSRUtils CUDACSRUtils::guard;    // guard variable for registration

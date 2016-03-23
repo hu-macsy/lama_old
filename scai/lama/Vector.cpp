@@ -43,7 +43,6 @@
 
 // tracing
 #include <scai/tracing.hpp>
-#include <scai/common/preprocessor.hpp>
 
 // std
 #include <map>
@@ -221,7 +220,7 @@ Vector& Vector::operator=( const Expression_SMV& expression )
 {
     SCAI_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
 
-    const Scalar& beta = 0.0;
+    const Scalar beta(0.0);
 
     Expression_SV exp2( beta, *this );
 
@@ -252,7 +251,7 @@ Vector& Vector::operator=( const Expression_SVM& expression )
 {
     SCAI_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
 
-    const Scalar& beta = 0.0;
+    const Scalar beta( 0.0 );
 
     Expression_SV exp2( beta, *this );
 
