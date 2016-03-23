@@ -42,6 +42,9 @@ scai_project (
     SOURCES
 
         AllMatrixTest
+        Redistribution
+
+        CSRSparseMatrixTest
 
         lamaMatrixTest
     )

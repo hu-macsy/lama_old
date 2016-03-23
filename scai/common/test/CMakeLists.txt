@@ -33,6 +33,7 @@
 set ( CXX_SOURCES
       commonTest.cpp
       FactoryTest.cpp  
+      TypeTraitsTest.cpp  
       SettingsTest.cpp  
       WalltimeTest.cpp  
 )
