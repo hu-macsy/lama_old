@@ -379,6 +379,22 @@ void HArrayUtils::conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefL
 }
 
 template<typename ValueType>
+void HArrayUtils::addScalar( hmemo::HArray<ValueType>& array, const ValueType scalar, hmemo::ContextPtr prefLoc )
+{
+    IndexType n = array.size();
+
+    static LAMAKernel<UtilKernelTrait::addScalar<ValueType> > addScalar;
+
+    hmemo::ContextPtr loc = addScalar.getValidContext( prefLoc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    hmemo::WriteAccess<ValueType> values( array, loc );
+
+    addScalar[loc]( values.get(), n, scalar );
+}
+
+template<typename ValueType>
 void HArrayUtils::SpecifierV<ValueType>::specify()
 {
     using common::mepr::TemplateSpecifier;

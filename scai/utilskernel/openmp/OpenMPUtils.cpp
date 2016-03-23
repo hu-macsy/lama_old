@@ -600,6 +600,30 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::addScalar( ValueType mValues[], const IndexType n, const ValueType scalar )
+{
+    SCAI_REGION( "OpenMP.Utils.addScalar" )
+
+    SCAI_LOG_INFO( logger, "addScalar, #n = " << n << " scalar = " << scalar )
+
+    // TODO: Use constants instead of 0.0 and use eps
+    if ( n <= 0 || scalar == 0.0 )
+    {
+        return;
+    }
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for( IndexType i = 0; i < n; i++ )
+    {
+        mValues[i] += scalar;
+    }
+}
+
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -635,6 +659,7 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::addScalar<ValueType> >( addScalar, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

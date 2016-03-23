@@ -269,6 +269,23 @@ struct UtilKernelTrait
 
         static const char* getId() { return "Util.conj"; }
     };
+
+    template<typename ValueType>
+    struct addScalar
+    {
+        /** @brief adds a scalar value to each element of a vector
+         *
+         *  @param[in,out]  values is the array
+         *  @param[in]      n      is the number of entries in values
+         *  @param[in]      scalar is the scalar that should be added
+         */
+        typedef void ( *FuncType ) (
+            ValueType values[],
+            const IndexType n,
+            const ValueType scalar );
+
+        static const char* getId() { return "Util.addScalar"; }
+    };
 };
 
 } /* end namespace utilskernel */

@@ -296,5 +296,68 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( addScalarTest, ValueType, scai_arithmetic_test_types )
+{
+    static LAMAKernel<UtilKernelTrait::addScalar<ValueType> > addScalar;
+
+    ContextPtr loc = addScalar.getValidContext( testContext );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "addScalarTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+
+    ValueType testValues[] = {1.0, 2.0, 3.0, 4.0, 5.0};
+    const IndexType n      = sizeof(testValues) / sizeof(ValueType);
+    HArray<ValueType> values( n, testValues );
+
+    // We are adding the scalar (0.0) to the array, the array should not change
+    {
+        WriteAccess<ValueType> valuesWrite( values, loc );
+        SCAI_CONTEXT_ACCESS( loc );
+        addScalar[loc]( valuesWrite.get(), n, 0.0 );
+    }
+    {
+        ReadAccess<ValueType> valuesRead( values );
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            BOOST_CHECK_EQUAL( testValues[i], valuesRead[i] );
+        }
+    }
+
+    // We add a positive value (15.7) to the array, the array should change adequately
+    {
+        WriteAccess<ValueType> valuesWrite( values, loc );
+        SCAI_CONTEXT_ACCESS( loc );
+        addScalar[loc]( valuesWrite.get(), n, 15.7 );
+    }
+    {
+        ReadAccess<ValueType> valuesRead( values );
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            // TODO: use different eps for different types?
+            ValueType eps = 1e-4;
+            SCAI_CHECK_CLOSE( testValues[i] + 15.7, valuesRead[i], eps );
+        }
+    }
+
+    // We add a negative value (15.7) to the array, the array should now have original values again
+    {
+        WriteAccess<ValueType> valuesWrite( values, loc );
+        SCAI_CONTEXT_ACCESS( loc );
+        addScalar[loc]( valuesWrite.get(), n, -15.7 );
+    }
+    {
+        ReadAccess<ValueType> valuesRead( values );
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            // TODO: use different eps for different types?
+            ValueType eps = 1e-4;
+            SCAI_CHECK_CLOSE( testValues[i], valuesRead[i], eps );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -38,7 +38,7 @@
 
 // local library
 #include <scai/lama/io/BinaryStream.hpp>
-#include <scai/lama/io/FileIO.hpp>
+//#include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/IOUtils.hpp>

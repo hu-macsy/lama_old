@@ -687,6 +687,42 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void addScalar_kernel( ValueType* array, const IndexType n, const ValueType scalar )
+{
+    const IndexType i = threadId(gridDim, blockIdx, blockDim, threadIdx);
+    if ( i < n )
+    {
+        array[i] += scalar;
+    }
+}
+
+template<typename ValueType>
+void CUDAUtils::addScalar( ValueType array[], const IndexType n, const ValueType scalar )
+{
+    SCAI_LOG_INFO( logger, "addScalar for vector of type " << TypeTraits<ValueType>::id() << ", n = " << n
+                   << ", scalar = " << scalar )
+
+    // TODO: Use constants instead of 0.0 and use eps
+    if ( n <= 0 || scalar == 0.0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1);
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    addScalar_kernel <<<dimGrid, dimBlock>>>( array, n, scalar );
+    cudaStreamSynchronize( 0 );
+    SCAI_CHECK_CUDA_ERROR
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -722,6 +758,7 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::addScalar<ValueType> >( addScalar, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

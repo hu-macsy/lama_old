@@ -129,6 +129,11 @@ public:
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
 
+    /** CUDA implementation for UtilKernelTrait::addScalar */
+
+    template<typename ValueType>
+    static void addScalar( ValueType array[], const IndexType n, const ValueType scalar );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

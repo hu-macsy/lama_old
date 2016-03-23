@@ -37,13 +37,13 @@ scai_project (
 
     CLASSES
         
-        BinaryStream
         mmio
         XDRFileStream
         IOUtils
 
     HEADERS
 
+        BinaryStream
         FileType
 
     ADD_PARENT_SCOPE
