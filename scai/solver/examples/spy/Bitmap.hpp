@@ -80,9 +80,9 @@ public:
 
             for ( int x = 0; x < width * scale; ++x )
             {
-               row_pointers[y][4 * x ] = background.r;
-               row_pointers[y][4 * x + 1 ] = background.g;
-               row_pointers[y][4 * x + 2 ] = background.b;
+               row_pointers[y][4 * x ] = static_cast<png_byte> ( background.r );
+               row_pointers[y][4 * x + 1 ] = static_cast<png_byte> ( background.g );
+               row_pointers[y][4 * x + 2 ] = static_cast<png_byte> ( background.b );
                row_pointers[y][4 * x + 3 ] = 255;
             }
         }
@@ -102,9 +102,9 @@ public:
 
     void setPixel( int x, int y, int r, int g, int b )
     {
-        row_pointers[x][4 * y ] = r;
-        row_pointers[x][4 * y + 1 ] = g;
-        row_pointers[x][4 * y + 2 ] = b;
+        row_pointers[x][4 * y ] = static_cast<png_byte> ( r );
+        row_pointers[x][4 * y + 1 ] = static_cast<png_byte> ( g );
+        row_pointers[x][4 * y + 2 ] = static_cast<png_byte> ( b );
     }
 
     void set( int x, int y, double val )

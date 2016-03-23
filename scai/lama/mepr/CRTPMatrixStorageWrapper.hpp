@@ -64,7 +64,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
     {}
 
     static void buildCSRDataImpl(
-        const Derived * const,
+        const Derived *,
         hmemo::HArray<IndexType>&,
         hmemo::HArray<IndexType>&,
         hmemo::_HArray&,
@@ -72,13 +72,13 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
     {}
 
     static void getRowImpl(
-        const Derived * const,
+        const Derived *,
         hmemo::_HArray&,
         const IndexType )
     { }
 
     static void getDiagonalImpl(
-        const Derived* const,
+        const Derived*,
         hmemo::_HArray& )
     { }
 
@@ -120,7 +120,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
     }
 
     static void buildCSRDataImpl(
-            const Derived* const obj,
+            const Derived* obj,
             hmemo::HArray<IndexType>& csrIA,
             hmemo::HArray<IndexType>& csrJA,
             hmemo::_HArray& csrValues,
@@ -137,7 +137,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
     }
 
     static void getRowImpl(
-            const Derived * const obj,
+            const Derived * obj,
             hmemo::_HArray& row,
             const IndexType irow )
     {
@@ -152,7 +152,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
     }
 
     static void getDiagonalImpl(
-        const Derived* const obj,
+        const Derived* obj,
         hmemo::_HArray& diagonal )
     {
         if( diagonal.getValueType() == common::getScalarType<H>() )

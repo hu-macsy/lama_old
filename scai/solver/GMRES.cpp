@@ -363,7 +363,7 @@ void GMRES::iterate()
         runtime.mG[krylovIndex] = runtime.mCC[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mH[hIdxDiag] = runtime.mCC[krylovIndex] * runtime.mH[hIdxDiag]
                                + runtime.mSS[krylovIndex] * runtime.mHd[krylovIndex];
-        SCAI_LOG_DEBUG( logger, "New Residual estimate " << abs( runtime.mG[krylovIndex + 1] ) << "." )
+        SCAI_LOG_DEBUG( logger, "New Residual estimate " << common::Math::abs( runtime.mG[krylovIndex + 1] ) << "." )
     }
 
     // do (partial) update to solution (currently very expensive to do every iteration)

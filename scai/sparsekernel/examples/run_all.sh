@@ -19,9 +19,9 @@ function RUN ( ) {
 }
 
 echo ""
-echo "==========================================================="
-echo "==  Building and executing all scai blaskernel examples  =="
-echo "==========================================================="
+echo "============================================================="
+echo "==  Building and executing all scai sparsekernel examples  =="
+echo "============================================================="
 echo ""
 
 cd $MYDIR
@@ -33,7 +33,7 @@ make
 i=0
 
 # run examples
-RUN 1 matmullell.exe
+RUN 1 matmulell.exe
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/*.exe | wc -l`

@@ -294,3 +294,6 @@ include ( DistClean )
 # copy in  scai_test.sh
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test.sh"
                  "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )
+
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test_xml.sh"
+                 "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )

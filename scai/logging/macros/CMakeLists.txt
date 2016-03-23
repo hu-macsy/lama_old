@@ -25,36 +25,16 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for sparsekernel examples
+ # @brief CMakeLists of logging/macros
  # @author Eric Schricker
- # @date 28.01.2016
+ # @date 21.03.2016
 ###
 
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
+scai_project(
 
-if    ( OPENMP_FOUND AND USE_OPENMP )
-	set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-endif ( OPENMP_FOUND AND USE_OPENMP )
- 
-foreach ( executable matmulell )
-    add_executable ( ${executable}.exe ${executable}.cpp )
-    target_link_libraries ( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-endforeach ( executable )
+    HEADERS
 
-# copy run_all.sh
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+        logging
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-
-## install examples
-install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
-
-# install Makefile
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in"
-				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/Makefile" COPYONLY )
+    ADD_PARENT_SCOPE 
+)
