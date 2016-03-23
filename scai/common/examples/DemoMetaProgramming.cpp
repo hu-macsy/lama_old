@@ -31,7 +31,7 @@ void output()
     std::cout << "Running output<" << TypeTraits<T>::id() << ">, is complex = " << isCmp << std::endl;
     T x = 1;
     x = x / 3;
-    std::cout << TypeTraits<T>::id() << " : " << x << std::endl;
+    std::cout << TypeTraits<T>::stype << " : " << x << std::endl;
 }
 
 // general defintion of Calling for template list
