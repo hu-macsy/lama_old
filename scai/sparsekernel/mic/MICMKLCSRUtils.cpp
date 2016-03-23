@@ -44,6 +44,7 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/Constants.hpp>
 
 // external
 #include <mkl_spblas.h>

@@ -129,16 +129,10 @@ private:
 
     SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
 
-    /** Helper class for (un) registration of kernel routines at static initialization. */
+    static MICDIAUtils guard;  // registration of kernels @ static initialization
 
-    class RegisterGuard
-    {
-    public:
-        RegisterGuard();
-        ~RegisterGuard();
-    };
-
-    static RegisterGuard guard;  // registration of kernels @ static initialization
+    MICDIAUtils();
+    ~MICDIAUtils();
 
     /*
     template<typename ValueType>
