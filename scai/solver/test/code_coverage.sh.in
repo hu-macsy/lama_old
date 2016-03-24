@@ -54,14 +54,23 @@ export SCAI_TRACE=time
 	
 # Running tests serial
 echo "Running serial tests"
-./SolverTest >/dev/null
+./solverTest >/dev/null
 if [ $? -ne 0 ]
 then
-	echo "ERROR in SolverTest"
+	echo "ERROR in solverTest"
 	error_count=$(($error_count + $?))
 fi
     
-    
+if [ -d distributed ];
+then    
+	echo "Running distributed tests"
+	./distributed/solverDistTest >/dev/null
+	if [ $? -ne 0 ]
+	then
+		echo "ERROR in solverDistTest"
+		error_count=$(($error_count + $?))
+	fi
+fi
 
 cd ${dirname}
 

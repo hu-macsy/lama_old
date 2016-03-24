@@ -64,15 +64,13 @@ fi
 if [ -d cuda ];
 then
     #Running common CUDA tests
-    cd cuda
     echo "Running common CUDA tests"
-    ./commonCUDATest >/dev/null
+    ./cuda/commonCUDATest >/dev/null
     if [ $? -ne 0 ]
     then
         echo "ERROR in commonCUDATest"
         error_count=$(($error_count + $?))
     fi
-    cd ..
 fi
 
 cd ${dirname}
@@ -106,4 +104,4 @@ then
     exit 1
 fi
 
-zip -r ../coverage.zip *
+zip -r ../common_coverage.zip *

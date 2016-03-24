@@ -54,25 +54,25 @@ export SCAI_TRACE=time
 	
 # Running tests serial
 echo "Running serial tests"
-./MemoryTest >/dev/null
+./hmemoTest >/dev/null
 if [ $? -ne 0 ]
 then
-	echo "ERROR in MemoryTest"
+	echo "ERROR in hmemoTest"
 	error_count=$(($error_count + $?))
 fi
 
 if [ -d cuda ];
 then
 	#Running CUDA tests
-	cd cuda
+	echo "Running tests with CUDA context"
+	./hmemoTest --SCAI_CONTEXT=CUDA >/dev/null
 	echo "Running cuda tests"
-	./CUDATest >/dev/null
+	./cuda/hmemoCUDATest >/dev/null
 	if [ $? -ne 0 ]
 	then
 		echo "ERROR in CudaTest"
 		error_count=$(($error_count + $?))
 	fi
-	cd ..
 fi
 
 cd ${dirname}
@@ -106,4 +106,4 @@ then
     exit 1
 fi
 
-zip -r ../coverage.zip *
+zip -r ../hmemo_coverage.zip *

@@ -52,21 +52,38 @@ cd ..
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
-# Running tests serial
-echo "Running serial tests"
-./lama_test >/dev/null
+# Running lama tests
+echo "Running serial lama tests"
+./lamaTest >/dev/null
 if [ $? -ne 0 ]
 then
 	echo "ERROR in lama_test"
 	error_count=$(($error_count + $?))
 fi
 
+#Running lama storage tests
+echo "Running serial lama storage tests"
+./storage/lamaStorageTest >/dev/null
+if [ $? -ne 0 ]
+then
+    echo "ERROR in lamaStorageTest"
+    error_count=$(($error_count + $?))
+fi
+
+#Running lama matrix tests
+echo "Running serial lama matrix tests"
+./matrix/lamaMatrixTest >/dev/null
+if [ $? -ne 0 ]
+then
+    echo "ERROR in lamaMatrixTest"
+    error_count=$(($error_count + $?))
+fi
+
 if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
-    cd distributed
     echo "Running distributed tests serial"
-    ./lama_dist_test >/dev/null
+    ./distributed/lamaDistTest >/dev/null
     if [ $? -ne 0 ]
     then
         echo "ERROR in lama_dist_test"
@@ -76,29 +93,44 @@ then
     for i in 2 3 4;
     do
         echo "Running distributed tests with $i processes"
-        mpirun -np $i ./lama_dist_test >/dev/null
+        mpirun -np $i ./distributed/lamaDistTest >/dev/null
         if [ $? -ne 0 ]
         then
-            echo "ERROR in lama_dist_test"
+            echo "ERROR in lamaDistTest with $i processes"
             error_count=$(($error_count + $?))
         fi
     done
-    cd ..
 fi
     
     
 if [ -d cuda ];
 then
-	#Running CUDA tests
-	cd cuda
-	echo "Running cuda tests"
-	./lama_cuda_test >/dev/null
-	if [ $? -ne 0 ]
-	then
-		echo "ERROR in lama_cuda_test"
-		error_count=$(($error_count + $?))
-	fi
-	cd ..
+    # Running lama tests
+    echo "Running serial lama tests"
+    ./lamaTest --SCAI_CONTEXT=CUDA >/dev/null
+    if [ $? -ne 0 ]
+    then
+        echo "ERROR in lama_test"
+        error_count=$(($error_count + $?))
+    fi
+
+    #Running lama storage tests
+    echo "Running serial lama storage tests"
+    ./storage/lamaStorageTest --SCAI_CONTEXT=CUDA >/dev/null
+    if [ $? -ne 0 ]
+    then
+        echo "ERROR in lamaStorageTest"
+        error_count=$(($error_count + $?))
+    fi
+
+    #Running lama matrix tests
+    echo "Running serial lama matrix tests"
+    ./matrix/lamaMatrixTest --SCAI_CONTEXT=CUDA >/dev/null
+    if [ $? -ne 0 ]
+    then
+        echo "ERROR in lamaMatrixTest"
+        error_count=$(($error_count + $?))
+    fi
 fi
 
 cd ${dirname}
@@ -132,4 +164,4 @@ then
     exit 1
 fi
 
-zip -r ../coverage.zip *
+zip -r ../lama_coverage.zip *

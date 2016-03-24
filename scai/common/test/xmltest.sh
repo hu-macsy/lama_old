@@ -29,7 +29,6 @@
 #         xml result files for further usage
 #  @author: Jan Ecker
 #  @date 08.05.2013
-#  @since 1.0.0
 #
 
 #!/bin/bash
@@ -42,14 +41,12 @@ mkdir ${dirname}
 ERROR_LEVEL=test_suite
 
 # Running common tests (only Host)
-
-echo "Running common tests"
+echo "Running common tests on Host"
 ./commonTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/commonTest.xml
 
 # Running common CUDA tests
-
 if [ -d cuda ];
 then
-    echo "Running common tests for CUDA"
+    echo "Running common tests on CUDA"
     ./cuda/commonCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/commonCUDATest.xml
 fi

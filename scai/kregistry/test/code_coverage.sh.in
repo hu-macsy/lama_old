@@ -52,12 +52,12 @@ cd ..
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
-# Running tests serial
+# Running kregistry serial
 echo "Running serial tests"
-./KernelInterfaceTest >/dev/null
+./kregistryTest >/dev/null
 if [ $? -ne 0 ]
 then
-	echo "ERROR in KernelInterfaceTest"
+	echo "ERROR in kregistryTest"
 	error_count=$(($error_count + $?))
 fi
 
@@ -92,4 +92,4 @@ then
     exit 1
 fi
 
-zip -r ../coverage.zip *
+zip -r ../kregistry_coverage.zip *
