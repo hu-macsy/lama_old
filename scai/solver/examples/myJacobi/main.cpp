@@ -70,7 +70,6 @@ int main( int , char** )
 
     CriterionPtr criterion( new IterationCount( 100 ) );
     jacobiSolver.setStoppingCriterion( criterion );
-    //jacobiSolver.setOmega( 0.5 );
     jacobiSolver.solve( solution, rhs );
 
     DenseVector<ValueType> diff( solution - exactSolution );

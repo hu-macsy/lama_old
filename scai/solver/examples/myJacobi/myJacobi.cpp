@@ -43,43 +43,35 @@
 
 #include <scai/lama/DenseVector.hpp>
 
-namespace scai 
-{
-
-namespace solver
-{
-
-SCAI_LOG_DEF_LOGGER( MyJacobi::logger, "Jacobi.MyJacobi" )
-
-using namespace hmemo;
+using namespace scai::hmemo;
 
 MyJacobi::MyJacobi( const std::string& id )
-    : OmegaSolver( id )
+    : scai::solver::OmegaSolver( id )
 {
 }
 
-MyJacobi::MyJacobi( const std::string& id, const lama::Scalar omega )
-    : OmegaSolver( id, omega )
+MyJacobi::MyJacobi( const std::string& id, const scai::lama::Scalar omega )
+    : scai::solver::OmegaSolver( id, omega )
 {
 }
 
-MyJacobi::MyJacobi( const std::string& id, LoggerPtr logger )
-    : OmegaSolver( id, logger )
+MyJacobi::MyJacobi( const std::string& id, scai::solver::LoggerPtr logger )
+    : scai::solver::OmegaSolver( id, logger )
 {
 }
 
-MyJacobi::MyJacobi( const std::string& id, const lama::Scalar omega, LoggerPtr logger )
-    : OmegaSolver( id, omega, logger )
+MyJacobi::MyJacobi( const std::string& id, const scai::lama::Scalar omega, scai::solver::LoggerPtr logger )
+    : scai::solver::OmegaSolver( id, omega, logger )
 {
 }
 
 MyJacobi::MyJacobi( const MyJacobi& other )
-    : OmegaSolver( other )
+    : scai::solver::OmegaSolver( other )
 {
 }
 
 MyJacobi::MyJacobiRuntime::MyJacobiRuntime()
-    : OmegaSolverRuntime(), mDiagonalTimesLU(), mDiagonalTimesRhs(), mOldSolution()
+    : scai::solver::OmegaSolver::OmegaSolverRuntime(), mDiagonalTimesLU(), mDiagonalTimesRhs(), mOldSolution()
 {
 }
 
@@ -91,7 +83,7 @@ MyJacobi::MyJacobiRuntime::~MyJacobiRuntime()
 {
 }
 
-void MyJacobi::initialize( const lama::Matrix& coefficients )
+void MyJacobi::initialize( const scai::lama::Matrix& coefficients )
 {
     MyJacobiRuntime& runtime = getRuntime();
 
@@ -113,17 +105,17 @@ void MyJacobi::initialize( const lama::Matrix& coefficients )
 
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
 
-    runtime.mOldSolution.reset( lama::Vector::create( runtime.mDiagonalTimesRhs->getCreateValue() ) );
+    runtime.mOldSolution.reset( scai::lama::Vector::create( runtime.mDiagonalTimesRhs->getCreateValue() ) );
     runtime.mOldSolution->setContextPtr( runtime.mDiagonalTimesRhs->getContextPtr() );
 
-    OmegaSolver::initialize( coefficients );
+    scai::solver::OmegaSolver::initialize( coefficients );
 }
 
-void MyJacobi::solve( lama::Vector& solution, const lama::Vector& rhs )
+void MyJacobi::solve( scai::lama::Vector& solution, const scai::lama::Vector& rhs )
 {
     if( getConstRuntime().mSolveInit )
     {
-        SCAI_LOG_WARN( logger, "Previous initialization of solver found! Will be overriden!" )
+        std::cout << "Previous initialization of solver found! Will be overriden!" << std::endl;
     }
 
     solveInit( solution, rhs );
@@ -131,14 +123,14 @@ void MyJacobi::solve( lama::Vector& solution, const lama::Vector& rhs )
     solveFinalize();
 }
 
-void MyJacobi::solveInit( lama::Vector& solution, const lama::Vector& rhs )
+void MyJacobi::solveInit( scai::lama::Vector& solution, const scai::lama::Vector& rhs )
 {
     MyJacobiRuntime& runtime = getRuntime();
 
     //Check if oldSolution already exists, if not create copy of solution
     if( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution.reset( lama::Vector::create( solution.getCreateValue() ) );
+        runtime.mOldSolution.reset( scai::lama::Vector::create( solution.getCreateValue() ) );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
@@ -171,8 +163,8 @@ void MyJacobi::iterate()
     MyJacobiRuntime& runtime = getRuntime();
 
     //swap old solution and solution pointer begin
-    lama::Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
-    lama::Vector* ptr_solution = &( *runtime.mSolution );
+    scai::lama::Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
+    scai::lama::Vector* ptr_solution = &( *runtime.mSolution );
 
     runtime.mProxyOldSolution = ptr_solution;
     runtime.mSolution = ptr_OldSolution;
@@ -180,7 +172,7 @@ void MyJacobi::iterate()
     //swap end now m_proxOldSolution holds the solution of the last iteration
     //and m_solution will be the output of the current iteration
 
-    const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
+    const scai::lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
 
     *runtime.mSolution = *runtime.mDiagonalTimesRhs - *runtime.mDiagonalTimesLU * oldSolution;
 
@@ -194,11 +186,11 @@ void MyJacobi::iterate()
 {
     switch( getRuntime().mDiagonalTimesLU->getValueType() )
     {
-        case common::scalar::FLOAT:
+        case scai::common::scalar::FLOAT:
             iterate<float>();
             break;
 
-        case common::scalar::DOUBLE:
+        case scai::common::scalar::DOUBLE:
             iterate<double>();
             break;
 
@@ -217,9 +209,9 @@ const MyJacobi::MyJacobiRuntime& MyJacobi::getConstRuntime() const
     return mMyJacobiRuntime;
 }
 
-SolverPtr MyJacobi::copy()
+scai::solver::SolverPtr MyJacobi::copy()
 {
-    return SolverPtr( new MyJacobi( *this ) );
+    return scai::solver::SolverPtr( new MyJacobi( *this ) );
 }
 
 void MyJacobi::writeAt( std::ostream& stream ) const
@@ -232,11 +224,7 @@ std::string MyJacobi::createValue()
 	return "MyJacobi";
 }
 
-Solver* MyJacobi::create( const std::string name )
+scai::solver::Solver* MyJacobi::create( const std::string name )
 {
 	return new MyJacobi( name );
 }
-
-} /* end namespace solver */
-
-} /* end namespace scai */

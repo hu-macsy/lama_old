@@ -43,24 +43,18 @@
 // logging
 #include <scai/logging/Logger.hpp>
 
-namespace scai
-{
-
-namespace solver
-{
-
 class COMMON_DLL_IMPORTEXPORT MyJacobi:
-		public OmegaSolver,
-		public Solver::Register<MyJacobi>
+		public scai::solver::OmegaSolver,
+		public scai::solver::Solver::Register<MyJacobi>
 {
 public:
     MyJacobi( const std::string& id );
 
-    MyJacobi( const std::string& id, LoggerPtr logger );
+    MyJacobi( const std::string& id, scai::solver::LoggerPtr logger );
 
-    MyJacobi( const std::string& id, const lama::Scalar omega ); //2nd param Matrix.Scalar
+    MyJacobi( const std::string& id, const scai::lama::Scalar omega ); //2nd param Matrix.Scalar
 
-    MyJacobi( const std::string& id, const lama::Scalar omega, LoggerPtr logger );
+    MyJacobi( const std::string& id, const scai::lama::Scalar omega, scai::solver::LoggerPtr logger );
 
     /**
      * @brief Copy constructor that copies the status independent solver information
@@ -78,11 +72,11 @@ public:
      *
      * @param coefficients The matrix A from A*u=f
      */
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const scai::lama::Matrix& coefficients );
 
-    virtual void solve( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solve( scai::lama::Vector& solution, const scai::lama::Vector& rhs );
 
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( scai::lama::Vector& solution, const scai::lama::Vector& rhs );
 
     virtual void solveFinalize();
 
@@ -92,18 +86,18 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual scai::solver::SolverPtr copy();
 
     struct MyJacobiRuntime: OmegaSolverRuntime
     {
         MyJacobiRuntime();
         virtual ~MyJacobiRuntime();
 
-        common::shared_ptr<lama::Matrix> mDiagonalTimesLU;
-        common::shared_ptr<lama::Matrix> mDiagonalInverted;
-        common::shared_ptr<lama::Vector> mDiagonalTimesRhs;
-        common::shared_ptr<lama::Vector> mOldSolution;
-        SolutionProxy mProxyOldSolution;
+        scai::common::shared_ptr<scai::lama::Matrix> mDiagonalTimesLU;
+        scai::common::shared_ptr<scai::lama::Matrix> mDiagonalInverted;
+        scai::common::shared_ptr<scai::lama::Vector> mDiagonalTimesRhs;
+        scai::common::shared_ptr<scai::lama::Vector> mOldSolution;
+        scai::solver::SolutionProxy mProxyOldSolution;
     };
 
     /**
@@ -140,12 +134,8 @@ protected:
 private:
 
     template<typename ValueType>
-    void initialize(const lama::Matrix& coefficients);
+    void initialize(const scai::lama::Matrix& coefficients);
 
     template<typename ValueType>
     void iterate();
 };
-
-} /* end namespace solver */
-
-} /* end namespace scai */

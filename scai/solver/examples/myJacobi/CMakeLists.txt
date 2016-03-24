@@ -32,10 +32,13 @@
 
 set ( HEADER myJacobi.hpp )
 
-set ( EXAMPLE_FILES myJacobi.cpp main.cpp )
-set ( EXAMPLE_EXECUTABLES myJacobi.exe )
-add_executable( ${EXAMPLE_EXECUTABLES} ${EXAMPLE_FILES} )
-target_link_libraries( ${EXAMPLE_EXECUTABLES} ${PROJECT_NAME} )
+set ( FILES myJacobi.cpp main.cpp )
+set ( EXECUTABLE myJacobi.exe )
+add_executable( ${EXECUTABLE} ${FILES} )
+
+target_link_libraries( ${EXECUTABLE} ${PROJECT_NAME} )
+set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${FILES} )
+set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${EXECUTABLE}" )
 
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )
