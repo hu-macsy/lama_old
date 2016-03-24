@@ -32,6 +32,7 @@
 
 set ( CXX_SOURCES
       commonTest.cpp
+      ComplexTest.cpp
       FactoryTest.cpp  
       TypeTraitsTest.cpp  
       SettingsTest.cpp  

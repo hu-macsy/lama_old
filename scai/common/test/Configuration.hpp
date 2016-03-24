@@ -31,8 +31,6 @@
  */
 #pragma once
 
-#include <scai/logging.hpp>
-
 #include <string>
 
 #ifndef LAMA_TESTFILE_PATH

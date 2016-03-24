@@ -13,7 +13,6 @@
 #include <iostream>
 
 using scai::common::Complex;
-using scai::common::conj;
 
 int main()
 {
@@ -25,7 +24,7 @@ int main()
     double b_im = b.imag();
 
     std::cout << "b.real() = " << b_re << ", b.imag() = " << b_im << std::endl;
-    std::cout << "conj( b ) = " << conj( b ) << std::endl;
+    std::cout << "conj( b ) = " << scai::common::Math::conj( b ) << std::endl;
     // not allowed for std::complex
     std::cout << "static_cast<double>( b ) = " << static_cast<double>( b ) << std::endl;
     std::cout << "abs( b ) = " << scai::common::Math::abs( b ) << std::endl;
