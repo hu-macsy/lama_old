@@ -68,7 +68,7 @@ RUN 1 solver/cg_solver.exe example
 RUN 1 solver/gmres_solver.exe example
 RUN 1 solver/amg_solver.exe example 3
 RUN 1 solver/solver.exe example
-RUN 0 solver/solver.exe example SpecializedJacobi 10
+RUN 0 solver/solver.exe example Jacobi 10
 RUN 0 solver/solver.exe example GMRES 3
 RUN 1 solver/lama_info.exe 
 
@@ -90,6 +90,20 @@ RUN 1 spy/spy.exe $MYDIR/lecture/gr_30_30.mtx
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/spy/*.exe | wc -l`
+if [ $count -ne $i ]; then
+    echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
+    exit 1
+fi
+
+
+#reset counter
+i=0
+
+# run examples spy/*
+RUN 1 myJacobi/myJacobi.exe
+
+# check if there are unkown examples
+count=`ls -l -la $MYDIR/myJacobi/*.exe | wc -l`
 if [ $count -ne $i ]; then
     echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
     exit 1

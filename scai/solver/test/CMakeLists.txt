@@ -49,12 +49,12 @@ scai_project (
         CGSTest
         CommonLoggerTest
         CriterionTest
-        DefaultJacobiTest
         FileLoggerTest
         GMRESTest
         InverseSolverTest
         IterationCountTest
         IterativeSolverTest
+        JacobiTest
         MINRESTest
         QMRTest
         ResidualStagnationTest
@@ -64,8 +64,6 @@ scai_project (
         SolutionProxyTest
         SolverTest
         SolverTest1
-        SORTest
-        SpecializedJacobiTest
         TFQMRTest
         TimerTest
         

@@ -53,7 +53,7 @@ typedef common::shared_ptr<OmegaSolver> OldSolutionHandlerPtr;
 
 /**
  * @brief The OldSolutionHandler class only manages the omega parameter
- * For solvers like Jacobi and SOR
+ * For solvers like a Jacobi.
  */
 class COMMON_DLL_IMPORTEXPORT OmegaSolver: public IterativeSolver
 {

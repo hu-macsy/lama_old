@@ -1,5 +1,5 @@
 /**
- * @file DefaultJacobi.hpp
+ * @file MyJacobi.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief DefaultJacobi.hpp
+ * @brief MyJacobi.hpp
  * @author Matthias Makulla
  * @date 06.04.2011
  * @since 1.0.0
@@ -49,25 +49,25 @@ namespace scai
 namespace solver
 {
 
-class COMMON_DLL_IMPORTEXPORT DefaultJacobi:
+class COMMON_DLL_IMPORTEXPORT MyJacobi:
 		public OmegaSolver,
-		public Solver::Register<DefaultJacobi>
+		public Solver::Register<MyJacobi>
 {
 public:
-    DefaultJacobi( const std::string& id );
+    MyJacobi( const std::string& id );
 
-    DefaultJacobi( const std::string& id, LoggerPtr logger );
+    MyJacobi( const std::string& id, LoggerPtr logger );
 
-    DefaultJacobi( const std::string& id, const lama::Scalar omega ); //2nd param Matrix.Scalar
+    MyJacobi( const std::string& id, const lama::Scalar omega ); //2nd param Matrix.Scalar
 
-    DefaultJacobi( const std::string& id, const lama::Scalar omega, LoggerPtr logger );
+    MyJacobi( const std::string& id, const lama::Scalar omega, LoggerPtr logger );
 
     /**
      * @brief Copy constructor that copies the status independent solver information
      */
-    DefaultJacobi( const DefaultJacobi& other );
+    MyJacobi( const MyJacobi& other );
 
-    virtual ~DefaultJacobi();
+    virtual ~MyJacobi();
 
     /**
      * @brief Initializes the solver by calculating D^(-1)*C from A = D + C.
@@ -94,10 +94,10 @@ public:
      */
     virtual SolverPtr copy();
 
-    struct DefaultJacobiRuntime: OmegaSolverRuntime
+    struct MyJacobiRuntime: OmegaSolverRuntime
     {
-        DefaultJacobiRuntime();
-        virtual ~DefaultJacobiRuntime();
+        MyJacobiRuntime();
+        virtual ~MyJacobiRuntime();
 
         common::shared_ptr<lama::Matrix> mDiagonalTimesLU;
         common::shared_ptr<lama::Matrix> mDiagonalInverted;
@@ -109,18 +109,18 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual DefaultJacobiRuntime& getRuntime();
+    virtual MyJacobiRuntime& getRuntime();
 
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const DefaultJacobiRuntime& getConstRuntime() const;
+    virtual const MyJacobiRuntime& getConstRuntime() const;
 
     static std::string createValue();
     static Solver* create( const std::string name );
 
 protected:
-    DefaultJacobiRuntime mDefaultJacobiRuntime;
+    MyJacobiRuntime mMyJacobiRuntime;
 
     /**
      * @brief Performs one Jacobi iteration based on Matrix/Vector operations

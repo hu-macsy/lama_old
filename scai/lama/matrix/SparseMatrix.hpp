@@ -77,8 +77,6 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>,ValueType>
 {
 
-//    friend class SpecializedJacobi;
-
 public:
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.

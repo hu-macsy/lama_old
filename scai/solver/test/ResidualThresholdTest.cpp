@@ -42,7 +42,7 @@
 #include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/solver/criteria/ResidualThreshold.hpp>
-#include <scai/solver/DefaultJacobi.hpp>
+#include <scai/solver/Jacobi.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
@@ -167,7 +167,7 @@ void testIsSatisfied( ResidualThreshold::ResidualThresholdCheckMode checkMode )
 {
     IndexType n = 3;
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
-    DefaultJacobi solver( "ResidualThresholdTest Jacobi", ( ValueType ) 1.0 );
+    Jacobi solver( "ResidualThresholdTest Jacobi", ( ValueType ) 1.0 );
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );
     DenseVector<ValueType> solution( n, 0.0 );

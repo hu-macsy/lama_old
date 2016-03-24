@@ -1,5 +1,5 @@
 ###
- # @file scai/solver/CMakeLists.txt
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,35 +25,27 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Main specification file for CMake
- # @author Lauretta Schubert
- # @date 25.01.2016
- # @since 2.0.0
+ # @brief CMake configuration file for scai_lama examples
+ # @author Jan Ecker
+ # @date 02.12.2015
 ###
 
-scai_project ( 
+set ( HEADER myJacobi.hpp )
 
-	CLASSES
+set ( EXAMPLE_FILES myJacobi.cpp main.cpp )
+set ( EXAMPLE_EXECUTABLES myJacobi.exe )
+add_executable( ${EXAMPLE_EXECUTABLES} ${EXAMPLE_FILES} )
+target_link_libraries( ${EXAMPLE_EXECUTABLES} ${PROJECT_NAME} )
 
-	HEADERS
+# configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
+prepareExamplesMakeInc()
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 
-	SOURCES
-        SolverDistTest
-        
-        P_CGTest
-        P_JacobiTest
-   )
-   
-### add definitions ###
-add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../../res/testfiles" )
+#install examples
+install ( FILES ${EXAMPLE_FILES} ${HEADER} ${CMAKE_CURRENT_BINARY_DIR}/make.inc 
+		  DESTINATION ${PROJECT_EXAMPLE_DIR}/myJacobi )
 
-add_executable ( solverDistTest ${CXX_SOURCES} )
-
-target_link_libraries ( solverDistTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
-    
-file ( GLOB LOCAL_HEADERS "*.hpp" )
-
-install ( FILES ${LOCAL_HEADERS} DESTINATION include/scai/solver/test/distributed )    
-
-### Copy the xmltest.sh file in build directory ### 
-#file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )  
+# install Makefile
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
+				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/myJacobi/Makefile" COPYONLY )
