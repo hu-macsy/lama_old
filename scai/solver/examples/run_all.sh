@@ -99,7 +99,7 @@ fi
 #reset counter
 i=0
 
-# run examples spy/*
+# run examples myJacobi/*
 RUN 1 myJacobi/myJacobi.exe
 
 # check if there are unkown examples

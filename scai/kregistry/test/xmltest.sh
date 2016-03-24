@@ -40,6 +40,6 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running kregistry serial
+# Running kregistry serial (only Host)
 echo "Running kregistry tests on Host"
 ./kregistryTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/KernelInterfaceTest.xml
