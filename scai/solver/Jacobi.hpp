@@ -1,5 +1,5 @@
 /**
- * @file SpecializedJacobi.hpp
+ * @file Jacobi.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief SpecializedJacobi.hpp
+ * @brief Jacobi.hpp
  * @author Matthias Makulla
  * @date 06.04.2011
  * @since 1.0.0
@@ -49,18 +49,18 @@ namespace scai
 namespace solver
 {
 
-class COMMON_DLL_IMPORTEXPORT SpecializedJacobi:
+class COMMON_DLL_IMPORTEXPORT Jacobi:
 	public OmegaSolver,
-	public Solver::Register<SpecializedJacobi>
+	public Solver::Register<Jacobi>
 {
 public:
-    SpecializedJacobi( const std::string& id );
-    SpecializedJacobi( const std::string& id, lama::Scalar omega );
-    SpecializedJacobi( const std::string& id, LoggerPtr logger );
-    SpecializedJacobi( const std::string& id, lama::Scalar omega, LoggerPtr logger );
-    SpecializedJacobi( const SpecializedJacobi& other );
+    Jacobi( const std::string& id );
+    Jacobi( const std::string& id, lama::Scalar omega );
+    Jacobi( const std::string& id, LoggerPtr logger );
+    Jacobi( const std::string& id, lama::Scalar omega, LoggerPtr logger );
+    Jacobi( const Jacobi& other );
 
-    virtual ~SpecializedJacobi();
+    virtual ~Jacobi();
 
     virtual void initialize( const lama::Matrix& coefficients );
 
@@ -70,10 +70,10 @@ public:
 
     void iterate();
 
-    struct SpecializedJacobiRuntime: OmegaSolverRuntime
+    struct JacobiRuntime: OmegaSolverRuntime
     {
-        SpecializedJacobiRuntime();
-        virtual ~SpecializedJacobiRuntime();
+        JacobiRuntime();
+        virtual ~JacobiRuntime();
 
         //TODO: HArray?
         common::shared_ptr<lama::Vector> mOldSolution;
@@ -84,12 +84,12 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual SpecializedJacobiRuntime& getRuntime();
+    virtual JacobiRuntime& getRuntime();
 
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const SpecializedJacobiRuntime& getConstRuntime() const;
+    virtual const JacobiRuntime& getConstRuntime() const;
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -104,7 +104,7 @@ public:
 
 protected:
 
-    SpecializedJacobiRuntime mSpecializedJacobiRuntime;
+    JacobiRuntime mJacobiRuntime;
 
     /**
      *  @brief own implementation of Printable::writeAt

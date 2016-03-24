@@ -1,5 +1,5 @@
 /**
- * @file SpecializedJacobi.cpp
+ * @file Jacobi.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,14 +25,14 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of class SpecializedJacobi.
+ * @brief Implementation of class Jacobi.
  * @author Matthias Makulla
  * @date 06.04.2011
  * @since 1.0.0
  */
 
 // hpp
-#include <scai/solver/SpecializedJacobi.hpp>
+#include <scai/solver/Jacobi.hpp>
 
 // local library
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -59,54 +59,54 @@ using lama::Scalar;
 namespace solver
 {
 
-SpecializedJacobi::SpecializedJacobi( const std::string& id )
+Jacobi::Jacobi( const std::string& id )
     : OmegaSolver( id )
 {
 }
 
-SpecializedJacobi::SpecializedJacobi( const std::string& id, LoggerPtr logger )
+Jacobi::Jacobi( const std::string& id, LoggerPtr logger )
     : OmegaSolver( id, logger )
 {
 }
 
-SpecializedJacobi::SpecializedJacobi( const std::string & id, lama::Scalar omega )
+Jacobi::Jacobi( const std::string & id, lama::Scalar omega )
     : OmegaSolver( id, omega )
 {
 }
 
-SpecializedJacobi::SpecializedJacobi( const std::string& id, lama::Scalar omega, LoggerPtr logger )
+Jacobi::Jacobi( const std::string& id, lama::Scalar omega, LoggerPtr logger )
     : OmegaSolver( id, omega, logger )
 {
 }
 
-SpecializedJacobi::SpecializedJacobi( const SpecializedJacobi& other )
+Jacobi::Jacobi( const Jacobi& other )
     : OmegaSolver( other )
 {
 }
 
-SpecializedJacobi::SpecializedJacobiRuntime::SpecializedJacobiRuntime()
+Jacobi::JacobiRuntime::JacobiRuntime()
     : OmegaSolverRuntime(), mOldSolution(), mDiagonal()
 {
 }
 
-SpecializedJacobi::~SpecializedJacobi()
+Jacobi::~Jacobi()
 {
-    SCAI_LOG_INFO( logger, "~SpecializedJacobi" )
+    SCAI_LOG_INFO( logger, "~Jacobi" )
 }
 
-SpecializedJacobi::SpecializedJacobiRuntime::~SpecializedJacobiRuntime()
+Jacobi::JacobiRuntime::~JacobiRuntime()
 {
-    SCAI_LOG_INFO( logger, "~SpecializedJacobiRuntime" )
+    SCAI_LOG_INFO( logger, "~JacobiRuntime" )
 }
 
-void SpecializedJacobi::initialize( const Matrix& coefficients )
+void Jacobi::initialize( const Matrix& coefficients )
 {
     using hmemo::_HArray;
 
     if( coefficients.getMatrixKind() == Matrix::DENSE )
     {
         COMMON_THROWEXCEPTION(
-            "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
+            "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for Jacobi specialization (must be SparseMatrix)." );
     }
 
     OmegaSolver::initialize( coefficients );
@@ -117,7 +117,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
     SCAI_ASSERT( coefficients.hasDiagonalProperty(), "Diagonal Property not set." )
 
-    SpecializedJacobiRuntime& runtime = getRuntime();
+    JacobiRuntime& runtime = getRuntime();
 
     if( !runtime.mOldSolution.get() )
     {
@@ -142,7 +142,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
 }
 
-void SpecializedJacobi::solveInit( Vector& solution, const Vector& rhs )
+void Jacobi::solveInit( Vector& solution, const Vector& rhs )
 {
     //Check if oldSolution already exists, if not create copy of solution
     if( !getConstRuntime().mOldSolution.get() )
@@ -167,7 +167,7 @@ void SpecializedJacobi::solveInit( Vector& solution, const Vector& rhs )
     IterativeSolver::solveInit( solution, rhs );
 }
 
-void SpecializedJacobi::solveFinalize()
+void Jacobi::solveFinalize()
 {
 //    MF: ?????
 //    if( &( mProxyOldSolution.getConstReference() ) ==
@@ -181,7 +181,7 @@ void SpecializedJacobi::solveFinalize()
     SCAI_LOG_DEBUG( logger, " end solve " )
 }
 
-void SpecializedJacobi::iterate()
+void Jacobi::iterate()
 {
     SCAI_REGION( "Solver.SpJacobi.iterate" )
 
@@ -209,7 +209,7 @@ void SpecializedJacobi::iterate()
 }
 
 template<typename ValueType>
-void SpecializedJacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
+void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
 {
     using hmemo::HArray;
 
@@ -330,34 +330,34 @@ void SpecializedJacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coeff
     }
 }
 
-SpecializedJacobi::SpecializedJacobiRuntime& SpecializedJacobi::getRuntime()
+Jacobi::JacobiRuntime& Jacobi::getRuntime()
 {
-    return mSpecializedJacobiRuntime;
+    return mJacobiRuntime;
 }
 
-const SpecializedJacobi::SpecializedJacobiRuntime& SpecializedJacobi::getConstRuntime() const
+const Jacobi::JacobiRuntime& Jacobi::getConstRuntime() const
 {
-    return mSpecializedJacobiRuntime;
+    return mJacobiRuntime;
 }
 
-SolverPtr SpecializedJacobi::copy()
+SolverPtr Jacobi::copy()
 {
-    return SolverPtr( new SpecializedJacobi( *this ) );
+    return SolverPtr( new Jacobi( *this ) );
 }
 
-void SpecializedJacobi::writeAt( std::ostream& stream ) const
+void Jacobi::writeAt( std::ostream& stream ) const
 {
-    stream << "SpecializedJacobi ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    stream << "Jacobi ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
-std::string SpecializedJacobi::createValue()
+std::string Jacobi::createValue()
 {
-	return "SpecializedJacobi";
+	return "Jacobi";
 }
 
-Solver* SpecializedJacobi::create( const std::string name )
+Solver* Jacobi::create( const std::string name )
 {
-	return new SpecializedJacobi( name );
+	return new Jacobi( name );
 }
 
 } /* end namespace solver */
