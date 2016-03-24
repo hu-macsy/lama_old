@@ -1,4 +1,4 @@
-set ( SCAI_VERSION_NAME "Alpamayo" )
+set ( SCAI_VERSION_NAME "Barrancas Blancas" )
 set ( SCAI_COPYRIGHT_YEAR 2016 )
 
 ## with CMake >= 3.0.2 this can be set in project definition, e.g. project( scai_common VERSION 1.0.0 LANGUAGES CXX )
