@@ -359,10 +359,8 @@ else
 
     prepareTestCase time
     if [ $ret -eq 0 ]; then
-        # TODO: THIS IS STILL AN ISSUE AND HAS TO BE FIXED, WE ARE STILL CREATING .ct FILES!
 
-        # there should be no .ct files
-        #checkCTFilesExist 0
+        checkCTFilesExist 0
         
         checkTimeFilesExist 1
         if [ $ret -eq 0 ]; then
@@ -393,10 +391,8 @@ else
     prepareTestCase time:PREFIX=customPrefix
     
     if [ $ret -eq 0 ]; then
-        # TODO still a problem
-        
-        # there should be no .ct files
-        #checkCTFilesExist 0
+
+        checkCTFilesExist 0
     
         # we have to check if there is exactly one .time file (no additional .time files created)
         checkTimeFilesExist 1
@@ -440,10 +436,10 @@ else
     prepareTestCase time:thread
     
     if [ $ret -eq 0 ]; then
-        # TODO: .ct files are still created
-        
-        # there should be no .ct files
-        #checkCTFilesExist 0
+
+        # there should be no .ct files 
+
+        checkCTFilesExist 0
         
         checkTimeFilesExist 1
         if [ $ret -eq 0 ]; then
@@ -539,8 +535,6 @@ else
     checkTimeFilesExist 0
 fi
 
-# TODO: This does not work at the moment!
-
 ## Check if the tracing works with unnamed threads
 make clean > /dev/null
 make simple DEFINES="-DSCAI_TRACE_ON -DUNNAMED_THREADS" &> /dev/null
@@ -548,7 +542,7 @@ if [ $? -ne 0 ]; then
     echo "ERROR: Could not build executable! Tests are skipped!"
     errors=$(($errors + 1))
 else
-    prepareTestCase ct:time:threads
+    prepareTestCase ct:time:thread
     
     checkCTFilesExist $numThreads
     if [ $ret -eq 0 ]; then

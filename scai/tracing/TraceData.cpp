@@ -47,39 +47,39 @@ namespace tracing
 
 SCAI_LOG_DEF_LOGGER( TraceData::logger, "TraceData" )
 
-void TraceData::enter( const int regionId, RegionEntry& region, const bool callTreeFlag )
+void TraceData::enter( const int regionId, RegionEntry& region )
 {
     SCAI_ASSERT( &region != NULL, "NULL pointer for region" )
     CounterArray enterCounterValues( true );  // get stamp of all counters
     SCAI_LOG_DEBUG( logger, "enter " << regionId << ", region= " << &region )
     // SCAI_LOG_DEBUG( logger, "enter " << regionId << ", " << region << ", counters = " << enterCounterValues )
 
-    if ( callTreeFlag )
+    if ( mCallTreeTable.get() != NULL )
     {
         if ( region.firstAccess() )
         {
             // write Info about the region in the call tree
-            mCallTreeTable.writeRegion( regionId, region ) ;
+            mCallTreeTable->writeRegion( regionId, region ) ;
         }
 
         if ( mCallStack.empty() )
         {
             // This is the first time we enter a region, do initialization
-            mCallTreeTable.initCounters( enterCounterValues );
+            mCallTreeTable->initCounters( enterCounterValues );
         }
         else
         {
             // Before we enter the called region add exclusive costs so far for caller region
             int caller_region = mCallStack.currentRegionId();
             int scl = 0;
-            mCallTreeTable.addExclusiveCosts( caller_region, scl, enterCounterValues );
+            mCallTreeTable->addExclusiveCosts( caller_region, scl, enterCounterValues );
         }
     }
 
     mCallStack.push( regionId, enterCounterValues );
 };
 
-void TraceData::leave( const int regionId, RegionEntry& region, const bool callTreeFlag )
+void TraceData::leave( const int regionId, RegionEntry& region )
 {
     SCAI_ASSERT( &region != NULL, "NULL pointer for region" )
     CounterArray leaveCounterValues( true );  // get stamp of all counters
@@ -110,7 +110,10 @@ void TraceData::leave( const int regionId, RegionEntry& region, const bool callT
 
     SCAI_LOG_DEBUG( logger, "Region " << regionId << ": spent time = " << spentTime )
 
-    mCallTreeTable.addExclusiveCosts( regionId, 0, leaveCounterValues );
+    if ( mCallTreeTable.get() != NULL )
+    {
+        mCallTreeTable->addExclusiveCosts( regionId, 0, leaveCounterValues );
+    }
 
     SCAI_LOG_DEBUG( logger, region.getRegionName() << ", spent time = " << spentTime << ", costs = " << costs )
     mCallStack.pop();
@@ -122,10 +125,10 @@ void TraceData::leave( const int regionId, RegionEntry& region, const bool callT
         RegionEntry& callRegion = mRegionTable.getRegion( callRegionId );
         callRegion.subRegionCall( spentTime );
 
-        if ( callTreeFlag )
+        if ( mCallTreeTable.get() != NULL )
         {
             int scl = 0; // not used
-            mCallTreeTable.addCallCosts( callRegionId, regionId, scl, costs );
+            mCallTreeTable->addCallCosts( callRegionId, regionId, scl, costs );
         }
     }
 }
@@ -156,11 +159,18 @@ int TraceData::getCurrentRegionId( const char* regionName )
     return regionId;
 }
 
-TraceData::TraceData( const char* prefix, ThreadId threadId, bool mThreadEnabled ) :
+TraceData::TraceData( const char* prefix, ThreadId threadId, bool mThreadEnabled, bool callTreeFlag ) :
     mThreadId( threadId ),
-    mRegionTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL ),
-    mCallTreeTable( prefix, mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL )
+    mRegionTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL )
 {
+    // calltree table only allocated if needed
+
+    if ( callTreeFlag )
+    {
+        const char* threadName = mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL;
+        mCallTreeTable.reset( new CallTreeTable( prefix, threadName ) );
+    }
+
     SCAI_LOG_DEBUG( logger, "TraceData for thread " << threadId )
 }
 

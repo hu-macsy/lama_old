@@ -237,6 +237,7 @@ TraceConfig::TraceConfig()
     // save id of this main thread
     mMaster = Thread::getSelf();
     SCAI_LOG_INFO( logger, "ThreadConfig: enabled = " << mEnabled )
+    SCAI_LOG_INFO( logger, "ThreadConfig: call tree enabled = " << mCallTreeEnabled )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -343,7 +344,8 @@ TraceData* TraceConfig::getTraceData( ThreadId threadId )
 
         try
         {
-            traceData.reset( new TraceData( mTraceFilePrefix.c_str(), threadId, mThreadEnabled ) );
+            std::cerr << "mCallTreeEnabled = " << mCallTreeEnabled << std::endl;
+            traceData.reset( new TraceData( mTraceFilePrefix.c_str(), threadId, mThreadEnabled, mCallTreeEnabled ) );
         }
         catch ( common::Exception& ex )
         {

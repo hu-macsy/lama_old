@@ -37,6 +37,8 @@
 #include <scai/tracing/CallStack.hpp>
 #include <scai/tracing/CallTreeTable.hpp>
 
+#include <scai/common/unique_ptr.hpp>
+
 namespace scai
 {
 
@@ -56,9 +58,10 @@ public:
      *  @param[in] prefix string for the first part of the calltree filename
      *  @param[in] threadId  id of the thread to which data belongs
      *  @param[in] threadEnabled if true tracing is done for all threads
+     *  @param[in] callTreeFlag if true call tree trace file is used
      */
 
-    TraceData( const char* prefix, ThreadId threadId, bool threadEnabled );
+    TraceData( const char* prefix, ThreadId threadId, bool threadEnabled, bool callTreeFlag );
 
     /** Destructor. */
 
@@ -71,9 +74,9 @@ public:
         return mThreadId;
     }
 
-    void leave( const int regionId, RegionEntry& region, const bool callTreeFlag );
+    void leave( const int regionId, RegionEntry& region );
 
-    void enter( const int regionId, RegionEntry& region, const bool callTreeFlag );
+    void enter( const int regionId, RegionEntry& region );
 
     /** Get the id of a region, creates a new entry if region is not available yet.
      *
@@ -110,7 +113,7 @@ private:
 
     RegionTable   mRegionTable;     // counts timing of regions
 
-    CallTreeTable mCallTreeTable;   // generates call tree trace file
+    common::unique_ptr<CallTreeTable> mCallTreeTable;   // generates call tree trace file
 
 protected:
 
