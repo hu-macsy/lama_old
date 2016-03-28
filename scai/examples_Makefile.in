@@ -14,9 +14,15 @@ ifdef ADDITIONAL_EXAMPLE_LINK_LIBRARIES
 	LINK_LIBRARY = -l${ADDITIONAL_EXAMPLE_LINK_LIBRARIES}
 endif
 
+ifdef MODULES
+	M_SO = $(foreach a, ${MODULES}, $(a).so )
+	M_LIBS = $(foreach a, ${MODULES}, -l$(a) )
+	MODULE_LIB = -L. ${M_LIBS}
+endif
+
 LD_FLAGS = ${SCAI_LD_FLAGS} ${LINK_LIBRARY} -Wl,-rpath=${SCAI_ROOT}/lib:${SCAI_CUDA_LIBRARY_PATH}
 
-EXECUTABLE: ${EXECUTABLES} ${MODULES}
+All: ${M_SO} ${EXECUTABLES}
 
 .SUFFIXES:
 
@@ -26,7 +32,7 @@ EXECUTABLE: ${EXECUTABLES} ${MODULES}
 .SUFFIXES: .o .so
 
 .o.exe: 
-	${CXX} -o $*.exe $*.o ${LD_FLAGS}
+	${CXX} -o $*.exe $*.o ${MODULE_LIB} ${LD_FLAGS}
 
 .o.so:
 	${CXX} -o lib$*.so $*.o ${LD_FLAGS} -shared

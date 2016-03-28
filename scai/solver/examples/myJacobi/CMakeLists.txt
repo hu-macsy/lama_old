@@ -30,15 +30,24 @@
  # @date 02.12.2015
 ###
 
-set ( HEADER myJacobi.hpp )
+set ( HEADER MyJacobiModule.hpp )
 
-set ( FILES myJacobi.cpp main.cpp )
+set ( MODULE_FILE MyJacobiModule.cpp )
+set ( EXECUTABLE_FILE myJacobi.cpp )
 set ( EXECUTABLE myJacobi.exe )
-add_executable( ${EXECUTABLE} ${FILES} )
 
-target_link_libraries( ${EXECUTABLE} ${PROJECT_NAME} )
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${FILES} )
+# build MyJacobiModule
+add_library( MyJacobiModule SHARED ${MODULE_FILE} )
+target_link_libraries( MyJacobiModule ${PROJECT_NAME} )
+
+#build main for MyJacobiModule
+add_executable( ${EXECUTABLE} ${EXECUTABLE_FILE} )
+target_link_libraries( ${EXECUTABLE} MyJacobiModule )
+
+set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${EXECUTABLE_FILE} ${MODULE_FILE} )
 set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${EXECUTABLE}" )
+
+set ( EXAMPLE_MODULES "MyJacobiModule" ) # for make.inc
 
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )
