@@ -34,38 +34,51 @@
 
 #!/bin/bash
 
-. ../../scai_code_coverage_functions.sh
+function prepare_coverage
+{
+	error_count=0
 
-prepare_coverage
+	# Creating dir using current unix timestamp
+	dirname=coverage_$(date +%s)
+	echo "Create coverage directory: ${dirname}"
+	mkdir ${dirname}
 
-export SCAI_LOG=TRACE
-export SCAI_TRACE=time
-	
-# Running tests serial
-echo "Running serial tests"
-./dmemoTest >/dev/null
-if [ $? -ne 0 ]
-then
-	echo "ERROR in dmemoTest"
-	error_count=$(($error_count + $?))
-fi
+	# Clearing up environment
+	cd ${dirname}
+	lcov --base-directory ../.. --directory ../.. --zerocounters
+	cd ..
+}
 
-if [ -d distributed ];
-then
-    # Running parallel tests
-    for i in 2 3 4;
-    do
-        echo "Running distributed tests with $i processes"
-        mpirun -np $i ./dmemoTest >/dev/null
-        if [ $? -ne 0 ]
-        then
-            echo "ERROR in dmemoTest"
-            error_count=$(($error_count + $?))
-        fi
-    done
-    cd ..
-fi
-    
-do_coverage
+function do_coverage
+{
+	cd ${dirname}
 
-zip -r ../dmemo_coverage.zip *
+	#Running lcov and creating data
+	lcov --base-directory ../.. --directory ../.. --capture --output-file=data.info
+	if [ $? -ne 0 ]
+	then
+		echo "ERROR in running lcov"
+		error_count=$(($error_count + $?))
+	fi
+
+	#Extracting just Sourcefiles
+	lcov --extract data.info "@CMAKE_SOURCE_DIR@/*" --output-file=data.info
+	if [ $? -ne 0 ]
+	then
+		echo "ERROR in extracting lcov data"
+		error_count=$(($error_count + $?))
+	fi
+
+	# Generating html-structure
+	genhtml data.info
+	if [ $? -ne 0 ]
+	then
+		echo "ERROR in generating html-structure"
+		error_count=$(($error_count + $?))
+	fi
+
+	if [[ $error_count != 0 ]]
+	then
+	    exit 1
+	fi
+}
