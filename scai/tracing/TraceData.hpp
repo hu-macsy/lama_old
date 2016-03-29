@@ -58,7 +58,7 @@ public:
      *  @param[in] prefix string for the first part of the calltree filename
      *  @param[in] threadId  id of the thread to which data belongs
      *  @param[in] threadEnabled if true tracing is done for all threads
-     *  @param[in] callTreeFlag if true call tree trace file is used
+     *  @param[in] callTreeFlag if true call tree trace file will be generated
      */
 
     TraceData( const char* prefix, ThreadId threadId, bool threadEnabled, bool callTreeFlag );
@@ -74,9 +74,19 @@ public:
         return mThreadId;
     }
 
-    void leave( const int regionId, RegionEntry& region );
-
+    /** Enter a region, will set corresponding tracing values.
+     *
+     *  @param [in] regionId unique identification id of the region
+     *  @param [in,out] region is the record with trace data of the region
+     */
     void enter( const int regionId, RegionEntry& region );
+
+    /** Leave a region, will set corresponding tracing values.
+     *
+     *  @param [in] regionId unique identification id of the region
+     *  @param [in,out] region is the record with trace data of the region
+     */
+    void leave( const int regionId, RegionEntry& region );
 
     /** Get the id of a region, creates a new entry if region is not available yet.
      *
