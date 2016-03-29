@@ -158,7 +158,7 @@ void TraceRegionRecord::enter()
 
     if ( mTimeTrace | mCallTree )
     {
-        mTraceData->enter( mRegionId, regionEntry, mCallTree );
+        mTraceData->enter( mRegionId, regionEntry );
     }
 
     if ( mVampirTrace )
@@ -182,7 +182,7 @@ void TraceRegionRecord::leave()
 
     if ( mTimeTrace | mCallTree )
     {
-        mTraceData->leave( mRegionId, regionEntry, mCallTree );
+        mTraceData->leave( mRegionId, regionEntry );
     }
 
     if ( mVampirTrace )
