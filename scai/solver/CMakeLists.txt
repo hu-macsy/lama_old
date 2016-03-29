@@ -108,20 +108,18 @@ scai_project (
         CGNE
         CGNR
         CGS
-        DefaultJacobi
         GMRES
         InverseSolver
         IterativeSolver
+        Jacobi
         MINRES
         OmegaSolver
         QMR
         Richardson
-        SOR
         SimpleAMG
         SingleGridSetup
         SolutionProxy
         Solver
-        SpecializedJacobi
         TFQMR
         TrivialPreconditioner
 

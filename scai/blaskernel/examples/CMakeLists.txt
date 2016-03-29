@@ -30,8 +30,6 @@
  # @date 28.01.2016
 ###
 
-# ThreadTest example
-
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
 
 if    ( OPENMP_FOUND AND USE_OPENMP )
@@ -42,7 +40,7 @@ endif ( OPENMP_FOUND AND USE_OPENMP )
 
 foreach ( executable CG_BLAS )
     add_executable ( ${executable}.exe ${executable}.cpp )
-    target_link_libraries ( ${executable}.exe scai_blaskernel )
+    target_link_libraries ( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )

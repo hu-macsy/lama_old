@@ -68,7 +68,6 @@ scai_project (
         JDSStorageTest
         L1NormTest
         L2NormTest
-        MatrixNormTest
         MatrixTest
         MaxNormTest
         ScalarTest
@@ -91,6 +90,7 @@ endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
 ### add subdirectories ###
 
 add_subdirectory ( storage )
+add_subdirectory ( matrix )
 
 if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( distributed )

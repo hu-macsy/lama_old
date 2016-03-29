@@ -1,0 +1,10 @@
+Tests for matrices
+==================
+
+One executable: lamaMatrixTest
+
+Can be run with different context and on distributed machines.
+
+lamaMatrixTest --SCAI_CONTEXT=Host
+lamaMatrixTest --SCAI_CONTEXT=CUDA
+mpirun -np [2|3|4|...] lamaMatrixTest --SCAI_CONTEXT=Host

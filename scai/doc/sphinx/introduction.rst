@@ -107,13 +107,7 @@ The supported features of the actual release are listed below:
   
        - Jacobi 
  
-         - DefaultJacobi
-   
-         - SpecializedJacobi
-      
        - Richardson
-    
-       - SOR
     
      - krylov subspace methods
     

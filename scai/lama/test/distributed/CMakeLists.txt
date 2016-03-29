@@ -57,7 +57,6 @@ scai_project (
         P_ELLSparseMatrixTest
         P_JDSSparseMatrixTest
         P_MatrixCreatorTest
-        P_MatrixStorageTest
         P_MatrixTest
         P_VectorTest
         P_NormTest
@@ -85,11 +84,11 @@ if ( WIN32 )
 endif( WIN32 )
 
 ### add executable ###
-add_executable ( lama_dist_test lama_dist_test.cpp ${CXX_SOURCES} )
+add_executable ( lamaDistTest lama_dist_test.cpp ${CXX_SOURCES} )
 
 ### set target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lama_dist_test ${PROJECT_NAME} )
+    target_link_libraries ( lamaDistTest ${PROJECT_NAME} )
 else ( WIN32 )
-    target_link_libraries ( lama_dist_test ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+    target_link_libraries ( lamaDistTest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )

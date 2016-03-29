@@ -1,5 +1,5 @@
 /**
- * @file SOR.hpp
+ * @file Jacobi.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,9 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief SOR.hpp
- * @author Martin Schenk
- * @date 29.08.2011
+ * @brief Jacobi.hpp
+ * @author Matthias Makulla
+ * @date 06.04.2011
  * @since 1.0.0
  */
 
@@ -40,51 +40,56 @@
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/OmegaSolver.hpp>
 
+// local library
+#include <scai/lama/matrix/SparseMatrix.hpp>
+
 namespace scai
 {
 
 namespace solver
 {
 
-class COMMON_DLL_IMPORTEXPORT SOR:
-		public OmegaSolver,
-		public Solver::Register<SOR>
+class COMMON_DLL_IMPORTEXPORT Jacobi:
+	public OmegaSolver,
+	public Solver::Register<Jacobi>
 {
 public:
-    SOR( const std::string& id );
+    Jacobi( const std::string& id );
+    Jacobi( const std::string& id, lama::Scalar omega );
+    Jacobi( const std::string& id, LoggerPtr logger );
+    Jacobi( const std::string& id, lama::Scalar omega, LoggerPtr logger );
+    Jacobi( const Jacobi& other );
 
-    SOR( const std::string& id, const lama::Scalar omega );
+    virtual ~Jacobi();
 
-    SOR( const std::string& id, LoggerPtr logger );
+    virtual void initialize( const lama::Matrix& coefficients );
 
-    SOR( const std::string& id, const lama::Scalar omega, LoggerPtr logger );
+    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
 
-    /**
-     * @brief Copy constructor that copies the status independent solver information
-     */
-    SOR( const SOR& other );
-
-    virtual ~SOR();
-
-    void initialize( const lama::Matrix& coefficients );
+    virtual void solveFinalize();
 
     void iterate();
 
-    struct SORRuntime: OmegaSolverRuntime
+    struct JacobiRuntime: OmegaSolverRuntime
     {
-        SORRuntime();
-        virtual ~SORRuntime();
+        JacobiRuntime();
+        virtual ~JacobiRuntime();
+
+        //TODO: HArray?
+        common::shared_ptr<lama::Vector> mOldSolution;
+        SolutionProxy mProxyOldSolution;
+        common::shared_ptr<hmemo::_HArray> mDiagonal;
     };
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual SORRuntime& getRuntime();
+    virtual JacobiRuntime& getRuntime();
 
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const SORRuntime& getConstRuntime() const;
+    virtual const JacobiRuntime& getConstRuntime() const;
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -99,7 +104,7 @@ public:
 
 protected:
 
-    SORRuntime mSORRuntime;
+    JacobiRuntime mJacobiRuntime;
 
     /**
      *  @brief own implementation of Printable::writeAt
@@ -108,11 +113,25 @@ protected:
 
 private:
     template<typename ValueType>
-    void iterateImpl();
+    void iterateTyped( const lama::SparseMatrix<ValueType>& );
 
-    common::unique_ptr<const lama::Matrix> mIterationMatrix;
+    template<typename ValueType>
+    void iterateSync(
+        hmemo::HArray<ValueType>& solution,
+        const lama::SparseMatrix<ValueType>& coefficients,
+        const hmemo::HArray<ValueType>& localOldSolution,
+        hmemo::HArray<ValueType>& haloOldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const ValueType omega );
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+    template<typename ValueType>
+    void iterateAsync(
+        hmemo::HArray<ValueType>& solution,
+        const lama::SparseMatrix<ValueType>& coefficients,
+        const hmemo::HArray<ValueType>& localOldSolution,
+        hmemo::HArray<ValueType>& haloOldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const ValueType omega );
 };
 
 } /* end namespace solver */

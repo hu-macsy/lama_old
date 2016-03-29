@@ -157,7 +157,7 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
     if ( SCAI_LOG_INFO_ON( logger ) )
     {
         LoggerPtr slogger( new CommonLogger(
-                               "<SOR>: ",
+                               "<CG>: ",
                                scai::solver::LogLevel::solverInformation,
                                scai::solver::LoggerWriteBehaviour::toConsoleOnly ) );
         cgSolver.setLogger( slogger );

@@ -1,4 +1,4 @@
-# LAMA (Version 1.0.1 Alpamayo)
+# LAMA (Version 2.0.0 Barrancas Blancas)
 
 For building LAMA on your system please consider the installation requirements below and install required packages. 
 
@@ -14,7 +14,7 @@ Required:
 Recommended:
  * BLAS- and LAPack-Library (Intel MKL, BLAS)
  * CUDA >= 4.0
- * Intel Xeon Phi: MKL
+ * Intel Xeon Phi: Intel MKL
  * MPI
  * GPI-2
 

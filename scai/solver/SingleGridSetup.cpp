@@ -35,7 +35,7 @@
 #include <scai/solver/SingleGridSetup.hpp>
 
 // local library
-#include <scai/solver/SOR.hpp>
+#include <scai/solver/Jacobi.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 
 // tracing
@@ -81,14 +81,14 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
     // set default solver
     if( !mSolver )
     {
-        SCAI_LOG_DEBUG( logger, "new sor" )
-        SOR* sorSolver = new SOR( "10x SingleGridSetup SOR Solver" );
+        SCAI_LOG_DEBUG( logger, "new Jacobi" )
+        Jacobi* jacobiSolver = new Jacobi( "10x SingleGridSetup Jacobi Solver" );
 
         CriterionPtr criterion( new IterationCount( 10 ) );
 
-        sorSolver->setStoppingCriterion( criterion );
+        jacobiSolver->setStoppingCriterion( criterion );
 
-        mSolver.reset( sorSolver );
+        mSolver.reset( jacobiSolver );
     }
 
     SCAI_LOG_DEBUG( logger, "mSolver->initialize" )

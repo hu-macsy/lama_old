@@ -127,7 +127,7 @@ public:
 
     void getRow( hmemo::_HArray& row, const IndexType irow ) const
     {
-        mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::getRowImpl( static_cast<const Derived* const>( this ), row, irow );
+        mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::getRowImpl( static_cast<const Derived*>( this ), row, irow );
     }
 
     void getDiagonal( hmemo::_HArray& diagonal ) const
@@ -137,7 +137,7 @@ public:
             COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
         }
 
-        mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::getDiagonalImpl( static_cast<const Derived* const>( this ), diagonal );
+        mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::getDiagonalImpl( static_cast<const Derived*>( this ), diagonal );
     }
 
     void setDiagonal( const ValueType value )

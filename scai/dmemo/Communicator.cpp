@@ -42,6 +42,9 @@
 #include <scai/tracing.hpp>
 #include <scai/common/Settings.hpp>
 
+#include <locale>
+#include <string>
+
 using namespace std;
 using namespace scai::hmemo;
 using namespace scai::tasking;
@@ -119,13 +122,14 @@ CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
 CommunicatorPtr Communicator::getCommunicatorPtr()
 {
     std::string comm;
+    std::locale loc;
 
     if ( common::Settings::getEnvironment( comm, "SCAI_COMMUNICATOR" ) )
     {
         // comm name not case sensitive, take it upper case
         for ( std::string::iterator p = comm.begin(); comm.end() != p; ++p )
         {
-            *p = toupper( *p );
+            *p = std::toupper( *p, loc );
         }
 
         if ( comm == "MPI" )

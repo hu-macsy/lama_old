@@ -73,7 +73,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
     # -wd1478 : supprress warning deprecated auto_ptr
     # not set: -Werror-all (all warnings will be errors)
 
-    set ( SCAI_WARNING_FLAGS "-w2 -Wall -Wcheck -wd1478" ) # -Werror-all Warnings/Errors. No Remarks.
+    set ( SCAI_WARNING_FLAGS "-w2 -Wall -Werror-all -Wcheck -wd1478  -diag-disable 654" )
     
     # -ipo for interprocedural analysis, might be added for RELEASE but increases compile/link time dramatically
     # -xHost optimizes for the processor on which the code is compiled, not recommended for cross compilation

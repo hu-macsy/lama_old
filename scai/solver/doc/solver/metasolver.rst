@@ -16,14 +16,13 @@ To create a configuration you define a text file with the content or hand it ove
 
    CommonLogger loggerDef( <CGpre>, solverInformation, toConsoleOnly, Timer );
 
-   SOR sorSolver {
+   Jacobi jacobiSolver {
       logger = loggerDef; 
-      omega = 1.5;
    }
    
    CG root {
       logger = loggerDef;
-      preconditioner = sorSolver;
+      preconditioner = jacobiSolver;
       stoppingCriteria = 
          (IterationCount(10) OR ResidualThreshold(L2Norm, 0.001, Absolute));
    }

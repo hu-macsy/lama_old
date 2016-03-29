@@ -55,8 +55,6 @@
 
 using namespace std;
 
-using scai::common::shared_ptr;
-
 void contextInfo()
 {
     using namespace scai::hmemo;
@@ -125,7 +123,7 @@ void matrixInfo()
     {
         cout << "  Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
 
-        shared_ptr<Matrix> matrix ( Matrix::create( keys[i] ) );
+        scai::common::shared_ptr<Matrix> matrix ( Matrix::create( keys[i] ) );
 
         cout << "    Matrix: " << *matrix << endl;
     }
@@ -149,7 +147,7 @@ void vectorInfo()
     {
         cout << "  Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
 
-        shared_ptr<Vector> vector ( Vector::create( keys[i] ) );
+        scai::common::shared_ptr<Vector> vector ( Vector::create( keys[i] ) );
 
         cout << "    Vector: " << *vector << endl;
     }
@@ -174,7 +172,7 @@ void solverInfo()
     {
         cout << "   Registered values[" << i << "] = " << values[i] << endl;
 
-        shared_ptr<Solver> solver( Solver::create( values[i], "TestSolver" ) );
+        scai::common::shared_ptr<Solver> solver( Solver::create( values[i], "TestSolver" ) );
  
         cout << "      Solver: " << *solver << endl;
     }
@@ -199,7 +197,7 @@ void setupInfo()
     {
         cout << "  Registered values[" << i << "] = " << values[i] << endl;
 
-        shared_ptr<AMGSetup> setup( AMGSetup::create( values[i] ) );
+        scai::common::shared_ptr<AMGSetup> setup( AMGSetup::create( values[i] ) );
 
         cout << "    Setup: " << *setup << endl;
     }
@@ -225,7 +223,7 @@ void distributionInfo()
 
         CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // get the default one
 
-        shared_ptr<Distribution> dist( Distribution::getDistribution( values[i], comm, 10, 1.0 ) );
+        scai::common::shared_ptr<Distribution> dist( Distribution::getDistribution( values[i], comm, 10, 1.0 ) );
 
         cout << "    Distribution: " << *dist << endl;
     }

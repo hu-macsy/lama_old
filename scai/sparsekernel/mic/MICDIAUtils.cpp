@@ -488,23 +488,21 @@ void MICDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 /*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-MICDIAUtils::RegisterGuard::RegisterGuard()
+MICDIAUtils::MICDIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
-    Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
-MICDIAUtils::RegisterGuard::~RegisterGuard()
+MICDIAUtils::~MICDIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
 }
 
-MICDIAUtils::RegisterGuard MICDIAUtils::guard;    // guard variable for registration
+MICDIAUtils MICDIAUtils::guard;    // guard variable for registration
 
 } /* end namespace sparsekernel */
 

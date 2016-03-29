@@ -29,7 +29,6 @@
 #         xml result files for further usage
 #  @author: Jan Ecker
 #  @date 08.05.2013
-#  @since 1.0.0
 #
 
 #!/bin/bash
@@ -41,11 +40,13 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
+# Running blaskernel tests (only Host)
 echo "Running blaskernel test on Host"
-
 ./blaskernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/blasKernelTestHost.xml
 
-echo "Running blaskernel test on CUDA"
-
-./blaskernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/blasKernelTestCUDA.xml
-
+# Running blaskernel CUDA tests
+#if [ -d ../cuda ];
+#then
+	echo "Running blaskernel test on CUDA"
+	./blaskernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/blasKernelTestCUDA.xml
+#fi

@@ -283,9 +283,11 @@ else
     # check format string: #stack
     echo 'format="#stack"' > loggerConfig.cfg
     output=$( ./simpleLogging.exe | tr -d '\n' )
-    pattern=^"    stack\[1\] : scai::logging::GenLogger::log\(char const\*, scai::logging::SourceLocation&, std::string const&\)"
-    pattern+="    stack\[2\] : scai::logging::GenLogger::fatal\(scai::logging::SourceLocation, std::string const&\)"
-    pattern+=.*"\[0x"[0-9a-f]+"\]"$
+    pattern="stack"
+    # Only for GCC
+    #pattern=^"    stack\[1\] : scai::logging::GenLogger::log\(char const\*, scai::logging::SourceLocation&, std::string const&\)"
+    #pattern+="    stack\[2\] : scai::logging::GenLogger::fatal\(scai::logging::SourceLocation, std::string const&\)"
+    #pattern+=.*"\[0x"[0-9a-f]+"\]"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #stack"
         errors=$(($errors + 1))

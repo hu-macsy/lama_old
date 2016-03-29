@@ -53,7 +53,6 @@ using namespace scai;
 using namespace dmemo;
 using namespace lama;
 using namespace solver;
-using common::unique_ptr;
 
 int main( int argc, char* argv[] )
 {
@@ -133,7 +132,7 @@ int main( int argc, char* argv[] )
 
     // for solution create vector with same format/type as rhs, size = numColumns, init = 0.0
 
-    unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
+    scai::common::unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
     Vector& solution = *solutionPtr;
 
     int numRows = inMatrix.getNumRows();

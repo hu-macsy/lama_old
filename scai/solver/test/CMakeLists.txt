@@ -49,12 +49,12 @@ scai_project (
         CGSTest
         CommonLoggerTest
         CriterionTest
-        DefaultJacobiTest
         FileLoggerTest
         GMRESTest
         InverseSolverTest
         IterationCountTest
         IterativeSolverTest
+        JacobiTest
         MINRESTest
         QMRTest
         ResidualStagnationTest
@@ -64,8 +64,6 @@ scai_project (
         SolutionProxyTest
         SolverTest
         SolverTest1
-        SORTest
-        SpecializedJacobiTest
         TFQMRTest
         TimerTest
         
@@ -74,9 +72,9 @@ scai_project (
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
    
-add_executable ( SolverTest ${CXX_SOURCES} )
+add_executable ( solverTest ${CXX_SOURCES} )
 
-target_link_libraries ( SolverTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( solverTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
     
 file ( GLOB LOCAL_HEADERS "*.hpp" )
 

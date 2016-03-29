@@ -39,7 +39,7 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/solver/criteria/ResidualStagnation.hpp>
-#include <scai/solver/DefaultJacobi.hpp>
+#include <scai/solver/Jacobi.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/lama/test/EquationHelper.hpp>
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, ValueType, test_types )
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );
     DenseVector<ValueType> solution( 8, 0.0 );
-    DefaultJacobi solver( "StagnationTest solver" );
+    Jacobi solver( "StagnationTest solver" );
     NormPtr maxNorm( new MaxNorm() );
     CriterionPtr criterion( new ResidualStagnation( maxNorm, 2, Scalar( 1.1 ) ) );
     solver.setStoppingCriterion( criterion );

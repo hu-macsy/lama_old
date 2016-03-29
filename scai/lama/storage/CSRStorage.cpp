@@ -1115,22 +1115,34 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
 {
     SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
 
-    _MatrixStorage::_assignTranspose( other );
-
     // pass HArrays of this storage to build the values in it
 
-    if( &other == this )
+    if ( &other == this )
     {
+        SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose in place" )
+
         HArray<IndexType> tmpIA;
         HArray<IndexType> tmpJA;
         HArray<ValueType> tmpValues;
 
+        // do not change sizes before building CSC data
+
         other.buildCSCData( tmpIA, tmpJA, tmpValues );
-        swap( tmpIA, tmpJA, tmpValues );
+
+        // sizes must be set correctly BEFORE swap
+
+        _MatrixStorage::_assignTranspose( other );
+
+        swap( tmpIA, tmpJA, tmpValues );  // sets all other data correctly
     }
     else
     {
+        _MatrixStorage::_assignTranspose( other );
+
+        SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
+
         other.buildCSCData( mIa, mJa, mValues );
+
         mNumValues = mJa.size();
         mDiagonalProperty = checkDiagonalProperty();
         buildRowIndexes();
@@ -1139,7 +1151,6 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
     // actualize my member variables (class CSRStorage)
 
     check( "assignTranspose" );
-
 }
 
 /* --------------------------------------------------------------------------- */

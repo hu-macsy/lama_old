@@ -52,7 +52,8 @@ set ( EXAMPLE_MODULES "Module.so DummyModule.so" ) # for make.inc
 
 foreach ( executable ExceptionDemo CriticalRegion Barrier 
           DemoFactory DemoFactory1 DemoPointer UseModule TimePrecision 
-          DemoComplex DemoTypeTrait DemoSettings DemoMath DemoFunction BenchPointers )
+          DemoComplex DemoTypeTrait DemoSettings DemoMath DemoFunction 
+          DemoMetaProgramming BenchPointers )
     add_executable ( ${executable}.exe ${executable}.cpp )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     target_link_libraries ( ${executable}.exe ${PROJECT_NAME} )
@@ -74,9 +75,6 @@ configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" "${CMA
 ## install examples
 install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
 install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
-
-message ( STATUS "CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}" )
-message ( STATUS "PROJECT_EXAMPLE_DIR ${PROJECT_EXAMPLE_DIR}" )
 
 # install Makefile
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in"

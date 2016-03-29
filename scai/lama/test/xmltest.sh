@@ -29,7 +29,6 @@
 #         xml result files for further usage
 #  @author: Jan Ecker
 #  @date 08.05.2013
-#  @since 1.0.0
 #
 
 #!/bin/bash
@@ -41,39 +40,42 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running tests for Host context
-
-echo "Running lama tests for Host context"
-
+# Running lama tests (only Host)
+echo "Running lama tests on Host context"
 ./lamaTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaHostTest.xml
 
-echo "Running lama storage tests for Host context"
-
+echo "Running lama storage tests on Host context"
 ./storage/lamaStorageTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaStorageHostTest.xml
+
+echo "Running lama matrix tests on Host context"
+./matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrixHostTest.xml
 
 if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
-    echo "Running distributed tests serial"
-    mpirun -np 3 --output-filename ${dirname}/dist_tests.xml distributed/lama_dist_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
+    echo "Running distributed lama tests serial"
+    mpirun -np 3 --output-filename ${dirname}/dist_tests.xml distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
 
 	#for i in 2 3 4;
 	#do
     #	echo "Running distributed tests with $i processes"
-    #	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no
+    #	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml distributed/lamaDistTest --output_format=XML --log_level=all --report_level=no
     #done
 fi
 
+#Running CUDA tests
 if [ -d cuda ];
 then
 
-    echo "Running lama tests for CUDA context"
+    echo "Running lama tests on CUDA context"
     ./lamaTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaCudaTest.xml
 
-    echo "Running lama storage tests for CUDA context"
+    echo "Running lama storage tests on CUDA context"
     ./storage/lamaStorageTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaStorageCudaTest.xml
 
-    #Running CUDA tests
+    echo "Running lama matrix tests on CUDA context"
+    ./matrix/lamaMatrixTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrixHostTest.xml
+
     echo "Running dedicated cuda tests"
-    cuda/lama_cuda_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/cuda_tests.xml
+    ./cuda/lamaCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/cuda_tests.xml
 fi

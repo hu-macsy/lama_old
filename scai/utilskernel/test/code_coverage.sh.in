@@ -34,62 +34,34 @@
 
 #!/bin/bash
 
-error_count=0
+. ../../scai_code_coverage_functions.sh
 
-# Creating dir using current unix timestamp
-dirname=coverage_$(date +%s)
-echo "Create coverage directory: ${dirname}"
-mkdir ${dirname}
-
-
-# Clearing up environment
-cd ${dirname}
-lcov --base-directory ../.. --directory ../.. --zerocounters
-cd ..
-
-
+prepare_coverage
 
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
 # Running tests serial
 echo "Running serial tests"
-./UtilsKernelTest >/dev/null
+./utilskernelTest >/dev/null
 if [ $? -ne 0 ]
 then
-	echo "ERROR in UtilsKernelTest"
+	echo "ERROR in utilskernelTest"
 	error_count=$(($error_count + $?))
 fi
 
-cd ${dirname}
-
-#Running lcov and creating data
-lcov --base-directory ../.. --directory ../.. --capture --output-file=data.info
-if [ $? -ne 0 ]
+if [ -d ../cuda ];
 then
-	echo "ERROR in running lcov"
-	error_count=$(($error_count + $?))
+    #Running common CUDA tests
+    echo "Running blaskernel tests with CUDA context"
+    ./utilskernelTest --SCAI_CONTEXT=CUDA >/dev/null
+    if [ $? -ne 0 ]
+    then
+        echo "ERROR in utilskernelTest with CUDA context"
+        error_count=$(($error_count + $?))
+    fi
 fi
 
-#Extracting just Sourcefiles
-lcov --extract data.info "@CMAKE_SOURCE_DIR@/*" --output-file=data.info
-if [ $? -ne 0 ]
-then
-	echo "ERROR in extracting lcov data"
-	error_count=$(($error_count + $?))
-fi
+do_coverage
 
-# Generating html-structure
-genhtml data.info
-if [ $? -ne 0 ]
-then
-	echo "ERROR in generating html-structure"
-	error_count=$(($error_count + $?))
-fi
-
-if [[ $error_count != 0 ]]
-then
-    exit 1
-fi
-
-zip -r ../coverage.zip *
+zip -r ../utilskernel_coverage.zip *

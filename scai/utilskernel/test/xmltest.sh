@@ -29,7 +29,6 @@
 #         xml result files for further usage
 #  @author: Jan Ecker
 #  @date 08.05.2013
-#  @since 1.0.0
 #
 
 #!/bin/bash
@@ -41,10 +40,13 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running test on Host
-
+# Running utilskernel serial (only Host)
 echo "Running utilskernel test on Host"
-./UtilsKernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
+./utilskernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
 
-echo "Running utilskernel test on CUDA"
-./UtilsKernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
+# Running test on CUDA
+#if [ -d cuda ];
+#then
+	echo "Running utilskernel test on CUDA"
+	./utilskernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
+#fi
