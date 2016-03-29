@@ -32,7 +32,7 @@ All: ${M_SO} ${SCAI_EXECUTABLES} ${SCAI_MODULES}
 .SUFFIXES: .o .so
 
 .o.exe: 
-	${CXX} -o $*.exe $*.o ${MODULE_LIB} ${LD_FLAGS}:.
+	${CXX} -o $*.exe $*.o ${MODULE_LIB} ${LD_FLAGS}:$(CURDIR)
 
 .o.so:
 	${CXX} -o lib$*.so $*.o ${LD_FLAGS} -shared
