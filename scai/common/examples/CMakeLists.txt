@@ -48,7 +48,7 @@ target_link_libraries( Module ${PROJECT_NAME} )
 add_library( DummyModule SHARED DummyModule.cpp )
 set ( EXAMPLE_FILES ${EXAMPLE_FILES} DummyModule.cpp )
 
-set ( EXAMPLE_MODULES "Module DummyModule" ) # for make.inc
+set ( EXAMPLE_MODULES "Module.so DummyModule.so" ) # for make.inc
 
 foreach ( executable ExceptionDemo CriticalRegion Barrier 
           DemoFactory DemoFactory1 DemoPointer UseModule TimePrecision 

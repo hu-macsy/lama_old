@@ -47,7 +47,7 @@ target_link_libraries( ${EXECUTABLE} MyJacobiModule )
 set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${EXECUTABLE_FILE} ${MODULE_FILE} )
 set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${EXECUTABLE}" )
 
-set ( EXAMPLE_MODULES "MyJacobiModule" ) # for make.inc
+set ( EXAMPLE_LIBS "MyJacobiModule" ) # for make.inc
 
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )
