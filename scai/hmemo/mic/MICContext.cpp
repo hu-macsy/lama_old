@@ -190,7 +190,7 @@ MemoryPtr MICContext::getLocalMemoryPtr() const
 
 tasking::SyncToken* MICContext::getSyncToken() const
 {
-    return new tasking::MICSyncToken();
+    return new tasking::MICSyncToken( mDeviceNr );
 }
 
 /* ----------------------------------------------------------------------------- */
