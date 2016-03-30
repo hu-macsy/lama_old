@@ -68,13 +68,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unique_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES 
 {
 	unique_ptr<ValueType> emptyPointer;
 
-	bool test = ( emptyPointer == NULL );
+	bool test = ( emptyPointer.get() == NULL );
 
 	BOOST_CHECK ( test );
 
 	unique_ptr<ValueType> pointer ( new ValueType(10) );
 
-	test = ( pointer != NULL );
+	test = ( pointer.get() != NULL );
 
 	BOOST_CHECK ( test );
 }

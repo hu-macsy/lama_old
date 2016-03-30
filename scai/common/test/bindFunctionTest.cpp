@@ -55,6 +55,7 @@ T my_divide (T x, T y) { return x / y; }
 
 template<typename T>
 struct MyPair {
+  MyPair( T _a, T _b ): a(_a), b(_b) {}
   T a,b;
   T multiply() { return a * b; }
 };
@@ -68,7 +69,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bindFunctionTest, ValueType, SCAI_ARITHMETIC_TYPE
 
 	BOOST_CHECK_EQUAL( res1, 5.0 );
 
-	MyPair<ValueType> ten_two { 10, 2 };
+	MyPair<ValueType> ten_two( 10, 2 );
 	function<ValueType( MyPair<ValueType> )> bound_member_fn = bind ( &MyPair<ValueType>::multiply, _1 );
 	ValueType res2 = bound_member_fn( ten_two );
 
