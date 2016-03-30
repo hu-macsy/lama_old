@@ -48,8 +48,6 @@ namespace scai
 namespace tasking
 {
 
-typedef common::shared_ptr<const scai::hmemo::MICContext> MICContextPtr;
-
 /** Class that sycnchronizes with a MIC offload transfer or computation. */
 
 class COMMON_DLL_IMPORTEXPORT MICSyncToken: public SyncToken
@@ -64,7 +62,17 @@ public:
      *  A pointer to the MIC context is required to enable/disable it.
      */
 
-    MICSyncToken( MICContextPtr context );
+    MICSyncToken( int device );
+
+    inline int getDevice() const
+    {
+        return mDevice;
+    }
+
+    inline int& signal()
+    {
+        return mSignal;
+    }
 
     virtual ~MICSyncToken();
 
@@ -82,9 +90,8 @@ public:
 
 private:
 
-    MICContextPtr mMICContext; // needed for synchronization
-
     int mSignal; // set by an offload computation
+    int mDevice; // device set by constructor
 };
 
 } /* end namespace tasking */

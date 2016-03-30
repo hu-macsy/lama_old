@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2015
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,19 +25,27 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMakeLists of hmemo/cuda
+ # @brief CMakeLists.txt
  # @author Thomas Brandes
- # @date 09.06.2015
+ # @date 25.04.2013
+ # @since 1.0.0
 ###
 
-### Add classes and header files ###
+cmake_minimum_required( VERSION 2.8 )
 
-scai_project (
+## PROJECT NAME and supported LANGUAGES
 
-    CLASSES 
- 
-        MICContext
-        MICMemory 
+project ( GPITest CXX )
 
-    ADD_PARENT_SCOPE
-)
+################################################
+#   MPI stuff                                  #
+################################################
+
+include ( ../../package/GPI.cmake )
+
+include_directories( ${GPI_INCLUDE_PATH} )
+
+add_executable( GPITest cpi.cpp )
+
+target_link_libraries( GPITest ${GPI_LIBRARIES} )
+

@@ -36,10 +36,10 @@
 
 // local library
 #include <scai/hmemo/mic/MICMemory.hpp>
-#include <scai/hmemo/mic/MICSyncToken.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
+#include <scai/tasking/mic/MICSyncToken.hpp>
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Settings.hpp>
@@ -190,7 +190,7 @@ MemoryPtr MICContext::getLocalMemoryPtr() const
 
 tasking::SyncToken* MICContext::getSyncToken() const
 {
-    return new tasking::MICSyncToken( shared_from_this() );
+    return new tasking::MICSyncToken( mDeviceNr );
 }
 
 /* ----------------------------------------------------------------------------- */

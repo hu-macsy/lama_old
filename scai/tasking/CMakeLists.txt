@@ -113,6 +113,10 @@ if ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+if    ( USE_MIC )
+    add_subdirectory ( mic )
+endif ( USE_MIC )
+
 add_subdirectory ( doc )
 add_subdirectory ( examples )
 

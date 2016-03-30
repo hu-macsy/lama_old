@@ -25,40 +25,18 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for common examples
+ # @brief CMakeLists of tasking/mic
  # @author Thomas Brandes
- # @date 16.06.2015
+ # @date 09.06.2015
 ###
 
-# ThreadTest example
+### Add classes and header files ###
 
-foreach    ( executable DemoThreadPool DemoTask BenchTasking Token )
-   add_executable( ${executable}.exe ${executable}.cpp )
-   target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-   set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-   set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-endforeach ( executable )
+scai_project (
 
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
+    CLASSES 
+ 
+        MICSyncToken 
 
-if    ( USE_MIC )
-    add_subdirectory ( mic )
-endif ( USE_MIC )
-
-# copy run_all.sh
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-
-## install examples
-install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
-
-# install Makefile
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in"
-                 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/Makefile" COPYONLY )
+    ADD_PARENT_SCOPE
+)
