@@ -45,6 +45,8 @@
 // logging
 #include <scai/logging.hpp>
 
+#include <scai/kregistry/mepr/Registrator.hpp>
+
 namespace scai
 {
 

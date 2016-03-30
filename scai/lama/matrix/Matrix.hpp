@@ -788,8 +788,11 @@ public:
      *
      * The maximal value is given by the largest difference between two elements
      * at the same position of the matrices.
+     *
+     * Note: This method is the most general implementation and should be 
+     *       implemented more efficiently in derived classes.
      */
-    virtual Scalar maxDiffNorm( const Matrix& other ) const = 0;
+    virtual Scalar maxDiffNorm( const Matrix& other ) const;
 
      /**
       * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.

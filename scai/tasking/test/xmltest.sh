@@ -41,12 +41,12 @@ mkdir ${dirname}
 ERROR_LEVEL=test_suite
 
 # Running tasking tests (only Host)
-
-echo "Running tasking tests"
+echo "Running tasking tests on Host"
 ./taskingTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/taskingTest.xml
 
 # Running tasking CUDA tests
-
-# echo "Running tasking tests for CUDA"
-# ./cuda/taskingCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/taskingCUDATest.xml
-
+if [ -d cuda ];
+then
+	echo "Running tasking tests for CUDA"
+	./cuda/taskingCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/taskingCUDATest.xml
+fi

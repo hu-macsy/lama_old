@@ -32,6 +32,7 @@
 ###
 
 add_subdirectory ( lecture )
+add_subdirectory ( myJacobi )
 add_subdirectory ( solver )
 add_subdirectory ( spy )
 

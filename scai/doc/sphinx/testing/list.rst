@@ -89,7 +89,5 @@ Distributed Tests
 - P_MatrixTest
 - P_MPICommunicatorTest
 - P_RedistributorTest
-- P_SORTest
-- P_SpecializedJacobiTest
 - P_VectorTest
 - P_NormTest

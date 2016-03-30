@@ -42,9 +42,6 @@ scai_project (
         
         P_CGTest
         P_JacobiTest
-        P_SORTest
-        P_SpecializedJacobiTest
-
    )
    
 ### add definitions ###

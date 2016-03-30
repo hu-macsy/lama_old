@@ -29,7 +29,6 @@
 #         xml result files for further usage
 #  @author: Jan Ecker
 #  @date 08.05.2013
-#  @since 1.0.0
 #
 
 #!/bin/bash
@@ -41,16 +40,17 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running tests for Host context
-echo "Running hmemo test for Host context"
+# Running hmemo tests (only Host)
+echo "Running hmemo test on Host context"
 ./hmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoHostTest.xml
 
+# Running common CUDA tests
 if [ -d cuda ];
 then
-    echo "Running hmemo test for CUDA context"
+    echo "Running hmemo test on CUDA context"
     ./hmemoTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoCUDATest.xml
     #Running CUDA tests
     echo "Running dedicated CUDA test"
-    cuda/hmemoCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CUDATest.xml
+    ./cuda/hmemoCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CUDATest.xml
 fi
 

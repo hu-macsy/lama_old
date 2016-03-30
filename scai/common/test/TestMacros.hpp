@@ -61,11 +61,7 @@ typedef boost::mpl::list<ARITHMETIC_HOST> scai_arithmetic_test_types;
 /*  array test types                                                                */
 /* -------------------------------------------------------------------------------- */
 
-#define SCAI_TYPE( z, I, _ ) ARRAY_TYPE##I ,
-
 typedef boost::mpl::list<ARITHMETIC_ARRAY_HOST> scai_array_test_types;
-
-#undef SCAI_TYPE
 
 /* -------------------------------------------------------------------------------- */
 /*  Define one type used for test where only one ARITHMETIC TYPE is needed          */

@@ -90,7 +90,7 @@ public:
      * The moduli of the entries are of order 10^6.
      *
      * Currently (14.03.2016), this leads to NaN-entries for some iterative solvers like
-     * CGNR, GMRES, DefaultJacobi!!  
+     * CGNR, GMRES, Jacobi!!  
      * 
      * It can be used to test convergence for the following krylow methods:
      * BiCG, BiCGstab, CG, CGS, MINRES, QMR

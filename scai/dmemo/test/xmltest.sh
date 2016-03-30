@@ -29,7 +29,6 @@
 #         xml result files for further usage
 #  @author: Jan Ecker
 #  @date 08.05.2013
-#  @since 1.0.0
 #
 
 #!/bin/bash
@@ -41,6 +40,8 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Running tests serial
-echo "Running serial tests"
+# Running dmemo tests (only Host)
+echo "Running dmemo tests on Host"
 ./dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest.xml
+
+# TODO: distributed tests

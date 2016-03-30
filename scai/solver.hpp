@@ -38,14 +38,12 @@
 #include <scai/solver/CGNE.hpp>
 #include <scai/solver/CGNR.hpp>
 #include <scai/solver/CGS.hpp>
-#include <scai/solver/DefaultJacobi.hpp>
 #include <scai/solver/GMRES.hpp>
 #include <scai/solver/InverseSolver.hpp>
+#include <scai/solver/Jacobi.hpp>
 #include <scai/solver/MINRES.hpp>
 #include <scai/solver/QMR.hpp>
 #include <scai/solver/Richardson.hpp>
 #include <scai/solver/SimpleAMG.hpp>
-#include <scai/solver/SOR.hpp>
-#include <scai/solver/SpecializedJacobi.hpp>
 #include <scai/solver/TFQMR.hpp>
 #include <scai/solver/TrivialPreconditioner.hpp>

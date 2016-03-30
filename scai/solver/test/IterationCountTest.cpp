@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/solver/criteria/IterationCount.hpp>
-#include <scai/solver/DefaultJacobi.hpp>
+#include <scai/solver/Jacobi.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( SetAndGetIterationCountTest )
 template<typename ValueType>
 void testIsSatisfiedmethod( IndexType expectedIterationCount )
 {
-    DefaultJacobi jacobi( "IterationCountTest Jacobi" );
+    Jacobi jacobi( "IterationCountTest Jacobi" );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );

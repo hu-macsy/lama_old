@@ -3,6 +3,7 @@ all: makeAll
 clean: makeAllClean
 
 DIRS = lecture \
+	   myJacobi \
 	   solver \
        spy
 

@@ -706,12 +706,6 @@ ValueType Complex<ValueType>::metrikHost( void ) const
     return Math::sqrt( real() * real() + imag() * imag() );
 }
 
-template<typename ValueType>
-CUDA_CALLABLE_MEMBER inline Complex<ValueType> conj( const Complex<ValueType>& a )
-{
-    return Complex<ValueType>( a.real(), - a.imag() );
-}
-
 /*
  * @brief Check if a is lower than b.
  *

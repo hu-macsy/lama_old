@@ -615,6 +615,52 @@ void Matrix::writeToFile(
 
 /* ---------------------------------------------------------------------------------*/
 
+Scalar Matrix::maxDiffNorm( const Matrix& other ) const
+{
+    IndexType nRows = getNumRows();
+    IndexType nCols = getNumColumns();
+
+    SCAI_ASSERT_EQUAL( nRows, other.getNumRows(), "size mismatch" )
+    SCAI_ASSERT_EQUAL( nCols, other.getNumColumns(), "size mismatch" )
+
+    VectorCreateKeyType vectorType1( Vector::DENSE, getValueType() );
+    VectorCreateKeyType vectorType2( Vector::DENSE, other.getValueType() );
+
+    common::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
+    common::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );
+
+    Scalar diff( 0 );
+
+    // now traverse  all rows
+
+    for ( IndexType i = 0; i < nRows; ++i )
+    {
+        // Note: rows will be broadcast in case of distributed matrices
+
+        getRow( *ptrRow1, i );
+        other.getRow( *ptrRow2, i );
+
+        // compare the two vectors element-wise
+
+        for ( IndexType j = 0; j < nCols; j++ )
+        {
+            Scalar elem1 = ptrRow1->getValue( j );
+            Scalar elem2 = ptrRow2->getValue( j );
+
+            Scalar diff1  = abs( elem1 - elem2 );
+
+            if ( diff1 > diff )
+            {
+                diff = diff1;
+            }
+        }
+    }
+ 
+    return diff;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
 {
     // simple default implementation that works for each matrix

@@ -57,7 +57,6 @@ scai_project (
         P_ELLSparseMatrixTest
         P_JDSSparseMatrixTest
         P_MatrixCreatorTest
-        P_MatrixStorageTest
         P_MatrixTest
         P_VectorTest
         P_NormTest

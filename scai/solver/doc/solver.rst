@@ -21,13 +21,7 @@ Available Solvers
   
     - Jacobi 
  
-      - DefaultJacobi
-   
-      - SpecializedJacobi
-      
     - Richardson
-    
-    - SOR
     
   - Krylov Subspace Methods
    

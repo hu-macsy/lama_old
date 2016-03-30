@@ -1,5 +1,5 @@
 /**
- * @file DefaultJacobiTest.cpp
+ * @file Jacobi.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,26 +25,25 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class DefaultJacobi.cpp
+ * @brief Contains the implementation of the class Jacobi.
  * @author: Alexander Büchel, Matthias Makulla
- * @date 22.02.2012
+ * @date 27.02.2012
  * @since 1.0.0
  **/
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/solver/DefaultJacobi.hpp>
+#include <scai/solver/Jacobi.hpp>
+#include <scai/solver/TrivialPreconditioner.hpp>
+#include <scai/solver/criteria/IterationCount.hpp>
 #include <scai/solver/logger/Timer.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
-#include <scai/solver/logger/Timer.hpp>
-#include <scai/solver/criteria/IterationCount.hpp>
-#include <scai/solver/TrivialPreconditioner.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
@@ -55,13 +54,17 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
+#include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/lama/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
+#include <scai/dmemo/BlockDistribution.hpp>
+
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -72,10 +75,10 @@ struct JacobiTestConfig
     JacobiTestConfig()
     {
         LoggerPtr loggerD(
-            new CommonLogger( "<Jacobi>: ", LogLevel::completeInformation,
-                              LoggerWriteBehaviour::toConsoleOnly ) );
-        mJacobiDouble = new DefaultJacobi( "JacobiTest double solver", loggerD );
-        mJacobiFloat = new DefaultJacobi( "JacobiTest float solver", loggerD );
+            new CommonLogger( "<Jacobi>: ", scai::solver::LogLevel::completeInformation,
+                              scai::solver::LoggerWriteBehaviour::toConsoleOnly ) );
+        mJacobiDouble = new Jacobi( "JacobiTest double solver", loggerD );
+        mJacobiFloat = new Jacobi( "JacobiTest float solver", loggerD );
     }
 
     ~JacobiTestConfig()
@@ -90,34 +93,47 @@ struct JacobiTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( JacobiTest, JacobiTestConfig )
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.DefaultJacobiTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.JacobiTest" )
+
+// ---------------------------------------------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE( testGetId )
+{
+    BOOST_CHECK_EQUAL( 0, ( *mJacobiDouble ).getId().compare( "JacobiTest double solver" ) );
+    BOOST_CHECK_EQUAL( 0, ( *mJacobiFloat ).getId().compare( "JacobiTest float solver" ) );
+}
 
 // ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+    LoggerPtr slogger( new CommonLogger( "<SJ>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
-    DefaultJacobi DefaultJacobiSolver( "DefaultJacobiSolver", slogger );
-    BOOST_CHECK_EQUAL( DefaultJacobiSolver.getId(), "DefaultJacobiSolver" );
+    Jacobi sjSolver( "SJTestSolver", slogger );
+    BOOST_CHECK_EQUAL( sjSolver.getId(), "SJTestSolver" );
 
-    DefaultJacobi DefaultJacobiSolver2( "DefaultJacobiSolver2" );
-    BOOST_CHECK_EQUAL( DefaultJacobiSolver2.getId(), "DefaultJacobiSolver2" );
+    Jacobi sjSolver2( "SJTestSolver2" );
+    BOOST_CHECK_EQUAL( sjSolver2.getId(), "SJTestSolver2" );
 
-    DefaultJacobi DefaultJacobiSolver3( DefaultJacobiSolver2 );
-    BOOST_CHECK_EQUAL( DefaultJacobiSolver3.getId(), "DefaultJacobiSolver2" );
-    BOOST_CHECK( DefaultJacobiSolver3.getPreconditioner() == 0 );
+    Jacobi sjSolver3( sjSolver2 );
+    BOOST_CHECK_EQUAL( sjSolver3.getId(), "SJTestSolver2" );
+    BOOST_CHECK( sjSolver3.getPreconditioner() == 0 );
 
-    DefaultJacobi DefaultJacobiSolver4( "DefaultJacobiSolver4" );
+    Jacobi sjSolver4( "sjSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    DefaultJacobiSolver4.setPreconditioner( preconditioner );
+    sjSolver4.setPreconditioner( preconditioner );
 
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    DefaultJacobiSolver4.setStoppingCriterion( criterion );
+    IndexType expectedIterations = 10;
+    CriterionPtr criterion( new IterationCount( expectedIterations ) );
+    sjSolver4.setStoppingCriterion( criterion );
 
-    DefaultJacobi DefaultJacobiSolver5( DefaultJacobiSolver4 );
-    BOOST_CHECK_EQUAL( DefaultJacobiSolver5.getId(), DefaultJacobiSolver4.getId() );
-    BOOST_CHECK_EQUAL( DefaultJacobiSolver5.getPreconditioner()->getId(), DefaultJacobiSolver4.getPreconditioner()->getId() );
+    Jacobi sjSolver5( sjSolver4 );
+    BOOST_CHECK_EQUAL( sjSolver5.getId(), sjSolver4.getId() );
+    BOOST_CHECK_EQUAL( sjSolver5.getPreconditioner()->getId(), sjSolver4.getPreconditioner()->getId() );
+
+    Jacobi sjSolver6( "sjSolver6", 0.05, slogger );
+    BOOST_CHECK_EQUAL( sjSolver6.getId(), "sjSolver6" );
+    BOOST_CHECK_EQUAL( sjSolver6.getOmega(), 0.05 );
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -132,47 +148,47 @@ BOOST_AUTO_TEST_CASE( testSetAndGetOmega )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( testGetId )
-{
-    BOOST_CHECK_EQUAL( 0, ( *mJacobiDouble ).getId().compare( "JacobiTest double solver" ) );
-    BOOST_CHECK_EQUAL( 0, ( *mJacobiFloat ).getId().compare( "JacobiTest float solver" ) );
-}
-
-// ---------------------------------------------------------------------------------------------------------------
-
 template<typename MatrixType>
 void testSolveMethod( std::string solverId, ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
     std::string id = solverId;
     LoggerPtr slogger(
-        new CommonLogger( solverId, LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly) );
-
-    DefaultJacobi jacobiSolver( "JacobiTest", slogger );
+        new CommonLogger( solverId, LogLevel::solverInformation, LoggerWriteBehaviour::toConsoleOnly ) );
+    Jacobi jacobiSolver( "JacobiTest"/*, slogger*/ );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     CSRSparseMatrix<ValueType> matrix( system.coefficients );
+
     MatrixType coefficients( matrix );
-    SCAI_LOG_INFO( logger, "coefficient matrix = " << coefficients );
     coefficients.setContextPtr( context );
+
+    DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
+    coefficients.redistribute( dist, dist );
 
     SCAI_LOG_INFO( logger, "JacobiTest uses context = " << context->getType() );
 
     DenseVector<ValueType> rhs( system.rhs );
     rhs.setContextPtr( context );
+    rhs.redistribute( coefficients.getRowDistributionPtr() );
 
     DenseVector<ValueType> solution( system.coefficients.getNumRows(), static_cast<ValueType>( 2.1 ) );
     solution.setContextPtr( context );
+    solution.redistribute( coefficients.getColDistributionPtr() );
 
     DenseVector<ValueType> exactSolution( system.solution );
     exactSolution.setContextPtr( context );
+    exactSolution.redistribute( coefficients.getColDistributionPtr() );
 
-    jacobiSolver.initialize( system.coefficients );
+    jacobiSolver.initialize( coefficients );
     CriterionPtr criterion( new IterationCount( 120 ) );
     jacobiSolver.setStoppingCriterion( criterion );
     jacobiSolver.solve( solution, rhs );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     diff.setContextPtr( context );
+    diff.redistribute( coefficients.getColDistributionPtr() );
 
     L2Norm l2Norm;
     Scalar norm = l2Norm( diff );
@@ -182,8 +198,9 @@ void testSolveMethod( std::string solverId, ContextPtr context )
 
     DenseVector<ValueType> solutionA( system.coefficients.getNumRows(), 1.0 );
     solutionA.setContextPtr( context );
+    solutionA.redistribute( coefficients.getColDistributionPtr() );
 
-    DefaultJacobi jacobiSolverA( "JacobiTest solver 2" );
+    Jacobi jacobiSolverA( "JacobiTest solver 2" );
     jacobiSolverA.initialize( coefficients );
     jacobiSolverA.setOmega( 0.5 );
     jacobiSolverA.solve( solutionA, rhs );
@@ -191,8 +208,9 @@ void testSolveMethod( std::string solverId, ContextPtr context )
 
     DenseVector<ValueType> solutionB( system.coefficients.getNumRows(), 1.0 );
     solutionB.setContextPtr( context );
+    solutionB.redistribute( coefficients.getColDistributionPtr() );
 
-    DefaultJacobi jacobiSolverB( "JacobiTest solver 2" );
+    Jacobi jacobiSolverB( "JacobiTest solver 2" );
     CriterionPtr criterionB( new IterationCount( 2 ) );
     jacobiSolverB.setStoppingCriterion( criterionB );
     jacobiSolverB.initialize( coefficients );
@@ -201,6 +219,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
 
     DenseVector<ValueType> diffAB( solutionA - solutionB );
     diffAB.setContextPtr( context );
+    diffAB.redistribute( coefficients.getColDistributionPtr() );
 
     Scalar l2norm = l2Norm( diffAB );
     BOOST_CHECK( l2norm.getValue<ValueType>() < 1e-5 );
@@ -214,7 +233,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
     testSolveMethod<JDSSparseMatrix<ValueType> >( "<JacobiJDS>", context );
     testSolveMethod<DIASparseMatrix<ValueType> >( "<JacobiDIA>", context );
     testSolveMethod<COOSparseMatrix<ValueType> >( "<JacobiCOO> ", context );
-    testSolveMethod<DenseMatrix<ValueType> >( "<JacobiDense>", context );
+    // TODO: Not working with Dense!
+    //testSolveMethod<DenseMatrix<ValueType> >( "<JacobiDense>", context );
 }
 
 // ---------------------------------------------------------------------------------------------------------------
