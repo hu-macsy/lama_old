@@ -85,4 +85,5 @@ file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 if ( USE_CODE_COVERAGE )
     configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh" "${CMAKE_CURRENT_BINARY_DIR}/" @ONLY)
 endif ( USE_CODE_COVERAGE )

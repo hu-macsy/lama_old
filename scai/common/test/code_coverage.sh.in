@@ -34,9 +34,12 @@
 
 #!/bin/bash
 
-. ../../scai_code_coverage_functions.sh
+. scai_code_coverage_functions.sh
 
-prepare_coverage
+dirname=$(create_dir)
+echo "Create coverage directory: ${dirname}"
+
+prepare_coverage $dirname ../..
 
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
@@ -62,6 +65,11 @@ then
     fi
 fi
 
-do_coverage
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@/*"
+
+if [ $? == 1 ];
+then
+    exit 1
+fi
 
 zip -r ../common_coverage.zip *

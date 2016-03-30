@@ -34,27 +34,32 @@
 
 #!/bin/bash
 
-function prepare_coverage
+function create_dir
 {
-	error_count=0
-
 	# Creating dir using current unix timestamp
-	dirname=coverage_$(date +%s)
-	echo "Create coverage directory: ${dirname}"
+	local dirname=coverage_$(date +%s)
 	mkdir ${dirname}
-
-	# Clearing up environment
-	cd ${dirname}
-	lcov --base-directory ../.. --directory ../.. --zerocounters
-	cd ..
+	echo "${dirname}"
 }
 
+# $1: code coveage dirname $2: base coverage dir
+function prepare_coverage
+{
+	# Clearing up environment
+	cd $1
+	lcov --base-directory $2 --directory $2 --zerocounters
+	cd -
+}
+
+# $1: code coveage dirname $2: base coverage dir $3: current source dir
 function do_coverage
 {
-	cd ${dirname}
+	cd $1
+
+	local error_count=0
 
 	#Running lcov and creating data
-	lcov --base-directory ../.. --directory ../.. --capture --output-file=data.info
+	lcov --base-directory $2 --directory $2 --capture --output-file=data.info
 	if [ $? -ne 0 ]
 	then
 		echo "ERROR in running lcov"
@@ -62,7 +67,7 @@ function do_coverage
 	fi
 
 	#Extracting just Sourcefiles
-	lcov --extract data.info "@CMAKE_SOURCE_DIR@/*" --output-file=data.info
+	lcov --extract data.info $3 --output-file=data.info
 	if [ $? -ne 0 ]
 	then
 		echo "ERROR in extracting lcov data"
@@ -81,4 +86,6 @@ function do_coverage
 	then
 	    exit 1
 	fi
+
+	cd -
 }
