@@ -43,7 +43,7 @@ export SCAI_TRACE=time
 	
 # Running lama tests
 echo "Running serial lama tests"
-./lamaTest >/dev/null
+./lamaTest --SCAI_CONTEXT=Host >/dev/null
 if [ $? -ne 0 ]
 then
 	echo "ERROR in lama_test"
@@ -52,7 +52,7 @@ fi
 
 #Running lama storage tests
 echo "Running serial lama storage tests"
-./storage/lamaStorageTest >/dev/null
+./storage/lamaStorageTest --SCAI_CONTEXT=Host >/dev/null
 if [ $? -ne 0 ]
 then
     echo "ERROR in lamaStorageTest"
@@ -61,7 +61,7 @@ fi
 
 #Running lama matrix tests
 echo "Running serial lama matrix tests"
-./matrix/lamaMatrixTest >/dev/null
+./matrix/lamaMatrixTest --SCAI_CONTEXT=Host >/dev/null
 if [ $? -ne 0 ]
 then
     echo "ERROR in lamaMatrixTest"
@@ -72,7 +72,7 @@ if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
     echo "Running distributed tests serial"
-    ./distributed/lamaDistTest >/dev/null
+    ./distributed/lamaDistTest --SCAI_CONTEXT=Host >/dev/null
     if [ $? -ne 0 ]
     then
         echo "ERROR in lama_dist_test"
@@ -82,7 +82,7 @@ then
     for i in 2 3 4;
     do
         echo "Running distributed tests with $i processes"
-        mpirun -np $i ./distributed/lamaDistTest >/dev/null
+        mpirun -np $i ./distributed/lamaDistTest --SCAI_CONTEXT=Host >/dev/null
         if [ $? -ne 0 ]
         then
             echo "ERROR in lamaDistTest with $i processes"
@@ -120,6 +120,17 @@ then
         echo "ERROR in lamaMatrixTest"
         error_count=$(($error_count + $?))
     fi
+
+    #Running dedicated cuda tests
+    echo "Running dedicated cuda tests"
+    ./cuda/lamaCUDATest >/dev/null
+    if [ $? -ne 0 ]
+    then
+        echo "ERROR in lamaCUDATest"
+        error_count=$(($error_count + $?))
+    fi
+
+    // TODO: need distributed cuda tests?
 fi
 
 do_coverage

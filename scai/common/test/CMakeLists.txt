@@ -31,9 +31,15 @@
 ###
 
 set ( CXX_SOURCES
+	  atomicOpenMPTest.cpp
+	  bindFunctionTest.cpp
       commonTest.cpp
       FactoryTest.cpp  
       Factory1Test.cpp  
+      ComplexTest.cpp
+      FactoryTest.cpp
+      ptrTest.cpp
+      TypeTraitsTest.cpp  
       SettingsTest.cpp  
       WalltimeTest.cpp  
 )
