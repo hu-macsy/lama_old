@@ -34,7 +34,7 @@
 
 #!/bin/bash
 
-. ../../scai_code_coverage_functions.sh
+. scai_code_coverage_functions.sh
 
 dirname=$(create_dir)
 echo "Create coverage directory: ${dirname}"
