@@ -120,6 +120,15 @@ then
         echo "ERROR in lamaMatrixTest"
         error_count=$(($error_count + $?))
     fi
+
+    #Running dedicated cuda tests
+    echo "Running dedicated cuda tests"
+    ./cuda/lamaCUDATest >/dev/null
+    if [ $? -ne 0 ]
+    then
+        echo "ERROR in lamaCUDATest"
+        error_count=$(($error_count + $?))
+    fi
 fi
 
 do_coverage
