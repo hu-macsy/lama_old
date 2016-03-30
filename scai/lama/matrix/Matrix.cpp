@@ -579,12 +579,12 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 void Matrix::writeToFile(
     const std::string& fileName,
     const File::FileType fileType /* = UNFORMATTED */,
-    const common::scalar::ScalarType dataType /* = INTERNAL */,
-    const File::IndexDataType indexDataTypeIA /* = LONG */,
-    const File::IndexDataType indexDataTypeJA /* = LONG */ ) const
+    const common::scalar::ScalarType valuesType /* = INTERNAL */,
+    const common::scalar::ScalarType iaType /* = INDEX_TYPE */,
+    const common::scalar::ScalarType jaType /* = INDEX_TYPE */ ) const
 {
     SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << valuesType << " )" )
 
     if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
@@ -594,7 +594,7 @@ void Matrix::writeToFile(
 
         if ( comm.getRank() == 0 )
         {
-            getLocalStorage().writeToFile( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+            getLocalStorage().writeToFile( fileName, fileType, valuesType, iaType, jaType );
         }
 
         // synchronization to avoid that other processors start with
@@ -609,7 +609,7 @@ void Matrix::writeToFile(
 
         common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
 
-        repM->writeToFile( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+        repM->writeToFile( fileName, fileType, valuesType, iaType, jaType );
     }
 }
 

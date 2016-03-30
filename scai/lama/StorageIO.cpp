@@ -32,12 +32,13 @@
  */
 
 #include <scai/common/OpenMP.hpp>
+#include <scai/common/ScalarType.hpp>
 
 // hpp
 #include <scai/lama/StorageIO.hpp>
 
 // local library
-#include <scai/lama/io/BinaryStream.hpp>
+#include <scai/lama/io/FileStream.hpp>
 //#include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
@@ -482,70 +483,21 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     const HArray<IndexType>& csrJA,
     const HArray<ValueType>& csrValues,
     const std::string& amgFileName,
-    const long /* indexDataTypeSizeIA */,
-    const long /* indexDataTypeSizeJA */,
-    const long /* dataTypeSize */ )
+    const common::scalar::ScalarType iaType,
+    const common::scalar::ScalarType jaType,
+    const common::scalar::ScalarType valuesType )
 {
     SCAI_REGION( "StorageIO.writeCSRToBinaryFile " )
 
     SCAI_LOG_INFO( logger, "writeCSRToBinaryFile ( " << amgFileName << ")" << ", #rows = " << csrIA.size()-1
                            << ", #values = " << csrJA.size() )
-/*
-    ContextPtr host = Context::getHostPtr();
 
-    ReadAccess<IndexType> iaRead( csrIA, host );
-    ReadAccess<IndexType> jaRead( csrJA, host );
-    ReadAccess<ValueType> dataRead( csrValues, host );
-
-    IndexType numRows = csrIA.size() - 1;
-    IndexType numValues = csrJA.size();
-
-    SCAI_LOG_INFO( logger,
-                   "writeCSRToBinaryFile ( " << amgFileName << ")" << ", #rows = " << numRows << ", #values = " << numValues )
-
-    std::fstream outFile( amgFileName.c_str(), std::ios::out | std::ios::binary );
-
-    // write ia, add offset 1
-
-    if( indexDataTypeSizeIA == sizeof( int ) || sizeof(long) == sizeof( int ) )
-    {
-        IOUtils::writeBinary<int,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
-    }
-    else if( indexDataTypeSizeIA == sizeof( long ) )
-    {
-        IOUtils::writeBinary<long,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of IA." )
-    }
-
-    // write m_ja
-
-    if( indexDataTypeSizeJA == sizeof( int ) || sizeof(long) == sizeof( int ) )
-    {
-        IOUtils::writeBinary<int,IndexType>( outFile, jaRead.get(), numValues, 1 );
-    }
-    else if( indexDataTypeSizeJA == sizeof( long ) )
-    {
-        IOUtils::writeBinary<long,IndexType>( outFile, jaRead.get(), numValues, 1 );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
-    }
-
-    if( !mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeBinary( dataTypeSize, outFile, dataRead.get(), numValues ))
-    {
-        COMMON_THROWEXCEPTION( "unknown data type size  = " << dataTypeSize << " for values." )
-    }
-*/
-
-    BinaryStream outFile( amgFileName );
-    outFile.write<IndexType, IndexType>( csrIA, 1 );
-    outFile.write<IndexType, IndexType>( csrJA, 1 );
-    outFile.write<ValueType, ValueType>( csrValues, 0 );
-    outFile.close();
+    FileStream outFile( amgFileName, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary );
+    outFile.write<IndexType>( csrIA, 1, jaType );
+    outFile.write<IndexType>( csrJA, 1, iaType );
+    outFile.write<ValueType>( csrValues, 0, valuesType );
+    //TODO:
+    //outFile.close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1145,9 +1097,9 @@ void StorageIO<ValueType>::writeCSRToFile(
     const HArray<ValueType>& csrValues,
     const std::string& fileName,
     const File::FileType& fileType,
-    const common::scalar::ScalarType& dataType,
-    const File::IndexDataType indexDataTypeIA /*=LONG*/,
-    const File::IndexDataType indexDataTypeJA /*=LONG*/
+    const common::scalar::ScalarType& valuesType,
+    const common::scalar::ScalarType& iaType,
+    const common::scalar::ScalarType& jaType
     )
 {
     SCAI_REGION( "StorageIO.writeCSRToFile " )
@@ -1172,12 +1124,12 @@ void StorageIO<ValueType>::writeCSRToFile(
         fileBaseName += rankstr;
     }
 
-    long dataTypeSize = getDataTypeSize<ValueType>( dataType );
-    long indexDataTypeSizeIA = getIndexDataTypeSize( indexDataTypeIA );
-    long indexDataTypeSizeJA = getIndexDataTypeSize( indexDataTypeJA );
+    long dataTypeSize = getDataTypeSize<ValueType>( valuesType );
+    long indexDataTypeSizeIA = getIndexDataTypeSize( iaType );
+    long indexDataTypeSizeJA = getIndexDataTypeSize( jaType );
 
-    SCAI_ASSERT_ERROR( indexDataTypeSizeIA > 0, "indexDataTypeIA = " << indexDataTypeIA << " unsupported" )
-    SCAI_ASSERT_ERROR( indexDataTypeSizeJA > 0, "indexDataTypeJA = " << indexDataTypeJA << " unsupported" )
+    SCAI_ASSERT_ERROR( indexDataTypeSizeIA > 0, "indexDataTypeIA = " << iaType << " unsupported" )
+    SCAI_ASSERT_ERROR( indexDataTypeSizeJA > 0, "indexDataTypeJA = " << jaType << " unsupported" )
     SCAI_ASSERT_ERROR( dataTypeSize >= 0, "dataTypeSize = " << dataTypeSize << " unsupported" )
 
     switch( fileType )
@@ -1191,8 +1143,8 @@ void StorageIO<ValueType>::writeCSRToFile(
 
         case File::BINARY:
         {
-            writeCSRToBinaryFile( csrIA, csrJA, csrValues, fileBaseName + ".amg", indexDataTypeSizeIA,
-                                  indexDataTypeSizeJA, dataTypeSize );
+            writeCSRToBinaryFile( csrIA, csrJA, csrValues, fileBaseName + ".amg", iaType,
+                                  jaType, valuesType );
             break;
         }
 
@@ -1212,7 +1164,7 @@ void StorageIO<ValueType>::writeCSRToFile(
                 name += ".mtx";
             }
 
-            writeCSRToMMFile( csrIA, numColumns, csrJA, csrValues, name, dataType );
+            writeCSRToMMFile( csrIA, numColumns, csrJA, csrValues, name, valuesType );
             return;
         }
 

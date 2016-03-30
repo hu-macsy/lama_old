@@ -168,15 +168,18 @@ common::scalar::ScalarType getDataType( const long dataTypeSize )
 }
 
 static inline
-long getIndexDataTypeSize( const File::IndexDataType indexDataType )
+long getIndexDataTypeSize( const common::scalar::ScalarType stype )
 {
-    switch( indexDataType )
+    switch( stype )
     {
-        case File::LONG:
-            return sizeof( long );
+        case common::scalar::INDEX_TYPE:
+            return sizeof( IndexType );
 
-        case File::INT:
+        case common::scalar::INT:
             return sizeof( int );
+
+        case common::scalar::LONG:
+            return sizeof( long );
 
         default:
             return 0;

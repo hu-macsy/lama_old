@@ -157,9 +157,9 @@ public:
      *  @param[in] csrValues        CSR values array
      *  @param[in] fileName         name of output file
      *  @param[in] fileType         type of file
-     *  @param[in] dataType         specifies precision of real values
-     *  @param[in] indexDataTypeIA  specifies precision of IA array
-     *  @param[in] indexDataTypeJA  specifies precision of JA array
+     *  @param[in] valuesType       type in which the values should written to the file
+     *  @param[in] iaType           type in which the ia array should written to the file
+     *  @param[in] jaType           type in which the ja array should written to the file
      */
     static void writeCSRToFile(
         const PartitionId size,
@@ -170,9 +170,9 @@ public:
         const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const File::FileType& fileType,
-        const common::scalar::ScalarType& dataType,
-        const File::IndexDataType indexDataTypeIA /*=LONG*/,
-        const File::IndexDataType indexDataTypeJA /*=LONG*/
+        const common::scalar::ScalarType& valuesType,
+        const common::scalar::ScalarType& iaType,
+        const common::scalar::ScalarType& jaType
         );
 
     /** @brief Writing CSR storage to a formatted file.
@@ -194,18 +194,18 @@ public:
      *  @param[in] csrJA                CSR ja array
      *  @param[in] csrValues            CSR values array
      *  @param[in] fileName             name of output file
-     *  @param[in] indexDataTypeSizeIA  TODO[doxy] Complete Description.
-     *  @param[in] indexDataTypeSizeJA  TODO[doxy] Complete Description.
-     *  @param[in] dataTypeSize         TODO[doxy] Complete Description.
+     *  @param[in] iaType               Type as which the ja data should be written
+     *  @param[in] jaType               Type as which the ia data should be written
+     *  @param[in] valuesType           Type as which the value data should be written
      */
     static void writeCSRToBinaryFile(
         const hmemo::HArray<IndexType>& csrIA,
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
-        const long indexDataTypeSizeIA,
-        const long indexDataTypeSizeJA,
-        const long dataTypeSize );
+        const common::scalar::ScalarType iaType,
+        const common::scalar::ScalarType jaType,
+        const common::scalar::ScalarType valuesType );
 
     /** @brief Writing CSR storage to an xdr file.
      *

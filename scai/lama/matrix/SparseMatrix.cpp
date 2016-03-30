@@ -2388,9 +2388,9 @@ void SparseMatrix<ValueType>::writeToFile1(
 
     const std::string& fileName,
     const File::FileType fileType /* = UNFORMATTED */,
-    const common::scalar::ScalarType dataType /* = INTERNAL */,
-    const File::IndexDataType indexDataTypeIA /* = LONG */,
-    const File::IndexDataType indexDataTypeJA /* = LONG */) const
+    const common::scalar::ScalarType valuesType /* = INTERNAL */,
+    const common::scalar::ScalarType iaType /* = IndexType */,
+    const common::scalar::ScalarType jaType /* = IndexType */ ) const
 {
     if( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
@@ -2400,7 +2400,7 @@ void SparseMatrix<ValueType>::writeToFile1(
 
         if( comm.getRank() == 0 )
         {
-            mLocalData->writeToFile( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+            mLocalData->writeToFile( fileName, fileType, valuesType, iaType, jaType );
         }
 
         // synchronization to avoid that other processors start with
@@ -2419,8 +2419,7 @@ void SparseMatrix<ValueType>::writeToFile1(
         if( getColDistribution().isReplicated() )
         {
 
-            mLocalData->writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, dataType, indexDataTypeIA,
-                                     indexDataTypeJA );
+            mLocalData->writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, valuesType, iaType, jaType );
         }
         else
         {
@@ -2432,8 +2431,7 @@ void SparseMatrix<ValueType>::writeToFile1(
 
             local.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
 
-            local.writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, dataType, indexDataTypeIA,
-                               indexDataTypeJA );
+            local.writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, valuesType, iaType, jaType );
         }
     }
     else

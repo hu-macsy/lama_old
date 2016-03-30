@@ -70,6 +70,8 @@ namespace scalar
     typedef enum
     {
         INDEX_TYPE, //!<  synonymous for IndexType
+        INT,
+        LONG,
         FLOAT, //!<  synonymous for float
         DOUBLE, //!<  synonymous for double
         LONG_DOUBLE, //!<  synonymous for long double

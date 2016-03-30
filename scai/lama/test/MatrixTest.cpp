@@ -141,18 +141,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
     std::string formattedFileName = prefix + "/test_matrix_formatted.tmp.frm";
-    formattedMatrix.writeToFile( formattedFileName, File::FORMATTED, scai::common::scalar::FLOAT, File::INT, File::INT );
+    formattedMatrix.writeToFile( formattedFileName, File::FORMATTED, scai::common::scalar::FLOAT, scai::common::scalar::INT, scai::common::scalar::INT );
     MatrixType readFormattedMatrix( formattedFileName );
     testSameMatrix( formattedMatrix, readFormattedMatrix );
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading XDR matrix" );
     std::string xdrFileName = prefix + "/test_matrix_xdr.tmp.frm";
-    formattedMatrix.writeToFile( xdrFileName, File::XDR, scai::common::scalar::DOUBLE, File::LONG, File::LONG );
+    formattedMatrix.writeToFile( xdrFileName, File::XDR, scai::common::scalar::DOUBLE, scai::common::scalar::LONG, scai::common::scalar::LONG );
     MatrixType readXDRMatrix( xdrFileName );
     testSameMatrix( readXDRMatrix, formattedMatrix );
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading binary matrix" );
     std::string binaryFileName = prefix + "/test_matrix_bin.tmp.frm";
 // Be careful: binary read must fit to the format that has been used for the write
-    formattedMatrix.writeToFile( binaryFileName, File::BINARY, scai::common::scalar::INTERNAL, File::INT, File::INT );
+    formattedMatrix.writeToFile( binaryFileName, File::BINARY, scai::common::scalar::INTERNAL, scai::common::scalar::INT, scai::common::scalar::INT );
     MatrixType readBinaryMatrix( binaryFileName );
     testSameMatrix( formattedMatrix, readBinaryMatrix );
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading Matrix Market matrix" );
