@@ -100,18 +100,19 @@ get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
 
 foreach    ( CACHE_VAR ${CACHE_VARS} )
 
-	#message ( STATUS "test VAR ${CACHE_VAR}" )
-	check_whitelist ( CACHE_VAR "${WHITELIST}" "CMAKE_ARGS" )
-	
-	check_whitelist ( CACHE_VAR "${BOOST_WHITELIST}" "BOOST_ARGS" )
-	check_whitelist ( CACHE_VAR "${CUDA_WHITELIST}" "CUDA_ARGS" )
-	check_whitelist ( CACHE_VAR "${GPI2_WHITELIST}" "GPI2_ARGS" )
-	check_whitelist ( CACHE_VAR "${GRAPHPARTITIONING_WHITELIST}" "GRAPHPARTITIONING_ARGS" )
-	check_whitelist ( CACHE_VAR "${MIC_WHITELIST}" "MIC_ARGS" )    
-	check_whitelist ( CACHE_VAR "${MPI_WHITELIST}" "MPI_ARGS" )
-	check_whitelist ( CACHE_VAR "${OPENMP_WHITELIST}" "OPENMP_ARGS" )
-	check_whitelist ( CACHE_VAR "${SCAI_BLAS_WHITELIST}" "SCAI_BLAS_ARGS" )
-      check_whitelist ( CACHE_VAR "${DOXYGEN_WHITELIST}" "DOXYGEN_ARGS" )
+    #message ( STATUS "test VAR ${CACHE_VAR}" )
+    check_whitelist ( CACHE_VAR "${WHITELIST}" "CMAKE_ARGS" )
+    
+    check_whitelist ( CACHE_VAR "${BOOST_WHITELIST}" "BOOST_ARGS" )
+    check_whitelist ( CACHE_VAR "${CUDA_WHITELIST}" "CUDA_ARGS" )
+    check_whitelist ( CACHE_VAR "${GPI2_WHITELIST}" "GPI2_ARGS" )
+    check_whitelist ( CACHE_VAR "${GRAPHPARTITIONING_WHITELIST}" "GRAPHPARTITIONING_ARGS" )
+    check_whitelist ( CACHE_VAR "${MIC_WHITELIST}" "MIC_ARGS" )    
+    check_whitelist ( CACHE_VAR "${MPI_WHITELIST}" "MPI_ARGS" )
+    check_whitelist ( CACHE_VAR "${GPI_WHITELIST}" "GPI_ARGS" )
+    check_whitelist ( CACHE_VAR "${OPENMP_WHITELIST}" "OPENMP_ARGS" )
+    check_whitelist ( CACHE_VAR "${SCAI_BLAS_WHITELIST}" "SCAI_BLAS_ARGS" )
+    check_whitelist ( CACHE_VAR "${DOXYGEN_WHITELIST}" "DOXYGEN_ARGS" )
     
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
@@ -144,12 +145,12 @@ concatCacheArguments ( scai_common "CACHE_ARGS" )
 #message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_common 
-		DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
+        DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
             PREFIX common
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/common
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR common
+            BINARY_DIR common
             )
 
 concatCacheArguments ( scai_logging "CACHE_ARGS" )
@@ -161,7 +162,7 @@ ExternalProject_Add ( scai_logging
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/logging
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR logging
+            BINARY_DIR logging
             )
 
 concatCacheArguments ( scai_tracing "CACHE_ARGS" )
@@ -173,7 +174,7 @@ ExternalProject_Add ( scai_tracing
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tracing
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR tracing
+            BINARY_DIR tracing
             )
 
 concatCacheArguments ( scai_tasking "CACHE_ARGS" )
@@ -185,7 +186,7 @@ ExternalProject_Add ( scai_tasking
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tasking
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR tasking
+            BINARY_DIR tasking
             )
 
 concatCacheArguments ( scai_hmemo "CACHE_ARGS" )
@@ -197,7 +198,7 @@ ExternalProject_Add ( scai_hmemo
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/hmemo
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR hmemo
+            BINARY_DIR hmemo
             )
 
 concatCacheArguments ( scai_kregistry "CACHE_ARGS" )
@@ -209,7 +210,7 @@ ExternalProject_Add ( scai_kregistry
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/kregistry
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR kregistry
+            BINARY_DIR kregistry
             )
 
 concatCacheArguments ( scai_blaskernel "CACHE_ARGS" )
@@ -221,7 +222,7 @@ ExternalProject_Add ( scai_blaskernel
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/blaskernel
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR blaskernel
+            BINARY_DIR blaskernel
             )
             
 concatCacheArguments ( scai_utilskernel "CACHE_ARGS" )
@@ -233,7 +234,7 @@ ExternalProject_Add ( scai_utilskernel
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/utilskernel
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR utilskernel
+            BINARY_DIR utilskernel
             )
             
 concatCacheArguments ( scai_sparsekernel "CACHE_ARGS" )
@@ -245,7 +246,7 @@ ExternalProject_Add ( scai_sparsekernel
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/sparsekernel
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR sparsekernel
+            BINARY_DIR sparsekernel
             )
 
 concatCacheArguments ( scai_dmemo "CACHE_ARGS" )

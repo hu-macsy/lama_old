@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMakeLists of hmemo/cuda
+ # @brief CMakeLists of tasking/mic
  # @author Thomas Brandes
  # @date 09.06.2015
 ###
@@ -36,8 +36,7 @@ scai_project (
 
     CLASSES 
  
-        MICContext
-        MICMemory 
+        MICSyncToken 
 
     ADD_PARENT_SCOPE
 )

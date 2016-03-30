@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/tasking/mic/MICSyncToken.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
@@ -43,10 +43,9 @@ namespace scai
 namespace tasking
 {
 
-MICSyncToken::MICSyncToken( MICContextPtr micContext )
-    : mMICContext( micContext ), mSignal( -1 )
+MICSyncToken::MICSyncToken() : mSignal( -1 )
 {
-    SCAI_LOG_DEBUG( logger, "MICSyncToken for " << *micContext << " generated" )
+    SCAI_LOG_DEBUG( logger, "MICSyncToken generated" )
 }
 
 MICSyncToken::~MICSyncToken()

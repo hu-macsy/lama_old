@@ -57,6 +57,8 @@ endif ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
 if    ( DEFINED USE_GPI )
     # do nothing
     # if cache variable is NOT set
+    set( USE_GPI ${USE_GPI} CACHE BOOL "Enable / Disable use of GPI" )
+
 else ( DEFINED USE_GPI )
     # Check if package was found
     if    ( GPI2_FOUND AND IBVERBS_FOUND )

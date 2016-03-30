@@ -38,7 +38,7 @@
 #include <scai/dmemo/gpi/GPIUtils.hpp>
 
 #include <scai/tracing.hpp>
-#include <scai/common/macros/instaniate.hpp>
+#include <scai/common/macros/instantiate.hpp>
 #include <scai/common/macros/assert.hpp>
 
 using namespace std;
