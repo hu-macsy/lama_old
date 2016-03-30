@@ -31,6 +31,7 @@
 ###
 
 set ( CXX_SOURCES
+	  bindFunctionTest.cpp
       commonTest.cpp
       ComplexTest.cpp
       FactoryTest.cpp
