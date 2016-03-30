@@ -85,7 +85,7 @@ endif ( NOT SCAI_LIBRARY_TYPE )
 checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_OPTIONS}" )
 
 
-set ( TRUE_FALSE_CHOICE TRUE FALSE )
+set ( TRUE_FALSE_CHOICE ON OFF )
 
 # Set cache variable
 set ( BUILD_TEST TRUE CACHE BOOL "Enable / Disable building of tests" )
