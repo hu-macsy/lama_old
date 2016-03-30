@@ -1,5 +1,5 @@
 /**
- * @file shared_ptrTest.cpp
+ * @file atomicOpenMPTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test routines for smart pointer wrapper
+ * @brief Test routines for atomic openmp wrapper
  *
  * @author Lauretta Schubert
  * @date 30.03.2016
@@ -36,9 +36,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 
-#include <scai/common/shared_ptr.hpp>
-#include <scai/common/unique_ptr.hpp>
-#include <scai/common/weak_ptr.hpp>
+#include <scai/common/OpenMP.hpp>
 
 using namespace scai;
 using namespace common;
@@ -49,52 +47,20 @@ typedef boost::mpl::list<ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
 
 /* -------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( shared_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES )
+BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, SCAI_ARITHMETIC_TYPES )
 {
-	shared_ptr<ValueType> emptyPointer;
+	int size = 100;
 
-	BOOST_CHECK_EQUAL ( emptyPointer.use_count(), 0 );
+	ValueType globalResult = 0;
 
-  	shared_ptr<ValueType> pointer ( new ValueType(10) );
+	#pragma omp parallel for
+	for( int i = 0; i < size; ++i )
+	{
+		ValueType localResult = i + 1;
+		atomicAdd( globalResult, localResult );
+	}
 
-    BOOST_CHECK_EQUAL( pointer.use_count(), 1 );
+	int res = ( size * (size+1) ) / 2;
 
-    shared_ptr<ValueType> secPointer ( pointer );
-
-    BOOST_CHECK_EQUAL( secPointer.use_count(), 2 );
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( unique_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES )
-{
-	unique_ptr<ValueType> emptyPointer;
-
-	bool test = ( emptyPointer == NULL );
-
-	BOOST_CHECK ( test );
-
-	unique_ptr<ValueType> pointer ( new ValueType(10) );
-
-	test = ( pointer != NULL );
-
-	BOOST_CHECK ( test );
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( weak_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES )
-{
-	weak_ptr<ValueType> emptyPointer;
-
-	BOOST_CHECK_EQUAL ( emptyPointer.use_count(), 0 );
-
-	weak_ptr<ValueType> sec_emptyPointer( emptyPointer );
-
-	BOOST_CHECK_EQUAL ( sec_emptyPointer.use_count(), 0 );	
-
-  	shared_ptr<ValueType> shared_pointer ( new ValueType(10) );
-    weak_ptr<ValueType> pointer ( shared_pointer );
-
-    BOOST_CHECK_EQUAL( pointer.use_count(), 1 );
-
-    shared_pointer.reset();
-
-    BOOST_CHECK_EQUAL( pointer.use_count(), 0 );
+	BOOST_CHECK_EQUAL( globalResult, res );
 }

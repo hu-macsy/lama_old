@@ -31,6 +31,7 @@
 ###
 
 set ( CXX_SOURCES
+	  atomicOpenMPTest.cpp
 	  bindFunctionTest.cpp
       commonTest.cpp
       ComplexTest.cpp

@@ -1,5 +1,5 @@
 /**
- * @file shared_ptrTest.cpp
+ * @file bindFunctionTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test routines for shared_ptr wrapper
+ * @brief Test routines for bind and function wrapper
  *
  * @author Lauretta Schubert
  * @date 30.03.2016
