@@ -62,7 +62,17 @@ public:
      *  A pointer to the MIC context is required to enable/disable it.
      */
 
-    MICSyncToken();
+    MICSyncToken( int device );
+
+    inline int getDevice() const
+    {
+        return mDevice;
+    }
+
+    inline int& signal()
+    {
+        return mSignal;
+    }
 
     virtual ~MICSyncToken();
 
@@ -81,6 +91,7 @@ public:
 private:
 
     int mSignal; // set by an offload computation
+    int mDevice; // device set by constructor
 };
 
 } /* end namespace tasking */

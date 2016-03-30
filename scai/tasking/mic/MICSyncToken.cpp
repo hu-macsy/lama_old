@@ -43,7 +43,7 @@ namespace scai
 namespace tasking
 {
 
-MICSyncToken::MICSyncToken() : mSignal( -1 )
+MICSyncToken::MICSyncToken( int device ) : mSignal( -1 ), mDevice( device )
 {
     SCAI_LOG_DEBUG( logger, "MICSyncToken generated" )
 }
@@ -66,8 +66,9 @@ void MICSyncToken::wait()
     {
         // SCAI_REGION( "MIC.offloadSynchronize" )
 
-        // // finally called functions might also need the context, e.g. unbindTexture
-
+        #pragma offload target( mic:mDevice ) wait(mSignal)
+        {
+        }
     }
 
     setSynchronized();
