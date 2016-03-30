@@ -1,5 +1,5 @@
 /**
- * @file WalltimeTest.cpp
+ * @file ReductionOpTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,40 +25,30 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test routines for class Walltime
+ * @brief Test enum for ReductionOp
  *
  * @author Thomas Brandes
- * @date 10.03.2016
+ * @date 30.03.2016
  */
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/Walltime.hpp>
+#include <scai/common/ReductionOp.hpp>
+#include <sstream>
 
-#include <unistd.h>
+using namespace scai;
+using namespace common;
 
-BOOST_AUTO_TEST_CASE( WalltimeTest )
+BOOST_AUTO_TEST_CASE( ReductionOpTest )
 {
-
-    using scai::common::Walltime;
-    using scai::common::INTEGER_8;
-
-    INTEGER_8 i0 = Walltime::timestamp();
-    double t0 = Walltime::get();
-
-    sleep( 1 );
-    double t1 = Walltime::get();
-    INTEGER_8 i1 = Walltime::timestamp();
-
-    // time in seconds
-
-    double time = t1 - t0;
-
-    // should be rather accurate one second
-
-    BOOST_CHECK_CLOSE( 1.0, time, 1 );
-
-    // using timestamp instead of get() should give same result
-
-    BOOST_CHECK_CLOSE( double( i1 - i0 ) / double( Walltime::timerate() ), time, 1 );
+    for ( int type = reduction::COPY; type <= reduction::ABS_MAX + 1; ++type )
+    {
+        std::ostringstream s;
+        s << reduction::ReductionOp( type );
+        BOOST_CHECK( s.str().length() > 0 );
+        if ( type == reduction::COPY )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "COPY" );
+        }
+    }
 }

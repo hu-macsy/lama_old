@@ -39,7 +39,11 @@ set ( CXX_SOURCES
       ComplexTest.cpp
       FactoryTest.cpp
       ptrTest.cpp
+      PrintableTest.cpp
+      ReductionOpTest.cpp  
+      ThreadTest.cpp  
       TypeTraitsTest.cpp  
+      ScalarTypeTest.cpp  
       SettingsTest.cpp  
       WalltimeTest.cpp  
 )
