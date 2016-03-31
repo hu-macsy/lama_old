@@ -36,7 +36,7 @@
 
 . scai_code_coverage_functions.sh
 
-prepare_coverage
+prepare_coverage $dirname ../..
 
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
