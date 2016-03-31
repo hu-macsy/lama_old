@@ -32,7 +32,7 @@
 #  @since 1.0.0
 #
 
-#!/bin/bash -e
+#!/bin/bash
 
 source scai_code_coverage_functions.sh
 
@@ -49,6 +49,9 @@ then
 	echo "ERROR in commonTest"
 	error_count=$(($error_count + $?))
 fi
+
+# problem with these, so first ignore
+rm simpleTracing.gcno simpleTracing.gcda
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
