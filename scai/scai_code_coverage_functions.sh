@@ -67,7 +67,7 @@ function do_coverage
 	fi
 
 	#Extracting just Sourcefiles
-	lcov --extract data.info $3 --output-file=data.info
+	lcov --extract data.info "$3/*" --output-file=data.info
 	if [ $? -ne 0 ]
 	then
 		echo "ERROR in extracting lcov data"

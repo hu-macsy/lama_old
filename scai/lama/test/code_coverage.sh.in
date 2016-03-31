@@ -136,7 +136,7 @@ then
     // TODO: need distributed cuda tests?
 fi
 
-do_coverage "@CMAKE_SOURCE_DIR@/*"
+do_coverage "@CMAKE_SOURCE_DIR@"
 
 if [ $? == 1 ];
 then
