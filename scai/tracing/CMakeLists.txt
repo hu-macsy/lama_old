@@ -117,8 +117,18 @@ add_subdirectory ( examples )
 add_subdirectory ( macros )
 ## begin subdir test
 # prepare test
+if ( USE_CODE_COVERAGE )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/test/code_coverage.sh" @ONLY)
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../scai_code_coverage_functions.sh" "${CMAKE_CURRENT_BINARY_DIR}/test" @ONLY)
+endif ( USE_CODE_COVERAGE )
+
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
-file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
+set ( TEST_FILES Makefile README simpleTracing.cpp test.sh )
+foreach    ( TEST_FILE ${TEST_FILES} )
+    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/${TEST_FILE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test )
+endforeach ( TEST_FILE ${TEST_FILES} )
+
 # add test
 enable_testing()
 add_test ( tracing_test test/test.sh )
