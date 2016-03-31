@@ -41,8 +41,8 @@ echo "Create coverage directory: ${dirname}"
 
 prepare_coverage $dirname ../..
 
-# Running logging tests
-echo "Running logging tests"
+# Running tracing tests
+echo "Running tracing tests"
 ./test.sh >/dev/null
 if [ $? -ne 0 ]
 then
