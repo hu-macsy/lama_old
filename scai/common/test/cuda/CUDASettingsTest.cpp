@@ -1,5 +1,5 @@
 /**
- * @file CUDACtxTest.cpp
+ * @file CUDASettingsTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,15 +25,17 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test of class CUDACtx
+ * @brief Test of class CUDASettings
  * @author: Thomas Brandes
- * @date 08.03.2016
+ * @date 31.03.2016
  **/
 
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/cuda/CUDACtx.hpp>
+#include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDASettings.hpp>
 
 #include <scai/common/Settings.hpp>
 
@@ -42,92 +44,66 @@
 
 #include <iostream>
 
-
-static void inc( int* val ) 
-{
-    *val += 1;
-}
+using namespace scai;
+using namespace common;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CUDACtxTest );
+BOOST_AUTO_TEST_SUITE( CUDASettingsTest );
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( constructorTest )
+BOOST_AUTO_TEST_CASE( useTextureTest )
 {
-    int blas_version = 0;
-
-    BOOST_CHECK_THROW (
-    {
-        SCAI_CUBLAS_CALL( cublasGetVersion( 0, &blas_version ), "get version" );
-
-    }, scai::common::Exception );
 
     int nr = 0;
 
     scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
-
     scai::common::CUDACtx myCuda( nr );
+    scai::common::CUDAAccess tmpAccess( myCuda );
 
-    BOOST_CHECK_EQUAL( nr, myCuda.getDeviceNr() );
+    bool useTexture = CUDASettings::useTexture();
+    bool useSharedMem = CUDASettings::useSharedMem();
 
-    cublasHandle_t blasHandle = myCuda.getcuBLASHandle();
+    // cannot be rewritten this way
 
-    blas_version = 0;
+    Settings::putEnvironment( "SCAI_CUDA_USE_TEXTURE", not useTexture );
 
-    SCAI_CUBLAS_CALL( cublasGetVersion( blasHandle, &blas_version ), "get version" );
+    BOOST_CHECK_EQUAL( useTexture, CUDASettings::useTexture() );
 
-    BOOST_CHECK( blas_version > 0 );
+    // but can be rewritten in this way
 
-    cusparseHandle_t sparseHandle = myCuda.getcuSparseHandle();
+    CUDASettings::set( useSharedMem, not useTexture );
 
-    int sparse_version = 0;
+    BOOST_CHECK_EQUAL( not useTexture, CUDASettings::useTexture() );
+    BOOST_CHECK_EQUAL( useSharedMem, CUDASettings::useSharedMem() );
 
-    SCAI_CUSPARSE_CALL( cusparseGetVersion( sparseHandle, &sparse_version ), "get version" );
-
-    BOOST_CHECK( sparse_version > 0 );
-
-    cusparseMatDescr_t dA = NULL;
-    cusparseDiagType_t dtype = cusparseDiagType_t ( 10 );    //  no legal enum value
-
-    SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &dA ), "create mat" );
-
-    BOOST_CHECK_THROW (
-    {
-        SCAI_CUSPARSE_CALL( cusparseSetMatDiagType( dA, dtype ), "set unknown diag type" );
-
-    }, scai::common::Exception );
+    CUDASettings::set( not useSharedMem, useTexture );
+    BOOST_CHECK_EQUAL( not useSharedMem, CUDASettings::useSharedMem() );
 }
 
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( shutdownTest )
+BOOST_AUTO_TEST_CASE( blockSizeTest )
 {
     int nr = 0;
 
-    int val = 0;
-
     scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
+    scai::common::CUDACtx myCuda( nr );
+    scai::common::CUDAAccess tmpAccess( myCuda );
 
-    {
-        scai::common::CUDACtx myCuda( nr );
+    // This is the default block size for parallelism 
 
-        myCuda.addShutdown( scai::common::bind( &inc, &val ) );
+    int bsize = CUDASettings::getBlockSize();
 
-        BOOST_CHECK_EQUAL( 0, val );
+    // For large sized problems we get the full block size
+ 
+    int bsize100 = CUDASettings::getBlockSize( 100 * bsize );
+    BOOST_CHECK_EQUAL( bsize, bsize100 );
 
-        myCuda.addShutdown( scai::common::bind( &inc, &val ) );
+    // For small sized problems we get the half block size
 
-        // shutdown routine will only be called with destructor
-    }
-
-    // inc should have been called twice by destructor
-
-    BOOST_CHECK_EQUAL( 2, val );
+    int bsize2 = CUDASettings::getBlockSize( bsize );
+    BOOST_CHECK_EQUAL( bsize, 2 * bsize2 );
 }
-
-/* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
 

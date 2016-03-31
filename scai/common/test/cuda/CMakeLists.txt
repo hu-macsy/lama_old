@@ -37,6 +37,7 @@ scai_project (
         commonCUDATest
         CUDAAccessTest
         CUDADeviceTest
+        CUDASettingsTest
  
     CUDA_SOURCES
 
