@@ -65,7 +65,7 @@ then
     fi
 fi
 
-do_coverage "@CMAKE_SOURCE_DIR@"
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
 if [ $? == 1 ];
 then
