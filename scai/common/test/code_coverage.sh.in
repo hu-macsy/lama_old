@@ -72,4 +72,4 @@ then
     exit 1
 fi
 
-zip -r ../common_coverage.zip *
+zip -qr ../common_coverage.zip *
