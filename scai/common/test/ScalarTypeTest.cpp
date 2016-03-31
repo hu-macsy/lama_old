@@ -1,5 +1,5 @@
 /**
- * @file WalltimeTest.cpp
+ * @file ScalarTypeTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,40 +25,42 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test routines for class Walltime
+ * @brief Test enum for ScalarType
  *
  * @author Thomas Brandes
- * @date 10.03.2016
+ * @date 30.03.2016
  */
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/Walltime.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <sstream>
 
-#include <unistd.h>
+using namespace scai;
+using namespace common;
 
-BOOST_AUTO_TEST_CASE( WalltimeTest )
+BOOST_AUTO_TEST_CASE( ScalarTypeTest )
 {
+    for ( int type = scalar::INDEX_TYPE; type <= scalar::UNKNOWN; ++type )
+    {
+        scalar::ScalarType stype = scalar::ScalarType( type );
 
-    using scai::common::Walltime;
-    using scai::common::INTEGER_8;
+        std::ostringstream s;
+        s << stype;
 
-    INTEGER_8 i0 = Walltime::timestamp();
-    double t0 = Walltime::get();
+        BOOST_CHECK( s.str().length() > 0 );
 
-    sleep( 1 );
-    double t1 = Walltime::get();
-    INTEGER_8 i1 = Walltime::timestamp();
+        BOOST_CHECK_EQUAL( stype, str2ScalarType( s.str().c_str() ) );
 
-    // time in seconds
+        size_t pos = s.str().find( "Complex" );
 
-    double time = t1 - t0;
-
-    // should be rather accurate one second
-
-    BOOST_CHECK_CLOSE( 1.0, time, 1 );
-
-    // using timestamp instead of get() should give same result
-
-    BOOST_CHECK_CLOSE( double( i1 - i0 ) / double( Walltime::timerate() ), time, 1 );
+        if ( isComplex( stype ) )
+        {
+           BOOST_CHECK( pos != std::string::npos );
+        }
+        else
+        {
+           BOOST_CHECK( pos == std::string::npos );
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /**
- * @file WalltimeTest.cpp
+ * @file PrintableTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test routines for class Walltime
+ * @brief Test functionality of base class Printable
  *
  * @author Thomas Brandes
  * @date 10.03.2016
@@ -33,32 +33,53 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/Walltime.hpp>
+#include <scai/common/Printable.hpp>
 
 #include <unistd.h>
 
-BOOST_AUTO_TEST_CASE( WalltimeTest )
+// Printable class uses defaults writeAt
+
+class X1 : public scai::common::Printable
 {
+};
 
-    using scai::common::Walltime;
-    using scai::common::INTEGER_8;
+// Printable class overrides defaults writeAt
 
-    INTEGER_8 i0 = Walltime::timestamp();
-    double t0 = Walltime::get();
+class X2 : public scai::common::Printable
+{
+    virtual void writeAt( std::ostream& stream ) const
+    {
+        stream << "X2object";
+    }
+};
 
-    sleep( 1 );
-    double t1 = Walltime::get();
-    INTEGER_8 i1 = Walltime::timestamp();
+BOOST_AUTO_TEST_CASE( PrintableTest )
+{
+    X1 x1;
+    X2 x2;
 
-    // time in seconds
+    std::ostringstream out;
+  
+    out << x1;
+    BOOST_CHECK_EQUAL( out.str(), typeid(X1).name() );
 
-    double time = t1 - t0;
+    out.str( "" );
+    out.clear();
 
-    // should be rather accurate one second
+    out << x2;
+    BOOST_CHECK_EQUAL( out.str(), "X2object" );
 
-    BOOST_CHECK_CLOSE( 1.0, time, 1 );
+    scai::common::Printable& p = x2;
 
-    // using timestamp instead of get() should give same result
+    out.str( "" );
+    out.clear();
 
-    BOOST_CHECK_CLOSE( double( i1 - i0 ) / double( Walltime::timerate() ), time, 1 );
+    out << p;
+    BOOST_CHECK_EQUAL( out.str(), "X2object" );
+
+    out.str( "" );
+    out.clear();
+
+    p.Printable::writeAt( out );
+    BOOST_CHECK_EQUAL( out.str(), typeid(X2).name() );
 }

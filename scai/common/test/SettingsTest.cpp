@@ -65,3 +65,30 @@ BOOST_AUTO_TEST_CASE( SettingsTest )
 
     BOOST_CHECK( !set );
 }
+
+BOOST_AUTO_TEST_CASE( SettingsConvertTest )
+{
+    static char var[] = "Dummy";
+
+    using scai::common::Settings;
+
+    bool flag;
+    bool set;
+
+    Settings::putEnvironment( var, "Yes" );
+    set = Settings::getEnvironment( flag, var );
+    BOOST_CHECK( set && flag );
+ 
+    Settings::putEnvironment( var, "No" );
+    set = Settings::getEnvironment( flag, var );
+    BOOST_CHECK( set && !flag );
+
+    Settings::putEnvironment( var, "shit" );
+    set = Settings::getEnvironment( flag, var );
+    BOOST_CHECK( !set );
+
+    Settings::putEnvironment( var, 0 );
+    set = Settings::getEnvironment( flag, var );
+    BOOST_CHECK( set && !flag );
+}
+
