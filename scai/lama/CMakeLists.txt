@@ -161,16 +161,8 @@ relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLU
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" )
 install ( FILES "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" DESTINATION include/scai )
 
-# generate file make.inc + install it
-#configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
-#install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
-
-# copy examples in build directory + install it
-#file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-#install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
-
 ## add custum target distClean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 ### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

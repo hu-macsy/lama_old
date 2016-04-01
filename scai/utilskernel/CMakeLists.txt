@@ -165,7 +165,7 @@ relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLU
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ### add custum target distClean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 ### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

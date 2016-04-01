@@ -178,7 +178,7 @@ install ( FILES ../solver.hpp DESTINATION include/scai )
 #install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
 ## add custum target distClean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 ### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

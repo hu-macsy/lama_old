@@ -296,7 +296,7 @@ if    ( BUILD_DOC )
 endif ( BUILD_DOC )
 
 ## add custom target distclean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 # copy in  scai_test.sh
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test.sh"
