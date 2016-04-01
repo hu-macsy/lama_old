@@ -32,7 +32,7 @@
 
 # ThreadTest example
 
-include ( CheckC++11 )
+include ( Compiler/CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 )
     include( Package/Boost )
     include_directories ( ${BOOST_INCLUDE_DIR} )

@@ -47,12 +47,12 @@ project ( LAMA_ALL CXX )
 
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
-include ( CompilerVersion )
+include ( Compiler/VersionCheck )
 include ( SCAIAssert )
-include ( SetCPPFlags )
+include ( Compiler/SetCPPFlags )
 
 ## maybe boost
-include ( CheckC++11 )
+include ( Compiler/CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )

@@ -51,11 +51,11 @@ setAndCheckCache ( CUDA )
 if ( CUDA_FOUND AND USE_CUDA )
 
 	# find out CUDA compute capability by test program
-	include ( CUDAComputeCapability )
+	include ( Compiler/CUDAComputeCapability )
 	
 	# set nvcc compiler flags, if not added as external project (has flags from parent)
 	if    ( NOT SCAI_COMPLETE_BUILD )
-		include ( SetNVCCFlags )
+		include ( Compiler/SetNVCCFlags )
 	endif ( NOT SCAI_COMPLETE_BUILD )
 	
 	### Check for cuSPASE library, Version 2 (since CUDA 5.0)

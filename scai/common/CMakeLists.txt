@@ -56,15 +56,15 @@ include ( Functions/relativeInstall )
 ### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
-    include ( CompilerVersion )
-    include ( SetCPPFlags )
+    include ( Compiler/VersionCheck )
+    include ( Compiler/SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## C++11 or Boost
-include ( CheckC++11 )
+include ( Compiler/CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )

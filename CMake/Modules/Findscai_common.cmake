@@ -26,7 +26,7 @@ find_library ( SCAI_COMMON_LIBRARY scai_common
     ${SCAI_COMMON_ROOT}/lib
 )
 
-include ( CheckC++11 )
+include ( Compiler/CheckC++11 )
 include ( Package/OpenMP )
 
 if ( SCAI_COMMON_INCLUDE_DIR )
