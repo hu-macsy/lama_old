@@ -44,8 +44,8 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ## important Variables for project
 include ( VersionDefinition )
 include ( SetProjectVariables)
-include ( InternalDependencies )
-include ( ExternalDependencies )
+include ( Dependencies/internal )
+include ( Dependencies/external )
 
 ## needed functions
 include ( Functions/scaiFunctions )

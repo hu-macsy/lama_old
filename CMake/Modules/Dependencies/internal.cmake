@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file dependendies/internal.cmake
  #
  # @license
  # Copyright (c) 2009-2015

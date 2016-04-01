@@ -69,7 +69,7 @@ include ( VersionDefinition )
 include ( SetProjectVariables )
 include ( Functions/scaiFunctions )
 
-include ( ExternalDependencies )
+include ( Dependencies/external )
 
 foreach    ( module ${SCAI_EXTERNAL_DEPS} )
     include( Package/${module} )
@@ -87,7 +87,7 @@ include ( Summaries/scai )
 ## pass CACHE Variables to all subprojects via white listing
 
 # loads variables WHITELIST, MPI_WHITELIST, CUDA_WHITELIST, MIC_WHITELIST
-include ( NeededCacheVariables )
+include ( Dependencies/NeededCacheVariables )
 
 set ( BOOST_ARGS "" )
 set ( CUDA_ARGS "" )
@@ -138,8 +138,7 @@ endforeach ( CACHE_VAR ${CACHE_VARS} )
 ## define external projects
 
 # loads SCAI_[LIB]_INTERNAL_DEPS variables 
-include ( InternalDependencies )
-include ( ExternalDependencies )
+include ( Dependencies/internal )
 
 include ( ExternalProject )
 
