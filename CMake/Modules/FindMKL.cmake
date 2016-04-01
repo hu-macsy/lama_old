@@ -74,7 +74,7 @@ if ( NOT DEFINED MKL_INCLUDE_DIR )
                 # Found more than one include dir
                 if ( ${MKL_SEARCH_DIR_COUNT} GREATER 1 ) 
                     list ( GET MKL_SEARCH_DIR 0 MKL_SEARCH_DIR )
-                    message ( STATUS "Found multiple MKL installations. Will choose: " ${MKL_SEARCH_DIR} )
+                    message ( "Found multiple MKL installations. Will choose: " ${MKL_SEARCH_DIR} )
                 endif( ${MKL_SEARCH_DIR_COUNT} GREATER 1 )
                 
                 get_filename_component ( MKL_INCLUDE_DIR "${MKL_SEARCH_DIR}" PATH )

@@ -34,11 +34,16 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( LAMA_ALL CXX )
-
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
+
+### set cmake quiet for untyped messages
+if    ( NOT SCAI_CMAKE_VERBOSE )
+    include ( Functions/setCMakeQuiet )
+endif ( NOT SCAI_CMAKE_VERBOSE )
+
+### Set PROJECT NAME / supported LANGUAGES
+project ( LAMA_ALL CXX )
 
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
@@ -46,10 +51,14 @@ include ( CompilerVersion )
 include ( SCAIAssert )
 include ( SetCPPFlags )
 
+## maybe boost
 include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+## documentation
+include( Package/doc )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
@@ -70,9 +79,7 @@ include ( LoggingSettings )
 include ( TracingSettings )
 
 include ( ConcludeFlags )
-
-## documentation
-include( Package/doc )
+include ( SetCacheVariableTexts )
 
 ## summary of what is found
 include ( Summaries/scai )

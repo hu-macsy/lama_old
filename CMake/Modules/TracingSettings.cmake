@@ -4,8 +4,12 @@
 # ignored. Otherwise performance data can be collected
 # where configuration is set at runtime via SCAI_TRACE.
 
-set ( SCAI_TRACING TRUE CACHE BOOL 
-     "Enable / Disable tracing of regions for performance analysis" )
+include ( Functions/checkValue )
+
+set ( TRUE_FALSE_CHOICE ON OFF TRUE FALSE 1 0 )
+set ( SCAI_TRACING ON )
+checkValue ( ${SCAI_TRACING} "${TRUE_FALSE_CHOICE}" )
+
 if ( SCAI_TRACING )
     set ( SCAI_TRACING_FLAG "SCAI_TRACE_ON" )
 else ( SCAI_TRACING )

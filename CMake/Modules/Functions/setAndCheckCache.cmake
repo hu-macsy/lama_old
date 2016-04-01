@@ -59,6 +59,6 @@ function    ( setAndCheckCache PACKAGE_NAME )
         endif ( ${FOUND_VARIABLE_NAME} )
         
         # Set cache variable
-        set ( ${CACHE_VARIABLE_NAME} ${USE_PACKAGE} CACHE BOOL "Enable / Disable use of ${CACHE_NAME}" )
+        set ( ${CACHE_VARIABLE_NAME} ${USE_PACKAGE} CACHE BOOL "" )
     endif ( DEFINED ${CACHE_VARIABLE_NAME} )
 endfunction ( setAndCheckCache )

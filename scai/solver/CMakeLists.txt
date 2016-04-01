@@ -74,6 +74,7 @@ addInternalAndExternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
+include ( SetCacheVariableTexts )
 
 ### add definitions ###
 

@@ -40,7 +40,9 @@ else  ( SPHINX_FOUND OR DOXYGEN_FOUND )
 	set ( DOC_FOUND FALSE )
 endif ( SPHINX_FOUND OR DOXYGEN_FOUND )
 
-set ( BUILD_DOC ${DOC_FOUND} CACHE BOOL "Enable / Disable building of doc" )
+if    ( NOT BUILD_DOC )
+	set ( BUILD_DOC ${DOC_FOUND} )
+endif ( NOT BUILD_DOC )
 
 if    ( BUILD_DOC AND NOT DOC_FOUND )
     message( FATAL_ERROR "Build of documentation enabled, but configuration is incomplete!")

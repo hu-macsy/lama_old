@@ -57,7 +57,6 @@ include ( Functions/relativeInstall )
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
     include ( CompilerVersion )
-    include ( SCAIAssert )
     include ( SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
@@ -75,6 +74,7 @@ addInternalAndExternalPackages()
 
 ### finalize build flags
 include ( ConcludeFlags )
+include ( SetCacheVariableTexts )
 
 ### add definitions
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )

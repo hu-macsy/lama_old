@@ -60,8 +60,8 @@ set ( WHITELIST
         SCAI_ASSERT_LEVEL
         SCAI_CMAKE_VERBOSE
         SCAI_LIBRARY_TYPE
-        SCAI_LOG_LEVEL
-        SCAI_TRACING    
+        SCAI_LOGGING_LEVEL
+        SCAI_TRACING
         # USE
         USE_CODE_COVERAGE
     )

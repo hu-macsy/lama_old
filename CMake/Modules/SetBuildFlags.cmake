@@ -49,48 +49,50 @@ set ( CMAKE_VERBOSE_MAKEFILE OFF )
 # Note: can be changed at any time via CCMAKE
 
 # Choose Default CMAKE_BUILD_TYPE
-if ( NOT CMAKE_BUILD_TYPE )
-	set ( CMAKE_BUILD_TYPE_OPTIONS None Debug Release RelWithDebInfo MinSizeRel ) 
-    # Can be: (RelWithDebInfo)
-    set ( CMAKE_BUILD_TYPE Debug CACHE STRING 
-        "Choose the type of build, options are: ${CMAKE_BUILD_TYPE_OPTIONS}." FORCE )
-	checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_OPTIONS}" )
-    message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
-endif ( NOT CMAKE_BUILD_TYPE )
+set ( CMAKE_BUILD_TYPE_OPTIONS None Debug Release RelWithDebInfo MinSizeRel ) 
+if    ( DEFINED CMAKE_BUILD_TYPE )
+    set ( CMAKE_BUILD_TYPE Debug )
+endif ( DEFINED CMAKE_BUILD_TYPE )
+checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_OPTIONS}" )
+#message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 
 # Choose Doc type
-if ( NOT SCAI_DOC_TYPE )
-    set ( SCAI_DOC_TYPE_OPTIONS html json ) 
-    set ( SCAI_DOC_TYPE html CACHE STRING 
-        "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_OPTIONS}." FORCE )
-    checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_OPTIONS}" )
-    message ( STATUS "Doc type is set to " ${CMAKE_BUILD_TYPE} )
-
-    if    ( SCAI_DOC_TYPE STREQUAL json )
-        set ( DOC_EXTENTSION "fjson" )
-    else  ( SCAI_DOC_TYPE STREQUAL json )
-        set ( DOC_EXTENTSION "html" )
-    endif ( SCAI_DOC_TYPE STREQUAL json )
+set ( SCAI_DOC_TYPE_OPTIONS html json )
+if    ( NOT SCAI_DOC_TYPE )
+    set ( SCAI_DOC_TYPE html )
 endif ( NOT SCAI_DOC_TYPE )
+checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_OPTIONS}" )
+#message ( STATUS "Doc type is set to " ${CMAKE_BUILD_TYPE} )
+
+if    ( SCAI_DOC_TYPE STREQUAL json )
+    set ( DOC_EXTENTSION "fjson" )
+else  ( SCAI_DOC_TYPE STREQUAL json )
+    set ( DOC_EXTENTSION "html" )
+endif ( SCAI_DOC_TYPE STREQUAL json )
 
 ## Check if lama should be build static or shared
 
 # default: build shared library
 set ( SCAI_LIBRARY_TYPE_OPTIONS STATIC SHARED )
 if    ( NOT SCAI_LIBRARY_TYPE )
-	set ( SCAI_LIBRARY_TYPE SHARED CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_OPTIONS}" )
-else  ( NOT SCAI_LIBRARY_TYPE ) 	
-    set ( SCAI_LIBRARY_TYPE STATIC CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_OPTIONS}" )
+    set ( SCAI_LIBRARY_TYPE SHARED )
 endif ( NOT SCAI_LIBRARY_TYPE )
 checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_OPTIONS}" )
 
 
-set ( TRUE_FALSE_CHOICE ON OFF )
-
 # Set cache variable
-set ( BUILD_TEST ON CACHE BOOL "Enable / Disable building of tests" )
+set ( TRUE_FALSE_CHOICE ON OFF TRUE FALSE 1 0 )
+
+## Check if tests should be build
+if    ( NOT BUILD_TEST )
+    set ( BUILD_TEST ON )
+endif ( NOT BUILD_TEST )
 checkValue ( ${BUILD_TEST} "${TRUE_FALSE_CHOICE}" )
 
 ## Check if lama should be build for code coverage
-set ( USE_CODE_COVERAGE OFF CACHE BOOL "Enable / Disable use of Code Coverage" )
+if    ( NOT USE_CODE_COVERAGE )
+    set ( USE_CODE_COVERAGE OFF )
+endif ( NOT USE_CODE_COVERAGE )
 checkValue ( ${USE_CODE_COVERAGE} "${TRUE_FALSE_CHOICE}" )
+
+include ( SCAIAssert )

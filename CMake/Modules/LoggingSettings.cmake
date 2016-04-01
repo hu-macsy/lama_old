@@ -11,6 +11,8 @@ set( LOG_CHOICES "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF" )
 #  For serious problems: -DLOG_LEVEL_TRACE
 #  For benchmarks:       -DLOG_LEVEL_OFF (or -DLOG_LEVEL_FATAL, -DLOG_LEVEL_ERROR)
 
+include ( Functions/checkValue )
+
 if    ( NOT SCAI_LOGGING_LEVEL )
     if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
         set ( DEFAULT_LOG_LEVEL "INFO" )
@@ -23,28 +25,13 @@ if    ( NOT SCAI_LOGGING_LEVEL )
     endif ( )
 
     if    ( NOT scai_logging_FIND_QUIETLY )
-        message ( STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE} implies default logging level ${DEFAULT_LOG_LEVEL}" )
+        message ( "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE} implies default logging level ${DEFAULT_LOG_LEVEL}" )
     endif ( NOT scai_logging_FIND_QUIETLY )
 
 endif ( NOT SCAI_LOGGING_LEVEL )
 
-set ( SCAI_LOGGING_LEVEL ${DEFAULT_LOG_LEVEL} CACHE STRING
-      "Choose level of compile time logging: ${LOG_CHOICES}" )
-
-# check for a correct entry
-
-set ( _okay FALSE )
-foreach ( ITEM ${LOG_CHOICES} )
-   if ( ${SCAI_LOGGING_LEVEL} MATCHES ${ITEM} )
-      set ( _okay TRUE )
-   endif ()
-endforeach()
-
-if ( NOT _okay )
-    message ( FATAL_ERROR "Logging value ${SCAI_LOGGING_LEVEL} is invalid, use one of ${LOG_CHOICES}" )
-endif ( NOT _okay )
-
-set ( CACHE LOG_LEVEL PROPERTY STRINGS ${LOG_CHOICES} )
+set ( SCAI_LOGGING_LEVEL ${DEFAULT_LOG_LEVEL} )
+checkValue ( ${SCAI_LOGGING_LEVEL} "${LOG_CHOICES}" )
 
 # compile flag for logging should not be put in the cache, avoids errors for wrong settings
 

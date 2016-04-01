@@ -36,23 +36,19 @@
 #  Debug   : use -DASSERT_LEVEL_DEBUG
 #  Release : use -DASSERT_LEVEL_ERROR
 #  
-#  For benchmarks:       -DASSERT_LEVEL_OFF
+#  For benchmarks: -DASSERT_LEVEL_OFF
 
 list ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
 
 if    ( NOT SCAI_ASSERT_LEVEL )
     if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-        set ( DEFAULT_ASSERT_LEVEL "ERROR" )
+        set ( SCAI_ASSERT_LEVEL "ERROR" )
     elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
-        set ( DEFAULT_ASSERT_LEVEL "DEBUG" )
+        set ( SCAI_ASSERT_LEVEL "DEBUG" )
     else   ( )
-        set ( DEFAULT_ASSERT_LEVEL "DEBUG" )
+        set ( SCAI_ASSERT_LEVEL "DEBUG" )
     endif  ( )
 endif ( NOT SCAI_ASSERT_LEVEL )
-
-set ( SCAI_ASSERT_LEVEL ${DEFAULT_ASSERT_LEVEL} CACHE STRING
-      "Choose level of ASSERT: ${ASSERT_CHOICES}" )
-set ( CACHE SCAI_ASSERT_LEVEL PROPERTY STRINGS ${ASSERT_CHOICES} )
 checkValue ( ${SCAI_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
 
 #add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
