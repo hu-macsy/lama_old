@@ -75,8 +75,8 @@ foreach    ( module ${SCAI_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
 
-include ( LoggingSettings )
-include ( TracingSettings )
+include ( Settings/logging )
+include ( Settings/tracing )
 
 include ( ConcludeFlags )
 include ( SetCacheVariableTexts )

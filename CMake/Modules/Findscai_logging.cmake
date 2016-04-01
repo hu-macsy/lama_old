@@ -43,4 +43,4 @@ if ( SCAI_LOGGING_INCLUDE_DIR )
     endif ( SCAI_LOGGING_LIBRARY )
 endif ( SCAI_LOGGING_INCLUDE_DIR)
 
-include ( LoggingSettings )
+include ( Settings/logging )
