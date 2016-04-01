@@ -57,7 +57,6 @@ include ( Functions/relativeInstall )
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
     include ( Compiler/VersionCheck )
-    include ( SCAIAssert )
     include ( Compiler/SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Functions/CheckValueAtCompleteBuild )
@@ -114,7 +113,11 @@ scai_project (
 
 ## add subdirectories
 add_subdirectory ( doc )
+
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
+
 add_subdirectory ( macros )
 ## begin subdir test
 # prepare test

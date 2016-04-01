@@ -56,7 +56,6 @@ include ( Functions/relativeInstall )
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
     include ( Compiler/VersionCheck )
-    include ( SCAIAssert )
     include ( Compiler/SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Functions/CheckValueAtCompleteBuild )
@@ -129,7 +128,10 @@ scai_project (
 ### add subdirectories
 
 add_subdirectory ( doc )
+
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
 
 if ( GPI_FOUND AND USE_GPI )
     add_subdirectory( gpi )

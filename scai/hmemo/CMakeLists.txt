@@ -57,7 +57,6 @@ include ( Functions/relativeInstall )
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
     include ( Compiler/VersionCheck )
-    include ( SCAIAssert )
     include ( Compiler/SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Functions/CheckValueAtCompleteBuild )
@@ -128,7 +127,11 @@ if    ( CUDA_FOUND AND USE_CUDA )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 add_subdirectory ( doc )
+
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
+
 add_subdirectory ( exception )
 
 if    ( USE_MIC )

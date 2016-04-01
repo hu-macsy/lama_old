@@ -1,7 +1,7 @@
 # Using the logging library requires setting of SCAI_LOG_LEVEL_xxx at compile time
 # CMake variable SCAI_LOGGING_LEVEL (cache) is used for the correct setting
 
-set( LOG_CHOICES "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF" )
+# LOG_CHOICES "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF"
 
 ## LOGGING Level
 #
@@ -31,13 +31,8 @@ if    ( NOT SCAI_LOGGING_LEVEL )
 endif ( NOT SCAI_LOGGING_LEVEL )
 
 set ( SCAI_LOGGING_LEVEL ${DEFAULT_LOG_LEVEL} )
-checkValue ( ${SCAI_LOGGING_LEVEL} "${LOG_CHOICES}" )
+checkValue ( ${SCAI_LOGGING_LEVEL} "${SCAI_LOGGING_CHOICES}" )
 
 # compile flag for logging should not be put in the cache, avoids errors for wrong settings
 
 set ( SCAI_LOGGING_FLAG "SCAI_LOG_LEVEL_${SCAI_LOGGING_LEVEL}" )
-
-# Note: files using logging should be compiles with the corresponding flag
-# add_definitions ( -D${SCAI_LOGGING_FLAG} )
-
-mark_as_advanced ( SCAI_LOGGING_INCLUDE_DIR SCAI_LOGGING_LIBRARY )

@@ -48,7 +48,6 @@ project ( LAMA_ALL CXX )
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
 include ( Compiler/VersionCheck )
-include ( SCAIAssert )
 include ( Compiler/SetCPPFlags )
 
 ## maybe boost
@@ -71,6 +70,7 @@ include ( Functions/scaiFunctions )
 
 include ( Dependencies/external )
 
+
 foreach    ( module ${SCAI_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
@@ -79,6 +79,7 @@ include ( Settings/logging )
 include ( Settings/tracing )
 
 include ( ConcludeFlags )
+
 include ( SetCacheVariableTexts )
 
 ## summary of what is found

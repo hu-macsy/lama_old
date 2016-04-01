@@ -43,4 +43,6 @@ if ( SCAI_LOGGING_INCLUDE_DIR )
     endif ( SCAI_LOGGING_LIBRARY )
 endif ( SCAI_LOGGING_INCLUDE_DIR)
 
+mark_as_advanced ( SCAI_LOGGING_INCLUDE_DIR SCAI_LOGGING_LIBRARY )
+
 include ( Settings/logging )

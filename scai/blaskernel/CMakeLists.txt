@@ -57,7 +57,6 @@ include ( Functions/relativeInstall )
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
     include ( Compiler/VersionCheck )
-    include ( SCAIAssert )
     include ( Compiler/SetCPPFlags )
     include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
@@ -118,7 +117,10 @@ if    ( CUDA_FOUND AND USE_CUDA )
 	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
+
 add_subdirectory ( doc )
 add_subdirectory ( external )
 

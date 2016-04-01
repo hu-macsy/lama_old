@@ -149,7 +149,11 @@ install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
 
 add_subdirectory ( cuda )
 add_subdirectory ( doc )
+
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
+
 add_subdirectory ( exception )
 add_subdirectory ( macros )
 add_subdirectory ( mepr )

@@ -31,6 +31,7 @@
  # @since 2.0.0
 ###
 include ( Functions/checkValue )
+include ( Settings/switchChoices )
 
 function ( checkValueAtCompleteBuild LIBRARY )
 
@@ -40,23 +41,19 @@ set ( VAR_NAME "SCAI_${UPPER_LIBRARY}_EXTERNAL_DEPS" )
 ## from SetBuildFlags
 
 # CMAKE_BUILD_TYPE
-set ( CMAKE_BUILD_TYPE_OPTIONS None Debug Release RelWithDebInfo MinSizeRel )
-checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_OPTIONS}" )
+checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_CHOICES}" )
 
 # SCAI_LIBRARY_TYPE
-set ( SCAI_LIBRARY_TYPE_OPTIONS STATIC SHARED )
-checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_OPTIONS}" )
+checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_CHOICES}" )
 
 ## from SCAIAssert
-list ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
-checkValue ( ${SCAI_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
+checkValue ( ${SCAI_ASSERT_LEVEL} "${SCAI_ASSERT_CHOICES}" )
 
 ## from SCAI_BLAS
 list ( FIND ${VAR_NAME} SCAI_BLAS test_var )
 #message ( STATUS "test_var SCAI_BLAS ${test_var}" )
 if    ( ${test_var} GREATER -1 )
-	LIST ( APPEND LIBRARY_CHOICES "auto" "MKL" "BLAS" "INTERNALBLAS" )
-	checkValue( ${SCAI_BLAS_LIBRARY} "${LIBRARY_CHOICES}" )
+	checkValue( ${SCAI_BLAS_LIBRARY} "${SCAI_BLAS_LIBRARY_CHOICES}" )
 endif ( ${test_var} GREATER -1 )
 
 if    ( CUDA_FOUND AND USE_CUDA )

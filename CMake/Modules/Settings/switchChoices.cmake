@@ -1,5 +1,5 @@
 ###
- # @file SCAIAssert.cmake
+ # @file switchChoices.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,30 +25,33 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Definitions of SCAI_ASSERT
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief Sets all lists of choices that can be switch in the LAMA configutation and defines their default behaviour.
+ # @author Lauretta Schubert
+ # @date 01.04.2016
+ # @since 2.0.0
 ###
 
-## ASSERT Level
-#
-#  Debug   : use -DASSERT_LEVEL_DEBUG
-#  Release : use -DASSERT_LEVEL_ERROR
-#  
-#  For benchmarks: -DASSERT_LEVEL_OFF
+set ( TRUE_FALSE_CHOICES ON OFF TRUE FALSE 1 0 )
 
-list ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
+set ( BUILD_DOC_DEFAULT ON )
+set ( BUILD_EXAMPLES_DEFAULT ON )
+set ( BUILD_TEST_DEFAULT ON )
+set ( USE_CODE_COVERAGE_DEFAULT OFF )
 
-if    ( NOT SCAI_ASSERT_LEVEL )
-    if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-        set ( SCAI_ASSERT_LEVEL "ERROR" )
-    elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
-        set ( SCAI_ASSERT_LEVEL "DEBUG" )
-    else   ( )
-        set ( SCAI_ASSERT_LEVEL "DEBUG" )
-    endif  ( )
-endif ( NOT SCAI_ASSERT_LEVEL )
-checkValue ( ${SCAI_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
+set ( CMAKE_BUILD_TYPE_CHOICES "None" "Debug" "Release" "RelWithDebInfo" "MinSizeRel" ) 
+set ( CMAKE_BUILD_TYPE_DEFAULT "Debug" )
 
-#add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+set ( SCAI_ASSERT_CHOICES DEBUG ERROR OFF )
+set ( SCAI_ASSERT_DEFAULT DEBUG )
+
+set ( SCAI_BLAS_LIBRARY_CHOICES auto MKL BLAS INTERNALBLAS )
+set ( SCAI_BLAS_LIBRARY_DEFAULT auto )
+
+set ( SCAI_DOC_TYPE_CHOICES html json )
+set ( SCAI_DOC_TYPE_DEFAULT html )
+
+set ( SCAI_LIBRARY_TYPE_CHOICES STATIC SHARED )
+set ( SCAI_LIBRARY_TYPE_DEFAULT SHARED )
+
+set ( SCAI_LOGGING_CHOICES TRACE DEBUG INFO WARN ERROR OFF )
+# no default, decision depending on choosen CMAKE_BUILD_TYPE --> see Settings/logging

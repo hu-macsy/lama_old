@@ -57,7 +57,6 @@ include ( Functions/relativeInstall )
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
     include ( Compiler/VersionCheck )
-    include ( SCAIAssert )
     include ( Compiler/SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Functions/CheckValueAtCompleteBuild )
@@ -119,7 +118,10 @@ if    ( USE_MIC )
 endif ( USE_MIC )
 
 add_subdirectory ( doc )
+
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )

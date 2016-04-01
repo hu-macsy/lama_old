@@ -36,7 +36,7 @@
 # build_
 
 if    ( DEFINED BUILD_DOC )
-	set ( BUILD_DOC ${DOC_FOUND} CACHE BOOL "Enable / Disable building of doc" FORCE )
+	set ( BUILD_DOC ${BUILD_DOC} CACHE BOOL "Enable / Disable building of doc" FORCE )
 endif ( DEFINED BUILD_DOC )
 
 if    ( DEFINED BUILD_TEST )
@@ -50,8 +50,7 @@ if    ( DEFINED CMAKE_INSTALL_PREFIX )
 endif ( DEFINED CMAKE_INSTALL_PREFIX )
 
 if    ( DEFINED CMAKE_BUILD_TYPE )
-	set ( CMAKE_BUILD_TYPE_OPTIONS None Debug Release RelWithDebInfo MinSizeRel ) 
-	set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are: ${CMAKE_BUILD_TYPE_OPTIONS}." FORCE )
+	set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are: ${CMAKE_BUILD_TYPE_CHOICES}." FORCE )
 endif ( DEFINED CMAKE_BUILD_TYPE )
 
 # cuda_
@@ -59,6 +58,7 @@ endif ( DEFINED CMAKE_BUILD_TYPE )
 if    ( DEFINED CUDA_COMPUTE_CAPABILITY )
 	set ( CUDA_COMPUTE_CAPABILITY ${CUDA_COMPUTE_CAPABILITY} CACHE STRING "CUDA compute capability (supported up from 13)" FORCE )
 endif ( DEFINED CUDA_COMPUTE_CAPABILITY )
+
 if    ( DEFINED CUDA_GENERATE_CODE )
 	set ( CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} CACHE STRING "Which GPU architectures to generate code for (each arch/code pair will be passed as --generate-code option to nvcc, separate multiple pairs by ;)" FORCE )
 endif ( DEFINED CUDA_GENERATE_CODE )
@@ -66,28 +66,23 @@ endif ( DEFINED CUDA_GENERATE_CODE )
 # scai_
 
 if    ( DEFINED SCAI_ASSERT_LEVEL )
-	list ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
-	set ( SCAI_ASSERT_LEVEL ${SCAI_ASSERT_LEVEL} CACHE STRING "Choose level of ASSERT: ${ASSERT_CHOICES}" FORCE )
+	set ( SCAI_ASSERT_LEVEL ${SCAI_ASSERT_LEVEL} CACHE STRING "Choose level of ASSERT: ${SCAI_ASSERT_CHOICES}" FORCE )
 endif ( DEFINED SCAI_ASSERT_LEVEL )
 
 if    ( DEFINED SCAI_BLAS_LIBRARY )
-	LIST ( APPEND LIBRARY_CHOICES "auto" "MKL" "BLAS" "INTERNALBLAS" )
-	set ( SCAI_BLAS_LIBRARY ${SCAI_BLAS_LIBRARY} CACHE STRING "Choose the used BLAS Library: ${LIBRARY_CHOICES}" FORCE )
+	set ( SCAI_BLAS_LIBRARY ${SCAI_BLAS_LIBRARY} CACHE STRING "Choose the used BLAS Library: ${SCAI_BLAS_LIBRARY_CHOICES}" FORCE )
 endif ( DEFINED SCAI_BLAS_LIBRARY )
 
 if    ( DEFINED SCAI_DOC_TYPE )
-	set ( SCAI_DOC_TYPE_OPTIONS html json )
-	set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE} CACHE STRING "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_OPTIONS}." FORCE )
+	set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE} CACHE STRING "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_CHOICES}." FORCE )
 endif ( DEFINED SCAI_DOC_TYPE )
 
 if    ( DEFINED SCAI_LIBRARY_TYPE )
-	set ( SCAI_LIBRARY_TYPE_OPTIONS STATIC SHARED )
-	set ( SCAI_LIBRARY_TYPE ${SCAI_LIBRARY_TYPE} CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_OPTIONS}" FORCE )
+	set ( SCAI_LIBRARY_TYPE ${SCAI_LIBRARY_TYPE} CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_CHOICES}" FORCE )
 endif ( DEFINED SCAI_LIBRARY_TYPE )
 
 if    ( DEFINED SCAI_LOGGING_LEVEL )
-	set( LOG_CHOICES "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF" )
-	set ( SCAI_LOGGING_LEVEL ${SCAI_LOGGING_LEVEL} CACHE STRING "Choose level of compile time logging: ${LOG_CHOICES}" FORCE )
+	set ( SCAI_LOGGING_LEVEL ${SCAI_LOGGING_LEVEL} CACHE STRING "Choose level of compile time logging: ${SCAI_LOGGING_CHOICES}" FORCE )
 endif ( DEFINED SCAI_LOGGING_LEVEL )
 
 if    ( DEFINED SCAI_TRACING )
