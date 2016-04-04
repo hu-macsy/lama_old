@@ -39,6 +39,10 @@ if    ( DEFINED BUILD_DOC )
 	set ( BUILD_DOC ${BUILD_DOC} CACHE BOOL "Enable / Disable building of doc" FORCE )
 endif ( DEFINED BUILD_DOC )
 
+if    ( DEFINED BUILD_EXAMPLES )
+	set ( BUILD_EXAMPLES ${BUILD_EXAMPLES} CACHE BOOL "Enable / Disable building of examples" FORCE )
+endif ( DEFINED BUILD_EXAMPLES )
+
 if    ( DEFINED BUILD_TEST )
 	set ( BUILD_TEST ${BUILD_TEST} CACHE BOOL "Enable / Disable building of tests" FORCE )
 endif ( DEFINED BUILD_TEST )
