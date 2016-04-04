@@ -25,10 +25,11 @@ else  ( SCAI_COMMON_FOUND )
     if ( USE_OPENMP )
 	    set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${OpenMP_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
     endif ( USE_OPENMP )
-    if    ( NOT USE_MIC )
-      set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${MIC_NO_OFFLOAD_FLAG}")
-    endif ( NOT USE_MIC )
 endif ( SCAI_COMMON_FOUND ) 
+
+if    ( NOT USE_MIC )
+    set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${MIC_NO_OFFLOAD_FLAG}")
+endif ( NOT USE_MIC )
 
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 

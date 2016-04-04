@@ -1,8 +1,8 @@
 ###
- # @file PackageMIC.cmake
+ # @file testMICfound.cmake
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2014
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,19 +25,29 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Configuration for using MIC Intel Many Integrated Core Architecture
- # @author Thomas Brandes
- # @date 05.07.2013
- # @since 1.1.0
+ # @brief Detect MIC availability with test program
+ # @author Lauretta Schubert
+ # @date 04.04.2016
+ # @since 2.0.0
 ###
 
-# detect whether a MIC device is available, then USE_MIC
-include ( Compiler/mic/testMICfound )
+if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
-if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-	set ( MIC_NO_OFFLOAD_FLAG "-no-offload" )
+	try_run ( RUN_RESULT_VAR COMPILE_RESULT_VAR
+	    ${CMAKE_BINARY_DIR}
+	    ${CMAKE_MODULE_PATH}/Compiler/mic/testMICfound.cpp
+	    CMAKE_FLAGS 
+	    COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT_VAR
+	    RUN_OUTPUT_VARIABLE MIC_RUN_OUTPUT_VAR )
 
-	if    ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
-		set ( MIC_NO_OFFLOAD_FLAG "-qno-offload" )
-	endif ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
+	if     ( ${MIC_RUN_OUTPUT_VAR} MATCHES MIC )
+		set ( USE_MIC TRUE )
+	elseif ( ${MIC_RUN_OUTPUT_VAR} MATCHES HOST )
+		set ( USE_MIC FALSE )
+	else   ( )
+		set ( USE_MIC FALSE )
+	endif  ( )
+
+else  ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+	set ( USE_MIC FALSE )
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
