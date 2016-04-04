@@ -39,7 +39,7 @@
 #include <scai/blaskernel/mic/MICBLASWrapper.hpp>
 
 // internal scai libraries
-#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/tasking/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>

@@ -40,7 +40,7 @@
 #include <scai/utilskernel/mic/MICUtils.hpp>
 #include <scai/tracing.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
-#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/tasking/mic/MICSyncToken.hpp>
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Settings.hpp>

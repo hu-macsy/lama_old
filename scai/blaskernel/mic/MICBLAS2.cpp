@@ -41,7 +41,7 @@
 // scai library
 #include <scai/kregistry/KernelRegistry.hpp>
 
-#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/tasking/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 
 #include <scai/common/TypeTraits.hpp>

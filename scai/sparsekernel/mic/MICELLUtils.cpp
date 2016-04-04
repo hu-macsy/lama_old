@@ -38,7 +38,7 @@
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
 
 // internal scai projects
-#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/tasking/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
