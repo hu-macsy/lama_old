@@ -33,3 +33,12 @@
 
 ###  User selection to switch use on or off
 set ( USE_MIC FALSE CACHE BOOL "Enable / Disable use of MIC (only for Intel Compiler)" )
+
+if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+	set ( MIC_NO_OFFLOAD_FLAG "-no-offload" )
+
+	message ( STATUS "version: ${IntelCXX_COMPILER_VERSION}" )
+	if    ( IntelCXX_COMPILER_VERSION VERSION_EQUAL 15 )
+		set ( MIC_NO_OFFLOAD_FLAG "-qno-offload" )
+	endif ( IntelCXX_COMPILER_VERSION VERSION_EQUAL 15 )	
+endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
