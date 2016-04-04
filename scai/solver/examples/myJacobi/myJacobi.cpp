@@ -42,6 +42,8 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/lama/expression/VectorExpressions.hpp>
 
+#include <cmath>
+
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -57,7 +59,7 @@ int main( int , char** )
     CSRSparseMatrix<ValueType> matrix;
     MatrixCreator<double>::buildPoisson( matrix, dim, stencil, size, size, size );
 
-    int vectorSize = std::pow(size,dim);
+    int vectorSize = static_cast<int>( std::pow(size,dim) );
 
     DenseVector<ValueType> exactSolution( vectorSize, 1.0 );
     DenseVector<ValueType> rhs = matrix * exactSolution;

@@ -45,8 +45,8 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ## important Variables for project
 include ( VersionDefinition )
 include ( SetProjectVariables)
-include ( InternalDependencies )
-include ( ExternalDependencies )
+include ( Dependencies/internal )
+include ( Dependencies/external )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -56,9 +56,8 @@ include ( Functions/relativeInstall )
 ### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
-    include ( CompilerVersion )
-    include ( SCAIAssert )
-    include ( SetCPPFlags )
+    include ( Compiler/VersionCheck )
+    include ( Compiler/SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Functions/CheckValueAtCompleteBuild )
     CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
@@ -74,6 +73,7 @@ addInternalAndExternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
+include ( SetCacheVariableTexts )
 
 ### add definitions
 
@@ -113,8 +113,15 @@ if ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+if    ( USE_MIC )
+    add_subdirectory ( mic )
+endif ( USE_MIC )
+
 add_subdirectory ( doc )
+
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
@@ -139,7 +146,7 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCL
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ## add custum target distClean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 ### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

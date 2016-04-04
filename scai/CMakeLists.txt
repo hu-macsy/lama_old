@@ -34,22 +34,30 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( LAMA_ALL CXX )
-
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
+### set cmake quiet for untyped messages
+if    ( NOT SCAI_CMAKE_VERBOSE )
+    include ( Functions/setCMakeQuiet )
+endif ( NOT SCAI_CMAKE_VERBOSE )
+
+### Set PROJECT NAME / supported LANGUAGES
+project ( LAMA_ALL CXX )
+
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
-include ( CompilerVersion )
-include ( SCAIAssert )
-include ( SetCPPFlags )
+include ( Compiler/VersionCheck )
+include ( Compiler/SetCPPFlags )
 
-include ( CheckC++11 )
+## maybe boost
+include ( Compiler/CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+## documentation
+include( Package/doc )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
@@ -60,19 +68,19 @@ include ( VersionDefinition )
 include ( SetProjectVariables )
 include ( Functions/scaiFunctions )
 
-include ( ExternalDependencies )
+include ( Dependencies/external )
+
 
 foreach    ( module ${SCAI_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
 
-include ( LoggingSettings )
-include ( TracingSettings )
+include ( Settings/logging )
+include ( Settings/tracing )
 
 include ( ConcludeFlags )
 
-## documentation
-include( Package/doc )
+include ( SetCacheVariableTexts )
 
 ## summary of what is found
 include ( Summaries/scai )
@@ -80,7 +88,7 @@ include ( Summaries/scai )
 ## pass CACHE Variables to all subprojects via white listing
 
 # loads variables WHITELIST, MPI_WHITELIST, CUDA_WHITELIST, MIC_WHITELIST
-include ( NeededCacheVariables )
+include ( Dependencies/NeededCacheVariables )
 
 set ( BOOST_ARGS "" )
 set ( CUDA_ARGS "" )
@@ -100,18 +108,19 @@ get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
 
 foreach    ( CACHE_VAR ${CACHE_VARS} )
 
-	#message ( STATUS "test VAR ${CACHE_VAR}" )
-	check_whitelist ( CACHE_VAR "${WHITELIST}" "CMAKE_ARGS" )
-	
-	check_whitelist ( CACHE_VAR "${BOOST_WHITELIST}" "BOOST_ARGS" )
-	check_whitelist ( CACHE_VAR "${CUDA_WHITELIST}" "CUDA_ARGS" )
-	check_whitelist ( CACHE_VAR "${GPI2_WHITELIST}" "GPI2_ARGS" )
-	check_whitelist ( CACHE_VAR "${GRAPHPARTITIONING_WHITELIST}" "GRAPHPARTITIONING_ARGS" )
-	check_whitelist ( CACHE_VAR "${MIC_WHITELIST}" "MIC_ARGS" )    
-	check_whitelist ( CACHE_VAR "${MPI_WHITELIST}" "MPI_ARGS" )
-	check_whitelist ( CACHE_VAR "${OPENMP_WHITELIST}" "OPENMP_ARGS" )
-	check_whitelist ( CACHE_VAR "${SCAI_BLAS_WHITELIST}" "SCAI_BLAS_ARGS" )
-      check_whitelist ( CACHE_VAR "${DOXYGEN_WHITELIST}" "DOXYGEN_ARGS" )
+    #message ( STATUS "test VAR ${CACHE_VAR}" )
+    check_whitelist ( CACHE_VAR "${WHITELIST}" "CMAKE_ARGS" )
+    
+    check_whitelist ( CACHE_VAR "${BOOST_WHITELIST}" "BOOST_ARGS" )
+    check_whitelist ( CACHE_VAR "${CUDA_WHITELIST}" "CUDA_ARGS" )
+    check_whitelist ( CACHE_VAR "${GPI2_WHITELIST}" "GPI2_ARGS" )
+    check_whitelist ( CACHE_VAR "${GRAPHPARTITIONING_WHITELIST}" "GRAPHPARTITIONING_ARGS" )
+    check_whitelist ( CACHE_VAR "${MIC_WHITELIST}" "MIC_ARGS" )    
+    check_whitelist ( CACHE_VAR "${MPI_WHITELIST}" "MPI_ARGS" )
+    check_whitelist ( CACHE_VAR "${GPI_WHITELIST}" "GPI_ARGS" )
+    check_whitelist ( CACHE_VAR "${OPENMP_WHITELIST}" "OPENMP_ARGS" )
+    check_whitelist ( CACHE_VAR "${SCAI_BLAS_WHITELIST}" "SCAI_BLAS_ARGS" )
+    check_whitelist ( CACHE_VAR "${DOXYGEN_WHITELIST}" "DOXYGEN_ARGS" )
     
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
@@ -130,8 +139,7 @@ endforeach ( CACHE_VAR ${CACHE_VARS} )
 ## define external projects
 
 # loads SCAI_[LIB]_INTERNAL_DEPS variables 
-include ( InternalDependencies )
-include ( ExternalDependencies )
+include ( Dependencies/internal )
 
 include ( ExternalProject )
 
@@ -144,12 +152,12 @@ concatCacheArguments ( scai_common "CACHE_ARGS" )
 #message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_common 
-		DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
+        DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
             PREFIX common
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/common
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR common
+            BINARY_DIR common
             )
 
 concatCacheArguments ( scai_logging "CACHE_ARGS" )
@@ -161,7 +169,7 @@ ExternalProject_Add ( scai_logging
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/logging
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR logging
+            BINARY_DIR logging
             )
 
 concatCacheArguments ( scai_tracing "CACHE_ARGS" )
@@ -173,7 +181,7 @@ ExternalProject_Add ( scai_tracing
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tracing
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR tracing
+            BINARY_DIR tracing
             )
 
 concatCacheArguments ( scai_tasking "CACHE_ARGS" )
@@ -185,7 +193,7 @@ ExternalProject_Add ( scai_tasking
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tasking
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR tasking
+            BINARY_DIR tasking
             )
 
 concatCacheArguments ( scai_hmemo "CACHE_ARGS" )
@@ -197,7 +205,7 @@ ExternalProject_Add ( scai_hmemo
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/hmemo
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR hmemo
+            BINARY_DIR hmemo
             )
 
 concatCacheArguments ( scai_kregistry "CACHE_ARGS" )
@@ -209,7 +217,7 @@ ExternalProject_Add ( scai_kregistry
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/kregistry
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR kregistry
+            BINARY_DIR kregistry
             )
 
 concatCacheArguments ( scai_blaskernel "CACHE_ARGS" )
@@ -221,7 +229,7 @@ ExternalProject_Add ( scai_blaskernel
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/blaskernel
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR blaskernel
+            BINARY_DIR blaskernel
             )
             
 concatCacheArguments ( scai_utilskernel "CACHE_ARGS" )
@@ -233,7 +241,7 @@ ExternalProject_Add ( scai_utilskernel
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/utilskernel
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR utilskernel
+            BINARY_DIR utilskernel
             )
             
 concatCacheArguments ( scai_sparsekernel "CACHE_ARGS" )
@@ -245,7 +253,7 @@ ExternalProject_Add ( scai_sparsekernel
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/sparsekernel
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR sparsekernel
+            BINARY_DIR sparsekernel
             )
 
 concatCacheArguments ( scai_dmemo "CACHE_ARGS" )
@@ -289,14 +297,11 @@ if    ( BUILD_DOC )
 endif ( BUILD_DOC )
 
 ## add custom target distclean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 # copy in  scai_test.sh
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test.sh"
                  "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )
 
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test_xml.sh"
-                 "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )
-
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_code_coverage_functions.sh"
                  "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )

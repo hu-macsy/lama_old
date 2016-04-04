@@ -1,5 +1,5 @@
 ###
- # @file SCAIAssert.cmake
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,34 +25,27 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Definitions of SCAI_ASSERT
- # @author Jan Ecker
+ # @brief CMakeLists.txt
+ # @author Thomas Brandes
  # @date 25.04.2013
  # @since 1.0.0
 ###
 
-## ASSERT Level
-#
-#  Debug   : use -DASSERT_LEVEL_DEBUG
-#  Release : use -DASSERT_LEVEL_ERROR
-#  
-#  For benchmarks:       -DASSERT_LEVEL_OFF
+cmake_minimum_required( VERSION 2.8 )
 
-list ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
+## PROJECT NAME and supported LANGUAGES
 
-if    ( NOT SCAI_ASSERT_LEVEL )
-    if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-        set ( DEFAULT_ASSERT_LEVEL "ERROR" )
-    elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
-        set ( DEFAULT_ASSERT_LEVEL "DEBUG" )
-    else   ( )
-        set ( DEFAULT_ASSERT_LEVEL "DEBUG" )
-    endif  ( )
-endif ( NOT SCAI_ASSERT_LEVEL )
+project ( GPITest CXX )
 
-set ( SCAI_ASSERT_LEVEL ${DEFAULT_ASSERT_LEVEL} CACHE STRING
-      "Choose level of ASSERT: ${ASSERT_CHOICES}" )
-set ( CACHE SCAI_ASSERT_LEVEL PROPERTY STRINGS ${ASSERT_CHOICES} )
-checkValue ( ${SCAI_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
+################################################
+#   MPI stuff                                  #
+################################################
 
-#add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+include ( ../../package/GPI.cmake )
+
+include_directories( ${GPI_INCLUDE_PATH} )
+
+add_executable( GPITest cpi.cpp )
+
+target_link_libraries( GPITest ${GPI_LIBRARIES} )
+

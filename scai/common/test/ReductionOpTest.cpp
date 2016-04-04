@@ -1,8 +1,8 @@
 /**
- * @file cudaComputeCapability.c
+ * @file ReductionOpTest.cpp
  *
  * @license
- * Copyright (c) 2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -25,42 +25,30 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief BiCGstabTest.cpp
- * @author Jan Ecker
- * @date 10.01.2014
- * @since 1.1.0
+ * @brief Test enum for ReductionOp
  *
- * Based on code by Florian Rathgeber<florian.rathgeber@gmail.com> on
- * http://www.cmake.org/Bug/print_bug_page.php?bug_id=11767
+ * @author Thomas Brandes
+ * @date 30.03.2016
  */
 
-#include <stdio.h>
-#include <cuda_runtime.h>
-#include <stdlib.h>
+#include <boost/test/unit_test.hpp>
 
-int main()
+#include <scai/common/ReductionOp.hpp>
+#include <sstream>
+
+using namespace scai;
+using namespace common;
+
+BOOST_AUTO_TEST_CASE( ReductionOpTest )
 {
-    int deviceCount;
-    struct cudaDeviceProp properties;
-    long int cuda_device;
-
-    if ( cudaGetDeviceCount( &deviceCount ) != cudaSuccess )
-        return 1;
-
-    if ( getenv( "SCAI_DEVICE" ) ) {
-        char *pEnd;
-        cuda_device = strtol( getenv( "SCAI_DEVICE" ), &pEnd, 10 );
-    } else {
-        // TODO:  search for device with highest compute capability
-        cuda_device = 0;
+    for ( int type = reduction::COPY; type <= reduction::ABS_MAX + 1; ++type )
+    {
+        std::ostringstream s;
+        s << reduction::ReductionOp( type );
+        BOOST_CHECK( s.str().length() > 0 );
+        if ( type == reduction::COPY )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "COPY" );
+        }
     }
-
-    if ( deviceCount > cuda_device ) {
-        cudaGetDeviceProperties( &properties, cuda_device );
-        printf( "%d%d", properties.major, properties.minor );
-        return 0;
-    }
-
-    // failure
-    return 1;
 }

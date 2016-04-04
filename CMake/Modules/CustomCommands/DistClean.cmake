@@ -44,6 +44,6 @@ else ( TARGET distclean )
 		COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
         COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND sh ${CMAKE_MODULE_PATH}/distclean.sh
+        COMMAND sh ${CMAKE_MODULE_PATH}/CustomCommands/distclean.sh
     )
 endif ( TARGET distclean )

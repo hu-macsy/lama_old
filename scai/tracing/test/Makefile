@@ -54,4 +54,4 @@ simple: simpleTracing.exe
 	${CXX} ${CXX_FLAGS} ${DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
 
 clean:
-	rm -rf *.exe *.o
+	rm -rf *.exe *.o *.ct.* *.time

@@ -38,7 +38,6 @@ scai_project (
  
         MICContext
         MICMemory 
-        MICSyncToken 
 
     ADD_PARENT_SCOPE
 )

@@ -31,8 +31,6 @@
  # @since 1.0.0
 ###
 
-include ( Functions/checkValue )
-
 # Check if verbose mode for CMAKE is selected
 if    ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
     set ( SCAI_FIND_PACKAGE_FLAGS )
@@ -40,57 +38,105 @@ else  ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
     set ( SCAI_FIND_PACKAGE_FLAGS QUIET )
 endif ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
 
+if    ( SCAI_BUILD_LIB_ONLY )
+	set ( BUILD_DOC OFF )
+	set ( BUILD_EXAMPLES OFF )
+	set ( BUILD_TEST OFF )
+endif ( SCAI_BUILD_LIB_ONLY )
+
 # Makefile outputs
 set ( CMAKE_VERBOSE_MAKEFILE OFF )
 
-## BUILDTYPE
+## set default switches or check user input
 
-# Set default build type, will be used for all projects
-# Note: can be changed at any time via CCMAKE
+include ( Settings/switchChoices )
+include ( Functions/checkValue )
 
-# Choose Default CMAKE_BUILD_TYPE
-if ( NOT CMAKE_BUILD_TYPE )
-	set ( CMAKE_BUILD_TYPE_OPTIONS None Debug Release RelWithDebInfo MinSizeRel ) 
-    # Can be: (RelWithDebInfo)
-    set ( CMAKE_BUILD_TYPE Debug CACHE STRING 
-        "Choose the type of build, options are: ${CMAKE_BUILD_TYPE_OPTIONS}." FORCE )
-	checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_OPTIONS}" )
-    message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
-endif ( NOT CMAKE_BUILD_TYPE )
+## DOC
+
+# Check if doc should be build
+if    ( DEFINED BUILD_DOC )
+	#do nothing
+else  ( DEFINED BUILD_DOC )
+    set ( BUILD_DOC ${BUILD_DOC_DEFAULT} )
+endif ( DEFINED BUILD_DOC )
+checkValue ( ${BUILD_DOC} "${TRUE_FALSE_CHOICES}" )
+message ( "Build doc is set to " ${BUILD_DOC} )
 
 # Choose Doc type
-if ( NOT SCAI_DOC_TYPE )
-    set ( SCAI_DOC_TYPE_OPTIONS html json ) 
-    set ( SCAI_DOC_TYPE html CACHE STRING 
-        "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_OPTIONS}." FORCE )
-    checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_OPTIONS}" )
-    message ( STATUS "Doc type is set to " ${CMAKE_BUILD_TYPE} )
+if    ( DEFINED SCAI_DOC_TYPE )
+	# do nothing
+else  ( DEFINED SCAI_DOC_TYPE )
+    set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE_DEFAULT} )
+endif ( DEFINED SCAI_DOC_TYPE )
+checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_CHOICES}" )
+message ( "Doc type is set to " ${SCAI_DOC_TYPE_CHOICES} )
 
-    if    ( SCAI_DOC_TYPE STREQUAL json )
-        set ( DOC_EXTENTSION "fjson" )
-    else  ( SCAI_DOC_TYPE STREQUAL json )
-        set ( DOC_EXTENTSION "html" )
-    endif ( SCAI_DOC_TYPE STREQUAL json )
-endif ( NOT SCAI_DOC_TYPE )
+if    ( SCAI_DOC_TYPE STREQUAL json )
+    set ( DOC_EXTENTSION "fjson" )
+else  ( SCAI_DOC_TYPE STREQUAL json )
+    set ( DOC_EXTENTSION "html" )
+endif ( SCAI_DOC_TYPE STREQUAL json )
 
-## Check if lama should be build static or shared
+## EXAMPLES
 
-# default: build shared library
-set ( SCAI_LIBRARY_TYPE_OPTIONS STATIC SHARED )
-if    ( NOT SCAI_LIBRARY_TYPE )
-	set ( SCAI_LIBRARY_TYPE SHARED CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_OPTIONS}" )
-else  ( NOT SCAI_LIBRARY_TYPE ) 	
-    set ( SCAI_LIBRARY_TYPE STATIC CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_OPTIONS}" )
-endif ( NOT SCAI_LIBRARY_TYPE )
-checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_OPTIONS}" )
+# Check if examples should be build
+if    ( DEFINED BUILD_EXAMPLES )
+	# do nothing
+else  ( DEFINED BUILD_EXAMPLES )
+    set ( BUILD_EXAMPLES ${BUILD_EXAMPLES_DEFAULT} )
+endif ( DEFINED BUILD_EXAMPLES )
+checkValue ( ${BUILD_EXAMPLES} "${TRUE_FALSE_CHOICES}" )
+message ( "Build examples is set to " ${BUILD_EXAMPLES} )
 
+## TEST
 
-set ( TRUE_FALSE_CHOICE TRUE FALSE )
+## Check if tests should be build
+if    ( DEFINED BUILD_TEST )
+	# do nothing
+else  ( DEFINED BUILD_TEST )
+    set ( BUILD_TEST ${BUILD_TEST_DEFAULT} )
+endif ( DEFINED BUILD_TEST )
+checkValue ( ${BUILD_TEST} "${TRUE_FALSE_CHOICES}" )
+message ( "Build test is set to " ${BUILD_TEST} )
 
-# Set cache variable
-set ( BUILD_TEST TRUE CACHE BOOL "Enable / Disable building of tests" )
-checkValue ( ${BUILD_TEST} "${TRUE_FALSE_CHOICE}" )
+## CODE COVERAGE
 
 ## Check if lama should be build for code coverage
-set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
-checkValue ( ${USE_CODE_COVERAGE} "${TRUE_FALSE_CHOICE}" )
+if    ( DEFINED USE_CODE_COVERAGE )
+	# do nothing
+else  ( DEFINED USE_CODE_COVERAGE )
+    set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE_DEFAULT} )
+endif ( DEFINED USE_CODE_COVERAGE )
+checkValue ( ${USE_CODE_COVERAGE} "${TRUE_FALSE_CHOICES}" )
+message ( "Use code coverage is set to " ${USE_CODE_COVERAGE} )
+
+##  CMAKE_BUILD_TYPE
+if    ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE ) # variable may be defined empty
+	# do nothing
+else  ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
+    set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE_DEFAULT} )
+endif ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
+checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_CHOICES}" )
+message ( "Build type is set to " ${CMAKE_BUILD_TYPE} )
+
+## SCAI_ASSERT_LEVEL
+if    ( NOT SCAI_ASSERT_LEVEL )
+    if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+        set ( SCAI_ASSERT_LEVEL "ERROR" )
+    elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
+        set ( SCAI_ASSERT_LEVEL "DEBUG" )
+    else   ( )
+        set ( SCAI_ASSERT_LEVEL "DEBUG" )
+    endif  ( )
+endif ( NOT SCAI_ASSERT_LEVEL )
+checkValue ( ${SCAI_ASSERT_LEVEL} "${SCAI_ASSERT_CHOICES}" )
+
+## SCAI_LIBRARY_TYPE ( static or shared )
+if    ( DEFINED SCAI_LIBRARY_TYPE )
+	# do nothing
+else  ( DEFINED SCAI_LIBRARY_TYPE )
+    set ( SCAI_LIBRARY_TYPE ${SCAI_LIBRARY_TYPE_DEFAULT} )
+endif ( DEFINED SCAI_LIBRARY_TYPE )
+checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_CHOICES}" )
+message ( "Library type is set to " ${SCAI_LIBRARY_TYPE} )

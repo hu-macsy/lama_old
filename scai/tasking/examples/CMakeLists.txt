@@ -43,6 +43,10 @@ if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+if    ( USE_MIC )
+    add_subdirectory ( mic )
+endif ( USE_MIC )
+
 # copy run_all.sh
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
@@ -57,4 +61,4 @@ install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
 
 # install Makefile
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in"
-				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/Makefile" COPYONLY )
+                 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/Makefile" COPYONLY )

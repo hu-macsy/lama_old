@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file dependendies/internal.cmake
  #
  # @license
  # Copyright (c) 2009-2015
@@ -35,7 +35,6 @@
 ## use reverse linking order (for static linking)
 
 set ( SCAI_COMMON_INTERNAL_DEPS ) # 1
-
 set ( SCAI_LOGGING_INTERNAL_DEPS      scai_common ) # 2
 set ( SCAI_TRACING_INTERNAL_DEPS      scai_common scai_logging ) # 3
 set ( SCAI_TASKING_INTERNAL_DEPS      scai_common scai_logging scai_tracing ) # 4

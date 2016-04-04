@@ -241,7 +241,7 @@ endif ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
      
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "BUILD_DOC"
+                       "REQUIRED_FOUND"
                        "DOC"
                        "" )
     # Sphinx                               
@@ -255,6 +255,14 @@ scai_summary_message ( "USE"
                           "DOXYGEN_FOUND"
                           "Doxygen"
                           "Version ${DOXYGEN_VERSION} at ${DOXYGEN_EXECUTABLE}: 'make doxygendoc' to build system documentation" )
+
+message ( STATUS "" )
+
+# EXAMPLES
+scai_summary_message ( "USE"
+                       "BUILD_EXAMPLES"
+                       "EXAMPLES"
+                       "" )
 
 message ( STATUS "" )
 
