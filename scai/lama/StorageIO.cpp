@@ -89,38 +89,16 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
 {
     SCAI_REGION( "StorageIO.writeCSRToFormattedFile" )
 
-    IndexType numRows = csrIA.size() - 1;
-    IndexType numValues = csrJA.size();
-
-    SCAI_LOG_INFO( logger,
-                   "write CSR (#rows = " << numRows << ", #values = " << numValues << ") formatted to file :'" << fileName << "'" )
+    SCAI_LOG_INFO( logger, "write CSR (#rows = " << (csrIA.size() - 1) << ", #values = " << csrJA.size()
+                           << ") formatted to file :'" << fileName << "'" )
 
     //writing matrix data
+    FileStream amgfile( fileName, std::ios::out );
 
-    std::ofstream amgfile( fileName.c_str(), std::ios::out ); // open .amg
-
-    ContextPtr host = Context::getHostPtr();
-
-    ReadAccess<IndexType> ia( csrIA, host );
-    ReadAccess<IndexType> ja( csrJA, host );
-    ReadAccess<ValueType> data( csrValues, host );
-
-    for( IndexType i = 0; i < numRows + 1; ++i )
-    {
-        IndexType tmp = ia[i] + 1;
-        amgfile << tmp << std::endl;
-    }
-
-    for( IndexType j = 0; j < numValues; ++j )
-    {
-        IndexType tmp = ja[j] + 1;
-        amgfile << tmp << std::endl;
-    }
-
-    for( IndexType j = 0; j < numValues; ++j )
-    {
-        amgfile << data[j] << std::endl;
-    }
+    // TODO: do we have to use variable output types here?
+    amgfile.write(csrIA, 1, common::TypeTraits<IndexType>::stype, "\n");
+    amgfile.write(csrJA, 1, common::TypeTraits<IndexType>::stype, "\n");
+    amgfile.write(csrValues, 0, common::TypeTraits<ValueType>::stype, "\n");
 
     amgfile.close();
 }
@@ -138,38 +116,34 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
     SCAI_REGION( "StorageIO.readCSRFromFormattedFile" )
 
     //Reading matrix data
-    std::ifstream amgfile( fileName.c_str(), std::ios::in ); // open .amg
 
-    if( amgfile.fail() )
-    {
-        COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
-    }
-
-    WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
-
-    for( IndexType i = 0; i < numRows + 1; ++i )
-    {
-        amgfile >> ia[i];
-        --ia[i];
-    }
-
+    FileStream inFile( fileName, std::ios::in );
+    inFile.read( csrIA, numRows + 1, -1, common::TypeTraits<IndexType>::stype );
+    ReadAccess<IndexType> ia( csrIA );
     IndexType numValues = ia[numRows];
 
-    WriteOnlyAccess<IndexType> ja( csrJA, numValues );
-    WriteOnlyAccess<ValueType> data( csrValues, numValues );
+    inFile.read( csrJA, numValues, -1, common::TypeTraits<IndexType>::stype );
+    inFile.read( csrValues, numValues, 0, common::TypeTraits<ValueType>::stype );
 
-    for( IndexType j = 0; j < numValues; ++j )
-    {
-        amgfile >> ja[j];
-        --ja[j];
-    }
 
-    for( IndexType j = 0; j < numValues; ++j )
-    {
-        amgfile >> data[j];
-    }
-
-    amgfile.close();
+//    WriteOnlyAccess<IndexType> ja( csrJA, numValues );
+//    WriteOnlyAccess<ValueType> data( csrValues, numValues );
+//
+//    for( IndexType j = 0; j < numValues; ++j )
+//    {
+////        amgfile >> ja[j];
+//        inFile >> ja[j];
+//        --ja[j];
+//    }
+//
+//    for( IndexType j = 0; j < numValues; ++j )
+//    {
+////        amgfile >> data[j];
+//        inFile >> data[j];
+//    }
+//
+////    amgfile.close();
+    inFile.close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -492,12 +466,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     SCAI_LOG_INFO( logger, "writeCSRToBinaryFile ( " << amgFileName << ")" << ", #rows = " << csrIA.size()-1
                            << ", #values = " << csrJA.size() )
 
-    FileStream outFile( amgFileName, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary );
+    FileStream outFile( amgFileName, std::ios::out | std::ios::trunc | std::ios::binary );
     outFile.write<IndexType>( csrIA, 1, jaType );
     outFile.write<IndexType>( csrJA, 1, iaType );
     outFile.write<ValueType>( csrValues, 0, valuesType );
-    //TODO:
-    //outFile.close();
+    outFile.close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -513,21 +486,16 @@ void StorageIO<ValueType>::writeCSRToMMFile(
 {
     SCAI_REGION( "StorageIO.writeCSRToMMFile" )
 
+    // TODO: different output type possible?
+
     const IndexType numRows = csrIA.size() - 1;
     const IndexType numValues = csrJA.size();
 
     writeMMHeader( false, numRows, numColumns, numValues, fileName, dataType );
 
-    std::ofstream ofile;
-    ofile.open( fileName.c_str(), std::ios::out | std::ios::app );
-
-    if( ofile.fail() )
-    {
-        COMMON_THROWEXCEPTION( "SparseMatrix>::writeMatrixToMMFile: '" + fileName + "' could not be reopened." )
-    }
+    FileStream outFile( fileName, std::ios::out | std::ios::app );
 
     // output code runs only for host context
-
     ContextPtr host = Context::getHostPtr();
 
     ReadAccess<IndexType> ia( csrIA, host );
@@ -538,18 +506,18 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     {
         for( IndexType jj = ia[ii]; jj < ia[ii + 1]; ++jj )
         {
-            ofile << ii + 1 << " " << ja[jj] + 1;
+            outFile << ii + 1 << " " << ja[jj] + 1;
 
             if( dataType != common::scalar::PATTERN )
             {
-                ofile << " " << data[jj];
+                outFile << " " << data[jj];
             }
 
-            ofile << std::endl;
+            outFile << std::endl;
         }
     }
 
-    ofile.close();
+    outFile.close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -852,23 +820,9 @@ void _StorageIO::writeCSRHeader(
             COMMON_THROWEXCEPTION( "Invalid header file." )
     }
 
-    std::fstream outFile( fileName.c_str(), std::ios::out );
-
-    if( !outFile.is_open() )
-    {
-        COMMON_THROWEXCEPTION( "Unable to open matrix header file " + fileName + "." )
-    }
-
-    outFile << charFileType;
-    outFile << " \t";
-    outFile << mIversion;
-    outFile << "\n";
-    outFile << "\t\t";
-    outFile << numValues << "\t";
-    outFile << numRows << "\t";
-    outFile << VERSION_ID << "\t";
-    outFile << size << "\t";
-    outFile << rank;
+    FileStream outFile( fileName, std::ios::out | std::ios::trunc );
+    outFile << charFileType << " \t" << mIversion << "\n";
+    outFile << "\t\t" << numValues << "\t" << numRows << "\t" << VERSION_ID << "\t" << size << "\t" << rank;
     outFile.close();
 }
 
@@ -883,12 +837,7 @@ void _StorageIO::readCSRHeader(
     File::FileType& fileType,
     const std::string& frmFileName )
 {
-    std::ifstream frmFile( frmFileName.c_str(), std::ios::in ); // open *.frm
-
-    if( !frmFile.is_open() )
-    {
-        COMMON_THROWEXCEPTION( "Could not open header file " + frmFileName + "." )
-    }
+    FileStream frmFile( frmFileName, std::ios::in );
 
     int iversion;
     char ch = '!';
