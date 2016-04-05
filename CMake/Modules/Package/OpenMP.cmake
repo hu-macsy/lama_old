@@ -68,7 +68,7 @@ else  ( OPENMP_FOUND AND USE_OPENMP )
         set ( SCAI_WARNING_FLAGS "${SCAI_WARNING_FLAGS} -Wno-unknown-pragmas" )
     endif ( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES Intel )
     
-endif ( OPENMP_FOUND  AND USE_OPENMP )
+endif ( OPENMP_FOUND AND USE_OPENMP )
 
 if    ( USE_OPENMP AND NOT OPENMP_FOUND )
     message( FATAL_ERROR "Build of LAMA with OpenMP support enabled, but configuration is incomplete!")

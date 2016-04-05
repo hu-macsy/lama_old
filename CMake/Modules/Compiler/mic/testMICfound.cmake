@@ -31,37 +31,17 @@
  # @since 2.0.0
 ###
 
+if ( CMAKE_CXX_COMPILER_ID MATCHES Intel AND USE_OPENMP )
 
-if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+	execute_process ( COMMAND micinfo
+					  RESULT_VARIABLE MIC_RUN_RESULT_VAR
+					  OUTPUT_VARIABLE MIC_RUN_OUTPUT_VAR)
 
-    # MIC_COMPILE_RESULT_VAR is TRUE when compile succeeds
-    # MIC_RUN_RESULT_VAR is zero when a GPU is found
-	try_run ( MIC_RUN_RESULT_VAR MIC_COMPILE_RESULT_VAR
-	    ${CMAKE_BINARY_DIR}
-	    ${CMAKE_MODULE_PATH}/Compiler/mic/testMICfound.cpp
-	    CMAKE_FLAGS 
-	    COMPILE_OUTPUT_VARIABLE MIC_COMPILE_OUTPUT_VAR
-	    RUN_OUTPUT_VARIABLE MIC_RUN_OUTPUT_VAR )
+	# if micinfo return with SUCCESS MIC_RUN_RESULT_VAR is 0
+	if    ( NOT MIC_RUN_RESULT_VAR )
+		set ( USE_MIC TRUE )
+	endif ( NOT MIC_RUN_RESULT_VAR )
 
-	#message ( STATUS "MIC run output: ${MIC_COMPILE_OUTPUT_VAR} flag: ${MIC_COMPILE_RESULT_VAR}" )
-
-	if    ( MIC_COMPILE_RESULT_VAR )
-
-		message ( STATUS "MIC run output: ${MIC_RUN_OUTPUT_VAR} flag: ${MIC_RUN_RESULT_VAR}" )
-
-		if     ( ${MIC_RUN_OUTPUT_VAR} MATCHES MIC )
-			set ( USE_MIC TRUE )
-		elseif ( ${MIC_RUN_OUTPUT_VAR} MATCHES HOST )
-			set ( USE_MIC FALSE )
-		else   ( )
-			message ( FATAL_ERROR "Internal Error: MIC test examples return neighter MIC or HOST." )
-		endif  ( )
-
-	else  ( MIC_COMPILE_RESULT_VAR )
-		# TODO: shouldn't be here an fatal error because testfile can't compile ?
-		set ( USE_MIC FALSE )
-	endif ( MIC_COMPILE_RESULT_VAR )
-
-else  ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+else  ( CMAKE_CXX_COMPILER_ID MATCHES Intel AND USE_OPENMP )
 	set ( USE_MIC FALSE )
-endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel AND USE_OPENMP )
