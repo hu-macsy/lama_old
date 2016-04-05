@@ -34,22 +34,30 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( LAMA_ALL CXX )
-
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
+### set cmake quiet for untyped messages
+if    ( NOT SCAI_CMAKE_VERBOSE )
+    include ( Functions/setCMakeQuiet )
+endif ( NOT SCAI_CMAKE_VERBOSE )
+
+### Set PROJECT NAME / supported LANGUAGES
+project ( LAMA_ALL CXX )
+
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
-include ( CompilerVersion )
-include ( SCAIAssert )
-include ( SetCPPFlags )
+include ( Compiler/VersionCheck )
+include ( Compiler/SetCPPFlags )
 
-include ( CheckC++11 )
+## maybe boost
+include ( Compiler/CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+## documentation
+include( Package/doc )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
@@ -60,19 +68,19 @@ include ( VersionDefinition )
 include ( SetProjectVariables )
 include ( Functions/scaiFunctions )
 
-include ( ExternalDependencies )
+include ( Dependencies/external )
+
 
 foreach    ( module ${SCAI_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
 
-include ( LoggingSettings )
-include ( TracingSettings )
+include ( Settings/logging )
+include ( Settings/tracing )
 
 include ( ConcludeFlags )
 
-## documentation
-include( Package/doc )
+include ( SetCacheVariableTexts )
 
 ## summary of what is found
 include ( Summaries/scai )
@@ -80,7 +88,7 @@ include ( Summaries/scai )
 ## pass CACHE Variables to all subprojects via white listing
 
 # loads variables WHITELIST, MPI_WHITELIST, CUDA_WHITELIST, MIC_WHITELIST
-include ( NeededCacheVariables )
+include ( Dependencies/NeededCacheVariables )
 
 set ( BOOST_ARGS "" )
 set ( CUDA_ARGS "" )
@@ -131,8 +139,7 @@ endforeach ( CACHE_VAR ${CACHE_VARS} )
 ## define external projects
 
 # loads SCAI_[LIB]_INTERNAL_DEPS variables 
-include ( InternalDependencies )
-include ( ExternalDependencies )
+include ( Dependencies/internal )
 
 include ( ExternalProject )
 
@@ -290,7 +297,7 @@ if    ( BUILD_DOC )
 endif ( BUILD_DOC )
 
 ## add custom target distclean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 # copy in  scai_test.sh
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test.sh"

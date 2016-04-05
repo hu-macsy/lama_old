@@ -1,5 +1,5 @@
 /**
- * @file cudaComputeCapability.c
+ * @file ComputeCapabilityCheck.cpp
  *
  * @license
  * Copyright (c) 2013
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief BiCGstabTest.cpp
+ * @brief ComputeCapabilityCheck.cpp
  * @author Jan Ecker
  * @date 10.01.2014
  * @since 1.1.0

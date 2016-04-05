@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, SCAI_ARITHMETIC_TYPES )
 	#pragma omp parallel for
 	for( int i = 0; i < size; ++i )
 	{
-		ValueType localResult = i + 1;
+		ValueType localResult = i + static_cast<ValueType> (1);
 		atomicAdd( globalResult, localResult );
 	}
 

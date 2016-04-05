@@ -1,8 +1,8 @@
 ###
- # @file Distclean.cmake
+ # @file setCMakeQuiet.cmake
  #
  # @license
- # Copyright (c) 2009-2015
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,25 +25,20 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Add custom target distclean
- # @author Fraunhofer SCAI
- # @date 09.06.2015
+ # @brief CMake function for quiet cmake mode (set cmake quiet for untyped messages)
+ # @author Lauretta Schubert
+ # @date 01.04.2016
+ # @since 2.0.0
 ###
 
-if ( TARGET distclean )
-    # Target already available, do no create it then anymore
-else ( TARGET distclean )
-    add_custom_target ( distclean )
-    add_custom_command (
-        TARGET distclean
-        DEPENDS clean
-        # make docclean (not command itself becaue it depends on clean --> doubled cmake call)
-		COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
-		# make doxygendocclean
-		COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
-        COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND sh ${CMAKE_MODULE_PATH}/distclean.sh
-    )
-endif ( TARGET distclean )
+## adapted to example from: http://stackoverflow.com/questions/10509380/tell-cmake-to-be-quiet
+
+function    ( message )
+	list ( GET ARGV 0 MessageType )
+  	if    ( MessageType STREQUAL FATAL_ERROR OR MessageType STREQUAL SEND_ERROR OR
+      	    MessageType STREQUAL WARNING     OR MessageType STREQUAL AUTHOR_WARNING OR
+	      	MessageType STREQUAL STATUS )
+  		list ( REMOVE_AT ARGV 0 )
+    	_message( ${MessageType} ${ARGV} )
+  	endif ( )
+endfunction ( message )

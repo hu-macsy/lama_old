@@ -1,8 +1,8 @@
 ###
- # @file SCAIAssert.cmake
+ # @file Distclean.cmake
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2015
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,34 +25,25 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Definitions of SCAI_ASSERT
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief Add custom target distclean
+ # @author Fraunhofer SCAI
+ # @date 09.06.2015
 ###
 
-## ASSERT Level
-#
-#  Debug   : use -DASSERT_LEVEL_DEBUG
-#  Release : use -DASSERT_LEVEL_ERROR
-#  
-#  For benchmarks:       -DASSERT_LEVEL_OFF
-
-list ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
-
-if    ( NOT SCAI_ASSERT_LEVEL )
-    if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-        set ( DEFAULT_ASSERT_LEVEL "ERROR" )
-    elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
-        set ( DEFAULT_ASSERT_LEVEL "DEBUG" )
-    else   ( )
-        set ( DEFAULT_ASSERT_LEVEL "DEBUG" )
-    endif  ( )
-endif ( NOT SCAI_ASSERT_LEVEL )
-
-set ( SCAI_ASSERT_LEVEL ${DEFAULT_ASSERT_LEVEL} CACHE STRING
-      "Choose level of ASSERT: ${ASSERT_CHOICES}" )
-set ( CACHE SCAI_ASSERT_LEVEL PROPERTY STRINGS ${ASSERT_CHOICES} )
-checkValue ( ${SCAI_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
-
-#add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+if ( TARGET distclean )
+    # Target already available, do no create it then anymore
+else ( TARGET distclean )
+    add_custom_target ( distclean )
+    add_custom_command (
+        TARGET distclean
+        DEPENDS clean
+        # make docclean (not command itself becaue it depends on clean --> doubled cmake call)
+		COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
+		# make doxygendocclean
+		COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
+        COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND sh ${CMAKE_MODULE_PATH}/CustomCommands/distclean.sh
+    )
+endif ( TARGET distclean )

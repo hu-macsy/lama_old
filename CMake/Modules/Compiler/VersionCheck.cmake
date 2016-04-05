@@ -1,5 +1,5 @@
 ###
- # @file Functions.cmake
+ # @file CompilerVersion.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,40 +25,36 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake functions and macros
+ # @brief Version variable defintions for the used compilers
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0
 ###
 
-# Function for setting USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
-# Also sets cache Variables
-function    ( setAndCheckCache PACKAGE_NAME )
-	
-    # if optional parameter is set, use this one as package name
-    if    ( DEFINED ARGV1 )
-        set ( CACHE_NAME ${ARGV1} )
-    else  ( DEFINED ARGV1 )
-    	set ( CACHE_NAME ${PACKAGE_NAME} )
-    endif ( DEFINED ARGV1 )
+### GNU compiler
 
-    # Create variable names with USE_XXX and FOUND_XXX
-    set ( CACHE_VARIABLE_NAME USE_${CACHE_NAME} )
-    set ( FOUND_VARIABLE_NAME ${PACKAGE_NAME}_FOUND )
+## C Compiler
+if    ( CMAKE_COMPILER_IS_GNUCC )
+    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCC_COMPILER_VERSION ${_compiler_output} )
+endif ( CMAKE_COMPILER_IS_GNUCC )
 
-    # Check if cache variable is already set
-    if    ( DEFINED ${CACHE_VARIABLE_NAME} )
-        # do nothing
-    # if cache variable is NOT set
-    else ( DEFINED ${CACHE_VARIABLE_NAME} )
-        # Check if package was found
-        if    ( ${FOUND_VARIABLE_NAME} )
-            set ( USE_PACKAGE TRUE )
-        else  ( ${FOUND_VARIABLE_NAME} )
-            set ( USE_PACKAGE FALSE )
-        endif ( ${FOUND_VARIABLE_NAME} )
-        
-        # Set cache variable
-        set ( ${CACHE_VARIABLE_NAME} ${USE_PACKAGE} CACHE BOOL "" )
-    endif ( DEFINED ${CACHE_VARIABLE_NAME} )
-endfunction ( setAndCheckCache )
+## CXX Compiler
+if ( CMAKE_COMPILER_IS_GNUCXX )
+    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCXX_COMPILER_VERSION ${_compiler_output} )
+endif ( CMAKE_COMPILER_IS_GNUCXX )
+
+### Intel compiler
+
+## C Compiler
+if    ( CMAKE_CC_COMPILER_ID MATCHES Intel )
+    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" IntelCC_COMPILER_VERSION ${_compiler_output} )
+endif ( CMAKE_CC_COMPILER_ID MATCHES Intel )
+
+## CXX Compiler
+if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" IntelCXX_COMPILER_VERSION ${_compiler_output} )
+endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )

@@ -35,4 +35,4 @@ endif ( SCAI_TRACING_INCLUDE_DIR)
 
 mark_as_advanced ( SCAI_TRACING_INCLUDE_DIR SCAI_TRACING_LIBRARY )
 
-include ( TracingSettings )
+include ( Settings/tracing )

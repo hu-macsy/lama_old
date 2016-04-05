@@ -40,4 +40,4 @@ if    ( DOXYGEN_FOUND )
 endif ( DOXYGEN_FOUND )
 
 ## add custom target docclean
-include ( DocClean )
+include ( CustomCommands/DocClean )

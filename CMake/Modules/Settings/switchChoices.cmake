@@ -1,5 +1,5 @@
 ###
- # @file CompilerVersion.cmake
+ # @file switchChoices.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,20 +25,33 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Version variable defintions for the used compilers
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief Sets all lists of choices that can be switch in the LAMA configutation and defines their default behaviour.
+ # @author Lauretta Schubert
+ # @date 01.04.2016
+ # @since 2.0.0
 ###
 
-### C Compiler
-if    ( CMAKE_COMPILER_IS_GNUCC )
-    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCC_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_COMPILER_IS_GNUCC )
+set ( TRUE_FALSE_CHOICES ON OFF TRUE FALSE 1 0 )
 
-### CXX Compiler
-if ( CMAKE_COMPILER_IS_GNUCXX )
-    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCXX_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_COMPILER_IS_GNUCXX )
+set ( BUILD_DOC_DEFAULT ON )
+set ( BUILD_EXAMPLES_DEFAULT ON )
+set ( BUILD_TEST_DEFAULT ON )
+set ( USE_CODE_COVERAGE_DEFAULT OFF )
+
+set ( CMAKE_BUILD_TYPE_CHOICES "None" "Debug" "Release" "RelWithDebInfo" "MinSizeRel" ) 
+set ( CMAKE_BUILD_TYPE_DEFAULT "Debug" )
+
+set ( SCAI_ASSERT_CHOICES DEBUG ERROR OFF )
+set ( SCAI_ASSERT_DEFAULT DEBUG )
+
+set ( SCAI_BLAS_LIBRARY_CHOICES auto MKL BLAS INTERNALBLAS )
+set ( SCAI_BLAS_LIBRARY_DEFAULT auto )
+
+set ( SCAI_DOC_TYPE_CHOICES html json )
+set ( SCAI_DOC_TYPE_DEFAULT html )
+
+set ( SCAI_LIBRARY_TYPE_CHOICES STATIC SHARED )
+set ( SCAI_LIBRARY_TYPE_DEFAULT SHARED )
+
+set ( SCAI_LOGGING_CHOICES TRACE DEBUG INFO WARN ERROR OFF )
+# no default, decision depending on choosen CMAKE_BUILD_TYPE --> see Settings/logging

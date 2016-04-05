@@ -37,31 +37,25 @@
 if    ( CUDA_FOUND )
     try_run ( RUN_RESULT_VAR COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}
-        ${CMAKE_MODULE_PATH}/CudaComputeCapability.cpp
+        ${CMAKE_MODULE_PATH}/Compiler/cuda/ComputeCapabilityCheck.cpp
         CMAKE_FLAGS 
         -DINCLUDE_DIRECTORIES:STRING=${CUDA_TOOLKIT_INCLUDE}
         -DLINK_LIBRARIES:STRING=${CUDA_CUDART_LIBRARY}
         COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT_VAR
-        RUN_OUTPUT_VARIABLE RUN_OUTPUT_VAR)
+        RUN_OUTPUT_VARIABLE CUDA_RUN_OUTPUT_VAR )
         
     # COMPILE_RESULT_VAR is TRUE when compile succeeds
     # RUN_RESULT_VAR is zero when a GPU is found
     if    ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
         set ( CUDA_HAVE_GPU TRUE CACHE BOOL "Whether CUDA-capable GPU is present" )
-        set ( CUDA_COMPUTE_CAPABILITY ${RUN_OUTPUT_VAR} CACHE STRING "CUDA compute capability (supported up from 13)")
-        set ( CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}" CACHE STRING "Which GPU architectures to generate code for (each arch/code pair will be passed as --generate-code option to nvcc, separate multiple pairs by ;)" )
+        set ( CUDA_COMPUTE_CAPABILITY ${CUDA_RUN_OUTPUT_VAR} )
+        set ( CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}" )
         mark_as_advanced ( CUDA_COMPUTE_CAPABILITY CUDA_GENERATE_CODE )
     else  ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
-        set ( CUDA_HAVE_GPU FALSE CACHE BOOL "Whether CUDA-capable GPU is present")
-        set ( CUDA_COMPUTE_CAPABILITY "not-found" CACHE STRING "CUDA compute capability (supported up from 13)" )
+        set ( CUDA_HAVE_GPU FALSE CACHE BOOL "Whether CUDA-capable GPU is present" )
+        set ( CUDA_COMPUTE_CAPABILITY "not-found" )
     endif ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
     
     mark_as_advanced ( CUDA_HAVE_GPU )
     
-#   DO NEVER USE THIS: implies recompilation of all sources if CUDA is enabled
-#   maybe it might be added as compile property for some files
-#   if    ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
-#       add_definitions ( -DCUDA_35 )
-#    endif ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
-
 endif ( CUDA_FOUND )

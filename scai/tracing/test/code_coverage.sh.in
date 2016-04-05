@@ -34,38 +34,25 @@
 
 #!/bin/bash
 
-. scai_code_coverage_functions.sh
+source scai_code_coverage_functions.sh
+
+dirname=$(create_dir)
+echo "Create coverage directory: ${dirname}"
 
 prepare_coverage $dirname ../..
 
-export SCAI_LOG=TRACE
-export SCAI_TRACE=time
-	
-# Running tests serial
-echo "Running serial tests"
-./dmemoTest >/dev/null
+# Running tracing tests
+echo "Running tracing tests"
+./test.sh >/dev/null
 if [ $? -ne 0 ]
 then
-	echo "ERROR in dmemoTest"
+	echo "ERROR in commonTest"
 	error_count=$(($error_count + $?))
 fi
 
-if [ -d distributed ];
-then
-    # Running parallel tests
-    for i in 2 3 4;
-    do
-        echo "Running distributed tests with $i processes"
-        mpirun -np $i ./dmemoTest >/dev/null
-        if [ $? -ne 0 ]
-        then
-            echo "ERROR in dmemoTest"
-            error_count=$(($error_count + $?))
-        fi
-    done
-    cd ..
-fi
-    
+# problem with these, so first ignore
+rm simpleTracing.gcno simpleTracing.gcda
+
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
 if [ $? == 1 ];
@@ -73,4 +60,4 @@ then
     exit 1
 fi
 
-zip -r ../dmemo_coverage.zip *
+zip -qr ../logging_coverage.zip *

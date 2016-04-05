@@ -45,8 +45,8 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ## important Variables for project
 include ( VersionDefinition )
 include ( SetProjectVariables)
-include ( InternalDependencies )
-include ( ExternalDependencies )
+include ( Dependencies/internal )
+include ( Dependencies/external )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -56,16 +56,15 @@ include ( Functions/relativeInstall )
 ### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
-    include ( CompilerVersion )
-    include ( SCAIAssert )
-    include ( SetCPPFlags )
+    include ( Compiler/VersionCheck )
+    include ( Compiler/SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## C++11 or Boost
-include ( CheckC++11 )
+include ( Compiler/CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
@@ -75,6 +74,7 @@ addInternalAndExternalPackages()
 
 ### finalize build flags
 include ( ConcludeFlags )
+include ( SetCacheVariableTexts )
 
 ### add definitions
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
@@ -149,7 +149,11 @@ install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
 
 add_subdirectory ( cuda )
 add_subdirectory ( doc )
+
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
+
 add_subdirectory ( exception )
 add_subdirectory ( macros )
 add_subdirectory ( mepr )
@@ -178,7 +182,7 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCL
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ### add custum target distClean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 ### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

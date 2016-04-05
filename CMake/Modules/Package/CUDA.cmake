@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file CUDA.cmake
  #
  # @license
  # Copyright (c) 2009-2015
@@ -51,11 +51,11 @@ setAndCheckCache ( CUDA )
 if ( CUDA_FOUND AND USE_CUDA )
 
 	# find out CUDA compute capability by test program
-	include ( CUDAComputeCapability )
+	include ( Compiler/cuda/ComputeCapabilityCheck )
 	
 	# set nvcc compiler flags, if not added as external project (has flags from parent)
 	if    ( NOT SCAI_COMPLETE_BUILD )
-		include ( SetNVCCFlags )
+		include ( Compiler/cuda/SetNVCCFlags )
 	endif ( NOT SCAI_COMPLETE_BUILD )
 	
 	### Check for cuSPASE library, Version 2 (since CUDA 5.0)

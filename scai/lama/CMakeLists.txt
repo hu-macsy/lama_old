@@ -45,8 +45,8 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ## important Variables for project
 include ( VersionDefinition )
 include ( SetProjectVariables)
-include ( InternalDependencies )
-include ( ExternalDependencies )
+include ( Dependencies/internal )
+include ( Dependencies/external )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -56,9 +56,8 @@ include ( Functions/relativeInstall )
 ### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
-    include ( CompilerVersion )
-    include ( SCAIAssert )
-    include ( SetCPPFlags )
+    include ( Compiler/VersionCheck )
+    include ( Compiler/SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Functions/CheckValueAtCompleteBuild )
     CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
@@ -74,6 +73,7 @@ addInternalAndExternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
+include ( SetCacheVariableTexts )
 
 ### add definitions ###
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
@@ -111,7 +111,11 @@ scai_project (
 
 ### add subdirectories
 add_subdirectory ( doc )
+
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
+
 add_subdirectory ( expression )
 
 if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
@@ -160,16 +164,8 @@ relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLU
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" )
 install ( FILES "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" DESTINATION include/scai )
 
-# generate file make.inc + install it
-#configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
-#install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
-
-# copy examples in build directory + install it
-#file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-#install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
-
 ## add custum target distClean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 ### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

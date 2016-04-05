@@ -39,7 +39,7 @@
 
 // internal scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
-#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/tasking/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/TypeTraits.hpp>
 

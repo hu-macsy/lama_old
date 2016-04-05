@@ -45,8 +45,8 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ## important Variables for project
 include ( VersionDefinition )
 include ( SetProjectVariables)
-include ( InternalDependencies )
-include ( ExternalDependencies )
+include ( Dependencies/internal )
+include ( Dependencies/external )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -56,9 +56,8 @@ include ( Functions/relativeInstall )
 ### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
-    include ( CompilerVersion )
-    include ( SCAIAssert )
-    include ( SetCPPFlags )
+    include ( Compiler/VersionCheck )
+    include ( Compiler/SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Functions/CheckValueAtCompleteBuild )
     CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
@@ -74,6 +73,7 @@ addInternalAndExternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
+include ( SetCacheVariableTexts )
 
 ### add definitions
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
@@ -111,12 +111,26 @@ scai_project (
 
 ## add subdirectories
 add_subdirectory ( doc )
+
+if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
+
 add_subdirectory ( macros )
 ## begin subdir test
 # prepare test
+if ( USE_CODE_COVERAGE )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/test/code_coverage.sh" @ONLY)
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../scai_code_coverage_functions.sh" "${CMAKE_CURRENT_BINARY_DIR}/test" @ONLY)
+endif ( USE_CODE_COVERAGE )
+
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
-file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
+set ( TEST_FILES Makefile README complexLogging.cpp simpleLogging.cpp test.sh )
+foreach    ( TEST_FILE ${TEST_FILES} )
+    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/${TEST_FILE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test )
+endforeach ( TEST_FILE ${TEST_FILES} )
+
 # add test
 enable_testing()
 add_test ( logging_test test/test.sh )
@@ -141,7 +155,7 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCL
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ## add custum target distClean
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
 ### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

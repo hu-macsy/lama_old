@@ -1,5 +1,5 @@
 ###
- # @file ExternalDependencies.cmake
+ # @file dependencies/external.cmake
  #
  # @license
  # Copyright (c) 2009-2015
