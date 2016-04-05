@@ -344,7 +344,6 @@ TraceData* TraceConfig::getTraceData( ThreadId threadId )
 
         try
         {
-            std::cerr << "mCallTreeEnabled = " << mCallTreeEnabled << std::endl;
             traceData.reset( new TraceData( mTraceFilePrefix.c_str(), threadId, mThreadEnabled, mCallTreeEnabled ) );
         }
         catch ( common::Exception& ex )
