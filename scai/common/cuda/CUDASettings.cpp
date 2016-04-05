@@ -183,7 +183,7 @@ int CUDASettings::getBlockSize( int n )
     {
         // take smaller block size to get all multiprocessors occupied
 
-        return theBlockSize > 1; // mod 2
+        return theBlockSize >> 1; // mod 2
     }
 }
 
