@@ -40,6 +40,9 @@ set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compile
 
 find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
 
+# find out if host compiler version is supported by CUDA installation
+include ( Compiler/cuda/CheckHostCompilerCompatibility )
+
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR
 				   CUDA_VERBOSE_BUILD CUDA_HOST_COMPILER CUDA_SEPARABLE_COMPILATION )

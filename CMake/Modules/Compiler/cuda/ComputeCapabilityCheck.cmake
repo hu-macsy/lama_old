@@ -1,5 +1,5 @@
 ###
- # @file CUDAComputeCapability.cmake
+ # @file ComputeCapabilityCheck.cmake
  #
  # @license
  # Copyright (c) 2009-2014
