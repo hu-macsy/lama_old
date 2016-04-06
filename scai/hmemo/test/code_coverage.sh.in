@@ -74,4 +74,4 @@ then
     exit 1
 fi
 
-zip -r ../hmemo_coverage.zip *
+zip -qr ../hmemo_coverage.zip *

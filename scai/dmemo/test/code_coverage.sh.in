@@ -34,15 +34,18 @@
 
 #!/bin/bash
 
-. scai_code_coverage_functions.sh
+source scai_code_coverage_functions.sh
+
+dirname=$(create_dir)
+echo "Create coverage directory: ${dirname}"
 
 prepare_coverage $dirname ../..
 
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
-# Running tests serial
-echo "Running serial tests"
+# Running dmemo tests
+echo "Running dmemo tests"
 ./dmemoTest >/dev/null
 if [ $? -ne 0 ]
 then
@@ -73,4 +76,4 @@ then
     exit 1
 fi
 
-zip -r ../dmemo_coverage.zip *
+zip -qr ../dmemo_coverage.zip *
