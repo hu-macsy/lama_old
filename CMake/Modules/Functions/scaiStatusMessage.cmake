@@ -31,26 +31,27 @@
  # @since 1.0.0
 ###
 
+include ( Settings/bashFormats )
+
 # prints colored text messages
 # inspired by soci colormsg function
 function ( scai_status_message )
-    string ( ASCII 27 _escape )
     # ANSI Display Atributes
-    set ( ERROR "1\;31" )
-    set ( WARNING "33" )
-    set ( INFO "2\;32" )
-    set ( HEADLINE "4" )
+    set ( ERROR "${TextRed}" )
+    set ( WARNING "${TextAmber}" )
+    set ( INFO "${TextGreen}" )
+    set ( HEADLINE "${TextUnderline}" )
     
     set ( coloron FALSE )
     set ( str "" )
     foreach    ( arg ${ARGV} )
         if    ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
-            set(str "${str}${_escape}[${${arg}}m")
+            set(str "${str}${${arg}}")
             set(coloron TRUE)
         else  ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
             set ( str "${str}${arg}" )
             if    ( coloron )
-                set ( str "${str}${_escape}[0m" )
+                set ( str "${str}${TextColorReset}" )
                 set ( coloron FALSE )
             endif ( coloron )
             set ( str "${str} " )

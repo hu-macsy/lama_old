@@ -59,9 +59,24 @@ macro    ( scai_summary_message MESSAGE_TYPE EXPRESSION PACKAGE_NAME ADDITIONAL_
         set ( SCAI_PACKAGE_NAME_BLANKS "" )
     endif ( ${MESSAGE_TYPE} STREQUAL "USE" )
 
-    if    ( ${EXPRESSION} )
-        scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} INFO ${TYPE_TRUE} ${ADDITIONAL_INFO})
-    else  ( ${EXPRESSION} )
-        scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} ERROR ${TYPE_FALSE} )  
-    endif ( ${EXPRESSION} )
+    if ( ${MESSAGE_TYPE} STREQUAL "HEADLINE" )
+        set ( TYPE_TRUE "OK" )
+        set ( TYPE_FALSE "FAILED" )
+        set ( TYPE_INTENT "" )
+        set ( SCAI_PACKAGE_NAME_BLANKS "" )
+    endif ( ${MESSAGE_TYPE} STREQUAL "HEADLINE" )
+
+#    if ( DEFINED ${EXPRESSION} )
+
+        if    ( ${EXPRESSION} )
+            scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} INFO ${TYPE_TRUE} ${ADDITIONAL_INFO} )
+        else  ( ${EXPRESSION} )
+            scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} ERROR ${TYPE_FALSE} )  
+        endif ( ${EXPRESSION} )
+
+#    else  ( DEFINED ${EXPRESSION} )
+
+#        scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} INFO ${TYPE_TRUE} )
+
+#    endif ( DEFINED ${EXPRESSION} )
 endmacro ( scai_summary_message )

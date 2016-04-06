@@ -39,50 +39,43 @@ message ( STATUS "Summary of SCAI Configuration:" )
 message ( STATUS "==============================" )
 message ( STATUS "" )
 
-scai_status_message ( HEADLINE "Compiler:" )
+scai_summary_message ( "HEADLINE" "TRUE" "Compiler:" "" )
+message ( STATUS "" )
+
 # C++ Compiler
 scai_summary_message ( "FOUND"
                        "CMAKE_CXX_COMPILER"
                        "C++ Compiler"
                        "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
 
-message ( STATUS "" )
-
-if    ( ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR) )
-    set( REQUIRED_FOUND TRUE )
-else  ( ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR) )
-  set( REQUIRED_FOUND FALSE )
-endif ( ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR) )
-
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "SCAI"
-                       "Needs compiler supporting C++11 or Boost" )
+scai_status_message ( "     with:" )
 
 scai_summary_message ( "FOUND"
 					             "CXX_SUPPORTS_C11"
-					             "C++11 support"
+					             "  C++11 support"
 					             "" )
-				
+
+set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
+
+scai_summary_message ( "USE"
+                       "USE_OPENMP"
+                       "    OpenMP usage"
+                       "${OPENMP_INFO_TEXT}"   )
+
 if    ( NOT CXX_SUPPORTS_C11 )
+    message ( STATUS "" )
+    message ( STATUS "Either compiler supporting C++11 or Boost needed." )
+
     scai_summary_message ( "FOUND"
                            "SCAI_BOOST_INCLUDE_DIR"
                            "Boost"
                            "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
 endif ( NOT CXX_SUPPORTS_C11 )
 
-message ( STATUS "" )
-
-set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
-
-scai_summary_message ( "USE"
-                       "USE_OPENMP"
-                       "  OpenMP usage"
-                       "${OPENMP_INFO_TEXT}"   )
-
 # LAMA (core)
 message ( STATUS "" )
-scai_status_message ( HEADLINE "LIBRARIES:" )
+scai_status_message ( HEADLINE "External Libraries:" )
+message ( STATUS "" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR AND SCAI_BLAS_FOUND )
@@ -94,8 +87,10 @@ endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR AND SCAI_BLAS_FOUND )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
-                       "SCAI (core)"
+                       "SCAI required core"
                        "" )
+
+message ( STATUS "" )
 
     # pthreads
     scai_summary_message ( "FOUND"
@@ -104,13 +99,10 @@ scai_summary_message ( "STATIC"
                            "" )
 
     # boost
-    message ( STATUS "" )
     scai_summary_message ( "FOUND"
                            "SCAI_BOOST_INCLUDE_DIR"
                            "Boost"
                            "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
-
-message ( STATUS "" )
 
     # BLAS
     scai_summary_message ( "FOUND"
@@ -126,13 +118,16 @@ message ( STATUS "" )
                                "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
 
+message ( STATUS "" )
+message ( STATUS "SCAI optional components" )
+message ( STATUS "" )
+
 # LAMA MPI
 set ( REQUIRED_FOUND FALSE )
 if    ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
   set ( REQUIRED_FOUND TRUE )
 endif ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
 
-message ( STATUS "" )
 scai_summary_message ( "USE"
                        "REQUIRED_FOUND"
                        "Distributed"
@@ -206,7 +201,8 @@ scai_summary_message ( "USE"
 
 # LAMA TEST
 message ( STATUS "" )
-scai_status_message ( HEADLINE "TESTING:" )
+scai_status_message ( HEADLINE "Testing:" )
+message ( STATUS "" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
@@ -232,7 +228,8 @@ scai_summary_message ( "USE"
 
 # DOC
 message ( STATUS "" )
-scai_status_message ( HEADLINE "DOCUMENTATION:" )
+scai_status_message ( HEADLINE "Documentation:" )
+message ( STATUS "" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
@@ -266,7 +263,8 @@ scai_summary_message ( "USE"
 
 message ( STATUS "" )
 
-scai_status_message ( HEADLINE "INFO:" )
+scai_status_message ( HEADLINE "Configuration:" )
+message ( STATUS "" )
 message ( STATUS "LAMA (ALL) Version : ${SCAI_LAMA_ALL_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
