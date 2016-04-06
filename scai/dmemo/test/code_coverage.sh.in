@@ -53,7 +53,7 @@ then
 	error_count=$(($error_count + $?))
 fi
 
-if [ -d distributed ];
+if [ -d mpi ];
 then
     # Running parallel tests
     for i in 2 3 4;
