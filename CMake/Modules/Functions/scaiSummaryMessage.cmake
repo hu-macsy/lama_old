@@ -37,46 +37,60 @@ include ( Functions/scaiGenerateBlanks )
 
 # generates messages for scai summary page
 macro    ( scai_summary_message MESSAGE_TYPE EXPRESSION PACKAGE_NAME ADDITIONAL_INFO )
+
     set ( SCAI_SUMMARY_PACKAGE_NAME_LENGTH 18 )
+    
+    if    ( ${MESSAGE_TYPE} STREQUAL "STATIC" )
+        set ( TYPE_TRUE  "COMPLETE" )
+        set ( TYPE_FALSE "INCOMPLETE" )
+        set ( TYPE_INTENT "" )
+        set ( SCAI_PACKAGE_NAME_BLANKS "" )
+
+        if    ( ${EXPRESSION} )
+            set ( COLOR_TYPE INFO )
+            set ( TYPE ${TYPE_TRUE} )
+        else  ( ${EXPRESSION} )
+            set ( COLOR_TYPE ERROR )
+            set ( TYPE ${TYPE_FALSE} )
+            set ( ${ADDITIONAL_INFO} "" )
+        endif ( ${EXPRESSION} )
+
+    endif ( ${MESSAGE_TYPE} STREQUAL "STATIC" )
+
     if    ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
-        set ( TYPE_TRUE "FOUND" )
+        set ( TYPE_TRUE  "FOUND" )
         set ( TYPE_FALSE "NOT FOUND" )
         set ( TYPE_INTENT "    " )
         scai_generate_blanks ( SCAI_PACKAGE_NAME_BLANKS ${PACKAGE_NAME} ${SCAI_SUMMARY_PACKAGE_NAME_LENGTH} )
+
+        if    ( ${EXPRESSION} )
+            set ( COLOR_TYPE INFO )
+            set ( TYPE ${TYPE_TRUE} )
+        else  ( ${EXPRESSION} )
+            set ( COLOR_TYPE ERROR )
+            set ( TYPE ${TYPE_FALSE} )
+            set ( ${ADDITIONAL_INFO} "" )
+        endif ( ${EXPRESSION} )
+
     endif ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
     
-    if ( ${MESSAGE_TYPE} STREQUAL "STATIC" )
-        set ( TYPE_TRUE "REQUIRED" )
-        set ( TYPE_FALSE "REQUIRED" )
-        set ( TYPE_INTENT " " )
-        set ( SCAI_PACKAGE_NAME_BLANKS "" )
-    endif ( ${MESSAGE_TYPE} STREQUAL "STATIC" )
-    
-    if ( ${MESSAGE_TYPE} STREQUAL "USE" )
-        set ( TYPE_TRUE "ENABLED" )
+    if    ( ${MESSAGE_TYPE} STREQUAL "USE" )
+        set ( TYPE_TRUE  "ENABLED" )
         set ( TYPE_FALSE "DISABLED" )
         set ( TYPE_INTENT "  " )
         set ( SCAI_PACKAGE_NAME_BLANKS "" )
-    endif ( ${MESSAGE_TYPE} STREQUAL "USE" )
-
-    if ( ${MESSAGE_TYPE} STREQUAL "HEADLINE" )
-        set ( TYPE_TRUE "OK" )
-        set ( TYPE_FALSE "FAILED" )
-        set ( TYPE_INTENT "" )
-        set ( SCAI_PACKAGE_NAME_BLANKS "" )
-    endif ( ${MESSAGE_TYPE} STREQUAL "HEADLINE" )
-
-#    if ( DEFINED ${EXPRESSION} )
 
         if    ( ${EXPRESSION} )
-            scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} INFO ${TYPE_TRUE} ${ADDITIONAL_INFO} )
+            set ( COLOR_TYPE INFO )
+            set ( TYPE ${TYPE_TRUE} )
         else  ( ${EXPRESSION} )
-            scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} ERROR ${TYPE_FALSE} )  
+            set ( COLOR_TYPE WARNING )
+            set ( TYPE ${TYPE_FALSE} )
+            set ( ${ADDITIONAL_INFO} "" )
         endif ( ${EXPRESSION} )
 
-#    else  ( DEFINED ${EXPRESSION} )
+    endif ( ${MESSAGE_TYPE} STREQUAL "USE" )
 
-#        scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} INFO ${TYPE_TRUE} )
+    scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} ${COLOR_TYPE} ${TYPE} ${ADDITIONAL_INFO} )
 
-#    endif ( DEFINED ${EXPRESSION} )
 endmacro ( scai_summary_message )

@@ -35,12 +35,24 @@ include ( Functions/scaiStatusMessage )
 include ( Functions/scaiSummaryMessage )
 
 message ( STATUS "" )
+message ( STATUS "==============================" )
 message ( STATUS "Summary of SCAI Configuration:" )
 message ( STATUS "==============================" )
 message ( STATUS "" )
 
-scai_summary_message ( "HEADLINE" "TRUE" "Compiler:" "" )
+scai_status_message ( HEADLINE "Compiler:" "" )
 message ( STATUS "" )
+
+if    ( ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR) )
+    set( REQUIRED_FOUND TRUE )
+else  ( ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR) )
+    set( REQUIRED_FOUND FALSE )
+endif ( ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR) )
+
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "Configuration"
+                       "" )
 
 # C++ Compiler
 scai_summary_message ( "FOUND"
@@ -48,19 +60,10 @@ scai_summary_message ( "FOUND"
                        "C++ Compiler"
                        "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
 
-scai_status_message ( "     with:" )
-
 scai_summary_message ( "FOUND"
 					             "CXX_SUPPORTS_C11"
-					             "  C++11 support"
+					             "with C++11 support"
 					             "" )
-
-set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
-
-scai_summary_message ( "USE"
-                       "USE_OPENMP"
-                       "    OpenMP usage"
-                       "${OPENMP_INFO_TEXT}"   )
 
 if    ( NOT CXX_SUPPORTS_C11 )
     message ( STATUS "" )
@@ -87,7 +90,7 @@ endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR AND SCAI_BLAS_FOUND )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
-                       "SCAI required core"
+                       "Required core"
                        "" )
 
 message ( STATUS "" )
@@ -111,7 +114,6 @@ message ( STATUS "" )
                            "${SCAI_BLAS_NAME} with: ${SCAI_SCAI_BLAS_LIBRARIES}" )
                            
     if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-        message ( STATUS "" )
         scai_summary_message ( "FOUND"
                                "LAPACK_FOUND"
                                "LAPACK"
@@ -119,8 +121,21 @@ message ( STATUS "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
 
 message ( STATUS "" )
-message ( STATUS "SCAI optional components" )
+message ( STATUS "Optional components" )
 message ( STATUS "" )
+
+# OpenMP usage
+set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
+
+scai_summary_message ( "USE"
+                       "USE_OPENMP"
+                       "OpenMP"
+                       ""   )
+
+    scai_summary_message ( "FOUND"
+                           "OpenMP_CXX_FLAGS"
+                           "OpenMP flag"
+                           "(${OpenMP_CXX_FLAGS}) ${OPENMP_INFO_TEXT}" )
 
 # LAMA MPI
 set ( REQUIRED_FOUND FALSE )
@@ -128,6 +143,7 @@ if    ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
   set ( REQUIRED_FOUND TRUE )
 endif ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
 
+message ( STATUS "" )
 scai_summary_message ( "USE"
                        "REQUIRED_FOUND"
                        "Distributed"
@@ -199,16 +215,20 @@ scai_summary_message ( "USE"
                        "MIC"
                        "" )
 
-# LAMA TEST
+# EXAMPLES
 message ( STATUS "" )
-scai_status_message ( HEADLINE "Testing:" )
-message ( STATUS "" )
+scai_summary_message ( "USE"
+                       "BUILD_EXAMPLES"
+                       "EXAMPLES"
+                       "" )
 
+# LAMA TEST
 set ( REQUIRED_FOUND FALSE )
 if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
   set ( REQUIRED_FOUND TRUE )
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
 
+message ( STATUS "" )
 scai_summary_message ( "USE"
                        "REQUIRED_FOUND"
                        "TEST"
@@ -227,10 +247,6 @@ scai_summary_message ( "USE"
                            "" )
 
 # DOC
-message ( STATUS "" )
-scai_status_message ( HEADLINE "Documentation:" )
-message ( STATUS "" )
-
 set ( REQUIRED_FOUND FALSE )
 if    ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
   set ( REQUIRED_FOUND TRUE )
@@ -239,7 +255,7 @@ endif ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "REQUIRED_FOUND"
-                       "DOC"
+                       "Documentation"
                        "" )
     # Sphinx                               
     scai_summary_message ( "FOUND"
@@ -255,15 +271,7 @@ scai_summary_message ( "USE"
 
 message ( STATUS "" )
 
-# EXAMPLES
-scai_summary_message ( "USE"
-                       "BUILD_EXAMPLES"
-                       "EXAMPLES"
-                       "" )
-
-message ( STATUS "" )
-
-scai_status_message ( HEADLINE "Configuration:" )
+scai_status_message ( HEADLINE "Configuration Details:" )
 message ( STATUS "" )
 message ( STATUS "LAMA (ALL) Version : ${SCAI_LAMA_ALL_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
