@@ -33,8 +33,6 @@
 
 if    ( CUDA_FOUND )
 
-	message ( STATUS "execute: ${CUDA_NVCC_EXECUTABLE} ${CMAKE_MODULE_PATH}/Compiler/cuda/CheckHostCompilerCompatibility.cu -ccbin=${CMAKE_CXX_COMPILER}")
-
 	execute_process ( COMMAND ${CUDA_NVCC_EXECUTABLE} ${CMAKE_MODULE_PATH}/Compiler/cuda/CheckHostCompilerCompatibility.cu -ccbin=${CMAKE_CXX_COMPILER}
 					  RESULT_VARIABLE CUDA_CHECK_COMPILE_RESULT_VAR
 					  OUTPUT_VARIABLE CUDA_CHECK_COMPILE_OUTPUT_VAR
