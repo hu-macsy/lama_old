@@ -31,7 +31,7 @@
 ###
 
 if    ( CUDA_FOUND AND USE_CUDA )
-    set ( CUDACLASSES CUDAError CUDASettings CUDATexture CUDACtx CUDAAccess )
+    set ( CUDACLASSES CUDAError CUDASettings CUDACtx CUDAAccess )
     set ( CUDAHEADERS CUDATexVector )
 endif ( CUDA_FOUND AND USE_CUDA )
 
