@@ -72,11 +72,15 @@ endif ( DEFINED SCAI_DOC_TYPE )
 checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_CHOICES}" )
 message ( "Doc type is set to " ${SCAI_DOC_TYPE_CHOICES} )
 
-if    ( SCAI_DOC_TYPE STREQUAL json )
+if     ( SCAI_DOC_TYPE STREQUAL json )
     set ( DOC_EXTENTSION "fjson" )
-else  ( SCAI_DOC_TYPE STREQUAL json )
+elseif  ( SCAI_DOC_TYPE STREQUAL html )
     set ( DOC_EXTENTSION "html" )
-endif ( SCAI_DOC_TYPE STREQUAL json )
+elseif  ( SCAI_DOC_TYPE STREQUAL xml )
+    set ( DOC_EXTENTSION "xml" )
+else    ( )
+    set ( DOC_EXTENTSION "xml" )
+endif  ( )
 
 ## EXAMPLES
 
