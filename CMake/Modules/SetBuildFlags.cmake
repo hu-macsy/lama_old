@@ -51,12 +51,14 @@ set ( CMAKE_VERBOSE_MAKEFILE OFF )
 
 include ( Settings/switchChoices )
 include ( Functions/checkValue )
+include ( Functions/parseBoolean )
 
 ## DOC
 
 # Check if doc should be build
 if    ( DEFINED BUILD_DOC )
 	#do nothing
+    parseBoolean( BUILD_DOC )
 else  ( DEFINED BUILD_DOC )
     set ( BUILD_DOC ${BUILD_DOC_DEFAULT} )
 endif ( DEFINED BUILD_DOC )
@@ -76,8 +78,6 @@ elseif  ( SCAI_DOC_TYPE STREQUAL html )
     set ( DOC_EXTENTSION "html" )
 elseif  ( SCAI_DOC_TYPE STREQUAL xml )
     set ( DOC_EXTENTSION "xml" )
-else    ( )
-    set ( DOC_EXTENTSION "xml" )
 endif  ( )
 
 ## EXAMPLES
@@ -85,6 +85,7 @@ endif  ( )
 # Check if examples should be build
 if    ( DEFINED BUILD_EXAMPLES )
 	# do nothing
+    parseBoolean( BUILD_EXAMPLES )
 else  ( DEFINED BUILD_EXAMPLES )
     set ( BUILD_EXAMPLES ${BUILD_EXAMPLES_DEFAULT} )
 endif ( DEFINED BUILD_EXAMPLES )
@@ -95,6 +96,7 @@ checkValue ( ${BUILD_EXAMPLES} "${TRUE_FALSE_CHOICES}" )
 ## Check if tests should be build
 if    ( DEFINED BUILD_TEST )
 	# do nothing
+    parseBoolean( BUILD_TEST )
 else  ( DEFINED BUILD_TEST )
     set ( BUILD_TEST ${BUILD_TEST_DEFAULT} )
 endif ( DEFINED BUILD_TEST )
@@ -105,6 +107,7 @@ checkValue ( ${BUILD_TEST} "${TRUE_FALSE_CHOICES}" )
 ## Check if lama should be build for code coverage
 if    ( DEFINED USE_CODE_COVERAGE )
 	# do nothing
+    parseBoolean( USE_CODE_COVERAGE )
 else  ( DEFINED USE_CODE_COVERAGE )
     set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE_DEFAULT} )
 endif ( DEFINED USE_CODE_COVERAGE )
