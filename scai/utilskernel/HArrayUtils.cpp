@@ -389,6 +389,8 @@ ValueType HArrayUtils::reduce( const hmemo::HArray<ValueType>& array, const comm
 
     hmemo::ReadAccess<ValueType> readArray( array, loc );
 
+    hmemo::WriteAccess<ValueType> values( array, loc );
+
     ValueType redVal = reduce[loc]( readArray.get(), readArray.size(), redOp );
 
     return redVal;
