@@ -47,7 +47,7 @@ project ( LAMA_ALL CXX )
 
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
-include ( Compiler/VersionCheck )
+include ( VersionCheck/Compiler )
 include ( Compiler/SetCPPFlags )
 
 ## maybe boost

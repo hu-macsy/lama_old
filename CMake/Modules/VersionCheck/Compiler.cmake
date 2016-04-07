@@ -1,5 +1,5 @@
 ###
- # @file CompilerVersion.cmake
+ # @file Compiler.cmake
  #
  # @license
  # Copyright (c) 2009-2013

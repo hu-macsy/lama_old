@@ -51,17 +51,20 @@ endif ( ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR) )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
+                       "REQUIRED"
                        "Configuration"
                        "" )
 
 # C++ Compiler
 scai_summary_message ( "FOUND"
                        "CMAKE_CXX_COMPILER"
+                       "REQUIRED"
                        "C++ Compiler"
                        "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
 
 scai_summary_message ( "FOUND"
 					             "CXX_SUPPORTS_C11"
+                       "REQUIRED"
 					             "with C++11 support"
 					             "" )
 
@@ -71,8 +74,9 @@ if    ( NOT CXX_SUPPORTS_C11 )
 
     scai_summary_message ( "FOUND"
                            "SCAI_BOOST_INCLUDE_DIR"
+                           "REQUIRED"
                            "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 # LAMA (core)
@@ -90,7 +94,8 @@ endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR AND SCAI_BLAS_FOUND )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
-                       "Required core"
+                       "REQUIRED"
+                       "  Required core"
                        "" )
 
 message ( STATUS "" )
@@ -98,44 +103,100 @@ message ( STATUS "" )
     # pthreads
     scai_summary_message ( "FOUND"
                            "SCAI_THREAD_LIBRARIES"
+                           "REQUIRED"
                            "pThreads"
-                           "" )
+                           "VERSION ${SCAI_THREAD_VERSION}" )
 
     # boost
     scai_summary_message ( "FOUND"
                            "SCAI_BOOST_INCLUDE_DIR"
+                           "REQUIRED"
                            "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
 
     # BLAS
     scai_summary_message ( "FOUND"
                            "SCAI_BLAS_FOUND"
+                           "REQUIRED"
                            "BLAS"
-                           "${SCAI_BLAS_NAME} with: ${SCAI_SCAI_BLAS_LIBRARIES}" )
+                           "${SCAI_BLAS_NAME} Version ${BLAS_VERSION} with:" )
+
+    foreach    ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
+      message ( STATUS "                              ${_B_LIB}" )
+    endforeach ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
                            
     if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
         scai_summary_message ( "FOUND"
                                "LAPACK_FOUND"
+                               "REQUIRED"
                                "LAPACK"
                                "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
 
 message ( STATUS "" )
-message ( STATUS "Optional components" )
+message ( STATUS "  Optional components" )
 message ( STATUS "" )
 
 # OpenMP usage
-set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 scai_summary_message ( "USE"
                        "USE_OPENMP"
+                       "OPTIONAL"
                        "OpenMP"
                        ""   )
 
     scai_summary_message ( "FOUND"
+                           "OPENMP_VERSION"
+                           "OPTIONAL"
+                           "OpenMP"
+                           "Version ${OPENMP_VERSION}" )
+
+    scai_summary_message ( "FOUND"
                            "OpenMP_CXX_FLAGS"
-                           "OpenMP flag"
-                           "(${OpenMP_CXX_FLAGS}) ${OPENMP_INFO_TEXT}" )
+                           "OPTIONAL"
+                           "compile flag"
+                           "${OpenMP_CXX_FLAGS}" )
+
+    scai_summary_message ( "FOUND"
+                           "SCAI_OMP_SCHEDULE"
+                           "OPTIONAL"
+                           "schedule type"
+                           "set to \"${SCAI_OMP_SCHEDULE}\"" )
+
+# LAMA CUDA
+set ( REQUIRED_FOUND FALSE )
+if    ( CUDA_FOUND AND USE_CUDA )
+  set ( REQUIRED_FOUND TRUE )
+endif ( CUDA_FOUND AND USE_CUDA )
+
+message ( STATUS "" )
+scai_summary_message ( "USE"
+                       "REQUIRED_FOUND"
+                       "OPTIONAL"
+                       "CUDA"
+                       "" )
+
+    # CUDA
+    scai_summary_message ( "FOUND"
+                           "CUDA_FOUND"
+                           "OPTIONAL"
+                           "CUDA"
+                           "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
+                           
+    # CUDA Compute Capability
+    scai_summary_message ( "FOUND"
+                           "CUDA_HAVE_GPU"
+                           "OPTIONAL"
+                           "Compute Capability"
+                           "${CUDA_COMPUTE_CAPABILITY}" )
+                           
+# LAMA MIC
+message ( STATUS "" )
+scai_summary_message ( "USE"
+                       "USE_MIC"
+                       "OPTIONAL"
+                       "MIC"
+                       "" )
 
 # LAMA MPI
 set ( REQUIRED_FOUND FALSE )
@@ -146,18 +207,21 @@ endif ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "REQUIRED_FOUND"
+                       "OPTIONAL"
                        "Distributed"
                        "" )
 
     # MPI
     scai_summary_message ( "FOUND"
                            "MPI_FOUND"
+                           "OPTIONAL"
                            "MPI"
-                           "at ${SCAI_MPI_INCLUDE_DIR}" )
+                           "Version ${MPI_VERSION} at ${SCAI_MPI_INCLUDE_DIR}" )
 
     # GPI
     scai_summary_message ( "FOUND"
                            "GPI_FOUND"
+                           "OPTIONAL"
                            "GPI"
                            "at ${SCAI_GPI_INCLUDE_DIR}" )
 
@@ -170,56 +234,29 @@ endif ( METIS_FOUND AND USE_GRAPHPARTITIONING )
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "REQUIRED_FOUND"
+                       "OPTIONAL"
                        "Graph Partitioning"
                        "" )                   
 	# Metis
     scai_summary_message ( "FOUND"
                            "METIS_FOUND"
+                           "OPTIONAL"
                            "Metis"
-                           "at ${METIS_INCLUDE_DIR}" )
+                           "Version ${METIS_VERSION} at ${METIS_INCLUDE_DIR}" )
 
 	# ParMetis
     scai_summary_message ( "FOUND"
                            "PARMETIS_FOUND"
+                           "OPTIONAL"
                            "ParMetis"
-                           "at ${PARMETIS_INCLUDE_DIR}" )
-
-# LAMA CUDA
-set ( REQUIRED_FOUND FALSE )
-if    ( CUDA_FOUND AND USE_CUDA )
-  set ( REQUIRED_FOUND TRUE )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "REQUIRED_FOUND"
-                       "CUDA"
-                       "" )
-
-    # CUDA
-    scai_summary_message ( "FOUND"
-                           "CUDA_FOUND"
-                           "CUDA"
-                           "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
-                           
-    # CUDA Compute Capability
-    scai_summary_message ( "FOUND"
-                           "CUDA_HAVE_GPU"
-                           "Compute Capability"
-                           "${CUDA_COMPUTE_CAPABILITY}" )
-                           
-# LAMA MIC
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_MIC"
-                       "MIC"
-                       "" )
+                           "Version ${PARMETIS_VERSION} at ${PARMETIS_INCLUDE_DIR}" )
 
 # EXAMPLES
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "BUILD_EXAMPLES"
-                       "EXAMPLES"
+                       "OPTIONAL"
+                       "Examples"
                        "" )
 
 # LAMA TEST
@@ -231,20 +268,23 @@ endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "REQUIRED_FOUND"
-                       "TEST"
+                       "OPTIONAL"
+                       "Test"
                        "" )
 
     # Boost Test-Framework
     scai_summary_message ( "FOUND"
                            "Boost_UNIT_TEST_FRAMEWORK_FOUND"
+                           "OPTIONAL"
                            "Boost Unit Test"
-                           "" )
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
                            
     # Boost Regex
     scai_summary_message ( "FOUND"
                            "Boost_REGEX_FOUND"
+                           "OPTIONAL"
                            "Boost Regex"
-                           "" )
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
 
 # DOC
 set ( REQUIRED_FOUND FALSE )
@@ -255,19 +295,22 @@ endif ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "REQUIRED_FOUND"
+                       "OPTIONAL"
                        "Documentation"
                        "" )
     # Sphinx                               
     scai_summary_message ( "FOUND"
                            "SPHINX_FOUND"
+                           "OPTIONAL"
                            "Sphinx"
-                           "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make doc' to build user documentation" )
+                           "Version ${Sphinx_VERSION_STRING} with ${Sphinx-build_EXECUTABLE}" )
 
     # DOXYGEN
     scai_summary_message( "FOUND"
                           "DOXYGEN_FOUND"
+                          "OPTIONAL"
                           "Doxygen"
-                          "Version ${DOXYGEN_VERSION} at ${DOXYGEN_EXECUTABLE}: 'make doxygendoc' to build system documentation" )
+                          "Version ${DOXYGEN_VERSION} with ${DOXYGEN_EXECUTABLE}" )
 
 message ( STATUS "" )
 

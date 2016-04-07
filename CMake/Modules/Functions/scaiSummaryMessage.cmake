@@ -36,7 +36,17 @@ include ( Functions/scaiGenerateBlanks )
 ## Need to be macros not functions, because modifications of the parent scope
 
 # generates messages for scai summary page
-macro    ( scai_summary_message MESSAGE_TYPE EXPRESSION PACKAGE_NAME ADDITIONAL_INFO )
+macro    ( scai_summary_message MESSAGE_TYPE EXPRESSION OPTIONAL PACKAGE_NAME ADDITIONAL_INFO )
+
+    set ( COLOR_TYPE_TRUE  "INFO" )
+    if     ( ${OPTIONAL} MATCHES "OPTIONAL" )
+        set ( COLOR_TYPE_FALSE "WARNING" )
+    elseif ( ${OPTIONAL} MATCHES "REQUIRED" )
+        set ( COLOR_TYPE_FALSE "ERROR" )
+    else   ( )
+        message ( WARNING "No valid third parameter given to scai_summary_message." )
+        set ( COLOR_TYPE_FALSE "ERROR" )
+    endif  ( )
 
     set ( SCAI_SUMMARY_PACKAGE_NAME_LENGTH 18 )
     
@@ -45,51 +55,30 @@ macro    ( scai_summary_message MESSAGE_TYPE EXPRESSION PACKAGE_NAME ADDITIONAL_
         set ( TYPE_FALSE "INCOMPLETE" )
         set ( TYPE_INTENT "" )
         set ( SCAI_PACKAGE_NAME_BLANKS "" )
-
-        if    ( ${EXPRESSION} )
-            set ( COLOR_TYPE INFO )
-            set ( TYPE ${TYPE_TRUE} )
-        else  ( ${EXPRESSION} )
-            set ( COLOR_TYPE ERROR )
-            set ( TYPE ${TYPE_FALSE} )
-            set ( ${ADDITIONAL_INFO} "" )
-        endif ( ${EXPRESSION} )
-
     endif ( ${MESSAGE_TYPE} STREQUAL "STATIC" )
 
     if    ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
         set ( TYPE_TRUE  "FOUND" )
         set ( TYPE_FALSE "NOT FOUND" )
-        set ( TYPE_INTENT "    " )
+        set ( TYPE_INTENT "  " )
         scai_generate_blanks ( SCAI_PACKAGE_NAME_BLANKS ${PACKAGE_NAME} ${SCAI_SUMMARY_PACKAGE_NAME_LENGTH} )
-
-        if    ( ${EXPRESSION} )
-            set ( COLOR_TYPE INFO )
-            set ( TYPE ${TYPE_TRUE} )
-        else  ( ${EXPRESSION} )
-            set ( COLOR_TYPE ERROR )
-            set ( TYPE ${TYPE_FALSE} )
-            set ( ${ADDITIONAL_INFO} "" )
-        endif ( ${EXPRESSION} )
-
     endif ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
     
     if    ( ${MESSAGE_TYPE} STREQUAL "USE" )
         set ( TYPE_TRUE  "ENABLED" )
         set ( TYPE_FALSE "DISABLED" )
-        set ( TYPE_INTENT "  " )
+        set ( TYPE_INTENT " " )
         set ( SCAI_PACKAGE_NAME_BLANKS "" )
-
-        if    ( ${EXPRESSION} )
-            set ( COLOR_TYPE INFO )
-            set ( TYPE ${TYPE_TRUE} )
-        else  ( ${EXPRESSION} )
-            set ( COLOR_TYPE WARNING )
-            set ( TYPE ${TYPE_FALSE} )
-            set ( ${ADDITIONAL_INFO} "" )
-        endif ( ${EXPRESSION} )
-
     endif ( ${MESSAGE_TYPE} STREQUAL "USE" )
+
+    if    ( ${EXPRESSION} )
+        set ( COLOR_TYPE ${COLOR_TYPE_TRUE} )
+        set ( TYPE ${TYPE_TRUE} )
+    else  ( ${EXPRESSION} )
+        set ( COLOR_TYPE ${COLOR_TYPE_FALSE} )
+        set ( TYPE ${TYPE_FALSE} )
+        set ( ${ADDITIONAL_INFO} "" )
+    endif ( ${EXPRESSION} )
 
     scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} ${COLOR_TYPE} ${TYPE} ${ADDITIONAL_INFO} )
 

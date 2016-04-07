@@ -1,5 +1,5 @@
 ###
- # @file PackageMPI.cmake
+ # @file MPI.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,30 +25,14 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief find Thread library
+ # @brief Version variable defintions for the used compilers
  # @author Lauretta Schubert
- # @date 20.08.2015
+ # @date 07.04.2016
  # @since 2.0.0
 ###
 
-### SCAI_THREAD_LIBRARY - needed Thread library
-
-enable_language ( C )
-
-set ( CMAKE_THREAD_PREFER_PTHREAD 1 )
-set ( THREADS_PREFER_PTHREAD_FLAG 1 )
-
-find_package( Threads ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-set ( SCAI_THREAD_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} CACHE PATH "Pthread library" )
-mark_as_advanced( SCAI_THREAD_LIBRARIES )
-
-if    ( NOT WIN32 )
-	## get pthread version
-	execute_process ( COMMAND /usr/bin/getconf GNU_LIBPTHREAD_VERSION OUTPUT_VARIABLE _pthread_output )
-	string ( REGEX MATCH "([0-9]+\\.[0-9]*)" SCAI_THREAD_VERSION ${_pthread_output} )
-endif ( NOT WIN32 )
-
-###  Here we use PThread library for threads
-###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
-#find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
-#set ( SCAI_THREAD_LIBRARY ${PTHREADS_LIBRARY} )
+if    ( MPI_FOUND )
+    execute_process ( COMMAND ${MPIEXEC} --version OUTPUT_VARIABLE _mpi_output ERROR_VARIABLE _mpi_error)
+    set ( _output "${_mpi_output}${_mpi_error}" ) # some version write output to error stream
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" MPI_VERSION ${_output} )
+endif ( MPI_FOUND )
