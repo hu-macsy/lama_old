@@ -47,7 +47,7 @@ namespace scai
 namespace utilskernel
 {
 
-/** The LArray is derived form HArray but offers some more functionality. 
+/** The LArray is derived form HArray but offers some more functionality.
  *
  *  - constructor with array of values
  *  - copy operator with arbitrary array (implicit conversions)
@@ -59,7 +59,7 @@ namespace utilskernel
  *  library (initialization, conversion, scale, ... )
  */
 
-template<typename ValueType> 
+template<typename ValueType>
 class LArray : public hmemo::HArray<ValueType>
 {
 public:
@@ -72,40 +72,40 @@ public:
         /** Proxy constructed by ref to the array and the index value. */
 
         IndexProxy( LArray<ValueType>& array, const IndexType i ) :
-    
+
             mArray( array ),
             mIndex( i )
         {
         }
-    
+
         /** indexed value proxy can be used to get its value */
 
         operator ValueType() const
         {
-             return HArrayUtils::getVal<ValueType>( mArray, mIndex );
+            return HArrayUtils::getVal<ValueType>( mArray, mIndex );
         }
-    
+
         /** indexed value proxy can be assigned a value */
 
         IndexProxy& operator= ( ValueType val )
         {
-            HArrayUtils::setVal( mArray, mIndex, val );    
+            HArrayUtils::setVal( mArray, mIndex, val );
             return *this;
         }
 
         /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */
- 
+
         IndexProxy& operator= ( const IndexProxy& other )
         {
             ValueType tmp = HArrayUtils::getVal<ValueType>( mArray, mIndex );
-            HArrayUtils::setVal( mArray, mIndex, tmp );    
+            HArrayUtils::setVal( mArray, mIndex, tmp );
         }
 
     private:
 
         LArray<ValueType>& mArray;
         IndexType mIndex;
-    
+
     };
 
     /* -------------------------------------------------------------------------------------- */
@@ -123,7 +123,7 @@ public:
     explicit LArray( hmemo::ContextPtr context ) :
 
         hmemo::HArray<ValueType>( context )
-   
+
     {
     }
 
@@ -132,7 +132,7 @@ public:
      *  This constructor also allocates memory on the specified context.
      */
     explicit LArray( const IndexType n,
-                        hmemo::ContextPtr context = hmemo::ContextPtr() )
+                     hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
         this->resize( n );    // only sets the size, no allocate
 
@@ -142,16 +142,16 @@ public:
         }
     }
 
-    /** @brief Construcor with context and size and initial value.    
+    /** @brief Construcor with context and size and initial value.
      *
      *  @param n is the size of the array
      *  @param value is the initial value
      *  @param context is location where initialization is done, if not specified its the host
      */
 
-    explicit LArray( const IndexType n, 
-                        const ValueType value, 
-                        hmemo::ContextPtr context = hmemo::ContextPtr() ) 
+    explicit LArray( const IndexType n,
+                     const ValueType value,
+                     hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
         // SCAI_ASSERT( context.get(), "NULL context" )
 
@@ -177,9 +177,9 @@ public:
      */
 
     template<typename OtherValueType>
-    explicit LArray( const IndexType n, 
-                        const OtherValueType* values,
-                        hmemo::ContextPtr context = hmemo::Context::getHostPtr() ) 
+    explicit LArray( const IndexType n,
+                     const OtherValueType* values,
+                     hmemo::ContextPtr context = hmemo::Context::getHostPtr() )
     {
         hmemo::HArrayRef<OtherValueType> tmp( n, values );
         this->reserve( context, n );  // includes also the first touch
@@ -235,6 +235,26 @@ public:
         return HArrayUtils::getVal( *this, i );
     }
 
+    /** Get the minimal value of an array */
+
+    ValueType min() const
+    {
+        return HArrayUtils::reduce( *this, common::reduction::MIN );
+    }
+
+    /** Get the maximal value of an array */
+
+    ValueType max() const
+    {
+        return HArrayUtils::reduce( *this, common::reduction::MAX );
+    }
+
+    /** Get the sum of all array elements */
+
+    ValueType sum() const
+    {
+        return HArrayUtils::reduce( *this, common::reduction::ADD );
+    }
 };
 
 } /* end namespace utilskernel */

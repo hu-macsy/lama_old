@@ -379,6 +379,22 @@ void HArrayUtils::conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefL
 }
 
 template<typename ValueType>
+ValueType HArrayUtils::reduce( const hmemo::HArray<ValueType>& array, const common::reduction::ReductionOp redOp )
+{
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
+
+    // preferred location: where valid values of the array are available
+
+    hmemo::ContextPtr loc = reduce.getValidContext( array.getValidContext() );
+
+    hmemo::ReadAccess<ValueType> readArray( array, loc );
+
+    ValueType redVal = reduce[loc]( readArray.get(), readArray.size(), redOp );
+
+    return redVal;
+}
+
+template<typename ValueType>
 void HArrayUtils::SpecifierV<ValueType>::specify()
 {
     using common::mepr::TemplateSpecifier;
@@ -389,6 +405,7 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
     TemplateSpecifier::set( HArrayUtils::assignScaled<ValueType> );
     TemplateSpecifier::set( HArrayUtils::scale<ValueType> );
     TemplateSpecifier::set( HArrayUtils::conj<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::reduce<ValueType> );
 }
 
 HArrayUtils::HArrayUtils()

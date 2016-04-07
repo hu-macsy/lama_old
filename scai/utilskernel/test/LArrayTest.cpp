@@ -35,6 +35,8 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/utilskernel/LArray.hpp>
 
+#include <scai/common/test/TestMacros.hpp>
+
 using namespace scai::utilskernel;
 using namespace scai::hmemo;
 using namespace scai::common;
@@ -53,6 +55,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.LArrayTest" )
 
 BOOST_AUTO_TEST_CASE( indexTest )
 {
+    testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "indexTest on " << *testContext )
 
     // the LArray allows indexed access, but attention: can be very slow
@@ -78,6 +82,8 @@ BOOST_AUTO_TEST_CASE( indexTest )
 
 BOOST_AUTO_TEST_CASE( assignTest )
 {
+    testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "assignTest on " << *testContext )
 
     // the LArray allows indexed access, but attention: can be very slow
@@ -101,6 +107,8 @@ BOOST_AUTO_TEST_CASE( assignTest )
 
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
+    testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "constructorTest on " << *testContext )
 
     // the LArray allows indexed access, but attention: can be very slow
@@ -127,6 +135,29 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     {
         BOOST_CHECK_EQUAL( myVals[i], array1[i] );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, scai_array_test_types )
+{
+    testContext = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "reductionTest on " << *testContext )
+
+    // the LArray allows indexed access, but attention: can be very slow
+
+    const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
+
+    const IndexType N = sizeof( myVals ) / sizeof( ValueType );
+
+    LArray<ValueType> array( N, myVals, testContext );
+
+    BOOST_CHECK( array.isValid( testContext ) );
+
+    BOOST_CHECK_EQUAL( 0, array.min() );
+    BOOST_CHECK_EQUAL( 9, array.max() );
+    BOOST_CHECK_EQUAL( 45, array.sum() );
 }
 
 /* --------------------------------------------------------------------- */
