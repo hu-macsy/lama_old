@@ -31,12 +31,11 @@
  # @since 1.0.0
 ###
 
-include ( Functions/scaiGenerateBlanks )
-
 ## Need to be macros not functions, because modifications of the parent scope
 
 # generates messages for scai summary page
-macro    ( scai_summary_message MESSAGE_TYPE EXPRESSION OPTIONAL PACKAGE_NAME ADDITIONAL_INFO )
+macro    ( scai_summary_message MESSAGE_TYPE PACKAGE_NAME LEVEL EXPRESSION OPTIONAL ADDITIONAL_INFO )
+    include ( Functions/scaiGenerateBlanks )
 
     set ( COLOR_TYPE_TRUE  "INFO" )
     if     ( ${OPTIONAL} MATCHES "OPTIONAL" )
@@ -48,27 +47,30 @@ macro    ( scai_summary_message MESSAGE_TYPE EXPRESSION OPTIONAL PACKAGE_NAME AD
         set ( COLOR_TYPE_FALSE "ERROR" )
     endif  ( )
 
+    math ( EXPR NUM_BLANKS "2 * (${LEVEL} - 1)" )
+    createBlanks ( TYPE_INTENT ${NUM_BLANKS} )
+
     set ( SCAI_SUMMARY_PACKAGE_NAME_LENGTH 18 )
     
+    if    ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
+        scai_generate_blanks ( SCAI_PACKAGE_NAME_BLANKS ${PACKAGE_NAME} ${SCAI_SUMMARY_PACKAGE_NAME_LENGTH} )
+    else  ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
+        set ( SCAI_PACKAGE_NAME_BLANKS "" )
+    endif ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
+
     if    ( ${MESSAGE_TYPE} STREQUAL "STATIC" )
         set ( TYPE_TRUE  "COMPLETE" )
         set ( TYPE_FALSE "INCOMPLETE" )
-        set ( TYPE_INTENT "" )
-        set ( SCAI_PACKAGE_NAME_BLANKS "" )
     endif ( ${MESSAGE_TYPE} STREQUAL "STATIC" )
 
     if    ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
         set ( TYPE_TRUE  "FOUND" )
         set ( TYPE_FALSE "NOT FOUND" )
-        set ( TYPE_INTENT "  " )
-        scai_generate_blanks ( SCAI_PACKAGE_NAME_BLANKS ${PACKAGE_NAME} ${SCAI_SUMMARY_PACKAGE_NAME_LENGTH} )
     endif ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
     
     if    ( ${MESSAGE_TYPE} STREQUAL "USE" )
         set ( TYPE_TRUE  "ENABLED" )
         set ( TYPE_FALSE "DISABLED" )
-        set ( TYPE_INTENT " " )
-        set ( SCAI_PACKAGE_NAME_BLANKS "" )
     endif ( ${MESSAGE_TYPE} STREQUAL "USE" )
 
     if    ( ${EXPRESSION} )

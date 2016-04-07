@@ -31,12 +31,11 @@
  # @since 1.0.0
 ###
 
-include ( Settings/bashFormats )
-
 # prints colored text messages
 # inspired by soci colormsg function
 function ( scai_status_message )
-    # ANSI Display Atributes
+    include ( Settings/bashFormats )
+
     set ( ERROR "${TextRed}" )
     set ( WARNING "${TextAmber}" )
     set ( INFO "${TextGreen}" )
@@ -64,3 +63,16 @@ function ( scai_status_message )
     
     message ( STATUS ${str} )
 endfunction ( scai_status_message )
+
+function    ( indend_message LEVEL MSG )
+    include ( Functions/scaiGenerateBlanks )
+
+    math ( EXPR NUM_BLANKS "2 * (${LEVEL} - 1)" )
+    createBlanks ( TYPE_INTENT ${NUM_BLANKS} )
+
+    message ( STATUS "${TYPE_INTENT}${MSG}" )
+endfunction ( indend_message LEVEL MSG )
+
+function    ( emptyline )
+    message ( STATUS "" )
+endfunction ( emptyline )
