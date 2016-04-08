@@ -397,6 +397,29 @@ ValueType HArrayUtils::reduce( const hmemo::HArray<ValueType>& array, const comm
 }
 
 template<typename ValueType>
+ValueType HArrayUtils::absMaxDiffVal(
+    const hmemo::HArray<ValueType>& array1,
+    const hmemo::HArray<ValueType>& array2 )
+{
+    SCAI_ASSERT_EQUAL( array1.size(), array2.size(), "array size mismatch for building differences" )
+
+    static LAMAKernel<UtilKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
+
+    // Rule for location: where array1 has valid values
+
+    hmemo::ContextPtr loc = absMaxDiffVal.getValidContext( array1.getValidContext() );
+
+    hmemo::ReadAccess<ValueType> readArray1( array1, loc );
+    hmemo::ReadAccess<ValueType> readArray2( array2, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ValueType redVal = absMaxDiffVal[loc]( readArray1.get(), readArray2.get(), readArray1.size() );
+
+    return redVal;
+}
+
+template<typename ValueType>
 void HArrayUtils::SpecifierV<ValueType>::specify()
 {
     using common::mepr::TemplateSpecifier;
@@ -408,6 +431,7 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
     TemplateSpecifier::set( HArrayUtils::scale<ValueType> );
     TemplateSpecifier::set( HArrayUtils::conj<ValueType> );
     TemplateSpecifier::set( HArrayUtils::reduce<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::absMaxDiffVal<ValueType> );
 }
 
 HArrayUtils::HArrayUtils()

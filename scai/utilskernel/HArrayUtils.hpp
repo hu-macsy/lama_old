@@ -173,6 +173,11 @@ public:
         const hmemo::HArray<ValueType>& array,
         const common::reduction::ReductionOp redOp );
 
+    template<typename ValueType>
+    static ValueType absMaxDiffVal( 
+        const hmemo::HArray<ValueType>& array1,
+        const hmemo::HArray<ValueType>& array2 );
+
 private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

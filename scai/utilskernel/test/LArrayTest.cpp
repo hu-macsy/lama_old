@@ -162,4 +162,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, ValueType, scai_array_test_types )
+{
+    testContext = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "maxDiffNormTest on " << *testContext )
+
+    // the LArray allows indexed access, but attention: can be very slow
+
+    const ValueType myVals1[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
+    const ValueType myVals2[] = { 9, 5, 1, 3, 6, 3, 7, 8, 2, 0 };
+
+    const IndexType N = sizeof( myVals1 ) / sizeof( ValueType );
+
+    LArray<ValueType> array1( N, myVals1, testContext );
+    LArray<ValueType> array2( N, myVals2, testContext );
+
+    BOOST_CHECK( array1.isValid( testContext ) );
+    BOOST_CHECK( array2.isValid( testContext ) );
+
+    BOOST_CHECK_EQUAL( 1, array1.maxDiffNorm( array2 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

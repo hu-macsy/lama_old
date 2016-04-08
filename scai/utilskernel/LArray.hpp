@@ -255,6 +255,13 @@ public:
     {
         return HArrayUtils::reduce( *this, common::reduction::ADD );
     }
+
+    /** Build the max diff norm */
+
+    ValueType maxDiffNorm( const hmemo::HArray<ValueType>& other ) const
+    {
+        return HArrayUtils::absMaxDiffVal( *this, other );
+    }
 };
 
 } /* end namespace utilskernel */
