@@ -389,7 +389,7 @@ ValueType HArrayUtils::reduce( const hmemo::HArray<ValueType>& array, const comm
 
     hmemo::ReadAccess<ValueType> readArray( array, loc );
 
-    hmemo::WriteAccess<ValueType> values( array, loc );
+    SCAI_CONTEXT_ACCESS( loc )
 
     ValueType redVal = reduce[loc]( readArray.get(), readArray.size(), redOp );
 
