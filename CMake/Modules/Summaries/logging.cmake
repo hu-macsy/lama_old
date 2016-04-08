@@ -60,16 +60,4 @@ heading3 ( "Documentation" "DOC_ENABLED" )
     found_message ( "Sphinx" "SPHINX_FOUND" "OPTIONAL" "Version ${Sphinx_VERSION_STRING} with ${Sphinx-build_EXECUTABLE}" )
     found_message ( "Doxygen" "DOXYGEN_FOUND" "OPTIONAL" "Version ${DOXYGEN_VERSION} with ${DOXYGEN_EXECUTABLE}" )
 
-heading ( "Configuration Details:" )
-
-indent_message ( "1" "SCAI logging Version : ${SCAI_LOGGING_VERSION}" )
-indent_message ( "1" "Build Type   : ${CMAKE_BUILD_TYPE}" )
-indent_message ( "1" "Library Type : ${SCAI_LIBRARY_TYPE}" )
-indent_message ( "1" "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
-#indent_message ( "1" "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" ) #opt
-#indent_message ( "1" "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" ) #opt
-if    ( USE_CODE_COVERAGE )
-    indent_message ( "1" "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
-endif ( USE_CODE_COVERAGE )
-
-emptyline()
+include ( Summaries/Modules/Configuration )

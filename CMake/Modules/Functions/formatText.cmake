@@ -60,6 +60,8 @@ function    ( formatText )
 
     endforeach ( arg ${ARGV} )
 
-    set ( str "${str}${TextReset}${BGReset}" )
+    if    ( CMAKE_COLOR_MAKEFILE )
+        set ( str "${str}${TextReset}${BGReset}" )
+    endif ( CMAKE_COLOR_MAKEFILE )  
     set ( ${RESULT_NAME} ${str} PARENT_SCOPE )
 endfunction ( formatText )

@@ -36,6 +36,7 @@ string ( TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME )
 
 ## get project "sur"name (everthing after scai_)
 string ( SUBSTRING ${PROJECT_NAME} 5 -1 PROJECT_SURNAME )
+string ( TOUPPER ${PROJECT_SURNAME} UPPER_PROJECT_SURNAME )
 
 ## upper case project name for project dependent variables
 set ( ${UPPER_PROJECT_NAME}_INCLUDE_DIR include/scai/${PROJECT_SURNAME} )

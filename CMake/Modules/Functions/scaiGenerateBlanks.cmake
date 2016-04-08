@@ -35,7 +35,7 @@ function    ( createBlanks OUTPUT LENGTH )
 	set ( MESSAGE_BLANKS "")
     foreach    ( SCAI_I RANGE ${LENGTH} )
         set ( MESSAGE_BLANKS "${MESSAGE_BLANKS} " )
-    endforeach ( SCAI_I RANGE ${SCAI_MESSAGE_BLANK_LENGTH} )
+    endforeach ( SCAI_I RANGE ${LENGTH} )
 
     set ( ${OUTPUT} ${MESSAGE_BLANKS} PARENT_SCOPE )
 endfunction ( createBlanks OUTPUT LENGTH )

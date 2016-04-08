@@ -34,13 +34,20 @@
 include ( Functions/scaiMessages )
 
 emptyline()
+
 message ( STATUS "==============================" )
 message ( STATUS "Summary of SCAI Configuration:" )
 message ( STATUS "==============================" )
 
 include ( Summaries/Modules/Compiler )
+
 include ( Summaries/Modules/Core )
-include ( Summaries/Modules/Optional )
+
+heading2 ( "Optional components" "" )
+include ( Summaries/Modules/Accelerator )
+include ( Summaries/Modules/Distributed )
+include ( Summaries/Modules/Graphpartitioning )
+
 include ( Summaries/Modules/Build )
+
 include ( Summaries/Modules/Configuration )
-emptyline()
