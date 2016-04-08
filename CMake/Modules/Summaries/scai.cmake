@@ -49,9 +49,8 @@ else  ( ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR) )
 endif ( ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR) )
 
 heading2 ( "Configuration" "REQUIRED_FOUND" )
-
-found_message ( "C++ Compiler" "CMAKE_CXX_COMPILER" "REQUIRED" "" )
-found_message ( "with C++11 support" "CXX_SUPPORTS_C11" "REQUIRED" "" )
+    found_message ( "C++ Compiler" "CMAKE_CXX_COMPILER" "REQUIRED" "" )
+    found_message ( "with C++11 support" "CXX_SUPPORTS_C11" "REQUIRED" "" )
 
 if    ( NOT CXX_SUPPORTS_C11 )
     emptyline()
@@ -87,21 +86,18 @@ heading2 ( "Optional components" "" )
 #emptyline()
 
 # OpenMP usage
-
 heading3 ( "OpenMP" "USE_OPENMP" )
-
     found_message ( "OpenMP" "OPENMP_VERSION" "OPTIONAL" "Version ${OPENMP_VERSION}" )
     found_message ( "compile flag" "OpenMP_CXX_FLAGS" "OPTIONAL" "${OpenMP_CXX_FLAGS}" )
     found_message ( "schedule type" "SCAI_OMP_SCHEDULE" "OPTIONAL" "set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 # LAMA CUDA
-set ( REQUIRED_FOUND FALSE )
-if    ( CUDA_FOUND AND USE_CUDA )
-  set ( REQUIRED_FOUND TRUE )
-endif ( CUDA_FOUND AND USE_CUDA )
+#set ( REQUIRED_FOUND FALSE )
+#if    ( CUDA_FOUND AND USE_CUDA )
+#  set ( REQUIRED_FOUND TRUE )
+#endif ( CUDA_FOUND AND USE_CUDA )
 
-heading3 ( "CUDA" "USE_CUDA" )
-
+heading3 ( "CUDA" "CUDA_ENABLED" )
     found_message ( "CUDA" "CUDA_FOUND" "OPTIONAL" "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
     found_message ( "Compute Capability" "CUDA_HAVE_GPU" "OPTIONAL" "${CUDA_COMPUTE_CAPABILITY}" )
                            
@@ -115,7 +111,6 @@ if    ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
 endif ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
 
 heading3 ( "Graph Distributed" "REQUIRED_FOUND" )
-
     found_message ( "MPI" "MPI_FOUND" "OPTIONAL" "Version ${MPI_VERSION} at ${SCAI_MPI_INCLUDE_DIR}" )
     found_message ( "GPI" "GPI_FOUND" "OPTIONAL" "at ${SCAI_GPI_INCLUDE_DIR}" )
 
@@ -126,7 +121,6 @@ if    ( METIS_FOUND AND USE_GRAPHPARTITIONING )
 endif ( METIS_FOUND AND USE_GRAPHPARTITIONING )
 
 heading3 ( "Graph Partitioning" "REQUIRED_FOUND" )
-
     found_message ( "Metis" "METIS_FOUND" "OPTIONAL" "Version ${METIS_VERSION} at ${METIS_INCLUDE_DIR}" )
     found_message ( "ParMetis" "PARMETIS_FOUND" "OPTIONAL" "Version ${PARMETIS_VERSION} at ${PARMETIS_INCLUDE_DIR}" )
 
@@ -140,7 +134,6 @@ if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
 
 heading3 ( "Test" "REQUIRED_FOUND" )
-
     found_message ( "Boost Unit Test" "Boost_UNIT_TEST_FRAMEWORK_FOUND" "OPTIONAL" "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
     found_message ( "Boost Regex" "Boost_REGEX_FOUND" "OPTIONAL" "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
 
@@ -151,7 +144,6 @@ if    ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
 endif ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
 
 heading3 ( "Documentation" "REQUIRED_FOUND" )
-
     found_message ( "Sphinx" "SPHINX_FOUND" "OPTIONAL" "Version ${Sphinx_VERSION_STRING} with ${Sphinx-build_EXECUTABLE}" )
     found_message ( "Doxygen" "DOXYGEN_FOUND" "OPTIONAL" "Version ${DOXYGEN_VERSION} with ${DOXYGEN_EXECUTABLE}" )
 
