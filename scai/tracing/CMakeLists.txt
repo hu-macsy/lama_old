@@ -139,9 +139,7 @@ enable_testing()
 add_test ( tracing_test test/test.sh )
 ## end subdir test
 
-if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 ) 
-    add_subdirectory( gui )
-endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+add_subdirectory( gui )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )

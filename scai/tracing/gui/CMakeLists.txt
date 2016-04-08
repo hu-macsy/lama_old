@@ -1,9 +1,3 @@
-
-# Enable Java Compilation
-# this will set at least CMAKE_Java_COMPILER CMAKE_Java_ARCHIVE 
-
-find_package( Java )
-
 # Note: Java_FOUND not set by some versions, so ask for JAVAC executable
 
 if ( Java_JAVAC_EXECUTABLE )

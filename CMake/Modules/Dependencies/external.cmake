@@ -37,7 +37,7 @@
 set ( SCAI_COMMON_EXTERNAL_DEPS dl Thread Boost OpenMP CUDA ) # 1
 set ( SCAI_LOGGING_EXTERNAL_DEPS ) # 2
 set ( SCAI_TRACING_EXTERNAL_DEPS ) # 3
-set ( SCAI_TASKING_EXTERNAL_DEPS                       CUDA MIC ) # 4
+set ( SCAI_TASKING_EXTERNAL_DEPS                       CUDA MIC Java ) # 4
 set ( SCAI_HMEMO_EXTERNAL_DEPS                  OpenMP CUDA MIC ) # 5
 set ( SCAI_KREGISTRY_EXTERNAL_DEPS ) # 6
 set ( SCAI_BLASKERNEL_EXTERNAL_DEPS             OpenMP CUDA MIC SCAI_BLAS ) # 7
