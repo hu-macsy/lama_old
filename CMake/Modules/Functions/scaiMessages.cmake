@@ -1,5 +1,5 @@
 ###
- # @file Functions.cmake
+ # @file scaiMessages.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,44 +25,15 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake functions and macros
+ # @brief CMake functions for formatted messages used in summaries
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0
 ###
 
-# prints colored text messages
-# inspired by soci colormsg function
-function ( scai_status_message )
-    include ( Settings/bashFormats )
-
-    set ( ERROR "${TextRed}" )
-    set ( WARNING "${TextAmber}" )
-    set ( INFO "${TextGreen}" )
-    set ( HEADLINE "${TextUnderline}" )
-    
-    set ( coloron FALSE )
-    set ( str "" )
-    foreach    ( arg ${ARGV} )
-
-        if    ( DEFINED ${arg} )
-            if    ( CMAKE_COLOR_MAKEFILE )
-                set ( str "${str}${${arg}}" )
-                set ( coloron TRUE )
-            endif ( CMAKE_COLOR_MAKEFILE )
-        else  ( DEFINED ${arg} )
-            set ( str "${str}${arg}" )
-            if    ( coloron )
-                set ( str "${str}${TextColorReset}" )
-                set ( coloron FALSE )
-            endif ( coloron )
-            set ( str "${str} " )
-        endif ( DEFINED ${arg} )
-
-    endforeach ( arg ${ARGV} )
-    
-    message ( STATUS ${str} )
-endfunction ( scai_status_message )
+function    ( emptyline )
+    message ( STATUS "" )
+endfunction ( emptyline )
 
 function    ( indent_message LEVEL MSG )
     include ( Functions/scaiGenerateBlanks )
@@ -73,49 +44,15 @@ function    ( indent_message LEVEL MSG )
     message ( STATUS "${TYPE_INTENT}${MSG}" )
 endfunction ( indent_message LEVEL MSG )
 
-function    ( emptyline )
-    message ( STATUS "" )
-endfunction ( emptyline )
-
-
-function    ( format_text )
-    # first arg is name of "return variable"
-    list ( GET ARGV 0 RESULT_NAME )
-    list ( REMOVE_AT ARGV 0 )
-
-    include ( Settings/bashFormats )
-
-    set ( coloron FALSE )
-    set ( str "" )
-    foreach    ( arg ${ARGV} )
-
-        if    ( DEFINED ${arg} )
-            if    ( CMAKE_COLOR_MAKEFILE )
-                set ( str "${str}${${arg}}" )
-                set ( coloron TRUE )
-            endif ( CMAKE_COLOR_MAKEFILE )
-        else  ( DEFINED ${arg} )
-            set ( str "${str}${arg}" )
-            if    ( coloron )
-                set ( str "${str}${TextColorReset}" )
-                set ( coloron FALSE )
-            endif ( coloron )
-            set ( str "${str} " )
-        endif ( DEFINED ${arg} )
-
-    endforeach ( arg ${ARGV} )
-
-    set ( str "${str}${TextReset}${BGReset}" )
-    set ( ${RESULT_NAME} ${str} PARENT_SCOPE )
-endfunction ( format_text )
-
 function    ( heading TEXT )
+    include ( Functions/formatText )
     emptyline()
-    format_text ( H1 "TextUnderline" "${TEXT}" )
+    formatText ( H1 "TextUnderline" "${TEXT}" )
     indent_message ( "1" "${H1}" )
 endfunction ( heading TEXT )
 
 function    ( heading2 TEXT VAR )
+    include ( Functions/formatText )
     emptyline()
 
     if    ( VAR STREQUAL "" )
@@ -128,7 +65,7 @@ function    ( heading2 TEXT VAR )
             set ( FLAG_TEXT "INCOMPLETE" )
             set ( FLAG_FORMAT "TextRed" )
         endif ( ${VAR} )
-        format_text ( H2 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
+        formatText ( H2 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
     endif ( VAR STREQUAL "" )
         
     indent_message ( "2" "${TEXT} ${H2}" )
@@ -136,6 +73,7 @@ function    ( heading2 TEXT VAR )
 endfunction ( heading2 TEXT )
 
 function    ( heading3 TEXT VAR )
+    include ( Functions/formatText )
     emptyline()
     if    ( ${VAR} )
         set ( FLAG_TEXT "ENABLED" )
@@ -144,12 +82,13 @@ function    ( heading3 TEXT VAR )
         set ( FLAG_TEXT "DISABLED" )
         set ( FLAG_FORMAT "TextAmber" )
     endif ( ${VAR} )
-    format_text ( H3 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
+    formatText ( H3 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
         
     indent_message ( "3" "${TEXT} ${H3}" )
 endfunction ( heading3 TEXT )
 
 function    ( found_message TEXT VAR OPTIONAL ADDITIONAL_TEXT )
+    include ( Functions/formatText )
     include ( Functions/scaiGenerateBlanks )
 
     set ( SCAI_SUMMARY_PACKAGE_NAME_LENGTH 18 )
@@ -170,7 +109,7 @@ function    ( found_message TEXT VAR OPTIONAL ADDITIONAL_TEXT )
             set ( FLAG_FORMAT "TextRed" )   
         endif  ( )
     endif ( ${VAR} )
-    format_text ( H4 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
+    formatText ( H4 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
         
     indent_message ( "4" "${TEXT}${SCAI_PACKAGE_NAME_BLANKS}${H4} ${ADDITIONAL_TEXT}" )
 endfunction ( found_message TEXT )
