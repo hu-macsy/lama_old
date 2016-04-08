@@ -1,5 +1,5 @@
 ###
- # @file doc.cmake
+ # @file parseBoolean.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,28 +25,16 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief everthing for building sphinx and doxygen documentation
+ # @brief parseBoolean to ON/OFF
  # @author Lauretta Schubert
- # @date 12.02.2016
+ # @date07.04.2016
  # @since 2.0.0
 ###
 
-include ( Package/Sphinx )
-include ( Package/Doxygen)
-
-if    ( SPHINX_FOUND OR DOXYGEN_FOUND )
-	set ( DOC_FOUND TRUE )
-else  ( SPHINX_FOUND OR DOXYGEN_FOUND )
-	set ( DOC_FOUND FALSE )
-endif ( SPHINX_FOUND OR DOXYGEN_FOUND )
-
-message ( STATUS "BUILD_DOC ${BUILD_DOC} SPHINX_FOUND ${SPHINX_FOUND} DOXYGEN_FOUND ${DOXYGEN_FOUND}")
-
-set ( DOC_ENABLED FALSE )
-if    ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
-  set ( DOC_ENABLED TRUE )
-endif ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
-
-if    ( BUILD_DOC AND NOT DOC_FOUND )
-    message( FATAL_ERROR "Build of documentation enabled, but configuration is incomplete!")
-endif ( BUILD_DOC AND NOT DOC_FOUND )
+macro ( parseBoolean ARG )
+	if    ( ${ARG} )
+		set ( ${ARG} ON )
+    else  ( ${ARG} ) 
+		set ( ${ARG} OFF )
+    endif ( ${ARG} )
+endmacro ( parseBoolean ARG)

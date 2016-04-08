@@ -36,6 +36,8 @@
 ### SCAI_BOOST_INCLUDE_DIR - Boost include directory
 ### Boost_<lib>_LIBRARY    - Boost component library
 ### SCAI_BOOST_LIBRARIES   - all found BOOST libraries out of the searched component
+### BOOST_VERSION          - concluded ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}
+### BOOST_TEST_ENABLED     - if Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST
 
 ### Boost_USE_STATIC_LIBS  ( default is OFF )
 ### 
@@ -90,3 +92,10 @@ endif ( NOT Boost_REGEX_FOUND AND ${BUILD_TEST} )
 if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
     set ( FOUND_BOOST_TEST TRUE )
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) 
+
+set ( BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}" )
+
+set ( BOOST_TEST_ENABLED FALSE )
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+  set ( BOOST_TEST_ENABLED TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )

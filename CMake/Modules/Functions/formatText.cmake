@@ -1,5 +1,5 @@
 ###
- # @file doc.cmake
+ # @file formatText.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,28 +25,41 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief everthing for building sphinx and doxygen documentation
- # @author Lauretta Schubert
- # @date 12.02.2016
- # @since 2.0.0
+ # @brief CMake function to format text
+ # @author Jan Ecker
+ # @date 25.04.2013
+ # @since 1.0.0
 ###
 
-include ( Package/Sphinx )
-include ( Package/Doxygen)
+# prints colored text messages
+# inspired by soci colormsg function
+function    ( formatText )
+    # first arg is name of "return variable"
+    list ( GET ARGV 0 RESULT_NAME )
+    list ( REMOVE_AT ARGV 0 )
 
-if    ( SPHINX_FOUND OR DOXYGEN_FOUND )
-	set ( DOC_FOUND TRUE )
-else  ( SPHINX_FOUND OR DOXYGEN_FOUND )
-	set ( DOC_FOUND FALSE )
-endif ( SPHINX_FOUND OR DOXYGEN_FOUND )
+    include ( Settings/bashFormats )
 
-message ( STATUS "BUILD_DOC ${BUILD_DOC} SPHINX_FOUND ${SPHINX_FOUND} DOXYGEN_FOUND ${DOXYGEN_FOUND}")
+    set ( coloron FALSE )
+    set ( str "" )
+    foreach    ( arg ${ARGV} )
 
-set ( DOC_ENABLED FALSE )
-if    ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
-  set ( DOC_ENABLED TRUE )
-endif ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
+        if    ( DEFINED ${arg} )
+            if    ( CMAKE_COLOR_MAKEFILE )
+                set ( str "${str}${${arg}}" )
+                set ( coloron TRUE )
+            endif ( CMAKE_COLOR_MAKEFILE )
+        else  ( DEFINED ${arg} )
+            set ( str "${str}${arg}" )
+            if    ( coloron )
+                set ( str "${str}${TextColorReset}" )
+                set ( coloron FALSE )
+            endif ( coloron )
+            set ( str "${str} " )
+        endif ( DEFINED ${arg} )
 
-if    ( BUILD_DOC AND NOT DOC_FOUND )
-    message( FATAL_ERROR "Build of documentation enabled, but configuration is incomplete!")
-endif ( BUILD_DOC AND NOT DOC_FOUND )
+    endforeach ( arg ${ARGV} )
+
+    set ( str "${str}${TextReset}${BGReset}" )
+    set ( ${RESULT_NAME} ${str} PARENT_SCOPE )
+endfunction ( formatText )

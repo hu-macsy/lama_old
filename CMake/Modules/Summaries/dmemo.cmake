@@ -31,178 +31,64 @@
  # @since 1.0.0
 ###
 
-include ( Functions/scaiStatusMessage )
-include ( Functions/scaiSummaryMessage )
+include ( Functions/scaiMessages )
 
-message ( STATUS "" )
+emptyline()
+message ( STATUS "===============================" )
 message ( STATUS "Summary of dmemo Configuration:" )
-message ( STATUS "==============================" )
-message ( STATUS "" )
+message ( STATUS "===============================" )
 
-scai_status_message ( HEADLINE "Compiler:" )
-# C++ Compiler
-scai_summary_message ( "FOUND"
-                       "CMAKE_CXX_COMPILER"
-                       "C++ Compiler"
-                       "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
-                       
-message ( STATUS "" )
+include ( Summaries/Modules/Compiler )
 
-if    ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-    set( REQUIRED_FOUND TRUE )
-else  ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-  set( REQUIRED_FOUND FALSE )
-endif ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "dmemo"
-                       "Needs compiler supporting C++11 or Boost and pThreads" )
-
-scai_summary_message ( "FOUND"
-                       "CXX_SUPPORTS_C11"
-                       "C++11 support"
-                       "" )
-
-if    ( NOT CXX_SUPPORTS_C11 )
-    scai_summary_message ( "FOUND"
-                           "SCAI_BOOST_INCLUDE_DIR"
-                           "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-message ( STATUS "" )
-
-set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
-
-scai_summary_message ( "USE"
-                       "USE_OPENMP"
-                       "  OpenMP usage"
-                       "${OPENMP_INFO_TEXT}"   )
-
-# LAMA (core)
-message ( STATUS "" )
-scai_status_message ( HEADLINE "LIBRARIES:" )
-  
-set ( REQUIRED_FOUND FALSE )
-if    ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
-  set ( REQUIRED_FOUND TRUE )
-endif ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
-
-# LAMA MPI
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "REQUIRED_FOUND"
-                       "Distributed"
-                       "" )
-
-    # MPI
-    scai_summary_message ( "FOUND"
-                           "MPI_FOUND"
-                           "MPI"
-                           "at ${SCAI_MPI_INCLUDE_DIR}" )
-
-    # GPI
-    scai_summary_message ( "FOUND"
-                           "GPI_FOUND"
-                           "GPI"
-                           "at ${SCAI_GPI_INCLUDE_DIR}" )
-
-# Graph Partitioning
-set ( REQUIRED_FOUND FALSE )
-if    ( METIS_FOUND AND USE_GRAPHPARTITIONING )
-  set ( REQUIRED_FOUND TRUE )
-endif ( METIS_FOUND AND USE_GRAPHPARTITIONING )
-
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "REQUIRED_FOUND"
-                       "Graph Partitioning"
-                       "" )                  
-  # Metis
-    scai_summary_message ( "FOUND"
-                           "METIS_FOUND"
-                           "Metis"
-                           "at ${METIS_INCLUDE_DIR}" )
-
-  # ParMetis
-    scai_summary_message ( "FOUND"
-                           "PARMETIS_FOUND"
-                           "ParMetis"
-                           "at ${PARMETIS_INCLUDE_DIR}" )
-
+# dmemo (core)
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND )
 
-message ( STATUS "" )
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "Internal Libraries (core)"
-                       "" )
+heading2 ( "Required core" "REQUIRED_FOUND" )
+heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
+    found_message ( "SCAI common"    "SCAI_COMMON_FOUND"    "REQUIRED" "Version ${SCAI_COMMON_VERSION}"    )
+    found_message ( "SCAI logging"   "SCAI_LOGGING_FOUND"   "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"   )
+    found_message ( "SCAI tracing"   "SCAI_TRACING_FOUND"   "REQUIRED" "Version ${SCAI_TRACING_VERSION}"   )
+    found_message ( "SCAI tasking"   "SCAI_TASKING_FOUND"   "REQUIRED" "Version ${SCAI_TASKING_VERSION}"   )
+    found_message ( "SCAI hmemo"     "SCAI_HMEMO_FOUND"     "REQUIRED" "Version ${SCAI_HMEMO_VERSION}"     )
 
-    scai_summary_message ( "FOUND"
-                           "SCAI_COMMON_FOUND"
-                           "SCAI Common"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_LOGGING_FOUND"
-                           "SCAI Logging"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_TRACING_FOUND"
-                           "SCAI Tracing"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_TASKING_FOUND"
-                           "SCAI Tasking"
-                           "" )
-
-    scai_summary_message ( "FOUND"
-                           "SCAI_HMEMO_FOUND"
-                           "SCAI Hmemo"
-                           "" )
-                           
-# LAMA TEST
-message ( STATUS "" )
-scai_status_message ( HEADLINE "TESTING:" )
-
+heading2 ( "Optional components" "" )
+heading3 ( "External Libraries:" "" )
+  
 set ( REQUIRED_FOUND FALSE )
-if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+if    ( MPI_ENABLES OR GPI_ENABLED )
   set ( REQUIRED_FOUND TRUE )
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+endif ( MPI_ENABLES OR GPI_ENABLED )
 
-scai_summary_message ( "USE"
-                       "REQUIRED_FOUND"
-                       "TEST"
-                       "" )
+# LAMA MPI
+set ( REQUIRED_FOUND FALSE )
+if    ( MPI_ENABLED OR GPI_ENABLED )
+  set ( REQUIRED_FOUND TRUE )
+endif ( MPI_ENABLED OR GPI_ENABLED )
 
-    # Boost Test-Framework
-    scai_summary_message ( "FOUND"
-                           "Boost_UNIT_TEST_FRAMEWORK_FOUND"
-                           "Boost Unit Test"
-                           "" )
-                           
-    # Boost Regex
-    scai_summary_message ( "FOUND"
-                           "Boost_REGEX_FOUND"
-                           "Boost Regex"
-                           "" )
-                           
-message ( STATUS "" )
+heading3 ( "Distributed" "REQUIRED_FOUND" )
+    found_message ( "MPI" "MPI_FOUND" "OPTIONAL" "Version ${MPI_VERSION} at ${SCAI_MPI_INCLUDE_DIR}" )
+    found_message ( "GPI" "GPI_FOUND" "OPTIONAL" "at ${SCAI_GPI_INCLUDE_DIR}" )
 
-scai_status_message ( HEADLINE "INFO:" )
-message ( STATUS "LAMA Version : ${SCAI_LAMA_VERSION} ${SCAI_VERSION_NAME}" )
-message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
-message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
-message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
-message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
+# Graph Partitioning
+heading3 ( "Graph Partitioning" "GRAPHPARTITIONING_ENABLED" )
+    found_message ( "Metis" "METIS_FOUND" "OPTIONAL" "Version ${METIS_VERSION} at ${METIS_INCLUDE_DIR}" )
+    found_message ( "ParMetis" "PARMETIS_FOUND" "OPTIONAL" "Version ${PARMETIS_VERSION} at ${PARMETIS_INCLUDE_DIR}" )
+
+include ( Summaries/Modules/Build )  
+
+heading ( "Configuration Details:" )
+
+indent_message ( "1" "dmemo Version : ${SCAI_DMEMO_VERSION}" )
+indent_message ( "1" "Build Type   : ${CMAKE_BUILD_TYPE}" )
+indent_message ( "1" "Library Type : ${SCAI_LIBRARY_TYPE}" )
+indent_message ( "1" "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
+indent_message ( "1" "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" ) #opt
+indent_message ( "1" "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" ) #opt
 if    ( USE_CODE_COVERAGE )
-  message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
+    indent_message ( "1" "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
-message ( STATUS "" )
+
+emptyline()

@@ -36,7 +36,8 @@
 ### OPENMP_FOUND           - if OpenMP is found
 ### USE_OPENMP             - if OpenMP is enabled
 ### OpenMP_CXX_FLAGS       - flags to be used for compiling/linking C++ code with OpenMP pragmas
-### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag 
+### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag
+### OPENMP_VERSION         - version id
 
 if    ( CMAKE_VERSION VERSION_LESS 2.8.7 )
 	enable_language ( C )
@@ -46,6 +47,19 @@ find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
 
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( OPENMP )
+
+## get OpenMP version
+if    ( OPENMP_FOUND )
+	    try_run ( OPENMP_RUN_RESULT_VAR OPENMP_COMPILE_RESULT_VAR
+        ${CMAKE_BINARY_DIR}
+        ${CMAKE_MODULE_PATH}/VersionCheck/openmp.cpp
+        CMAKE_FLAGS 
+        -DCOMPILE_DEFINITIONS:STRING=${OpenMP_CXX_FLAGS}
+        COMPILE_OUTPUT_VARIABLE OPENMP_COMPILE_OUTPUT_VAR
+        RUN_OUTPUT_VARIABLE OPENMP_RUN_OUTPUT_VAR )
+
+        set ( OPENMP_VERSION ${OPENMP_RUN_OUTPUT_VAR} )
+endif ( OPENMP_FOUND )
 
 if    ( OPENMP_FOUND AND USE_OPENMP )
 

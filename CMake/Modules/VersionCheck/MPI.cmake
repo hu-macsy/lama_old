@@ -1,5 +1,5 @@
 ###
- # @file CompilerVersion.cmake
+ # @file MPI.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -26,35 +26,13 @@
  # @endlicense
  #
  # @brief Version variable defintions for the used compilers
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @author Lauretta Schubert
+ # @date 07.04.2016
+ # @since 2.0.0
 ###
 
-### GNU compiler
-
-## C Compiler
-if    ( CMAKE_COMPILER_IS_GNUCC )
-    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCC_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_COMPILER_IS_GNUCC )
-
-## CXX Compiler
-if ( CMAKE_COMPILER_IS_GNUCXX )
-    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCXX_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_COMPILER_IS_GNUCXX )
-
-### Intel compiler
-
-## C Compiler
-if    ( CMAKE_CC_COMPILER_ID MATCHES Intel )
-    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" IntelCC_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_CC_COMPILER_ID MATCHES Intel )
-
-## CXX Compiler
-if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" IntelCXX_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+if    ( MPI_FOUND )
+    execute_process ( COMMAND ${MPIEXEC} --version OUTPUT_VARIABLE _mpi_output ERROR_VARIABLE _mpi_error)
+    set ( _output "${_mpi_output}${_mpi_error}" ) # some version write output to error stream
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" MPI_VERSION ${_output} )
+endif ( MPI_FOUND )

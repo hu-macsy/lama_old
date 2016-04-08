@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake functions and macros
+ # @brief Find SCAI_BLAS: either MKL, BLAS or use INTERNALBLAS
  # @author
  # @date 25.04.2013
  # @since 1.0.0
@@ -107,7 +107,7 @@ if ( NOT INTERNALBLAS_FOUND )
     
     if ( BLAS_FOUND )
         set ( SCAI_BLAS_FOUND TRUE )
-        set ( SCAI_BLAS_NAME "BLAS " )
+        set ( SCAI_BLAS_NAME "BLAS" )
 
         if     ( LAPACK_lapack_LIBRARY AND BLAS_blas_LIBRARY )
             set ( SCAI_SCAI_BLAS_LIBRARIES ${BLAS_blas_LIBRARY} ${LAPACK_lapack_LIBRARY} )
@@ -122,6 +122,8 @@ else ( NOT INTERNALBLAS_FOUND )
     set ( SCAI_BLAS_NAME "Internal" )
 
 endif ( NOT INTERNALBLAS_FOUND )
+
+include ( VersionCheck/BLAS )
 
 #message ( STATUS "SCAI_BLAS_FOUND ${SCAI_BLAS_FOUND} SCAI_BLAS_NAME ${SCAI_BLAS_NAME}" )
 #message ( STATUS "SCAI_SCAI_BLAS_INCLUDE_DIR ${SCAI_SCAI_BLAS_INCLUDE_DIR} SCAI_SCAI_BLAS_LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES}" )

@@ -31,148 +31,50 @@
  # @since 1.0.0
 ###
 
-include ( Functions/scaiStatusMessage )
-include ( Functions/scaiSummaryMessage )
+include ( Functions/scaiMessages )
 
-message ( STATUS "" )
+emptyline()
+message ( STATUS "==============================" )
 message ( STATUS "Summary of LAMA Configuration:" )
 message ( STATUS "==============================" )
-message ( STATUS "" )
 
-scai_status_message ( HEADLINE "Compiler:" )
-# C++ Compiler
-scai_summary_message ( "FOUND"
-                       "CMAKE_CXX_COMPILER"
-                       "C++ Compiler"
-                       "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
-                       
-message ( STATUS "" )
+include ( Summaries/Modules/Compiler )
 
-if    ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-    set( REQUIRED_FOUND TRUE )
-else  ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-	set( REQUIRED_FOUND FALSE )
-endif ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "LAMA"
-                       "Needs compiler supporting C++11 or Boost and pThreads" )
-
-scai_summary_message ( "FOUND"
-					             "CXX_SUPPORTS_C11"
-					             "C++11 support"
-					             "" )
-
-if    ( NOT CXX_SUPPORTS_C11 )
-    scai_summary_message ( "FOUND"
-                           "BOOST_INCLUDE_DIR"
-                           "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-message ( STATUS "" )
-
-set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
-
-scai_summary_message ( "USE"
-                       "USE_OPENMP"
-                       "  OpenMP usage"
-                       "${OPENMP_INFO_TEXT}"   )
-
-# LAMA (core)
-message ( STATUS "" )
-scai_status_message ( HEADLINE "LIBRARIES:" )
-   
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_DMEMO_FOUND )
+            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_UTILSKERNEL_FOUND AND SCAI_SPARSEKERNEL_FOUND
+            AND SCAI_DMEMO_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_DMEMO_FOUND )
+            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_UTILSKERNEL_FOUND AND SCAI_SPARSEKERNEL_FOUND
+            AND SCAI_DMEMO_FOUND )
 
-message ( STATUS "" )
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "Internal Libraries (core)"
-                       "" )
+heading2 ( "Required core" "REQUIRED_FOUND" )
+heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
+    found_message ( "SCAI common"       "SCAI_COMMON_FOUND"       "REQUIRED" "Version ${SCAI_COMMON_VERSION}"       )
+    found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
+    found_message ( "SCAI tracing"      "SCAI_TRACING_FOUND"      "REQUIRED" "Version ${SCAI_TRACING_VERSION}"      )
+    found_message ( "SCAI tasking"      "SCAI_TASKING_FOUND"      "REQUIRED" "Version ${SCAI_TASKING_VERSION}"      )
+    found_message ( "SCAI hmemo"        "SCAI_HMEMO_FOUND"        "REQUIRED" "Version ${SCAI_HMEMO_VERSION}"        )
+    found_message ( "SCAI kregistry"    "SCAI_KREGISTRY_FOUND"    "REQUIRED" "Version ${SCAI_KREGISTRY_VERSION}"    )
+    found_message ( "SCAI blaskernel"   "SCAI_BLASKERNEL_FOUND"   "REQUIRED" "Version ${SCAI_BLASKERNEL_VERSION}"   )
+    found_message ( "SCAI utilskernel"  "SCAI_UTILSKERNEL_FOUND"  "REQUIRED" "Version ${SCAI_UTILSKERNEL_VERSION}"  )
+    found_message ( "SCAI sparsekernel" "SCAI_SPARSEKERNEL_FOUND" "REQUIRED" "Version ${SCAI_SPARSEKERNEL_VERSION}" )
+    found_message ( "SCAI dmemo"        "SCAI_DMEMO_FOUND"        "REQUIRED" "Version ${SCAI_DMEMO_VERSION}"        )
 
-    scai_summary_message ( "FOUND"
-                           "SCAI_COMMON_FOUND"
-                           "SCAI Common"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_LOGGING_FOUND"
-                           "SCAI Logging"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_TRACING_FOUND"
-                           "SCAI Tracing"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_TASKING_FOUND"
-                           "SCAI Tasking"
-                           "" )
+heading2 ( "Optional components" "" )
+include ( Summaries/Modules/Build )  
 
-    scai_summary_message ( "FOUND"
-                           "SCAI_HMEMO_FOUND"
-                           "SCAI Hmemo"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_KREGISTRY_FOUND"
-                           "SCAI Kregistry"
-                           "" )
+heading ( "Configuration Details:" )
 
-    scai_summary_message ( "FOUND"
-                           "SCAI_BLASKERNEL_FOUND"
-                           "SCAI Blaskernel"
-                           "" )
-
-    scai_summary_message ( "FOUND"
-                           "SCAI_DMEMO_FOUND"
-                           "SCAI Dmemo"
-                           "" )
-
-# LAMA TEST
-message ( STATUS "" )
-scai_status_message ( HEADLINE "TESTING:" )
-
-set ( REQUIRED_FOUND FALSE )
-if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
-  set ( REQUIRED_FOUND TRUE )
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
-
-scai_summary_message ( "USE"
-                       "REQUIRED_FOUND"
-                       "TEST"
-                       "" )
-
-    # Boost Test-Framework
-    scai_summary_message ( "FOUND"
-                           "Boost_UNIT_TEST_FRAMEWORK_FOUND"
-                           "Boost Unit Test"
-                           "" )
-                           
-    # Boost Regex
-    scai_summary_message ( "FOUND"
-                           "Boost_REGEX_FOUND"
-                           "Boost Regex"
-                           "" )
-                           
-message ( STATUS "" )
-
-scai_status_message ( HEADLINE "INFO:" )
-message ( STATUS "LAMA Version : ${SCAI_LAMA_VERSION} ${SCAI_VERSION_NAME}" )
-message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
-message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
-message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
-message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
+indent_message ( "1" "LAMA Version : ${SCAI_LAMA_VERSION}" )
+indent_message ( "1" "Build Type   : ${CMAKE_BUILD_TYPE}" )
+indent_message ( "1" "Library Type : ${SCAI_LIBRARY_TYPE}" )
+indent_message ( "1" "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
+indent_message ( "1" "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" ) #opt
+indent_message ( "1" "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" ) #opt
 if    ( USE_CODE_COVERAGE )
-	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
+    indent_message ( "1" "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
-message ( STATUS "" )
+
+emptyline()

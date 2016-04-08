@@ -31,148 +31,44 @@
  # @since 2.0.0
 ###
 
-include ( Functions/scaiStatusMessage )
-include ( Functions/scaiSummaryMessage )
+include ( Functions/scaiMessages )
 
-message ( STATUS "" )
+emptyline()
+message ( STATUS "=====================================" )
 message ( STATUS "Summary of SCAI common Configuration:" )
 message ( STATUS "=====================================" )
-message ( STATUS "" )
 
-scai_status_message ( HEADLINE "Compiler:" )
-# C++ Compiler
-scai_summary_message ( "FOUND"
-                       "CMAKE_CXX_COMPILER"
-                       "C++ Compiler"
-                       "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
+include ( Summaries/Modules/Compiler )
 
-message ( STATUS "" )
-
-if    ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) )
-    set( REQUIRED_FOUND TRUE )
-else  ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) )
-	set( REQUIRED_FOUND FALSE )
-endif ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) )
-
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "Common"
-                       "Needs compiler supporting C++11 or Boost and pThreads" )
-
-scai_summary_message ( "FOUND"
-					             "CXX_SUPPORTS_C11"
-					             "C++11 support"
-					             "" )
-				
-if    ( NOT CXX_SUPPORTS_C11 )
-    scai_summary_message ( "FOUND"
-                           "SCAI_BOOST_INCLUDE_DIR"
-                           "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-message ( STATUS "" )
-
-set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
-
-scai_summary_message ( "USE"
-                       "USE_OPENMP"
-                       "  OpenMP usage"
-                       "${OPENMP_INFO_TEXT}"   )
-
-# LAMA (core)
-message ( STATUS "" )
-scai_status_message ( HEADLINE "LIBRARIES:" )
+# common (core)
+heading ( "External Libraries:" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR )
     set ( REQUIRED_FOUND TRUE )
-endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR )
+endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR  )
 
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "common (core)"
-                       "" )
+heading2 ( "Required core" "REQUIRED_FOUND" )
 
-    #pthreads
-    scai_summary_message ( "FOUND"
-                           "SCAI_THREAD_LIBRARIES"
-                           "pThreads"
-                           "" )
-    
+    # pthreads
+    found_message ( "pThreads" "SCAI_THREAD_LIBRARIES" "REQUIRED" "Version ${SCAI_THREAD_VERSION}" )
     # boost
-    message ( STATUS "" )
-    scai_summary_message ( "FOUND"
-                           "SCAI_BOOST_INCLUDE_DIR"
-                           "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
+    found_message ( "Boost" "SCAI_BOOST_INCLUDE_DIR" "REQUIRED" "Version ${BOOST_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
 
-# LAMA CUDA
-set ( REQUIRED_FOUND FALSE )
-if    ( CUDA_FOUND AND USE_CUDA )
-  set ( REQUIRED_FOUND TRUE )
-endif ( CUDA_FOUND AND USE_CUDA )
+heading2 ( "Optional components" "" )
+include ( Summaries/Modules/Build )
 
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "REQUIRED_FOUND"
-                       "CUDA"
-                       "" )
+#include ( Summaries/Modules/Configuration )
+heading ( "Configuration Details:" )
 
-    # CUDA
-    scai_summary_message ( "FOUND"
-                           "CUDA_FOUND"
-                           "CUDA"
-                           "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
-                           
-    # CUDA Compute Capability
-    scai_summary_message ( "FOUND"
-                           "CUDA_HAVE_GPU"
-                           "Compute Capability"
-                           "${CUDA_COMPUTE_CAPABILITY}" )
-                           
-# LAMA MIC
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_MIC"
-                       "MIC"
-                       "" )
-
-# LAMA TEST
-message ( STATUS "" )
-scai_status_message ( HEADLINE "TESTING:" )
-
-set ( REQUIRED_FOUND FALSE )
-if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
-  set ( REQUIRED_FOUND TRUE )
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
-
-scai_summary_message ( "USE"
-                       "REQUIRED_FOUND"
-                       "TEST"
-                       "" )
-
-    # Boost Test-Framework
-    scai_summary_message ( "FOUND"
-                           "Boost_UNIT_TEST_FRAMEWORK_FOUND"
-                           "Boost Unit Test"
-                           "" )
-                           
-    # Boost Regex
-    scai_summary_message ( "FOUND"
-                           "Boost_REGEX_FOUND"
-                           "Boost Regex"
-                           "" )
-                  
-message ( STATUS "" )
-
-scai_status_message ( HEADLINE "INFO:" )
-
-message ( STATUS "Common Version : ${SCAI_COMMON_VERSION} ${SCAI_VERSION_NAME}" )
-message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
-message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
+indent_message ( "1" "SCAI common Version : ${SCAI_COMMON_VERSION}" )
+indent_message ( "1" "Build Type   : ${CMAKE_BUILD_TYPE}" )
+indent_message ( "1" "Library Type : ${SCAI_LIBRARY_TYPE}" )
+indent_message ( "1" "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
+#indent_message ( "1" "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" ) #opt
+#indent_message ( "1" "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" ) #opt
 if    ( USE_CODE_COVERAGE )
-	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
+    indent_message ( "1" "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
-message ( STATUS "" )
+
+emptyline()

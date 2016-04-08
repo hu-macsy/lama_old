@@ -31,50 +31,16 @@
  # @since 2.0.0
 ###
 
-include ( Functions/scaiStatusMessage )
-include ( Functions/scaiSummaryMessage )
+include ( Functions/scaiMessages )
 
-message ( STATUS "" )
+emptyline()
+message ( STATUS "=========================================" )
 message ( STATUS "Summary of SCAI blaskernel Configuration:" )
-message ( STATUS "=====================================" )
-message ( STATUS "" )
+message ( STATUS "=========================================" )
 
-scai_status_message ( HEADLINE "Compiler:" )
-# C++ Compiler
-scai_summary_message ( "FOUND"
-                       "CMAKE_CXX_COMPILER"
-                       "C++ Compiler"
-                       "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
+include ( Summaries/Modules/Compiler )
 
-message ( STATUS "" )
-
-if    ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-    set( REQUIRED_FOUND TRUE )
-else  ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-	set( REQUIRED_FOUND FALSE )
-endif ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "blaskernel"
-                       "Needs compiler supporting C++11 or Boost" )
-
-scai_summary_message ( "FOUND"
-					             "CXX_SUPPORTS_C11"
-					             "C++11 support"
-					             "" )
-				
-if    ( NOT CXX_SUPPORTS_C11 )
-scai_summary_message ( "FOUND"
-                       "SCAI_BOOST_INCLUDE_DIR"
-                       "Boost"
-                       "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-# LAMA (core)
-message ( STATUS "" )
-scai_status_message ( HEADLINE "LIBRARIES:" )
-
+# blaskernel (core)
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_BLAS_FOUND )
     set( REQUIRED_FOUND TRUE )
@@ -83,128 +49,44 @@ if    ( SCAI_BLAS_FOUND )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
 endif ( SCAI_BLAS_FOUND )
 
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "BlasKernel (core)"
-                       "" )
+heading2 ( "Required core" "REQUIRED_FOUND" )
 
-   # BLAS
-    scai_summary_message ( "FOUND"
-                           "SCAI_BLAS_FOUND"
-                           "BLAS"
-                           "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_SCAI_BLAS_LIBRARIES}" )
+    # BLAS (Lapack)
+    found_message ( "BLAS" "SCAI_BLAS_FOUND" "REQUIRED" "${SCAI_BLAS_NAME} Version ${BLAS_VERSION} with:" )
+    foreach    ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
+        message ( STATUS "                                 ${_B_LIB}" )
+    endforeach ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
     if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-      message ( STATUS "" )
-      scai_summary_message ( "FOUND"
-                             "LAPACK_FOUND"
-                             "LAPACK"
-                             "" )
+        found_message ( "Lapack" "LAPACK_FOUND" "REQUIRED" "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
-
-# LAMA CUDA
-set ( REQUIRED_FOUND FALSE )
-if    ( CUDA_FOUND AND USE_CUDA )
-  set ( REQUIRED_FOUND TRUE )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "REQUIRED_FOUND"
-                       "CUDA"
-                       "" )
-
-    # CUDA
-    scai_summary_message ( "FOUND"
-                           "CUDA_FOUND"
-                           "CUDA"
-                           "${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
-                           
-    # CUDA Compute Capability
-    scai_summary_message ( "FOUND"
-                           "CUDA_HAVE_GPU"
-                           "Compute Capability"
-                           "${CUDA_COMPUTE_CAPABILITY}" )
-                           
-# LAMA MIC
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_MIC"
-                       "MIC"
-                       "" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_KREGISTRY_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_KREGISTRY_FOUND )
 
-message ( STATUS "" )
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "Internal Libraries (core)"
-                       "" )
+heading2 ( "Optional components" "" )
+include ( Summaries/Modules/Accelerator )
 
-    scai_summary_message ( "FOUND"
-                           "SCAI_COMMON_FOUND"
-                           "SCAI Common"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_LOGGING_FOUND"
-                           "SCAI Logging"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_TRACING_FOUND"
-                           "SCAI Tracing"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_TASKING_FOUND"
-                           "SCAI Tasking"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_KREGISTRY_FOUND"
-                           "SCAI Kregistry"
-                           "" )
+heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
+    found_message ( "SCAI common"    "SCAI_COMMON_FOUND"    "REQUIRED" "Version ${SCAI_COMMON_VERSION}"    )
+    found_message ( "SCAI logging"   "SCAI_LOGGING_FOUND"   "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"   )
+    found_message ( "SCAI tracing"   "SCAI_TRACING_FOUND"   "REQUIRED" "Version ${SCAI_TRACING_VERSION}"   )
+    found_message ( "SCAI tasking"   "SCAI_TASKING_FOUND"   "REQUIRED" "Version ${SCAI_TASKING_VERSION}"   )
+    found_message ( "SCAI kregistry" "SCAI_KREGISTRY_FOUND" "REQUIRED" "Version ${SCAI_KREGISTRY_VERSION}" )
 
-# LAMA TEST
-message ( STATUS "" )
-scai_status_message ( HEADLINE "TESTING:" )
-
-set ( REQUIRED_FOUND FALSE )
-if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
-  set ( REQUIRED_FOUND TRUE )
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
-
-scai_summary_message ( "USE"
-                       "REQUIRED_FOUND"
-                       "TEST"
-                       "" )
-
-    # Boost Test-Framework
-    scai_summary_message ( "FOUND"
-                           "Boost_UNIT_TEST_FRAMEWORK_FOUND"
-                           "Boost Unit Test"
-                           "" )
-                           
-    # Boost Regex
-    scai_summary_message ( "FOUND"
-                           "Boost_REGEX_FOUND"
-                           "Boost Regex"
-                           "" )  
+include ( Summaries/Modules/Build )
                        
-message ( STATUS "" )
+heading ( "Configuration Details:" )
 
-scai_status_message ( HEADLINE "INFO:" )
-
-message ( STATUS "BlasKernel Version : ${SCAI_BLASKERNEL_VERSION} ${SCAI_VERSION_NAME}" )
-message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
-message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
-message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
-message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
+indent_message ( "1" "BlasKernel) Version : ${SCAI_BLASKERNEL_VERSION}" )
+indent_message ( "1" "Build Type   : ${CMAKE_BUILD_TYPE}" )
+indent_message ( "1" "Library Type : ${SCAI_LIBRARY_TYPE}" )
+indent_message ( "1" "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
+indent_message ( "1" "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" ) #opt
+indent_message ( "1" "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" ) #opt
 if    ( USE_CODE_COVERAGE )
-	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
+    indent_message ( "1" "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
-message ( STATUS "" )
+
+emptyline()

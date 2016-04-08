@@ -31,15 +31,21 @@
  # @since 1.0.0
 ###
 
+function    ( createBlanks OUTPUT LENGTH )
+	set ( MESSAGE_BLANKS "")
+    foreach    ( SCAI_I RANGE ${LENGTH} )
+        set ( MESSAGE_BLANKS "${MESSAGE_BLANKS} " )
+    endforeach ( SCAI_I RANGE ${SCAI_MESSAGE_BLANK_LENGTH} )
+
+    set ( ${OUTPUT} ${MESSAGE_BLANKS} PARENT_SCOPE )
+endfunction ( createBlanks OUTPUT LENGTH )
+
 function    ( scai_generate_blanks OUTPUT STRING LENGTH )
     string ( LENGTH "${STRING}" SCAI_STRING_LENGTH )
     # -1 for correct looping from 0 to LENGTH
     math ( EXPR SCAI_MESSAGE_BLANK_LENGTH ${LENGTH}-${SCAI_STRING_LENGTH} )
     
-    set ( MESSAGE_BLANKS "")
-    foreach    ( SCAI_I RANGE ${SCAI_MESSAGE_BLANK_LENGTH} )
-        set ( MESSAGE_BLANKS "${MESSAGE_BLANKS} " )
-    endforeach ( SCAI_I RANGE ${SCAI_MESSAGE_BLANK_LENGTH} )
+    createBlanks ( MESSAGE_BLANKS ${SCAI_MESSAGE_BLANK_LENGTH} )
     
     set ( ${OUTPUT} ${MESSAGE_BLANKS} PARENT_SCOPE )
 endfunction ( scai_generate_blanks )
