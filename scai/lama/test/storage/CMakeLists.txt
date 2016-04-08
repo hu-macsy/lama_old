@@ -38,6 +38,7 @@ scai_project (
     HEADERS
 
         Storages
+        TestStorages
         
     SOURCES
 

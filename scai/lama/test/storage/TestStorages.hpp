@@ -1,6 +1,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/utilskernel/LArray.hpp>
+#include <scai/lama/storage/MatrixStorage.hpp>
 
 template<typename ValueType>
 void getMatrix_7_4 ( IndexType& numRows,
@@ -43,3 +44,40 @@ void getMatrix_7_4 ( IndexType& numRows,
 
     denseValues.init( resultMatrix, numRows * numColumns );
 }
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void setDenseData( scai::lama::MatrixStorage<ValueType>& storage )
+{
+    const IndexType numRows = 4;
+    const IndexType numColumns = 4;
+    static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
+    // just make sure that number of entries in values matches the matrix size
+    BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
+    ValueType eps = static_cast<ValueType>( 1E-5 );
+    // Note: diagonal property of sparse matrices will be set due to square matrix
+    storage.setRawDenseData( numRows, numColumns, values, eps );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void setDenseRandom( scai::lama::MatrixStorage<ValueType>& storage )
+{
+    const IndexType numRows = 4;
+    const IndexType numColumns = 4;
+    static ValueType values[] =
+    {
+        0.436213f, 0.683202f, 0.531013f, 0.422152f,
+        0.4632f,   0.168648f, 0.967549f, 0.498486f,
+        0.126115f, 0.708545f, 0.131853f, 0.820422f,
+        0.992481f, 0.202542f, 0.47369f,  0.947076f
+    };
+    // just make sure that number of entries in values matches the matrix size
+    BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
+    ValueType eps = static_cast<ValueType>( 1E-5 );
+    // Note: diagonal property of sparse matrices will be set due to square matrix
+    storage.setRawDenseData( numRows, numColumns, values, eps );
+}
+
