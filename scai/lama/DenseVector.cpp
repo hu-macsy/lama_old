@@ -468,52 +468,26 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
     return Scalar( allValue );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 Scalar DenseVector<ValueType>::min() const
 {
-    //TODO: need a interface function for this
+    // Note: min returns the maximal representation value on zero-sized vectors, TypeTraits<ValueType>::getMax()
 
-    ContextPtr contextPtr = Context::getHostPtr();
+    ValueType localMin = mLocalValues.min();
 
-    ReadAccess<ValueType> readLocalValues( mLocalValues, contextPtr );
- 
-    IndexType n = mLocalValues.size();
-
-    const ValueType* localValues = readLocalValues.get();
-
-    ValueType localMin = localValues[0];
-#pragma omp parallel
-    {
-        ValueType myLocalMin = localMin;
-#pragma omp for
-
-        for( IndexType i = 0; i < n; ++i )
-        {
-            myLocalMin = std::min( localValues[i], myLocalMin );
-        }
-
-#pragma omp critical
-        {
-            localMin = std::min( localMin, myLocalMin );
-        }
-    }
     return Scalar( getDistribution().getCommunicator().min( localMin ) );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 Scalar DenseVector<ValueType>::max() const
 {
-    IndexType nnu = mLocalValues.size();
+    // Note: max returns the minimal representation value on zero-sized vectors
 
-    SCAI_ASSERT_GT( nnu, 0, "no local values for max" )
-
-    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-
-    ContextPtr loc = reduce.getValidContext( mLocalValues.getValidContext() );
-
-    ReadAccess<ValueType> localValues( mLocalValues, loc );
-
-    ValueType localMax = reduce[loc]( localValues.get(), localValues.size(), common::reduction::MAX );
+    ValueType localMax = mLocalValues.max();
 
     return Scalar( getDistribution().getCommunicator().max( localMax ) );
 }

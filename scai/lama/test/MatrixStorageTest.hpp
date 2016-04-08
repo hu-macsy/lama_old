@@ -45,7 +45,7 @@ static std::string storagetestclasses[] =
 
 static std::string storagetestmethods[] =
 {
-    "purgeTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest",
+    "purgeTest", "buildCSRDataTest", "diagonalTest",
     "vectorMultTest", "jacobiTest", "jacobiHaloTest", "matrixMultTest", "matrixMultTest1", "matrixAddTest"
     "inverseTest", "vectorTimesMatrixTest", "numericalTest"
 };
@@ -81,10 +81,6 @@ public:
     /** Test for MatrixStorage<ValueType>::purge and MatrixStorage<ValueType>::getMemoryUsage */
 
     void purgeTest();
-
-    /** Test for virtual method MatrixStorage<ValueType>::setCSRData. */
-
-    void setCSRDataTest();
 
     /** Test for virtual method MatrixStorage<ValueType>::buildCSRData. */
 
@@ -164,7 +160,6 @@ private:
 
 #define MATRIXSTORAGE_COMMONTESTCASES( testinstance )                   \
     {   COMMONTESTCASEINVOKER( testinstance, purgeTest );                   \
-        COMMONTESTCASEINVOKER( testinstance, setCSRDataTest );              \
         COMMONTESTCASEINVOKER( testinstance, buildCSRDataTest );            \
         COMMONTESTCASEINVOKER( testinstance, diagonalTest );                \
         COMMONTESTCASEINVOKER( testinstance, vectorMultTest );              \
