@@ -41,14 +41,14 @@ message ( STATUS "=====================================" )
 include ( Summaries/Modules/Compiler )
 
 # common (core)
-heading ( "External Libraries:" )
+heading ( "Required core:" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR )
     set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR  )
 
-heading2 ( "Required core" "REQUIRED_FOUND" )
+heading2 ( "External Libraries" "REQUIRED_FOUND" )
 
     # pthreads
     found_message ( "pThreads" "SCAI_THREAD_LIBRARIES" "REQUIRED" "Version ${SCAI_THREAD_VERSION}" )

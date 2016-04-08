@@ -41,14 +41,14 @@ message ( STATUS "==========================================" )
 include ( Summaries/Modules/Compiler )
 
 # UtilsKernel (core)
-heading2 ( "Required core" "REQUIRED_FOUND" )
+heading ( "Required core" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_KREGISTRY_FOUND AND SCAI_HMEMO_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_KREGISTRY_FOUND AND SCAI_HMEMO_FOUND )
 
-heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
+heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI common"       "SCAI_COMMON_FOUND"       "REQUIRED" "Version ${SCAI_COMMON_VERSION}"       )
     found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
     found_message ( "SCAI tracing"      "SCAI_TRACING_FOUND"      "REQUIRED" "Version ${SCAI_TRACING_VERSION}"      )
@@ -56,8 +56,7 @@ heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI hmemo"        "SCAI_HMEMO_FOUND"        "REQUIRED" "Version ${SCAI_HMEMO_VERSION}"        )
     found_message ( "SCAI kregistry"    "SCAI_KREGISTRY_FOUND"    "REQUIRED" "Version ${SCAI_KREGISTRY_VERSION}"    )
 
-heading2 ( "Optional components" "" )
-
+heading ( "Optional external Libraries:" )
 include ( Summaries/Modules/Accelerator )
 
 include ( Summaries/Modules/Build )  

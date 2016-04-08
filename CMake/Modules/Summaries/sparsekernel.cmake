@@ -41,6 +41,24 @@ message ( STATUS "===========================================" )
 include ( Summaries/Modules/Compiler )
 
 # SparseKernel (core)
+heading ( "Required core" )
+
+set ( REQUIRED_FOUND FALSE )
+if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND 
+            AND SCAI_KREGISTRY_FOUND AND SCAI_UTILSKERNEL_FOUND )
+  set ( REQUIRED_FOUND TRUE )
+endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND 
+            AND SCAI_KREGISTRY_FOUND AND SCAI_UTILSKERNEL_FOUND )
+
+heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
+    found_message ( "SCAI common"       "SCAI_COMMON_FOUND"       "REQUIRED" "Version ${SCAI_COMMON_VERSION}"       )
+    found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
+    found_message ( "SCAI tracing"      "SCAI_TRACING_FOUND"      "REQUIRED" "Version ${SCAI_TRACING_VERSION}"      )
+    found_message ( "SCAI tasking"      "SCAI_TASKING_FOUND"      "REQUIRED" "Version ${SCAI_TASKING_VERSION}"      )
+    found_message ( "SCAI hmemo"        "SCAI_HMEMO_FOUND"        "REQUIRED" "Version ${SCAI_HMEMO_VERSION}"        )
+    found_message ( "SCAI kregistry"    "SCAI_KREGISTRY_FOUND"    "REQUIRED" "Version ${SCAI_KREGISTRY_VERSION}"    )
+    found_message ( "SCAI utilskernel"  "SCAI_UTILSKERNEL_FOUND"  "REQUIRED" "Version ${SCAI_UTILSKERNEL_VERSION}"  )
+
 if    ( SCAI_BLAS_FOUND )
     set( REQUIRED_FOUND TRUE )
     if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
@@ -50,8 +68,7 @@ else  ( SCAI_BLAS_FOUND )
     set( REQUIRED_FOUND FALSE )
 endif ( SCAI_BLAS_FOUND )
 
-heading2 ( "Required core" "REQUIRED_FOUND" )
-heading3 ( "External Libraries:" "" )
+heading2 ( "External Libraries:" "" )
 
     # BLAS (Lapack)
     found_message ( "BLAS" "SCAI_BLAS_FOUND" "REQUIRED" "${SCAI_BLAS_NAME} Version ${BLAS_VERSION} with:" )
@@ -62,16 +79,7 @@ heading3 ( "External Libraries:" "" )
         found_message ( "Lapack" "LAPACK_FOUND" "REQUIRED" "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
 
-heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
-    found_message ( "SCAI common"       "SCAI_COMMON_FOUND"       "REQUIRED" "Version ${SCAI_COMMON_VERSION}"       )
-    found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
-    found_message ( "SCAI tracing"      "SCAI_TRACING_FOUND"      "REQUIRED" "Version ${SCAI_TRACING_VERSION}"      )
-    found_message ( "SCAI tasking"      "SCAI_TASKING_FOUND"      "REQUIRED" "Version ${SCAI_TASKING_VERSION}"      )
-    found_message ( "SCAI hmemo"        "SCAI_HMEMO_FOUND"        "REQUIRED" "Version ${SCAI_HMEMO_VERSION}"        )
-    found_message ( "SCAI kregistry"    "SCAI_KREGISTRY_FOUND"    "REQUIRED" "Version ${SCAI_KREGISTRY_VERSION}"    )
-    found_message ( "SCAI utilskernel"  "SCAI_UTILSKERNEL_FOUND"  "REQUIRED" "Version ${SCAI_UTILSKERNEL_VERSION}"  )
-
-heading2 ( "Optional components" "" )
+heading ( "Optional External Libraries" "" )
 include ( Summaries/Modules/Accelerator )
 
 set ( REQUIRED_FOUND FALSE )

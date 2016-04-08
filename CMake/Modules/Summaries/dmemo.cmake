@@ -41,41 +41,23 @@ message ( STATUS "===============================" )
 include ( Summaries/Modules/Compiler )
 
 # dmemo (core)
+heading ( "Required core" )
+
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND )
 
-heading2 ( "Required core" "REQUIRED_FOUND" )
-heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
+heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI common"    "SCAI_COMMON_FOUND"    "REQUIRED" "Version ${SCAI_COMMON_VERSION}"    )
     found_message ( "SCAI logging"   "SCAI_LOGGING_FOUND"   "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"   )
     found_message ( "SCAI tracing"   "SCAI_TRACING_FOUND"   "REQUIRED" "Version ${SCAI_TRACING_VERSION}"   )
     found_message ( "SCAI tasking"   "SCAI_TASKING_FOUND"   "REQUIRED" "Version ${SCAI_TASKING_VERSION}"   )
     found_message ( "SCAI hmemo"     "SCAI_HMEMO_FOUND"     "REQUIRED" "Version ${SCAI_HMEMO_VERSION}"     )
 
-heading2 ( "Optional components" "" )
-heading3 ( "External Libraries:" "" )
-  
-set ( REQUIRED_FOUND FALSE )
-if    ( MPI_ENABLES OR GPI_ENABLED )
-  set ( REQUIRED_FOUND TRUE )
-endif ( MPI_ENABLES OR GPI_ENABLED )
-
-# LAMA MPI
-set ( REQUIRED_FOUND FALSE )
-if    ( MPI_ENABLED OR GPI_ENABLED )
-  set ( REQUIRED_FOUND TRUE )
-endif ( MPI_ENABLED OR GPI_ENABLED )
-
-heading3 ( "Distributed" "REQUIRED_FOUND" )
-    found_message ( "MPI" "MPI_FOUND" "OPTIONAL" "Version ${MPI_VERSION} at ${SCAI_MPI_INCLUDE_DIR}" )
-    found_message ( "GPI" "GPI_FOUND" "OPTIONAL" "at ${SCAI_GPI_INCLUDE_DIR}" )
-
-# Graph Partitioning
-heading3 ( "Graph Partitioning" "GRAPHPARTITIONING_ENABLED" )
-    found_message ( "Metis" "METIS_FOUND" "OPTIONAL" "Version ${METIS_VERSION} at ${METIS_INCLUDE_DIR}" )
-    found_message ( "ParMetis" "PARMETIS_FOUND" "OPTIONAL" "Version ${PARMETIS_VERSION} at ${PARMETIS_INCLUDE_DIR}" )
+heading ( "Optional External Libraries:" )
+include ( Summaries/Modules/Distributed )
+include ( Summaries/Modules/Graphpartitioning )
 
 include ( Summaries/Modules/Build )  
 

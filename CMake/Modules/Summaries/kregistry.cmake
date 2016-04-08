@@ -41,17 +41,17 @@ message ( STATUS "========================================" )
 include ( Summaries/Modules/Compiler )
 
 # kregistry (core)
+heading ( "Required core" )
+
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND )
 
-heading2 ( "Required core" "REQUIRED_FOUND" )
-heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
+heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI common"    "SCAI_COMMON_FOUND"    "REQUIRED" "Version ${SCAI_COMMON_VERSION}"    )
     found_message ( "SCAI logging"   "SCAI_LOGGING_FOUND"   "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"   )
 
-heading2 ( "Optional components" "" )
 include ( Summaries/Modules/Build )  
 
 include ( Summaries/Modules/Configuration )

@@ -22,7 +22,7 @@ endif ( ${FOUND_LOG_DEP} GREATER -1 )
 
 list ( FIND ${UPPER_PROJECT_NAME}_INTERNAL_DEPS "scai_tracing" FOUND_TRACE_DEP )
 if    ( ${FOUND_TRACE_DEP} GREATER -1 )
-indent_message ( "1" "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" ) #opt
+	indent_message ( "1" "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" ) #opt
 endif ( ${FOUND_TRACE_DEP} GREATER -1 )
 
 if    ( USE_CODE_COVERAGE )

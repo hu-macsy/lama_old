@@ -40,6 +40,9 @@ message ( STATUS "==============================" )
 
 include ( Summaries/Modules/Compiler )
 
+# lama (core)
+heading ( "Required core:" )
+
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
             AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_UTILSKERNEL_FOUND AND SCAI_SPARSEKERNEL_FOUND
@@ -49,8 +52,7 @@ endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI
             AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_UTILSKERNEL_FOUND AND SCAI_SPARSEKERNEL_FOUND
             AND SCAI_DMEMO_FOUND )
 
-heading2 ( "Required core" "REQUIRED_FOUND" )
-heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
+heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI common"       "SCAI_COMMON_FOUND"       "REQUIRED" "Version ${SCAI_COMMON_VERSION}"       )
     found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
     found_message ( "SCAI tracing"      "SCAI_TRACING_FOUND"      "REQUIRED" "Version ${SCAI_TRACING_VERSION}"      )
@@ -62,7 +64,6 @@ heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI sparsekernel" "SCAI_SPARSEKERNEL_FOUND" "REQUIRED" "Version ${SCAI_SPARSEKERNEL_VERSION}" )
     found_message ( "SCAI dmemo"        "SCAI_DMEMO_FOUND"        "REQUIRED" "Version ${SCAI_DMEMO_VERSION}"        )
 
-heading2 ( "Optional components" "" )
 include ( Summaries/Modules/Build )  
 
 include ( Summaries/Modules/Configuration )

@@ -41,25 +41,18 @@ message ( STATUS "======================================" )
 include ( Summaries/Modules/Compiler )
 
 # LAMA (core)
+heading ( "Required core" )
+
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND )
 
-heading2 ( "Required core" "REQUIRED_FOUND" )
-heading3 ( "Internal Libraries" "REQUIRED_FOUND" )
+heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI common"       "SCAI_COMMON_FOUND"       "REQUIRED" "Version ${SCAI_COMMON_VERSION}"       )
     found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
     found_message ( "SCAI tracing"      "SCAI_TRACING_FOUND"      "REQUIRED" "Version ${SCAI_TRACING_VERSION}"      )
 
-heading2 ( "Optional components" "" )
-
-# EXAMPLES
-heading3 ( "Examples" "BUILD_EXAMPLES" )
-
-# DOC
-heading3 ( "Documentation" "DOC_ENABLED" )
-    found_message ( "Sphinx" "SPHINX_FOUND" "OPTIONAL" "Version ${Sphinx_VERSION_STRING} with ${Sphinx-build_EXECUTABLE}" )
-    found_message ( "Doxygen" "DOXYGEN_FOUND" "OPTIONAL" "Version ${DOXYGEN_VERSION} with ${DOXYGEN_EXECUTABLE}" )
+include ( Summaries/Modules/Build )
 
 include ( Summaries/Modules/Configuration )

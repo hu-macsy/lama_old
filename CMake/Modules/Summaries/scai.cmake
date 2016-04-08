@@ -34,19 +34,47 @@
 include ( Functions/scaiMessages )
 
 emptyline()
-
 message ( STATUS "==============================" )
 message ( STATUS "Summary of SCAI Configuration:" )
 message ( STATUS "==============================" )
 
 include ( Summaries/Modules/Compiler )
 
-include ( Summaries/Modules/Core )
+#lama all core
+heading ( "Required core:" )
 
-heading2 ( "Optional components" "" )
+set ( REQUIRED_FOUND FALSE )
+if    ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR AND SCAI_BLAS_FOUND )
+    set ( REQUIRED_FOUND TRUE )
+    if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
+        set( REQUIRED_FOUND FALSE )
+    endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
+endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR AND SCAI_BLAS_FOUND )
+
+heading2 ( "External Libraries" "REQUIRED_FOUND" )
+
+    # pthreads
+    found_message ( "pThreads" "SCAI_THREAD_LIBRARIES" "REQUIRED" "Version ${SCAI_THREAD_VERSION}" )
+    # boost
+    found_message ( "Boost" "SCAI_BOOST_INCLUDE_DIR" "REQUIRED" "Version ${BOOST_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
+
+    # BLAS (Lapack)
+    found_message ( "BLAS" "SCAI_BLAS_FOUND" "REQUIRED" "${SCAI_BLAS_NAME} Version ${BLAS_VERSION} with:" )
+    foreach    ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
+        message ( STATUS "                                 ${_B_LIB}" )
+    endforeach ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
+    if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
+        found_message ( "Lapack" "LAPACK_FOUND" "REQUIRED" "" )
+    endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
+
+heading ( "Optional External Libraries:" )
 include ( Summaries/Modules/Accelerator )
 include ( Summaries/Modules/Distributed )
 include ( Summaries/Modules/Graphpartitioning )
+
+heading ( "Optional components:" "" )
+heading3 ( "Java:" "Java_JAVAC_EXECUTABLE" )
+    found_message ( "Java Exexutable" "Java_JAVAC_EXECUTABLE" "OPTIONAL" "with ${Java_JAVAC_EXECUTABLE}" )
 
 include ( Summaries/Modules/Build )
 
