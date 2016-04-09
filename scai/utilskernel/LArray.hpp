@@ -185,14 +185,25 @@ public:
         HArrayUtils::assign( *this, tmp, context );
     }
 
+    /** Override the default copy construtor */
+
     LArray( const LArray<ValueType>& other ) : hmemo::HArray<ValueType>()
     {
         HArrayUtils::assign( *this, other );
     }
 
+    /** Copy constructor that works with HArray of any type. */
+
     LArray( const hmemo::_HArray& other ) : hmemo::HArray<ValueType>()
     {
         HArrayUtils::assign( *this, other );
+    }
+
+    /** Copy constructor that works with HArray of any type and specifies context */
+
+    LArray( const hmemo::_HArray& other, hmemo::ContextPtr context ) : hmemo::HArray<ValueType>()
+    {
+        HArrayUtils::assign( *this, other, context );
     }
 
     LArray& operator= ( const LArray<ValueType>& other )
