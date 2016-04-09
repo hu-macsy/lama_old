@@ -1058,7 +1058,6 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
     SCAI_REGION( "Storage.ELL.VectorTimesMatrix" )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {

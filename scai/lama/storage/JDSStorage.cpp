@@ -949,7 +949,11 @@ void JDSStorage<ValueType>::matrixTimesVector(
                     "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+
+    if ( beta != common::constants::ZERO )
+    {
+        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
+    }
 
     static LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
@@ -964,34 +968,15 @@ void JDSStorage<ValueType>::matrixTimesVector(
     ReadAccess<ValueType> jdsValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    SCAI_CONTEXT_ACCESS( loc )
 
-    if ( &result == &y )
-    {
-        WriteAccess<ValueType> wResult( result, loc );
+    // this call will finish the computation, syncToken == NULL
 
-        // we assume that normalGEMV can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // this call will finish the computation, syncToken == NULL
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-    }
-    else
-    {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // this call will finish the computation, syncToken == NULL
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-    }
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1010,7 +995,11 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
                     "Computing z = " << alpha << " * x * A + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+
+    if ( beta != common::constants::ZERO )
+    {
+        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
+    }
 
     static LAMAKernel<JDSKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
@@ -1025,34 +1014,15 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
     ReadAccess<ValueType> jdsValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    SCAI_CONTEXT_ACCESS( loc )
 
-    if ( &result == &y )
-    {
-        WriteAccess<ValueType> wResult( result, loc );
+    // this call will finish the computation, syncToken == NULL
 
-        // we assume that normalGEMV can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // this call will finish the computation, syncToken == NULL
-
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-    }
-    else
-    {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // this call will finish the computation, syncToken == NULL
-
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-    }
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

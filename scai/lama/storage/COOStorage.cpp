@@ -830,8 +830,14 @@ void COOStorage<ValueType>::matrixTimesVector(
     SCAI_LOG_DEBUG( logger,
                     "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL( x.size(), mNumColumns, "size mismatch" )
+
+    // beta == ZERO: do not check size of y as it might be any dummy
+
+    if ( beta != scai::common::constants::ZERO )
+    {
+        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch" )
+    }
 
     // Method on CUDA is not safe due to atomic
 
@@ -846,33 +852,15 @@ void COOStorage<ValueType>::matrixTimesVector(
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    SCAI_CONTEXT_ACCESS( loc )
 
-    if( &result == &y )
-    {
-        // only write access for y, no read access for result
-
-        WriteAccess<ValueType> wResult( result, loc );
-
-        // we assume that normalGEMV can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                         cooValues.get() );
-    }
-    else
-    {
-        // make also sure that result will have the correct size
-
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                         cooValues.get() );
-    }
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                     cooValues.get() );
 }
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -888,12 +876,11 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
     SCAI_REGION( "Storage.COO.VectorTimesMatrix" )
 
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL( x.size(), mNumRows, "size mismatch" )
 
-    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if ( beta != scai::common::constants::ZERO ) 
     {
-        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch" )
     }
 
     static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
@@ -907,32 +894,13 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    SCAI_CONTEXT_ACCESS( loc )
 
-    if( &result == &y )
-    {
-        // only write access for y, no read access for result
-
-        WriteAccess<ValueType> wResult( result, loc );
-
-        // we assume that normalGEVM can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, mNumValues, cooIA.get(),
-                         cooJA.get(), cooValues.get() );
-    }
-    else
-    {
-        // make also sure that result will have the correct size
-
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
-                         cooValues.get() );
-    }
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
+                     cooValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -1375,7 +1375,6 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
     SCAI_REGION( "Storage.CSR.VectorTimesMatrix" )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != common::constants::ZERO ) && ( &result != &y ) )
     {

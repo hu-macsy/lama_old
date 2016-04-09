@@ -573,7 +573,11 @@ void DenseStorageView<ValueType>::matrixTimesVector(
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+
+    if ( beta != common::constants::ZERO )
+    {
+        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
+    }
 
     if ( mNumRows == 0 )
     {
@@ -686,7 +690,11 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+
+    if ( beta != common::constants::ZERO )
+    {
+        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
+    }
 
     if ( mNumRows == 0 )
     {

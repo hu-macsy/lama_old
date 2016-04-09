@@ -917,7 +917,11 @@ void DIAStorage<ValueType>::matrixTimesVector(
                     << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+
+    if ( beta != common::constants::ZERO )
+    {
+        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
+    }
 
     static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
@@ -925,6 +929,8 @@ void DIAStorage<ValueType>::matrixTimesVector(
 
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
+
+    // Note: read access to y must appear before write access to result in case of alias
 
     ReadAccess<ValueType> rX( x, loc );
     ReadAccess<ValueType> rY( y, loc );
@@ -953,7 +959,6 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     SCAI_REGION( "Storage.DIA.VectorTimesMatrix" )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
@@ -970,32 +975,14 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     ReadAccess<ValueType> diaValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
-    if( &result == &y )
-    {
-        // only write access for y, no read access for result
+    SCAI_CONTEXT_ACCESS( loc )
 
-        WriteAccess<ValueType> wResult( result, loc );
-
-        // we assume that normalGEVM can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-    }
-    else
-    {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-    }
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                     diaOffsets.get(), diaValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
