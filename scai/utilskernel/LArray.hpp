@@ -182,8 +182,7 @@ public:
                      hmemo::ContextPtr context = hmemo::Context::getHostPtr() )
     {
         hmemo::HArrayRef<OtherValueType> tmp( n, values );
-        this->reserve( context, n );  // includes also the first touch
-        HArrayUtils::assign( *this, tmp );
+        HArrayUtils::assign( *this, tmp, context );
     }
 
     LArray( const LArray<ValueType>& other ) : hmemo::HArray<ValueType>()

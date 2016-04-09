@@ -36,10 +36,12 @@
 #include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
+#include <scai/common/TypeTraits.hpp>
 
-using namespace scai::utilskernel;
-using namespace scai::hmemo;
-using namespace scai::common;
+using namespace scai;
+using namespace utilskernel;
+using namespace hmemo;
+using namespace common;
 
 extern ContextPtr testContext;
 
@@ -139,21 +141,29 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, scai_array_test_types )
+
+typedef boost::mpl::list<IndexType, ARITHMETIC_CUDA> ArrayRedTypes;
+
+// ToDo: introduce a predicate in COMMON to check if a certain type is supported on a context
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 {
     testContext = Context::getContextPtr();
 
     SCAI_LOG_INFO( logger, "reductionTest on " << *testContext )
 
-    // the LArray allows indexed access, but attention: can be very slow
-
     const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
-
     const IndexType N = sizeof( myVals ) / sizeof( ValueType );
 
     LArray<ValueType> array( N, myVals, testContext );
 
+    // Constructor should have provided a valid copy on testContext
+
     BOOST_CHECK( array.isValid( testContext ) );
+
+    // reduction ops will be executed on testContext
 
     BOOST_CHECK_EQUAL( 0, array.min() );
     BOOST_CHECK_EQUAL( 9, array.max() );
@@ -162,11 +172,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, ValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, ValueType, ArrayRedTypes )
 {
     testContext = Context::getContextPtr();
 
-    SCAI_LOG_INFO( logger, "maxDiffNormTest on " << *testContext )
+    SCAI_LOG_INFO( logger, "maxDiffNormTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
 
     // the LArray allows indexed access, but attention: can be very slow
 
