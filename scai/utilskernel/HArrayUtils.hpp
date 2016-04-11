@@ -59,7 +59,7 @@ public:
      *
      *  @param[out] target   contains copy of source values
      *  @param[in]  source   array with source values
-     *  @param[in]  context  specifies optionally at which context target will have valid values
+     *  @param[in]  prefLoc  specifies optionally at which preferred context target will have valid values
      *
      *  \code
      *  HArray<float> fvalues;
@@ -70,13 +70,13 @@ public:
      *  \endcode
      *  Size of target array will be the same as the source array.
      */
-    static void assign( hmemo::_HArray& target, const hmemo::_HArray& source, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    static void assign( hmemo::_HArray& target, const hmemo::_HArray& source, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     static void set( 
         hmemo::_HArray& target, 
         const hmemo::_HArray& source, 
         const common::reduction::ReductionOp op,
-        hmemo::ContextPtr context = hmemo::ContextPtr() );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     static void gather(
         hmemo::_HArray& target,
@@ -105,7 +105,7 @@ public:
     template<typename ValueType>
     static ValueType getVal( const hmemo::_HArray& array, const IndexType index );
 
-    /** Scaled assignment on HArray.
+    /** Scaled assignment: result = beta * y
      *
      *  @param[out] result  output array
      *  @param[in]  beta    scaling factor
@@ -120,7 +120,41 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr context );
 
-    /** scale array in place 
+    /** Axpy: result += beta * y
+     *
+     *  @param[in,out] result  output array
+     *  @param[in]     beta    scaling factor
+     *  @param[in]     y       source array
+     *  @param[in]     context location where operation is done
+     */
+
+    template<typename ValueType>
+    static void axpy(
+        hmemo::HArray<ValueType>& result,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        hmemo::ContextPtr context );
+
+    /** Addition of two arrays: result = alpha * x + beta * y
+     *
+     *  @param[out] result  output array
+     *  @param[in]  alpha   scaling factor
+     *  @param[in]  x       source array
+     *  @param[in]  beta    scaling factor
+     *  @param[in]  y       source array
+     *  @param[in]  context location where operation is done
+     */
+
+    template<typename ValueType>
+    static void arrayPlusArray(    
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** scale array in place : array *= beta
      *
      *  Note: scale will be done where array has currently valid values. The preferred
      *        location is not taken if the array is not valid there.
@@ -177,6 +211,11 @@ public:
     static ValueType absMaxDiffVal( 
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2 );
+
+    /** array = 1.0 / array elementwise */
+
+    template<typename ValueType>
+    static void invert( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
 
 private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
