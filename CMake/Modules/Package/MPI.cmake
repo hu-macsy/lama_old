@@ -76,7 +76,7 @@ if    ( NOT ${MPIEXEC} )
     find_program( MPIEXEC NAMES ${_MPI_EXEC_NAMES} HINTS ${MPI_ROOT}/bin )
 endif ( NOT ${MPIEXEC} )
 
-mark_as_advanced ( MPI_EXTRA_LIBRARY MPI_LIBRARY )
+mark_as_advanced ( MPI_EXTRA_LIBRARY MPI_LIBRARY MPIEXEC_POSTFLAGS MPIEXEC_PREFLAGS )
 
 ### ALLOW to switch off MPI explicitly ###
 include ( Functions/setAndCheckCache )

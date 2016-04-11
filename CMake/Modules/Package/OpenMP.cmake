@@ -48,6 +48,9 @@ find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( OPENMP )
 
+# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
+mark_as_advanced ( OpenMP_C_FLAGS )
+
 ## get OpenMP version
 if    ( OPENMP_FOUND )
 	    try_run ( OPENMP_RUN_RESULT_VAR OPENMP_COMPILE_RESULT_VAR
