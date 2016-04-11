@@ -53,16 +53,16 @@ namespace constants
 
 /** Enumeration type for constants for which type-specific values are provided */
 
-enum ConstantType
+typedef enum
 {
     ONE,   //!< stands for value 1
     ZERO   //!< stands for value 0
-};
+} ConstantType;
 
 /** This method returns the type specific value for each constant */
 
 template<typename ValueType>
-inline ValueType getConstant( const enum ConstantType& c )
+inline ValueType getConstant( const ConstantType& c )
 {
     ValueType val( 0 );
 
@@ -81,7 +81,13 @@ inline ValueType getConstant( const enum ConstantType& c )
 /** Comparison against constant ZERO or ONE uses machine-specific EPS */
 
 template<typename ValueType>
-bool operator==( const ValueType& x, const enum ConstantType& c )
+bool operator==( const ValueType& x, const ConstantType& c )
+{
+    return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
+}
+
+template<typename ValueType>
+bool operator==( const ConstantType& c, const ValueType& x )
 {
     return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
 }
@@ -89,7 +95,13 @@ bool operator==( const ValueType& x, const enum ConstantType& c )
 /** Operator not equal also provided for convenience */
 
 template<typename ValueType>
-bool operator!=( const ValueType& x, const enum ConstantType& c )
+bool operator!=( const ValueType& x, const ConstantType& c )
+{
+    return ! ( x == c );
+}
+
+template<typename ValueType>
+bool operator!=( const ConstantType& c, const ValueType& x )
 {
     return ! ( x == c );
 }

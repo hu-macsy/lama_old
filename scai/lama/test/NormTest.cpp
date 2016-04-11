@@ -50,15 +50,15 @@ LAMA_COMMON_TEST_CASE( NormTest, positiveHomogeneityTest )
 	BOOST_CHECK_EQUAL( mNorm.apply ( tmp ), s* mNorm.apply( x ) );
 LAMA_COMMON_TEST_CASE_END()
 
-LAMA_COMMON_TEST_CASE( NormTest, triangleInequalityTest );
+LAMA_COMMON_TEST_CASE( NormTest, triangleInequalityTest )
     scai::lama::DenseVector<double> x( 2, 2.0 );
     scai::lama::DenseVector<double> y( 2, 2.0 );
     scai::lama::DenseVector<double> z( x + y );
 
-	BOOST_CHECK( mNorm.apply( z ) <= mNorm.apply( x ) + mNorm.apply( y ) );
+	BOOST_CHECK( mNorm.apply( z ) == mNorm.apply( x ) + mNorm.apply( y ) );
 LAMA_COMMON_TEST_CASE_END()
 
-LAMA_COMMON_TEST_CASE( NormTest, ZeroVectorTest );
+LAMA_COMMON_TEST_CASE( NormTest, ZeroVectorTest )
     scai::lama::DenseVector<double> x( 4, 0.0 );
 	BOOST_CHECK_EQUAL( mNorm.apply( x ), 0.0 );
 LAMA_COMMON_TEST_CASE_END()

@@ -435,11 +435,15 @@ void isSortedKernel( bool* result, const IndexType numValues, const ValueType* v
     {
         if ( ascending )
         {
-            result[i] = values[i] <= values[i + 1];
+            // not possible, <= not defined on complex
+            // ToDo: warp divergence possible?
+//            result[i] = values[i] <= values[i + 1];
+            result[i] = values[i] < values[i + 1] || values[i] == values[i+1];
         }
         else
         {
-            result[i] = values[i] >= values[i + 1];
+//            result[i] = values[i] >= values[i + 1];
+            result[i] = values[i] > values[i + 1] || values[i] == values[i+1];
         }
     }
 }

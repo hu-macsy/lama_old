@@ -62,7 +62,7 @@ int main( int argc, char* argv[] )
 
     L2Norm norm;
 
-    for ( int k = 0 ; k < maxIter and norm(r) >= eps; k++ )
+    for ( int k = 0 ; k < maxIter and norm(r) > eps; k++ )
     {
         DenseVector<double> z = A * d;
         Scalar alpha = rOld / d.dotProduct( z );

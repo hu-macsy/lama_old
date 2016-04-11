@@ -492,7 +492,7 @@ void OpenMPELLUtils::compressIA(
                     continue;
                 }
 
-                if ( common::Math::abs( ellValues[pos] ) <= eps )
+                if ( common::Math::abs( ellValues[pos] ) <= common::Math::real( eps ) )
                 {
                     length--;
                 }
@@ -533,7 +533,7 @@ void OpenMPELLUtils::compressValues(
             {
                 IndexType pos = ellindex( i, j, numRows, numValuesPerRow );
 
-                if ( common::Math::abs( values[pos] ) <= eps && JA[pos] != i )
+                if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
                 {
                     gap++;
                     continue;
