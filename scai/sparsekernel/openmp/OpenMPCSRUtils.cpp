@@ -781,17 +781,14 @@ void OpenMPCSRUtils::normalGEVM(
                 }
             }
 
-            result[i] = alpha * sum;
-        }
-    }
-
-    if( beta != scai::common::constants::ZERO )
-    {
-        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
-
-        for( IndexType i = 0; i < numColumns; ++i )
-        {
-            result[i] += beta * y[i];
+            if ( beta == scai::common::constants::ZERO )
+            {
+                result[i] = alpha * sum;
+            }
+            else
+            {
+                result[i] = alpha * sum + beta * y[i];
+            }
         }
     }
 

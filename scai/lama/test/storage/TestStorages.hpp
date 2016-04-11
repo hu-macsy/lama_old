@@ -50,6 +50,20 @@ void getMatrix_7_4 ( IndexType& numRows,
 template<typename ValueType>
 void setDenseData( scai::lama::MatrixStorage<ValueType>& storage )
 {
+    const IndexType numRows = 2;
+    const IndexType numColumns = 8;
+    static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
+    // just make sure that number of entries in values matches the matrix size
+    BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
+    ValueType eps = static_cast<ValueType>( 1E-5 );
+    storage.setRawDenseData( numRows, numColumns, values, eps );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void setDenseSquareData( scai::lama::MatrixStorage<ValueType>& storage )
+{
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
     static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
@@ -78,6 +92,30 @@ void setDenseRandom( scai::lama::MatrixStorage<ValueType>& storage )
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
     ValueType eps = static_cast<ValueType>( 1E-5 );
     // Note: diagonal property of sparse matrices will be set due to square matrix
+    storage.setRawDenseData( numRows, numColumns, values, eps );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void setSymDenseData( scai::lama::MatrixStorage<ValueType>& storage )
+{
+    /* Matrix:     1  2  0  5
+     *             2  1  3  0
+     *             0  3  1  4
+     *             5  0  4  2
+     */
+
+    const IndexType numRows = 4;
+    const IndexType numColumns = 4;
+
+    static ValueType values[] = { 1, 2, 0, 5, 2, 1, 3, 0, 0, 3, 1, 4, 5, 0, 4, 2 };
+
+    // just make sure that number of entries in values matches the matrix size
+    BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
+
+    ValueType eps = static_cast<ValueType>( 1E-5 );
+
     storage.setRawDenseData( numRows, numColumns, values, eps );
 }
 

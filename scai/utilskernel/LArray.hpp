@@ -182,18 +182,28 @@ public:
                      hmemo::ContextPtr context = hmemo::Context::getHostPtr() )
     {
         hmemo::HArrayRef<OtherValueType> tmp( n, values );
-        this->reserve( context, n );  // includes also the first touch
-        HArrayUtils::assign( *this, tmp );
+        HArrayUtils::assign( *this, tmp, context );
     }
+
+    /** Override the default copy construtor */
 
     LArray( const LArray<ValueType>& other ) : hmemo::HArray<ValueType>()
     {
         HArrayUtils::assign( *this, other );
     }
 
+    /** Copy constructor that works with HArray of any type. */
+
     LArray( const hmemo::_HArray& other ) : hmemo::HArray<ValueType>()
     {
         HArrayUtils::assign( *this, other );
+    }
+
+    /** Copy constructor that works with HArray of any type and specifies context */
+
+    LArray( const hmemo::_HArray& other, hmemo::ContextPtr context ) : hmemo::HArray<ValueType>()
+    {
+        HArrayUtils::assign( *this, other, context );
     }
 
     LArray& operator= ( const LArray<ValueType>& other )
