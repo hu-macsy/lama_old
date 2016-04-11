@@ -81,6 +81,9 @@ BOOST_AUTO_TEST_CASE( indexTest )
 
     BOOST_CHECK( 1 == index );
 
+    index = mepr::TypeListUtilsV<size_t, TEST_LIST>::index;
+
+    BOOST_CHECK( -1 == index );
 #undef TEST_LIST
 }
 
