@@ -1,8 +1,8 @@
 ###
- # @file CompilerVersion.cmake
+ # @file testMICfound.cmake
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2014
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,20 +25,23 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Version variable defintions for the used compilers
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief Detect MIC availability with test program
+ # @author Lauretta Schubert
+ # @date 04.04.2016
+ # @since 2.0.0
 ###
 
-### C Compiler
-if    ( CMAKE_COMPILER_IS_GNUCC )
-    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCC_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_COMPILER_IS_GNUCC )
+if ( CMAKE_CXX_COMPILER_ID MATCHES Intel AND USE_OPENMP )
 
-### CXX Compiler
-if ( CMAKE_COMPILER_IS_GNUCXX )
-    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCXX_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_COMPILER_IS_GNUCXX )
+	execute_process ( COMMAND micinfo
+					  RESULT_VARIABLE MIC_RUN_RESULT_VAR
+					  OUTPUT_VARIABLE MIC_RUN_OUTPUT_VAR)
+
+	# if micinfo return with SUCCESS MIC_RUN_RESULT_VAR is 0
+	if    ( NOT MIC_RUN_RESULT_VAR )
+		set ( USE_MIC TRUE )
+	endif ( NOT MIC_RUN_RESULT_VAR )
+
+else  ( CMAKE_CXX_COMPILER_ID MATCHES Intel AND USE_OPENMP )
+	set ( USE_MIC FALSE )
+endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel AND USE_OPENMP )

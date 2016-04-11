@@ -72,4 +72,4 @@ then
     exit 1
 fi
 
-zip -r ../blaskernel_coverage.zip *
+zip -qr ../blaskernel_coverage.zip *

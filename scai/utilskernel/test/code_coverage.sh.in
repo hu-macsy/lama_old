@@ -72,4 +72,4 @@ then
     exit 1
 fi
 
-zip -r ../utilskernel_coverage.zip *
+zip -qr ../utilskernel_coverage.zip *

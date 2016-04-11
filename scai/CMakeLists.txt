@@ -47,7 +47,7 @@ project ( LAMA_ALL CXX )
 
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
-include ( Compiler/VersionCheck )
+include ( VersionCheck/Compiler )
 include ( Compiler/SetCPPFlags )
 
 ## maybe boost
@@ -70,10 +70,9 @@ include ( Functions/scaiFunctions )
 
 include ( Dependencies/external )
 
-
-foreach    ( module ${SCAI_EXTERNAL_DEPS} )
+foreach    ( module ${LAMA_ALL_EXTERNAL_DEPS} )
     include( Package/${module} )
-endforeach ( module ${SCAI_EXTERNAL_DEPS} )
+endforeach ( module ${LAMA_ALL_EXTERNAL_DEPS} )
 
 include ( Settings/logging )
 include ( Settings/tracing )
@@ -98,6 +97,7 @@ set ( MIC_ARGS "" )
 set ( MPI_ARGS "" )
 set ( OPENMP_ARGS "" )
 set ( SCAI_BLAS_ARGS "" )
+set ( JAVA_ARGS "" )
 
 get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
 #message ( STATUS "all CACHE_VARS ${CACHE_VARS}")
@@ -121,6 +121,7 @@ foreach    ( CACHE_VAR ${CACHE_VARS} )
     check_whitelist ( CACHE_VAR "${OPENMP_WHITELIST}" "OPENMP_ARGS" )
     check_whitelist ( CACHE_VAR "${SCAI_BLAS_WHITELIST}" "SCAI_BLAS_ARGS" )
     check_whitelist ( CACHE_VAR "${DOXYGEN_WHITELIST}" "DOXYGEN_ARGS" )
+    check_whitelist ( CACHE_VAR "${JAVA_WHITELIST}" "JAVA_ARGS" )
     
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
@@ -135,6 +136,7 @@ endforeach ( CACHE_VAR ${CACHE_VARS} )
 #message ( STATUS "Passed OPENMP_ARGS ${OPENMP_ARGS}" )
 #message ( STATUS "Passed SCAI_BLAS_ARGS ${SCAI_BLAS_ARGS}" )
 #message ( STATUS "Passed DOXYGEN_ARGS ${DOXYGEN_ARGS}" )
+#message ( STATUS "Passed JAVA_ARGS ${JAVA_ARGS}" )
 
 ## define external projects
 

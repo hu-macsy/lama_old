@@ -143,4 +143,4 @@ then
     exit 1
 fi
 
-zip -r ../lama_coverage.zip *
+zip -qr ../lama_coverage.zip *

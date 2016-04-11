@@ -31,87 +31,31 @@
  # @since 2.0.0
 ###
 
-include ( Functions/scaiStatusMessage )
-include ( Functions/scaiSummaryMessage )
+include ( Functions/scaiMessages )
 
-message ( STATUS "" )
+emptyline()
+message ( STATUS "=====================================" )
 message ( STATUS "Summary of SCAI tracing Configuration:" )
 message ( STATUS "=====================================" )
-message ( STATUS "" )
 
-scai_status_message ( HEADLINE "Compiler:" )
-# C++ Compiler
-scai_summary_message ( "FOUND"
-                       "CMAKE_CXX_COMPILER"
-                       "C++ Compiler"
-                       "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
+include ( Summaries/Modules/Compiler )
 
-message ( STATUS "" )
-
-if    ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-    set( REQUIRED_FOUND TRUE )
-else  ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-	set( REQUIRED_FOUND FALSE )
-endif ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "Tracing"
-                       "Needs compiler supporting C++11 or Boost" )
-
-scai_summary_message ( "FOUND"
-					             "CXX_SUPPORTS_C11"
-					             "C++11 support"
-					             "" )
-				
-if    ( NOT CXX_SUPPORTS_C11 )
-    scai_summary_message ( "FOUND"
-                           "SCAI_BOOST_INCLUDE_DIR"
-                           "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-# LAMA (core)
-message ( STATUS "" )
-scai_status_message ( HEADLINE "LIBRARIES:" )
+# tracing (core)
+heading ( "Required core" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND )
 
-message ( STATUS "" )
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "Internal Libraries (core)"
-                       "" )
+heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
+    found_message ( "SCAI common"       "SCAI_COMMON_FOUND"       "REQUIRED" "Version ${SCAI_COMMON_VERSION}"       )
+    found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
 
-    scai_summary_message ( "FOUND"
-                           "SCAI_COMMON_FOUND"
-                           "SCAI common"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_LOGGING_FOUND"
-                           "SCAI logging"
-                           "" )
-                       
-message ( STATUS "" )
-scai_status_message ( HEADLINE "GUI:" )
-scai_summary_message ( "FOUND"
-                       "Java_FOUND"
-                       "Java"
-                       "" )
+heading ( "Optional components" "" )
+heading3 ( "Java:" "Java_JAVAC_EXECUTABLE" )
+    found_message ( "Java Exexutable" "Java_JAVAC_EXECUTABLE" "OPTIONAL" "with ${Java_JAVAC_EXECUTABLE}" )
 
-message ( STATUS "" )
+include ( Summaries/Modules/Build )
 
-scai_status_message ( HEADLINE "INFO:" )
-message ( STATUS "Tracing Version : ${SCAI_TRACING_VERSION} ${SCAI_VERSION_NAME}" )
-message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
-message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
-message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
-if    ( USE_CODE_COVERAGE )
-	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
-endif ( USE_CODE_COVERAGE )
-message ( STATUS "" )
+include ( Summaries/Modules/Configuration )

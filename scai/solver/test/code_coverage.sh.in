@@ -73,4 +73,4 @@ then
     exit 1
 fi
 
-zip -r ../solver_coverage.zip *
+zip -qr ../solver_coverage.zip *

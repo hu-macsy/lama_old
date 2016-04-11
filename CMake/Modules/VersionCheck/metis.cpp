@@ -1,8 +1,8 @@
 /**
- * @file CUDATexture.hpp
+ * @file metis.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -25,55 +25,16 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Using of Texture for CUDA
- * @author Thomas Brandes
- * @date 04.05.2013
- * $Id$
+ * @brief Checking the Metis version
+ * @author Eric Schricker
+ * @date 07.04.2016
+ * @since 2.0.0
  */
 
-#pragma once
+#include <stdio.h>
+#include <metis.h>
 
-namespace scai
+int main()
 {
-
-namespace common
-{
-
-/** This class determines whether the texture on GPU device should be used or not.
- *
- */
-
-class CUDATexture
-{
-
-public:
-
-    /** Check whether textures should be used or not in kernel algorithms. */
-
-    static bool useTexture();
-
-private:
-
-    static    bool initialized; //!< will be set true after determination of theUseTextureFlag
-
-    static bool theUseTextureFlag;//!< result for useTexture if initialized is true
-
-    /** Set theUseTextureFlag by environment variable
-     *
-     *  @return true if environment variable was correctly set to yes or no or 0 or 1
-     *
-     */
-
-    static bool getUseTextureByEnv();
-
-    /** Set the UseTextureFlag by device compute capability
-     *
-     *  Note: can only be called if there is an active device
-     */
-
-    static void setUseTextureByDevice();
-};
-
-} /* end namespace common */
-
-} /* end namespace scai */
+    printf("%d.%d.%d", METIS_VER_MAJOR, METIS_VER_MINOR, METIS_VER_SUBMINOR );
+}

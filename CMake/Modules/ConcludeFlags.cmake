@@ -27,6 +27,10 @@ else  ( SCAI_COMMON_FOUND )
     endif ( USE_OPENMP )
 endif ( SCAI_COMMON_FOUND ) 
 
+if    ( NOT USE_MIC )
+    set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${MIC_NO_OFFLOAD_FLAG}")
+endif ( NOT USE_MIC )
+
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
 set ( ADDITIONAL_WARNING_FLAGS "${SCAI_WARNING_FLAGS}" CACHE STRING "compilation flags concerning warnings" )

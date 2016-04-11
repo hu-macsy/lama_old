@@ -49,7 +49,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/cuda/CUDATexture.hpp>
 #include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/SCAITypes.hpp>

@@ -4,6 +4,7 @@
 #include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
+#include <scai/hmemo/exception/MemoryException.hpp>
 
 BOOST_AUTO_TEST_SUITE( MemoryTest )
 
@@ -31,13 +32,25 @@ BOOST_AUTO_TEST_CASE( DeviceMemoryTest )
 
     BOOST_CHECK( ctx->canUseMemory( *mem ) );
 
-    IndexType N = 100;
+    size_t N = 100;
 
     void *data = mem->allocate( N );
 
     BOOST_ASSERT( data != NULL );
 
     mem->free( data, N );
+
+    // Make sure that too much memory allocation throws an exception
+
+    size_t MAX_N = std::numeric_limits<size_t>::max();
+
+    SCAI_LOG_ERROR( logger, "Allocation device memory " << *mem << ", size = " << MAX_N << " should fail" )
+
+    BOOST_CHECK_THROW(
+    {
+        data = mem->allocate( MAX_N );
+    }
+    , MemoryException )
 }
 
 /* --------------------------------------------------------------------- */
@@ -58,7 +71,7 @@ BOOST_AUTO_TEST_CASE( HostMemoryTest )
     ContextPtr host = Context::getHostPtr();  // host context
     BOOST_CHECK( host->canUseMemory( *mem ) );
 
-    IndexType N = 100;
+    size_t N = 100;
 
     void *data = mem->allocate( N );
 
@@ -83,7 +96,7 @@ BOOST_AUTO_TEST_CASE( CopyTest )
     BOOST_REQUIRE( cmem->canCopyTo( *hmem ) );
     BOOST_REQUIRE( cmem->canCopyFrom( *hmem ) );
 
-    const IndexType N = 10;
+    const size_t N = 10;
 
     char *cdata = reinterpret_cast<char*>( cmem->allocate( N ) );
     char *hdata = reinterpret_cast<char*>( hmem->allocate( N ) );
@@ -98,7 +111,7 @@ BOOST_AUTO_TEST_CASE( CopyTest )
     memset( hdata, 0, N );
     cmem->memcpyTo( *hmem, hdata, cdata, N );
 
-    for ( IndexType i = 0; i < N; ++i )
+    for ( size_t i = 0; i < N; ++i )
     {
         BOOST_CHECK_EQUAL( hdata[i], VAL );
     }

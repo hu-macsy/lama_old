@@ -1,5 +1,5 @@
 ###
- # @file Functions.cmake
+ # @file Compiler.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,37 +25,36 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake functions and macros
+ # @brief Version variable defintions for the used compilers
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0
 ###
 
-# prints colored text messages
-# inspired by soci colormsg function
-function ( scai_status_message )
-    string ( ASCII 27 _escape )
-    # ANSI Display Atributes
-    set ( ERROR "1\;31" )
-    set ( WARNING "33" )
-    set ( INFO "2\;32" )
-    set ( HEADLINE "4" )
-    
-    set ( coloron FALSE )
-    set ( str "" )
-    foreach    ( arg ${ARGV} )
-        if    ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
-            set(str "${str}${_escape}[${${arg}}m")
-            set(coloron TRUE)
-        else  ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
-            set ( str "${str}${arg}" )
-            if    ( coloron )
-                set ( str "${str}${_escape}[0m" )
-                set ( coloron FALSE )
-            endif ( coloron )
-            set ( str "${str} " )
-        endif ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
-    endforeach ( arg ${ARGV} )
-    
-    message ( STATUS ${str} )
-endfunction ( scai_status_message )
+### GNU compiler
+
+## C Compiler
+if    ( CMAKE_COMPILER_IS_GNUCC )
+    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCC_COMPILER_VERSION ${_compiler_output} )
+endif ( CMAKE_COMPILER_IS_GNUCC )
+
+## CXX Compiler
+if ( CMAKE_COMPILER_IS_GNUCXX )
+    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCXX_COMPILER_VERSION ${_compiler_output} )
+endif ( CMAKE_COMPILER_IS_GNUCXX )
+
+### Intel compiler
+
+## C Compiler
+if    ( CMAKE_CC_COMPILER_ID MATCHES Intel )
+    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" IntelCC_COMPILER_VERSION ${_compiler_output} )
+endif ( CMAKE_CC_COMPILER_ID MATCHES Intel )
+
+## CXX Compiler
+if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" IntelCXX_COMPILER_VERSION ${_compiler_output} )
+endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )

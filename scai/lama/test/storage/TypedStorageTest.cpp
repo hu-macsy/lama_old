@@ -33,10 +33,13 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <scai/lama/test/storage/TestStorages.hpp>
+
 #include <scai/lama/test/storage/Storages.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
+#include <scai/common/unique_ptr.hpp>
 #include <scai/utilskernel/LArray.hpp>
 
 #include <scai/hmemo/ReadAccess.hpp>
@@ -46,21 +49,7 @@
 
 using namespace scai;
 using namespace lama;
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void setDenseData( MatrixStorage<ValueType>& storage )
-{
-    const IndexType numRows = 4;
-    const IndexType numColumns = 4;
-    static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
-    // just make sure that number of entries in values matches the matrix size
-    BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
-    // Note: diagonal property of sparse matrices will be set due to square matrix
-    storage.setRawDenseData( numRows, numColumns, values, eps );
-}
+using utilskernel::LArray;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -68,14 +57,14 @@ template<typename ValueType>
 void setSymDenseData( MatrixStorage<ValueType>& storage )
 {
     /* Matrix:     1  2  0  5
-     *             2  1  3  0 
+     *             2  1  3  0
      *             0  3  1  4
      *             5  0  4  2
      */
 
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
- 
+
     static ValueType values[] = { 1, 2, 0, 5, 2, 1, 3, 0, 0, 3, 1, 4, 5, 0, 4, 2 };
 
     // just make sure that number of entries in values matches the matrix size
@@ -100,8 +89,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( factoryTest, ValueType, scai_arithmetic_test_type
 
     size_t nFormats = Format::UNDEFINED;
 
-    SCAI_LOG_INFO( logger, "factoryTest<" << common::TypeTraits<ValueType>::id() << "> : " 
-                            << allMatrixStorages.size() << " storages"                        )
+    SCAI_LOG_INFO( logger, "factoryTest<" << common::TypeTraits<ValueType>::id() << "> : "
+                   << allMatrixStorages.size() << " storages"                        )
 
     BOOST_CHECK_EQUAL( nFormats, allMatrixStorages.size() );
 }
@@ -129,7 +118,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_arithmetic_test_types )
         ValueType expected = 9.3f; // maximal absolute value
 
         SCAI_CHECK_CLOSE( maxNorm, expected, 1 );
-    }        
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -166,6 +155,173 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_arithmetic_test_types 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( diagonalTest, ValueType, scai_arithmetic_test_types )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        setDenseData( storage );
+
+        SCAI_LOG_DEBUG( logger, "diagonalTest, storage = " << storage << " @ " << *storage.getContextPtr() )
+
+        LArray<ValueType> diag( context );
+
+        storage.getDiagonal( diag );
+
+        BOOST_CHECK_EQUAL( diag.size(), storage.getNumRows() ); // square matrix
+
+        SCAI_LOG_INFO( logger, "diagonalTest: get diagonal = " << diag )
+
+        {
+            hmemo::ReadAccess<ValueType> readDiag ( diag );
+        
+            for ( IndexType i = 0; i < diag.size(); ++i )
+            {
+                ValueType s = storage.getValue( i, i );
+                BOOST_CHECK_EQUAL( s, readDiag[i] );
+            }
+        }
+
+        storage.setDiagonal( 0 );
+
+        for ( IndexType i = 0; i < diag.size(); ++i )
+        {
+            ValueType s = storage.getValue( i, i );
+            BOOST_CHECK_EQUAL( s, 0 );
+        }
+        
+        storage.setDiagonalV( diag );
+        
+        {
+            hmemo::ReadAccess<ValueType> readDiag ( diag );
+        
+            for ( IndexType i = 0; i < diag.size(); ++i )
+            {
+                ValueType s = storage.getValue( i, i );
+                BOOST_CHECK_EQUAL( s, readDiag[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( inverseTestIdentity )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    const IndexType N = 10;
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        storage.setIdentity( N );
+
+        common::unique_ptr<MatrixStorage<ValueType> > inverse( storage.newMatrixStorage() );
+        inverse->invert( storage );
+        BOOST_CHECK( inverse->maxDiffNorm( storage ) < common::TypeTraits<ValueType>::small() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( inverseTestRandom )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        setDenseRandom( storage );
+
+        common::unique_ptr<MatrixStorage<ValueType> > inverse( storage.newMatrixStorage() );
+        common::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
+        inverse->invert( storage );
+        result->matrixTimesMatrix( ValueType( 1 ), storage, *inverse, ValueType( 0 ), *inverse );
+        // BOOST_CHECK( result->maxDiffNorm( storage ) < common::TypeTraits<ValueType>::small() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( inverseTestRandom1 )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        setDenseRandom( storage );
+
+        common::unique_ptr<MatrixStorage<ValueType> > inverse( storage.copy() );
+        common::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
+        inverse->invert( *inverse );
+        result->matrixTimesMatrix( ValueType( 1 ), storage, *inverse, ValueType( 0 ), *inverse );
+        // BOOST_CHECK( result->maxDiffNorm( storage ) < common::TypeTraits<ValueType>::small() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    const ValueType alpha = 1;
+    const ValueType beta  = 2;
+    const ValueType xVal  = 1.5;
+    const ValueType yVal  = 0.5;
+
+    DenseStorage<ValueType> denseStorage;
+
+    setDenseData( denseStorage );
+
+    const LArray<ValueType> x( denseStorage.getNumColumns(), xVal );
+    const LArray<ValueType> y( denseStorage.getNumColumns(), yVal );
+
+    LArray<ValueType> denseResult;
+    denseStorage.matrixTimesVector( denseResult, alpha, x, beta, y );
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+        setDenseData( storage );
+
+        // compute y = A * x
+
+        LArray<ValueType> result( context );
+        storage.matrixTimesVector( result, alpha, x, beta, y );
+
+        BOOST_CHECK_EQUAL( denseResult.maxDiffNorm( result ), 0 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( symmetryTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
@@ -186,6 +342,125 @@ BOOST_AUTO_TEST_CASE( symmetryTest )
 
         setSymDenseData( storage );
         BOOST_CHECK( storage.checkSymmetry() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( setCSRDataTest )
+{
+    using namespace hmemo;
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    ContextPtr context = Context::getContextPtr();
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        SCAI_LOG_INFO( logger, "setCSRData for " << storage )
+
+        storage.clear();
+        IndexType numRows;
+        IndexType numColumns;
+        LArray<IndexType> matrixRowSizes( context );
+        LArray<IndexType> matrixJA( context );
+        LArray<ValueType> matrixValues( context );
+        LArray<ValueType> matrixDense( context );
+        getMatrix_7_4 ( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues, matrixDense );
+        IndexType numValues = matrixJA.size();
+        _MatrixStorage::sizes2offsets( matrixRowSizes );
+
+        // Now we can use matrixRowSizes as IA array
+
+        storage.setCSRData( numRows, numColumns, numValues, matrixRowSizes, matrixJA, matrixValues );
+
+        SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
+                       << ", nnz = " << numValues << ") : matrix = " << storage )
+        storage.prefetch();
+        hmemo::ReadAccess<ValueType> results( matrixDense );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            for ( IndexType j = 0; j < numColumns; j++ )
+            {
+                BOOST_CHECK_EQUAL( storage.getValue( i, j ) , results[ i * numColumns + j ] );
+            }
+        }
+
+        storage.wait();
+
+        // now we make some checks with incorrect CSR data
+
+        /* not yet
+
+        BOOST_CHECK_THROW(
+        {
+            storage.setCSRData( numRows, numColumns, numValues-1, matrixRowSizes, matrixJA, matrixValues );
+        },
+        common::Exception );
+
+        */
+
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( buildCSRDataTest )
+{
+    using namespace hmemo;
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    ContextPtr context = Context::getContextPtr();
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        SCAI_LOG_INFO( logger, "buildCSRData for " << storage )
+        storage.clear();
+        IndexType numRows;
+        IndexType numColumns;
+        LArray<IndexType> matrixRowSizes;
+        LArray<IndexType> matrixJA;
+        LArray<ValueType> matrixValues;
+        LArray<ValueType> matrixDense;
+        getMatrix_7_4 ( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues, matrixDense );
+        IndexType numValues = matrixJA.size();
+        // IA array not available yet, we have only sizes
+        _MatrixStorage::sizes2offsets( matrixRowSizes );
+        // Now we can use matrixRowSizes as IA array
+        storage.setCSRData( numRows, numColumns, numValues, matrixRowSizes, matrixJA, matrixValues );
+        // make sure that storage has not diagonal property, otherwise it will build wrong CSR data
+        BOOST_REQUIRE_EQUAL( storage.hasDiagonalProperty(), false );
+        // make sure that we have all values stored
+        BOOST_CHECK_EQUAL( numValues, storage.getNumValues() );
+
+        SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
+                       << ", nnz = " << numValues << ") : storage = " << storage )
+
+        LArray<IndexType> csrIA( context );
+        LArray<IndexType> csrJA( context );
+        LArray<ValueType> csrValues( context );
+
+        storage.buildCSRData( csrIA, csrJA, csrValues );
+
+        BOOST_REQUIRE_EQUAL( numRows + 1, csrIA.size() );
+        BOOST_REQUIRE_EQUAL( numValues, csrJA.size() );
+        BOOST_REQUIRE_EQUAL( numValues, csrValues.size() );
+
+        // check the IA array ( csrIA are offsets, matrixRowSizes was converted to offsets
+
+        BOOST_CHECK_EQUAL( 0, matrixRowSizes.maxDiffNorm( csrIA ) );
+        BOOST_CHECK_EQUAL( 0, matrixJA.maxDiffNorm( csrJA ) );
+        BOOST_CHECK_EQUAL( 0, matrixValues.maxDiffNorm( csrValues ) );
     }
 }
 

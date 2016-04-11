@@ -6,7 +6,11 @@
 
 include ( Functions/checkValue )
 
-set ( SCAI_TRACING ON )
+if    ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+	set ( SCAI_TRACING OFF )
+else  ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+	set ( SCAI_TRACING ON )
+endif ( CMAKE_BUILD_TYPE STREQUAL "Release" )
 checkValue ( ${SCAI_TRACING} "${TRUE_FALSE_CHOICES}" )
 
 if ( SCAI_TRACING )

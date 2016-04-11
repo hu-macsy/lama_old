@@ -35,6 +35,7 @@
 ### USE_MPI              - if MPI is enabled
 ### SCAI_MPI_INCLUDE_DIR - MPI include directory
 ### SCAI_MPI_LIBRARIES   - all needed MPI libraries
+### MPI_ENABLED          - if MPI_FOUND AND USE_MPI
 
 # Look for MPI first to allow SCAI_BLAS to take the correct blacs implementation
 # based on the found mpi
@@ -77,6 +78,13 @@ setAndCheckCache ( MPI )
 
 set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
 set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )
+
+include ( VersionCheck/MPI )
+
+set ( MPI_ENABLED FALSE )
+if    ( USE_MPI AND MPI_FOUND )
+    set ( MPI_ENABLED TRUE )
+endif ( USE_MPI AND MPI_FOUND )
 
 if    ( USE_MPI AND NOT MPI_FOUND )
     message( FATAL_ERROR "Build of LAMA MPI enabled, but configuration is incomplete!")

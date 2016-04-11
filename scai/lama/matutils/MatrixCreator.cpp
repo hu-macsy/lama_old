@@ -296,7 +296,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     // ToDo: take communicator from input set
 
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::MPI );
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
 
     // get rank of this processor
 
@@ -596,7 +596,7 @@ void MatrixCreator<ValueType>::buildRandom(
     const IndexType size,
     const double density )
 {
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::MPI );
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( size, comm ) );
     matrix.allocate( dist, dist );

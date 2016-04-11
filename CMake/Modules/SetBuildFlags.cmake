@@ -51,17 +51,18 @@ set ( CMAKE_VERBOSE_MAKEFILE OFF )
 
 include ( Settings/switchChoices )
 include ( Functions/checkValue )
+include ( Functions/parseBoolean )
 
 ## DOC
 
 # Check if doc should be build
 if    ( DEFINED BUILD_DOC )
 	#do nothing
+    parseBoolean( BUILD_DOC )
 else  ( DEFINED BUILD_DOC )
     set ( BUILD_DOC ${BUILD_DOC_DEFAULT} )
 endif ( DEFINED BUILD_DOC )
 checkValue ( ${BUILD_DOC} "${TRUE_FALSE_CHOICES}" )
-message ( "Build doc is set to " ${BUILD_DOC} )
 
 # Choose Doc type
 if    ( DEFINED SCAI_DOC_TYPE )
@@ -70,46 +71,47 @@ else  ( DEFINED SCAI_DOC_TYPE )
     set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE_DEFAULT} )
 endif ( DEFINED SCAI_DOC_TYPE )
 checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_CHOICES}" )
-message ( "Doc type is set to " ${SCAI_DOC_TYPE_CHOICES} )
 
-if    ( SCAI_DOC_TYPE STREQUAL json )
+if     ( SCAI_DOC_TYPE STREQUAL json )
     set ( DOC_EXTENTSION "fjson" )
-else  ( SCAI_DOC_TYPE STREQUAL json )
+elseif  ( SCAI_DOC_TYPE STREQUAL html )
     set ( DOC_EXTENTSION "html" )
-endif ( SCAI_DOC_TYPE STREQUAL json )
+elseif  ( SCAI_DOC_TYPE STREQUAL xml )
+    set ( DOC_EXTENTSION "xml" )
+endif  ( )
 
 ## EXAMPLES
 
 # Check if examples should be build
 if    ( DEFINED BUILD_EXAMPLES )
 	# do nothing
+    parseBoolean( BUILD_EXAMPLES )
 else  ( DEFINED BUILD_EXAMPLES )
     set ( BUILD_EXAMPLES ${BUILD_EXAMPLES_DEFAULT} )
 endif ( DEFINED BUILD_EXAMPLES )
 checkValue ( ${BUILD_EXAMPLES} "${TRUE_FALSE_CHOICES}" )
-message ( "Build examples is set to " ${BUILD_EXAMPLES} )
 
 ## TEST
 
 ## Check if tests should be build
 if    ( DEFINED BUILD_TEST )
 	# do nothing
+    parseBoolean( BUILD_TEST )
 else  ( DEFINED BUILD_TEST )
     set ( BUILD_TEST ${BUILD_TEST_DEFAULT} )
 endif ( DEFINED BUILD_TEST )
 checkValue ( ${BUILD_TEST} "${TRUE_FALSE_CHOICES}" )
-message ( "Build test is set to " ${BUILD_TEST} )
 
 ## CODE COVERAGE
 
 ## Check if lama should be build for code coverage
 if    ( DEFINED USE_CODE_COVERAGE )
 	# do nothing
+    parseBoolean( USE_CODE_COVERAGE )
 else  ( DEFINED USE_CODE_COVERAGE )
     set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE_DEFAULT} )
 endif ( DEFINED USE_CODE_COVERAGE )
 checkValue ( ${USE_CODE_COVERAGE} "${TRUE_FALSE_CHOICES}" )
-message ( "Use code coverage is set to " ${USE_CODE_COVERAGE} )
 
 ##  CMAKE_BUILD_TYPE
 if    ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE ) # variable may be defined empty
@@ -118,7 +120,6 @@ else  ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
     set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE_DEFAULT} )
 endif ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
 checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_CHOICES}" )
-message ( "Build type is set to " ${CMAKE_BUILD_TYPE} )
 
 ## SCAI_ASSERT_LEVEL
 if    ( NOT SCAI_ASSERT_LEVEL )
@@ -139,4 +140,3 @@ else  ( DEFINED SCAI_LIBRARY_TYPE )
     set ( SCAI_LIBRARY_TYPE ${SCAI_LIBRARY_TYPE_DEFAULT} )
 endif ( DEFINED SCAI_LIBRARY_TYPE )
 checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_CHOICES}" )
-message ( "Library type is set to " ${SCAI_LIBRARY_TYPE} )

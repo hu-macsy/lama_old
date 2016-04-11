@@ -212,40 +212,6 @@ void MatrixStorageTest<ValueType>::setDenseRandomInverse( MatrixStorage<ValueTyp
 
 /* ========================================================================= */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setCSRDataTest )
-{
-    SCAI_LOG_INFO( logger, "setCSRDataTest" )
-    mMatrixStorage.clear();
-    IndexType numRows;
-    IndexType numColumns;
-    LArray<IndexType> matrixRowSizes;
-    LArray<IndexType> matrixJA;
-    LArray<ValueType> matrixValues;
-    LArray<ValueType> matrixDense;
-    getMatrix_7_4 ( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues, matrixDense );
-    IndexType numValues = matrixJA.size();
-    _MatrixStorage::sizes2offsets( matrixRowSizes );
-// Now we can use matrixRowSizes as IA array
-    mMatrixStorage.setCSRData( numRows, numColumns, numValues, matrixRowSizes, matrixJA, matrixValues );
-    SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
-                   << ", nnz = " << numValues << ") : matrix = " << mMatrixStorage )
-    mMatrixStorage.prefetch();
-    ReadAccess<ValueType> results( matrixDense );
-
-    for ( IndexType i = 0; i < numRows; i++ )
-    {
-        for ( IndexType j = 0; j < numColumns; j++ )
-        {
-            BOOST_CHECK_EQUAL( mMatrixStorage.getValue( i, j ) , results[ i * numColumns + j ] );
-        }
-    }
-
-    mMatrixStorage.wait();
-}
-LAMA_COMMON_TEST_CASE_TEMPLATE_END()
-
-/* ------------------------------------------------------------------------- */
-
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, buildCSRDataTest )
 {
     mMatrixStorage.clear();
@@ -1040,7 +1006,6 @@ template<typename StorageType>                                                  
 void MatrixStorageTest<StorageType>::runTests()
 {
     purgeTest();
-    setCSRDataTest();
     buildCSRDataTest();
     diagonalTest();
     vectorMultTest();

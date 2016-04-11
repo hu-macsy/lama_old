@@ -35,10 +35,14 @@
 ### USE_CUDA              - if CUDA is enabled
 ### SCAI_CUDA_INCLUDE_DIR - CUDA include directory
 ### SCAI_CUDA_LIBRARIES   - all needed CUDA libraries
+### CUDA_ENABLED          - if CUDA_FOUND and USE_CUDA
 
 set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
 
 find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
+
+# find out if host compiler version is supported by CUDA installation
+include ( Compiler/cuda/CheckHostCompilerCompatibility )
 
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR
@@ -48,7 +52,9 @@ mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION C
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( CUDA )
 
+set ( CUDA_ENABLED FALSE )
 if ( CUDA_FOUND AND USE_CUDA )
+	set ( CUDA_ENABLED TRUE )
 
 	# find out CUDA compute capability by test program
 	include ( Compiler/cuda/ComputeCapabilityCheck )

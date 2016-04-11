@@ -1,5 +1,5 @@
 ###
- # @file CUDAComputeCapability.cmake
+ # @file ComputeCapabilityCheck.cmake
  #
  # @license
  # Copyright (c) 2009-2014
@@ -35,27 +35,27 @@
 ###
 
 if    ( CUDA_FOUND )
-    try_run ( RUN_RESULT_VAR COMPILE_RESULT_VAR
+    try_run ( CUDA_RUN_RESULT_VAR CUDA_COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}
         ${CMAKE_MODULE_PATH}/Compiler/cuda/ComputeCapabilityCheck.cpp
         CMAKE_FLAGS 
         -DINCLUDE_DIRECTORIES:STRING=${CUDA_TOOLKIT_INCLUDE}
         -DLINK_LIBRARIES:STRING=${CUDA_CUDART_LIBRARY}
-        COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT_VAR
-        RUN_OUTPUT_VARIABLE RUN_OUTPUT_VAR )
-        
-    # COMPILE_RESULT_VAR is TRUE when compile succeeds
-    # RUN_RESULT_VAR is zero when a GPU is found
-    if    ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
+        COMPILE_OUTPUT_VARIABLE CUDA_COMPILE_OUTPUT_VAR
+        RUN_OUTPUT_VARIABLE CUDA_RUN_OUTPUT_VAR )
+    
+    # CUDA_COMPILE_RESULT_VAR is TRUE when compile succeeds
+    # CUDA_RUN_RESULT_VAR is zero when a GPU is found
+    if    ( CUDA_COMPILE_RESULT_VAR AND NOT CUDA_RUN_RESULT_VAR )
         set ( CUDA_HAVE_GPU TRUE CACHE BOOL "Whether CUDA-capable GPU is present" )
-        set ( CUDA_COMPUTE_CAPABILITY ${RUN_OUTPUT_VAR} )
+        set ( CUDA_COMPUTE_CAPABILITY ${CUDA_RUN_OUTPUT_VAR} )
         set ( CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}" )
         mark_as_advanced ( CUDA_COMPUTE_CAPABILITY CUDA_GENERATE_CODE )
-    else  ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
+    else  ( CUDA_COMPILE_RESULT_VAR AND NOT CUDA_RUN_RESULT_VAR )
         set ( CUDA_HAVE_GPU FALSE CACHE BOOL "Whether CUDA-capable GPU is present" )
         set ( CUDA_COMPUTE_CAPABILITY "not-found" )
-    endif ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
-    
+    endif ( CUDA_COMPILE_RESULT_VAR AND NOT CUDA_RUN_RESULT_VAR )
+        
     mark_as_advanced ( CUDA_HAVE_GPU )
-    
+   
 endif ( CUDA_FOUND )

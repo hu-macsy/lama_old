@@ -31,113 +31,28 @@
  # @since 2.0.0
 ###
 
-include ( Functions/scaiStatusMessage )
-include ( Functions/scaiSummaryMessage )
+include ( Functions/scaiMessages )
 
-message ( STATUS "" )
+emptyline()
+message ( STATUS "======================================" )
 message ( STATUS "Summary of SCAI tasking Configuration:" )
-message ( STATUS "=====================================" )
-message ( STATUS "" )
+message ( STATUS "======================================" )
 
-scai_status_message ( HEADLINE "Compiler:" )
-# C++ Compiler
-scai_summary_message ( "FOUND"
-                       "CMAKE_CXX_COMPILER"
-                       "C++ Compiler"
-                       "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
-
-message ( STATUS "" )
-
-if    ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-    set( REQUIRED_FOUND TRUE )
-else  ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-	set( REQUIRED_FOUND FALSE )
-endif ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "Tasking"
-                       "Needs compiler supporting C++11 or Boost" )
-
-scai_summary_message ( "FOUND"
-					             "CXX_SUPPORTS_C11"
-					             "C++11 support"
-					             "" )
-				
-if    ( NOT CXX_SUPPORTS_C11 )
-    scai_summary_message ( "FOUND"
-                           "SCAI_BOOST_INCLUDE_DIR"
-                           "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
-endif ( NOT CXX_SUPPORTS_C11 )
+include ( Summaries/Modules/Compiler )
 
 # LAMA (core)
-message ( STATUS "" )
-scai_status_message ( HEADLINE "LIBRARIES:" )
+heading ( "Required core" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND )
 
-message ( STATUS "" )
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "Internal Libraries (core)"
-                       "" )
+heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
+    found_message ( "SCAI common"       "SCAI_COMMON_FOUND"       "REQUIRED" "Version ${SCAI_COMMON_VERSION}"       )
+    found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
+    found_message ( "SCAI tracing"      "SCAI_TRACING_FOUND"      "REQUIRED" "Version ${SCAI_TRACING_VERSION}"      )
 
-    scai_summary_message ( "FOUND"
-                           "SCAI_COMMON_FOUND"
-                           "SCAI common"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_LOGGING_FOUND"
-                           "SCAI logging"
-                           "" )
-                           
-    scai_summary_message ( "FOUND"
-                           "SCAI_TRACING_FOUND"
-                           "SCAI tracing"
-                           "" )
+include ( Summaries/Modules/Build )
 
-# LAMA TEST
-#message ( STATUS "" )
-#scai_status_message ( HEADLINE "TESTING:" )
-#
-#set ( REQUIRED_FOUND FALSE )
-#if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
-#  set ( REQUIRED_FOUND TRUE )
-#endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
-#
-#scai_summary_message ( "USE"
-#                       "REQUIRED_FOUND"
-#                       "TEST"
-#                       "" )
-#
-#    # Boost Test-Framework
-#    scai_summary_message ( "FOUND"
-#                           "Boost_UNIT_TEST_FRAMEWORK_FOUND"
-#                           "Boost Unit Test"
-#                           "" )
-#                           
-#    # Boost Regex
-#    scai_summary_message ( "FOUND"
-#                           "Boost_REGEX_FOUND"
-#                           "Boost Regex"
-#                           "" )
-
-message ( STATUS "" )
-
-scai_status_message ( HEADLINE "INFO:" )
-
-message ( STATUS "Tasking Version : ${SCAI_TASKING_VERSION} ${SCAI_VERSION_NAME}" )
-message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
-message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
-message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
-message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
-if    ( USE_CODE_COVERAGE )
-	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
-endif ( USE_CODE_COVERAGE )
-message ( STATUS "" )
+include ( Summaries/Modules/Configuration )

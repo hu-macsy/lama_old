@@ -49,4 +49,3 @@ set ( SCAI_SOLVER_INTERNAL_DEPS       scai_common scai_logging scai_tracing scai
 
 ## head project containing all sub projects
 set ( LAMA_ALL_INTERNAL_DEPS scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_blaskernel scai_utilskernel scai_sparsekernel scai_dmemo scai_lama scai_solver )
-
