@@ -41,7 +41,7 @@ set ( SCAI_TASKING_INTERNAL_DEPS      scai_common scai_logging scai_tracing ) # 
 set ( SCAI_HMEMO_INTERNAL_DEPS        scai_common scai_logging scai_tracing scai_tasking ) # 5
 set ( SCAI_KREGISTRY_INTERNAL_DEPS    scai_common scai_logging ) # 6
 set ( SCAI_BLASKERNEL_INTERNAL_DEPS   scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry ) # 7
-set ( SCAI_UTILSKERNEL_INTERNAL_DEPS  scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry ) # 8
+set ( SCAI_UTILSKERNEL_INTERNAL_DEPS  scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_blaskernel ) # 8
 set ( SCAI_SPARSEKERNEL_INTERNAL_DEPS scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_utilskernel ) # 9
 set ( SCAI_DMEMO_INTERNAL_DEPS        scai_common scai_logging scai_tracing scai_tasking scai_hmemo ) # 10
 set ( SCAI_LAMA_INTERNAL_DEPS         scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_blaskernel scai_utilskernel scai_sparsekernel scai_dmemo ) # 11
