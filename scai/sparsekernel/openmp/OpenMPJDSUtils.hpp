@@ -36,9 +36,6 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// local library
-#include <scai/lama/Scalar.hpp>
-
 // internal scai libraries
 #include <scai/kregistry/mepr/Registrator.hpp>
 

@@ -739,11 +739,11 @@ COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>, > , long double )
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is lower than b or equal to b
  */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <= , long double )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , int )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , long )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , float )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , double )
+//COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <= , long double )
 
 /*
  * @brief Check if a is greater than b or equal to b.
@@ -752,11 +752,11 @@ COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <= , long double )
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is greater than b or equal to b
  */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>=, >= , long double )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , int )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , long )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , float )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , double )
+//COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>=, >= , long double )
 
 /*
  * @brief Check equality of a and b.

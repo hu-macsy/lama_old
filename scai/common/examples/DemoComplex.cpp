@@ -37,8 +37,8 @@ int main()
     {
         std::cout << a << " == " << b << std::endl;
     }
-    else if ( a >= b )
-    {
-        std::cout << a << " >= " << b << std::endl;
-    }
+//    else if ( a >= b )
+//    {
+//        std::cout << a << " >= " << b << std::endl;
+//    }
 }

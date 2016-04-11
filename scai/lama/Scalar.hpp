@@ -42,6 +42,7 @@
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/Constants.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
@@ -191,6 +192,11 @@ public:
 
     inline virtual void writeAt( std::ostream& stream ) const;
 
+    inline bool hasComplexValue() const
+    {
+        return common::Math::imag( mValue ) != common::constants::ZERO;
+    }
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
@@ -198,6 +204,7 @@ protected:
 private:
 
     ScalarRepType mValue;  //!< use highest precision for representation
+
 };
 
 /* --------------------------------------------------------------------------- *
@@ -322,15 +329,15 @@ inline bool operator>( const Scalar& a, const Scalar& b )
     return a.getValue<ScalarRepType>() > b.getValue<ScalarRepType>();
 }
 
-inline bool operator<=( const Scalar& a, const Scalar& b )
-{
-    return !( a > b );
-}
-
-inline bool operator>=( const Scalar& a, const Scalar& b )
-{
-    return !( a < b );
-}
+//inline bool operator<=( const Scalar& a, const Scalar& b )
+//{
+//    return !( a > b );
+//}
+//
+//inline bool operator>=( const Scalar& a, const Scalar& b )
+//{
+//    return !( a < b );
+//}
 
 inline Scalar sqrt( const Scalar scalar )
 {
@@ -361,16 +368,30 @@ inline Scalar conj( const Scalar scalar )
 
 inline Scalar max( const Scalar a, const Scalar b )
 {
-    return Scalar(   a.getValue<ScalarRepType>() >= b.getValue<ScalarRepType>() 
-                   ? a.getValue<ScalarRepType>() 
-                   : b.getValue<ScalarRepType>() );
+    if( a.hasComplexValue() || b.hasComplexValue() )
+    {
+        return Scalar( common::Math::max( a.getValue<ScalarRepType>(), b.getValue<ScalarRepType>() ) );
+    }
+    else
+    {
+        return Scalar( common::Math::max(
+            common::Math::real( a.getValue<ScalarRepType>() ),
+            common::Math::real( b.getValue<ScalarRepType>() ) ) );
+    }
 }
 
 inline Scalar min( const Scalar a, const Scalar b )
 {
-    return Scalar(   a.getValue<ScalarRepType>() <= b.getValue<ScalarRepType>() 
-                   ? a.getValue<ScalarRepType>() 
-                   : b.getValue<ScalarRepType>() );
+    if( a.hasComplexValue() || b.hasComplexValue() )
+    {
+        return Scalar( common::Math::min( a.getValue<ScalarRepType>(), b.getValue<ScalarRepType>() ) );
+    }
+    else
+    {
+        return Scalar( common::Math::min(
+            common::Math::real( a.getValue<ScalarRepType>() ),
+            common::Math::real( b.getValue<ScalarRepType>() ) ) );
+    }
 }
 
 } /* end namespace lama */
