@@ -45,6 +45,7 @@ set ( CXX_SOURCES
       PrintableTest.cpp
       ReductionOpTest.cpp  
       ThreadTest.cpp  
+      TypeListTest.cpp
       TypeTraitsTest.cpp  
       ScalarTypeTest.cpp  
       SettingsTest.cpp  
