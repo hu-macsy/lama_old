@@ -32,9 +32,9 @@
 #  @since 1.0.0
 #
 
-#!/bin/bash
+#!/bin/bash -e
 
-. scai_code_coverage_functions.sh
+source scai_code_coverage_functions.sh
 
 dirname=$(create_dir)
 echo "Create coverage directory: ${dirname}"

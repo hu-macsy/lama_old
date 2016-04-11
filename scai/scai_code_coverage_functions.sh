@@ -32,7 +32,7 @@
 #  @since 1.0.0
 #
 
-#!/bin/bash
+#!/bin/bash -e
 
 function create_dir
 {
