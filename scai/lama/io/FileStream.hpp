@@ -57,6 +57,8 @@
 // TODO: remove
 #include <iostream>
 
+
+// TODO: do initialization of all arrays using set() (correct first touch)
 namespace scai
 {
 
@@ -66,82 +68,71 @@ namespace lama
 class COMMON_DLL_IMPORTEXPORT FileStream : public std::fstream
 {
 public:
-    FileStream( const std::string& filename, ios_base::openmode mode = ios_base::in|ios_base::out );
-
-    //void open( const std::string& filename );
-
-    //void close();
+    FileStream( const std::string& filename, ios_base::openmode mode, bool useLittleEndian = true );
 
     template<typename ValueType>
     void write( const hmemo::HArray<ValueType>& data,
                 const int offset,
                 const common::scalar::ScalarType type,
-                const std::string delimiter = "" );
+                const char delimiter = ' ' );
 
     template<typename ValueType>
     void read(  hmemo::HArray<ValueType>& data,
                 const IndexType size,
                 const int offset,
                 const common::scalar::ScalarType type,
-                const std::string delimiter = "" );
+                const char delimiter = ' ' );
 
-protected:
+private:
+    bool isBinary;
+    bool isLittleEndian;
+    bool useLittleEndian;
+
     /** Logger for this class */
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     template<typename FileType, typename DataType>
     void _write( const hmemo::HArray<DataType>& data,
                  const int offset,
-                 const std::string delimiter = "" );
+                 const char delimiter = ' ' );
 
     template<typename FileType, typename DataType>
     void _read(  hmemo::HArray<DataType>& data,
                  const IndexType size,
                  const int offset,
-                 const std::string delimiter = "" );
+                 const char delimiter = ' ' );
 
-private:
-    //std::fstream mFileStream;
-
-    SCAI_DECLARE_TEMPLATESPECIFIER( SpecifierVO, template<typename ValueType, typename OtherValueType> )
-
-    class Guard
-    {
-    public:
-        Guard();
-    };
-
-    static Guard guard;
+    bool _isLittleEndian();
 
 }; // class FileStream
 
 SCAI_LOG_DEF_LOGGER( FileStream::logger, "IO.FileStream" )
 
-FileStream::FileStream( const std::string& filename, ios_base::openmode mode /* = ios_base::in|ios_base::out */ )
+FileStream::FileStream( const std::string& filename, ios_base::openmode mode, bool useLittleEndian /* = true */ )
 {
     std::fstream::open( filename.c_str(), mode );
+    if( mode & std::ios::binary )
+    {
+        isBinary = true;
+    }
+    else
+    {
+        isBinary = false;
+    }
+    this->useLittleEndian = useLittleEndian;
+    isLittleEndian = _isLittleEndian();
+
     if( !is_open() )
     {
         COMMON_THROWEXCEPTION( "Unable to open file " + filename + "." )
     }
 }
 
-//void FileStream::open( const std::string& filename )
-//{
-//    mFileStream.open( filename.c_str(), std::ios::out | std::ios::binary );
-//
-//}
-
-//void FileStream::close()
-//{
-//    mFileStream.close();
-//}
-
 template<typename ValueType>
 void FileStream::write( const hmemo::HArray<ValueType>& data,
                         const int offset,
                         const common::scalar::ScalarType type,
-                        const std::string delimiter /* = "" */ )
+                        const char delimiter /* = ' ' */ )
 {
     switch(type){
     // special cases for handling IndexType, int and long, as these are not properly supported yet
@@ -177,7 +168,7 @@ void FileStream::read(  hmemo::HArray<ValueType>& data,
                         const IndexType size,
                         const int offset,
                         const common::scalar::ScalarType type,
-                        const std::string delimiter /* = "" */ )
+                        const char delimiter /* = ' ' */ )
 {
     switch(type){
     // special cases for handling IndexType, int and long, as these are not properly supported yet
@@ -211,19 +202,27 @@ void FileStream::read(  hmemo::HArray<ValueType>& data,
 template<typename FileType, typename DataType>
 void FileStream::_write( const hmemo::HArray<DataType>& data,
                          const int offset,
-                         const std::string delimiter /* = "" */ )
+                         const char delimiter /* = ' ' */ )
 {
-    SCAI_LOG_INFO( logger, "write array data<" << common::TypeTraits<DataType>::id() << "> to <"
+    SCAI_LOG_INFO( logger, "write array data <" << common::TypeTraits<DataType>::id() << "> to <"
                            << common::TypeTraits<FileType>::id() << ">, offset = " << offset )
 
     assert( is_open() );
 
+
     if( offset == 0 && typeid(FileType) == typeid(DataType) )
     {
         hmemo::ReadAccess<DataType> dataRead( data );
-        if( delimiter.empty() )
+        if ( isBinary )
         {
-            std::fstream::write( reinterpret_cast<const char*>( dataRead.get() ), sizeof(DataType)*data.size() );
+            if( useLittleEndian == isLittleEndian )
+            {
+                std::fstream::write( reinterpret_cast<const char*>( dataRead.get() ), sizeof(DataType)*data.size() );
+            }
+            else
+            {
+                COMMON_THROWEXCEPTION( "Error, wrong Endian!!!" )
+            }
         }
         else
         {
@@ -233,14 +232,14 @@ void FileStream::_write( const hmemo::HArray<DataType>& data,
                 *this << dataPtr[i] << delimiter;
             }
         }
-    }else{
+    }
+    else
+    {
         hmemo::HArray<FileType> buffer;
         {
             static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<FileType, DataType> > set;
             static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::addScalar<FileType> > addScalar;
             hmemo::ContextPtr loc = addScalar.getValidContext(set.getValidContext(data.getValidContext()));
-
-            std::cout << "context: " << *loc << std::endl;
 
             hmemo::ReadAccess<DataType> dataRead( data, loc );
             hmemo::WriteOnlyAccess<FileType> bufferWrite( buffer, loc, data.size() );
@@ -250,7 +249,7 @@ void FileStream::_write( const hmemo::HArray<DataType>& data,
         }
         hmemo::ReadAccess<FileType> bufferRead( buffer );
 
-        if( delimiter.empty() )
+        if( isBinary )
         {
             std::fstream::write( reinterpret_cast<const char*>( bufferRead.get() ), sizeof(FileType)*data.size() );
         }
@@ -269,17 +268,91 @@ void FileStream::_write( const hmemo::HArray<DataType>& data,
 template<typename FileType, typename DataType>
 void FileStream::_read( hmemo::HArray<DataType>& data,
                         const IndexType size,
-                        const int /* offset */,
-                        const std::string /* delimiter */ /* = "" */ )
+                        const int offset,
+                        const char delimiter /* = ' ' */ )
 {
-    hmemo::WriteOnlyAccess<DataType> ia( data, size );
+    SCAI_LOG_INFO( logger, "read array data <" << common::TypeTraits<FileType>::id() << "> to <"
+                           << common::TypeTraits<DataType>::id() << ">, offset = " << offset << ", size = " << size )
 
-    for( IndexType i = 0; i < size; ++i )
+    hmemo::WriteOnlyAccess<DataType> dataWrite( data, size );
+
+    if(typeid(FileType) == typeid(DataType) )
     {
-        *this >> ia[i];
-        --ia[i];
+        if( isBinary )
+        {
+            std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), sizeof(DataType)*size );
+            if ( !*this )
+            {
+                COMMON_THROWEXCEPTION( "Error reading data!" )
+            }
+        }
+        else
+        {
+            std::string buffer;
+            std::stringstream ssBuffer;
+            for( int i=0; i < size; ++i )
+            {
+                std::getline(*this, buffer, delimiter );
+                if ( !*this )
+                {
+                    COMMON_THROWEXCEPTION( "Unexpected end of file" )
+                }
+
+                ssBuffer.clear();
+                ssBuffer << buffer;
+                ssBuffer >> dataWrite[i];
+            }
+        }
+    }
+    else
+    {
+        hmemo::HArray<FileType> buffer;
+        hmemo::WriteOnlyAccess<FileType> bufferWrite( buffer, size );
+
+        if( isBinary )
+        {
+            std::fstream::read( reinterpret_cast<char*>( bufferWrite.get() ), sizeof(FileType)*size );
+            if ( !*this )
+            {
+                COMMON_THROWEXCEPTION( "Error reading data!" )
+            }
+        }
+        else
+        {
+            std::string buffer;
+            std::stringstream ssBuffer;
+            for( int i=0; i < size; ++i )
+            {
+                std::getline(*this, buffer, delimiter );
+                if ( !*this )
+                {
+                    COMMON_THROWEXCEPTION( "Unexpected end of file" )
+                }
+
+                ssBuffer.clear();
+                ssBuffer << buffer;
+                ssBuffer >> bufferWrite[i];
+            }
+        }
+
+
+        static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<DataType, FileType> > set;
+        hmemo::ContextPtr loc = set.getValidContext(data.getValidContext());
+        set[loc](dataWrite, bufferWrite, size, common::reduction::COPY);
     }
 
+    if( offset != 0 ){
+        static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::addScalar<DataType> > addScalar;
+        hmemo::ContextPtr loc = addScalar.getValidContext(data.getValidContext());
+        addScalar[loc](dataWrite, size, offset);
+    }
+}
+
+bool FileStream::_isLittleEndian()
+{
+    int a = 1;
+    char *ch = reinterpret_cast<char*>( &a );
+    return static_cast<int>( *ch ) != 0;
 }
 
 

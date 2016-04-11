@@ -96,9 +96,9 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
     FileStream amgfile( fileName, std::ios::out );
 
     // TODO: do we have to use variable output types here?
-    amgfile.write(csrIA, 1, common::TypeTraits<IndexType>::stype, "\n");
-    amgfile.write(csrJA, 1, common::TypeTraits<IndexType>::stype, "\n");
-    amgfile.write(csrValues, 0, common::TypeTraits<ValueType>::stype, "\n");
+    amgfile.write(csrIA, 1, common::TypeTraits<IndexType>::stype, '\n' );
+    amgfile.write(csrJA, 1, common::TypeTraits<IndexType>::stype, '\n' );
+    amgfile.write(csrValues, 0, common::TypeTraits<ValueType>::stype, '\n');
 
     amgfile.close();
 }
@@ -117,55 +117,16 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
 
     //Reading matrix data
 
+    //TODO: allow different type to be read?
     FileStream inFile( fileName, std::ios::in );
-    inFile.read( csrIA, numRows + 1, -1, common::TypeTraits<IndexType>::stype );
+    inFile.read( csrIA, numRows + 1, -1, common::TypeTraits<IndexType>::stype, '\n' );
     ReadAccess<IndexType> ia( csrIA );
     IndexType numValues = ia[numRows];
 
-    inFile.read( csrJA, numValues, -1, common::TypeTraits<IndexType>::stype );
-    inFile.read( csrValues, numValues, 0, common::TypeTraits<ValueType>::stype );
+    inFile.read( csrJA, numValues, -1, common::TypeTraits<IndexType>::stype, '\n' );
+    inFile.read( csrValues, numValues, 0, common::TypeTraits<ValueType>::stype, '\n' );
 
-
-//    WriteOnlyAccess<IndexType> ja( csrJA, numValues );
-//    WriteOnlyAccess<ValueType> data( csrValues, numValues );
-//
-//    for( IndexType j = 0; j < numValues; ++j )
-//    {
-////        amgfile >> ja[j];
-//        inFile >> ja[j];
-//        --ja[j];
-//    }
-//
-//    for( IndexType j = 0; j < numValues; ++j )
-//    {
-////        amgfile >> data[j];
-//        inFile >> data[j];
-//    }
-//
-////    amgfile.close();
     inFile.close();
-}
-
-/* -------------------------------------------------------------------------- */
-
-/** Help function to determine size of file with CSR data of certain value type
- *
- *  @tparam ValueType type of matrix value, i.e. float or double
- *  @param[in] numRows  number of rows in CSR data
- *  @param[in] numValues number of values in CSR data
- *
- *  @return number of bytes expected for a binary file containing CSR data of this type
- */
-
-template<typename ValueType>
-static IOUtils::file_size_t expectedCSRFileSize( const IndexType numRows, const IndexType numValues )
-{
-    IOUtils::file_size_t size = sizeof(IndexType) * ( numRows + 1 ); // size of csrIA
-
-    size += sizeof(IndexType) * numValues; // size of csrJA
-    size += sizeof(ValueType) * numValues; // size of csrValues
-
-    return size;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -187,41 +148,14 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     SCAI_LOG_INFO( logger, "CSR binary file " << fileName << " has size = " << actualSize )
 
-    std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
+    FileStream inFile( fileName, std::ios::in | std::ios::binary );
 
-    WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
-
-    // read offset array IA
-
-    IOUtils::readBinaryData<IndexType,IndexType>( inFile, ia.get(), numRows + 1, -1 );
-
+    inFile.read( csrIA, numRows + 1, -1, common::TypeTraits<IndexType>::stype );
+    ReadAccess<IndexType> ia( csrIA );
     IndexType numValues = ia[numRows];
 
-    WriteOnlyAccess<IndexType> ja( csrJA, numValues );
-    WriteOnlyAccess<ValueType> values( csrValues, numValues );
-
-    IOUtils::readBinaryData<IndexType,IndexType>( inFile, ja.get(), numValues, -1 );
-
-    // now we can calculate the expected size
-
-    IOUtils::file_size_t expectedSize = expectedCSRFileSize<ValueType>( numRows, numValues );
-
-    if ( expectedSize == actualSize )
-    {
-        SCAI_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() << ", no conversion" )
-        IOUtils::readBinaryData<ValueType,ValueType>( inFile, values.get(), numValues );
-    }
-    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readBinary( actualSize, inFile, values.get(), numValues ))
-    {
-        SCAI_LOG_WARN( logger, "read binary data of different type, conversion done" )
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION(
-                        "File " << fileName << " has unexpected file size = " << actualSize << ", #rows = " << numRows << ", #values = " << numValues 
-                         << ", expected for float = " << expectedCSRFileSize<float>( numRows, numValues ) 
-                         << ", or expected for double = " << expectedCSRFileSize<double>( numRows, numValues ) )
-    }
+    inFile.read( csrJA, numValues, -1, common::TypeTraits<IndexType>::stype );
+    inFile.read( csrValues, numValues, 0, common::TypeTraits<ValueType>::stype );
 
     inFile.close();
 }

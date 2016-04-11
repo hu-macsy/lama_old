@@ -133,6 +133,11 @@ public:
     template<typename ValueType>
     static void addScalar( ValueType mValues[], const IndexType n, const ValueType scalar );
 
+    /** OpenMP implementation for UtilKernelTrait::swapEndian */
+
+    template<typename ValueType>
+    static void swapEndian( ValueType mValues[], const IndexType n );
+
 private:
 
     template<typename ValueType>
