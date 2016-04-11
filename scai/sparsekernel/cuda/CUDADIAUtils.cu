@@ -772,7 +772,12 @@ __global__ void normal_gevm_kernel(
 
     if ( k < numColumns )
     {
-        ValueType summand = beta * y[k];
+        ValueType summand = 0;
+
+        if ( beta != 0 )
+        {
+            summand = beta * y[k];
+        }
 
         ValueType temp = 0.0;
 
