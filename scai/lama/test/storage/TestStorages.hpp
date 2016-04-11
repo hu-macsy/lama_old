@@ -66,12 +66,13 @@ void setDenseSquareData( scai::lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
-    static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
     // just make sure that number of entries in values matches the matrix size
+    static ValueType values[] = { 10, 0, 0, 4, 3, 10, 0, 0, 0, 0, -9.3f, 4, 1, 5, 0, 13 };
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
     ValueType eps = static_cast<ValueType>( 1E-5 );
-    // Note: diagonal property of sparse matrices will be set due to square matrix
     storage.setRawDenseData( numRows, numColumns, values, eps );
+
+    // Note: diagonal does not contain any zeros
 }
 
 /* ------------------------------------------------------------------------- */

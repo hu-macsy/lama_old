@@ -1163,8 +1163,9 @@ void DIAStorage<ValueType>::jacobiIterate(
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, rhs.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+
     // matrix must be square
 
     static LAMAKernel<DIAKernelTrait::jacobi<ValueType> > jacobi;
@@ -1173,11 +1174,12 @@ void DIAStorage<ValueType>::jacobiIterate(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> diaOffset( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
+
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
 
     jacobi[loc]( wSolution.get(), mNumColumns, mNumDiagonals, diaOffset.get(), diaValues.get(),
                  rOldSolution.get(), rRhs.get(), omega, mNumRows );

@@ -942,17 +942,7 @@ void DenseVector<ValueType>::wait() const
 template<typename ValueType>
 void DenseVector<ValueType>::invert()
 {
-    const IndexType size = mLocalValues.size();
-
-    static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
-
-    const ContextPtr loc = invert.getValidContext( this->getContextPtr() );
-
-    SCAI_CONTEXT_ACCESS( loc );
-
-    WriteAccess<ValueType> wValues( mLocalValues, loc );
-
-    invert[loc]( wValues.get(), size );
+    utilskernel::HArrayUtils::invert( mLocalValues, this->getContextPtr() );
 }
 
 template<typename ValueType>

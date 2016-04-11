@@ -1860,20 +1860,22 @@ void CSRStorage<ValueType>::jacobiIterate(
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, rhs.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+
     // matrix must be square
 
     static LAMAKernel<CSRKernelTrait::jacobi<ValueType> > jacobi;
 
     ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
-    WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<IndexType> csrJA( mJa, loc );
     ReadAccess<ValueType> csrValues( mValues, loc );
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
+
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
 
     // Due to diagonal property there is no advantage by taking row indexes
 

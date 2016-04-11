@@ -1495,7 +1495,7 @@ void ELLStorage<ValueType>::jacobiIterate(
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, rhs.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
 
     // matrix must be square
@@ -1508,12 +1508,13 @@ void ELLStorage<ValueType>::jacobiIterate(
 
     // make all needed data available at loc
 
-    WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> ellSizes( mIA, loc );
     ReadAccess<IndexType> ellJA( mJA, loc );
     ReadAccess<ValueType> ellValues( mValues, loc );
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
+
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
 
     jacobi[loc] ( wSolution.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get(),
                   rOldSolution.get(), rRhs.get(), omega );
