@@ -34,12 +34,13 @@ set ( CXX_SOURCES
 	  atomicOpenMPTest.cpp
 	  bindFunctionTest.cpp
       commonTest.cpp
+      ComplexTest.cpp
       ContextTypeTest.cpp
       FactoryTest.cpp  
       Factory1Test.cpp  
-      ComplexTest.cpp
       FactoryTest.cpp
       LibModuleTest.cpp
+      MathTest.cpp
       ptrTest.cpp
       PrintableTest.cpp
       ReductionOpTest.cpp  
