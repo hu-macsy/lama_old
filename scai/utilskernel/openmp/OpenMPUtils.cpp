@@ -1,25 +1,25 @@
-/**
- * @file OpenMPUtils.cpp
- *
- * @license
- * Copyright (c) 2009-2015
- * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
- * for Fraunhofer-Gesellschaft
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		/**
+		 * @file OpenMPUtils.cpp
+		 *
+		 * @license
+		 * Copyright (c) 2009-2015
+		 * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+		 * for Fraunhofer-Gesellschaft
+		 *
+		 * Permission is hereby granted, free of charge, to any person obtaining a copy
+		 * of this software and associated documentation files (the "Software"), to deal
+		 * in the Software without restriction, including without limitation the rights
+		 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+		 * copies of the Software, and to permit persons to whom the Software is
+		 * furnished to do so, subject to the following conditions:
+		 *
+		 * The above copyright notice and this permission notice shall be included in
+		 * all copies or substantial portions of the Software.
+		 *
+		 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
@@ -306,6 +306,20 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const OtherValue
             }
             break;
         }
+        case common::reduction::SUB :
+        {
+            if ( val == common::constants::ZERO ) 
+            {
+                return;
+            }
+
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] -= value;
+            }
+            break;
+        }
         case common::reduction::MULT :
         {
             // scale all values of the array 
@@ -325,6 +339,29 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const OtherValue
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     array[i] *= value;
+                }
+            }
+            break;
+        }
+        case common::reduction::DIVIDE :
+        {
+            // scale all values of the array 
+
+            if ( val == common::constants::ONE ) 
+            {
+                // skip it
+            }
+            else if ( val == common::constants::ZERO )
+            {
+                COMMON_THROWEXCEPTION( "DIVIDE by ZEROR, val = " << val )
+            }
+            else
+            {
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    array[i] /= value;
                 }
             }
             break;
@@ -471,6 +508,26 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
             for ( IndexType i = 0; i < n; i++ )
             {
                 out[i] += static_cast<ValueType1>( in[i] );
+            }
+            break;
+        }
+        case common::reduction::SUB :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] -= static_cast<ValueType1>( in[i] );
+            }
+            break;
+        }
+        case common::reduction::DIVIDE :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] /= static_cast<ValueType1>( in[i] );
             }
             break;
         }

@@ -71,10 +71,11 @@ SparseAssemblyStorage<ValueType>::SparseAssemblyStorage()
 
 template<typename ValueType>
 SparseAssemblyStorage<ValueType>::SparseAssemblyStorage( const SparseAssemblyStorage<ValueType>& other )
-    : CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>( other.getNumRows(),
+    : CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType>( other.getNumRows(),
             other.getNumColumns() ), mRows(
           other.mRows ), mNumValues( other.mNumValues )
 {
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -85,6 +86,7 @@ SparseAssemblyStorage<ValueType>::SparseAssemblyStorage( const _MatrixStorage& o
             other.getNumColumns() )
 {
     assign( other );
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

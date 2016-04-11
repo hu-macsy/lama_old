@@ -218,6 +218,54 @@ public:
         return *this;
     }
 
+    LArray& operator*= ( const hmemo::_HArray& other )
+    {
+        HArrayUtils::set( *this, other, common::reduction::MULT );
+        return *this;
+    }
+
+    LArray& operator*= ( const ValueType val )
+    {
+        HArrayUtils::setVal( *this, val, common::reduction::MULT );
+        return *this;
+    }
+
+    LArray& operator/= ( const hmemo::_HArray& other )
+    {
+        HArrayUtils::set( *this, other, common::reduction::DIVIDE );
+        return *this;
+    }
+
+    LArray& operator/= ( const ValueType val )
+    {
+        HArrayUtils::setVal( *this, val, common::reduction::DIVIDE );
+        return *this;
+    }
+
+    LArray& operator+= ( const hmemo::_HArray& other )
+    {
+        HArrayUtils::set( *this, other, common::reduction::ADD );
+        return *this;
+    }
+
+    LArray& operator+= ( const ValueType val )
+    {
+        HArrayUtils::setVal( *this, val, common::reduction::ADD );
+        return *this;
+    }
+
+    LArray& operator-= ( const hmemo::_HArray& other )
+    {
+        HArrayUtils::set( *this, other, common::reduction::SUB );
+        return *this;
+    }
+
+    LArray& operator-= ( const ValueType val )
+    {
+        HArrayUtils::setVal( *this, val, common::reduction::SUB );
+        return *this;
+    }
+
     /** Assignment operator to initialize an array with a certain value.
      *
      *  @brief val is value to be assigned.
@@ -271,6 +319,11 @@ public:
     ValueType maxDiffNorm( const hmemo::HArray<ValueType>& other ) const
     {
         return HArrayUtils::absMaxDiffVal( *this, other );
+    }
+
+    void invert()
+    {
+        HArrayUtils::invert( *this );
     }
 };
 

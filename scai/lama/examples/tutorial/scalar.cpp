@@ -42,10 +42,11 @@ int main()
     boolean = ( a != b );
     boolean = ( a < b );
     boolean = ( a > b );
-    boolean = ( a <= b );
-    boolean = ( a >= b );
+//    boolean = ( a <= b );
+//    boolean = ( a >= b );
 
-    std::cout << "a >= B : " << boolean << std::endl;
+//    std::cout << "a >= B : " << boolean << std::endl;
+    std::cout << "a > B : " << boolean << std::endl;
 
     //
     // math functions

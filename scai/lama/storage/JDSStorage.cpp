@@ -224,6 +224,8 @@ void JDSStorage<ValueType>::assignJDS( const JDSStorage<ValueType>& other )
 
     _MatrixStorage::_assign( other ); // assign member variables of base class
 
+    mDiagonalProperty = other.mDiagonalProperty;   
+
     mNumDiagonals = other.mNumDiagonals;
     mNumValues = other.mNumValues;
 
@@ -1265,13 +1267,14 @@ void JDSStorage<ValueType>::jacobiIterate(
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
+    SCAI_ASSERT_EQUAL( mNumRows, mNumColumns, "storage must be square" )
+
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, rhs.size() )
+
     // matrix must be square
 
     {
-        WriteAccess<ValueType> wSolution( solution, loc );
         ReadAccess<IndexType> jdsDlg( mDlg, loc );
         ReadAccess<IndexType> jdsIlg( mIlg, loc );
         ReadAccess<IndexType> jdsPerm( mPerm, loc );
@@ -1279,6 +1282,8 @@ void JDSStorage<ValueType>::jacobiIterate(
         ReadAccess<ValueType> jdsValues( mValues, loc );
         ReadAccess<ValueType> rOldSolution( oldSolution, loc );
         ReadAccess<ValueType> rRhs( rhs, loc );
+
+        WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
 
         SCAI_CONTEXT_ACCESS( loc )
 

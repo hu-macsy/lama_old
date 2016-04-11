@@ -322,6 +322,9 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const OtherValueTy
             case common::reduction::ADD:
                 thrust::for_each( data, data + n,  _1 += value);
                 break;
+            case common::reduction::SUB:
+                thrust::for_each( data, data + n,  _1 -= value);
+                break;
             case common::reduction::MULT:
                 {
                     if ( val == scai::common::constants::ZERO )
@@ -331,6 +334,18 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const OtherValueTy
                     else
                     {
                         thrust::for_each( data, data + n,  _1 *= value );
+                    }
+                }
+                break;
+            case common::reduction::DIVIDE:
+                {
+                    if ( val == scai::common::constants::ZERO )
+                    {
+                        COMMON_THROWEXCEPTION( "Divide by ZERO" )
+                    }
+                    else
+                    {
+                        thrust::for_each( data, data + n,  _1 /= value );
                     }
                 }
                 break;
@@ -420,11 +435,15 @@ void isSortedKernel( bool* result, const IndexType numValues, const ValueType* v
     {
         if ( ascending )
         {
-            result[i] = values[i] <= values[i + 1];
+            // not possible, <= not defined on complex
+            // ToDo: warp divergence possible?
+//            result[i] = values[i] <= values[i + 1];
+            result[i] = values[i] < values[i + 1] || values[i] == values[i+1];
         }
         else
         {
-            result[i] = values[i] >= values[i + 1];
+//            result[i] = values[i] >= values[i + 1];
+            result[i] = values[i] > values[i + 1] || values[i] == values[i+1];
         }
     }
 }
@@ -563,6 +582,18 @@ void setKernelAdd( T1* out, const T2* in, IndexType n )
 
 template<typename T1, typename T2>
 __global__
+void setKernelSub( T1* out, const T2* in, IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] -= static_cast<T1>( in[i] );
+    }
+}
+
+template<typename T1, typename T2>
+__global__
 void setKernelMult( T1* out, const T2* in, IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -570,6 +601,18 @@ void setKernelMult( T1* out, const T2* in, IndexType n )
     if ( i < n )
     {
         out[i] *= static_cast<T1>( in[i] );
+    }
+}
+
+template<typename T1, typename T2>
+__global__
+void setKernelDivide( T1* out, const T2* in, IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] /= static_cast<T1>( in[i] );
     }
 }
 
@@ -600,8 +643,14 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n,
         case common::reduction::ADD :
             setKernelAdd <<< dimGrid, dimBlock>>>( out, in, n );
             break;
+        case common::reduction::SUB :
+            setKernelSub <<< dimGrid, dimBlock>>>( out, in, n );
+            break;
         case common::reduction::MULT :
             setKernelMult <<< dimGrid, dimBlock>>>( out, in, n );
+            break;
+        case common::reduction::DIVIDE :
+            setKernelDivide <<< dimGrid, dimBlock>>>( out, in, n );
             break;
          default:
             COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
