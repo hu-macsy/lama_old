@@ -1080,20 +1080,35 @@ Complex<long double> Math::max( const Complex<long double>& x, const Complex<lon
 // ------------------ Math::random ------------------------------
 void Math::random( Complex<float>& x )
 {
-    x.real( static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) );
-    x.imag( static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) );
+    float val;
+
+    Math::random( val );
+    x.real( val );
+
+    Math::random( val );
+    x.imag( val );
 }
 
 void Math::random( Complex<double>& x )
 {
-    x.real( static_cast<double>( rand() ) / static_cast<double>( RAND_MAX ) );
-    x.imag( static_cast<double>( rand() ) / static_cast<double>( RAND_MAX ) );
+    double val;
+
+    Math::random( val );
+    x.real( val );
+
+    Math::random( val );
+    x.imag( val );
 }
 
 void Math::random( Complex<long double>& x )
 {
-    x.real( static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX ) );
-    x.imag( static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX ) );
+    long double val;
+
+    Math::random( val );
+    x.real( val );
+
+    Math::random( val );
+    x.imag( val );
 }
 
 } /* end namespace common */

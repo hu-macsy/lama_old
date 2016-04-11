@@ -427,17 +427,17 @@ void Math::random( long long& x )
 
 void Math::random( float& x )
 {
-    x = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+    x = 1 - static_cast<float>( rand() ) / static_cast<float>( RAND_MAX / 2 );
 }
 
 void Math::random( double& x )
 {
-    x = static_cast<double>( rand() ) / static_cast<double>( RAND_MAX );
+    x = 1 - static_cast<double>( rand() ) / static_cast<double>( RAND_MAX / 2 );
 }
 
 void Math::random( long double& x )
 {
-    x = static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX );
+    x = 1 - static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX / 2 );
 }
 
 } /* end namespace common */
