@@ -58,19 +58,7 @@ heading2 ( "External Libraries" "REQUIRED_FOUND" )
     # boost
     found_message ( "Boost" "SCAI_BOOST_INCLUDE_DIR" "REQUIRED" "Version ${BOOST_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
 
-    # BLAS (Lapack)
-    if    ( SCAI_BLAS_NAME MATCHES "Internal" )
-        found_message ( "BLAS" "SCAI_BLAS_FOUND" "REQUIRED" "${SCAI_BLAS_NAME} Version ${SCAI_BLASKERNEL_VERSION}" )
-    else  ( SCAI_BLAS_NAME MATCHES "Internal" )
-        found_message ( "BLAS" "SCAI_BLAS_FOUND" "REQUIRED" "${SCAI_BLAS_NAME} Version ${BLAS_VERSION} with:" )
-    endif ( SCAI_BLAS_NAME MATCHES "Internal" )
-
-    foreach    ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
-        message ( STATUS "                                 ${_B_LIB}" )
-    endforeach ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
-    if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-        found_message ( "Lapack" "LAPACK_FOUND" "REQUIRED" "" )
-    endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
+    include ( Summaries/Modules/BLAS )
 
 heading ( "Optional External Libraries:" )
 include ( Summaries/Modules/Accelerator )
