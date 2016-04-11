@@ -47,6 +47,8 @@
 #  Note: most common flags will be set by CMAKE itself, like -g for Debug or -O3 for Release, so these
 #        flags do not have to be defined here.
 
+set ( SCAI_LINKER_FLAGS "" )
+
 # GNU C++ compiler
 
 if ( CMAKE_COMPILER_IS_GNUCXX )
