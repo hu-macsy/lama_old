@@ -1000,7 +1000,6 @@ long double Math::abs( const Complex<long double>& a )
 }
 
 // ------------------ Math::conj --------------------------------
-
 Complex<float> Math::conj( const Complex<float>& a )
 {
     return Complex<float>( a.real(), -a.imag() );
@@ -1015,7 +1014,6 @@ Complex<long double> Math::conj( const Complex<long double>& a )
 }
 
 // ------------------ Math::real --------------------------------
-
 float Math::real( const Complex<float>& a )
 {
     return a.real();
@@ -1032,7 +1030,6 @@ long double Math::real( const Complex<long double>& a )
 }
 
 // ------------------ Math::imag --------------------------------
-
 float Math::imag( const Complex<float>& a )
 {
     return a.imag();
@@ -1046,6 +1043,57 @@ double Math::imag( const Complex<double>& a )
 long double Math::imag( const Complex<long double>& a )
 {
     return a.imag();
+}
+
+// ------------------ Math::min ---------------------------------
+Complex<float> Math::min( const Complex<float>& x, const Complex<float>& y )
+{
+    return Math::abs( x ) < Math::abs( y ) ? x : y;
+}
+
+Complex<double> Math::min( const Complex<double>& x, const Complex<double>& y )
+{
+    return Math::abs( x ) < Math::abs( y ) ? x : y;
+}
+
+Complex<long double> Math::min( const Complex<long double>& x, const Complex<long double>& y )
+{
+    return Math::abs( x ) < Math::abs( y ) ? x : y;
+}
+
+// ------------------ Math::max ---------------------------------
+Complex<float> Math::max( const Complex<float>& x, const Complex<float>& y )
+{
+    return Math::abs( x ) > Math::abs( y ) ? x : y;
+}
+
+Complex<double> Math::max( const Complex<double>& x, const Complex<double>& y )
+{
+    return Math::abs( x ) > Math::abs( y ) ? x : y;
+}
+
+Complex<long double> Math::max( const Complex<long double>& x, const Complex<long double>& y )
+{
+    return Math::abs( x ) > Math::abs( y ) ? x : y;
+}
+
+// ------------------ Math::random ------------------------------
+void Math::random( Complex<float>& x )
+{
+    x.real( static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) );
+    x.imag( static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) );
+}
+
+void Math::random( Complex<double>& x )
+{
+    x.real( static_cast<double>( rand() ) / static_cast<double>( RAND_MAX ) );
+    x.imag( static_cast<double>( rand() ) / static_cast<double>( RAND_MAX ) );
+}
+
+void Math::random( Complex<long double>& x )
+{
+    x.real( static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX ) );
+    x.imag( static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX ) );
 }
 
 } /* end namespace common */

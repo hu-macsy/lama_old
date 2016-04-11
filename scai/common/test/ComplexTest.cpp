@@ -370,6 +370,84 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sqrt, ValueType, scai_complex_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( min, ValueType, scai_complex_test_types )
+{
+    ValueType x, y, min_val;
+
+    // min from -1 & 2 + i --> -1
+    x = ValueType(-1, 0);
+    y = ValueType( 2, 1);
+
+    min_val = Math::min( x, y );
+    BOOST_CHECK( min_val == x );
+
+    min_val = Math::min( y, x );
+    BOOST_CHECK( min_val == x );
+
+    // min from 7 + i & -1 + 5i --> -1 + 5i
+    x = ValueType( 7, 1 );
+    y = ValueType( -1, 5 );
+
+    min_val = Math::min( x, y );
+    BOOST_CHECK( min_val == y );
+
+    min_val = Math::min( y, x );
+    BOOST_CHECK( min_val == y );
+
+    // min from -1 + 5i & -1 + 5i
+    x = ValueType( -1, 5 );
+    y = ValueType( -1, 5 );
+
+    min_val = Math::min( x, y );
+    BOOST_CHECK( min_val == x );
+    BOOST_CHECK( min_val == y );
+
+    min_val = Math::min( y, x );
+    BOOST_CHECK( min_val == x );
+    BOOST_CHECK( min_val == y );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( max, ValueType, scai_complex_test_types )
+{
+    ValueType x, y, max_val;
+
+    // min from -1 & 2 + i --> -1
+    x = ValueType(-1, 0);
+    y = ValueType( 2, 1);
+
+    max_val = Math::max( x, y );
+    BOOST_CHECK( max_val == y );
+
+    max_val = Math::max( y, x );
+    BOOST_CHECK( max_val == y );
+
+    // min from 7 + i & -1 + 5i --> -1 + 5i
+    x = ValueType( 7, 1 );
+    y = ValueType( -1, 5 );
+
+    max_val = Math::max( x, y );
+    BOOST_CHECK( max_val == x );
+
+    max_val = Math::max( y, x );
+    BOOST_CHECK( max_val == x );
+
+    // min from -1 + 5i & -1 + 5i
+    x = ValueType( -1, 5 );
+    y = ValueType( -1, 5 );
+
+    max_val = Math::max( x, y );
+    BOOST_CHECK( max_val == x );
+    BOOST_CHECK( max_val == y );
+
+    max_val = Math::max( y, x );
+    BOOST_CHECK( max_val == x );
+    BOOST_CHECK( max_val == y );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( compare, ValueType, scai_complex_test_types )
 {
     ValueType w(2,  4);

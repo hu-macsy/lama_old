@@ -158,6 +158,75 @@ struct Math
     static inline MIC_CALLABLE_MEMBER long double imag( const Complex<long double>& x );
 #endif
 
+    /*
+     * min operation
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int min( const int& x, const int& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long min( const long& x, const long& y );
+
+    static inline MIC_CALLABLE_MEMBER long long min( const long long& x, const long long& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float min( const float& x, const float& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double min( const double& x, const double& y );
+
+    static inline MIC_CALLABLE_MEMBER long double min( const long double& x, const long double& y );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> min( const Complex<float>& x, const Complex<float>& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> min( const Complex<double>& x, const Complex<double>& y );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> min( const Complex<long double>& x, const Complex<long double>& y );
+#endif
+
+    /*
+     * max operation
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int max( const int& x, const int& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long max( const long& x, const long& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long max( const long long& x, const long long& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float max( const float& x, const float& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double max( const double& x, const double& y );
+
+    static inline MIC_CALLABLE_MEMBER long double max( const long double& x, const long double& y );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> max( const Complex<float>& x, const Complex<float>& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> max( const Complex<double>& x, const Complex<double>& y );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> max( const Complex<long double>& x, const Complex<long double>& y );
+#endif
+
+    /*
+     * random value creator
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( int& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( long& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( long long& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( double& x );
+
+    static inline MIC_CALLABLE_MEMBER  void random( long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER  void random( Complex<long double>& x );
+#endif
+
 };
 
 // -------------------------------- sqrt ----------------------------
@@ -273,6 +342,102 @@ double Math::imag( const double& )
 long double Math::imag( const long double& )
 {
     return 0;
+}
+
+// -------------------------------- min ------------------------------
+
+int Math::min( const int& x, const int& y )
+{
+    return x < y ? x : y;
+}
+
+long Math::min( const long& x, const long& y )
+{
+    return x < y ? x : y;
+}
+
+long long Math::min( const long long& x, const long long& y )
+{
+    return x < y ? x : y;
+}
+
+float Math::min( const float& x, const float& y )
+{
+    return x < y ? x : y;
+}
+
+double Math::min( const double& x, const double& y )
+{
+    return x < y ? x : y;
+}
+
+long double Math::min( const long double& x, const long double& y )
+{
+    return x < y ? x : y;
+}
+
+// -------------------------------- max ------------------------------
+
+int Math::max( const int& x, const int& y )
+{
+    return x > y ? x : y;
+}
+
+long Math::max( const long& x, const long& y )
+{
+    return x > y ? x : y;
+}
+
+long long Math::max( const long long& x, const long long& y )
+{
+    return x > y ? x : y;
+}
+
+float Math::max( const float& x, const float& y )
+{
+    return x > y ? x : y;
+}
+
+double Math::max( const double& x, const double& y )
+{
+    return x > y ? x : y;
+}
+
+long double Math::max( const long double& x, const long double& y )
+{
+    return x > y ? x : y;
+}
+
+// -------------------------------- random ---------------------------
+
+void Math::random( int& x )
+{
+    x = rand();
+}
+
+void Math::random( long& x )
+{
+    x = rand();
+}
+
+void Math::random( long long& x )
+{
+    x = rand();
+}
+
+void Math::random( float& x )
+{
+    x = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+}
+
+void Math::random( double& x )
+{
+    x = static_cast<double>( rand() ) / static_cast<double>( RAND_MAX );
+}
+
+void Math::random( long double& x )
+{
+    x = static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX );
 }
 
 } /* end namespace common */
