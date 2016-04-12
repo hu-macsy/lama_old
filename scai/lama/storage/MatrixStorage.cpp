@@ -219,7 +219,10 @@ IndexType _MatrixStorage::getNumValues() const
     buildCSRSizes( sizes );
 
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-    ContextPtr loc = reduce.getValidContext( sizes.getValidContext() );
+
+    ContextPtr loc = sizes.getValidContext();
+    reduce.getSupportedContext( loc);
+
     ReadAccess<IndexType> csrSizes( sizes, loc );
     IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, common::reduction::ADD );
     return numValues;
@@ -386,7 +389,10 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
 
     static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
-    ContextPtr loc = convertCSR2CSC.getValidContext( preferredLoc );
+
+    ContextPtr loc = preferredLoc;
+    convertCSR2CSC.getSupportedContext( loc );
+
     SCAI_LOG_INFO( logger,
                    "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
     SCAI_REGION( "Storage.CSR2CSC" )

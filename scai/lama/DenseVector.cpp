@@ -585,7 +585,9 @@ void DenseVector<ValueType>::vectorPlusVector(
     static LAMAKernel<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
     static LAMAKernel<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
 
-    ContextPtr context = sum.getValidContext( setVal, axpy, prefContext );
+    ContextPtr context = prefContext;
+
+    sum.getSupportedContext( context, setVal, axpy );
 
     const IndexType nnu = result.size();
 

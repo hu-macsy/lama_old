@@ -285,7 +285,9 @@ void COOStorage<ValueType>::buildCSR(
 
     // do it where all routines are avaialble
 
-    ContextPtr loc = sizes2offsets.getValidContext( getCSRSizes, getCSRValues, preferredLoc );
+    ContextPtr loc = preferredLoc;
+
+    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -417,7 +419,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
     {
         static LAMAKernel<COOKernelTrait::offsets2ia> offsets2ia;
 
-        ContextPtr loc = offsets2ia.getValidContext( this->getContextPtr() );
+        ContextPtr loc = this->getContextPtr();
+        offsets2ia.getSupportedContext( loc );
 
         ReadAccess<IndexType> csrIA( ia, loc );
         WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
@@ -599,15 +602,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
-
-    ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    WriteAccess<ValueType> wValues( mValues, loc );
-
-    setVal[loc]( wValues.get(), mNumValues, value, common::reduction::MULT );
+    HArrayUtils::setScalarImpl( mValues, value, common::reduction::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -626,7 +621,8 @@ void COOStorage<ValueType>::scaleImpl( const HArray<OtherType>& values )
 {
     static LAMAKernel<COOKernelTrait::scaleRows<ValueType, OtherType> > scaleRows;
 
-    ContextPtr loc = scaleRows.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    scaleRows.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -706,7 +702,8 @@ void COOStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
 
-    ContextPtr loc = set.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    set.getSupportedContext( loc );
 
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
@@ -730,7 +727,8 @@ void COOStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 
     static LAMAKernel<UtilKernelTrait::set<ValueType, OtherType> > set;
 
-    ContextPtr loc = set.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    set.getSupportedContext( loc );
 
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
@@ -749,17 +747,9 @@ ValueType COOStorage<ValueType>::l1Norm() const
 {
 	SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
-    const IndexType n = mNumValues;
+    // asum over the full array mValues
 
-    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
-
-	ContextPtr loc = asum.getValidContext( this->getContextPtr() );
-
-	ReadAccess<ValueType> data( mValues, loc );
-
-	SCAI_CONTEXT_ACCESS( loc );
-
-	return asum[loc]( n, data.get(), static_cast<IndexType>(1.0) );
+    return HArrayUtils::asum( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -769,17 +759,9 @@ ValueType COOStorage<ValueType>::l2Norm() const
 {
 	SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
-    const IndexType n = mNumValues;
+    ValueType res = HArrayUtils::dotProduct( mValues, mValues, this->getContextPtr() );
 
-    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
-
-	ContextPtr loc = dot.getValidContext( this->getContextPtr() );
-
-	ReadAccess<ValueType> data( mValues, loc );
-
-	SCAI_CONTEXT_ACCESS( loc );
-
-	return common::Math::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
+	return common::Math::sqrt( res );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -789,24 +771,7 @@ ValueType COOStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    const IndexType n = mNumValues;
-
-    if( n == 0 )
-    {
-        return static_cast<ValueType>(0.0);
-    }
-
-    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-
-    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
-
-    ReadAccess<ValueType> cooValues( mValues, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ValueType maxval = reduce[loc]( cooValues.get(), n, common::reduction::ABS_MAX );
-
-    return maxval;
+    return HArrayUtils::reduce( mValues, common::reduction::ABS_MAX, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -852,7 +817,8 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEMV.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
@@ -894,7 +860,8 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
     static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEVM.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
 
@@ -930,7 +897,8 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
     static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEMV.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
@@ -986,7 +954,8 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEVM.getSupportedContext( loc );
 
     if( loc->getType() == common::context::Host )
     {
@@ -1101,7 +1070,8 @@ void COOStorage<ValueType>::jacobiIterate(
 
     static LAMAKernel<COOKernelTrait::jacobi<ValueType> > jacobi;
 
-    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    jacobi.getSupportedContext( loc );
 
     ReadAccess<IndexType> cooIA( mIA, loc );
     ReadAccess<IndexType> cooJA( mJA, loc );
