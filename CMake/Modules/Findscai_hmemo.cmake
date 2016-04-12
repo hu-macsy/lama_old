@@ -25,6 +25,7 @@ find_library ( SCAI_HMEMO_LIBRARY scai_hmemo
     ${SCAI_HMEMO_ROOT}/lib
 )
 
+set ( SCAI_HMEMO_FOUND FALSE )
 if ( SCAI_HMEMO_INCLUDE_DIR )
     if ( SCAI_HMEMO_LIBRARY)
         set ( SCAI_HMEMO_FOUND TRUE )

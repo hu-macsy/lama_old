@@ -25,6 +25,7 @@ find_library ( SCAI_TASKING_LIBRARY scai_tasking
     ${SCAI_TASKING_ROOT}/lib
 )
 
+set ( SCAI_TASKING_FOUND FALSE )
 if ( SCAI_TASKING_INCLUDE_DIR )
     if ( SCAI_TASKING_LIBRARY)
         set ( SCAI_TASKING_FOUND TRUE )

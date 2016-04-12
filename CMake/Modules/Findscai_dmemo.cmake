@@ -25,6 +25,7 @@ find_library ( SCAI_DMEMO_LIBRARY scai_dmemo
     ${SCAI_DMEMO_ROOT}/lib
 )
 
+set ( SCAI_DMEMO_FOUND FALSE )
 if ( SCAI_DMEMO_INCLUDE_DIR )
     if ( SCAI_DMEMO_LIBRARY)
         set ( SCAI_DMEMO_FOUND TRUE )

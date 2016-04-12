@@ -24,6 +24,7 @@ find_library ( SCAI_LAMA_LIBRARY scai_lama
     ${SCAI_LAMA_ROOT}/lib
 )
 
+set ( SCAI_LAMA_FOUND FALSE )
 if ( SCAI_LAMA_INCLUDE_DIR )
     if ( SCAI_LAMA_LIBRARY)
         set ( SCAI_LAMA_FOUND TRUE )

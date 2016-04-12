@@ -29,6 +29,7 @@ find_library ( SCAI_COMMON_LIBRARY scai_common
 include ( Compiler/CheckC++11 )
 include ( Package/OpenMP )
 
+set ( SCAI_COMMON_FOUND FALSE )
 if ( SCAI_COMMON_INCLUDE_DIR )
 
 	include ( Package/Boost )
@@ -45,9 +46,5 @@ if ( SCAI_COMMON_INCLUDE_DIR )
     set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${SCAI_LANG_FLAGS}" )
     
 endif ( SCAI_COMMON_INCLUDE_DIR)
-
-# message ( STATUS "SCAI_COMMON_FOUND: ${SCAI_COMMON_FOUND}" )
-# message ( STATUS "SCAI_COMMON_INCLUDE_DIR: ${SCAI_COMMON_INCLUDE_DIR}" )
-# message ( STATUS "SCAI_COMMON_LIBRARY: ${SCAI_COMMON_LIBRARY}" )
 
 mark_as_advanced ( SCAI_COMMON_FOUND SCAI_COMMON_INCLUDE_DIR SCAI_COMMON_LIBRARY )
