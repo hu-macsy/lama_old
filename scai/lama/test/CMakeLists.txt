@@ -38,7 +38,6 @@ scai_project (
     CLASSES
 
        # Configuration
-        MatrixStorageTest
         NormTest
         SparseMatrixHelper
         SparseMatrixTest
@@ -53,19 +52,13 @@ scai_project (
     SOURCES
 
         COOSparseMatrixTest
-        COOStorageTest
         CSRSparseMatrixTest
-        CSRStorageTest
         DenseMatrixTest
         DenseMatrixTest1
-        DenseStorageTest
         DerivedSparseMatrixTest
         DIASparseMatrixTest
-        DIAStorageTest
         ELLSparseMatrixTest
-        ELLStorageTest
         JDSSparseMatrixTest
-        JDSStorageTest
         L1NormTest
         L2NormTest
         MatrixTest

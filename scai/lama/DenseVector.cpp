@@ -505,27 +505,7 @@ void DenseVector<ValueType>::conj()
 template<typename ValueType>
 Scalar DenseVector<ValueType>::l1Norm() const
 {
-    IndexType nnu = mLocalValues.size();
-
-    ValueType localL1Norm = 0;
-
-    if ( nnu > 0 )
-    {
-        // get available kernel routines for "BLAS1.asum" 
-
-        static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
-
-        // find valid context, preferred is mContext
-
-        ContextPtr loc = asum.getValidContext( mContext );
-
-        ReadAccess<ValueType> read( mLocalValues, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        localL1Norm = asum[loc]( nnu, read.get(), 1 );
-    }
-
+    ValueType localL1Norm = mLocalValues.l1Norm();
     return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
 }
 
@@ -534,26 +514,9 @@ Scalar DenseVector<ValueType>::l1Norm() const
 template<typename ValueType>
 Scalar DenseVector<ValueType>::l2Norm() const
 {
-    IndexType nnu = mLocalValues.size();
+    // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
 
-    ValueType localDotProduct = 0;
-
-    if( nnu > 0 )
-    {
-        // get available kernel routines for "BLAS1.dot" 
-
-        static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
-
-        // find valid context, preferred is mContext
-
-        ContextPtr loc = dot.getValidContext( mContext );
-
-        ReadAccess<ValueType> read( mLocalValues, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        localDotProduct = dot[loc]( nnu, read.get(), 1, read.get(), 1 );
-    }
+    ValueType localDotProduct = mLocalValues.dotProduct( mLocalValues );
 
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
@@ -565,29 +528,14 @@ Scalar DenseVector<ValueType>::l2Norm() const
 template<typename ValueType>
 Scalar DenseVector<ValueType>::maxNorm() const
 {
-    IndexType nnu = mLocalValues.size(); // number of local rows
-
-    ValueType localMaxNorm = static_cast<ValueType>(0.0);
-
-    if ( nnu > 0 )
-    {
-        static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-
-        ContextPtr loc = reduce.getValidContext( mContext );  
-
-        ReadAccess<ValueType> read( mLocalValues, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        localMaxNorm = reduce[loc]( read.get(), nnu, common::reduction::ABS_MAX );
-    }
+    ValueType localMaxNorm = mLocalValues.maxNorm();
 
     const Communicator& comm = getDistribution().getCommunicator();
 
     ValueType globalMaxNorm = comm.max( localMaxNorm );
 
     SCAI_LOG_INFO( logger,
-                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm 
+                   comm << ": max norm " << *this << ", local max norm: " << localMaxNorm 
                    << ", max norm global = " << globalMaxNorm )
 
     return Scalar( globalMaxNorm );
@@ -813,7 +761,9 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 
         SCAI_LOG_DEBUG( logger, "call vectorPlusVector" )
 
-        vectorPlusVector( mContext, mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues );
+        // vectorPlusVector( mContext, mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues );
+
+        utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues, mContext );
     }
     else
     {
@@ -844,26 +794,11 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         SCAI_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
 
-        // get available kernel routines for "BLAS1.dot" 
-
-        static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
-
-        // find valid context, preferred is mContext
-
-        ContextPtr loc = dot.getValidContext( mContext );
-
-        // Now do the dot production at location loc ( might have been changed to other location  )
-
-        ReadAccess<ValueType> localRead( mLocalValues, loc );
-        ReadAccess<ValueType> otherRead( denseOther->mLocalValues, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
         const IndexType localSize = mLocalValues.size();
 
         SCAI_ASSERT_EQ_DEBUG( localSize, getDistribution().getLocalSize(), "size mismatch" )
 
-        const ValueType localDotProduct = dot[loc]( localSize, localRead.get(), 1, otherRead.get(), 1 );
+        const ValueType localDotProduct = mLocalValues.dotProduct( denseOther->mLocalValues );
 
         SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
 
