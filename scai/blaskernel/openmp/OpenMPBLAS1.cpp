@@ -152,7 +152,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 
             for( int i = 0; i < n; i++ )
             {
-                tSumOfSquares += x[i] * x[i];
+                tSumOfSquares += x[i] * common::Math::conj( x[i] );
             }
         }
         else
@@ -161,7 +161,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 
             for( int i = 0; i < n; i++ )
             {
-                tSumOfSquares += x[i * incX] * x[i * incX];
+                tSumOfSquares += x[i * incX] * common::Math::conj( x[i * incX] );
             }
         }
 
@@ -206,7 +206,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 
             for( int i = 0; i < n; i++ )
             {
-                tResult += common::Math::abs( x[i] );
+                tResult += common::Math::abs( common::Math::real( x[i] ) ) + common::Math::abs( common::Math::imag( x[i] ) );
             }
         }
         else
@@ -215,7 +215,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 
             for( int i = 0; i < n; i++ )
             {
-                tResult += common::Math::abs( x[i * incX] );
+                tResult += common::Math::abs( common::Math::real( x[i * incX] ) ) + common::Math::abs( common::Math::imag( x[i * incX] ) );
             }
         }
 
