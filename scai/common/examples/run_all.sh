@@ -34,6 +34,8 @@ i=0
 
 # run examples
 RUN 1 Barrier.exe
+RUN 1 BenchMath.exe
+RUN 1 BenchPointers.exe
 RUN 1 CriticalRegion.exe
 RUN 1 DemoComplex.exe
 RUN 1 DemoFactory.exe
@@ -45,7 +47,6 @@ RUN 1 DemoSettings.exe
 RUN 1 DemoTypeTrait.exe
 RUN 1 DemoMetaProgramming.exe
 RUN 1 ExceptionDemo.exe
-RUN 1 BenchPointers.exe
 RUN 1 TimePrecision.exe
 RUN 1 UseModule.exe $MYDIR/libDummyModule.so
 RUN 0 UseModule.exe $MYDIR/libModule.so
