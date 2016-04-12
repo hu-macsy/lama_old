@@ -83,11 +83,12 @@ public:
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& index );
 
-    template<typename ValueType1>
+    template<typename ValueType>
     static void setScalar( 
         hmemo::_HArray& target,
-        const ValueType1 value,
-        const common::reduction::ReductionOp op, hmemo::ContextPtr context )
+        const ValueType value,
+        const common::reduction::ReductionOp op, 
+        hmemo::ContextPtr prefLoc  = hmemo::ContextPtr() )
         __attribute__( ( noinline ) );
 
     /** This method sets a single value in a heterogeneous array.
@@ -184,11 +185,12 @@ public:
         const hmemo::HArray<ValueType2>& source,
         const hmemo::HArray<IndexType>& index );
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename ValueType>
     static void setScalarImpl(
-        hmemo::HArray<ValueType1>& target,
-        const ValueType2 value,
-        const common::reduction::ReductionOp op, hmemo::ContextPtr context )
+        hmemo::HArray<ValueType>& target,
+        const ValueType value,
+        const common::reduction::ReductionOp op, 
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
         __attribute__( ( noinline ) );
 
     template<typename ValueType, typename OtherValueType>
@@ -213,7 +215,8 @@ public:
     template<typename ValueType>
     static ValueType absMaxDiffVal( 
         const hmemo::HArray<ValueType>& array1,
-        const hmemo::HArray<ValueType>& array2 );
+        const hmemo::HArray<ValueType>& array2,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static ValueType dotProduct( 

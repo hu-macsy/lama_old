@@ -108,7 +108,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H,T> >
     {
         if( common::getScalarType<H>() ==  target.getValueType() )
         {
-            HArrayUtils::setScalarImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), value, op, ctx );
+            HArrayUtils::setScalarImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), static_cast<H>( value ), op, ctx );
         }
         else
         {

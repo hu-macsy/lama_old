@@ -273,4 +273,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binReductionTest, ValueType, ArithmeticRedTypes )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignOperatorTest, ValueType, ArithmeticRedTypes )
+{
+    testContext = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "assignOperatorTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
+
+    // the LArray allows indexed access, but attention: can be very slow
+
+    const ValueType myVals[]  = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
+    const ValueType myVals1[] = { 1, -1, 2, -2, 3, -3, 2, -1, -2, 1 };
+
+    const IndexType N = sizeof( myVals ) / sizeof( ValueType );
+
+    LArray<ValueType> array( N, myVals, testContext );
+    LArray<ValueType> other( N, myVals1, testContext );
+
+    array /= ValueType( 2 );
+    array *= ValueType( 2 );
+    array += ValueType( 2 );
+    array -= ValueType( 2 );
+    array /= other;
+    array *= other;
+    array += other;
+    array -= other;
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_CHECK_CLOSE( common::Math::real( myVals[i] ), common::Math::real( array[i] ), 0.01 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

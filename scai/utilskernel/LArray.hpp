@@ -226,7 +226,7 @@ public:
 
     LArray& operator*= ( const ValueType val )
     {
-        HArrayUtils::setVal( *this, val, common::reduction::MULT );
+        HArrayUtils::setScalar( *this, val, common::reduction::MULT );
         return *this;
     }
 
@@ -238,7 +238,7 @@ public:
 
     LArray& operator/= ( const ValueType val )
     {
-        HArrayUtils::setVal( *this, val, common::reduction::DIVIDE );
+        HArrayUtils::setScalar( *this, val, common::reduction::DIVIDE );
         return *this;
     }
 
@@ -250,7 +250,7 @@ public:
 
     LArray& operator+= ( const ValueType val )
     {
-        HArrayUtils::setVal( *this, val, common::reduction::ADD );
+        HArrayUtils::setScalar( *this, val, common::reduction::ADD );
         return *this;
     }
 
@@ -262,7 +262,7 @@ public:
 
     LArray& operator-= ( const ValueType val )
     {
-        HArrayUtils::setVal( *this, val, common::reduction::SUB );
+        HArrayUtils::setScalar( *this, val, common::reduction::SUB );
         return *this;
     }
 

@@ -64,7 +64,7 @@ public:
         return kregistry::KernelTraitContextFunction<KernelTrait>::operator[]( context->getType() );
     }
 
-    hmemo::ContextPtr getValidContext( hmemo::ContextPtr defaultContext )
+    hmemo::ContextPtr getValidContext( hmemo::ContextPtr defaultContext ) 
     {
         SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
 
@@ -81,20 +81,35 @@ public:
         }
     }
 
-    hmemo::ContextPtr getValidContext( kregistry::_ContextFunction other, hmemo::ContextPtr defaultContext )
-    {
-        SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
+    /** Change context to host if function is not supported on preferred context. */
 
-        common::context::ContextType defCtx = defaultContext->getType();
+    void getSupportedContext( hmemo::ContextPtr& context ) const
+    {
+        SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
+
+        common::context::ContextType defCtx = context->getType();
+        common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( defCtx );
+
+        if ( runCtx != defCtx )
+        {
+            context = hmemo::Context::getHostPtr();
+        }
+    }
+
+    void getSupportedContext( hmemo::ContextPtr& context, kregistry::_ContextFunction other ) const
+    {
+        SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
+
+        common::context::ContextType defCtx = context->getType();
         common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( other, defCtx );
 
         if ( runCtx == defCtx )
         {
-            return defaultContext;
+            // context is fine, this and other are supported
         }
         else if ( runCtx == common::context::Host )
         {
-            return hmemo::Context::getHostPtr();  // do it on host
+            context = hmemo::Context::getHostPtr();  // do it on host
         }
         else
         {
