@@ -1,4 +1,4 @@
-/**
+/*
  * @file HArrayUtils.hpp
  *
  * @license
@@ -207,10 +207,13 @@ public:
     template<typename ValueType>
     static ValueType reduce( 
         const hmemo::HArray<ValueType>& array,
-        const common::reduction::ReductionOp redOp );
+        const common::reduction::ReductionOp redOp,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static ValueType asum( const hmemo::HArray<ValueType>& array );
+    static ValueType asum( 
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( 

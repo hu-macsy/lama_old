@@ -389,13 +389,16 @@ void HArrayUtils::conj( HArray<ValueType>& array, ContextPtr prefLoc )
 }
 
 template<typename ValueType>
-ValueType HArrayUtils::reduce( const HArray<ValueType>& array, const common::reduction::ReductionOp redOp )
+ValueType HArrayUtils::reduce( 
+    const HArray<ValueType>& array, 
+    const common::reduction::ReductionOp redOp,
+    const ContextPtr prefLoc )
 {
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
     // preferred location: where valid values of the array are available
 
-    ContextPtr loc = array.getValidContext();
+    ContextPtr loc = array.getValidContext( prefLoc );
 
     reduce.getSupportedContext( loc );
 
@@ -409,7 +412,7 @@ ValueType HArrayUtils::reduce( const HArray<ValueType>& array, const common::red
 }
 
 template<typename ValueType>
-ValueType HArrayUtils::asum( const HArray<ValueType>& array )
+ValueType HArrayUtils::asum( const HArray<ValueType>& array, const ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -422,7 +425,7 @@ ValueType HArrayUtils::asum( const HArray<ValueType>& array )
 
     // preferred location: where valid values of the array are available
 
-    ContextPtr loc = array.getValidContext();
+    ContextPtr loc = array.getValidContext( prefLoc );
 
     asum.getSupportedContext( loc );
 
