@@ -34,5 +34,9 @@
 if    ( MPI_FOUND )
     execute_process ( COMMAND ${MPIEXEC} --version OUTPUT_VARIABLE _mpi_output ERROR_VARIABLE _mpi_error)
     set ( _output "${_mpi_output}${_mpi_error}" ) # some version write output to error stream
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" MPI_VERSION ${_output} )
+    if    ( CMAKE_COMPILER_IS_GNUCXX )
+    	string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" MPI_VERSION ${_output} )
+    else  ( CMAKE_COMPILER_IS_GNUCXX ) ## icpc
+    	string ( REGEX MATCH "([0-9]+\\.[0-9])" MPI_VERSION ${_output} )
+    endif ( CMAKE_COMPILER_IS_GNUCXX )
 endif ( MPI_FOUND )
