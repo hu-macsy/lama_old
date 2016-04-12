@@ -208,9 +208,18 @@ public:
         const common::reduction::ReductionOp redOp );
 
     template<typename ValueType>
+    static ValueType asum( const hmemo::HArray<ValueType>& array );
+
+    template<typename ValueType>
     static ValueType absMaxDiffVal( 
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2 );
+
+    template<typename ValueType>
+    static ValueType dotProduct( 
+        const hmemo::HArray<ValueType>& array1,
+        const hmemo::HArray<ValueType>& array2,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** array = 1.0 / array elementwise */
 

@@ -387,6 +387,31 @@ ValueType HArrayUtils::reduce( const HArray<ValueType>& array, const common::red
 }
 
 template<typename ValueType>
+ValueType HArrayUtils::asum( const HArray<ValueType>& array )
+{
+    const IndexType n = array.size();
+
+    if ( n == 0 )
+    {
+        return ValueType( 0 );
+    }
+
+    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
+
+    // preferred location: where valid values of the array are available
+
+    ContextPtr loc = asum.getValidContext( array.getValidContext() );
+
+    ReadAccess<ValueType> readArray( array, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ValueType result = asum[loc]( n, readArray.get(), 1 );
+
+    return result;
+}
+
+template<typename ValueType>
 ValueType HArrayUtils::absMaxDiffVal(
     const HArray<ValueType>& array1,
     const HArray<ValueType>& array2 )
@@ -407,6 +432,37 @@ ValueType HArrayUtils::absMaxDiffVal(
     ValueType redVal = absMaxDiffVal[loc]( readArray1.get(), readArray2.get(), readArray1.size() );
 
     return redVal;
+}
+
+template<typename ValueType>
+ValueType HArrayUtils::dotProduct(
+    const HArray<ValueType>& array1,
+    const HArray<ValueType>& array2,
+    ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQUAL( array1.size(), array2.size(), "array size mismatch for dotproduct" )
+
+    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
+
+    ContextPtr loc = prefLoc;
+
+    // Rule for default location: where array1 has valid values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array1.getValidContext();
+    }
+
+    loc = dot.getValidContext( array1.getValidContext() );
+
+    ReadAccess<ValueType> readArray1( array1, loc );
+    ReadAccess<ValueType> readArray2( array2, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    const ValueType res = dot[loc]( readArray1.size(), readArray1.get(), 1, readArray2.get(), 1 );
+
+    return res;
 }
 
 template<typename ValueType>
@@ -529,6 +585,8 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
     TemplateSpecifier::set( HArrayUtils::absMaxDiffVal<ValueType> );
     TemplateSpecifier::set( HArrayUtils::axpy<ValueType> );
     TemplateSpecifier::set( HArrayUtils::arrayPlusArray<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::dotProduct<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::asum<ValueType> );
     TemplateSpecifier::set( HArrayUtils::invert<ValueType> );
 }
 
