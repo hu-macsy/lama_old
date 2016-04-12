@@ -929,7 +929,9 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
 
     // choose location where both routines are available
 
-    ContextPtr loc = countNonEmptyRowsBySizes.getValidContext( setNonEmptyRowsBySizes, context );
+    ContextPtr loc = context;
+
+    countNonEmptyRowsBySizes.getSupportedContext( loc, setNonEmptyRowsBySizes );
 
     ReadAccess<IndexType> ellIA( mIA, loc );
 
@@ -962,7 +964,10 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
 
-    ContextPtr loc = compressIA.getValidContext( compressValues, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    reduce.getSupportedContext( loc );
+    compressIA.getSupportedContext( loc, compressValues );
 
     ReadAccess<IndexType> IA( mIA, loc );
     ReadAccess<IndexType> JA( mJA, loc );
@@ -1067,7 +1072,8 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
     static LAMAKernel<ELLKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
     static LAMAKernel<ELLKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    ContextPtr loc = sparseGEVM.getValidContext( normalGEVM, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    sparseGEVM.getSupportedContext( loc, normalGEVM );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
 
@@ -1209,7 +1215,9 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
 {
     static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( normalGEMV, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    normalGEMV.getSupportedContext( loc );
 
     unique_ptr<SyncToken> syncToken;
 
@@ -1260,7 +1268,9 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
 {
     static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( normalGEMV, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    normalGEMV.getSupportedContext( loc );
 
     unique_ptr<SyncToken> syncToken;
 
@@ -1306,7 +1316,8 @@ SyncToken* ELLStorage<ValueType>::sparseGEMV(
 {
     static LAMAKernel<ELLKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
 
-    ContextPtr loc = sparseGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    sparseGEMV.getSupportedContext( loc );
 
     unique_ptr<SyncToken> syncToken;
 
@@ -1368,7 +1379,9 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     // default location is context of this storage
 
-    ContextPtr loc = normalGEVM.getValidContext( sparseGEVM, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    sparseGEVM.getSupportedContext( loc, normalGEVM );
 
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly

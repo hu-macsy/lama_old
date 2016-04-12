@@ -100,7 +100,8 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
 
     // make sure that for both context functions implementations are available at the chosen context
 
-    ContextPtr loc = setVal.getValidContext( setOrder, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    setOrder.getSupportedContext( loc, setVal );
 
     WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
     WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
@@ -623,7 +624,8 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 
     // get context where all implementations are available, if not on own context
 
-    ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    setOrder.getSupportedContext( loc, setVal );
 
     WriteOnlyAccess<IndexType> wDlg( mDlg, loc, mNumDiagonals );
     WriteOnlyAccess<IndexType> wIlg( mIlg, loc, mNumRows );
@@ -652,7 +654,8 @@ void JDSStorage<ValueType>::setupData( ContextPtr context )
     static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
     static LAMAKernel<JDSKernelTrait::ilg2dlg> ilg2dlg;
 
-    ContextPtr loc = getValue.getValidContext( ilg2dlg, context );
+    ContextPtr loc = context;
+    getValue.getSupportedContext( loc, ilg2dlg );
 
     ReadAccess<IndexType> ilg( mIlg, loc );
     WriteOnlyAccess<IndexType> dlg( mDlg, loc, mNumDiagonals );
@@ -680,7 +683,8 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<JDSKernelTrait::sortRows> sortRows;
 
-    ContextPtr loc = reduce.getValidContext( sortRows, context );
+    ContextPtr loc = context;
+    reduce.getSupportedContext( loc, sortRows );
 
     // sort the rows according to the array ilg, take sorting over in perm
     WriteAccess<IndexType> ilg( mIlg, loc );
@@ -789,7 +793,8 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     static LAMAKernel<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
-    ContextPtr loc = offsets2sizes.getValidContext( setCSRValues, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    offsets2sizes.getSupportedContext( loc, setCSRValues );
 
     ReadAccess<IndexType> rCsrIA( ia, loc );
     ReadAccess<IndexType> rCsrJA( ja, loc );
@@ -884,7 +889,8 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
         static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
         static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
-        ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
+        ContextPtr loc = this->getContextPtr();
+        setOrder.getSupportedContext( loc, setVal );
 
         mNumRows = numRows;
         mNumColumns = numColumns;

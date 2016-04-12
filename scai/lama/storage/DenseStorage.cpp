@@ -372,7 +372,8 @@ void DenseStorageView<ValueType>::setIdentity()
     LAMAKernel<DenseKernelTrait::setValue<ValueType> > setValue;
     LAMAKernel<DenseKernelTrait::setDiagonalValue<ValueType> > setDiagonalValue;
 
-    ContextPtr loc = setValue.getValidContext( setDiagonalValue, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    setValue.getSupportedContext( loc, setDiagonalValue );
 
     WriteOnlyAccess<ValueType> data( mData, loc, mNumRows * mNumColumns );
 

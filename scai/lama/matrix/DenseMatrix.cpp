@@ -1775,7 +1775,9 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             {
                 static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
-                ContextPtr loc = copy.getValidContext( this->getContextPtr() );
+                ContextPtr loc = this->getContextPtr();
+ 
+                copy.getSupportedContext( loc );
 
                 SCAI_CONTEXT_ACCESS( loc )
 

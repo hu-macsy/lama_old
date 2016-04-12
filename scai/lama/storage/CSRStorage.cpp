@@ -181,7 +181,8 @@ void CSRStorage<ValueType>::check( const char* msg ) const
         static LAMAKernel<UtilKernelTrait::isSorted<IndexType> > isSorted;
         static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
 
-        const ContextPtr loc = isSorted.getValidContext( getValue, this->getContextPtr() );
+        ContextPtr loc = this->getContextPtr();
+        isSorted.getSupportedContext( loc, getValue );
 
         ReadAccess<IndexType> csrIA( mIa, loc );
 
@@ -981,7 +982,8 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
     /// ContextPtr loc = Context::getHostPtr();
 
-    ContextPtr loc = setVal.getValidContext( setScatter, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    setVal.getSupportedContext( loc, setScatter );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -1384,8 +1386,8 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
     static LAMAKernel<CSRKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
     static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    ContextPtr preferedLoc = this->getContextPtr();
-    ContextPtr loc = sparseGEVM.getValidContext( normalGEVM, preferedLoc );
+    ContextPtr loc = this->getContextPtr();
+    normalGEVM.getSupportedContext( loc, sparseGEVM );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
 
@@ -1492,7 +1494,8 @@ SyncToken* CSRStorage<ValueType>::sparseGEMV(
 {
     static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
 
-    ContextPtr loc = sparseGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    sparseGEMV.getSupportedContext( loc );
 
     unique_ptr<SyncToken> syncToken;
 
@@ -1547,7 +1550,8 @@ SyncToken* CSRStorage<ValueType>::normalGEMV(
 {
     static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( normalGEMV, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEMV.getSupportedContext( loc );
 
     unique_ptr<SyncToken> syncToken;
 
@@ -1598,7 +1602,8 @@ SyncToken* CSRStorage<ValueType>::normalGEMV(
 {
     static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( normalGEMV, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEMV.getSupportedContext( loc );
 
     unique_ptr<SyncToken> syncToken;
 
@@ -1733,7 +1738,8 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     static LAMAKernel<CSRKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
     static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    const ContextPtr loc = normalGEVM.getValidContext( sparseGEVM, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEVM.getSupportedContext( loc, sparseGEVM );
 
     if ( loc->getType() == Context::MaxContext )
     {
@@ -2176,7 +2182,8 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
     static LAMAKernel<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
     static LAMAKernel<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
 
-    const ContextPtr loc = matrixAdd.getValidContext( matrixAddSizes, preferedLoc );
+    ContextPtr loc = preferedLoc;
+    matrixAdd.getSupportedContext( loc, matrixAddSizes );
 
     if( &a == this || &b == this )
     {
@@ -2265,7 +2272,8 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
 
     // choose Context where all kernel routines are available
 
-    ContextPtr loc = matrixMultiply.getValidContext( matrixMultiplySizes, preferedLoc );
+    ContextPtr loc = preferedLoc;
+    matrixMultiply.getSupportedContext( loc, matrixMultiplySizes );
 
     SCAI_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
     SCAI_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
