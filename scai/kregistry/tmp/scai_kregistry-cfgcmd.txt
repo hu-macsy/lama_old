@@ -1,0 +1,1 @@
+cmd='/home/brandes/local/cmake-2.8.12/bin/cmake;-DSCAI_COMPLETE_BUILD=1;-C/home/brandes/git/lama/scai/kregistry/tmp/scai_kregistry-cache.cmake;-GUnix Makefiles;/home/brandes/git/lama/scai/kregistry'
