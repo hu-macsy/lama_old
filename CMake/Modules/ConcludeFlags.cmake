@@ -20,16 +20,19 @@ endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 
 ## scai common adds OpenMP_CXX_FLAGS and SCAI_LANG_FLAGS to SCAI_COMMON_FLAGS if found
 if    ( SCAI_COMMON_FOUND ) 
-	list ( APPEND SCAI_CXX_FLAGS ${SCAI_COMMON_FLAGS} )
+	set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${SCAI_COMMON_FLAGS}" )
 else  ( SCAI_COMMON_FOUND )
     if ( USE_OPENMP )
-	    list ( APPEND SCAI_CXX_FLAGS "${OpenMP_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
+	    set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${OpenMP_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
     endif ( USE_OPENMP )
 endif ( SCAI_COMMON_FOUND ) 
 
 if    ( NOT USE_MIC )
-    list ( APPEND SCAI_CXX_FLAGS ${MIC_NO_OFFLOAD_FLAG} )
+    set ( SCAI_CXX_FLAGS "${SCAI_CXX_FLAGS} ${MIC_NO_OFFLOAD_FLAG}" )
 endif ( NOT USE_MIC )
+
+# remove leading and trailing whitespaces
+string ( STRIP "${SCAI_CXX_FLAGS}" SCAI_CXX_FLAGS )
 
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
