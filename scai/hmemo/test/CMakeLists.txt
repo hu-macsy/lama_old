@@ -31,12 +31,12 @@
 ###
 
 set ( CXX_SOURCES
-      hmemoTest.cpp
-      ContextTest.cpp  
-      AccessTest.cpp  
-      HArrayTest.cpp  
-      HArrayRefTest.cpp  
-      MemoryTest.cpp
+      hmemoTest
+      ContextTest  
+      AccessTest  
+      HArrayTest  
+      HArrayRefTest  
+      MemoryTest
 ) 
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )

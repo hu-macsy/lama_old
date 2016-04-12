@@ -31,11 +31,11 @@
 ###
 
 set ( CXX_SOURCES
-      ContextTest.cpp  
-      KernelInterfaceTest.cpp
-      ReplaceTest.cpp  
-      SimpleTest.cpp  
-      TraitTest.cpp  
+      ContextTest  
+      KernelInterfaceTest
+      ReplaceTest  
+      SimpleTest  
+      TraitTest  
 )
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
