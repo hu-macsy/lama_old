@@ -48,6 +48,7 @@ set ( CXX_SOURCES
       ThreadTest  
       TypeConversionTest
       TypeListTest
+      TypeLoopTest
       TypeTraitsTest  
       ScalarTypeTest  
       SettingsTest  

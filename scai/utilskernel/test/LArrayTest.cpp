@@ -141,7 +141,6 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
 /* --------------------------------------------------------------------- */
 
-
 typedef boost::mpl::list<IndexType, ARITHMETIC_CUDA> ArrayRedTypes;
 
 // ToDo: introduce a predicate in COMMON to check if a certain type is supported on a context
@@ -154,8 +153,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 
     SCAI_LOG_INFO( logger, "reductionTest on " << *testContext )
 
+    // ToDo: example with complex numbers 
+
     const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
     const IndexType N = sizeof( myVals ) / sizeof( ValueType );
+
+    ValueType expectedMin = common::TypeTraits<ValueType>::getMax();
+    ValueType expectedMax = common::TypeTraits<ValueType>::getMin();;
+    ValueType expectedSum = 0;
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        expectedMin = common::Math::min( expectedMin, myVals[i] );
+        expectedMax = common::Math::max( expectedMax, myVals[i] );
+        expectedSum += myVals[i];
+    }
 
     LArray<ValueType> array( N, myVals, testContext );
 
@@ -165,18 +177,72 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 
     // reduction ops will be executed on testContext
 
-    BOOST_CHECK_EQUAL( 0, array.min() );
-    BOOST_CHECK_EQUAL( 9, array.max() );
-    BOOST_CHECK_EQUAL( 45, array.sum() );
+    BOOST_CHECK_EQUAL( expectedMin, array.min() );
+    BOOST_CHECK_EQUAL( expectedMax, array.max() );
+    BOOST_CHECK_EQUAL( expectedSum, array.sum() );
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, ValueType, ArrayRedTypes )
+typedef boost::mpl::list<ARITHMETIC_CUDA> ArithmeticRedTypes;
+
+// ToDo: introduce a predicate in COMMON to check if a certain type is supported on a context
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
 {
     testContext = Context::getContextPtr();
 
-    SCAI_LOG_INFO( logger, "maxDiffNormTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
+    SCAI_LOG_INFO( logger, "normTest on " << *testContext )
+
+    // ToDo: example with complex numbers 
+
+    const IndexType N = 13;
+
+    common::scoped_array<ValueType> myVals( new ValueType[N] );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        // random numbers between -1.0 and 1.0, real and imag part for complex
+
+        common::Math::random( myVals[i] );
+    }
+
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType expectedL1Norm = 0;
+    AbsType expectedL2Norm = 0;
+    AbsType expectedMaxNorm = 0;
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        expectedL1Norm += common::Math::abs( common::Math::real( myVals[i] ) );
+        expectedL1Norm += common::Math::abs( common::Math::imag( myVals[i] ) );
+        expectedL2Norm += common::Math::real( myVals[i] * common::Math::conj( myVals[i] ) );
+        expectedMaxNorm = common::Math::max( expectedMaxNorm, common::Math::abs( myVals[i] ) );
+    }
+
+    LArray<ValueType> array( N, myVals.get(), testContext );
+
+    // Constructor should have provided a valid copy on testContext
+
+    BOOST_CHECK( array.isValid( testContext ) );
+
+    // reduction ops will be executed on testContext
+
+    BOOST_CHECK_CLOSE( expectedL1Norm, AbsType( array.l1Norm() ), 0.1  );
+    BOOST_CHECK_CLOSE( AbsType( expectedL2Norm ), AbsType( array.l2Norm() ), 0.1 );
+    BOOST_CHECK_CLOSE( expectedMaxNorm, AbsType( array.maxNorm() ), 0.1 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( binReductionTest, ValueType, ArithmeticRedTypes )
+{
+    testContext = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "binReductionTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
 
     // the LArray allows indexed access, but attention: can be very slow
 
@@ -185,13 +251,57 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, ValueType, ArrayRedTypes )
 
     const IndexType N = sizeof( myVals1 ) / sizeof( ValueType );
 
+    ValueType expectedDotProduct = 0;
+    ValueType expectedMaxDiffNorm = 0;
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        expectedDotProduct += myVals1[i] * common::Math::conj( myVals2[i] );
+        ValueType absDiff = common::Math::abs( myVals2[i] - myVals1[i] );
+        expectedMaxDiffNorm = common::Math::max( expectedMaxDiffNorm, absDiff );
+    }
+
     LArray<ValueType> array1( N, myVals1, testContext );
     LArray<ValueType> array2( N, myVals2, testContext );
 
     BOOST_CHECK( array1.isValid( testContext ) );
     BOOST_CHECK( array2.isValid( testContext ) );
 
-    BOOST_CHECK_EQUAL( 1, array1.maxDiffNorm( array2 ) );
+    BOOST_CHECK_EQUAL( expectedMaxDiffNorm, array1.maxDiffNorm( array2 ) );
+    BOOST_CHECK_EQUAL( expectedDotProduct, array1.dotProduct( array2 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignOperatorTest, ValueType, ArithmeticRedTypes )
+{
+    testContext = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "assignOperatorTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
+
+    // the LArray allows indexed access, but attention: can be very slow
+
+    const ValueType myVals[]  = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
+    const ValueType myVals1[] = { 1, -1, 2, -2, 3, -3, 2, -1, -2, 1 };
+
+    const IndexType N = sizeof( myVals ) / sizeof( ValueType );
+
+    LArray<ValueType> array( N, myVals, testContext );
+    LArray<ValueType> other( N, myVals1, testContext );
+
+    array /= ValueType( 2 );
+    array *= ValueType( 2 );
+    array += ValueType( 2 );
+    array -= ValueType( 2 );
+    array /= other;
+    array *= other;
+    array += other;
+    array -= other;
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_CHECK_CLOSE( common::Math::real( myVals[i] ), common::Math::real( array[i] ), 0.01 );
+    }
 }
 
 /* --------------------------------------------------------------------- */

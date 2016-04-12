@@ -121,7 +121,9 @@ void HArrayUtils::setImpl(
 
     static LAMAKernel<UtilKernelTrait::set<ValueType1, ValueType2> > set;
 
-    ContextPtr loc = set.getValidContext( prefContext );
+    ContextPtr loc = prefContext;
+
+    set.getSupportedContext( loc );
 
     const IndexType n = source.size();
 
@@ -168,60 +170,71 @@ void HArrayUtils::gatherImpl(
 
     static LAMAKernel<UtilKernelTrait::setGather<ValueType1, ValueType2> > setGather;
 
-    ContextPtr context = setGather.getValidContext( source.getValidContext() );
+    ContextPtr loc = source.getValidContext();
+
+    setGather.getSupportedContext( loc );
 
     const IndexType n = indexes.size();
 
-    WriteOnlyAccess<ValueType1> wTarget( target, context, n );
+    WriteOnlyAccess<ValueType1> wTarget( target, loc, n );
 
-    SCAI_CONTEXT_ACCESS( context )
+    SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<ValueType2> rSource( source, context );
-    ReadAccess<IndexType> rIndexes( indexes, context );
+    ReadAccess<ValueType2> rSource( source, loc );
+    ReadAccess<IndexType> rIndexes( indexes, loc );
 
     //  target[i] = source[ indexes[i] ]
 
-    setGather[context] ( wTarget.get(), rSource.get(), rIndexes.get(), n );
+    setGather[loc] ( wTarget.get(), rSource.get(), rIndexes.get(), n );
+}
+
+template<typename OtherValueType>
+void HArrayUtils::setScalar(
+    _HArray& target,
+    const OtherValueType value,
+    const common::reduction::ReductionOp op,
+    ContextPtr prefLoc )
+{
+    mepr::UtilsWrapperT<OtherValueType, ARITHMETIC_ARRAY_HOST_LIST>::setScalarImpl( target, value, op, prefLoc );
 }
 
 template<typename ValueType>
-void HArrayUtils::setScalar(
-    _HArray& target,
-    const ValueType value,
-    const common::reduction::ReductionOp op,
-    ContextPtr prefContext )
-{
-    mepr::UtilsWrapperT< ValueType, ARITHMETIC_ARRAY_HOST_LIST>::setScalarImpl( target, value, op, prefContext );
-}
-
-template<typename ValueType, typename OtherValueType>
 void HArrayUtils::setScalarImpl(
     HArray<ValueType>& target,
-    const OtherValueType value,
+    const ValueType value,
     const common::reduction::ReductionOp op,
-    ContextPtr prefContext )
+    ContextPtr prefLoc )
 {
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, OtherValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
-    ContextPtr context = setVal.getValidContext( prefContext );
+    ContextPtr loc = prefLoc;
+
+    if ( loc == ContextPtr() )
+    {
+        // default location: where we have valid copy of the data
+
+        loc = target.getValidContext();
+    }
+
+    setVal.getSupportedContext( loc );
 
     const IndexType n = target.size();
 
-    SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *context << ", n = " << n )
+    SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *loc << ", n = " << n )
 
     if ( op == common::reduction::COPY )
     {
         // Note: very important is to specify the size n here as it might not have been allocated
 
-        WriteOnlyAccess<ValueType> wTarget( target, context, n );
-        SCAI_CONTEXT_ACCESS( context )
-        setVal[context]( wTarget.get(), n, value, op );
+        WriteOnlyAccess<ValueType> wTarget( target, loc, n );
+        SCAI_CONTEXT_ACCESS( loc )
+        setVal[loc]( wTarget.get(), n, value, op );
     }
     else
     {
-        WriteAccess<ValueType> wTarget( target, context );
-        SCAI_CONTEXT_ACCESS( context )
-        setVal[context]( wTarget.get(), n, value, op );
+        WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc )
+        setVal[loc]( wTarget.get(), n, value, op );
     }
 }
 
@@ -246,7 +259,7 @@ void HArrayUtils::setValImpl(
 
     static LAMAKernel<UtilKernelTrait::setVal<ValueType, OtherValueType> > setVal;
 
-    loc = setVal.getValidContext( loc );
+    setVal.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger, "setVal<" << common::TypeTraits<ValueType>::id() << ">[" << index
                            << "] = " << val << " @ " << *loc )
@@ -280,7 +293,7 @@ ValueType HArrayUtils::getValImpl(
 
     static LAMAKernel<UtilKernelTrait::getValue<OtherValueType> > getValue;
 
-    loc = getValue.getValidContext( loc );
+    getValue.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -305,7 +318,7 @@ void HArrayUtils::assignScaled(
 
     if ( beta == common::constants::ZERO )
     {
-        setScalar( result, 0, common::reduction::COPY, prefLoc );
+        setScalarImpl( result, beta, common::reduction::COPY, prefLoc );
     }
     else if( &result == &y )
     {
@@ -316,7 +329,7 @@ void HArrayUtils::assignScaled(
 
         // result := beta * result, use setScalar, op == MULT
 
-        setScalar( result, beta, common::reduction::MULT, prefLoc );
+        setScalarImpl( result, beta, common::reduction::MULT, prefLoc );
     }
     else
     {
@@ -332,7 +345,7 @@ void HArrayUtils::assignScaled(
             loc = y.getValidContext();
         }
 
-        loc = setScale.getValidContext( loc );
+        setScale.getSupportedContext( loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -346,7 +359,7 @@ void HArrayUtils::assignScaled(
 template<typename ValueType>
 void HArrayUtils::scale( HArray<ValueType>& array, const ValueType beta, ContextPtr prefLoc )
 {
-    setScalar( array, beta, common::reduction::MULT, prefLoc );
+    setScalarImpl( array, beta, common::reduction::MULT, prefLoc );
 }
 
 template<typename ValueType>
@@ -358,7 +371,14 @@ void HArrayUtils::conj( HArray<ValueType>& array, ContextPtr prefLoc )
     {
         static LAMAKernel<UtilKernelTrait::conj<ValueType> > conj;
 
-        ContextPtr loc = conj.getValidContext( prefLoc );
+        ContextPtr loc = prefLoc;
+
+        if ( loc == ContextPtr() )
+        {
+            loc = array.getValidContext();
+        }
+
+        conj.getSupportedContext( loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -375,7 +395,9 @@ ValueType HArrayUtils::reduce( const HArray<ValueType>& array, const common::red
 
     // preferred location: where valid values of the array are available
 
-    ContextPtr loc = reduce.getValidContext( array.getValidContext() );
+    ContextPtr loc = array.getValidContext();
+
+    reduce.getSupportedContext( loc );
 
     ReadAccess<ValueType> readArray( array, loc );
 
@@ -387,17 +409,52 @@ ValueType HArrayUtils::reduce( const HArray<ValueType>& array, const common::red
 }
 
 template<typename ValueType>
+ValueType HArrayUtils::asum( const HArray<ValueType>& array )
+{
+    const IndexType n = array.size();
+
+    if ( n == 0 )
+    {
+        return ValueType( 0 );
+    }
+
+    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
+
+    // preferred location: where valid values of the array are available
+
+    ContextPtr loc = array.getValidContext();
+
+    asum.getSupportedContext( loc );
+
+    ReadAccess<ValueType> readArray( array, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ValueType result = asum[loc]( n, readArray.get(), 1 );
+
+    return result;
+}
+
+template<typename ValueType>
 ValueType HArrayUtils::absMaxDiffVal(
     const HArray<ValueType>& array1,
-    const HArray<ValueType>& array2 )
+    const HArray<ValueType>& array2,
+    ContextPtr prefLoc )
 {
     SCAI_ASSERT_EQUAL( array1.size(), array2.size(), "array size mismatch for building differences" )
 
     static LAMAKernel<UtilKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
 
-    // Rule for location: where array1 has valid values
+    ContextPtr loc = prefLoc;
 
-    ContextPtr loc = absMaxDiffVal.getValidContext( array1.getValidContext() );
+    // Rule for default location: where array1 has valid values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array1.getValidContext();
+    }
+
+    absMaxDiffVal.getSupportedContext( loc );
 
     ReadAccess<ValueType> readArray1( array1, loc );
     ReadAccess<ValueType> readArray2( array2, loc );
@@ -407,6 +464,37 @@ ValueType HArrayUtils::absMaxDiffVal(
     ValueType redVal = absMaxDiffVal[loc]( readArray1.get(), readArray2.get(), readArray1.size() );
 
     return redVal;
+}
+
+template<typename ValueType>
+ValueType HArrayUtils::dotProduct(
+    const HArray<ValueType>& array1,
+    const HArray<ValueType>& array2,
+    ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQUAL( array1.size(), array2.size(), "array size mismatch for dotproduct" )
+
+    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
+
+    ContextPtr loc = prefLoc;
+
+    // Rule for default location: where array1 has valid values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array1.getValidContext();
+    }
+
+    dot.getSupportedContext( loc );
+
+    ReadAccess<ValueType> readArray1( array1, loc );
+    ReadAccess<ValueType> readArray2( array2, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    const ValueType res = dot[loc]( readArray1.size(), readArray1.get(), 1, readArray2.get(), 1 );
+
+    return res;
 }
 
 template<typename ValueType>
@@ -434,7 +522,7 @@ void HArrayUtils::axpy(
         loc = result.getValidContext();
     }
 
-    loc = axpy.getValidContext( loc );  // axpy must be available 
+    axpy.getSupportedContext( loc );  // axpy must be available at loc
 
     ReadAccess<ValueType> xAccess( x, loc );
     WriteAccess<ValueType> resultAccess( result, loc, true );
@@ -479,7 +567,7 @@ void HArrayUtils::arrayPlusArray(
         loc = x.getValidContext();
     }
 
-    loc = sum.getValidContext( loc );
+    sum.getSupportedContext( loc );
 
     // no alias checks are done here
 
@@ -505,7 +593,7 @@ void HArrayUtils::invert( HArray<ValueType>& array, ContextPtr prefContext )
         loc = array.getValidContext();
     }
 
-    loc = invert.getValidContext( loc );
+    invert.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -529,6 +617,8 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
     TemplateSpecifier::set( HArrayUtils::absMaxDiffVal<ValueType> );
     TemplateSpecifier::set( HArrayUtils::axpy<ValueType> );
     TemplateSpecifier::set( HArrayUtils::arrayPlusArray<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::dotProduct<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::asum<ValueType> );
     TemplateSpecifier::set( HArrayUtils::invert<ValueType> );
 }
 

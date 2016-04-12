@@ -170,12 +170,13 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
 
         static LAMAKernel<COOKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
 
-        ContextPtr contextPtr = hasDiagonalProperty.getValidContext( this->getContextPtr() );
+        ContextPtr loc = this->getContextPtr();
+        hasDiagonalProperty.getSupportedContext( loc );
 
-        ReadAccess<IndexType> ia( mIA, contextPtr );
-        ReadAccess<IndexType> ja( mJA, contextPtr );
+        ReadAccess<IndexType> ia( mIA, loc );
+        ReadAccess<IndexType> ja( mJA, loc );
 
-        diagonalProperty = hasDiagonalProperty[contextPtr]( ia.get(), ja.get(), mNumRows );
+        diagonalProperty = hasDiagonalProperty[loc]( ia.get(), ja.get(), mNumRows );
     }
 
     SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
@@ -213,7 +214,9 @@ void COOStorage<ValueType>::check( const char* msg ) const
     {
         static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
 
-        ContextPtr  loc = validIndexes.getValidContext( getContextPtr() );  // find location where routine is available
+        ContextPtr loc = getContextPtr();
+
+        validIndexes.getSupportedContext( loc );  // find location where routine is available
 
         ReadAccess<IndexType> rJA( mJA, loc );
         ReadAccess<IndexType> rIA( mIA, loc );
@@ -246,7 +249,9 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
 
-    ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    setOrder.getSupportedContext( loc, setVal );  // setOrder, setVal must be available at loc
 
     WriteOnlyAccess<IndexType> ia( mIA, loc, mNumValues );
     WriteOnlyAccess<IndexType> ja( mJA, loc, mNumValues );
@@ -387,7 +392,9 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
         static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
 
-        ContextPtr loc = hasDiagonalProperty.getValidContext( this->getContextPtr() );
+        ContextPtr loc = this->getContextPtr();
+
+        hasDiagonalProperty.getSupportedContext( loc );
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
@@ -423,7 +430,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
     {
         static LAMAKernel<COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
 
-        ContextPtr loc = setCSRData.getValidContext( this->getContextPtr() );
+        ContextPtr loc = this->getContextPtr();   // preferred location
+        setCSRData.getSupportedContext( loc );    // supported location
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
@@ -437,7 +445,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
     {
         static LAMAKernel<COOKernelTrait::setCSRData<ValueType, OtherValueType> > setCSRData;
 
-        ContextPtr loc = setCSRData.getValidContext( this->getContextPtr() );
+        ContextPtr loc = this->getContextPtr();   // preferred location
+        setCSRData.getSupportedContext( loc );    // supported location
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<OtherValueType> csrValues( values, loc );

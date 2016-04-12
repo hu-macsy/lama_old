@@ -226,7 +226,7 @@ public:
 
     LArray& operator*= ( const ValueType val )
     {
-        HArrayUtils::setVal( *this, val, common::reduction::MULT );
+        HArrayUtils::setScalar( *this, val, common::reduction::MULT );
         return *this;
     }
 
@@ -238,7 +238,7 @@ public:
 
     LArray& operator/= ( const ValueType val )
     {
-        HArrayUtils::setVal( *this, val, common::reduction::DIVIDE );
+        HArrayUtils::setScalar( *this, val, common::reduction::DIVIDE );
         return *this;
     }
 
@@ -250,7 +250,7 @@ public:
 
     LArray& operator+= ( const ValueType val )
     {
-        HArrayUtils::setVal( *this, val, common::reduction::ADD );
+        HArrayUtils::setScalar( *this, val, common::reduction::ADD );
         return *this;
     }
 
@@ -262,7 +262,7 @@ public:
 
     LArray& operator-= ( const ValueType val )
     {
-        HArrayUtils::setVal( *this, val, common::reduction::SUB );
+        HArrayUtils::setScalar( *this, val, common::reduction::SUB );
         return *this;
     }
 
@@ -307,6 +307,13 @@ public:
         return HArrayUtils::reduce( *this, common::reduction::MAX );
     }
 
+    /** Get the maximal value of an array */
+
+    ValueType maxNorm() const
+    {
+        return HArrayUtils::reduce( *this, common::reduction::ABS_MAX );
+    }
+
     /** Get the sum of all array elements */
 
     ValueType sum() const
@@ -314,12 +321,33 @@ public:
         return HArrayUtils::reduce( *this, common::reduction::ADD );
     }
 
-    /** Build the max diff norm */
+    /** Compute the sum of magnitudes, for complex numbers it is the sum of real and imag part */
+
+    ValueType l1Norm() const
+    {
+        return HArrayUtils::asum( *this );
+    }
+
+    ValueType l2Norm() const
+    {
+        return HArrayUtils::dotProduct( *this, *this );
+    }
+
+    /** Build the max diff norm with another LAMA array */
 
     ValueType maxDiffNorm( const hmemo::HArray<ValueType>& other ) const
     {
         return HArrayUtils::absMaxDiffVal( *this, other );
     }
+
+    /** Compute the dotproduct with another LAMA array. */
+
+    ValueType dotProduct( const hmemo::HArray<ValueType>& other ) const
+    {
+        return HArrayUtils::dotProduct( *this, other );
+    }
+
+    /** Compute the inverse/reciprocal in-place, all elements should be non-zero  */
 
     void invert()
     {

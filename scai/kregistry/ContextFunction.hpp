@@ -81,7 +81,7 @@ public:
         mContextFuncArray[ ctx ] = fn;
     }
 
-    inline bool isEmpty()
+    inline bool isEmpty() const
     {
     	bool status = true;
     	for(IndexType i = 0; i < common::context::MaxContext; ++i)
@@ -98,13 +98,13 @@ public:
 
     std::string printIt() const;
 
-    common::context::ContextType validContext( ContextType preferedCtx );
+    common::context::ContextType validContext( ContextType preferedCtx ) const;
 
-    ContextType validContext( const _ContextFunction& other, ContextType preferedCtx );
+    ContextType validContext( const _ContextFunction& other, ContextType preferedCtx ) const;
 
     ContextType validContext( const _ContextFunction& other1, 
                                       const _ContextFunction& other2, 
-                                      ContextType preferedCtx );
+                                      ContextType preferedCtx ) const;
 
 protected:
 

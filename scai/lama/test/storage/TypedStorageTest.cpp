@@ -456,8 +456,6 @@ BOOST_AUTO_TEST_CASE( jacobiTest )
 
         const LArray<ValueType> oldSolution( storage.getNumRows(), 1 );
         const LArray<ValueType> rhs( storage.getNumRows(), 2 );
-        const LArray<ValueType> solution1;
-        const LArray<ValueType> solution2;
 
         // clone the storage and set its diagonal to zero, but keep inverse of diagonal
 
@@ -493,6 +491,195 @@ BOOST_AUTO_TEST_CASE( jacobiTest )
     
             BOOST_CHECK( solution1.maxDiffNorm( solution2 ) < common::TypeTraits<ValueType>::small() );
         }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( jacobiHaloTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "jacobiHaloTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+ 
+        if ( storage.getFormat() == Format::DIA )
+        {
+            continue;   // DIA  has still bug
+        }
+
+        setDenseHalo( storage ); 
+
+        common::unique_ptr<MatrixStorage<ValueType> > local( storage.newMatrixStorage() );
+
+        setDenseSquareData( *local );
+
+        SCAI_LOG_DEBUG( logger, "storage for jacobiIterateHalo = " << storage )
+
+        const LArray<ValueType> oldSolution( storage.getNumColumns(), 1 );
+
+        // clone the storage and set its diagonal to zero, but keep inverse of diagonal
+
+        common::unique_ptr<MatrixStorage<ValueType> > storage1( storage.copy() );
+
+        LArray<ValueType> diagonalInverse;
+        local->getDiagonal( diagonalInverse );
+        diagonalInverse.invert();
+        storage1->scaleRows( diagonalInverse );
+
+        ValueType omegas[] = { 1.0, 0.8, 0.5 };
+        const int NCASES = sizeof( omegas ) / sizeof( ValueType );
+
+        for ( int k = 0; k < NCASES; ++k )
+        {
+            ValueType omega = omegas[k];
+
+            LArray<ValueType> solution1( storage.getNumRows(), 1, context );
+            LArray<ValueType> solution2( storage.getNumRows(), 1, context );
+
+            // solution1 -= omega * ( B(halo) * oldSolution ) * dinv
+
+            storage.jacobiIterateHalo( solution1, *local, oldSolution, omega );
+
+            const ValueType alpha = -omega;
+            const ValueType beta  = 1;
+
+            storage1->matrixTimesVector( solution2, alpha, oldSolution, beta , solution2 );
+
+            // now solution1 and solution2 must be the same
+    
+            /* for debug
+            std::cout << "Solution1 :";
+            for ( IndexType i = 0; i < storage.getNumRows(); ++i )
+            {
+                std::cout << " ";
+                std::cout << solution1[i];
+            }
+            std::cout << std::endl;
+
+            std::cout << "Solution2 :";
+            for ( IndexType i = 0; i < storage.getNumRows(); ++i )
+            {
+                std::cout << " ";
+                std::cout << solution2[i];
+            }
+            std::cout << std::endl;
+            std::cout << "max diff norm = " << solution1.maxDiffNorm( solution2 );
+            std::cout << ", small = " << common::TypeTraits<ValueType>::small() << std::endl;
+            */
+
+            BOOST_CHECK( solution1.maxDiffNorm( solution2 ) < common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( matrixAddTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    const IndexType N = 3;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "matrixAddTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        if ( storage.getFormat() == Format::ASSEMBLY )
+        {
+           continue;
+        }
+
+        SCAI_LOG_DEBUG( logger, "storage for matrixAdd = " << storage )
+
+        common::unique_ptr<MatrixStorage<ValueType> > a( storage.newMatrixStorage() );
+        common::unique_ptr<MatrixStorage<ValueType> > b( storage.newMatrixStorage() );
+        common::unique_ptr<MatrixStorage<ValueType> > c( storage.newMatrixStorage() );
+        common::unique_ptr<MatrixStorage<ValueType> > res( storage.newMatrixStorage() );
+       
+        ValueType alpha = 1;
+        ValueType beta  = 2;
+
+        a->setIdentity( N );
+        b->setIdentity( N );
+        c->setIdentity( N );
+        res->setIdentity( N );
+
+        a->setDiagonal( 2 );
+        b->setDiagonal( 3 );
+        c->setDiagonal( -3 );
+
+        storage.matrixTimesMatrix( alpha, *a, *b, beta, *c );
+        res->setDiagonal( alpha * 2 * 3 - beta * 3 );
+
+        BOOST_REQUIRE_EQUAL( N, storage.getNumRows() );
+        BOOST_REQUIRE_EQUAL( N, storage.getNumColumns() );
+
+        BOOST_CHECK_EQUAL( 0, storage.maxDiffNorm( *res ) );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( matrixMultTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "matrixMultTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        if ( storage.getFormat() == Format::ASSEMBLY )
+        {
+           continue;
+        }
+
+        SCAI_LOG_DEBUG( logger, "storage for matrixMult = " << storage )
+
+        common::unique_ptr<MatrixStorage<ValueType> > a( storage.newMatrixStorage() );
+        common::unique_ptr<MatrixStorage<ValueType> > b( storage.newMatrixStorage() );
+       
+        ValueType alpha = 1;
+        ValueType beta  = 0;
+
+        setDenseSquareData( *a );
+        setDenseSquareData( *b );
+        storage.matrixTimesMatrix( alpha, *a, *b, beta, storage );
+
+        LArray<ValueType> x( a->getNumColumns(), 1 );
+
+        LArray<ValueType> dummy;
+        LArray<ValueType> y1;
+        LArray<ValueType> y2;
+        LArray<ValueType> tmp;
+
+        // compute y1 = a * b * x and y2 = storage * x, y1 and y2 must be same
+
+        b->matrixTimesVector( tmp, alpha, x, beta, dummy );
+        a->matrixTimesVector( y1, alpha, tmp, beta, dummy );
+
+        storage.matrixTimesVector( y2, alpha, x, beta, dummy );
+
+        BOOST_CHECK( y1.maxDiffNorm( y2 ) < common::TypeTraits<ValueType>::small() );
     }
 }
 
