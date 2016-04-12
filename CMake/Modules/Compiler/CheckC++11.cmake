@@ -53,8 +53,11 @@ if ( NOT DEFINED CXX_SUPPORTS_C11 )
     CHECK_CXX_COMPILER_FLAG( -std=c++11 CXX_SUPPORTS_C11 )
 endif ( NOT DEFINED CXX_SUPPORTS_C11 )
 
-if ( CXX_SUPPORTS_C11 )
+if    ( CXX_SUPPORTS_C11 )
     set ( SCAI_LANG_FLAGS "-std=c++11" )
-else ( CXX_SUPPORTS_C11 )
+else  ( CXX_SUPPORTS_C11 )
     set ( SCAI_LANG_FLAGS "" )
 endif ( CXX_SUPPORTS_C11 )
+
+set ( ADDITIONAL_CXX_FLAGS_LANG "${SCAI_LANG_FLAGS}" CACHE STRING "Language flag for using C++11 (if compiler capable)" )
+mark_as_advanced ( ADDITIONAL_CXX_FLAGS_LANG )

@@ -32,7 +32,6 @@
 ###
 
 ### This module returns the following variables regarding OpenMP:
-###
 ### OPENMP_FOUND           - if OpenMP is found
 ### USE_OPENMP             - if OpenMP is enabled
 ### OpenMP_CXX_FLAGS       - flags to be used for compiling/linking C++ code with OpenMP pragmas
@@ -43,10 +42,10 @@ if    ( CMAKE_VERSION VERSION_LESS 2.8.7 )
 	enable_language ( C )
 endif ( CMAKE_VERSION VERSION_LESS 2.8.7 ) 
 
-find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
+find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} ) # sets OPENMP_FOUND, OpenMP_CXX_FLAGS
 
 include ( Functions/setAndCheckCache )
-setAndCheckCache ( OPENMP )
+setAndCheckCache ( OPENMP ) # sets USE_OPENMP
 
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( OpenMP_C_FLAGS )
@@ -77,16 +76,12 @@ if    ( OPENMP_FOUND AND USE_OPENMP )
 	# Note: files using omp scheduling should be compiled with the corresponding flag
 	# add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 
-else  ( OPENMP_FOUND AND USE_OPENMP )
-
-	# Supress unknown pragma warnings if OpenMP is disabled
-
-	if    ( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES Intel )
-        set ( SCAI_WARNING_FLAGS "${SCAI_WARNING_FLAGS} -Wno-unknown-pragmas" )
-    endif ( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES Intel )
-    
 endif ( OPENMP_FOUND AND USE_OPENMP )
 
 if    ( USE_OPENMP AND NOT OPENMP_FOUND )
     message( FATAL_ERROR "Build of LAMA with OpenMP support enabled, but configuration is incomplete!")
 endif ( USE_OPENMP AND NOT OPENMP_FOUND )
+
+set ( ADDITIONAL_CXX_FLAGS_OPENMP "${OpenMP_CXX_FLAGS}" CACHE STRING "OpenMP flag (only if enabled)" )
+set ( ADDITIONAL_CXX_FLAGS_NO_OPENMP "-Wno-unknown-pragmas" ) # Supress unknown pragma warnings if OpenMP is disabled
+mark_as_advanced ( ADDITIONAL_CXX_FLAGS_OPENMP ADDITIONAL_CXX_FLAGS_NO_OPENMP )
