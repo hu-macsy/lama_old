@@ -41,11 +41,11 @@
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/tasking/mic/MICSyncToken.hpp>
 
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Settings.hpp>
 
 // external
-#include <omp.h>
 #include <mkl.h>
 
 #define SCAI_MAX_MIC_DEVICES 4

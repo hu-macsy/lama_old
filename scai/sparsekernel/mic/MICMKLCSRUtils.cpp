@@ -42,6 +42,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tasking/mic/MICSyncToken.hpp>
 
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Constants.hpp>
