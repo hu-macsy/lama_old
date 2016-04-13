@@ -247,7 +247,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     mNumValues = mNumRows;
 
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr loc = this->getContextPtr();
 

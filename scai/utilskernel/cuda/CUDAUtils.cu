@@ -300,8 +300,8 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common:
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, typename OtherValueType>
-void CUDAUtils::setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op )
+template<typename ValueType>
+void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
 {
     using namespace thrust::placeholders;
 
@@ -770,6 +770,7 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
 }
 
@@ -783,7 +784,6 @@ void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry:
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<UtilKernelTrait::setVal<ValueType, OtherValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
