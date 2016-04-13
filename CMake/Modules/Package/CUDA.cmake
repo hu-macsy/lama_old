@@ -41,10 +41,6 @@ set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compile
 
 find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
 
-if    ( ${CUDA_VERSION_MAJOR} GREATER 4 )
-	message ( FATAL_ERROR "LAMA supports CUDA with SDK greater 5.0. Use a newer CUDA installation or disable CUDA." )
-endif ( ${CUDA_VERSION_MAJOR} GREATER 4 )
-
 # find out if host compiler version is supported by CUDA installation
 include ( Compiler/cuda/CheckHostCompilerCompatibility )
 
@@ -59,6 +55,10 @@ setAndCheckCache ( CUDA )
 set ( CUDA_ENABLED FALSE )
 if ( CUDA_FOUND AND USE_CUDA )
 	set ( CUDA_ENABLED TRUE )
+
+	if    ( ${CUDA_VERSION_MAJOR} LESS 5 )
+		message ( FATAL_ERROR "LAMA supports CUDA with SDK greater 5.0, your installation is ${CUDA_VERSION}. Use a newer CUDA installation or disable CUDA." )
+	endif ( ${CUDA_VERSION_MAJOR} LESS 5 )
 
 	# find out CUDA compute capability by test program
 	include ( Compiler/cuda/ComputeCapabilityCheck )
