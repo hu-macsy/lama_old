@@ -78,7 +78,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
             if ( CUDA_VERSION STRLESS "7.0" )
                 message ( FATAL_ERROR "CUDA version ${CUDA_VERSION} does not support -std=c++11, please call cmake with -DCXX_SUPPORTS_C11=0" )
             else ()
-                list ( APPEND SCAI_NVCC_FLAGS ${ADDITIONAL_CXX_FLAGS_LANG} )
+                list ( APPEND SCAI_NVCC_FLAGS "-std=c++11" )
             endif ()
         endif ( CXX_SUPPORTS_C11 )
 
