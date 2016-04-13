@@ -200,24 +200,24 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 #endif
 
-// For convenience we define ARRAY_TYPE, must be SCAI_ARITHMETIC_HOST_TYPE_CNT + 1
+// For convenience we define SCAI_ARRAY_TYPE, must be SCAI_ARITHMETIC_HOST_TYPE_CNT + 1
 
 
-#define ARRAY_TYPE0    IndexType
-#define ARRAY_TYPE1    float
-#define ARRAY_TYPE2    double
-#define ARRAY_TYPE3    ComplexFloat
-#define ARRAY_TYPE4    ComplexDouble
-#define ARRAY_TYPE5    long double
-#define ARRAY_TYPE6    ComplexLongDouble
+#define SCAI_ARRAY_TYPE0    IndexType
+#define SCAI_ARRAY_TYPE1    float
+#define SCAI_ARRAY_TYPE2    double
+#define SCAI_ARRAY_TYPE3    ComplexFloat
+#define SCAI_ARRAY_TYPE4    ComplexDouble
+#define SCAI_ARRAY_TYPE5    long double
+#define SCAI_ARRAY_TYPE6    ComplexLongDouble
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-#define ARRAY_TYPE_CNT 7
+#define SCAI_ARRAY_TYPE_CNT 7
 
 #else
 
-#define ARRAY_TYPE_CNT 3
+#define SCAI_ARRAY_TYPE_CNT 3
 
 #endif
 
