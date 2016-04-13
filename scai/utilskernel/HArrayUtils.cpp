@@ -97,7 +97,7 @@ void HArrayUtils::set(
         }
     }
 
-    mepr::UtilsWrapper<ARITHMETIC_ARRAY_HOST_LIST>::setImpl( target, source, op, loc );
+    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setImpl( target, source, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -154,7 +154,7 @@ void HArrayUtils::gather(
     const HArray<IndexType>& indexes,
     const ContextPtr prefLoc )
 {
-    mepr::UtilsWrapper<ARITHMETIC_ARRAY_HOST_LIST>::gatherImpl( target, source, indexes, prefLoc );
+    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gatherImpl( target, source, indexes, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -165,7 +165,7 @@ void HArrayUtils::scatter(
     const _HArray& source,
     const ContextPtr prefLoc )
 {
-    mepr::UtilsWrapper<ARITHMETIC_ARRAY_HOST_LIST>::scatterImpl( target, indexes, source, prefLoc );
+    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatterImpl( target, indexes, source, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -253,7 +253,7 @@ void HArrayUtils::setScalar(
     const common::reduction::ReductionOp op,
     ContextPtr prefLoc )
 {
-    mepr::UtilsWrapperT<ValueType, ARITHMETIC_ARRAY_HOST_LIST>::setScalarImpl( target, value, op, prefLoc );
+    mepr::UtilsWrapperT<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setScalarImpl( target, value, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -308,7 +308,7 @@ void HArrayUtils::setVal(
 {
     SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
 
-    mepr::UtilsWrapperT< ValueType, ARITHMETIC_ARRAY_HOST_LIST>::setValImpl( target, index, val );
+    mepr::UtilsWrapperT< ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setValImpl( target, index, val );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -342,7 +342,7 @@ ValueType HArrayUtils::getVal(
     const _HArray& array,
     const IndexType index )
 {
-    ValueType val = mepr::UtilsWrapperT< ValueType, ARITHMETIC_ARRAY_HOST_LIST>::getValImpl( array, index );
+    ValueType val = mepr::UtilsWrapperT< ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::getValImpl( array, index );
     return val;
 }
 
@@ -719,7 +719,7 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
 
 HArrayUtils::HArrayUtils()
 {
-    common::mepr::TemplateSpecifierV<SpecifierV, ARITHMETIC_ARRAY_HOST_LIST>::call();
+    common::mepr::TemplateSpecifierV<SpecifierV, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call();
 }
 
 /* --------------------------------------------------------------------------- */

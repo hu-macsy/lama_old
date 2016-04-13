@@ -178,7 +178,7 @@ template class COMMON_DLL_IMPORTEXPORT SegmentData<char> ;
 
 // generic template instantiation for the supported data types
 
-SCAI_COMMON_INST_CLASS( SegmentData, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( SegmentData, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } // namespace dmemo
 

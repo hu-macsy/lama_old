@@ -592,13 +592,13 @@ void OpenMPBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
 OpenMPBLAS1::OpenMPBLAS1()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
                     kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS1::~OpenMPBLAS1()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
                         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

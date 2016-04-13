@@ -65,7 +65,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 
 /* --------------------------------------------------------------------- */
 
-// ToDo: take ARITHMETIC_HOST_TYPE for the tests
+// ToDo: take SCAI_ARITHMETIC_HOST_TYPE for the tests
 
 typedef boost::mpl::list<float, double> test_types;
 

@@ -1135,7 +1135,7 @@ Communicator::CommunicatorKind MPICommunicator::createValue()
     void MPICommunicator::maxlocImpl(                             \
             _type &, IndexType&, PartitionId) const;
 
-SCAI_COMMON_TYPELOOP( ARITHMETIC_ARRAY_HOST_CNT, SCAI_DMEMO_MPI_METHODS_INSTANTIATE, ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, SCAI_DMEMO_MPI_METHODS_INSTANTIATE, SCAI_ARITHMETIC_ARRAY_HOST )
 
 #undef SCAI_DMEMO_MPI_METHODS_INSTANTIATE
 

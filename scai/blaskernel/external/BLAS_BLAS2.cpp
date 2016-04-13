@@ -190,13 +190,13 @@ void BLAS_BLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 BLAS_BLAS2::BLAS_BLAS2()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
                             kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS2::~BLAS_BLAS2()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
                             kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

@@ -165,7 +165,7 @@ struct UtilsWrapper<common::mepr::TypeList<H, T> >
     {
         if( common::getScalarType<H>() == target.getValueType() )
         {
-            UtilsWrapperT<H, ARITHMETIC_ARRAY_HOST_LIST>::setImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), source, op, loc );
+            UtilsWrapperT<H, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), source, op, loc );
         }
         else
         {
@@ -177,7 +177,7 @@ struct UtilsWrapper<common::mepr::TypeList<H, T> >
     {
         if( common::getScalarType<H>() == target.getValueType() )
         {
-            UtilsWrapperT<H, ARITHMETIC_ARRAY_HOST_LIST>::gatherImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), source, index, prefLoc );
+            UtilsWrapperT<H, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gatherImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), source, index, prefLoc );
         }
         else
         {
@@ -189,7 +189,7 @@ struct UtilsWrapper<common::mepr::TypeList<H, T> >
     {
         if ( common::getScalarType<H>() == target.getValueType() )
         {
-            UtilsWrapperT<H, ARITHMETIC_ARRAY_HOST_LIST>::scatterImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), index, source, prefLoc );
+            UtilsWrapperT<H, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatterImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), index, source, prefLoc );
         }
         else
         {

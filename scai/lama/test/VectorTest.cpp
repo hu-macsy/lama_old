@@ -66,12 +66,12 @@ using namespace scai::hmemo;
 using namespace scai::dmemo;
 using scai::common::Exception;
 
-#if ARITHMETIC_HOST_TYPE_CNT == 1
-typedef boost::mpl::list<ARITHMETIC_HOST_TYPE_0> test_types;
-#elif ARITHMETIC_HOST_TYPE_CNT == 2
-typedef boost::mpl::list<ARITHMETIC_HOST_TYPE_0, ARITHMETIC_HOST_TYPE_1> test_types;
+#if SCAI_ARITHMETIC_HOST_TYPE_CNT == 1
+typedef boost::mpl::list<SCAI_ARITHMETIC_HOST_TYPE_0> test_types;
+#elif SCAI_ARITHMETIC_HOST_TYPE_CNT == 2
+typedef boost::mpl::list<SCAI_ARITHMETIC_HOST_TYPE_0, SCAI_ARITHMETIC_HOST_TYPE_1> test_types;
 #else
-typedef boost::mpl::list<ARITHMETIC_HOST_TYPE_0, ARITHMETIC_HOST_TYPE_1, ARITHMETIC_HOST_TYPE_2> test_types;
+typedef boost::mpl::list<SCAI_ARITHMETIC_HOST_TYPE_0, SCAI_ARITHMETIC_HOST_TYPE_1, SCAI_ARITHMETIC_HOST_TYPE_2> test_types;
 #endif
 
 /* --------------------------------------------------------------------- */

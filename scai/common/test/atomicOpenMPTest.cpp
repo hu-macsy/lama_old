@@ -43,7 +43,7 @@ using namespace common;
 
 /* -------------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
+typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
 
 /* -------------------------------------------------------------------------------- */
 

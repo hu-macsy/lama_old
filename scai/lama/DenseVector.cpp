@@ -1214,7 +1214,7 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
     {
         IOUtils::writeXDR<ValueType, ValueType>( outFile, dataRead.get(), numRows );
     }
-    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeXDR( dataType, outFile, dataRead.get(), numRows ) )
+    else if( mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::writeXDR( dataType, outFile, dataRead.get(), numRows ) )
     {
         SCAI_LOG_DEBUG( logger, "write through IOWrapper" )
     }
@@ -1243,7 +1243,7 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
     }
     else
     {
-        mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeBinary( type, outFile, dataRead.get(), numRows );
+        mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::writeBinary( type, outFile, dataRead.get(), numRows );
     }
 }
 
@@ -1445,7 +1445,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
     }
     else
     {
-        mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readXDR( fileType, inFile, writeData.get(), nnu );
+        mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::readXDR( fileType, inFile, writeData.get(), nnu );
     }
 
     // Validate Header
@@ -1485,7 +1485,7 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
     }
     else
     {
-        mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readBinary( type, inFile, writeData.get(), n );
+        mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::readBinary( type, inFile, writeData.get(), n );
     }
 }
 
@@ -1527,7 +1527,7 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseVector, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseVector, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

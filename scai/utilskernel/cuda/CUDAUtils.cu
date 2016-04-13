@@ -799,8 +799,8 @@ CUDAUtils::CUDAUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_ARRAY_CUDA_LIST, ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
 }
 
 CUDAUtils::~CUDAUtils()
@@ -808,8 +808,8 @@ CUDAUtils::~CUDAUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_ARRAY_CUDA_LIST, ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
 }
 
 CUDAUtils CUDAUtils::guard;    // guard variable for registration
