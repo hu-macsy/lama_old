@@ -234,7 +234,7 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
         SCAI_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() << ", no conversion" )
         IOUtils::readBinaryData<ValueType,ValueType>( inFile, values.get(), numValues );
     }
-    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readBinary( actualSize, inFile, values.get(), numValues ))
+    else if( mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::readBinary( actualSize, inFile, values.get(), numValues ))
     {
         SCAI_LOG_WARN( logger, "read binary data of different type, conversion done" )
     }
@@ -326,7 +326,7 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         IOUtils::writeXDR<ValueType, ValueType>( outFile, dataRead.get(), numValues );
     }
-    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeXDR( dataTypeSize, outFile, dataRead.get(), numValues ) )
+    else if( mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::writeXDR( dataTypeSize, outFile, dataRead.get(), numValues ) )
     {
         SCAI_LOG_INFO( logger, "writeXDR conversion neeeded" )
     }
@@ -450,7 +450,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
-    if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readXDR( dataTypeSize, xdrFile, m_data.get(), numValues ) )
+    if( mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::readXDR( dataTypeSize, xdrFile, m_data.get(), numValues ) )
     {
         SCAI_LOG_TRACE( logger, "read xdr file")
     }
@@ -530,7 +530,7 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
         COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
     }
 
-    if( !mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeBinary( dataTypeSize, outFile, dataRead.get(), numValues ))
+    if( !mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::writeBinary( dataTypeSize, outFile, dataRead.get(), numValues ))
     {
         COMMON_THROWEXCEPTION( "unknown data type size  = " << dataTypeSize << " for values." )
     }
@@ -1303,7 +1303,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( StorageIO, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( StorageIO, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 /* -------------------------------------------------------------------------- */
 

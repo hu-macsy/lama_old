@@ -463,7 +463,7 @@ CUSparseCSRUtils::CUSparseCSRUtils()
     if ( useCUSparse )
     {
         Registrator::initAndReg( flag );
-        kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+        kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
     }
 }
 
@@ -478,7 +478,7 @@ CUSparseCSRUtils::~CUSparseCSRUtils()
     if ( useCUSparse )
     {
         Registrator::initAndReg( flag );
-        kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+        kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
     }
 }
 

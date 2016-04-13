@@ -577,16 +577,16 @@ OpenMPDIAUtils::OpenMPDIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_HOST_LIST, ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
 }
 
 OpenMPDIAUtils::~OpenMPDIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_HOST_LIST, ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

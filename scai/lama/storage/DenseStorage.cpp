@@ -1215,7 +1215,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
     {
         // more efficient solution for assigment of dense storage
 
-        if( mepr::DenseStorageViewWrapper<ValueType, ARITHMETIC_HOST_LIST>::assignImpl( *this, other ) )
+        if( mepr::DenseStorageViewWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::assignImpl( *this, other ) )
         {
             return;
         }
@@ -1494,8 +1494,8 @@ const char* DenseStorageView<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
-SCAI_COMMON_INST_CLASS( DenseStorageView, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

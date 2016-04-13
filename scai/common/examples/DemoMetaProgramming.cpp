@@ -16,7 +16,7 @@
 
 // define the list of types
 
-#define MY_TYPELIST TYPELIST( ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+#define MY_TYPELIST TYPELIST( SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 using namespace scai;
 using namespace common;

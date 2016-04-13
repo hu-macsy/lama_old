@@ -69,11 +69,11 @@ namespace lama
  * these operations should be avoided in all critical code parts.
  *
  * ScalarRepType is used internally for the representation of
- * the value. For each supported arithmetic type ARITHMETIC_TYPE the following
+ * the value. For each supported arithmetic type SCAI_ARITHMETIC_TYPE the following
  * conversions must be supported:
  *
- *    - ScalarRepType( ARITHMETIC_TYPE v )
- *    - ARITHMETIC_TYPE( ScalarRepType v )
+ *    - ScalarRepType( SCAI_ARITHMETIC_TYPE v )
+ *    - SCAI_ARITHMETIC_TYPE( ScalarRepType v )
  *
  * Conversion into the representation type and back should be lossless, i. e. the
  * following relation must / should  hold:
@@ -123,7 +123,7 @@ public:
     inline Scalar( const type value ) : mValue( value ) \
     { }
 
-    SCAI_COMMON_TYPELOOP( ARITHMETIC_HOST_CNT, SCAI_LAMA_SCALAR_CONSTRUCTORS, ARITHMETIC_HOST )
+    SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_HOST_CNT, SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ARITHMETIC_HOST )
 
 #undef SCAI_LAMA_SCALAR_CONSTRUCTORS
 

@@ -314,7 +314,7 @@
         if ( context->getType() == scai::common::context::CUDA                                                  \
                                || context->getType() == scai::common::context::MIC )                            \
         {                                                                                                       \
-            switch( scai::common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() )                                   \
+            switch( scai::common::getScalarType<SCAI_ARITHMETIC_HOST_TYPE_##I>() )                              \
             {                                                                                                   \
                 case scai::common::scalar::LONG_DOUBLE:                                                         \
                 case scai::common::scalar::LONG_DOUBLE_COMPLEX:                                                 \
@@ -323,11 +323,11 @@
                      ;                                                                                          \
              }                                                                                                  \
         }                                                                                                       \
-        method<ARITHMETIC_HOST_TYPE_##I>( context );                                                            \
+        method<SCAI_ARITHMETIC_HOST_TYPE_##I>( context );                                                       \
     }                                                                                                           \
     catch ( scai::kregistry::KernelRegistryException& )                                                         \
     {                                                                                                           \
-        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
+        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( SCAI_ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
                        << context->getType() << ", corresponding function not implemented yet."        )        \
         return;                                                                                                 \
     }
@@ -348,6 +348,6 @@
             ContextPtr context = Context::getContextPtr();                                              \
             const std::string lama_name = #name;                                                        \
             const std::string lama_classname = #classname;                                              \
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_RUN_TEST, namespacename::classname::name )  \
+            BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT, LAMA_RUN_TEST, namespacename::classname::name )  \
     }
 

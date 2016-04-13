@@ -45,11 +45,11 @@ using namespace common;
 
 /* -------------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
+typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> ValueTypes;
 
 /* -------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( shared_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES )
+BOOST_AUTO_TEST_CASE_TEMPLATE( shared_ptrTest, ValueType, ValueTypes )
 {
 	shared_ptr<ValueType> emptyPointer;
 
@@ -64,7 +64,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shared_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES 
     BOOST_CHECK_EQUAL( secPointer.use_count(), 2 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unique_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES )
+/* -------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( unique_ptrTest, ValueType, ValueTypes )
 {
 	unique_ptr<ValueType> emptyPointer;
 
@@ -79,7 +81,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unique_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES 
 	BOOST_CHECK ( test );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( weak_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES )
+/* -------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( weak_ptrTest, ValueType, ValueTypes )
 {
 	weak_ptr<ValueType> emptyPointer;
 
@@ -98,3 +102,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( weak_ptrTest, ValueType, SCAI_ARITHMETIC_TYPES )
 
     BOOST_CHECK_EQUAL( pointer.use_count(), 0 );
 }
+
+/* -------------------------------------------------------------------------------- */

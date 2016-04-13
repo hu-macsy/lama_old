@@ -126,7 +126,7 @@ enum IndexDataType
 template<typename ValueType>
 long getDataTypeSize( const common::scalar::ScalarType dataType )
 {
-    long s = common::mepr::ScalarTypeHelper<ARITHMETIC_HOST_LIST>::sizeOf( dataType );
+    long s = common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_HOST_LIST>::sizeOf( dataType );
 
     if( s != 0 )
     {
@@ -164,7 +164,7 @@ common::scalar::ScalarType getDataType( const long dataTypeSize )
         return common::scalar::PATTERN;
     }
 
-    return common::mepr::ScalarTypeHelper<ARITHMETIC_HOST_LIST>::getBySize( dataTypeSize );
+    return common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_HOST_LIST>::getBySize( dataTypeSize );
 }
 
 static inline

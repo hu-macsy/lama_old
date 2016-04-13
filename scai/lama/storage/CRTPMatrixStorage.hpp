@@ -100,7 +100,7 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::_HArray& values )
     {
-        mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::setCSRDataImpl(
+        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::setCSRDataImpl(
                         static_cast<Derived*>( this ), numRows, numColumns,
                         numValues, ia, ja, values, this->getContextPtr());
     }
@@ -119,7 +119,7 @@ public:
 
     void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
     {
-         mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::buildCSRDataImpl(
+         mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::buildCSRDataImpl(
                          static_cast<const Derived*>( this ), csrIA, csrJA, csrValues, this->getContextPtr() );
     }
 
@@ -127,7 +127,7 @@ public:
 
     void getRow( hmemo::_HArray& row, const IndexType irow ) const
     {
-        mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::getRowImpl( static_cast<const Derived*>( this ), row, irow );
+        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::getRowImpl( static_cast<const Derived*>( this ), row, irow );
     }
 
     void getDiagonal( hmemo::_HArray& diagonal ) const
@@ -137,7 +137,7 @@ public:
             COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
         }
 
-        mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::getDiagonalImpl( static_cast<const Derived*>( this ), diagonal );
+        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::getDiagonalImpl( static_cast<const Derived*>( this ), diagonal );
     }
 
     void setDiagonal( const ValueType value )
@@ -164,7 +164,7 @@ public:
             COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
         }
 
-        mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::setDiagonalVImpl( static_cast<Derived*>( this ), diagonal );
+        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::setDiagonalVImpl( static_cast<Derived*>( this ), diagonal );
     }
 
     void scale( const ValueType value )
@@ -178,7 +178,7 @@ public:
     {
         SCAI_ASSERT_EQUAL_ERROR( this->getNumRows(), values.size() )
 
-        mepr::CRTPMatrixStorageWrapper<Derived, ARITHMETIC_HOST_LIST>::scaleRowsImpl( static_cast<Derived*>( this ), values );
+        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::scaleRowsImpl( static_cast<Derived*>( this ), values );
     }
 
     /** Implementation of MatrixStorage::getTypeName for derived class. */

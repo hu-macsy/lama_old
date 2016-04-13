@@ -2503,7 +2503,7 @@ const char* SparseMatrix<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( SparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( SparseMatrix, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

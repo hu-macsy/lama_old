@@ -1236,7 +1236,7 @@ void MatrixStorage<ValueType>::setDenseData(
 {
     mEpsilon = epsilon;
 
-    mepr::MatrixStorageWrapper<ValueType, ARITHMETIC_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
+    mepr::MatrixStorageWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
 }
 
 /* ========================================================================= */
@@ -1383,23 +1383,23 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
     void MatrixStorage<TYPE>::setRawDenseData(                     \
             const IndexType numRows,                               \
             const IndexType numColumns,                            \
-            const ARITHMETIC_HOST_TYPE_##J values[],               \
+            const SCAI_ARITHMETIC_HOST_TYPE_##J values[],               \
             const TYPE );
 
 #define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                                      \
                                                                                       \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                        \
+    BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT,                                        \
                      LAMA_MATRIX_STORAGE2_INSTANTIATE,                                \
-                     ARITHMETIC_HOST_TYPE_##I )                                       \
+                     SCAI_ARITHMETIC_HOST_TYPE_##I )                                       \
 
 
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_MATRIX_STORAGE_INSTANTIATE
 #undef LAMA_MATRIX_STORAGE2_INSTANTIATE
 
 
-SCAI_COMMON_INST_CLASS( MatrixStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 
