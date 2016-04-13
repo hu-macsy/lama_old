@@ -118,13 +118,9 @@ void Richardson::solveFinalize()
     SCAI_LOG_DEBUG( logger, " end solve " )
 }
 
-template<typename T>
 void Richardson::iterate()
 {
-    typedef T DataType;
     RichardsonRuntime& runtime = getRuntime();
-
-    DataType omega = mOmega.getValue<DataType>();
 
     const lama::Vector& rhs = *runtime.mRhs;
     const lama::Matrix& A = *runtime.mCoefficients;
@@ -137,58 +133,18 @@ void Richardson::iterate()
 
     const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
 
-    lama::DenseVector<T> x = A * oldSolution;
-    *runtime.mSolution = rhs - x;
+    lama::Vector* x = lama::Vector::getVector( lama::Vector::VectorFormat::DENSE, A.getValueType() );
+    lama::Vector& xRef = *x;
+    xRef = A * oldSolution;
 
-    if ( omega != 1.0 )
+    *runtime.mSolution = rhs - xRef;
+
+    if ( mOmega != 1.0 )
     {
-        *runtime.mSolution = omega * ( *runtime.mSolution );
+        *runtime.mSolution = mOmega * ( *runtime.mSolution );
     }
 
     *runtime.mSolution = oldSolution + ( *runtime.mSolution );
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        SCAI_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
-        const lama::DenseVector<T>& sol = dynamic_cast<const lama::DenseVector<T>&>( *runtime.mSolution );
-        hmemo::ReadAccess<T> rsol( sol.getLocalValues(), hmemo::Context::getHostPtr() );
-        std::cout << "Solution: ";
-
-        for ( IndexType i = 0; i < rsol.size(); ++i )
-        {
-            std::cout << " " << rsol[i];
-        }
-
-        std::cout << std::endl;
-    }
-}
-
-void Richardson::iterate()
-{
-    switch ( getRuntime().mCoefficients->getValueType() )
-    {
-        case common::scalar::FLOAT:
-            iterate<float>();
-            break;
-        case common::scalar::DOUBLE:
-            iterate<double>();
-            break;
-        case common::scalar::LONG_DOUBLE:
-            iterate<long double>();
-            break;
-        case common::scalar::COMPLEX:
-            iterate<ComplexFloat>();
-            break;
-        case common::scalar::DOUBLE_COMPLEX:
-            iterate<ComplexDouble>();
-            break;
-        case common::scalar::LONG_DOUBLE_COMPLEX:
-            iterate<ComplexLongDouble>();
-            break;
-
-        default:
-            COMMON_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mCoefficients->getValueType() )
-    }
 }
 
 Richardson::RichardsonRuntime& Richardson::getRuntime()

@@ -136,13 +136,6 @@ protected:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-private:
-
-    template<typename T>
-    void initialize( const lama::Matrix& coefficients );
-
-    template<typename T>
-    void iterate();
 };
 
 } /* end namespace solver */
