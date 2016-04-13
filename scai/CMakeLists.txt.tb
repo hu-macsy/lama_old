@@ -194,5 +194,5 @@ include ( Package/Doxygen )
 
 ## add custum target distClean
 
-include ( DistClean )
+include ( CustomCommands/DistClean )
 
