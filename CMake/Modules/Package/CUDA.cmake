@@ -56,6 +56,10 @@ set ( CUDA_ENABLED FALSE )
 if ( CUDA_FOUND AND USE_CUDA )
 	set ( CUDA_ENABLED TRUE )
 
+	if    ( ${CUDA_VERSION_MAJOR} LESS 5 )
+		message ( FATAL_ERROR "LAMA supports CUDA with SDK greater 5.0, your installation is ${CUDA_VERSION}. Use a newer CUDA installation or disable CUDA." )
+	endif ( ${CUDA_VERSION_MAJOR} LESS 5 )
+
 	# find out CUDA compute capability by test program
 	include ( Compiler/cuda/ComputeCapabilityCheck )
 	
@@ -63,28 +67,6 @@ if ( CUDA_FOUND AND USE_CUDA )
 	if    ( NOT SCAI_COMPLETE_BUILD )
 		include ( Compiler/cuda/SetNVCCFlags )
 	endif ( NOT SCAI_COMPLETE_BUILD )
-	
-	### Check for cuSPASE library, Version 2 (since CUDA 5.0)
-	
-	if ( CUDA_VERSION_MAJOR MATCHES "5" )
-	
-	    #message( STATUS "Check for cuSPARSE V2 include file in ${CUDA_INCLUDE_DIRS}" )
-	    
-	    set ( CUSPARSE_V2 false )
-	    
-	    foreach( dir "${CUDA_INCLUDE_DIRS}" )
-	       if ( EXISTS "${dir}/cusparse_v2.h" )
-	          set ( CUSPARSE_V2 true )
-	       endif ( EXISTS "${dir}/cusparse_v2.h" )
-	    endforeach( dir "${CUDA_INCLUDE_DIRS}" )
-	    
-	    if ( CUSPARSE_V2 )
-	        message( STATUS "cuSPARSE Version 2 is supported and will be used" )
-	    else( CUSPARSE_V2 )
-	        message( STATUS "cuSPARSE Version 2 not supported" )
-	    endif( CUSPARSE_V2 )
-	    
-	endif ( CUDA_VERSION_MAJOR MATCHES "5" )
 	
 	### Older cmake version have not set CUDA_cusparse_LIBRARY
 	
