@@ -107,7 +107,7 @@ void HArrayUtils::setImpl(
     HArray<TargetValueType>& target,
     const HArray<SourceValueType>& source,
     const common::reduction::ReductionOp op,
-    const ContextPtr prefContext )
+    const ContextPtr prefLoc )
 {
     // verify that dynamic cast operations went okay before
 
@@ -118,7 +118,7 @@ void HArrayUtils::setImpl(
 
     static LAMAKernel<UtilKernelTrait::set<TargetValueType, SourceValueType> > set;
 
-    ContextPtr loc = prefContext;
+    ContextPtr loc = prefLoc;
 
     set.getSupportedContext( loc );
 
@@ -671,13 +671,13 @@ void HArrayUtils::arrayPlusArray(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::invert( HArray<ValueType>& array, ContextPtr prefContext )
+void HArrayUtils::invert( HArray<ValueType>& array, ContextPtr prefLoc )
 {
     const IndexType size = array.size();
 
     static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
 
-    ContextPtr loc = prefContext;
+    ContextPtr loc = prefLoc;
 
     if ( loc == ContextPtr() )
     {
@@ -691,6 +691,37 @@ void HArrayUtils::invert( HArray<ValueType>& array, ContextPtr prefContext )
     WriteAccess<ValueType> wValues( array, loc );
 
     invert[loc]( wValues.get(), size );
+}
+
+/* --------------------------------------------------------------------------- */
+
+bool HArrayUtils::validIndexes( 
+    const hmemo::HArray<IndexType>& array, 
+    const IndexType size, 
+    const hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    validIndexes.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rValues( array, loc );
+
+    bool valid = validIndexes[loc]( rValues.get(), n, size );
+
+    return valid;
 }
 
 /* --------------------------------------------------------------------------- */

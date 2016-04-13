@@ -37,12 +37,15 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/common/ReductionOp.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 using namespace scai::utilskernel;
 using namespace scai::hmemo;
 using namespace scai::common;
 
-typedef boost::mpl::list<IndexType, float, double> test_types;
+typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> test_types;
+
+// typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -78,7 +81,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, test_types )
 
         for ( IndexType i = 0; i < N; ++i )
         {
-            BOOST_CHECK_EQUAL( expectedValue, read[i] );
+             BOOST_CHECK_EQUAL( expectedValue, read[i] );
         }
     }
 }
@@ -140,11 +143,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, test_types )
     LArray<IndexType> indexes( N, indexVals );
     LArray<ValueType> target;
 
+    BOOST_CHECK( HArrayUtils::validIndexes( indexes, M ) );
+    BOOST_CHECK( !HArrayUtils::validIndexes( indexes, 1 ) );
+
     HArrayUtils::gather( target, source, indexes );
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        BOOST_CHECK_EQUAL( target[i], source[indexes[i]] );
+        ValueType x1 = source[indexes[i]];
+        ValueType x2 = target[i];
+        BOOST_CHECK_EQUAL( x1, x2 );
     }
 }
 
@@ -169,11 +177,97 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, test_types )
     LArray<IndexType> indexes( N, indexVals );
     LArray<ValueType> target;
 
+    BOOST_CHECK( HArrayUtils::validIndexes( indexes, M ) );
+
     HArrayUtils::scatter( target, indexes, source );
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        BOOST_CHECK_EQUAL( target[indexes[i]], source[i] );
+        ValueType x1 = target[indexes[i]];
+        ValueType x2 = source[i];
+
+        BOOST_CHECK_EQUAL( x1, x2 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    ValueType sourceVals1[] = { 3, 1, 4, 2 };
+    ValueType sourceVals2[] = { 2, -1, -1, -5 };
+
+    const IndexType n1 = sizeof( sourceVals1 ) / sizeof( ValueType );
+    const IndexType n2 = sizeof( sourceVals2 ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( n1, n2 );
+
+    LArray<ValueType> x1( n1, sourceVals1, loc );
+    LArray<ValueType> x2( n2, sourceVals2, loc );
+    LArray<ValueType> xf( n2-1, sourceVals2, loc );  // wrong sized array
+
+    LArray<ValueType> target( loc );
+
+    ValueType factors[] = { -1, 0, 1, 2 };
+    int NCASE = sizeof( factors ) / sizeof( ValueType );
+
+    for ( int k1 = 0; k1 < NCASE; ++k1 )
+    {
+        ValueType alpha = factors[k1];
+
+        for ( int k2 = 0; k2 < NCASE; ++k2 )
+        {
+            ValueType beta = factors[k2];
+
+            SCAI_LOG_DEBUG( logger, "target = " << alpha << " * x1 + " << beta << " * x2" )
+
+            target.purge();
+
+            if ( beta == ValueType( 0 ) || alpha == ValueType( 0 ) )
+            {
+                // as one factor is zero, sizes must not match 
+
+                HArrayUtils::arrayPlusArray( target, alpha , x1, beta, xf, loc );
+
+                if ( alpha != ValueType( 0 ) )
+                {
+                    BOOST_CHECK_EQUAL( x1.size(), target.size() );
+                }
+                else if ( beta != ValueType( 0 ) )
+                {
+                    BOOST_CHECK_EQUAL( xf.size(), target.size() );
+                }
+            }
+            else
+            {
+                // alpha, beta != 0, so sizes must match
+
+                BOOST_CHECK_THROW (
+                {
+                     HArrayUtils::arrayPlusArray( target, alpha , x1, beta, xf, loc );
+                }, Exception );
+            }
+
+            HArrayUtils::arrayPlusArray( target, alpha, x1, beta, x2, loc );
+
+            if ( alpha == ValueType( 0 ) && beta == ValueType( 0 ) )
+            {
+                // target should be unchanged, size was 0 due to purge
+
+                BOOST_CHECK_EQUAL( 0, target.size() );
+                continue;
+            }
+
+            BOOST_CHECK_EQUAL( x1.size(), target.size() );
+
+            for ( IndexType i = 0; i < n1; ++i )
+            {
+                ValueType v = target[i];
+                BOOST_CHECK_EQUAL( v, alpha * sourceVals1[i] + beta * sourceVals2[i] );
+            }
+        }
     }
 }
 

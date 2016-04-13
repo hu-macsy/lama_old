@@ -271,6 +271,10 @@ public:
     template<typename ValueType>
     static void invert( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
 
+    /** Check for an index array whether all values are smaller than n */
+
+    static bool validIndexes( const hmemo::HArray<IndexType>& array, const IndexType size, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
 private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
