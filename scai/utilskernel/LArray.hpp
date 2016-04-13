@@ -40,6 +40,7 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/Math.hpp>
 
 namespace scai
 {
@@ -330,7 +331,7 @@ public:
 
     ValueType l2Norm() const
     {
-        return HArrayUtils::dotProduct( *this, *this );
+        return common::Math::sqrt( HArrayUtils::dotProduct( *this, *this ) );
     }
 
     /** Build the max diff norm with another LAMA array */

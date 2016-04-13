@@ -49,6 +49,8 @@ set ( WHITELIST
 		Sphinx-apidoc_EXECUTABLE
 		Sphinx-build_EXECUTABLE
 		Sphinx_DIR
+		# C++11
+		CXX_SUPPORTS_C11
 		# CMAKE
 		CMAKE_BUILD_TYPE
         CMAKE_INSTALL_PREFIX
@@ -56,7 +58,6 @@ set ( WHITELIST
         CMAKE_C_COMPILER # may be unused
         CMAKE_SKIP_INSTALL_RPATH
         CMAKE_SKIP_RPATH
-        CXX_SUPPORTS_C11
         # SCAI
         SCAI_ASSERT_LEVEL
         SCAI_CMAKE_VERBOSE

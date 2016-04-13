@@ -223,6 +223,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
         expectedMaxNorm = common::Math::max( expectedMaxNorm, common::Math::abs( myVals[i] ) );
     }
 
+    expectedL2Norm = common::Math::sqrt( expectedL2Norm );
+
     LArray<ValueType> array( N, myVals.get(), testContext );
 
     // Constructor should have provided a valid copy on testContext
@@ -232,7 +234,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
     // reduction ops will be executed on testContext
 
     BOOST_CHECK_CLOSE( expectedL1Norm, AbsType( array.l1Norm() ), 0.1  );
-    BOOST_CHECK_CLOSE( AbsType( expectedL2Norm ), AbsType( array.l2Norm() ), 0.1 );
+    BOOST_CHECK_CLOSE( expectedL2Norm, AbsType( array.l2Norm() ), 0.1 );
     BOOST_CHECK_CLOSE( expectedMaxNorm, AbsType( array.maxNorm() ), 0.1 );
 }
 

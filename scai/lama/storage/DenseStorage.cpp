@@ -125,7 +125,8 @@ IndexType DenseStorageView<ValueType>::getNumValues() const
 {
     static LAMAKernel<DenseKernelTrait::nonZeroValues<ValueType> > nonZeroValues;
 
-    ContextPtr loc = nonZeroValues.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    nonZeroValues.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -159,7 +160,8 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const ValueType value )
 {
     static LAMAKernel<DenseKernelTrait::setDiagonalValue<ValueType> > setDiagonalValue;
 
-    ContextPtr loc = setDiagonalValue.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    setDiagonalValue.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -178,7 +180,8 @@ void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const Inde
 
     static LAMAKernel<DenseKernelTrait::getRow<OtherType, ValueType> > getRow;
 
-    ContextPtr loc = getRow.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    getRow.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -198,7 +201,8 @@ void DenseStorageView<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal )
 
     static LAMAKernel<DenseKernelTrait::getDiagonal<OtherType, ValueType> > getDiagonal;
 
-    ContextPtr loc = getDiagonal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    getDiagonal.getSupportedContext( loc );
 
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalValues );
     ReadAccess<ValueType> rData( mData, loc );
@@ -218,7 +222,8 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diag
 
     static LAMAKernel<DenseKernelTrait::setDiagonal<ValueType, OtherType> > setDiagonal;
 
-    ContextPtr loc = setDiagonal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    setDiagonal.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -239,7 +244,9 @@ void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 
     static LAMAKernel<DenseKernelTrait::scaleValue<ValueType> > scaleValue;
 
-    ContextPtr loc = scaleValue.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    scaleValue.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -264,7 +271,8 @@ void DenseStorageView<ValueType>::scaleImpl( const HArray<OtherType>& values )
 {
     static LAMAKernel<DenseKernelTrait::scaleRows<ValueType, OtherType> > scaleRows;
 
-    ContextPtr loc = scaleRows.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    scaleRows.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -392,7 +400,8 @@ void DenseStorageView<ValueType>::setZero()
 {
     LAMAKernel<DenseKernelTrait::setValue<ValueType> > setValue;
 
-    ContextPtr loc = setValue.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    setValue.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -419,7 +428,8 @@ void DenseStorageView<ValueType>::buildCSR(
 
     // check if context provides all implementations, otherwise go back to Host
 
-    ContextPtr loc = getCSRValues.getValidContext( getCSRSizes, sizes2offsets, context );
+    ContextPtr loc = context;
+    getCSRValues.getSupportedContext( loc, getCSRSizes, sizes2offsets );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -469,7 +479,8 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 
     // check if context provides all implementations, otherwise go back to Host
 
-    ContextPtr loc = setCSRValues.getValidContext( context );
+    ContextPtr loc = context;
+    setCSRValues.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger,
                    "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
@@ -549,7 +560,8 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 
     static LAMAKernel<blaskernel::BLASKernelTrait::getinv<ValueType> > getinv;
 
-    ContextPtr loc = getinv.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    getinv.getSupportedContext( loc );
 
     WriteAccess<ValueType> denseValues( this->getData(), loc );
 
@@ -595,7 +607,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-        ContextPtr loc = setVal.getValidContext( mContext );
+        ContextPtr loc = this->getContextPtr();
+        setVal.getSupportedContext( loc );
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
@@ -609,7 +622,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
-        ContextPtr loc = copy.getValidContext( mContext );
+        ContextPtr loc = this->getContextPtr();
+        copy.getSupportedContext( loc );
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
@@ -644,7 +658,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         {
             static LAMAKernel<blaskernel::BLASKernelTrait::scal<ValueType> > scal;
 
-            ContextPtr loc = scal.getValidContext( mContext );
+            ContextPtr loc = this->getContextPtr();
+            scal.getSupportedContext( loc );
 
             WriteAccess<ValueType> wResult( result, loc );
 
@@ -659,7 +674,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         static LAMAKernel<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
 
-        ContextPtr loc = gemv.getValidContext( mContext );
+        ContextPtr loc = this->getContextPtr();
+        gemv.getSupportedContext( loc );
 
         ReadAccess<ValueType> denseValues( mData, loc );
         ReadAccess<ValueType> rX( x, loc );
@@ -714,7 +730,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-        ContextPtr loc = setVal.getValidContext( mContext );
+        ContextPtr loc = this->getContextPtr();
+        setVal.getSupportedContext( loc );
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
@@ -728,7 +745,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
-        ContextPtr loc = copy.getValidContext( mContext );
+        ContextPtr loc = this->getContextPtr();
+        copy.getSupportedContext( loc );
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
@@ -763,7 +781,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         {
             static LAMAKernel<blaskernel::BLASKernelTrait::scal<ValueType> > scal;
 
-            ContextPtr loc = scal.getValidContext( mContext );
+            ContextPtr loc = this->getContextPtr();
+            scal.getSupportedContext( loc );
 
             WriteAccess<ValueType> wResult( result, loc );
 
@@ -778,7 +797,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         static LAMAKernel<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
 
-        ContextPtr loc = gemv.getValidContext( mContext );
+        ContextPtr loc = this->getContextPtr();
+        gemv.getSupportedContext( loc );
 
         ReadAccess<ValueType> denseValues( mData, loc );
         ReadAccess<ValueType> rX( x, loc );
@@ -948,12 +968,13 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-        ContextPtr context = setVal.getValidContext( mContext );
+        ContextPtr loc = this->getContextPtr();
+        setVal.getSupportedContext( loc );
 
         SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
-        WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
-        SCAI_CONTEXT_ACCESS( context )
-        setVal[context]( resAccess.get(), m * n, ValueType( 0 ), common::reduction::COPY );
+        WriteOnlyAccess<ValueType> resAccess( getData(), loc, m * n );
+        SCAI_CONTEXT_ACCESS( loc )
+        setVal[loc]( resAccess.get(), m * n, ValueType( 0 ), common::reduction::COPY );
     }
     else if ( this != &c )
     {
@@ -964,12 +985,15 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         mNumRows = m;
         mNumColumns = n;
         static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
-        ContextPtr context = copy.getValidContext( mContext );
-        ReadAccess<ValueType> cAccess( c.getData(), context );
-        WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
+
+        ContextPtr loc = this->getContextPtr();
+        copy.getSupportedContext( loc );
+
+        ReadAccess<ValueType> cAccess( c.getData(), loc );
+        WriteOnlyAccess<ValueType> resAccess( getData(), loc, m * n );
         SCAI_LOG_TRACE( logger, "Copying: res = c " )
-        SCAI_CONTEXT_ACCESS( context )
-        copy[context]( n * m, cAccess.get(), 1, resAccess.get(), 1 );
+        SCAI_CONTEXT_ACCESS( loc )
+        copy[loc]( n * m, cAccess.get(), 1, resAccess.get(), 1 );
     }
     else
     {
@@ -991,16 +1015,17 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     {
         static LAMAKernel<blaskernel::BLASKernelTrait::gemm<ValueType> > gemm;
 
-        ContextPtr context = gemm.getValidContext( mContext );
+        ContextPtr loc = this->getContextPtr();
+        gemm.getSupportedContext( loc );
 
-        ReadAccess<ValueType> aAccess( ptrA->getData(), context );
-        ReadAccess<ValueType> bAccess( ptrB->getData(), context );
-        WriteAccess<ValueType> resAccess( getData(), context );
+        ReadAccess<ValueType> aAccess( ptrA->getData(), loc );
+        ReadAccess<ValueType> bAccess( ptrB->getData(), loc );
+        WriteAccess<ValueType> resAccess( getData(), loc );
 
-        SCAI_CONTEXT_ACCESS( context )
+        SCAI_CONTEXT_ACCESS( loc )
 
-        gemm[context]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,
-                       resAccess.get(), ldc );
+        gemm[loc]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,
+                   resAccess.get(), ldc );
     }
 }
 
@@ -1026,7 +1051,8 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
 
     static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
-    ContextPtr loc = asum.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    asum.getSupportedContext( loc );
 
     ReadAccess<ValueType> data( mData, loc );
 
@@ -1051,7 +1077,8 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
     static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
-    ContextPtr loc = dot.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    dot.getSupportedContext( loc );
 
     ReadAccess<ValueType> data( mData, loc );
 
@@ -1074,7 +1101,8 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    reduce.getSupportedContext( loc );
 
     ReadAccess<ValueType> read1( mData, loc );
 
@@ -1128,7 +1156,8 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
 
     static LAMAKernel<UtilKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
 
-    ContextPtr loc = absMaxDiffVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    absMaxDiffVal.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -1152,7 +1181,8 @@ void DenseStorageView<ValueType>::assignDenseStorageImpl( const DenseStorageView
 
     LAMAKernel<DenseKernelTrait::copyDenseValues<ValueType, OtherValueType> > copyDenseValues;
 
-    ContextPtr loc = copyDenseValues.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    copyDenseValues.getSupportedContext( loc );
 
     {
         SCAI_CONTEXT_ACCESS( loc )

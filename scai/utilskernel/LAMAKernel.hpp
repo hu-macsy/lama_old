@@ -59,12 +59,12 @@ public:
 
     /** more convenient now is to access the routine by context pointer */
 
-    ContextFunctionType operator[] ( hmemo::ContextPtr context )
+    ContextFunctionType operator[] ( const hmemo::ContextPtr& context )
     {
         return kregistry::KernelTraitContextFunction<KernelTrait>::operator[]( context->getType() );
     }
 
-    hmemo::ContextPtr getValidContext( hmemo::ContextPtr defaultContext ) 
+    hmemo::ContextPtr getValidContext1( hmemo::ContextPtr defaultContext ) 
     {
         SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
 
@@ -81,7 +81,7 @@ public:
         }
     }
 
-    /** Change context to host if function is not supported on preferred context. */
+    /** Update context if function is not supported on preferred context. */
 
     void getSupportedContext( hmemo::ContextPtr& context ) const
     {
@@ -96,7 +96,7 @@ public:
         }
     }
 
-    void getSupportedContext( hmemo::ContextPtr& context, kregistry::_ContextFunction other ) const
+    void getSupportedContext( hmemo::ContextPtr& context, const kregistry::_ContextFunction& other ) const
     {
         SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
 
@@ -117,22 +117,21 @@ public:
         }
     }
 
-    hmemo::ContextPtr getValidContext( kregistry::_ContextFunction other1, 
-                                       kregistry::_ContextFunction other2,
-                                       hmemo::ContextPtr defaultContext    )
+    void getSupportedContext( hmemo::ContextPtr& context, const kregistry::_ContextFunction& other1,
+                                                          const kregistry::_ContextFunction& other2 ) const
     {
-        SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
+        SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
 
-        common::context::ContextType defCtx = defaultContext->getType();
+        common::context::ContextType defCtx = context->getType();
         common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( other1, other2, defCtx );
 
         if ( runCtx == defCtx )
         {
-            return defaultContext;
+            // context is fine, this and other are supported
         }
         else if ( runCtx == common::context::Host )
         {
-            return hmemo::Context::getHostPtr();  // do it on host
+            context = hmemo::Context::getHostPtr();  // do it on host
         }
         else
         {

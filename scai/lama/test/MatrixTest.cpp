@@ -122,7 +122,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     SCAI_LOG_INFO( logger, "prefix = " << prefix );
     SCAI_LOG_INFO( logger, "readWriteTest: check loading float matrix" );
 // load an available testfile matrix.
-    std::string formattedInputFile = prefix + "/bp__1600.mtx";
+    // std::string formattedInputFile = prefix + "/bp__1600.mtx";
+    std::string formattedInputFile = prefix + "/impcol_b.mtx";
     MatrixType formattedMatrix( formattedInputFile );
     SCAI_LOG_INFO( logger, "formatted input matrix = " << formattedMatrix );
 

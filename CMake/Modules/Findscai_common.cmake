@@ -26,28 +26,32 @@ find_library ( SCAI_COMMON_LIBRARY scai_common
     ${SCAI_COMMON_ROOT}/lib
 )
 
-include ( Compiler/CheckC++11 )
-include ( Package/OpenMP )
-
+set ( SCAI_COMMON_FOUND FALSE )
 if ( SCAI_COMMON_INCLUDE_DIR )
-
-	include ( Package/Boost )
-	list ( APPEND SCAI_COMMON_INCLUDE_DIR ${SCAI_BOOST_INCLUDE_DIR} )
-	
-	if    ( OPENMP_FOUND AND USE_OPENMP )
-		set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${OpenMP_CXX_FLAGS}" )
-	endif ( OPENMP_FOUND AND USE_OPENMP )
-	
-    if    ( SCAI_COMMON_LIBRARY )
+    if ( SCAI_COMMON_LIBRARY)
         set ( SCAI_COMMON_FOUND TRUE )
     endif ( SCAI_COMMON_LIBRARY )
-    
-    set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${SCAI_LANG_FLAGS}" )
-    
 endif ( SCAI_COMMON_INCLUDE_DIR)
 
-# message ( STATUS "SCAI_COMMON_FOUND: ${SCAI_COMMON_FOUND}" )
-# message ( STATUS "SCAI_COMMON_INCLUDE_DIR: ${SCAI_COMMON_INCLUDE_DIR}" )
-# message ( STATUS "SCAI_COMMON_LIBRARY: ${SCAI_COMMON_LIBRARY}" )
+# set SCAI_COMMON_FLAGS for required dependencies
+set ( SCAI_COMMON_FLAGS "" )
+if    ( SCAI_COMMON_FOUND )
+    include ( Compiler/CheckC++11 )
+    if    ( NOT CXX_SUPPORTS_C11 )
+        set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${SCAI_LANG_FLAGS}" )
+    else  ( NOT CXX_SUPPORTS_C11 )
+        # add Boost to SCAI_COMMON_INCLUDE_DIR
+        include ( Package/Boost )
+        set ( SCAI_COMMON_INCLUDE_DIR "${SCAI_COMMON_INCLUDE_DIR} ${SCAI_BOOST_INCLUDE_DIR}" )
+    endif ( NOT CXX_SUPPORTS_C11 )
 
-mark_as_advanced ( SCAI_COMMON_FOUND SCAI_COMMON_INCLUDE_DIR SCAI_COMMON_LIBRARY )
+    include ( Package/OpenMP )
+    if    ( OPENMP_FOUND AND USE_OPENMP )
+        set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${OpenMP_CXX_FLAGS}" )
+    endif ( OPENMP_FOUND AND USE_OPENMP )
+
+    # remove leading and trailing whitespaces
+    string ( STRIP "${SCAI_COMMON_FLAGS}" SCAI_COMMON_FLAGS )
+endif ( SCAI_COMMON_FOUND)
+
+mark_as_advanced ( SCAI_COMMON_FOUND SCAI_COMMON_INCLUDE_DIR SCAI_COMMON_LIBRARY SCAI_COMMON_FLAGS )

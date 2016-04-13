@@ -46,7 +46,6 @@
 
 /* Including all headerfiles of testcases */
 #include <scai/lama/test/NormTest.hpp>
-#include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/lama/test/SparseMatrixTest.hpp>
 
 #include <scai/common/Settings.hpp>
@@ -114,7 +113,6 @@ int main( int argc, char* argv[] )
         /* Registration of common Testclasses and their testmethods */
         TC_REG( normtestclasses, normtestmethods );
         TC_REG( sparsematrixtestclasses, sparsematrixtestmethods );
-        TC_REG( storagetestclasses, storagetestmethods );
 
         /* Parse command line arguments */
         for ( int i = 0; i < argc; i++ )

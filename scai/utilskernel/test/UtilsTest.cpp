@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 
     ContextPtr loc = testContext;
 
-    reduce.getSupportedContext( testContext );
+    reduce.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
 

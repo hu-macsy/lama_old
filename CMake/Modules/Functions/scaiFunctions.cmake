@@ -14,8 +14,8 @@ macro    ( addExternalPackages )
 endmacro ( addExternalPackages )
 
 macro    ( addInternalAndExternalPackages )
-	addInternalPackages()
 	addExternalPackages()
+	addInternalPackages()
 endmacro ( addInternalAndExternalPackages )
 
 ## adding includes dirs from packages
