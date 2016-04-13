@@ -34,6 +34,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/LArray.hpp>
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/common/ReductionOp.hpp>
 
@@ -115,6 +116,64 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, test_types )
                 BOOST_CHECK_EQUAL( a, read[i] );
             }
         }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, test_types )
+{
+    ValueType sourceVals[] = { 3, 1, 4, 2 };
+    IndexType indexVals[]  = { 0, 2, 1, 2, 1, 3 };
+
+    const IndexType M = sizeof( sourceVals ) / sizeof( ValueType );
+    const IndexType N = sizeof( indexVals ) / sizeof( IndexType );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_REQUIRE( indexVals[i] < M );
+    }
+
+    // target = source[ indexes ]
+
+    LArray<ValueType> source( M, sourceVals );
+    LArray<IndexType> indexes( N, indexVals );
+    LArray<ValueType> target;
+
+    HArrayUtils::gather( target, source, indexes );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_CHECK_EQUAL( target[i], source[indexes[i]] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, test_types )
+{
+    ValueType sourceVals[] = { 3, 1, 4, 2 };
+    IndexType indexVals[]  = { 0, 2, 1, 3 };
+
+    const IndexType M = sizeof( sourceVals ) / sizeof( ValueType );
+    const IndexType N = sizeof( indexVals ) / sizeof( IndexType );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_REQUIRE( indexVals[i] < M );
+    }
+
+    // target = source[ indexes ]
+
+    LArray<ValueType> source( M, sourceVals );
+    LArray<IndexType> indexes( N, indexVals );
+    LArray<ValueType> target;
+
+    HArrayUtils::scatter( target, indexes, source );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_CHECK_EQUAL( target[indexes[i]], source[i] );
     }
 }
 

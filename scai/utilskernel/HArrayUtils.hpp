@@ -70,19 +70,64 @@ public:
      *  \endcode
      *  Size of target array will be the same as the source array.
      */
-    static void assign( hmemo::_HArray& target, const hmemo::_HArray& source, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void assign( 
+        hmemo::_HArray& target, 
+        const hmemo::_HArray& source, 
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     static void set( 
         hmemo::_HArray& target, 
         const hmemo::_HArray& source, 
         const common::reduction::ReductionOp op,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** 
+     *  @brief Gathering (unstructured read) of values with heterogeneous arrays. 
+     *
+     *  target[i] = source[index[i]] 
+     */
     static void gather(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
-        const hmemo::HArray<IndexType>& index );
+        const hmemo::HArray<IndexType>& index,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /**
+     *  @brief Gathering (unstructured read of values) with HArrays, template typed version
+     */
+    template<typename TargetValueType,typename SourceValueType>
+    static void gatherImpl(
+        hmemo::HArray<TargetValueType>& target,
+        const hmemo::HArray<SourceValueType>& source,
+        const hmemo::HArray<IndexType>& index,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** 
+     *  @brief Scattering (unstructured write) of values with heterogeneous arrays. 
+     *
+     *  target[index[i]] = source[i] 
+     */
+    static void scatter(
+        hmemo::_HArray& target,
+        const hmemo::HArray<IndexType>& index,
+        const hmemo::_HArray& source,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /**
+     *  @brief Scatter (unstructured write of values) with HArrays, template typed version
+     */
+    template<typename TargetValueType,typename SourceValueType>
+    static void scatterImpl(
+        hmemo::HArray<TargetValueType>& target,
+        const hmemo::HArray<IndexType>& index,
+        const hmemo::HArray<SourceValueType>& source,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /**
+     *  @brief Setting one scalar element for all elements of HArray
+     *
+     *  target[i] <op>= value 
+     */
     template<typename ValueType>
     static void setScalar( 
         hmemo::_HArray& target,
@@ -172,18 +217,12 @@ public:
     /*
      * Implementation of functions
      */
-    template<typename ValueType1,typename ValueType2>
+    template<typename TargetValueType,typename SourceValueType>
     static void setImpl(
-        hmemo::HArray<ValueType1>& target,
-        const hmemo::HArray<ValueType2>& source,
+        hmemo::HArray<TargetValueType>& target,
+        const hmemo::HArray<SourceValueType>& source,
         const common::reduction::ReductionOp op,
         hmemo::ContextPtr context );
-
-    template<typename ValueType1,typename ValueType2>
-    static void gatherImpl(
-        hmemo::HArray<ValueType1>& target,
-        const hmemo::HArray<ValueType2>& source,
-        const hmemo::HArray<IndexType>& index );
 
     template<typename ValueType>
     static void setScalarImpl(
@@ -193,11 +232,11 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
         __attribute__( ( noinline ) );
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     static void setValImpl(
         hmemo::HArray<ValueType>& target,
         const IndexType index,
-        const OtherValueType val );
+        const ValueType val );
 
     template<typename ValueType, typename OtherValueType>
     static ValueType getValImpl(
