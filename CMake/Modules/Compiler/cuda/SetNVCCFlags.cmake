@@ -72,14 +72,13 @@ if    ( CUDA_FOUND AND USE_CUDA )
         set ( SCAI_NVCC_FLAGS -Xcompiler -fPIC )
       	set ( SCAI_NVCC_FLAGS_DEBUG -g -G )
         set ( SCAI_NVCC_FLAGS_RELEASE -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
-        
         # Note: -Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
 
         if    ( CXX_SUPPORTS_C11 )
             if ( CUDA_VERSION STRLESS "7.0" )
                 message ( FATAL_ERROR "CUDA version ${CUDA_VERSION} does not support -std=c++11, please call cmake with -DCXX_SUPPORTS_C11=0" )
             else ()
-                list ( APPEND SCAI_NVCC_FLAGS "-std=c++11" )
+                list ( APPEND SCAI_NVCC_FLAGS ${ADDITIONAL_CXX_FLAGS_LANG} )
             endif ()
         endif ( CXX_SUPPORTS_C11 )
 
@@ -99,7 +98,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
         ### cusparse is usually in same directory as cublas
         get_filename_component( HINT_CUDA_LIBRARY_DIR ${CUDA_cublas_LIBRARY} PATH )
         find_library( CUDA_cusparse_LIBRARY NAMES cusparse
-                  HINTS ${HINT_CUDA_LIBRARY_DIR} )
+                      HINTS ${HINT_CUDA_LIBRARY_DIR} )
         mark_as_advanced( CUDA_cusparse_LIBRARY )
     endif ( NOT CUDA_cusparse_LIBRARY )
 
@@ -128,8 +127,8 @@ if    ( CUDA_FOUND AND USE_CUDA )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 if ( CUDA_FOUND  )
-    set ( CUDA_NVCC_FLAGS_MINSIZEREL "${CUDA_NVCC_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+    set ( CUDA_NVCC_FLAGS_MINSIZEREL     "${CUDA_NVCC_FLAGS_MINSIZEREL}"     CACHE INTERNAL "" )
     set ( CUDA_NVCC_FLAGS_RELWITHDEBINFO "${CUDA_NVCC_FLAGS_RELWITHDEBINFO}" CACHE INTERNAL "" )
-    set ( CUDA_GENERATED_OUTPUT_DIR "${CUDA_GENERATED_OUTPUT_DIR}" CACHE INTERNAL "" )
-    set ( CUDA_SDK_ROOT_DIR "$CUDA_SDK_ROOT_DIR" CACHE INTERNAL "" )
+    set ( CUDA_GENERATED_OUTPUT_DIR      "${CUDA_GENERATED_OUTPUT_DIR}"      CACHE INTERNAL "" )
+    set ( CUDA_SDK_ROOT_DIR              "${CUDA_SDK_ROOT_DIR}"                CACHE INTERNAL "" )
 endif ( CUDA_FOUND  )

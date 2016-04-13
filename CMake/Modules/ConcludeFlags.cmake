@@ -36,19 +36,25 @@ mark_as_advanced ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE  ADDITIONAL_CXX_FLAGS_DEBU
 
 set ( CONCLUDE_CXX_FLAGS "" )
 
-if    ( USE_OPENMP )
-    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_OPENMP}" )
-else  ( USE_OPENMP )
-    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OPENMP}" )
-endif ( USE_OPENMP)
+if    ( SCAI_COMMON_FOUND )
+    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${SCAI_COMMON_FLAGS}")
+else  ( SCAI_COMMON_FOUND )
+
+    if    ( USE_OPENMP )
+        set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_OPENMP}" )
+    else  ( USE_OPENMP )
+        set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OPENMP}" )
+    endif ( USE_OPENMP)
+
+    if    ( CXX_SUPPORTS_C11 )
+        set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_LANG}" )
+    endif ( CXX_SUPPORTS_C11 )
+
+endif ( SCAI_COMMON_FOUND )
 
 if    ( NOT USE_MIC )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OFFLOAD}" )
 endif ( NOT USE_MIC )
-
-if    ( CXX_SUPPORTS_C11 )
-    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_LANG}" )
-endif ( CXX_SUPPORTS_C11 )
 
 if    ( USE_CODE_COVERAGE )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_CODE_COVERAGE}")
@@ -78,20 +84,21 @@ if ( CUDA_FOUND AND USE_CUDA )
     # with sm_20 no warnings about Cannot tell what pointer points to, assuming global memory space in Release build
     # We need at least compute capability 1.3, so if no architecture is specified set it here
     if    ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-    	list ( APPEND CUDA_NVCC_FLAGS -arch=sm_${CUDA_COMPUTE_CAPABILITY} )
+        list ( APPEND CUDA_NVCC_FLAGS -arch=sm_${CUDA_COMPUTE_CAPABILITY} )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
     
-    set ( ADDITIONAL_NVCC_FLAGS "${SCAI_NVCC_FLAGS}" CACHE STRING "additional nvcc compiler flags" )
-    set ( ADDITIONAL_NVCC_FLAGS_DEBUG "${SCAI_NVCC_FLAGS_DEBUG}" CACHE STRING "additional nvcc debug compiler flags" )
+    set ( ADDITIONAL_NVCC_FLAGS         "${SCAI_NVCC_FLAGS}"         CACHE STRING "additional nvcc compiler flags" )
+    set ( ADDITIONAL_NVCC_FLAGS_DEBUG   "${SCAI_NVCC_FLAGS_DEBUG}"   CACHE STRING "additional nvcc debug compiler flags" )
     set ( ADDITIONAL_NVCC_FLAGS_RELEASE "${SCAI_NVCC_FLAGS_RELEASE}" CACHE STRING "additional nvcc release compiler flags" )
     mark_as_advanced ( ADDITIONAL_NVCC_FLAGS ADDITIONAL_NVCC_FLAGS_RELEASE ADDITIONAL_NVCC_FLAGS_DEBUG )
 
-    list ( APPEND CUDA_NVCC_FLAGS ${ADDITIONAL_NVCC_FLAGS} )
+    list ( APPEND CUDA_NVCC_FLAGS         ${ADDITIONAL_NVCC_FLAGS} )
+    list ( APPEND CUDA_NVCC_FLAGS_DEBUG   ${ADDITIONAL_NVCC_FLAGS_DEBUG} )
     list ( APPEND CUDA_NVCC_FLAGS_RELEASE ${ADDITIONAL_NVCC_FLAGS_RELEASE} )
-    list ( APPEND CUDA_NVCC_FLAGS_DEBUG ${ADDITIONAL_NVCC_FLAGS_DEBUG} )
-    
+
     # remove leading and trailing whitespaces
     string ( STRIP "${CUDA_NVCC_FLAGS}"         CUDA_NVCC_FLAGS )
+    string ( STRIP "${CUDA_NVCC_FLAGS_DEBUG}"   CUDA_NVCC_FLAGS_DEBUG )
     string ( STRIP "${CUDA_NVCC_FLAGS_RELEASE}" CUDA_NVCC_FLAGS_RELEASE )
     
 endif ( CUDA_FOUND AND USE_CUDA )
