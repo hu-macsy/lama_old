@@ -173,6 +173,19 @@ void Richardson::iterate()
         case common::scalar::DOUBLE:
             iterate<double>();
             break;
+        case common::scalar::LONG_DOUBLE:
+            iterate<long double>();
+            break;
+        case common::scalar::COMPLEX:
+            iterate<ComplexFloat>();
+            break;
+        case common::scalar::DOUBLE_COMPLEX:
+            iterate<ComplexDouble>();
+            break;
+        case common::scalar::LONG_DOUBLE_COMPLEX:
+            iterate<ComplexLongDouble>();
+            break;
+
         default:
             COMMON_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mCoefficients->getValueType() )
     }
