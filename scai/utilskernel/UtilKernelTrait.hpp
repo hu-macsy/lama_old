@@ -120,14 +120,14 @@ struct UtilKernelTrait
      *  @tparam ValueType specifies the value type used in the set operations.
      */
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     struct setVal
     {
         /** Set all elements of a contiguous array with a value. 
          *  A reduction operator like ADD, MULT can be used to combine the new value with the old value.
          */
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
         static const char* getId() { return "Util.setVal"; }
     };
 

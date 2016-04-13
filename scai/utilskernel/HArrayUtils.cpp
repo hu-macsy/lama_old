@@ -205,7 +205,7 @@ void HArrayUtils::setScalarImpl(
     const common::reduction::ReductionOp op,
     ContextPtr prefLoc )
 {
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr loc = prefLoc;
 
@@ -257,7 +257,7 @@ void HArrayUtils::setValImpl(
 {
     ContextPtr loc = target.getValidContext();   // preferred location where to fill
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, OtherValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     setVal.getSupportedContext( loc );
 

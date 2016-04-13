@@ -99,7 +99,7 @@ ELLStorage<ValueType>::ELLStorage(
 
     // Initialization requires correct values for the IA array with 0
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( context );
 
@@ -272,7 +272,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
     mNumValuesPerRow = 1;
 
     {
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -297,7 +297,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
     // extra block caused by differnt types of setVal()
     {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -632,7 +632,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "setDiagonalImpl # value = " << value )
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -832,7 +832,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // Intialize array mIA with 0
 
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( getContextPtr() );
 

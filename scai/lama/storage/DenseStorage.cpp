@@ -593,7 +593,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( mContext );
 
@@ -712,7 +712,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( mContext );
 
@@ -946,7 +946,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     {
         // do not care at all about C as it might be any dummy, or aliased to result
 
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
         ContextPtr context = setVal.getValidContext( mContext );
 

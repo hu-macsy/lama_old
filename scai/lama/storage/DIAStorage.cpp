@@ -211,7 +211,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     // take context of this storage to set
 
@@ -421,7 +421,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
     mNumDiagonals = 1; // identity has exactly one diagonal
 
     {
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( getContextPtr() );
 
@@ -433,7 +433,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
     }
 
     {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( getContextPtr() );
 

@@ -29,7 +29,7 @@ int main(int, char**)
     int size = 10;
     hmemo::HArray<double> a, b, c;
 
-    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<double, double> > setVal;
+    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<double> > setVal;
 
     hmemo::ContextPtr loc = hmemo::Context::getContextPtr( common::context::Host );
 

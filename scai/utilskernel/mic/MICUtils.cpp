@@ -171,8 +171,8 @@ ValueType MICUtils::reduce( const ValueType array[], const IndexType n, const co
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, typename OtherValueType>
-void MICUtils::setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op )
+template<typename ValueType>
+void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
 {
     SCAI_LOG_DEBUG( logger, "setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
@@ -745,7 +745,7 @@ void MICUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistr
 
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::setVal<IndexType, IndexType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx, flag );
@@ -771,6 +771,7 @@ void MICUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
 }
 
@@ -789,7 +790,6 @@ void MICUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::setVal<ValueType, OtherValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
 
 }

@@ -247,7 +247,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     mNumValues = mNumRows;
 
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr loc = this->getContextPtr();
 
@@ -599,7 +599,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 

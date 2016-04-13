@@ -95,7 +95,7 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
         return;
     }
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
     // make sure that for both context functions implementations are available at the chosen context
@@ -300,7 +300,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
     SCAI_LOG_INFO( logger, "setDiagonalImpl with value = " << value )
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -607,7 +607,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     mNumValues = mNumRows;
 
     {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -619,7 +619,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 
     }
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
     // get context where all implementations are available, if not on own context
@@ -886,7 +886,7 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // the arrays mIlg and mPerm need initialization
 
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
         static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
         ContextPtr loc = this->getContextPtr();
