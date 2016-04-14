@@ -133,7 +133,7 @@ void Richardson::iterate()
 
     const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
 
-    lama::Vector* x = lama::Vector::getVector( lama::Vector::VectorFormat::DENSE, A.getValueType() );
+    lama::Vector* x = lama::Vector::getVector( lama::Vector::DENSE, A.getValueType() );
     lama::Vector& xRef = *x;
     xRef = A * oldSolution;
 
