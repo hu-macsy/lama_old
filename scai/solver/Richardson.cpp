@@ -34,13 +34,14 @@
 // hpp
 #include <scai/solver/Richardson.hpp>
 
-// local library
+// scai internal libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
-
 #include <scai/lama/DenseVector.hpp>
+
+#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {
@@ -100,6 +101,11 @@ void Richardson::solveInit( lama::Vector& solution, const lama::Vector& rhs )
         runtime.mOldSolution.reset( lama::Vector::create( solution.getCreateValue() ) );
     }
 
+    if( !runtime.mX.get() )
+    {
+        runtime.mX.reset( lama::Vector::create( solution.getCreateValue() ) );
+    }
+
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
 
     IterativeSolver::solveInit( solution, rhs );
@@ -133,8 +139,7 @@ void Richardson::iterate()
 
     const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
 
-    lama::Vector* x = lama::Vector::getVector( lama::Vector::DENSE, A.getValueType() );
-    lama::Vector& xRef = *x;
+    lama::Vector& xRef = *runtime.mX;
     xRef = A * oldSolution;
 
     *runtime.mSolution = rhs - xRef;
