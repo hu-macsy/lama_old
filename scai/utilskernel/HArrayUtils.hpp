@@ -238,9 +238,9 @@ public:
         const IndexType index,
         const ValueType val );
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     static ValueType getValImpl(
-        const hmemo::HArray<OtherValueType>& array,
+        const hmemo::HArray<ValueType>& array,
         const IndexType index );
 
     template<typename ValueType>
@@ -274,6 +274,19 @@ public:
     /** Check for an index array whether all values are smaller than n */
 
     static bool validIndexes( const hmemo::HArray<IndexType>& array, const IndexType size, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Check whether values in array are sorted ascending or descending. */
+
+    template<typename ValueType>
+    static bool isSorted( const hmemo::HArray<ValueType>& array, const bool isAscending, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Build the running sums for an array; note that result array will contain one element more. */
+
+    template<typename ValueType>
+    static ValueType scan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
 
 private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

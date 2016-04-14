@@ -70,17 +70,14 @@ namespace scai
 
 using namespace hmemo;
 using namespace dmemo;
+using namespace utilskernel;
+
 using common::unique_ptr;
 using common::shared_ptr;
 using common::TypeTraits;
-using utilskernel::OpenMPUtils;
-using utilskernel::UtilKernelTrait;
-using utilskernel::HArrayUtils;
-using utilskernel::LAMAKernel;
-using utilskernel::LArray;
+
 using sparsekernel::CSRKernelTrait;
 using sparsekernel::OpenMPCSRUtils;
-
 
 using tasking::SyncToken;
 
@@ -319,41 +316,17 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     if( ia.size() == numRows )
     {
-        static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+        IndexType sumIA = HArrayUtils::reduce( ia, common::reduction::ADD );
 
-        // checking is done where ia is already valid, preferred is loc
-
-        ContextPtr loc1 = ia.getValidContext( loc );
-        reduce.getSupportedContext( loc1 );
-
-        ReadAccess<IndexType> csrIA( ia, loc1 );
-
-        SCAI_CONTEXT_ACCESS( loc1 )
-
-        IndexType n = reduce[loc1]( csrIA.get(), numRows, common::reduction::ADD );
-
-        if( n != numValues )
-        {
-            COMMON_THROWEXCEPTION( "ia is invalid size array" )
-        }
+        SCAI_ASSERT_EQUAL( numValues, sumIA, "sizes do not sum up to numValues" );
     }
-    else if( ia.size() == numRows + 1 )
+    else if ( ia.size() == numRows + 1 )
     {
-        static LAMAKernel<CSRKernelTrait::validOffsets> validOffsets;
+        bool ascending = true; // check increasing, ia[i] <= ia[i+1]
 
-        // checking is done where ia is already valid
+        SCAI_ASSERT( HArrayUtils::isSorted( ia, ascending ), "ia is invalid offset array, entries not ascending" )
 
-        ContextPtr loc1 = ia.getValidContext( loc );
-        validOffsets.getSupportedContext( loc1 );
-
-        ReadAccess<IndexType> csrIA( ia, loc1 );
-
-        SCAI_CONTEXT_ACCESS( loc1 )
-
-        if( !validOffsets[loc1]( csrIA.get(), numRows, numValues ) )
-        {
-            COMMON_THROWEXCEPTION( "ia is invalid offset array" )
-        }
+        SCAI_ASSERT_EQUAL( numValues, HArrayUtils::getValImpl( ia, numRows ), "last entry in offsets must be numValues" );
     }
     else
     {
@@ -363,24 +336,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     SCAI_ASSERT_EQUAL_ERROR( numValues, ja.size() );
     SCAI_ASSERT_EQUAL_ERROR( numValues, values.size() );
 
-    {
-        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
-
-        ContextPtr loc1 = loc;
-
-        validIndexes.getSupportedContext( loc1 );
-
-        // make sure that column indexes in JA are all valid
-
-        ReadAccess<IndexType> csrJA( ja, loc1 );
-
-        SCAI_CONTEXT_ACCESS( loc1 )
-
-        if( !validIndexes[loc1]( csrJA.get(), numValues, numColumns ) )
-        {
-            COMMON_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
-        }
-    }
+    SCAI_ASSERT( HArrayUtils::validIndexes( ja, numColumns ), "invalid column indexes, #cols = " << numColumns );
 
     // now we can copy all data
 

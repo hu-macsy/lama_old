@@ -45,6 +45,7 @@
 #include <scai/common/Complex.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/unique_ptr.hpp>
 #include <scai/common/OpenMP.hpp>
 
 namespace scai
@@ -657,6 +658,156 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType OpenMPUtils::scanSerial( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger, "scanSerial: " << n << " entries" )
+
+    // In this case we do it just serial, probably faster
+
+    ValueType runningSum = 0;
+
+    for( IndexType i = 0; i < n; i++ )
+    {
+        ValueType tmp = runningSum;
+        runningSum += array[i];
+        SCAI_LOG_TRACE( logger, "scan, row = " << i << ", size = " << array[i] << ", offset = " << runningSum )
+        array[i] = tmp;
+    }
+
+    return runningSum;;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType OpenMPUtils::scanParallel( PartitionId numThreads, ValueType array[], const IndexType n )
+{
+    // std::cout << "Scan with " << numThreads << " in parallel" << std::endl;
+
+    // For more threads, we do it in parallel
+    // Attention: MUST USE schedule(static)
+
+    common::scoped_array<ValueType> threadCounter( new ValueType[numThreads] );
+
+    SCAI_LOG_DEBUG( logger, "scanParallel: " << n << " entries for " << numThreads << " threads" )
+
+    #pragma omp parallel
+    {
+        ValueType myCounter = 0;
+
+        #pragma omp for schedule(static)
+
+        for( IndexType i = 0; i < n; i++ )
+        {
+            myCounter += array[i];
+        }
+
+        threadCounter[omp_get_thread_num()] = myCounter;
+    }
+
+    ValueType runningSum = scanSerial( threadCounter.get(), numThreads );
+
+    // Each thread sets now its offsets
+
+    #pragma omp parallel
+    {
+        ValueType myRunningSum = threadCounter[omp_get_thread_num()];
+
+        #pragma omp for schedule(static)
+
+        for( IndexType i = 0; i < n; i++ )
+        {
+            ValueType tmp = myRunningSum;
+            myRunningSum += array[i];
+            array[i] = tmp;
+        }
+    }
+
+    return runningSum;;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType OpenMPUtils::scan( ValueType array[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.scan" )
+
+    SCAI_LOG_INFO( logger, "scan array[ " << n << " ]" )
+
+    int numThreads = 1; // will be set to available threads in parallel region
+
+    #pragma omp parallel
+    #pragma omp master
+    {
+        numThreads = omp_get_num_threads();
+    }
+
+    SCAI_LOG_INFO( logger, "scan " << n << " entries, #threads = " << numThreads )
+
+    static int minThreads = 3;  
+
+    ValueType total;
+
+    if ( numThreads < minThreads )
+    {
+        total = scanSerial( array, n );
+    }
+    else
+    {
+        total = scanParallel( numThreads, array, n );
+    }
+
+    array[n] = total;
+
+    return total;
+}
+
+/* --------------------------------------------------------------------------- */
+
+static void* ptr = NULL;
+
+template<typename ValueType>
+void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.sort" )
+
+    for ( int i = 0; i < n; ++i )
+    {
+        perm[i] = i;
+    }
+
+    // sort using a custom function object
+
+    struct compare
+    {
+        static bool f( IndexType a, IndexType b )
+        {   
+            ValueType* arr = reinterpret_cast<ValueType*>( ptr );
+            return arr[a] < arr[b];
+        }   
+    };
+
+    ptr = array;
+
+    std::sort( perm, perm + n, compare::f );
+
+    common::scoped_array<ValueType> tmp( new ValueType[n] );
+
+    for ( int i = 0; i < n; ++i )
+    {
+        tmp[i] = array[i];
+    }
+
+    for ( int i = 0; i < n; ++i )
+    {
+        array[i] = tmp[perm[i]];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -693,6 +844,8 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

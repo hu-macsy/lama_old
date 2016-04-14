@@ -348,9 +348,9 @@ ValueType HArrayUtils::getVal(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType>
 ValueType HArrayUtils::getValImpl(
-    const HArray<OtherValueType>& array,
+    const HArray<ValueType>& array,
     const IndexType index )
 {
     SCAI_ASSERT_DEBUG( index < array.size(), "index = " << index << " out of range for array = " << array );
@@ -359,17 +359,17 @@ ValueType HArrayUtils::getValImpl(
 
     ContextPtr loc = array.getValidContext();
 
-    static LAMAKernel<UtilKernelTrait::getValue<OtherValueType> > getValue;
+    static LAMAKernel<UtilKernelTrait::getValue<ValueType> > getValue;
 
     getValue.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<OtherValueType> rArray( array, loc );
+    ReadAccess<ValueType> rArray( array, loc );
 
-    OtherValueType val = getValue[loc]( rArray.get(), index );
+    ValueType val = getValue[loc]( rArray.get(), index );
 
-    return static_cast<ValueType>( val );
+    return val;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -727,6 +727,110 @@ bool HArrayUtils::validIndexes(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+bool HArrayUtils::isSorted( 
+    const hmemo::HArray<ValueType>& array, 
+    const bool ascending, 
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    isSorted.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<ValueType> rValues( array, loc );
+
+    bool sorted = isSorted[loc]( rValues.get(), n, ascending );
+
+    return sorted;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType HArrayUtils::scan( 
+    hmemo::HArray<ValueType>& array, 
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    static LAMAKernel<UtilKernelTrait::scan<ValueType> > scan;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    scan.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<ValueType> wValues( array, loc );
+
+    // One additional element will be added at the end
+
+    wValues.resize( n + 1 );
+
+    ValueType total = scan[loc]( wValues.get(), n );
+
+    return total;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::sort(
+    hmemo::HArray<ValueType>& array,
+    hmemo::HArray<IndexType>& perm,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    if ( n == 0 )
+    {
+        perm.clear();
+        return;
+    }
+
+    static LAMAKernel<UtilKernelTrait::sort<ValueType> > sort;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    sort.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<ValueType> wValues( array, loc );
+    WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
+
+    sort[loc]( wValues.get(), wPerm.get(), n );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void HArrayUtils::SpecifierV<ValueType>::specify()
 {
     using common::mepr::TemplateSpecifier;
@@ -744,6 +848,9 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
     TemplateSpecifier::set( HArrayUtils::dotProduct<ValueType> );
     TemplateSpecifier::set( HArrayUtils::asum<ValueType> );
     TemplateSpecifier::set( HArrayUtils::invert<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::isSorted<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::scan<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::sort<ValueType> );
 }
 
 /* --------------------------------------------------------------------------- */

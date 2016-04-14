@@ -129,6 +129,16 @@ public:
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
 
+    /** CUDA implementation for UtilKernelTrait::scan */
+
+    template<typename ValueType>
+    static ValueType scan( ValueType array[], const IndexType n );
+
+    /** CUDA implementation for UtilKernelTrait::sort */
+
+    template<typename ValueType>
+    static void sort( ValueType array[], IndexType perm[], const IndexType n );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

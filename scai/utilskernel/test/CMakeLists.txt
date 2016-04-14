@@ -30,12 +30,21 @@
  # @date 18.02.2016
 ###
 
-set ( CXX_SOURCES
-      UtilsKernelTest
-      HArrayUtilsTest
-      UtilsTest
-      LArrayTest
-) 
+scai_project ( 
+
+    CLASSES
+
+    HEADERS
+        
+        HArrays
+
+    SOURCES
+
+        UtilsKernelTest
+        HArrayUtilsTest
+        UtilsTest
+        LArrayTest
+)
 
 include_directories ( ${Boost_INCLUDE_DIR} )
 
@@ -43,15 +52,8 @@ add_executable ( utilskernelTest ${CXX_SOURCES} )
 
 target_link_libraries ( utilskernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
-#if    ( CUDA_FOUND AND USE_CUDA )
-#    add_subdirectory ( cuda )
-#endif ( CUDA_FOUND AND USE_CUDA )
-#
-#if    ( USE_MIC )
-#    add_subdirectory ( mic )
-#endif ( USE_MIC )
-
 ### Copy the xmltest.sh file in build directory ### 
+
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
 
 if ( USE_CODE_COVERAGE )

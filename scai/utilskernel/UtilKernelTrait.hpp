@@ -269,6 +269,52 @@ struct UtilKernelTrait
 
         static const char* getId() { return "Util.conj"; }
     };
+
+    template<typename ValueType>
+    struct scan
+    {
+        /** This method computes runnings sums of values
+         *
+         *  @param[in,out] array contains  values and later the running sums
+         *  @param[in]    n is the number of values, array must contain one additional value
+         *  @returns      the total sum of values
+         *
+         *  \code
+         *    array  :    3    7   8   4   2  x
+         *    array  :    0   10  15  12  16  18  -> returns 18
+         *  \endcode
+         *
+         *  Important: sizes must have numRows + 1 allocated entries.
+         *
+         */
+
+        typedef ValueType ( *FuncType ) ( ValueType array[], const IndexType n );
+
+        static const char* getId() { return "Util.scan"; }
+    };
+
+    template<typename ValueType>
+    struct sort
+    {
+        /** Stable sorting of values in array in descending order.
+         *
+         *  @param[in,out] array are the values to be sorted
+         *  @param[in,out] perm, where perm[i] has the value of the original position
+         *  @param[in]    n is the number of values to be sorted
+         *
+         *  \code
+         *           array =   1  4   1  8  5  7
+         *           perm  =   0  1   2  3  4  5
+         +
+         *           array =   8  7   5  4  1  1
+         *           perm  =   3  5   4  1  0  2
+         *  \endcode
+         */
+
+        typedef void ( *FuncType ) ( ValueType array[], IndexType perm[], const IndexType n );
+        
+        static const char* getId() { return "Utils.sort"; }
+    };
 };
 
 } /* end namespace utilskernel */

@@ -128,6 +128,20 @@ public:
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::scan */
+
+    template<typename ValueType>
+    static ValueType scan( ValueType array[], const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::sort, uses bucket sort */
+
+    template<typename ValueType>
+    static void sort( ValueType array[], IndexType perm[], const IndexType n );
+
+    /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
+
+    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
+
 private:
 
     template<typename ValueType>
@@ -141,6 +155,12 @@ private:
 
     template<typename ValueType>
     static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType scanSerial( ValueType array[], const IndexType numValues );
+
+    template<typename ValueType>
+    static ValueType scanParallel( PartitionId numThreads, ValueType array[], const IndexType numValues );
 
     /** Routine that registers all methods at the kernel registry. */
 

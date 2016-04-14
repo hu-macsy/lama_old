@@ -149,7 +149,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
     {
         if( common::getScalarType<H>() == array.getValueType() )
         {
-            return HArrayUtils::getValImpl< ValueType, H >( reinterpret_cast<const hmemo::HArray<H>&>( array ), index );
+            return static_cast<ValueType>( HArrayUtils::getValImpl( reinterpret_cast<const hmemo::HArray<H>&>( array ), index ) );
         }
         else
         {

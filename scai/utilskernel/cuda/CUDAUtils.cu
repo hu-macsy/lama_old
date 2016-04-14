@@ -55,9 +55,12 @@
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/reduce.h>
 #include <thrust/sequence.h>
+#include <thrust/sort.h>
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
+
+#include <complex.h>
 
 using namespace scai::common;
 
@@ -736,6 +739,46 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CUDAUtils::scan( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "scan<" << TypeTraits<ValueType>::id() <<  ">, #n = " << n )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> array_ptr( array );
+    thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr ); 
+    thrust::host_vector<ValueType> numValues( array_ptr + n, array_ptr + n + 1 );
+
+    return numValues[0];
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void CUDAUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "sort " << n << " values" )
+
+    if ( n > 1 )
+    {
+
+        SCAI_CHECK_CUDA_ACCESS
+
+        thrust::device_ptr<ValueType> array_d( array );
+        thrust::device_ptr<IndexType> perm_d( perm );
+        thrust::sequence( perm_d, perm_d + n );
+
+        // stable sort, descending order, so override default comparison
+
+        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<ValueType>() );
+
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "Utils: synchronize for sort FAILED" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -772,6 +815,8 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
