@@ -506,6 +506,16 @@ public:
     COMPLEX_OPERATOR_CUDA( operator=, Complex<float>, COMPLEX_SET_COMPLEX )
     COMPLEX_OPERATOR_CUDA( operator=, Complex<double>, COMPLEX_SET_COMPLEX )
     COMPLEX_OPERATOR_NONCUDA( operator=, Complex<long double>, COMPLEX_SET_COMPLEX )
+#ifdef __CUDACC__
+    template<typename OtherValueType>
+    CUDA_CALLABLE_MEMBER Complex<ValueType>& operator=( const thrust::device_reference<Complex<OtherValueType> >& value )
+    {
+        Complex<OtherValueType> x = value;
+    	real( static_cast<ValueType>( x.real() ) );
+    	imag( static_cast<ValueType>( x.imag() ) );
+    	return *this;
+    }
+#endif
 
     COMPLEX_OPERATOR_CUDA( operator+=, int, COMPLEX_OP_REAL( + ) )
     COMPLEX_OPERATOR_CUDA( operator+=, long, COMPLEX_OP_REAL( + ) )
