@@ -35,6 +35,9 @@
 #include <scai/solver/TFQMR.hpp>
 
 // local library
+#include <scai/solver/mepr/SolverEps.hpp>
+
+// internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
@@ -88,30 +91,7 @@ void TFQMR::initialize( const Matrix& coefficients ){
     runtime.mC = 0.0;
     runtime.mEta = 0.0;
     runtime.mTheta = 0.0;
-    // runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
-    switch(coefficients.getValueType()){
-        case common::scalar::FLOAT:
-            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
-            break;
-        case common::scalar::DOUBLE:
-            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
-            break;
-        case common::scalar::LONG_DOUBLE:
-            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
-            break;
-        case common::scalar::COMPLEX:
-            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
-            break;
-        case common::scalar::DOUBLE_COMPLEX:
-            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
-            break;
-        case common::scalar::LONG_DOUBLE_COMPLEX:
-            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
-            break;    
-        default:
-        SCAI_LOG_INFO(logger,"Valuetype not supported");
-        break;
-    }
+    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
     // create dense runtime vectors with same row distribution, type, context as coefficients
 
     runtime.mVecD.reset( coefficients.newDenseVector() );

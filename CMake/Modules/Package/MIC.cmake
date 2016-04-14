@@ -33,14 +33,3 @@
 
 # detect whether a MIC device is available, then USE_MIC
 include ( Compiler/mic/testMICfound )
-
-if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-	set ( MIC_NO_OFFLOAD_FLAG "-no-offload" )
-
-	if    ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
-		set ( MIC_NO_OFFLOAD_FLAG "-qno-offload" )
-	endif ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
-endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-
-set ( ADDITIONAL_CXX_FLAGS_NO_OFFLOAD "${MIC_NO_OFFLOAD_FLAG}" CACHE STRING "MIC no offload flag (only if MIC disabled)" )
-mark_as_advanced ( ADDITIONAL_CXX_FLAGS_NO_OFFLOAD )

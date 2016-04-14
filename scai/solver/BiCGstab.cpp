@@ -35,6 +35,9 @@
 #include <scai/solver/BiCGstab.hpp>
 
 // local library
+#include <scai/solver/mepr/SolverEps.hpp>
+
+// internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
@@ -91,32 +94,9 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mOmega = 1.0;
     runtime.mRhoOld = 1.0;
     runtime.mResNorm = 1.0;
-    // runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
-    switch(coefficients.getValueType()){
-        case common::scalar::FLOAT:
-            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
-            break;
-        case common::scalar::DOUBLE:
-            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
-            break;
-        case common::scalar::LONG_DOUBLE:
-            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
-            break;
-        case common::scalar::COMPLEX:
-            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
-            break;
-        case common::scalar::DOUBLE_COMPLEX:
-            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
-            break;
-        case common::scalar::LONG_DOUBLE_COMPLEX:
-            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
-            break;    
-        default:
-        SCAI_LOG_INFO(logger,"Valuetype not supported");
-        break;
-    }
-    // get runtime vectors with same row distribution / context / type as cofficients matrix
+    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
 
+    // get runtime vectors with same row distribution / context / type as cofficients matrix
     runtime.mRes0.reset( coefficients.newDenseVector() );
     runtime.mVecV.reset( coefficients.newDenseVector() );
     runtime.mVecP.reset( coefficients.newDenseVector() );

@@ -102,6 +102,7 @@ public:
         virtual ~RichardsonRuntime();
 
         common::unique_ptr<lama::Vector> mOldSolution;
+	common::unique_ptr<lama::Vector> mX;
         SolutionProxy mProxyOldSolution;
     };
     /**
@@ -136,13 +137,6 @@ protected:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-private:
-
-    template<typename T>
-    void initialize( const lama::Matrix& coefficients );
-
-    template<typename T>
-    void iterate();
 };
 
 } /* end namespace solver */

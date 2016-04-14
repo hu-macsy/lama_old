@@ -45,6 +45,7 @@
 
 #include <scai/tracing.hpp>
 
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/assert.hpp>
 
 // std

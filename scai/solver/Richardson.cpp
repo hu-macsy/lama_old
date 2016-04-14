@@ -34,13 +34,14 @@
 // hpp
 #include <scai/solver/Richardson.hpp>
 
-// local library
+// scai internal libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
-
 #include <scai/lama/DenseVector.hpp>
+
+#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {
@@ -100,6 +101,11 @@ void Richardson::solveInit( lama::Vector& solution, const lama::Vector& rhs )
         runtime.mOldSolution.reset( lama::Vector::create( solution.getCreateValue() ) );
     }
 
+    if( !runtime.mX.get() )
+    {
+        runtime.mX.reset( lama::Vector::create( solution.getCreateValue() ) );
+    }
+
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
 
     IterativeSolver::solveInit( solution, rhs );
@@ -118,13 +124,9 @@ void Richardson::solveFinalize()
     SCAI_LOG_DEBUG( logger, " end solve " )
 }
 
-template<typename T>
 void Richardson::iterate()
 {
-    typedef T DataType;
     RichardsonRuntime& runtime = getRuntime();
-
-    DataType omega = mOmega.getValue<DataType>();
 
     const lama::Vector& rhs = *runtime.mRhs;
     const lama::Matrix& A = *runtime.mCoefficients;
@@ -137,45 +139,17 @@ void Richardson::iterate()
 
     const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
 
-    lama::DenseVector<T> x = A * oldSolution;
-    *runtime.mSolution = rhs - x;
+    lama::Vector& xRef = *runtime.mX;
+    xRef = A * oldSolution;
 
-    if ( omega != 1.0 )
+    *runtime.mSolution = rhs - xRef;
+
+    if ( mOmega != 1.0 )
     {
-        *runtime.mSolution = omega * ( *runtime.mSolution );
+        *runtime.mSolution = mOmega * ( *runtime.mSolution );
     }
 
     *runtime.mSolution = oldSolution + ( *runtime.mSolution );
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        SCAI_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
-        const lama::DenseVector<T>& sol = dynamic_cast<const lama::DenseVector<T>&>( *runtime.mSolution );
-        hmemo::ReadAccess<T> rsol( sol.getLocalValues(), hmemo::Context::getHostPtr() );
-        std::cout << "Solution: ";
-
-        for ( IndexType i = 0; i < rsol.size(); ++i )
-        {
-            std::cout << " " << rsol[i];
-        }
-
-        std::cout << std::endl;
-    }
-}
-
-void Richardson::iterate()
-{
-    switch ( getRuntime().mCoefficients->getValueType() )
-    {
-        case common::scalar::FLOAT:
-            iterate<float>();
-            break;
-        case common::scalar::DOUBLE:
-            iterate<double>();
-            break;
-        default:
-            COMMON_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mCoefficients->getValueType() )
-    }
 }
 
 Richardson::RichardsonRuntime& Richardson::getRuntime()

@@ -37,7 +37,7 @@
 ### Boost_<lib>_LIBRARY    - Boost component library
 ### SCAI_BOOST_LIBRARIES   - all found BOOST libraries out of the searched component
 ### BOOST_VERSION          - concluded ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}
-### BOOST_TEST_ENABLED     - if Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST
+### BOOST_TEST_ENABLED     - if Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST
 
 ### Boost_USE_STATIC_LIBS  ( default is OFF )
 ### 
@@ -50,52 +50,47 @@
 
 if ( NOT DEFINED BOOST_INCLUDE_DIR )
 
-if    ( WIN32 )
-    message ( STATUS "Setting special Boost options on Windows" )
-    #set ( Boost_USE_STATIC_LIBS ON )
-    set ( Boost_USE_MULTITHREADED ON )
-endif ( WIN32 )
+    if    ( WIN32 )
+        message ( STATUS "Setting special Boost options on Windows" )
+        #set ( Boost_USE_STATIC_LIBS ON )
+        set ( Boost_USE_MULTITHREADED ON )
+    endif ( WIN32 )
 
-# Finds packages with custom search options 
+    # Finds packages with custom search options 
 
-set ( Boost_COMPONENTS unit_test_framework regex )
+    set ( Boost_COMPONENTS unit_test_framework )
 
-# FindBoost Debug options comment
-if    ( SCAI_CMAKE_VERBOSE )
-    set ( Boost_DEBUG TRUE )
-    set ( Boost_DETAILED_FAILURE_MSG TRUE )
-endif ( SCAI_CMAKE_VERBOSE )
+    # FindBoost Debug options comment
+    if    ( SCAI_CMAKE_VERBOSE )
+        set ( Boost_DEBUG TRUE )
+        set ( Boost_DETAILED_FAILURE_MSG TRUE )
+    endif ( SCAI_CMAKE_VERBOSE )
 
-# Find Boost 
+    # Find Boost 
 
-find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} OPTIONAL_COMPONENTS ${Boost_COMPONENTS} )
+    find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} OPTIONAL_COMPONENTS ${Boost_COMPONENTS} )
 
-if    ( Boost_INCLUDE_DIR )
-	set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
-    set ( SCAI_BOOST_INCLUDE_DIR ${BOOST_INCLUDE_DIR})
-else  ( Boost_INCLUDE_DIR )
-    message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
-endif ( Boost_INCLUDE_DIR )
+    set ( BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}" )
+
+    if    ( Boost_INCLUDE_DIR )
+        set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
+        set ( SCAI_BOOST_INCLUDE_DIR ${BOOST_INCLUDE_DIR})
+    else  ( Boost_INCLUDE_DIR )
+        message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
+    endif ( Boost_INCLUDE_DIR )
+
+    if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+        set ( FOUND_BOOST_TEST TRUE )
+    endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND ) 
+
+    set ( BOOST_TEST_ENABLED FALSE )
+    if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
+      set ( BOOST_TEST_ENABLED TRUE )
+    endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
 
 endif ( NOT DEFINED BOOST_INCLUDE_DIR )
 
-if    ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND ${BUILD_TEST} )
+if    ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
     message ( WARNING "Boost Test Framework is missing, so BUILD_TEST is disabled!" )
     set ( BUILD_TEST FALSE )
-endif ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND ${BUILD_TEST} )
-
-if    ( NOT Boost_REGEX_FOUND AND ${BUILD_TEST} )
-    message ( WARNING "Boost Regex is missing, so BUILD_TEST is disabled!" )
-    set ( BUILD_TEST FALSE )
-endif ( NOT Boost_REGEX_FOUND AND ${BUILD_TEST} )
-
-if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
-    set ( FOUND_BOOST_TEST TRUE )
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) 
-
-set ( BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}" )
-
-set ( BOOST_TEST_ENABLED FALSE )
-if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
-  set ( BOOST_TEST_ENABLED TRUE )
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+endif ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
