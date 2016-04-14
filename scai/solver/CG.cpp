@@ -34,6 +34,9 @@
 // hpp
 #include <scai/solver/CG.hpp>
 
+// local library
+#include <scai/solver/mepr/SolverEps.hpp>
+
 // internal scai libraries
 #include <scai/lama/DenseVector.hpp>
 
@@ -42,7 +45,7 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/Walltime.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -91,32 +94,8 @@ void CG::initialize( const Matrix& coefficients )
     IterativeSolver::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
 
-    runtime.mPScalar = 0.0;
-    
-    // runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
-    switch(coefficients.getValueType()){
-        case common::scalar::FLOAT:
-            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
-            break;
-        case common::scalar::DOUBLE:
-            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
-            break;
-        case common::scalar::LONG_DOUBLE:
-            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
-            break;
-        case common::scalar::COMPLEX:
-            runtime.mEps = std::numeric_limits<float>::epsilon()*3;
-            break;
-        case common::scalar::DOUBLE_COMPLEX:
-            runtime.mEps = std::numeric_limits<double>::epsilon()*3;
-            break;
-        case common::scalar::LONG_DOUBLE_COMPLEX:
-            runtime.mEps = std::numeric_limits<long double>::epsilon()*3;
-            break;    
-        default:
-        SCAI_LOG_INFO(logger,"Valuetype not supported");
-        break;
-    }
+    runtime.mPScalar = 0.0;  
+    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
     
     runtime.mP.reset( coefficients.newDenseVector() );
     runtime.mQ.reset( coefficients.newDenseVector() );
