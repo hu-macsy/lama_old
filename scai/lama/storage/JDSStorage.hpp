@@ -40,7 +40,7 @@
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
 // local scai libraries
-#include <scai/hmemo/HArray.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/logging.hpp>
 
@@ -393,11 +393,12 @@ protected:
     IndexType mNumDiagonals; //!< number of jagged diagonals (equals length of the longest row)
     IndexType mNumValues; //!< number of non-zero values (+ optionally zeros in diagonal)
 
-    hmemo::HArray<IndexType> mDlg; //!< number of values in each column, size is mNumDiagonals
-    hmemo::HArray<IndexType> mIlg; //!< number of values in each row, size is mNumRows
-    hmemo::HArray<IndexType> mPerm; //!< position of each row in original matrix, size is mNumRows
-    hmemo::HArray<IndexType> mJa; //!< column indices, size is mNumValues
-    hmemo::HArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
+    utilskernel::LArray<IndexType> mDlg; //!< number of values in each column, size is mNumDiagonals
+    utilskernel::LArray<IndexType> mIlg; //!< number of values in each row, size is mNumRows
+    utilskernel::LArray<IndexType> mPerm; //!< position of each row in original matrix, size is mNumRows
+    utilskernel::LArray<IndexType> mJa; //!< column indices, size is mNumValues
+
+    utilskernel::LArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
 
 private:
 

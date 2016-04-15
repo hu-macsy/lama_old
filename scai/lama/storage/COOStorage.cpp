@@ -602,7 +602,9 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    HArrayUtils::setScalarImpl( mValues, value, common::reduction::MULT, this->getContextPtr() );
+    // multiply value with each entry of mValues
+
+    HArrayUtils::setScalar( mValues, value, common::reduction::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
