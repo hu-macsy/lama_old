@@ -37,6 +37,11 @@
 #include <scai/solver/criteria/Criterion.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 
+#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/solver/CG.hpp>
+
 #include <scai/solver/test/TestMacros.hpp>
 
 using namespace scai::solver;
@@ -152,6 +157,31 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     CriterionPtr testcriterion = CriterionPtr( boolcondition );
     SCAI_COMMON_WRITEAT_TEST( *testcriterion );
 }
+
+/* ---------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE ( isSatisfiedTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    const IndexType N = 40;
+
+    scai::lama::CSRSparseMatrix<ValueType> coefficients;
+    scai::lama::MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N, N );
+
+    scai::lama::DenseVector<ValueType> rhs( N * N, 1.0 );
+    scai::lama::DenseVector<ValueType> solution( rhs );
+
+    CG cgsolver( "CriterionTestSolver" );
+    cgsolver.setStoppingCriterion( mIterationCountCriterion2Ptr );
+    cgsolver.initialize( coefficients );
+    cgsolver.solve( solution, rhs );
+
+    bool test = mIterationCountCriterion1Ptr->isSatisfied( cgsolver );
+
+    BOOST_CHECK ( !test );
+}
+
 /* ---------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
