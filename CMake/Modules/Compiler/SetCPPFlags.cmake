@@ -118,6 +118,3 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
     set ( SCAI_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
-
-set ( ADDITIONAL_CXX_FLAGS_NO_OFFLOAD "${MIC_NO_OFFLOAD_FLAG}" CACHE STRING "MIC no offload flag (only if MIC disabled)" )
-mark_as_advanced ( ADDITIONAL_CXX_FLAGS_NO_OFFLOAD )

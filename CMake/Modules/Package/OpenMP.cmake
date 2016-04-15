@@ -46,9 +46,10 @@ find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} ) # sets OPENMP_FOUND, OpenMP_C
 
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( OPENMP ) # sets USE_OPENMP
+set ( USE_OPENMP ${USE_OPENMP} CACHE BOOL "Enable / Disable use of OpenMP" )
 
-# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
-mark_as_advanced ( OpenMP_C_FLAGS )
+# LAMA irrelevant entries will be removed from cmake GUI completely
+set ( OpenMP_C_FLAGS "${OpenMP_C_FLAGS}" CACHE INTERNAL "" )
 
 ## get OpenMP version
 if    ( OPENMP_FOUND )

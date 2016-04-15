@@ -57,12 +57,12 @@ include ( Functions/parseBoolean )
 
 # Check if doc should be build
 if    ( DEFINED BUILD_DOC )
-	#do nothing
     parseBoolean( BUILD_DOC )
 else  ( DEFINED BUILD_DOC )
     set ( BUILD_DOC ${BUILD_DOC_DEFAULT} )
 endif ( DEFINED BUILD_DOC )
 checkValue ( ${BUILD_DOC} "${TRUE_FALSE_CHOICES}" )
+set ( BUILD_DOC ${BUILD_DOC} CACHE BOOL "Enable / Disable building of doc" )
 
 # Choose Doc type
 if    ( DEFINED SCAI_DOC_TYPE )
@@ -71,6 +71,7 @@ else  ( DEFINED SCAI_DOC_TYPE )
     set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE_DEFAULT} )
 endif ( DEFINED SCAI_DOC_TYPE )
 checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_CHOICES}" )
+set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE} CACHE STRING "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_CHOICES}." )
 
 if     ( SCAI_DOC_TYPE STREQUAL json )
     set ( DOC_EXTENTSION "fjson" )
@@ -84,23 +85,23 @@ endif  ( )
 
 # Check if examples should be build
 if    ( DEFINED BUILD_EXAMPLES )
-	# do nothing
     parseBoolean( BUILD_EXAMPLES )
 else  ( DEFINED BUILD_EXAMPLES )
     set ( BUILD_EXAMPLES ${BUILD_EXAMPLES_DEFAULT} )
 endif ( DEFINED BUILD_EXAMPLES )
 checkValue ( ${BUILD_EXAMPLES} "${TRUE_FALSE_CHOICES}" )
+set ( BUILD_EXAMPLES ${BUILD_EXAMPLES} CACHE BOOL "Enable / Disable building of examples" )
 
 ## TEST
 
 ## Check if tests should be build
 if    ( DEFINED BUILD_TEST )
-	# do nothing
     parseBoolean( BUILD_TEST )
 else  ( DEFINED BUILD_TEST )
     set ( BUILD_TEST ${BUILD_TEST_DEFAULT} )
 endif ( DEFINED BUILD_TEST )
 checkValue ( ${BUILD_TEST} "${TRUE_FALSE_CHOICES}" )
+set ( BUILD_TEST ${BUILD_TEST} CACHE BOOL "Enable / Disable building of tests" )
 
 ## CODE COVERAGE
 
@@ -112,6 +113,7 @@ else  ( DEFINED USE_CODE_COVERAGE )
     set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE_DEFAULT} )
 endif ( DEFINED USE_CODE_COVERAGE )
 checkValue ( ${USE_CODE_COVERAGE} "${TRUE_FALSE_CHOICES}" )
+set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE} CACHE BOOL "Enable / Disable use of Code Coverage" )
 
 ##  CMAKE_BUILD_TYPE
 if    ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE ) # variable may be defined empty
@@ -120,6 +122,7 @@ else  ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
     set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE_DEFAULT} )
 endif ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
 checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_CHOICES}" )
+set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are: ${CMAKE_BUILD_TYPE_CHOICES}." )
 
 ## SCAI_ASSERT_LEVEL
 if    ( NOT SCAI_ASSERT_LEVEL )
@@ -132,6 +135,7 @@ if    ( NOT SCAI_ASSERT_LEVEL )
     endif  ( )
 endif ( NOT SCAI_ASSERT_LEVEL )
 checkValue ( ${SCAI_ASSERT_LEVEL} "${SCAI_ASSERT_CHOICES}" )
+set ( SCAI_ASSERT_LEVEL ${SCAI_ASSERT_LEVEL} CACHE STRING "Choose level of ASSERT: ${SCAI_ASSERT_CHOICES}" )
 
 ## SCAI_LIBRARY_TYPE ( static or shared )
 if    ( DEFINED SCAI_LIBRARY_TYPE )
@@ -140,3 +144,4 @@ else  ( DEFINED SCAI_LIBRARY_TYPE )
     set ( SCAI_LIBRARY_TYPE ${SCAI_LIBRARY_TYPE_DEFAULT} )
 endif ( DEFINED SCAI_LIBRARY_TYPE )
 checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_CHOICES}" )
+set ( SCAI_LIBRARY_TYPE ${SCAI_LIBRARY_TYPE} CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_CHOICES}" )

@@ -31,8 +31,6 @@
  # @since 1.0.0
 ###
 
-# - Try to find SCAI_BLAS
-#   Once done this will define
 #   SCAI_BLAS_FOUND            - System has SCAI_BLAS
 #   SCAI_BLAS_NAME             - name of choosen BLAS library
 #   SCAI_SCAI_BLAS_INCLUDE_DIR - SCAI_BLAS include directory 
@@ -49,6 +47,7 @@ if ( NOT DEFINED SCAI_BLAS_LIBRARY )
 endif ( NOT DEFINED SCAI_BLAS_LIBRARY )
 set ( CACHE SCAI_BLAS_LIBRARY PROPERTY STRINGS ${SCAI_BLAS_LIBRARY_CHOICES} )
 checkValue( ${SCAI_BLAS_LIBRARY} "${SCAI_BLAS_LIBRARY_CHOICES}" )
+set ( SCAI_BLAS_LIBRARY ${SCAI_BLAS_LIBRARY} CACHE STRING "Choose the used BLAS Library: ${SCAI_BLAS_LIBRARY_CHOICES}" )
 
 else ( NOT DEFINED LAST_SCAI_BLAS_LIBRARY )
 

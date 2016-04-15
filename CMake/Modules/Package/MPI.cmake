@@ -81,6 +81,7 @@ mark_as_advanced ( MPI_EXTRA_LIBRARY MPI_LIBRARY MPIEXEC_POSTFLAGS MPIEXEC_PREFL
 ### ALLOW to switch off MPI explicitly ###
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( MPI )
+set ( USE_MPI ${USE_MPI} CACHE BOOL "Enable / Disable use of MPI" )
 
 set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
 set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )

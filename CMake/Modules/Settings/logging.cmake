@@ -32,6 +32,7 @@ endif ( NOT SCAI_LOGGING_LEVEL )
 
 set ( SCAI_LOGGING_LEVEL ${DEFAULT_LOG_LEVEL} )
 checkValue ( ${SCAI_LOGGING_LEVEL} "${SCAI_LOGGING_CHOICES}" )
+set ( SCAI_LOGGING_LEVEL ${SCAI_LOGGING_LEVEL} CACHE STRING "Choose level of compile time logging: ${SCAI_LOGGING_CHOICES}" )
 
 # compile flag for logging should not be put in the cache, avoids errors for wrong settings
 

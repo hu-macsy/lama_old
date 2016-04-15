@@ -38,29 +38,62 @@
 #include <cuda_runtime.h>
 #include <stdlib.h>
 
+void printVersion ( int major, int minor )
+{
+    printf( "%d%d", major, minor );
+}
+
 int main()
 {
     int deviceCount;
     struct cudaDeviceProp properties;
-    long int cuda_device;
 
     if ( cudaGetDeviceCount( &deviceCount ) != cudaSuccess )
+    {
         return 1;
+    }
 
-    if ( getenv( "SCAI_DEVICE" ) ) {
+    if ( getenv( "SCAI_DEVICE" ) )
+    {
         char *pEnd;
-        cuda_device = strtol( getenv( "SCAI_DEVICE" ), &pEnd, 10 );
-    } else {
-        // TODO:  search for device with highest compute capability
-        cuda_device = 0;
+        long int cuda_device = strtol( getenv( "SCAI_DEVICE" ), &pEnd, 10 );
+
+        if ( deviceCount > cuda_device )
+        {
+            cudaGetDeviceProperties( &properties, cuda_device );
+            printVersion( properties.major, properties.minor );
+            return 0;  // success
+        }
+    }
+    else
+    {
+        int max_major = -1;
+        int max_minor = -1;
+        for ( int device = 0; device < deviceCount; ++device )
+        {
+            int major = -1, minor = -1;
+            cudaGetDeviceProperties( &properties, device );
+            if ( properties.major != 9999 ) // 9999 means emulation only
+            { 
+                major = properties.major;
+                minor = properties.minor;
+                if ( major > max_major )
+                {
+                    max_major = major;
+                    max_minor = minor;
+                }
+                else if ( minor > max_minor )
+                {
+                    max_minor = minor;
+                }
+            }
+        }
+        if ( max_major != -1 && max_minor != -1 )
+        {
+            printVersion( max_major, max_minor );
+            return 0; // success
+        }
     }
 
-    if ( deviceCount > cuda_device ) {
-        cudaGetDeviceProperties( &properties, cuda_device );
-        printf( "%d%d", properties.major, properties.minor );
-        return 0;
-    }
-
-    // failure
-    return 1;
+    return 1; // failure
 }

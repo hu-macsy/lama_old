@@ -31,11 +31,10 @@
  # @since 1.0.0
 ###
 
-### BOOST_<lib>_FOUND      - if Boost component is found
-### BOOST_INCLUDE_DIR      - Boost include directory
 ### SCAI_BOOST_INCLUDE_DIR - Boost include directory
-### Boost_<lib>_LIBRARY    - Boost component library
 ### SCAI_BOOST_LIBRARIES   - all found BOOST libraries out of the searched component
+### BOOST_unit_test_framework_FOUND      - if Boost component is found
+### Boost_unit_test_framework_LIBRARY    - Boost component library
 ### BOOST_VERSION          - concluded ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}
 ### BOOST_TEST_ENABLED     - if Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST
 
@@ -87,6 +86,9 @@ if ( NOT DEFINED BOOST_INCLUDE_DIR )
     if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
       set ( BOOST_TEST_ENABLED TRUE )
     endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
+
+    # LAMA irrelevant entries will be removed from cmake GUI completely
+    set ( Boost_DIR "${Boost_DIR}" CACHE INTERNAL "" )
 
 endif ( NOT DEFINED BOOST_INCLUDE_DIR )
 
