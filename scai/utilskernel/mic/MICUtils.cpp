@@ -744,14 +744,6 @@ void MICUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistr
     // we keep the registrations for IndexType as we do not need conversions
 
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::setScatter<int, int> >( setScatter, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<int, int> >( setGather, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::set<int, int> >( set, ctx, flag );
 }
 
 template<typename ValueType>
