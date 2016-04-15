@@ -81,6 +81,7 @@ Criterion::~Criterion()
 {
 }
 
+/* unused: operator= always used on CriterionPtr
 Criterion& Criterion::operator=( const Criterion& other )
 {
     mLeftChild = other.mLeftChild;
@@ -88,7 +89,7 @@ Criterion& Criterion::operator=( const Criterion& other )
     mOperation = other.mOperation;
 
     return *this;
-}
+}*/
 
 bool Criterion::isSatisfied( const IterativeSolver& solver )
 {
