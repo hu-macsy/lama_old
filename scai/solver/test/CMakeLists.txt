@@ -31,9 +31,7 @@
  # @since 2.0.0
 ###
 
-if    ( MPI_ENABLED OR GPI_ENABLED )
-    add_subdirectory( distributed )
-endif ( MPI_ENABLED OR GPI_ENABLED )
+add_subdirectory( distributed )
 
 scai_project ( 
 
