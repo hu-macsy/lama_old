@@ -48,6 +48,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/ScalarType.hpp>
 
@@ -68,12 +69,12 @@ SCAI_LOG_DEF_LOGGER( HArrayUtils::logger, "HArrayUtils" )
 
 void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextPtr prefLoc )
 {
-    set( target, source, common::reduction::COPY, prefLoc );
+    assignOp( target, source, common::reduction::COPY, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::set(
+void HArrayUtils::assignOp(
     _HArray& target,
     const _HArray& source,
     const common::reduction::ReductionOp op,
@@ -97,13 +98,13 @@ void HArrayUtils::set(
         }
     }
 
-    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setImpl( target, source, op, loc );
+    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setArray( target, source, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType,typename SourceValueType>
-void HArrayUtils::setImpl(
+void HArrayUtils::setArray(
     HArray<TargetValueType>& target,
     const HArray<SourceValueType>& source,
     const common::reduction::ReductionOp op,
@@ -148,30 +149,32 @@ void HArrayUtils::setImpl(
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::gather(
+void HArrayUtils::assignGather(
     _HArray& target,
     const _HArray& source,
     const HArray<IndexType>& indexes,
     const ContextPtr prefLoc )
 {
-    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gatherImpl( target, source, indexes, prefLoc );
+    // use metaprogramming to call the gather version with the correct value types for target and source
+    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gather( target, source, indexes, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::scatter(
+void HArrayUtils::assignScatter(
     _HArray& target,
     const HArray<IndexType>& indexes,
     const _HArray& source,
     const ContextPtr prefLoc )
 {
-    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatterImpl( target, indexes, source, prefLoc );
+    // use metaprogramming to call the scatter version with the correct value types for target and source
+    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatter( target, indexes, source, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType,typename SourceValueType>
-void HArrayUtils::gatherImpl(
+void HArrayUtils::gather(
     HArray<TargetValueType>& target,
     const HArray<SourceValueType>& source,
     const HArray<IndexType>& indexes,
@@ -209,7 +212,7 @@ void HArrayUtils::gatherImpl(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType,typename SourceValueType>
-void HArrayUtils::scatterImpl(
+void HArrayUtils::scatter(
     HArray<TargetValueType>& target,
     const HArray<IndexType>& indexes,
     const HArray<SourceValueType>& source,
@@ -247,19 +250,19 @@ void HArrayUtils::scatterImpl(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setScalar(
+void HArrayUtils::assignScalar(
     _HArray& target,
     const ValueType value,
     const common::reduction::ReductionOp op,
     ContextPtr prefLoc )
 {
-    mepr::UtilsWrapperT<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setScalarImpl( target, value, op, prefLoc );
+    mepr::UtilsWrapperT<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setScalar( target, value, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setScalarImpl(
+void HArrayUtils::setScalar(
     HArray<ValueType>& target,
     const ValueType value,
     const common::reduction::ReductionOp op,
@@ -388,7 +391,7 @@ void HArrayUtils::assignScaled(
 
     if ( beta == common::constants::ZERO )
     {
-        setScalarImpl( result, beta, common::reduction::COPY, prefLoc );
+        setScalar( result, beta, common::reduction::COPY, prefLoc );
     }
     else if( &result == &y )
     {
@@ -399,7 +402,7 @@ void HArrayUtils::assignScaled(
 
         // result := beta * result, use setScalar, op == MULT
 
-        setScalarImpl( result, beta, common::reduction::MULT, prefLoc );
+        setScalar( result, beta, common::reduction::MULT, prefLoc );
     }
     else
     {
@@ -431,7 +434,7 @@ void HArrayUtils::assignScaled(
 template<typename ValueType>
 void HArrayUtils::scale( HArray<ValueType>& array, const ValueType beta, ContextPtr prefLoc )
 {
-    setScalarImpl( array, beta, common::reduction::MULT, prefLoc );
+    setScalar( array, beta, common::reduction::MULT, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -758,6 +761,44 @@ bool HArrayUtils::isSorted(
 
 /* --------------------------------------------------------------------------- */
 
+void HArrayUtils::setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefContext )
+{
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
+
+    ContextPtr loc = prefContext;
+
+    if ( prefContext == ContextPtr() )
+    {
+        loc = array.getValidContext();   // should be first context
+    }
+
+    setOrder.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteOnlyAccess<IndexType> wArray( array, loc, n );
+    setOrder[loc]( wArray.get(), n );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array, IndexType n, hmemo::ContextPtr prefLoc )
+{
+    ContextPtr loc = Context::getHostPtr();   // currently only available on host
+
+    WriteOnlyAccess<ValueType> wArray( array, loc, n );
+ 
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        common::Math::random( wArray[i] );
+    }
+
+    array.prefetch( prefLoc );
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 ValueType HArrayUtils::scan( 
     hmemo::HArray<ValueType>& array, 
@@ -851,6 +892,7 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
     TemplateSpecifier::set( HArrayUtils::isSorted<ValueType> );
     TemplateSpecifier::set( HArrayUtils::scan<ValueType> );
     TemplateSpecifier::set( HArrayUtils::sort<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::setRandom<ValueType> );
 }
 
 /* --------------------------------------------------------------------------- */

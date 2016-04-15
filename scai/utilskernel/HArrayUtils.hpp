@@ -75,7 +75,7 @@ public:
         const hmemo::_HArray& source, 
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    static void set( 
+    static void assignOp( 
         hmemo::_HArray& target, 
         const hmemo::_HArray& source, 
         const common::reduction::ReductionOp op,
@@ -86,7 +86,7 @@ public:
      *
      *  target[i] = source[index[i]] 
      */
-    static void gather(
+    static void assignGather(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& index,
@@ -96,7 +96,7 @@ public:
      *  @brief Gathering (unstructured read of values) with HArrays, template typed version
      */
     template<typename TargetValueType,typename SourceValueType>
-    static void gatherImpl(
+    static void gather(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
         const hmemo::HArray<IndexType>& index,
@@ -107,7 +107,7 @@ public:
      *
      *  target[index[i]] = source[i] 
      */
-    static void scatter(
+    static void assignScatter(
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::_HArray& source,
@@ -117,7 +117,7 @@ public:
      *  @brief Scatter (unstructured write of values) with HArrays, template typed version
      */
     template<typename TargetValueType,typename SourceValueType>
-    static void scatterImpl(
+    static void scatter(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::HArray<SourceValueType>& source,
@@ -129,7 +129,7 @@ public:
      *  target[i] <op>= value 
      */
     template<typename ValueType>
-    static void setScalar( 
+    static void assignScalar( 
         hmemo::_HArray& target,
         const ValueType value,
         const common::reduction::ReductionOp op, 
@@ -218,14 +218,14 @@ public:
      * Implementation of functions
      */
     template<typename TargetValueType,typename SourceValueType>
-    static void setImpl(
+    static void setArray(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
         const common::reduction::ReductionOp op,
         hmemo::ContextPtr context );
 
     template<typename ValueType>
-    static void setScalarImpl(
+    static void setScalar(
         hmemo::HArray<ValueType>& target,
         const ValueType value,
         const common::reduction::ReductionOp op, 
@@ -287,6 +287,15 @@ public:
 
     template<typename ValueType>
     static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+
+    /** Initialize an array with the sequence 0, .., n-1 */
+
+    static void setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+
+    /** Get an array with random values. */
+
+    template<typename ValueType>
+    static void setRandom( hmemo::HArray<ValueType>& array, IndexType n, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
 
 private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

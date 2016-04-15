@@ -38,7 +38,11 @@
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/utilskernel/test/HArrays.hpp>
 #include <scai/common/ReductionOp.hpp>
+#include <scai/common/Math.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/exception/Exception.hpp>
+
+#include <typeinfo>
 
 using namespace scai;
 using namespace scai::utilskernel;
@@ -248,6 +252,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    LArray<ValueType> array( loc );
+
+    const IndexType n = 100;
+
+    HArrayUtils::setRandom( array, n, loc );
+
+    BOOST_CHECK_EQUAL( array.size(), n );
+    
+    ValueType sum = array.sum();
+
+    if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
+    {
+    }
+    else
+    {
+        typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+        AbsType asum = Math::abs( sum );
+
+        BOOST_CHECK( asum < 20 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
@@ -269,6 +302,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
     HArrayUtils::gather( array1, origArray, perm );
 
     BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), 0 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( setOrderTest )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    const IndexType n = 10;
+
+    LArray<IndexType> array;
+
+    HArrayUtils::setOrder( array, n, loc );
+
+    BOOST_CHECK_EQUAL( array.size(), n );
+  
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        IndexType elem = array[i];
+        BOOST_CHECK_EQUAL( i, elem );
+    }
 }
 
 /* --------------------------------------------------------------------- */

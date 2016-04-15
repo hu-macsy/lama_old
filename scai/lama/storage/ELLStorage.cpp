@@ -89,26 +89,19 @@ template<typename ValueType>
 ELLStorage<ValueType>::ELLStorage(
     const IndexType numRows,
     const IndexType numColumns,
-   ContextPtr context /* = Context::getHostPtr() */)
+    ContextPtr context )
 
     : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValuesPerRow( 0 )
 {
-    // TODO in other formats the last parameter is "const ContextPtr loc"
-
     setContextPtr( context );
 
     // Initialization requires correct values for the IA array with 0
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    mIA.resize( mNumRows );
 
-    ContextPtr loc = this->getContextPtr();
-    setVal.getSupportedContext( loc );
+    // ellSizes[] = 0 @ context
 
-    WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    setVal[loc]( ellSizes.get(), mNumRows, 0, common::reduction::COPY );
+    HArrayUtils::setScalar( mIA, 0, common::reduction::COPY, context );
 
     SCAI_LOG_DEBUG( logger, "ELLStorage for matrix " << mNumRows << " x " << mNumColumns << ", no elements" )
 }
@@ -229,16 +222,7 @@ IndexType ELLStorage<ValueType>::getNumValues() const
 {
     SCAI_LOG_INFO( logger, "getNumValues" )
 
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-
-    ContextPtr loc = this->getContextPtr();
-    reduce.getSupportedContext( loc );
-
-    ReadAccess<IndexType> ia( mIA, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    IndexType numValues = reduce[ loc ]( ia.get(), mNumRows, common::reduction::ADD );
+    IndexType numValues = HArrayUtils::reduce( mIA, common::reduction::ADD, this->getContextPtr() );
 
     return numValues;
 }
@@ -273,45 +257,17 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
     mNumColumns = size;
     mNumValuesPerRow = 1;
 
-    {
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    const ContextPtr loc = this->getContextPtr();
 
-        ContextPtr loc = this->getContextPtr();
-        setVal.getSupportedContext( loc );
+    mIA.clear();
+    mIA.resize( mNumRows);
+    HArrayUtils::setScalar( mIA, 1, common::reduction::COPY, loc );
 
-        SCAI_CONTEXT_ACCESS( loc )
+    HArrayUtils::setOrder( mJA, mNumRows );
 
-        WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
-
-        setVal[loc]( ia.get(), mNumRows, 1, common::reduction::COPY );
-    }
-
-    {
-        static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
-
-        ContextPtr loc = this->getContextPtr();
-        setOrder.getSupportedContext( loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        WriteOnlyAccess<IndexType> ja( mJA, loc, mNumRows );
-
-        setOrder[loc]( ja.get(), mNumRows );
-    }
-
-    // extra block caused by differnt types of setVal()
-    {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-
-        ContextPtr loc = this->getContextPtr();
-        setVal.getSupportedContext( loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        WriteOnlyAccess<ValueType> data( mValues, loc, mNumRows );
-
-        setVal[loc]( data.get(), mNumRows, ValueType( 1 ), common::reduction::COPY );
-    }
+    mValues.clear();  
+    mValues.resize( mNumRows );
+    HArrayUtils::setScalar( mValues, ValueType( 1 ), common::reduction::COPY, loc );
 
     mDiagonalProperty = true;
 
@@ -402,30 +358,19 @@ void ELLStorage<ValueType>::buildCSR(
 
     IndexType numValues = 0;
 
+    ia.clear();
+    ia.reserve( context, mNumRows + 1 );  // reserve one more entry
+
+    HArrayUtils::setArray( ia, mIA, common::reduction::COPY, context );
+
+    if ( ja == NULL || values == NULL )
     {
-        static LAMAKernel<UtilKernelTrait::set<IndexType, IndexType> > set;
-        static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-
-        ContextPtr loc = context;
-        set.getSupportedContext( loc, sizes2offsets );
-
-        ReadAccess<IndexType> ellSizes( mIA, loc );
-        WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // just copy the size array mIA
-
-        set[loc]( csrIA.get(), ellSizes.get(), mNumRows, common::reduction::COPY );
-
-        if( ja == NULL || values == NULL )
-        {
-            csrIA.resize( mNumRows );
-            return;
-        }
-
-        numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
+        return;
     }
+
+    numValues = HArrayUtils::scan( ia, context );
+
+    // step 2 : compute the arrays ja and values
 
     static LAMAKernel<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
 
@@ -480,7 +425,6 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     static LAMAKernel<CSRKernelTrait::offsets2sizes > offsets2sizes;
     static LAMAKernel<ELLKernelTrait::hasDiagonalProperty > hasDiagonalProperty;
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
     ContextPtr loc = context;
@@ -498,11 +442,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     // determine the maximal number of non-zero in one row
 
-    {
-        ReadAccess<IndexType> ellSizes( mIA, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        mNumValuesPerRow = reduce[loc]( ellSizes.get(), mNumRows, common::reduction::MAX );
-    }
+    mNumValuesPerRow = HArrayUtils::reduce( mIA, common::reduction::MAX, loc );
 
     SCAI_LOG_INFO( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
 
@@ -593,10 +533,12 @@ void ELLStorage<ValueType>::setELLData(
 
     ContextPtr loc = getContextPtr();
 
-    HArrayUtils::setImpl( mIA, ia, common::reduction::COPY, loc );
-    HArrayUtils::setImpl( mJA, ja, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mIA, ia, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mJA, ja, common::reduction::COPY, loc );
 
-    HArrayUtils::set( mValues, values, common::reduction::COPY, loc );  // also type conversion
+    // assign works in contrary to setArray with each typed array
+
+    HArrayUtils::assignOp( mValues, values, common::reduction::COPY, loc );  // also type conversion
 
     // fill up my arrays ja and values to make matrix-multiplication fast
 
@@ -741,7 +683,7 @@ void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "scaleImpl # value = " << value )
 
-    HArrayUtils::scale( mValues, value, this->getContextPtr() );
+    HArrayUtils::setScalar( mValues, value, common::reduction::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

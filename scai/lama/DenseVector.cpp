@@ -47,9 +47,6 @@
 
 // internal scai libraries
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
@@ -74,8 +71,6 @@ using common::scoped_array;
 using common::TypeTraits;
 using utilskernel::HArrayUtils;
 using utilskernel::LArray;
-using utilskernel::LAMAKernel;
-using utilskernel::UtilKernelTrait;
 
 using namespace hmemo;
 using namespace dmemo;
@@ -568,148 +563,6 @@ void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::vectorPlusVector(
-    ContextPtr prefContext,
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    const ValueType beta,
-    const HArray<ValueType>& y )
-{
-    SCAI_LOG_DEBUG( logger,
-                    "vectorPlusVector: result:" << result << " = " << alpha << " * x:" << x << " + " << beta << " * y:" << y )
-
-    // get function pointers, do not use fallbacks here
-
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    static LAMAKernel<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
-    static LAMAKernel<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
-
-    ContextPtr context = prefContext;
-
-    sum.getSupportedContext( context, setVal, axpy );
-
-    const IndexType nnu = result.size();
-
-    if( &result == &x && &result == &y ) //result = alpha * result + beta * result
-    {
-        //result = alpha * result + beta * result
-        //=>
-        //result = ( alpha + beta ) * result
-        //=>
-        //result *= ( alpha + beta )
-
-        SCAI_LOG_DEBUG( logger,
-                        "vectorPlusVector: x = y = result, result *= " << "alpha(" << alpha << ") + beta(" << beta << ")" )
-
-        WriteAccess<ValueType> resultAccess( result, context, true );
-
-        SCAI_CONTEXT_ACCESS( context )
-        setVal[context]( resultAccess.get(), nnu, alpha + beta, common::reduction::MULT );
-    }
-    else if( &result == &x ) //result = alpha * result + beta * y
-    {
-        ReadAccess<ValueType> yAccess( y, context );
-        WriteAccess<ValueType> resultAccess( result, context, true );
-
-        if( beta == scai::common::constants::ZERO )
-        {
-            SCAI_LOG_DEBUG( logger, "vectorPlusVector: result *= alpha" )
-
-            if( alpha != scai::common::constants::ONE ) // result *= alpha
-            {
-                SCAI_CONTEXT_ACCESS( context )
-                setVal[context]( resultAccess.get(), nnu, alpha, common::reduction::MULT );
-            }
-            else
-            {
-                // do nothing: result = 1 * result
-            }
-        }
-        else if( beta == scai::common::constants::ONE ) // result = alpha * result + y
-        {
-            SCAI_LOG_DEBUG( logger, "vectorPlusVector: result = alpha * result + y" )
-
-            if( alpha != scai::common::constants::ONE ) // result = alpha * result + y
-            {
-                // result *= alpha
-                SCAI_CONTEXT_ACCESS( context )
-                setVal[context]( resultAccess.get(), nnu, alpha, common::reduction::MULT );
-            }
-
-            // result += y
-            SCAI_CONTEXT_ACCESS( context )
-            axpy[context]( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1 );
-        }
-        else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
-        {
-            SCAI_LOG_DEBUG( logger,
-                            "vectorPlusVector: result = alpha(" << alpha << ")" << " * result + beta(" << beta << ") * y" )
-
-            if( alpha != scai::common::constants::ONE )
-            {
-                SCAI_CONTEXT_ACCESS( context )
-                setVal[context]( resultAccess.get(), nnu, alpha, common::reduction::MULT );
-            }
-
-            SCAI_CONTEXT_ACCESS( context )
-            axpy[context]( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1 );
-        }
-    }
-    else if( &result == &y ) // result = alpha * x + beta * result
-    {
-        SCAI_LOG_DEBUG( logger,
-                        "vectorPlusVector: result = alpha(" << alpha << ")" << " * x + beta(" << beta << ") * result" )
-
-        // so we do here:  result = beta * result, result += alpha * x
-
-        ReadAccess<ValueType> xAccess( x, context );
-        WriteAccess<ValueType> resultAccess( result, context, true );
-
-        if( beta != scai::common::constants::ONE ) // result = [alpha * x + ] beta * result
-        {
-            // result *= beta
-            SCAI_CONTEXT_ACCESS( context )
-            setVal[context]( resultAccess.get(), nnu, beta, common::reduction::MULT );
-        }
-
-        if( alpha != scai::common::constants::ZERO )
-        {
-            // result = alpha * x + result
-            SCAI_CONTEXT_ACCESS( context )
-            axpy[context]( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1 );
-        }
-    }
-    else // result = alpha * x + beta * y
-    {
-        SCAI_LOG_DEBUG( logger,
-                        "vectorPlusVector: result = alpha(" << alpha << ")" << " * x + beta(" << beta << ") * y" )
-
-        ReadAccess<ValueType> xAccess( x, context );
-        ReadAccess<ValueType> yAccess( y, context );
-        // no need to keep old values of result
-        WriteAccess<ValueType> resultAccess( result, context, false );
-
-        SCAI_CONTEXT_ACCESS( context )
-        sum[context]( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get() );
-    }
-
-    SCAI_LOG_INFO( logger, "vectorPlusVector done" )
-}
-
-template<typename ValueType>
-tasking::SyncToken* DenseVector<ValueType>::vectorPlusVectorAsync(
-    ContextPtr /*context*/,
-    HArray<ValueType>& /*result*/,
-    const ValueType /*alpha*/,
-    const HArray<ValueType>& /*x*/,
-    const ValueType /*beta*/,
-    const HArray<ValueType>& /*y*/)
-{
-    COMMON_THROWEXCEPTION( "vectorPlusVectorAsync not implemented yet" )
-}
-
-template<typename ValueType>
 void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 {
     const Expression_SV& exp1 = expression.getArg1();
@@ -761,9 +614,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
         }
 #endif
 
-        SCAI_LOG_DEBUG( logger, "call vectorPlusVector" )
-
-        // vectorPlusVector( mContext, mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues );
+        SCAI_LOG_DEBUG( logger, "call arrayPlusArray" )
 
         utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues, mContext );
     }
