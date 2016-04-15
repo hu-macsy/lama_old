@@ -216,13 +216,39 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
 
                     for ( IndexType i = 0; i < n; i++ )
                     {
-                        array[i] *= value;
+                        array[i] += value;
                     }
                 }
             }
 
             break;
         }
+
+        case common::reduction::SUB :
+        {
+            if ( val == common::constants::ZERO )
+            {
+                // skip it
+            }
+            else
+            {
+                #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
+                {
+                    ValueType* array = static_cast<ValueType*>( arrayPtr );
+                    ValueType value = static_cast<ValueType>( *valPtr );
+
+                    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                    for ( IndexType i = 0; i < n; i++ )
+                    {
+                        array[i] -= value;
+                    }
+                }
+            }
+
+            break;
+        }
+
         case common::reduction::MULT :
         {
             // scale all values of the array
@@ -253,6 +279,38 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
 
             break;
         }
+
+        case common::reduction::DIVIDE :
+        {
+            // scale all values of the array
+
+            if ( val == common::constants::ONE )
+            {
+                // skip it
+            }
+            else if ( val == common::constants::ZERO )
+            {
+                setVal( array, n, ValueType( 0 ), common::reduction::COPY );
+            }
+            else
+            {
+                #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1], op )
+                {
+                    ValueType* array = static_cast<ValueType*>( arrayPtr );
+                    ValueType value = static_cast<ValueType>( *valPtr );
+
+                    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                    for ( IndexType i = 0; i < n; i++ )
+                    {
+                        array[i] /= value;
+                    }
+                }
+            }
+
+            break;
+        }
+
         default:
             COMMON_THROWEXCEPTION( "Unsupported reduction op : " << op )
     }
@@ -607,6 +665,17 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
                 break;
             }
+            case common::reduction::SUB :
+            {
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] -= static_cast<ValueType1>( in[i] );
+                }
+
+                break;
+            }
             case common::reduction::MULT :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -618,6 +687,18 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
                 break;
             }
+            case common::reduction::DIVIDE :
+            {
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] /= static_cast<ValueType1>( in[i] );
+                }
+
+                break;
+            }
+
         }
     }
 }
