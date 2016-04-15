@@ -126,22 +126,21 @@ ValueType MICUtils::reduceSum( const ValueType array[], const IndexType n )
 
         const ValueType* array = reinterpret_cast<const ValueType*>( arrayPtr );
 
-		ValueType threadVal = 0;
-        #pragma omp parallel private(threadVal)
+        #pragma omp parallel
         {
-			#pragma omp parallel for
-			for ( IndexType i = 0; i < n; ++i )
-			{
-				threadVal += array[i];
-			}
+	    ValueType threadVal = 0;
+	    #pragma omp for
+	    for ( IndexType i = 0; i < n; ++i )
+	    {
+		threadVal += array[i];
+	    }
 
-			#pragma omp critical
-			{
-				*valPtr += threadVal;
-			}
+	    #pragma omp critical
+	    {
+	        *valPtr += threadVal;
+	    }
         }
     }
-
     return val;
 }
 
