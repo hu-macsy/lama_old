@@ -96,9 +96,8 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
 
     SimpleAMG SimpleAMGSolver( "SimpleAMGSolver" );
 
+
     /* cant not be tested: not getter
-    scai::hmemo::ContextPtr context = scai::hmemo::Context::getContextPtr();
-    SimpleAMGSolver.setSmootherContext( context )
     SimpleAMGSolver.setHostOnlyLevel( IndexType hostOnlyLevel );
     SimpleAMGSolver.setHostOnlyVars( IndexType hostOnlyVars );
     SimpleAMGSolver.setReplicatedLevel( IndexType replicatedLevel ); 
@@ -106,6 +105,7 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
     SimpleAMGSolver.setMinVarsCoarseLevel( unsigned int vars );*/
 
     SolverPtr cgSolver ( new CG ( "CGCoarseLevelSolver" ) );
+    scai::hmemo::ContextPtr context = scai::hmemo::Context::getContextPtr();
 
     // does not work because coarselevelsolver in SingleGridSetup gets overridden by smoother
     //SimpleAMGSolver.setCoarseLevelSolver( cgSolver );
@@ -113,8 +113,10 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
     //BOOST_CHECK_EQUAL( SimpleAMGSolver.getCoarseLevelSolver().getId(), cgSolver->getId() );
 
     SimpleAMGSolver.setSmoother( cgSolver );
+    SimpleAMGSolver.setSmootherContext( context );
     SimpleAMGSolver.initialize( coefficients ); // solver needs to be initialized to have a AMGSetup to pass coarselevelsolver to setup
     BOOST_CHECK_EQUAL( SimpleAMGSolver.getSmoother( 0 ).getId(), cgSolver->getId() );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver.getSmoother( 0 ).getContextPtr()->getType(), context->getType() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------

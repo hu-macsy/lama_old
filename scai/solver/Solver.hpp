@@ -204,12 +204,19 @@ public:
      * @brief Sets the context where this solver should be executed.
      *
      * Sets the context where this solver should be executed. Caution: This overrides
-     * the context of the coefficients matrix A from A * u = f used to inializ this
+     * the context of the coefficients matrix A from A * u = f used to initialize this
      * solver.
      *
      * @param[in] context   the context where this solver should be executed.
      */
     virtual void setContextPtr( hmemo::ContextPtr context );
+
+    /**
+     * @ brief Returns the context where this solver would be executed.
+     *
+     * @param[out] the context where this solver would be executed.
+     */
+    hmemo::ContextPtr getContextPtr() { return mContext; }
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
