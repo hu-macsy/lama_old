@@ -45,7 +45,7 @@
 #include <scai/lama/norm/MaxNorm.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/solver/BiCG.hpp>
+#include <scai/solver/IterativeSolver.hpp>
 #include <scai/solver/TrivialPreconditioner.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest ) {
     coefficients.setContextPtr( context );
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
-    SCAI_LOG_INFO( logger, "BiCGstabTest uses context = " << context->getType() );
+    SCAI_LOG_INFO( logger, "IterativeSolverTest uses context = " << context->getType() );
 
     DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
     coefficients.setContextPtr( context );
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
-    SCAI_LOG_INFO( logger, "BiCGstabTest uses context = " << context->getType() );
+    SCAI_LOG_INFO( logger, "IterativeSolverTest uses context = " << context->getType() );
 
     DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
