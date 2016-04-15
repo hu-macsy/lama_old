@@ -44,4 +44,12 @@ ERROR_LEVEL=test_suite
 echo "Running dmemo tests on Host"
 ./dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest.xml
 
-# TODO: distributed tests
+if [ -d ../mpi ];
+then
+    echo "Running dmemo tests distributed"
+	for i in 2 3 4;
+	do
+    	echo "Running distributed tests with $i processes"
+    	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml dmemoTest --output_format=XML --log_level=all --report_level=no
+    done
+fi
