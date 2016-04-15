@@ -179,7 +179,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
     int device = MICContext::getCurrentDevice();
 
     void* arrayPtr = array;
-    const OtherValueType* valPtr = &val;
+    const ValueType* valPtr = &val;
 
     switch ( op )
     {
