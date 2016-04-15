@@ -221,7 +221,7 @@ public:
 
     LArray& operator*= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::set( *this, other, common::reduction::MULT );
+        HArrayUtils::assignOp( *this, other, common::reduction::MULT );
         return *this;
     }
 
@@ -233,7 +233,7 @@ public:
 
     LArray& operator/= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::set( *this, other, common::reduction::DIVIDE );
+        HArrayUtils::assignOp( *this, other, common::reduction::DIVIDE );
         return *this;
     }
 
@@ -245,7 +245,7 @@ public:
 
     LArray& operator+= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::set( *this, other, common::reduction::ADD );
+        HArrayUtils::assignOp( *this, other, common::reduction::ADD );
         return *this;
     }
 
@@ -257,7 +257,7 @@ public:
 
     LArray& operator-= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::set( *this, other, common::reduction::SUB );
+        HArrayUtils::assignOp( *this, other, common::reduction::SUB );
         return *this;
     }
 
