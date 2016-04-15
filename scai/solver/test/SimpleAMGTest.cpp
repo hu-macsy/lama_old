@@ -37,6 +37,12 @@
 #include <scai/solver/TrivialPreconditioner.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
+#include <scai/solver/CG.hpp>
+
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matutils/MatrixCreator.hpp>
+
+#include <scai/hmemo/Context.hpp>
 
 #include <scai/solver/test/TestMacros.hpp>
 
@@ -75,6 +81,59 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
     BOOST_CHECK_EQUAL( SimpleAMGSolver5.getId(), SimpleAMGSolver4.getId() );
     BOOST_CHECK_EQUAL( SimpleAMGSolver5.getPreconditioner()->getId(), SimpleAMGSolver4.getPreconditioner()->getId() );
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+
+//TODO:
+BOOST_AUTO_TEST_CASE ( SetterTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    const IndexType N = 40;
+
+    scai::lama::CSRSparseMatrix<ValueType> coefficients;
+    scai::lama::MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N, N );
+
+    SimpleAMG SimpleAMGSolver( "SimpleAMGSolver" );
+
+    /* cant not be tested: not getter
+    scai::hmemo::ContextPtr context = scai::hmemo::Context::getContextPtr();
+    SimpleAMGSolver.setSmootherContext( context )
+    SimpleAMGSolver.setHostOnlyLevel( IndexType hostOnlyLevel );
+    SimpleAMGSolver.setHostOnlyVars( IndexType hostOnlyVars );
+    SimpleAMGSolver.setReplicatedLevel( IndexType replicatedLevel ); 
+    SimpleAMGSolver.setMaxLevels( unsigned int levels );
+    SimpleAMGSolver.setMinVarsCoarseLevel( unsigned int vars );*/
+
+    SolverPtr cgSolver ( new CG ( "CGCoarseLevelSolver" ) );
+
+    // does not work because coarselevelsolver in SingleGridSetup gets overridden by smoother
+    //SimpleAMGSolver.setCoarseLevelSolver( cgSolver );
+    //SimpleAMGSolver.initialize( coefficients ); // solver needs to be initialized to have a AMGSetup to pass coarselevelsolver to setup
+    //BOOST_CHECK_EQUAL( SimpleAMGSolver.getCoarseLevelSolver().getId(), cgSolver->getId() );
+
+    SimpleAMGSolver.setSmoother( cgSolver );
+    SimpleAMGSolver.initialize( coefficients ); // solver needs to be initialized to have a AMGSetup to pass coarselevelsolver to setup
+    BOOST_CHECK_EQUAL( SimpleAMGSolver.getSmoother( 0 ).getId(), cgSolver->getId() );
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+
+// GetterTest makes no sense, because it test the AMGSetup, which can be SingleGridSetup or other, with different defaults
+/*    const lama::Matrix& getGalerkin( unsigned int level );
+    const lama::Matrix& getRestriction( unsigned int level );
+    const lama::Matrix& getInterpolation( unsigned int level );
+
+    lama::Vector& getSolutionVector( unsigned int level );
+    lama::Vector& getRhsVector( unsigned int level );
+
+    Solver& getSmoother( unsigned int level );
+    Solver& getCoarseLevelSolver();
+
+    double getAverageSmootherTime() const;
+    double getAverageTransferTime() const;
+    double getAverageResidualTime() const;
+*/
 
 // ---------------------------------------------------------------------------------------------------------------
 
