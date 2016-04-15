@@ -36,24 +36,24 @@
 
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
-
-# Running blaskernel serial
+	
+# Running tests serial
 echo "Running serial tests"
-./blaskernelTest >/dev/null
+./sparsekernelTest >/dev/null
 if [ $? -ne 0 ]
 then
-	echo "ERROR in blaskernelTest"
+	echo "ERROR in sparsekernelTest"
 	error_count=$(($error_count + $?))
 fi
 
-#if [ -d ../cuda ];
-#then
+if [ -d ../cuda ];
+then
     #Running common CUDA tests
     echo "Running blaskernel tests with CUDA context"
-    ./blaskernelTest --SCAI_CONTEXT=CUDA >/dev/null
+    ./sparsekernelTest --SCAI_CONTEXT=CUDA >/dev/null
     if [ $? -ne 0 ]
     then
-        echo "ERROR in blaskernelTest with CUDA context"
+        echo "ERROR in sparsekernelTest with CUDA context"
         error_count=$(($error_count + $?))
     fi
-#fi
+fi
