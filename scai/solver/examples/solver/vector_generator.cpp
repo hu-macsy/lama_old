@@ -316,7 +316,7 @@ int main( int argc, char* argv[] )
 
         // multiply random numbers with the scalar value
 
-        utilskernel::HArrayUtils::set( vLocal, randomValues, common::reduction::MULT, host );
+        utilskernel::HArrayUtils::assignOp( vLocal, randomValues, common::reduction::MULT, host );
     }
 
     cout << "Vector generated: " << *v << endl;

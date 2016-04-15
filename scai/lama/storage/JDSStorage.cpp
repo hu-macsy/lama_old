@@ -95,19 +95,13 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
         return;
     }
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
-    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
+    ContextPtr prefLoc = this->getContextPtr();
 
-    // make sure that for both context functions implementations are available at the chosen context
+    mIlg.clear();
+    mIlg.resize( mNumRows );
+    HArrayUtils::setScalar( mIlg, 0, common::reduction::COPY, prefLoc );
 
-    ContextPtr loc = this->getContextPtr();
-    setOrder.getSupportedContext( loc, setVal );
-
-    WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
-    WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
-
-    setVal[loc]( ilg.get(), mNumRows, 0, common::reduction::COPY );
-    setOrder[loc]( perm.get(), mNumRows );
+    HArrayUtils::setOrder( mPerm, mNumRows, prefLoc );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -160,10 +154,10 @@ void JDSStorage<ValueType>::setJDSData(
 
     ContextPtr loc = getContextPtr();
 
-    HArrayUtils::setImpl( mDlg, dlg, common::reduction::COPY, loc );
-    HArrayUtils::setImpl( mIlg, ilg, common::reduction::COPY, loc );
-    HArrayUtils::setImpl( mPerm, perm, common::reduction::COPY, loc );
-    HArrayUtils::setImpl( mJa, ja, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mDlg, dlg, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mIlg, ilg, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mPerm, perm, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mJa, ja, common::reduction::COPY, loc );
 
     HArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
@@ -338,12 +332,14 @@ void JDSStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
 
     ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
     ReadAccess<IndexType> rJa( mJa, loc );
-    WriteOnlyAccess<ValueType> wValues( mValues, loc, numDiagonal );
+    WriteAccess<ValueType> wValues( mValues, loc );
 
     // diagonal is first column in JDS data
     // values[i] = diagonal[ ja[ i ] ]
 
     setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), numDiagonal );
+
+    // Still problem to use HArrayUtils::gather, as only part of the array is used
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -616,39 +612,22 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     mNumDiagonals = 1; // identity has exactly one diagonal
     mNumValues = mNumRows;
 
-    {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+    ContextPtr prefLoc = this->getContextPtr();
 
-        ContextPtr loc = this->getContextPtr();
-        setVal.getSupportedContext( loc );
+    mValues.clear();  // invalidate all values
+    mValues.resize( mNumValues );
+    HArrayUtils::setScalar( mValues, ValueType( 1 ), common::reduction::COPY, prefLoc );
 
-        SCAI_CONTEXT_ACCESS( loc )
+    HArrayUtils::setOrder( mPerm, mNumRows, prefLoc );
+    HArrayUtils::setOrder( mJa,  mNumRows, prefLoc );
 
-        WriteOnlyAccess<ValueType> wValues( mValues, loc, mNumValues );
+    mDlg.clear();
+    mDlg.resize( mNumDiagonals );
+    HArrayUtils::setScalar( mDlg, mNumRows, common::reduction::COPY, prefLoc );
 
-        setVal[loc]( wValues.get(), mNumRows, ValueType ( 1 ), common::reduction::COPY );
-
-    }
-
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
-    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
-
-    // get context where all implementations are available, if not on own context
-
-    ContextPtr loc = this->getContextPtr();
-    setOrder.getSupportedContext( loc, setVal );
-
-    WriteOnlyAccess<IndexType> wDlg( mDlg, loc, mNumDiagonals );
-    WriteOnlyAccess<IndexType> wIlg( mIlg, loc, mNumRows );
-    WriteOnlyAccess<IndexType> wPerm( mPerm, loc, mNumRows );
-    WriteOnlyAccess<IndexType> wJa( mJa, loc, mNumValues );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    setVal[ loc ]( wDlg.get(), 1, mNumRows, common::reduction::COPY );
-    setVal[ loc ]( wIlg.get(), mNumRows, 1, common::reduction::COPY );
-    setOrder[ loc ]( wPerm.get(), mNumRows );
-    setOrder[ loc ]( wJa.get(), mNumRows );
+    mIlg.clear();
+    mIlg.resize( mNumRows );
+    HArrayUtils::setScalar( mIlg, 1, common::reduction::COPY, prefLoc );
 
     mDiagonalProperty = true;
 }
@@ -1519,25 +1498,7 @@ ValueType JDSStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    const IndexType n = mNumValues;
-
-    if( n == 0 )
-    {
-        return static_cast<ValueType>(0.0);
-    }
-
-    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-
-    ContextPtr loc = this->getContextPtr();
-    reduce.getSupportedContext( loc );
-
-    ReadAccess<ValueType> jdsValues( mValues, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ValueType maxval = reduce[loc]( jdsValues.get(), n, common::reduction::ABS_MAX );
-
-    return maxval;
+    return mValues.maxNorm();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

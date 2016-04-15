@@ -349,22 +349,6 @@ public:
 
     virtual void conj();
 
-    static void vectorPlusVector(
-        scai::hmemo::ContextPtr prefContext,
-        scai::hmemo::HArray<ValueType>& result,
-        const ValueType alpha,
-        const scai::hmemo::HArray<ValueType>& x,
-        const ValueType beta,
-        const scai::hmemo::HArray<ValueType>& y );
-
-    static tasking::SyncToken* vectorPlusVectorAsync(
-        hmemo::ContextPtr prefContext,
-        hmemo::HArray<ValueType>& result,
-        const ValueType alpha,
-        const hmemo::HArray<ValueType>& x,
-        const ValueType beta,
-        const hmemo::HArray<ValueType>& y );
-
     virtual void swap( Vector& other );
 
     virtual void writeAt( std::ostream& stream ) const;
