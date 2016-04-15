@@ -476,29 +476,38 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
 
     ValueType val( 0 );
 
-    #pragma omp parallel
+    const void* ptr1 = array1;
+    const void* ptr2 = array2;
+
+    ValueType* valPtr = &val;
+
+    int device = MICContext::getCurrentDevice();
+
+    #pragma offload target( mic : device ) in( n, ptr1, ptr2 ), inout( valPtr[0:1] )
     {
-        ValueType threadVal( 0 );
-
-        #pragma omp for
-
-        for ( IndexType i = 0; i < n; ++i )
+        const ValueType* arrayPtr1 = reinterpret_cast<const ValueType*>( ptr1 );
+        const ValueType* arrayPtr2 = reinterpret_cast<const ValueType*>( ptr2 );
+        #pragma omp parallel
         {
-            ValueType elem = common::Math::abs( array1[i] - array2[i] );
+            ValueType threadVal( 0 );
 
-            if ( elem > threadVal )
+            #pragma omp for
+            for ( IndexType i = 0; i < n; ++i )
             {
-                threadVal = elem;
+                ValueType elem = common::Math::abs( arrayPtr1[i] - arrayPtr2[i] );
+
+                if ( elem > threadVal )
+                {
+                    threadVal = elem;
+                }
             }
-        }
 
-        #pragma omp critical
-        {
-            SCAI_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
-
-            if ( threadVal > val )
+            #pragma omp critical
             {
-                val = threadVal;
+                if ( threadVal > *valPtr )
+                {
+                    *valPtr = threadVal;
+                }
             }
         }
     }
