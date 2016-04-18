@@ -162,6 +162,21 @@ private:
     template<typename ValueType>
     static ValueType scanParallel( PartitionId numThreads, ValueType array[], const IndexType numValues );
 
+    /** OpenMP implementation of UtilsKernelTrait::countNonZeros */
+
+    template<typename ValueType>
+    static IndexType countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps );
+
+    /** OpenMP implementation of UtilsKernelTrait::compress */
+
+    template<typename ValueType>
+    static IndexType compress( 
+        ValueType sparseArray[], 
+        IndexType sparseIndexes[], 
+        const ValueType denseArray[], 
+        const IndexType n, 
+        const ValueType eps );
+
     /** Routine that registers all methods at the kernel registry. */
 
     SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )

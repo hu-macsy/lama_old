@@ -315,6 +315,47 @@ struct UtilKernelTrait
         
         static const char* getId() { return "Utils.sort"; }
     };
+
+    template<typename ValueType>
+    struct countNonZeros
+    {
+        /** Count the non-zero elements in an array, used to allocate data for sparse version.
+         *
+         *  @param[in] denseArray are the values
+         *  @param[in] eps        threshold when a value is to be considered as non-zero
+         *  @param[in] n          number of elements in the dense array
+         *  @returns   number of non-zero elements in denseArray
+         */
+
+        typedef IndexType ( *FuncType ) ( const ValueType denseArray[], const IndexType n, const ValueType eps );
+
+        static const char* getId() { return "Utils.countNonZeros"; }
+    };
+
+    template<typename ValueType>
+    struct compress
+    {
+        /** Build sparse array and sparse indexes from dense array
+         *
+         *  @param[out] sparseArray     array with non-zero values
+         *  @param[out] sparseIndexes  indexes of the non-zero values of input array
+         *  @param[in]  denseArray      array with dense values
+         *  @param[in]  n               number of elements in the dense array
+         *  @returns    number of non-zero elements in denseArray
+         *
+         *  Note: sparseArray and sparseIndexes must have been allocated with the  correct size before
+         */
+
+        typedef IndexType ( *FuncType ) ( 
+            ValueType sparseArray[], 
+            IndexType sparseIndexes[], 
+            const ValueType denseArray[],
+            const IndexType n, 
+            const ValueType eps );
+
+        static const char* getId() { return "Utils.compress"; }
+    };
+
 };
 
 } /* end namespace utilskernel */

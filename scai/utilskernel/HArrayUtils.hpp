@@ -212,7 +212,7 @@ public:
     /** Replace in a complex array its values with the conjugate values */
 
     template<typename ValueType>
-    static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc );
+    static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /*
      * Implementation of functions
@@ -269,7 +269,7 @@ public:
     /** array = 1.0 / array elementwise */
 
     template<typename ValueType>
-    static void invert( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static void invert( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Check for an index array whether all values are smaller than n */
 
@@ -283,30 +283,57 @@ public:
     /** Build the running sums for an array; note that result array will contain one element more. */
 
     template<typename ValueType>
-    static ValueType scan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static ValueType scan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Initialize an array with the sequence 0, .., n-1 */
 
-    static void setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static void setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Get an array with random values. */
 
     template<typename ValueType>
-    static void setRandom( hmemo::HArray<ValueType>& array, IndexType n, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static void setRandom( hmemo::HArray<ValueType>& array, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
+
+    template<typename ValueType>
+    static void buildSparseArray( 
+        hmemo::HArray<ValueType>& sparseArray,
+        hmemo::HArray<IndexType>& sparseIndexes,
+        const hmemo::HArray<ValueType>& denseArray,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Build dense array from sparse array, needed for conversion SparseVector -> DenseVector 
+     *
+     *  @param[out]  denseArray will contain the dense data (input its only its size)
+     *  @param[in]   denseN is the size of the dense array
+     *  @param[in]   sparseArray contains non-zero values
+     *  @param[in]   sparseIndexes are the positions of the non-zero values
+     *  @param[in]   prefLoc is the context where operation should be done
+     *
+     *  Note: sparseIndexes must contain only indexes between 0 and denseN - 1
+     */
+
+    template<typename ValueType>
+    static void buildDenseArray( 
+        hmemo::HArray<ValueType>& denseArray,
+        const IndexType denseN,
+        const hmemo::HArray<ValueType>& sparseArray,
+        const hmemo::HArray<IndexType>& sparseIndexes,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
 private:
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     SCAI_DECLARE_TEMPLATESPECIFIER( SpecifierV, template<typename ValueType> )
 
-    HArrayUtils();
-    ~HArrayUtils(){}
-    HArrayUtils( const HArrayUtils& );
+    HArrayUtils();  // static class, no objects outside
 
-    static HArrayUtils guard;
+    static HArrayUtils guard;   // dummy object guarantees template method instantiation
 };
 
 } /* end namespace utilskernel */

@@ -220,7 +220,8 @@ void HArrayUtils::scatter(
 {
     SCAI_REGION( "HArray.scatter" )
 
-    // choose location for the operation where source array is currently valid
+    SCAI_ASSERT( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ), 
+                 "illegal scatter index, target has size " << target.size() )
 
     static LAMAKernel<UtilKernelTrait::setScatter<TargetValueType, SourceValueType> > setScatter;
 
@@ -235,7 +236,7 @@ void HArrayUtils::scatter(
 
     const IndexType n = indexes.size();
 
-    WriteOnlyAccess<TargetValueType> wTarget( target, loc, n );
+    WriteAccess<TargetValueType> wTarget( target, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -761,13 +762,13 @@ bool HArrayUtils::isSorted(
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefContext )
+void HArrayUtils::setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefLoc )
 {
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
-    ContextPtr loc = prefContext;
+    ContextPtr loc = prefLoc;
 
-    if ( prefContext == ContextPtr() )
+    if ( loc == ContextPtr() )
     {
         loc = array.getValidContext();   // should be first context
     }
@@ -872,6 +873,73 @@ void HArrayUtils::sort(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void HArrayUtils::buildSparseArray(
+    hmemo::HArray<ValueType>& sparseArray,
+    hmemo::HArray<IndexType>& sparseIndexes,
+    const hmemo::HArray<ValueType>& denseArray,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = denseArray.size();
+
+    static LAMAKernel<UtilKernelTrait::countNonZeros<ValueType> > countNonZeros;
+    static LAMAKernel<UtilKernelTrait::compress<ValueType> > compress;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for conversion: where we have the dense values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = denseArray.getValidContext();
+    }
+
+    compress.getSupportedContext( loc, countNonZeros );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ValueType eps = common::TypeTraits<ValueType>::getEps();
+
+    ReadAccess<ValueType> rDenseArray( denseArray, loc );
+
+    // we count the non-zeros at first to have sizes for sparse data
+
+    IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, eps );
+
+    WriteOnlyAccess<ValueType> wSparseArray( sparseArray, loc, sparseN );
+    WriteOnlyAccess<IndexType> wSparseIndexes( sparseIndexes, loc, sparseN );
+
+    sparseN = compress[loc]( wSparseArray.get(), wSparseIndexes.get(), rDenseArray.get(), n, eps );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::buildDenseArray(
+    hmemo::HArray<ValueType>& denseArray,
+    const IndexType denseN,
+    const hmemo::HArray<ValueType>& sparseArray,
+    const hmemo::HArray<IndexType>& sparseIndexes,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType sparseN = sparseArray.size();
+
+    SCAI_ASSERT_LE( sparseN, denseN, "sparse array cannot have more entries than dense array." )
+
+    SCAI_ASSERT( HArrayUtils::validIndexes( sparseIndexes, denseN, prefLoc ), 
+                 "Illegal index for sparse indexes, dense array size = " << denseN );
+
+    // use of existent HArray utilities, even if we have two write accesses for denseArray
+
+    denseArray.clear();
+    denseArray.resize( denseN ); 
+    HArrayUtils::setScalar( denseArray, ValueType( 0 ), common::reduction::COPY, prefLoc );
+
+    HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, prefLoc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void HArrayUtils::SpecifierV<ValueType>::specify()
 {
     using common::mepr::TemplateSpecifier;
@@ -893,12 +961,16 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
     TemplateSpecifier::set( HArrayUtils::scan<ValueType> );
     TemplateSpecifier::set( HArrayUtils::sort<ValueType> );
     TemplateSpecifier::set( HArrayUtils::setRandom<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::buildSparseArray<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::buildDenseArray<ValueType> );
 }
 
 /* --------------------------------------------------------------------------- */
 
 HArrayUtils::HArrayUtils()
 {
+    // instantiation of all template methods
+
     common::mepr::TemplateSpecifierV<SpecifierV, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call();
 }
 

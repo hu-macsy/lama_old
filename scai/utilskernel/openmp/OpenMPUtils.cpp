@@ -1,25 +1,25 @@
-		/**
-		 * @file OpenMPUtils.cpp
-		 *
-		 * @license
-		 * Copyright (c) 2009-2015
-		 * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
-		 * for Fraunhofer-Gesellschaft
-		 *
-		 * Permission is hereby granted, free of charge, to any person obtaining a copy
-		 * of this software and associated documentation files (the "Software"), to deal
-		 * in the Software without restriction, including without limitation the rights
-		 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-		 * copies of the Software, and to permit persons to whom the Software is
-		 * furnished to do so, subject to the following conditions:
-		 *
-		 * The above copyright notice and this permission notice shall be included in
-		 * all copies or substantial portions of the Software.
-		 *
-		 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-		 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-		 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-		 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+/**
+ * @file OpenMPUtils.cpp
+ *
+ * @license
+ * Copyright (c) 2009-2015
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
@@ -808,6 +808,50 @@ void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps )
+{
+    IndexType nonZeros = 0;
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        if ( common::Math::abs( denseArray[i] ) > eps )
+        {
+            nonZeros++;
+        }
+    }
+
+    return nonZeros;
+}
+
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType OpenMPUtils::compress(
+        ValueType sparseArray[],
+        IndexType sparseIndexes[],
+        const ValueType denseArray[],
+        const IndexType n,
+        const ValueType eps )
+{
+    IndexType nonZeros = 0;
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        if ( common::Math::abs( denseArray[i] ) > eps )
+        {
+            sparseArray[nonZeros] = denseArray[i];
+            sparseIndexes[nonZeros] = i;
+            nonZeros++;
+        }
+    }
+
+    return nonZeros;
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -846,6 +890,8 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::compress<ValueType> >( compress, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

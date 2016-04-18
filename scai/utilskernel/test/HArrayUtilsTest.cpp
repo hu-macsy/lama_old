@@ -37,8 +37,10 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/utilskernel/test/HArrays.hpp>
+
 #include <scai/common/ReductionOp.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/exception/Exception.hpp>
 
@@ -78,6 +80,60 @@ BOOST_AUTO_TEST_CASE( FactoryTest )
         _HArray& array = *allArrays[i];
 
         BOOST_CHECK_EQUAL( 0, array.size() ); 
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( UntypedTest )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+
+    HArrays allArrays1;    // vector with HArray of each type
+    HArrays allArrays2;    // another vector to get each pair combination
+
+    const IndexType permVals[] = { 1, 0, 3, 2 };
+
+    const IndexType n = sizeof( permVals ) / sizeof( IndexType );
+
+    LArray<IndexType> perm( n, permVals );
+
+    LArray<IndexType> order;
+    HArrayUtils::setOrder( order, n );    // 0, 1, 2, .., n-1
+
+    for ( size_t i1 = 0; i1 < allArrays1.size(); ++i1 )
+    {
+        _HArray& array1 = *allArrays1[i1];
+
+        HArrayUtils::assign( array1, order );
+
+        for ( size_t i2 = 0; i2 < allArrays2.size(); ++i2 )
+        {
+            _HArray& array2 = *allArrays2[i2];
+
+            // create array with same type, context
+
+            common::unique_ptr<_HArray> tmp( array2.copy() );
+
+            // array2 = array1[ perm ], tmp[ perm ] = array1
+
+            HArrayUtils::assignGather( array2, array1, perm, ctx );
+
+            BOOST_CHECK_EQUAL( array2.size(), perm.size() );
+
+            tmp->resize( n ); // no init required as all values are set
+
+            HArrayUtils::assignScatter( *tmp, perm, array1, ctx );
+
+            // as perm is its inverse, tmp and array2 should be the same
+  
+            for ( IndexType k = 0; k < n; ++k )
+            {
+                double val1 = HArrayUtils::getVal<double>( array2, k );
+                double val2 = HArrayUtils::getVal<double>( *tmp, k );
+                BOOST_CHECK_EQUAL( val1, val2 );
+            }
+        }
     }
 }
 
@@ -189,8 +245,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, test_types )
     ValueType sourceVals[] = { 3, 1, 4, 2 };
     IndexType indexVals[]  = { 0, 2, 1, 3 };
 
-    const IndexType M = sizeof( sourceVals ) / sizeof( ValueType );
-    const IndexType N = sizeof( indexVals ) / sizeof( IndexType );
+    const IndexType N = sizeof( sourceVals ) / sizeof( ValueType );
+    const IndexType N1 = sizeof( indexVals ) / sizeof( IndexType );
+
+    BOOST_REQUIRE_EQUAL( N, N1 );
+
+    const IndexType M = 5; // size of target arry, can be larger
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -199,12 +259,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, test_types )
 
     // target = source[ indexes ]
 
-    LArray<ValueType> source( M, sourceVals );
+    LArray<ValueType> source( N, sourceVals );
     LArray<IndexType> indexes( N, indexVals );
-    LArray<ValueType> target;
 
-    BOOST_CHECK( HArrayUtils::validIndexes( indexes, M ) );
+    BOOST_CHECK_THROW (
+    {
+        LArray<ValueType> target; 
+        HArrayUtils::scatter( target, indexes, source );
 
+    }, Exception );
+
+    LArray<ValueType> target( M );
     HArrayUtils::scatter( target, indexes, source );
 
     for ( IndexType i = 0; i < N; ++i )
@@ -322,6 +387,34 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
     {
         IndexType elem = array[i];
         BOOST_CHECK_EQUAL( i, elem );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    ValueType xVals[] = { 3, 1, 4, 2 };
+    ValueType yVals[] = { 2, -1, -1, -5 };
+
+    const IndexType nx = sizeof( xVals ) / sizeof( ValueType );
+    const IndexType ny = sizeof( yVals ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( nx, ny );
+
+    LArray<ValueType> x( nx, xVals, loc );
+    LArray<ValueType> y( ny, yVals, loc );
+
+    ValueType alpha = 2.0;
+
+    HArrayUtils::axpy( y, alpha, x, loc ); // y += alpha * x
+
+    for ( IndexType i = 0; i < ny; ++i )
+    {
+        ValueType elem = y[i];
+        BOOST_CHECK_EQUAL( yVals[i] + alpha * xVals[i], elem );
     }
 }
 
@@ -481,6 +574,44 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, test_types )
                 }
             }
         }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    ValueType denseValues[] = { 3, 0, 0, 1, 4, 0, 2, 7, 0, -1, -3 };
+    const IndexType n = sizeof( denseValues ) / sizeof( ValueType );
+
+    LArray<ValueType> denseArray( n, denseValues, loc );
+
+    /* Idea: convert to sparse and back to dense, must contain original data */
+
+    LArray<ValueType> sparseArray( loc );
+    LArray<IndexType> sparseIndexes( loc );
+
+    HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, denseArray, loc );
+
+    BOOST_CHECK_EQUAL( sparseArray.size(), 7 );
+    BOOST_REQUIRE_EQUAL( sparseArray.size(), sparseIndexes.size() );
+
+    // The spare indexes must be sorted, ascending = true
+
+    BOOST_CHECK( HArrayUtils::isSorted( sparseIndexes, true, loc ) );
+
+    denseArray.purge();  // will also reset size
+
+    HArrayUtils::buildDenseArray( denseArray, n, sparseArray, sparseIndexes, loc );
+
+    BOOST_REQUIRE_EQUAL( denseArray.size(), n );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        ValueType v = denseArray[i];
+        BOOST_CHECK_EQUAL( v, denseValues[i] );
     }
 }
 

@@ -354,6 +354,14 @@ public:
     {
         HArrayUtils::invert( *this );
     }
+
+    /** Compute the conj in-place */
+
+    void conj()
+    {
+        HArrayUtils::conj( *this );
+    }
+
 };
 
 } /* end namespace utilskernel */
