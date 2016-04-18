@@ -1198,7 +1198,7 @@ void OpenMPELLUtils::sparseGEVM(
     ValueType result[],
     const ValueType alpha,
     const ValueType x[],
-    const IndexType UNUSED( numRows ),
+    const IndexType numRows,
     const IndexType numColumns,
     const IndexType UNUSED( numValuesPerRow ),
     const IndexType numNonZeroRows,
@@ -1208,7 +1208,17 @@ void OpenMPELLUtils::sparseGEVM(
     const ValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "sparseGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A " )
+                   "sparseGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
+                    << ">, result[" << numColumns << "] += " << alpha << " * x * A "
+                    << ", only " << numNonZeroRows << " of " << numRows << " are used" )
+
+    if ( 0 )
+    {
+         // use this call if the following code does not work correctly
+
+         normalGEVM( result, alpha, x, ValueType( 1 ), result, numRows, numColumns, IndexType( 0 ), ellSizes, ellJA, ellValues );
+         return;
+    }
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -1225,7 +1235,7 @@ void OpenMPELLUtils::sparseGEVM(
 
         for ( IndexType i = 0; i < numColumns; ++i )
         {
-            ValueType temp = static_cast<ValueType>( 0.0 );
+            ValueType temp = 0;
 
             for ( IndexType jj = 0; jj < numNonZeroRows; ++jj )
             {
@@ -1233,27 +1243,19 @@ void OpenMPELLUtils::sparseGEVM(
 
                 for ( IndexType k = 0; k < ellSizes[j]; ++k )
                 {
-                    if ( ellJA[k * numNonZeroRows + j] == i )
+                    if ( ellJA[k * numRows + j] == i )
                     {
                         SCAI_LOG_TRACE( logger, "temp += dataAccess[k * numNonZeroRows + j] * xAccess[j]; i = " << j )
                         SCAI_LOG_TRACE( logger,
                                         ", dataAccess[k * numNonZeroRows + j] = " << ellValues[ k * numNonZeroRows + j ] )
                         SCAI_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
 
-                        temp += ellValues[k * numNonZeroRows + j] * x[j];
+                        temp += ellValues[k * numRows + j] * x[j];
                     }
                 }
-
             }
 
-            if ( alpha == scai::common::constants::ONE )
-            {
-                result[i] += temp;
-            }
-            else
-            {
-                result[i] += alpha * temp;
-            }
+            result[i] += alpha * temp;
         }
     }
 }
