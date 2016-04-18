@@ -310,7 +310,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addScalarTest, ValueType, scai_arithmetic_test_ty
 {
     static LAMAKernel<UtilKernelTrait::addScalar<ValueType> > addScalar;
 
-    ContextPtr loc = addScalar.getValidContext( testContext );
+    ContextPtr loc = testContext;
+
+    addScalar.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 

@@ -219,11 +219,6 @@ public:
     template<typename ValueType>
     static void addScalar( hmemo::HArray<ValueType>& array, const ValueType scalar, hmemo::ContextPtr prefLoc );
 
-    /** changes the endian of all elements of an array from little to big and vice versa */
-
-    template<typename ValueType>
-    static void swapEndian( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc );
-
     /*
      * Implementation of functions
      */

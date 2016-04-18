@@ -64,10 +64,6 @@ enum FileType
      */
     FORMATTED,
     /**
-     * @brief xdr binary format which considers the endianess
-     */
-    XDR,
-    /**
      * @brief the Matrix Market Format
      *        (see http://math.nist.gov/matrixMarket for details).
      */
@@ -91,9 +87,6 @@ static inline std::ostream& operator<<( std::ostream& stream, const FileType& ob
             break;
         case FORMATTED:
             stream << "FORMATTED";
-            break;
-        case XDR:
-            stream << "XDR";
             break;
         case MATRIX_MARKET:
             stream << "MATRIX_MARKET";

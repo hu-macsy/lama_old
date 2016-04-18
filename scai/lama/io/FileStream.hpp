@@ -136,9 +136,6 @@ void FileStream::write( const hmemo::HArray<ValueType>& data,
 {
     switch(type){
     // special cases for handling IndexType, int and long, as these are not properly supported yet
-    case common::scalar::INDEX_TYPE:
-        _write<IndexType,ValueType>( data, offset, delimiter );
-        break;
     case common::scalar::INT:
         _write<int,ValueType>( data, offset, delimiter );
         break;
@@ -147,11 +144,11 @@ void FileStream::write( const hmemo::HArray<ValueType>& data,
         break;
 
     // generate cases for all scalar types
-#define SCAI_LAMA_FILESTREAM_WRITE( _type )                \
-    case ( common::TypeTraits<_type>::stype ):             \
+#define SCAI_LAMA_FILESTREAM_WRITE( _type )                 \
+    case ( common::TypeTraits<_type>::stype ):              \
         _write<_type,ValueType>( data, offset, delimiter ); \
         break;
-    SCAI_COMMON_TYPELOOP( ARITHMETIC_HOST_CNT, SCAI_LAMA_FILESTREAM_WRITE, ARITHMETIC_HOST )
+    SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, SCAI_LAMA_FILESTREAM_WRITE, SCAI_ARITHMETIC_ARRAY_HOST )
 #undef SCAI_LAMA_FILESTREAM_WRITE
 
     case common::scalar::INTERNAL:
@@ -172,9 +169,6 @@ void FileStream::read(  hmemo::HArray<ValueType>& data,
 {
     switch(type){
     // special cases for handling IndexType, int and long, as these are not properly supported yet
-    case common::scalar::INDEX_TYPE:
-        _read<IndexType,ValueType>( data, size, offset, delimiter );
-        break;
     case common::scalar::INT:
         _read<int,ValueType>( data, size, offset, delimiter );
         break;
@@ -187,7 +181,7 @@ void FileStream::read(  hmemo::HArray<ValueType>& data,
     case ( common::TypeTraits<_type>::stype ):                   \
         _read<_type,ValueType>( data, size, offset, delimiter ); \
         break;
-    SCAI_COMMON_TYPELOOP( ARITHMETIC_HOST_CNT, SCAI_LAMA_FILESTREAM_READ, ARITHMETIC_HOST )
+    SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, SCAI_LAMA_FILESTREAM_READ, SCAI_ARITHMETIC_ARRAY_HOST )
 #undef SCAI_LAMA_FILESTREAM_READ
 
     case common::scalar::INTERNAL:
@@ -239,7 +233,9 @@ void FileStream::_write( const hmemo::HArray<DataType>& data,
         {
             static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<FileType, DataType> > set;
             static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::addScalar<FileType> > addScalar;
-            hmemo::ContextPtr loc = addScalar.getValidContext(set.getValidContext(data.getValidContext()));
+            hmemo::ContextPtr loc = data.getValidContext();
+            addScalar.getSupportedContext( loc );
+            set.getSupportedContext( loc );
 
             hmemo::ReadAccess<DataType> dataRead( data, loc );
             hmemo::WriteOnlyAccess<FileType> bufferWrite( buffer, loc, data.size() );
@@ -337,13 +333,15 @@ void FileStream::_read( hmemo::HArray<DataType>& data,
 
 
         static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<DataType, FileType> > set;
-        hmemo::ContextPtr loc = set.getValidContext(data.getValidContext());
+        hmemo::ContextPtr loc = data.getValidContext();
+        set.getSupportedContext( loc );
         set[loc](dataWrite, bufferWrite, size, common::reduction::COPY);
     }
 
     if( offset != 0 ){
         static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::addScalar<DataType> > addScalar;
-        hmemo::ContextPtr loc = addScalar.getValidContext(data.getValidContext());
+        hmemo::ContextPtr loc = data.getValidContext();
+        addScalar.getSupportedContext( loc );
         addScalar[loc](dataWrite, size, offset);
     }
 }

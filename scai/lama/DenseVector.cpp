@@ -160,7 +160,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 
     IndexType numElements = 0; // will be the size of the vector
 
-    File::FileType fileType; // = File::XDR;
+    File::FileType fileType; // = File::BINARY;
     std::string suffix;
 	std::string baseFileName = filename;
 	std::string vecFileName;
@@ -217,9 +217,6 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
                 readVectorFromBinaryFile( vecFileName, getDataType<ValueType>( dataTypeSize ) );
                 break;
 
-            case File::XDR: //XDR following the IEEE standard
-                readVectorFromXDRFile( vecFileName, dataTypeSize );
-                break;
             case File::MATRIX_MARKET:
             	readVectorFromMMFile( filename );
             	break;
@@ -867,10 +864,6 @@ void DenseVector<ValueType>::readVectorHeader(
             fileType = File::FORMATTED;
             break;
 
-        case 'x':
-            fileType = File::XDR;
-            break;
-
         default:
             COMMON_THROWEXCEPTION( "Invalid header file." )
     }
@@ -881,7 +874,7 @@ void DenseVector<ValueType>::readVectorHeader(
 template<typename ValueType>
 void DenseVector<ValueType>::writeToFile(
     const std::string& fileBaseName,
-    const File::FileType fileType/*=XDR*/,
+    const File::FileType fileType/*= File::BINARY*/,
     const common::scalar::ScalarType dataType/*=DOUBLE*/) const
 {
     std::string file = fileBaseName.c_str();
@@ -898,12 +891,6 @@ void DenseVector<ValueType>::writeToFile(
         case File::BINARY:
         {
             writeVectorToBinaryFile( file, dataType );
-            break;
-        }
-
-        case File::XDR:
-        {
-            writeVectorToXDRFile( file, dataType );
             break;
         }
 
@@ -941,10 +928,6 @@ void DenseVector<ValueType>::writeVectorHeader(
 
         case File::FORMATTED:
             charFileType = 'f';
-            break;
-
-        case File::XDR:
-            charFileType = 'x';
             break;
 
         case File::MATRIX_MARKET:
@@ -1019,63 +1002,6 @@ void DenseVector<ValueType>::writeVectorToBinaryFile( const std::string& file, c
 
     writeVectorDataToBinaryFile( outFile, type );
 
-    outFile.close();
-}
-
-template<typename FileType,typename DataType>
-static void writeDataToXDRFile( XDRFileStream& outFile, const DataType* data, const IndexType n )
-{
-    if( typeid(FileType) == typeid(DataType) )
-    {
-        outFile.write( data, n ); // no conversion needed
-        return;
-    }
-
-    // so user data has to be converted in file type data
-
-    scoped_array<FileType> buffer( new FileType[n] );
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        buffer[i] = static_cast<FileType>( data[i] );
-    }
-
-    outFile.write( buffer.get(), n );
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, const common::scalar::ScalarType dataType ) const
-{
-    XDRFileStream outFile( file.c_str(), std::ios::out );
-
-    IndexType numRows = size();
-
-    long nnu = static_cast<long>( numRows );
-
-    long dataTypeSize = getDataTypeSize<ValueType>( dataType );
-
-    outFile.write( &nnu );
-    outFile.write( &dataTypeSize );
-
-    ContextPtr hostContext = Context::getHostPtr();
-
-    ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
-
-    if( dataType == common::scalar::INTERNAL )
-    {
-        IOUtils::writeXDR<ValueType, ValueType>( outFile, dataRead.get(), numRows );
-    }
-    else if( mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::writeXDR( dataType, outFile, dataRead.get(), numRows ) )
-    {
-        SCAI_LOG_DEBUG( logger, "write through IOWrapper" )
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, "write to XDR not possible, no valid type found" )
-    }
-
-    outFile.write( &nnu );
-    outFile.write( &dataTypeSize );
     outFile.close();
 }
 
@@ -1155,29 +1081,6 @@ void DenseVector<ValueType>::readVectorFromBinaryFile( const std::string& fileNa
     inFile.close();
 }
 
-template<typename FileDataType, typename UserDataType>
-static void readXDRData( XDRFileStream& inFile, UserDataType data[], const IndexType n )
-{
-    if( typeid(FileDataType) == typeid(UserDataType) )
-    {
-        // no type conversion needed
-
-        inFile.read( data, n );
-        return;
-    }
-
-    // allocate a temporary buffer for n values of FileDataType to read the data
-
-    scoped_array<FileDataType> buffer( new FileDataType[n] );
-
-    inFile.read( buffer.get(), n );
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-        data[i] = static_cast<UserDataType>( buffer[i] );
-    }
-}
-
 template<typename ValueType>
 void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
 {
@@ -1251,71 +1154,6 @@ void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
     ifile.close();
     ifile.close();
     SCAI_LOG_INFO( logger, "construct vector " << numRows )
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName, const long dataTypeSizeHeader )
-{
-    XDRFileStream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
-
-    if( !inFile.is_open() )
-    {
-        COMMON_THROWEXCEPTION( "Could not open XDR vector file." )
-    }
-
-    // Number of elements
-    long nnuLong = 0;
-    inFile.read( &nnuLong );
-
-    IndexType nnu = static_cast<IndexType>( nnuLong );
-
-    if( size() != nnu )
-    {
-        COMMON_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal nnu value." )
-    }
-
-    // double or flaot vector data
-    long dataTypeSize = 0;
-    inFile.read( &dataTypeSize );
-
-    if( dataTypeSizeHeader != dataTypeSize )
-    {
-        COMMON_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal data type size." )
-    }
-
-    // Attention: determination of file type by size is ambiguous, e.g. Complex and Double
-    //            have same size. If ambiguous, own ValueType is the preferred one
-
-    common::scalar::ScalarType fileType = getDataType<ValueType>( dataTypeSize );
-
-    WriteOnlyAccess<ValueType> writeData( mLocalValues, nnu );
-
-    if( fileType == common::scalar::INTERNAL )
-    {
-        IOUtils::readXDR<ValueType, ValueType>( inFile, writeData.get(), nnu );
-    }
-    else
-    {
-        mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::readXDR( fileType, inFile, writeData.get(), nnu );
-    }
-
-    // Validate Header
-
-    nnuLong = 0;
-    inFile.read( &nnuLong );
-
-    if( size() != static_cast<IndexType>( nnuLong ) )
-    {
-        COMMON_THROWEXCEPTION( "Invalid header of the vector file. Unequal nnu." )
-    }
-
-    long checkDataType = 0;
-    inFile.read( &checkDataType );
-
-    if( checkDataType != dataTypeSize )
-    {
-        COMMON_THROWEXCEPTION( "Invalid header of the vector file. Unequal data type size." )
-    }
 }
 
 /* -------------------------------------------------------------------------- */

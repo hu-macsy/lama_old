@@ -40,7 +40,6 @@
 // local library
 #include <scai/lama/io/FileStream.hpp>
 //#include <scai/lama/io/FileIO.hpp>
-#include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/IOUtils.hpp>
 #include <scai/lama/mepr/IOWrapper.hpp>
@@ -163,229 +162,6 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void StorageIO<ValueType>::writeCSRToXDRFile(
-    const HArray<IndexType>& csrIA,
-    const HArray<IndexType>& csrJA,
-    const HArray<ValueType>& csrValues,
-    const std::string& fileName,
-    const long indexDataTypeSizeIA,
-    const long indexDataTypeSizeJA,
-    const long dataTypeSize )
-{
-    SCAI_REGION( "StorageIO.writeCSRToXDRFile" )
-
-    IndexType numValues = csrJA.size();
-    IndexType numRows = csrIA.size() - 1;
-
-    ContextPtr host = Context::getHostPtr();
-
-    ReadAccess<IndexType> iaRead( csrIA, host );
-    ReadAccess<IndexType> jaRead( csrJA, host );
-    ReadAccess<ValueType> dataRead( csrValues, host );
-
-    XDRFileStream outFile( fileName.c_str(), std::ios::out );
-
-    //Write m_ia with m_nnu + 1 elements
-    long nnu = 1;
-    // todo: += ?!
-    nnu = static_cast<long>( numRows );
-    //writing m_ia
-    outFile.write( &nnu );
-    outFile.write( &indexDataTypeSizeIA );
-
-    if( indexDataTypeSizeIA == sizeof( IndexType ) )
-    {
-        IOUtils::writeXDR<IndexType,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
-    }
-    else if( indexDataTypeSizeIA == sizeof( long ) )
-    {
-        IOUtils::writeXDR<long,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
-    }
-    else if( indexDataTypeSizeIA == sizeof ( int ) )
-    {
-        IOUtils::writeXDR<int,IndexType>( outFile, iaRead.get(), numRows + 1, 1 );
-    }
-
-    outFile.write( &indexDataTypeSizeIA );
-    outFile.write( &nnu );
-    //writing m_ja with m_nna elements
-    long nna = 1;
-    nna = static_cast<long>( numValues );
-    outFile.write( &nna );
-    outFile.write( &indexDataTypeSizeJA );
-
-    if( indexDataTypeSizeJA == sizeof(IndexType) )
-    {
-        IOUtils::writeXDR<IndexType,IndexType>( outFile, jaRead.get(), numValues );
-    }
-    else if( indexDataTypeSizeJA == sizeof(long) )
-    {
-        IOUtils::writeXDR<long,IndexType>( outFile, jaRead.get(), numValues );
-    }
-    else if( indexDataTypeSizeJA == sizeof(int) )
-    {
-        IOUtils::writeXDR<int,IndexType>( outFile, jaRead.get(), numValues );
-    }
-
-    outFile.write( &indexDataTypeSizeJA );
-    outFile.write( &numValues );
-    //writing m_data
-    outFile.write( &nna );
-    outFile.write( &dataTypeSize );
-
-    if ( dataTypeSize == sizeof( ValueType ) )
-    {
-        IOUtils::writeXDR<ValueType, ValueType>( outFile, dataRead.get(), numValues );
-    }
-    else if( mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::writeXDR( dataTypeSize, outFile, dataRead.get(), numValues ) )
-    {
-        SCAI_LOG_INFO( logger, "writeXDR conversion neeeded" )
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "no matching type found" )
-    }
-
-    outFile.write( &dataTypeSize );
-    outFile.write( &numValues );
-    outFile.close();
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void StorageIO<ValueType>::readCSRFromXDRFile(
-    HArray<IndexType>& csrIA,
-    HArray<IndexType>& csrJA,
-    HArray<ValueType>& csrValues,
-    const std::string& fileName,
-    const IndexType numRows )
-{
-    SCAI_REGION( "StorageIO.readCSRFromXDRFile" )
-
-    XDRFileStream xdrFile( fileName.c_str(), std::ios::in );
-    int indexDataTypeSizeIA;
-    int indexDataTypeSizeJA;
-    int dataTypeSize;
-
-    if( !xdrFile.is_open() )
-    {
-        COMMON_THROWEXCEPTION( "Unable to open XDR matrix file." )
-    }
-
-    // Read Index Vector m_ia with m_nnu + 1 elements
-
-    int nnu; // long nnu;
-
-    xdrFile.read( &nnu );
-
-    SCAI_ASSERT_EQ_ERROR( numRows, (IndexType ) nnu, "mismatch header and XDR matrix file" )
-
-    xdrFile.read( &indexDataTypeSizeIA );
-
-    WriteOnlyAccess<IndexType> m_ia( csrIA, numRows + 1 );
-
-    if( sizeof(IndexType) == indexDataTypeSizeIA )
-    {
-        IOUtils::readXDR<IndexType,IndexType>( xdrFile, m_ia, numRows + 1, -1 );
-    }
-    else if( indexDataTypeSizeIA == sizeof( int ) )
-    {
-        IOUtils::readXDR<int,IndexType>( xdrFile, m_ia, numRows + 1, -1 );
-    }
-    else if( indexDataTypeSizeIA == sizeof( long ) )
-    {
-        IOUtils::readXDR<long,IndexType>( xdrFile, m_ia, numRows + 1, -1 );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "Invalid index data type size in file " + fileName )
-    }
-
-    int indexDataTypeSizeIACheck;
-    xdrFile.read( &indexDataTypeSizeIACheck );
-
-    SCAI_ASSERT_EQ_ERROR( indexDataTypeSizeIA, indexDataTypeSizeIACheck, "size mismatch" )
-
-    int nnuCheck;
-    xdrFile.read( &nnuCheck );
-
-    SCAI_ASSERT_EQ_ERROR( nnuCheck, numRows, "")
-
-    IndexType numValues = m_ia[numRows];
-
-    //Read Index Vector m_ja with m_nna elements
-    int nna;
-    xdrFile.read( &nna );
-
-    SCAI_ASSERT_EQ_ERROR( numValues, (IndexType ) nna, "size mismatch" );
-
-    xdrFile.read( &indexDataTypeSizeJA );
-
-    WriteOnlyAccess<IndexType> m_ja( csrJA, numValues );
-
-    if( sizeof(IndexType) == indexDataTypeSizeJA )
-    {
-        IOUtils::readXDR<IndexType,IndexType>( xdrFile, m_ja.get(), numValues );
-    }
-    else if( indexDataTypeSizeJA == sizeof( long ) )
-    {
-        IOUtils::readXDR<long,IndexType>( xdrFile, m_ja.get(), numValues );
-    }
-    else if( indexDataTypeSizeJA == sizeof( int ) )
-    {
-        IOUtils::readXDR<int,IndexType>( xdrFile, m_ja.get(), numValues );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "Invalid index data type size in file " + fileName )
-    }
-
-    int indexDataTypeSizeJACheck;
-    xdrFile.read( &indexDataTypeSizeJACheck );
-
-    SCAI_ASSERT_EQ_ERROR( indexDataTypeSizeJA, indexDataTypeSizeJACheck, "size mismatch" )
-
-    int nnaCheck;
-    xdrFile.read( &nnaCheck );
-
-    SCAI_ASSERT_EQ_ERROR( nnaCheck, numValues, "size mismatch" )
-
-    //Read Index Vector m_data with m_nna elements
-
-    xdrFile.read( &nnaCheck );
-
-    SCAI_ASSERT_EQ_ERROR( nnaCheck, numValues, "size mismatch" )
-
-    xdrFile.read( &dataTypeSize );
-
-    WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
-
-    if( mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::readXDR( dataTypeSize, xdrFile, m_data.get(), numValues ) )
-    {
-        SCAI_LOG_TRACE( logger, "read xdr file")
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "Invalid data type size in file " + fileName )
-    }
-
-    int dataTypeSizeCheck;
-
-    xdrFile.read( &dataTypeSizeCheck );
-
-    SCAI_ASSERT_EQ_ERROR( dataTypeSize, dataTypeSizeCheck, "size mismatch" )
-
-    xdrFile.read( &nnaCheck );
-
-    SCAI_ASSERT_EQ_ERROR( nnaCheck, nna, "size mismatch" )
-
-    xdrFile.close();
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void StorageIO<ValueType>::writeCSRToBinaryFile(
     const HArray<IndexType>& csrIA,
     const HArray<IndexType>& csrJA,
@@ -442,6 +218,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
         {
             outFile << ii + 1 << " " << ja[jj] + 1;
 
+            // TODO: PATTERN?!
             if( dataType != common::scalar::PATTERN )
             {
                 outFile << " " << data[jj];
@@ -746,10 +523,6 @@ void _StorageIO::writeCSRHeader(
             charFileType = 'f';
             break;
 
-        case File::XDR:
-            charFileType = 'x';
-            break;
-
         default:
             COMMON_THROWEXCEPTION( "Invalid header file." )
     }
@@ -793,12 +566,6 @@ void _StorageIO::readCSRHeader(
         case 'b':
         {
             fileType = File::BINARY;
-            break;
-        }
-
-        case 'x':
-        {
-            fileType = File::XDR;
             break;
         }
 
@@ -905,10 +672,76 @@ void _StorageIO::readMMHeader(
 		IndexType& numRows,
 		IndexType& numColumns,
 		IndexType& numValues,
-		bool& isPattern,
-		bool& isSymmetric,
+		bool& /* isPattern */,
+		bool& /* isSymmetric */,
 		const std::string& fileName )
 {
+    FileStream inFile( fileName, std::ios::in );
+    std::string buffer;
+
+
+    //TODO: process read values properly
+
+    // read %%MatrixMarket
+    std::getline(inFile, buffer, ' ' );
+    std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+    if( buffer != "%%matrixmarket" )
+    {
+        COMMON_THROWEXCEPTION( "Given file is no valid matrix market file, expected file to begin with %%MatrixMarket" )
+    }
+
+    // read object type
+    // TODO: matrix and vector?
+    std::getline(inFile, buffer, ' ' );
+    std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+    if( buffer != "matrix" && buffer != "vector" )
+    {
+        COMMON_THROWEXCEPTION( "Object type in the given matrix market file is invalid, should be matrix or vector" )
+    }
+
+    // read file type
+    std::getline(inFile, buffer, ' ' );
+    std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+    if( buffer != "coordinate" && buffer != "array" )
+    {
+        COMMON_THROWEXCEPTION( "Format type in the given matrix market file is invalid, should be coordinate or array" )
+    }
+
+    // read data type
+    std::getline(inFile, buffer, ' ' );
+    std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+    if( buffer != "real" && buffer != "integer" && buffer != "complex" && buffer != "pattern" )
+    {
+        COMMON_THROWEXCEPTION( "Data type in the given matrix market file is invalid, should be real, integer, complex or pattern" )
+    }
+
+    // read symmetry
+    std::getline(inFile, buffer, '\n' );
+    std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+    if( buffer != "general" && buffer != "symmetric" && buffer != "skew-symmetric" && buffer != "hermitian" )
+    {
+        COMMON_THROWEXCEPTION( "Data type in the given matrix market file is invalid, should be general, symmetric, skew-symmetric or hermitian" )
+    }
+
+    do
+    {
+        std::getline(inFile, buffer, '\n' );
+    } while( buffer.at( 0 ) == '%' );
+
+    std::stringstream bufferSS( buffer );
+    bufferSS >> numRows;
+    bufferSS >> numColumns;
+    bufferSS >> numValues;
+
+
+
+   /*
+
+
+
+
+
+
 	std::FILE* file;
 	file = fopen( fileName.c_str(), "r" );
 
@@ -945,7 +778,7 @@ void _StorageIO::readMMHeader(
 		SCAI_LOG_DEBUG( logger, "data is dense" )
 		errorCode = mm_read_mtx_array_size( file, &numRows, &numColumns );
 		numValues = numRows * numColumns;
-	}
+	}matcode
 
 	if( errorCode != 0 )
 	{
@@ -953,10 +786,11 @@ void _StorageIO::readMMHeader(
 		COMMON_THROWEXCEPTION(
 						"Could not read values from file '" << fileName << "'. Cause: '" << getErrorString( errorCode ) << "'." );
 	}
+	*/
 
 	/* symmetric matrices: only lower triangular matrix is stored */
 	/* skew matrices: symmetric and all diagonal entries are zero */
-
+/*
 	isSymmetric = mm_is_symmetric( matcode ) || mm_is_skew( matcode );
 
 	SCAI_LOG_INFO( logger,
@@ -966,6 +800,7 @@ void _StorageIO::readMMHeader(
 	{
 		COMMON_THROWEXCEPTION( "'" << fileName << "' could not be closed." )
 	}
+	*/
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1028,13 +863,6 @@ void StorageIO<ValueType>::writeCSRToFile(
         {
             writeCSRToBinaryFile( csrIA, csrJA, csrValues, fileBaseName + ".amg", iaType,
                                   jaType, valuesType );
-            break;
-        }
-
-        case File::XDR:
-        {
-            writeCSRToXDRFile( csrIA, csrJA, csrValues, fileBaseName + ".amg", indexDataTypeSizeIA, indexDataTypeSizeJA,
-                               dataTypeSize );
             break;
         }
 
@@ -1124,12 +952,6 @@ void StorageIO<ValueType>::readCSRFromFile(
         {
             // Attention: no type conversion here, so data sizes must fit
             readCSRFromBinaryFile( csrIA, csrJA, csrValues, amgFileName, numRows );
-            break;
-        }
-
-        case File::XDR:
-        {
-            readCSRFromXDRFile( csrIA, csrJA, csrValues, amgFileName, numRows );
             break;
         }
 

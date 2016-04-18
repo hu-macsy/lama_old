@@ -41,7 +41,6 @@
 // local library
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>
-#include <scai/lama/io/XDRFileStream.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
@@ -404,10 +403,6 @@ private    :
                     const std::string& fileName,
                     const common::scalar::ScalarType outputType ) const;
 
-    void writeVectorToXDRFile(
-                    const std::string& fileName,
-                    const common::scalar::ScalarType outputType ) const;
-
     void writeVectorDataToBinaryFile(
                     std::fstream& outFile,
                     const common::scalar::ScalarType outputType ) const;
@@ -428,10 +423,6 @@ private    :
     void readVectorFromBinaryFile(
                     const std::string& fileName,
                     const common::scalar::ScalarType dataType );
-
-    void readVectorFromXDRFile(
-                    const std::string& fileName,
-                    const long dataTypeSizeHeader );
 
     void readVectorFromMMFile( const std::string& fileName );
 

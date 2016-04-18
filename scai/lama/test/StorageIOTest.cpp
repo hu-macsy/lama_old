@@ -117,7 +117,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, test_types )
         }
     }
 
-    std::remove( filename.c_str() );
+    // TODO:
+    //std::remove( filename.c_str() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -129,34 +130,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, test_types )
     setDenseData( csrMatrix );
     std::string filename = "out_binary";
     csrMatrix.writeToFile( filename, File::BINARY );
-    readMatrix.readFromFile( filename );
-    BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
-    BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
-
-// Binary data has no lost of accuracy, so we compare for equality here
-
-    for ( IndexType i = 0; i < csrMatrix.getNumRows(); ++i )
-    {
-        for ( IndexType j = 0; j < csrMatrix.getNumColumns(); ++j )
-        {
-            BOOST_CHECK_EQUAL( csrMatrix.getValue( i, j ),
-                               readMatrix.getValue( i, j ) );
-        }
-    }
-
-    std::remove( ( filename + ".amg" ).c_str() );
-    std::remove( ( filename + ".frm" ).c_str() );
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOXDR, ValueType, test_types )
-{
-    CSRStorage<ValueType> csrMatrix;
-    CSRStorage<ValueType> readMatrix;
-    setDenseData( csrMatrix );
-    std::string filename = "out_xdr";
-    csrMatrix.writeToFile( filename, File::XDR );
     readMatrix.readFromFile( filename );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );

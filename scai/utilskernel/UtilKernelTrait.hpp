@@ -288,21 +288,6 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
-    struct swapEndian
-    {
-        /** @brief changes the endian of all elements of an array from little to big and vice versa
-         *
-         *  @param[in,out]  values is the array
-         *  @param[in]      n      is the number of entries in values
-         */
-        typedef void ( *FuncType ) (
-            ValueType values[],
-            const IndexType n );
-
-        static const char* getId() { return "Util.swapEndian"; }
-    };
-
-    template<typename ValueType>
     struct scan
     {
         /** This method computes runnings sums of values

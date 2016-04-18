@@ -752,44 +752,6 @@ ValueType OpenMPUtils::scanParallel( PartitionId numThreads, ValueType array[], 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::swapEndian( ValueType mValues[], const IndexType n )
-{
-    SCAI_REGION( "OpenMP.Utils.swapEndian" )
-
-    SCAI_LOG_INFO( logger, "swapEndian, #n = " << n )
-
-    if ( n <= 0 )
-    {
-        return;
-    }
-
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-    for( IndexType i = 0; i < n; i++ )
-    {
-
-
-
-        const int length = getSize( *data );
-        *data = 0;
-        char* dataptr = reinterpret_cast<char*>( data );
-
-        if( isLittleEndian() )
-        {
-            for( int pos = length - 1; pos >= 0; pos-- )
-            {
-                m_filestream.read( dataptr + pos, 1 );
-            }
-
-
-
-            mValues[i] += scalar;
-
-        }
-    }
-}
-
-template<typename ValueType>
 ValueType OpenMPUtils::scan( ValueType array[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.scan" )

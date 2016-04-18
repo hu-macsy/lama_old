@@ -207,25 +207,6 @@ public:
         const common::scalar::ScalarType jaType,
         const common::scalar::ScalarType valuesType );
 
-    /** @brief Writing CSR storage to an xdr file.
-     *
-     *  @param[in] csrIA                CSR ia array
-     *  @param[in] csrJA                CSR ja array
-     *  @param[in] csrValues            CSR values array
-     *  @param[in] fileName             name of output file
-     *  @param[in] indexDataTypeSizeIA  TODO[doxy] Complete Description.
-     *  @param[in] indexDataTypeSizeJA  TODO[doxy] Complete Description.
-     *  @param[in] dataTypeSize         TODO[doxy] Complete Description.
-     */
-    static void writeCSRToXDRFile(
-        const hmemo::HArray<IndexType>& csrIA,
-        const hmemo::HArray<IndexType>& csrJA,
-        const hmemo::HArray<ValueType>& csrValues,
-        const std::string& fileName,
-        const long indexDataTypeSizeIA,
-        const long indexDataTypeSizeJA,
-        const long dataTypeSize );
-
     /** Writing CSR storage to an mm file.
      *
      *  @param[in] csrIA            CSR ia array
@@ -285,21 +266,6 @@ public:
      *  the binary file must contain data of exact the same type as needed.
      */
     static void readCSRFromBinaryFile(
-        hmemo::HArray<IndexType>& csrIA,
-        hmemo::HArray<IndexType>& csrJA,
-        hmemo::HArray<ValueType>& csrValues,
-        const std::string& fileName,
-        const IndexType numRows );
-
-    /** @brief Reading a CSR storage from an xdr file.
-     *
-     *  @param[out] csrIA           CSR ia array
-     *  @param[out] csrJA           CSR ja array
-     *  @param[out] csrValues       CSR values array
-     *  @param[in]  fileName        name of input file
-     *  @param[in]  numRows         number of rows
-     */
-    static void readCSRFromXDRFile(
         hmemo::HArray<IndexType>& csrIA,
         hmemo::HArray<IndexType>& csrJA,
         hmemo::HArray<ValueType>& csrValues,
