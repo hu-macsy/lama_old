@@ -154,17 +154,20 @@ ValueType MICJDSUtils::getValue(
     const void* valuesPtr = values;
 
     ValueType val = 0;
+    ValueType* valPtr = &val;
 
 #pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, valuesPtr, \
-                                               i, j, numRows ), out( val )
+                                               i, j, numRows ), out( valPtr[0:1] )
     {
-        val = 0;
-
         const IndexType* perm = static_cast<const IndexType*>( permPtr );
         const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
         const IndexType* dlg = static_cast<const IndexType*>( dlgPtr );
         const IndexType* ja = static_cast<const IndexType*>( jaPtr );
         const ValueType* values = static_cast<const ValueType*>( valuesPtr );
+
+	ValueType& valRef = *valPtr;
+
+	valRef = 0;
 
         #pragma omp parallel for
 
@@ -180,7 +183,7 @@ ValueType MICJDSUtils::getValue(
                 {
                     if( ja[ii + k] == j )
                     {
-                        val = values[ii + k];
+                        valRef = values[ii + k];
                     }
 
                     k += dlg[jj];
@@ -715,9 +718,11 @@ void MICJDSUtils::normalGEMV(
     const void* jdsJAPtr = jdsJA;
     const void* jdsValuesPtr = jdsValues;
 
+    const ValueType* alphaPtr = &alpha;
+
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( resultPtr, xPtr, jdsDLGPtr, jdsILGPtr, jdsJAPtr, jdsValuesPtr, alpha )
+#pragma offload target( mic : device ), in( resultPtr, xPtr, jdsDLGPtr, jdsILGPtr, jdsJAPtr, jdsValuesPtr, alphaPtr[0:1] )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
         const ValueType* x = static_cast<const ValueType*>( xPtr );
@@ -726,6 +731,8 @@ void MICJDSUtils::normalGEMV(
         const IndexType* jdsDLG = static_cast<const IndexType*>( jdsDLGPtr );
         const IndexType* jdsJA = static_cast<const IndexType*>( jdsJAPtr );
         const ValueType* jdsValues = static_cast<const ValueType*>( jdsValuesPtr );
+
+	const ValueType& alphaRef = *alphaPtr;
 
         // dlg[0] stands exactly for number of non-empty rows
 
@@ -747,7 +754,7 @@ void MICJDSUtils::normalGEMV(
 
             // scattering needs no synchronization as values of perm are unique
 
-            result[perm[ii]] += alpha * value;
+            result[perm[ii]] += alphaRef * value;
         }
     }
 }
@@ -791,9 +798,11 @@ void MICJDSUtils::jacobi(
     const void* jdsDLGPtr = jdsDLG;
     const void* jdsValuesPtr = jdsValues;
 
+    const ValueType* omegaPtr = &omega;
+
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, omega, numRows, \
+#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, omegaPtr[0:1], numRows, \
                                        jdsPermPtr, jdsJAPtr, jdsDLGPtr, jdsValuesPtr )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
@@ -805,7 +814,8 @@ void MICJDSUtils::jacobi(
         const IndexType* jdsILG = static_cast<const IndexType*>( jdsILGPtr );
         const ValueType* jdsValues = static_cast<const ValueType*>( jdsValuesPtr );
 
-        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
+	const ValueType& omegaRef = *omegaPtr;
+        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omegaRef;
 
         #pragma omp parallel for
 
@@ -823,17 +833,17 @@ void MICJDSUtils::jacobi(
                 pos += jdsDLG[j];
             }
 
-            if( omega == static_cast<ValueType>( 1.0 ) )
+            if( omegaRef == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] = temp / diag;
             }
-            else if( 0.5 == omega )
+            else if( 0.5 == omegaRef )
             {
-                solution[i] = omega * ( temp / diag + oldSolution[i] );
+                solution[i] = omegaRef * ( temp / diag + oldSolution[i] );
             }
             else
             {
-                solution[i] = omega * ( temp / diag ) + oneMinusOmega * oldSolution[i];
+                solution[i] = omegaRef * ( temp / diag ) + oneMinusOmega * oldSolution[i];
             }
         }
     }
@@ -887,11 +897,13 @@ void MICJDSUtils::jacobiHalo(
     const void* jdsHaloDLGPtr = jdsHaloDLG;
     const void* jdsHaloValuesPtr = jdsHaloValues;
 
+    const ValueType* omegaPtr = &omega;
+
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ) in ( jdsHaloPermPtr, localDiagonalPtr, jdsHaloILGPtr, \
                                                jdsHaloDLGPtr, jdsHaloJAPtr, jdsHaloValuesPtr, \
-                                               solutionPtr, oldSolutionPtr, omega )
+                                               solutionPtr, oldSolutionPtr, omegaPtr[0:1] )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
 
@@ -902,6 +914,8 @@ void MICJDSUtils::jacobiHalo(
         const IndexType* jdsHaloDLG = static_cast<const IndexType*>( jdsHaloDLGPtr );
         const IndexType* jdsHaloILG = static_cast<const IndexType*>( jdsHaloILGPtr );
         const ValueType* jdsHaloValues = static_cast<const ValueType*>( jdsHaloValuesPtr );
+
+        const ValueType& omegaRef = *omegaPtr;
 
         // JDS has no row indexes, but number of non-zero rows is known
 
@@ -924,7 +938,7 @@ void MICJDSUtils::jacobiHalo(
                 pos += jdsHaloDLG[j];
             }
 
-            solution[i] -= temp * omega / diag;
+            solution[i] -= temp * omegaRef / diag;
         }
     }
 }

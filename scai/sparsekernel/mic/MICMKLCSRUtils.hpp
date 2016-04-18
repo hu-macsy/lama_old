@@ -37,6 +37,8 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/mepr/Registrator.hpp>
+
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
@@ -78,18 +80,14 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    static void registerKernels( bool deleteFlag );
+    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
 
     /** Helper class for (un) registration of kernel routines at static initialization. */
 
-    class RegisterGuard
-    {
-    public:
-        RegisterGuard();
-        ~RegisterGuard();
-    };
+    MICMKLCSRUtils();
+    ~MICMKLCSRUtils();
 
-    static RegisterGuard guard;  // registration of kernels @ static initialization
+    static MICMKLCSRUtils guard;
 };
 
 } /* end namespace sparsekernel */
