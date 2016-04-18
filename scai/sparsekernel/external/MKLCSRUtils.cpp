@@ -192,6 +192,18 @@ void MKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
 MKLCSRUtils::MKLCSRUtils()
 {
+    bool useMKL = true;
+    int level = 0;
+
+    // using MKL for CSR might be disabled explicitly by environment variable
+
+    useMKL = common::Settings::getEnvironment( level, "SCAI_USE_MKL" );
+
+    if( !useMKL || ( level <= 0 ) )
+    {
+        return;
+    }
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );
@@ -199,6 +211,17 @@ MKLCSRUtils::MKLCSRUtils()
 
 MKLCSRUtils::~MKLCSRUtils()
 {
+    bool useMKL = true;
+
+    // using MKL for CSR might be disabled explicitly by environment variable
+
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
+
+    if( !useMKL )
+    {
+        return;
+    }
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );

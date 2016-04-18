@@ -35,6 +35,7 @@
 
 // local library
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/mic/MICMKLCSRWrapper.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
@@ -64,24 +65,24 @@ SCAI_LOG_DEF_LOGGER( MICMKLCSRUtils::logger, "MIC.MKLCSRUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-template<>
+template<typename ValueType>
 void MICMKLCSRUtils::normalGEMV(
-    float result[],
-    const float alpha,
-    const float x[],
-    const float beta,
-    const float y[],
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const float csrValues[] )
+    const ValueType csrValues[] )
 {
     // SCAI_REGION( "MIC.MKLscsrmv" )
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -110,10 +111,12 @@ void MICMKLCSRUtils::normalGEMV(
 
     // const_cast needed, MICMKL interface does not support it
 
-    mkl_scsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
-                const_cast<float*>( &alpha ), matdescra, const_cast<float*>( csrValues ),
-                const_cast<IndexType*>( csrJA ), const_cast<IndexType*>( csrIA ), const_cast<IndexType*>( csrIA + 1 ),
-                const_cast<float*>( x ), const_cast<float*>( &beta ), result );
+    MICMKLCSRWrapper<ValueType>::csrmv( transa, numRows, numColumns, alpha, matdescra, csrValues, csrJA, csrIA, csrIA + 1, x, beta, result );
+
+//    mkl_scsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
+//                const_cast<float*>( &alpha ), matdescra, const_cast<float*>( csrValues ),
+//                const_cast<IndexType*>( csrJA ), const_cast<IndexType*>( csrIA ), const_cast<IndexType*>( csrIA + 1 ),
+//                const_cast<float*>( x ), const_cast<float*>( &beta ), result );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -189,59 +192,61 @@ void MICMKLCSRUtils::normalGEMV(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICMKLCSRUtils::registerKernels( bool deleteFlag )
+template<typename ValueType>
+void MICMKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    bool useMKL = true;
-
-    // using MKL for CSR might be disabled explicitly by environment variable
-
-    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
-
-    if( !useMKL )
-    {
-        return;
-    }
-
-    // REGISTER1: overwrites previous settings
-
-    // LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
-
-    SCAI_LOG_INFO( logger, "register some CSR kernels implemented by MKL for MIC in Kernel Registry" )
-
+    const common::context::ContextType ctx = common::context::MIC;
     using kregistry::KernelRegistry;
 
-    const common::context::ContextType ctx = common::context::MIC;
+    SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for MIC at kernel registry [" << flag
+        << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
-
-    if ( deleteFlag )
-    {
-        flag = KernelRegistry::KERNEL_ERASE;
-    }
-
-    // ToDo : routine causes problems
-
-    // KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
-    // KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
 /*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-MICMKLCSRUtils::RegisterGuard::RegisterGuard()
+MICMKLCSRUtils::MICMKLCSRUtils()
 {
-    bool deleteFlag = false;
-    registerKernels( deleteFlag );
+    bool useMKL = true;
+
+   // using MKL for CSR might be disabled explicitly by environment variable
+
+   common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
+   int level = 0;
+
+   if( !useMKL || ( level <= 0 ) )
+   {
+       return;
+   }
+
+   const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
+
+   kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
-MICMKLCSRUtils::RegisterGuard::~RegisterGuard()
+MICMKLCSRUtils::~MICMKLCSRUtils()
 {
-    bool deleteFlag = true;
-    registerKernels( deleteFlag );
+    bool useMKL = true;
+
+   // using MKL for CSR might be disabled explicitly by environment variable
+
+   common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
+   int level = 0;
+
+   if( !useMKL || ( level <= 0 ) )
+   {
+       return;
+   }
+
+   const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
+
+   kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_MIC_LIST>::call( flag );
 }
 
-MICMKLCSRUtils::RegisterGuard MICMKLCSRUtils::guard;    // guard variable for registration
+MICMKLCSRUtils MICMKLCSRUtils::guard;    // guard variable for registration
 
 } /* end namespace sparsekernel */
 
