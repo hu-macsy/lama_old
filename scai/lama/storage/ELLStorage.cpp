@@ -1220,6 +1220,62 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+SyncToken* ELLStorage<ValueType>::normalGEVM(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const HArray<ValueType>& y,
+    bool async ) const
+{
+    static LAMAKernel<ELLKernelTrait::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = this->getContextPtr();
+
+    normalGEVM.getSupportedContext( loc );
+
+    unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+        syncToken->setCurrent();
+    }
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    // Note: alias &result == &y possible
+    //       ReadAccess on y before WriteOnlyAccess on result guarantees valid data
+
+    ReadAccess<IndexType> ellIA( mIA, loc );
+    ReadAccess<IndexType> ellJA( mJA, loc );
+    ReadAccess<ValueType> ellValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
+
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), 
+                     mNumRows, mNumColumns, mNumValuesPerRow,
+                     ellIA.get(), ellJA.get(), ellValues.get() );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( ellIA.releaseDelayed() );
+        syncToken->pushRoutine( ellJA.releaseDelayed() );
+        syncToken->pushRoutine( ellValues.releaseDelayed() );
+        syncToken->unsetCurrent();
+    }
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::normalGEMV(
     HArray<ValueType>& result,
     const ValueType alpha,
@@ -1250,6 +1306,54 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
     WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
     normalGEMV[loc]( wResult.get(), alpha, rX.get(), 0, NULL, mNumRows, mNumValuesPerRow,
+                     ellIA.get(), ellJA.get(), ellValues.get() );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( ellIA.releaseDelayed() );
+        syncToken->pushRoutine( ellJA.releaseDelayed() );
+        syncToken->pushRoutine( ellValues.releaseDelayed() );
+        syncToken->unsetCurrent();
+    }
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* ELLStorage<ValueType>::normalGEVM(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    bool async ) const
+{
+    static LAMAKernel<ELLKernelTrait::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = this->getContextPtr();
+
+    normalGEVM.getSupportedContext( loc );
+
+    unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+        syncToken->setCurrent();
+    }
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> ellIA( mIA, loc );
+    ReadAccess<IndexType> ellJA( mJA, loc );
+    ReadAccess<ValueType> ellValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), 0, NULL, mNumRows, mNumColumns, mNumValuesPerRow,
                      ellIA.get(), ellJA.get(), ellValues.get() );
 
     if ( async )
@@ -1322,6 +1426,62 @@ SyncToken* ELLStorage<ValueType>::sparseGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+SyncToken* ELLStorage<ValueType>::sparseGEVM(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    bool async ) const
+{
+    static LAMAKernel<ELLKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
+
+    ContextPtr loc = this->getContextPtr();
+    sparseGEVM.getSupportedContext( loc );
+
+    unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+        syncToken->setCurrent();
+    }
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> ellIA( mIA, loc );
+    ReadAccess<IndexType> ellJA( mJA, loc );
+    ReadAccess<ValueType> ellValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+
+    WriteAccess<ValueType> wResult( result, loc );
+
+    // result += alpha * thisMatrix * x, can take advantage of row indexes
+
+    IndexType numNonZeroRows = mRowIndexes.size();
+
+    ReadAccess<IndexType> rRowIndexes( mRowIndexes, loc );
+
+    sparseGEVM[loc]( wResult.get(), alpha, rX.get(), 
+                     mNumRows, mNumColumns, mNumValuesPerRow, 
+                     numNonZeroRows, rRowIndexes.get(), 
+                     ellIA.get(), ellJA.get(), ellValues.get() );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( rRowIndexes.releaseDelayed() );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( ellIA.releaseDelayed() );
+        syncToken->pushRoutine( ellJA.releaseDelayed() );
+        syncToken->pushRoutine( ellValues.releaseDelayed() );
+        syncToken->unsetCurrent();
+    }
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     HArray<ValueType>& result,
     const ValueType alpha,
@@ -1348,7 +1508,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == Context::MaxContext )
     {
         // execution as separate thread
 
@@ -1371,9 +1531,8 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if ( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if ( beta != scai::common::constants::ZERO ) 
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }

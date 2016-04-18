@@ -958,7 +958,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
 
-    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if ( beta != scai::common::constants::ZERO )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1049,13 +1049,15 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
-                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x 
+                    << ", beta = " << beta << ", y = " << y )
 
     SCAI_REGION( "Storage.DIA.vectorTimesMatrixAsync" )
 
     static LAMAKernel<DIAKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
     ContextPtr loc = this->getContextPtr();
+
     normalGEVM.getSupportedContext( loc );
 
     // Note: checks will be done by asynchronous task in any case
@@ -1086,9 +1088,8 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if ( beta != scai::common::constants::ZERO )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1105,37 +1106,16 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     ReadAccess<ValueType> rX( x, loc );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+    ReadAccess<ValueType> rY( y, loc );
 
-    if( &result == &y )
-    {
-        // only write access for y, no read access for result
+    SCAI_CONTEXT_ACCESS( loc )
 
-        WriteAccess<ValueType> wResult( result, loc );
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                     diaOffsets.get(), diaValues.get() );
 
-        // we assume that normalGEMV can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-    }
-    else
-    {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rY.releaseDelayed() );
-    }
-
+    syncToken->pushRoutine( wResult.releaseDelayed() );
+    syncToken->pushRoutine( rY.releaseDelayed() );
     syncToken->pushRoutine( rX.releaseDelayed() );
     syncToken->pushRoutine( diaValues.releaseDelayed() );
     syncToken->pushRoutine( diaOffsets.releaseDelayed() );
