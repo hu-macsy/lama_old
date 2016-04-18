@@ -173,6 +173,17 @@ private:
         const IndexType cooJA[],
         const ValueType cooValues[] );
 
+    template<typename ValueType>
+    static void normalGEVM_a(
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,
+        const std::pair<ValueType, const ValueType*> by,
+        const IndexType numColumns,
+        const IndexType numValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[] );
+
     /** Routine that registers all methods at the kernel registry. */
 
     SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )

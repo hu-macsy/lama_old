@@ -850,47 +850,6 @@ void sparse_gemv_kernel(
 
 template<typename ValueType, bool useTexture>
 __global__
-void sparse_gevm_kernel_alpha_one(
-    ValueType* result,
-    const ValueType* x_d,
-    const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    const IndexType* rowIndexes,
-    int numColumns,
-    int numNonZeroRows )
-{
-    // result = x_d * A
-
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < numColumns )
-    {
-        ValueType value = 0.0;
-
-        for ( int jj = 0; jj < numNonZeroRows; ++jj )
-        {
-            int j = rowIndexes[jj];
-            const int rowStart = csrIA[j];
-            const int rowEnd = csrIA[j + 1];
-
-            for ( int k = rowStart; k < rowEnd; ++k )
-            {
-                if ( csrJA[k] == i )
-                {
-                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, i );
-                }
-            }
-        }
-
-        result[i] = value;
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture>
-__global__
 void sparse_gevm_kernel(
     ValueType* result,
     const ValueType* x_d,
@@ -902,8 +861,7 @@ void sparse_gevm_kernel(
     int numColumns,
     int numNonZeroRows )
 {
-    // TODO
-    // result = alpha * x_d * A + beta * y_d
+    // result += alpha * x_d * A 
 
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -921,12 +879,12 @@ void sparse_gevm_kernel(
             {
                 if ( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, i );
+                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, j );
                 }
             }
         }
 
-        result[i] = alpha * value;
+        result[i] += alpha * value;
     }
 }
 
@@ -1557,29 +1515,17 @@ void CUDACSRUtils::sparseGEVM(
     {
         vectorBindTexture( x );
 
-        if ( alpha == constants::ONE )
-        {
-            sparse_gevm_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
-            ( result, x, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );
-        }
-        else
-        {
-            sparse_gevm_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
-            ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );
-        }
+        SCAI_LOG_DEBUG( logger, "sparse_gevm_kernel<useTexture=true>" )
+
+        sparse_gevm_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
+        ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );
     }
     else
     {
-        if ( alpha == constants::ONE )
-        {
-            sparse_gevm_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-            ( result, x, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );
-        }
-        else
-        {
-            sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-            ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );
-        }
+        SCAI_LOG_DEBUG( logger, "sparse_gevm_kernel<useTexture=false>" )
+
+        sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
+        ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );
     }
 
     if ( !syncToken )

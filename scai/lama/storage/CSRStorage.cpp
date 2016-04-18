@@ -56,7 +56,6 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
@@ -1709,7 +1708,8 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
-                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x 
+                    << ", beta = " << beta << ", y = " << y )
 
     SCAI_REGION( "Storage.CSR.vectorTimesMatrixAsync" )
 
@@ -1719,37 +1719,11 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     ContextPtr loc = this->getContextPtr();
     normalGEVM.getSupportedContext( loc, sparseGEVM );
 
-    if ( loc->getType() == Context::MaxContext )
-    {
-        // execution as separate thread
-
-        void ( CSRStorage::*pf )(
-            HArray<ValueType>&,
-            const ValueType,
-            const HArray<ValueType>&,
-            const ValueType,
-            const HArray<ValueType>& ) const
-
-            = &CSRStorage<ValueType>::vectorTimesMatrix;
-
-        using common::bind;
-        using common::ref;
-        using common::cref;
-
-        SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
-
-        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
-    }
-
-    // Note: checks will be done by asynchronous task in any case
-    //       and exception in tasks are handled correctly
-
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if ( ( beta != common::constants::ZERO ) && ( &result != &y ) )
+    if ( beta != common::constants::ZERO )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }

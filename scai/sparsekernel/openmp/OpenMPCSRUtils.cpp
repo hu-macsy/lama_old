@@ -760,7 +760,8 @@ void OpenMPCSRUtils::normalGEVM(
 
         for( IndexType i = 0; i < numColumns; ++i )
         {
-            ValueType sum = static_cast<ValueType>(0.0);
+            ValueType sum = 0;
+
             bool diag = false;
 
             if( i < numRows && csrIA[i] != csrIA[i + 1] && csrJA[csrIA[i]] == i )
@@ -879,6 +880,10 @@ void OpenMPCSRUtils::sparseGEVM(
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
+    SCAI_LOG_INFO( logger,
+                   "sparseGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
+                    << ">, result[" << numColumns << "] += " << alpha << " * x * A" )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -892,40 +897,28 @@ void OpenMPCSRUtils::sparseGEVM(
 
         SCAI_REGION( "OpenMP.CSR.normalGEVM" )
 
-        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < numColumns; ++i )
+        for ( IndexType j = 0; j < numColumns; ++j )
         {
-            ValueType sum = static_cast<ValueType>(0.0);
+            ValueType sum = 0;
 
-            for( IndexType jj = 0; jj < numNonZeroRows; ++jj )
+            for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
             {
-                IndexType j = rowIndexes[jj];
+                IndexType i = rowIndexes[ii];
 
-                for( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
+                for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
                 {
-                    if( csrJA[k] == i )
+                    if( csrJA[jj] == j )
                     {
-                        sum += csrValues[k] * x[i];
+                        sum += csrValues[jj] * x[i];
                         break;
                     }
                 }
             }
 
-            result[i] = alpha * sum;
+            result[j] += alpha * sum;
         }
-    }
-
-    if( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        std::cout << "sparseGEMV: result = ";
-
-        for( IndexType i = 0; i < numColumns; ++i )
-        {
-            std::cout << " " << result[i];
-        }
-
-        std::cout << std::endl;
     }
 }
 
