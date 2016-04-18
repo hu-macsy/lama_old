@@ -184,6 +184,26 @@ void Criterion::writeAt( std::ostream& stream ) const
 
         stream << *getRightChild() << ")";
     }
+    else if ( hasLeftChild() || hasRightChild() )
+    {
+        if( !mModifier )
+        {
+            stream << "!";
+        }
+
+        stream << "(";
+
+        if ( hasLeftChild() )
+        {
+            stream << *getLeftChild();
+        }
+        else
+        {
+            stream << *getRightChild();
+        }
+
+        stream << ")";  
+    }
     else //leaf
     {
         stream << "leaf<" << mModifier << ">";
