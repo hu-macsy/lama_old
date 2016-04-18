@@ -243,7 +243,7 @@ MICMKLCSRUtils::~MICMKLCSRUtils()
 
    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
-   kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_MIC_LIST>::call( flag );
+   kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICMKLCSRUtils MICMKLCSRUtils::guard;    // guard variable for registration

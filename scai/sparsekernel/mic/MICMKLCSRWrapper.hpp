@@ -81,8 +81,8 @@ MICMKLCSRWRAPPER_DEF( float, float, s )
 MICMKLCSRWRAPPER_DEF( double, double, d )
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-    MKLCSRWRAPPER_DEF( ComplexFloat,  MKL_Complex8,  c )
-    MKLCSRWRAPPER_DEF( ComplexDouble, MKL_Complex16, z )
+    MICMKLCSRWRAPPER_DEF( ComplexFloat,  MKL_Complex8,  c )
+    MICMKLCSRWRAPPER_DEF( ComplexDouble, MKL_Complex16, z )
 #endif
 
 #undef MICMKLCSRWRAPPER_DEF
