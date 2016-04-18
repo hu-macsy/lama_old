@@ -45,10 +45,11 @@ SolutionProxy::SolutionProxy()
 {
 }
 
+/* unused
 SolutionProxy::SolutionProxy( lama::Vector* const solution )
     : mSolution( solution ), mIsDirty( true )
 {
-}
+}*/
 
 SolutionProxy::~SolutionProxy()
 {
@@ -86,16 +87,18 @@ lama::Vector& SolutionProxy::getReference()
     return *mSolution;
 }
 
+/*unused
 lama::Vector* SolutionProxy::create()
 {
     return lama::Vector::create( mSolution->getCreateValue() );
-}
+}*/
 
+/*unused
 void SolutionProxy::swap( lama::Vector*& other )
 {
     setDirty( true );
     std::swap( other, mSolution );
-}
+}*/
 
 } /* end namespace solver */
 

@@ -55,9 +55,12 @@
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/reduce.h>
 #include <thrust/sequence.h>
+#include <thrust/sort.h>
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
+
+#include <complex.h>
 
 using namespace scai::common;
 
@@ -300,8 +303,8 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common:
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, typename OtherValueType>
-void CUDAUtils::setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op )
+template<typename ValueType>
+void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
 {
     using namespace thrust::placeholders;
 
@@ -322,6 +325,9 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const OtherValueTy
             case common::reduction::ADD:
                 thrust::for_each( data, data + n,  _1 += value);
                 break;
+            case common::reduction::SUB:
+                thrust::for_each( data, data + n,  _1 -= value);
+                break;
             case common::reduction::MULT:
                 {
                     if ( val == scai::common::constants::ZERO )
@@ -331,6 +337,18 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const OtherValueTy
                     else
                     {
                         thrust::for_each( data, data + n,  _1 *= value );
+                    }
+                }
+                break;
+            case common::reduction::DIVIDE:
+                {
+                    if ( val == scai::common::constants::ZERO )
+                    {
+                        COMMON_THROWEXCEPTION( "Divide by ZERO" )
+                    }
+                    else
+                    {
+                        thrust::for_each( data, data + n,  _1 /= value );
                     }
                 }
                 break;
@@ -420,11 +438,15 @@ void isSortedKernel( bool* result, const IndexType numValues, const ValueType* v
     {
         if ( ascending )
         {
-            result[i] = values[i] <= values[i + 1];
+            // not possible, <= not defined on complex
+            // ToDo: warp divergence possible?
+//            result[i] = values[i] <= values[i + 1];
+            result[i] = values[i] < values[i + 1] || values[i] == values[i+1];
         }
         else
         {
-            result[i] = values[i] >= values[i + 1];
+//            result[i] = values[i] >= values[i + 1];
+            result[i] = values[i] > values[i + 1] || values[i] == values[i+1];
         }
     }
 }
@@ -563,6 +585,18 @@ void setKernelAdd( T1* out, const T2* in, IndexType n )
 
 template<typename T1, typename T2>
 __global__
+void setKernelSub( T1* out, const T2* in, IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] -= static_cast<T1>( in[i] );
+    }
+}
+
+template<typename T1, typename T2>
+__global__
 void setKernelMult( T1* out, const T2* in, IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -570,6 +604,18 @@ void setKernelMult( T1* out, const T2* in, IndexType n )
     if ( i < n )
     {
         out[i] *= static_cast<T1>( in[i] );
+    }
+}
+
+template<typename T1, typename T2>
+__global__
+void setKernelDivide( T1* out, const T2* in, IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] /= static_cast<T1>( in[i] );
     }
 }
 
@@ -600,8 +646,14 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n,
         case common::reduction::ADD :
             setKernelAdd <<< dimGrid, dimBlock>>>( out, in, n );
             break;
+        case common::reduction::SUB :
+            setKernelSub <<< dimGrid, dimBlock>>>( out, in, n );
+            break;
         case common::reduction::MULT :
             setKernelMult <<< dimGrid, dimBlock>>>( out, in, n );
+            break;
+        case common::reduction::DIVIDE :
+            setKernelDivide <<< dimGrid, dimBlock>>>( out, in, n );
             break;
          default:
             COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
@@ -723,6 +775,46 @@ void CUDAUtils::addScalar( ValueType array[], const IndexType n, const ValueType
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CUDAUtils::scan( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "scan<" << TypeTraits<ValueType>::id() <<  ">, #n = " << n )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> array_ptr( array );
+    thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr ); 
+    thrust::host_vector<ValueType> numValues( array_ptr + n, array_ptr + n + 1 );
+
+    return numValues[0];
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void CUDAUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "sort " << n << " values" )
+
+    if ( n > 1 )
+    {
+
+        SCAI_CHECK_CUDA_ACCESS
+
+        thrust::device_ptr<ValueType> array_d( array );
+        thrust::device_ptr<IndexType> perm_d( perm );
+        thrust::sequence( perm_d, perm_d + n );
+
+        // stable sort, descending order, so override default comparison
+
+        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<ValueType>() );
+
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "Utils: synchronize for sort FAILED" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -757,8 +849,14 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
+<<<<<<< HEAD
     KernelRegistry::set<UtilKernelTrait::addScalar<ValueType> >( addScalar, ctx, flag );
+=======
+    KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
+>>>>>>> develop
 }
 
 template<typename ValueType, typename OtherValueType>
@@ -771,7 +869,6 @@ void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry:
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<UtilKernelTrait::setVal<ValueType, OtherValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
@@ -787,8 +884,8 @@ CUDAUtils::CUDAUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_ARRAY_CUDA_LIST, ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
 }
 
 CUDAUtils::~CUDAUtils()
@@ -796,8 +893,8 @@ CUDAUtils::~CUDAUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_ARRAY_CUDA_LIST, ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
 }
 
 CUDAUtils CUDAUtils::guard;    // guard variable for registration

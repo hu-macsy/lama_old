@@ -70,11 +70,18 @@ endif ( WIN32 AND NOT ( MPI_C_INCLUDE_PATH OR MPI_CXX_INCLUDE_PATH OR MPI_C_LIBR
 
 find_package ( MPI ${SCAI_FIND_PACKAGE_FLAGS} )
 
-mark_as_advanced ( MPI_EXTRA_LIBRARY MPI_LIBRARY )
+# find_package ( MPI ) does not find MPIEXEC when not in PATH
+# do it ourself
+if    ( NOT ${MPIEXEC} )
+    find_program( MPIEXEC NAMES ${_MPI_EXEC_NAMES} HINTS ${MPI_ROOT}/bin )
+endif ( NOT ${MPIEXEC} )
+
+mark_as_advanced ( MPI_EXTRA_LIBRARY MPI_LIBRARY MPIEXEC_POSTFLAGS MPIEXEC_PREFLAGS )
 
 ### ALLOW to switch off MPI explicitly ###
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( MPI )
+set ( USE_MPI ${USE_MPI} CACHE BOOL "Enable / Disable use of MPI" )
 
 set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
 set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )
@@ -89,3 +96,4 @@ endif ( USE_MPI AND MPI_FOUND )
 if    ( USE_MPI AND NOT MPI_FOUND )
     message( FATAL_ERROR "Build of LAMA MPI enabled, but configuration is incomplete!")
 endif ( USE_MPI AND NOT MPI_FOUND )
+ 

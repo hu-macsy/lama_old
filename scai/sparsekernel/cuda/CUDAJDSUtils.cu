@@ -1640,12 +1640,12 @@ void sparse_gevm_kernel(
     const IndexType* const jdsILG,
     const IndexType* jdsJA,
     const IndexType* jdsPerm,
-    IndexType numNonZeroRows,
+    IndexType numColumns,
     const IndexType ndlg )
 {
     extern __shared__ IndexType dlg[];
 
-    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
     {
@@ -1660,24 +1660,38 @@ void sparse_gevm_kernel(
         __syncthreads();
     }
 
-    if ( ii < numNonZeroRows )
+
+    if ( k < numColumns )
     {
-        IndexType i = jdsPerm[ii]; // row in matrix
-
-        ValueType value = 0.0;
-
-        int pos = ii;// position in jdsJA, jdsValues
-
-        int ni = jdsILG[ii];// number entries in row
-
-        for ( int jj = 0; jj < ni; ++jj )
+        if ( ndlg > 0 )
         {
-            IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchVectorX<ValueType, useTexture>( x_d, j );
-            pos += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
-        }
+            ValueType value = 0.0;
 
-        result_d[i] += alpha * value;
+            int nonEmptyRows = jdsDLG[0];
+
+            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
+            {
+                IndexType i = jdsPerm[ii]; // row in matrix
+
+                int off = ii;// position in jdsJA, jdsValues
+
+                int ni = jdsILG[ii];// number entries in row
+
+                for ( int jj = 0; jj < ni; ++jj )
+                {
+                    IndexType j = jdsJA[off];
+
+                    if ( j == k )
+                    {
+                        value += jdsValues[off] * fetchVectorX<ValueType, useTexture>( x_d, i );
+                    }
+
+                    off += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
+                }
+            }
+
+            result_d[k] = alpha * value;
+        }
     }
 }
 
@@ -2393,6 +2407,8 @@ void CUDAJDSUtils::normalGEVM(
     const IndexType jdsJA[],
     const ValueType jdsValues[] )
 {
+    /* ToDo: This optimization calls a wrong kernel, so do not do it
+
     if ( ( beta == scai::common::constants::ONE ) && ( result == y ) )
     {
         // result = alpha * A * x + beta * y ->  result += alpha * A * x
@@ -2401,6 +2417,8 @@ void CUDAJDSUtils::normalGEVM(
 
         return;
     }
+
+    */
 
     SCAI_REGION( "CUDA.JDS.normalGEVM" )
 
@@ -2968,8 +2986,8 @@ CUDAJDSUtils::CUDAJDSUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_CUDA_LIST, ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_CUDA_LIST, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDAJDSUtils::~CUDAJDSUtils()
@@ -2977,8 +2995,8 @@ CUDAJDSUtils::~CUDAJDSUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_CUDA_LIST, ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_CUDA_LIST, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDAJDSUtils CUDAJDSUtils::guard;    // guard variable for registration

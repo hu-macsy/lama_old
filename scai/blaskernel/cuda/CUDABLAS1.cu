@@ -537,13 +537,13 @@ void CUDABLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
 
 CUDABLAS1::CUDABLAS1()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
                     kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDABLAS1::~CUDABLAS1()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
                     kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

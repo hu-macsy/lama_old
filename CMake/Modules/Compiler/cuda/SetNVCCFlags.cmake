@@ -50,6 +50,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
     list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "37" "50" "52" )
 	set ( CACHE CUDA_COMPUTE_CAPABILITY PROPERTY STRINGS ${CC_CHOICES} )
     checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
+    set ( CUDA_COMPUTE_CAPABILITY ${CUDA_COMPUTE_CAPABILITY} CACHE STRING "CUDA compute capability (supported up from 13)" )
     
     if    ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )
         set ( CUDA_HAVE_GPU FALSE )
@@ -72,7 +73,6 @@ if    ( CUDA_FOUND AND USE_CUDA )
         set ( SCAI_NVCC_FLAGS -Xcompiler -fPIC )
       	set ( SCAI_NVCC_FLAGS_DEBUG -g -G )
         set ( SCAI_NVCC_FLAGS_RELEASE -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
-        
         # Note: -Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
 
         if    ( CXX_SUPPORTS_C11 )
@@ -99,37 +99,15 @@ if    ( CUDA_FOUND AND USE_CUDA )
         ### cusparse is usually in same directory as cublas
         get_filename_component( HINT_CUDA_LIBRARY_DIR ${CUDA_cublas_LIBRARY} PATH )
         find_library( CUDA_cusparse_LIBRARY NAMES cusparse
-                  HINTS ${HINT_CUDA_LIBRARY_DIR} )
+                      HINTS ${HINT_CUDA_LIBRARY_DIR} )
         mark_as_advanced( CUDA_cusparse_LIBRARY )
     endif ( NOT CUDA_cusparse_LIBRARY )
-
-    ### Check for cuSPASE library, Version 2 (since CUDA 5.0)
-
-    if ( CUDA_VERSION_MAJOR MATCHES "5" )
-
-        message( STATUS "Check for cuSPARSE V2 include file in ${CUDA_INCLUDE_DIRS}" )
-
-        set ( CUSPARSE_V2 false )
-
-        foreach( dir "${CUDA_INCLUDE_DIRS}" )
-            if ( EXISTS "${dir}/cusparse_v2.h" )
-                set ( CUSPARSE_V2 true )
-            endif ( EXISTS "${dir}/cusparse_v2.h" )
-        endforeach( dir "${CUDA_INCLUDE_DIRS}" )
-
-        if ( CUSPARSE_V2 )
-            message( STATUS "cuSPARSE Version 2 is supported and will be used" )
-        else( CUSPARSE_V2 )
-            message( STATUS "cuSPARSE Version 2 not supported" )
-        endif( CUSPARSE_V2 )
-
-    endif ( CUDA_VERSION_MAJOR MATCHES "5" )
     
 endif ( CUDA_FOUND AND USE_CUDA )
 
 if ( CUDA_FOUND  )
-    set ( CUDA_NVCC_FLAGS_MINSIZEREL "${CUDA_NVCC_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+    set ( CUDA_NVCC_FLAGS_MINSIZEREL     "${CUDA_NVCC_FLAGS_MINSIZEREL}"     CACHE INTERNAL "" )
     set ( CUDA_NVCC_FLAGS_RELWITHDEBINFO "${CUDA_NVCC_FLAGS_RELWITHDEBINFO}" CACHE INTERNAL "" )
-    set ( CUDA_GENERATED_OUTPUT_DIR "${CUDA_GENERATED_OUTPUT_DIR}" CACHE INTERNAL "" )
-    set ( CUDA_SDK_ROOT_DIR "$CUDA_SDK_ROOT_DIR" CACHE INTERNAL "" )
+    set ( CUDA_GENERATED_OUTPUT_DIR      "${CUDA_GENERATED_OUTPUT_DIR}"      CACHE INTERNAL "" )
+    set ( CUDA_SDK_ROOT_DIR              "${CUDA_SDK_ROOT_DIR}"              CACHE INTERNAL "" )
 endif ( CUDA_FOUND  )

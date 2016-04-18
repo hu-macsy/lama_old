@@ -42,6 +42,8 @@
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tasking/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
+
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -985,8 +987,8 @@ MICJDSUtils::RegisterGuard::RegisterGuard()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_MIC_LIST, ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICJDSUtils::RegisterGuard::~RegisterGuard()
@@ -994,8 +996,8 @@ MICJDSUtils::RegisterGuard::~RegisterGuard()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_MIC_LIST, ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICJDSUtils::RegisterGuard MICJDSUtils::guard;    // guard variable for registration

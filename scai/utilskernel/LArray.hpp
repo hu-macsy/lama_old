@@ -40,6 +40,7 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/Math.hpp>
 
 namespace scai
 {
@@ -182,18 +183,28 @@ public:
                      hmemo::ContextPtr context = hmemo::Context::getHostPtr() )
     {
         hmemo::HArrayRef<OtherValueType> tmp( n, values );
-        this->reserve( context, n );  // includes also the first touch
-        HArrayUtils::assign( *this, tmp );
+        HArrayUtils::assign( *this, tmp, context );
     }
+
+    /** Override the default copy construtor */
 
     LArray( const LArray<ValueType>& other ) : hmemo::HArray<ValueType>()
     {
         HArrayUtils::assign( *this, other );
     }
 
+    /** Copy constructor that works with HArray of any type. */
+
     LArray( const hmemo::_HArray& other ) : hmemo::HArray<ValueType>()
     {
         HArrayUtils::assign( *this, other );
+    }
+
+    /** Copy constructor that works with HArray of any type and specifies context */
+
+    LArray( const hmemo::_HArray& other, hmemo::ContextPtr context ) : hmemo::HArray<ValueType>()
+    {
+        HArrayUtils::assign( *this, other, context );
     }
 
     LArray& operator= ( const LArray<ValueType>& other )
@@ -205,6 +216,54 @@ public:
     LArray& operator= ( const hmemo::_HArray& other )
     {
         HArrayUtils::assign( *this, other );
+        return *this;
+    }
+
+    LArray& operator*= ( const hmemo::_HArray& other )
+    {
+        HArrayUtils::assignOp( *this, other, common::reduction::MULT );
+        return *this;
+    }
+
+    LArray& operator*= ( const ValueType val )
+    {
+        HArrayUtils::setScalar( *this, val, common::reduction::MULT );
+        return *this;
+    }
+
+    LArray& operator/= ( const hmemo::_HArray& other )
+    {
+        HArrayUtils::assignOp( *this, other, common::reduction::DIVIDE );
+        return *this;
+    }
+
+    LArray& operator/= ( const ValueType val )
+    {
+        HArrayUtils::setScalar( *this, val, common::reduction::DIVIDE );
+        return *this;
+    }
+
+    LArray& operator+= ( const hmemo::_HArray& other )
+    {
+        HArrayUtils::assignOp( *this, other, common::reduction::ADD );
+        return *this;
+    }
+
+    LArray& operator+= ( const ValueType val )
+    {
+        HArrayUtils::setScalar( *this, val, common::reduction::ADD );
+        return *this;
+    }
+
+    LArray& operator-= ( const hmemo::_HArray& other )
+    {
+        HArrayUtils::assignOp( *this, other, common::reduction::SUB );
+        return *this;
+    }
+
+    LArray& operator-= ( const ValueType val )
+    {
+        HArrayUtils::setScalar( *this, val, common::reduction::SUB );
         return *this;
     }
 
@@ -249,6 +308,13 @@ public:
         return HArrayUtils::reduce( *this, common::reduction::MAX );
     }
 
+    /** Get the maximal value of an array */
+
+    ValueType maxNorm() const
+    {
+        return HArrayUtils::reduce( *this, common::reduction::ABS_MAX );
+    }
+
     /** Get the sum of all array elements */
 
     ValueType sum() const
@@ -256,11 +322,37 @@ public:
         return HArrayUtils::reduce( *this, common::reduction::ADD );
     }
 
-    /** Build the max diff norm */
+    /** Compute the sum of magnitudes, for complex numbers it is the sum of real and imag part */
+
+    ValueType l1Norm() const
+    {
+        return HArrayUtils::asum( *this );
+    }
+
+    ValueType l2Norm() const
+    {
+        return common::Math::sqrt( HArrayUtils::dotProduct( *this, *this ) );
+    }
+
+    /** Build the max diff norm with another LAMA array */
 
     ValueType maxDiffNorm( const hmemo::HArray<ValueType>& other ) const
     {
         return HArrayUtils::absMaxDiffVal( *this, other );
+    }
+
+    /** Compute the dotproduct with another LAMA array. */
+
+    ValueType dotProduct( const hmemo::HArray<ValueType>& other ) const
+    {
+        return HArrayUtils::dotProduct( *this, other );
+    }
+
+    /** Compute the inverse/reciprocal in-place, all elements should be non-zero  */
+
+    void invert()
+    {
+        HArrayUtils::invert( *this );
     }
 };
 

@@ -211,11 +211,12 @@ void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     // take context of this storage to set
 
-    ContextPtr loc = setVal.getValidContext( this->getContextPtr() ); 
+    ContextPtr loc = this->getContextPtr();
+    setVal.getSupportedContext( loc );
 
     {
         // not all values might be changed, so use WriteAccess instead of WriteOnlyAccess
@@ -268,7 +269,8 @@ void DIAStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
 
-    ContextPtr loc = set.getValidContext( getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    set.getSupportedContext( loc );
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -294,7 +296,8 @@ void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 
     static LAMAKernel<UtilKernelTrait::set<ValueType, OtherType> > set;
 
-    ContextPtr loc = set.getValidContext( getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    set.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -421,9 +424,10 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
     mNumDiagonals = 1; // identity has exactly one diagonal
 
     {
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
 
-        ContextPtr loc = setVal.getValidContext( getContextPtr() );
+        ContextPtr loc = this->getContextPtr();
+        setVal.getSupportedContext( loc );
 
         WriteOnlyAccess<IndexType> wOffset( mOffset, loc, mNumDiagonals );
 
@@ -433,9 +437,10 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
     }
 
     {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-        ContextPtr loc = setVal.getValidContext( getContextPtr() );
+        ContextPtr loc = this->getContextPtr();
+        setVal.getSupportedContext( loc );
 
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumRows );
 
@@ -496,7 +501,8 @@ void DIAStorage<ValueType>::buildCSR(
 
     // do it where all routines are avaialble
 
-    ContextPtr loc = sizes2offsets.getValidContext( getCSRSizes, getCSRValues, prefLoc );
+    ContextPtr loc = prefLoc;
+    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
 
     SCAI_LOG_INFO( logger,
                    "buildTypedCSRData<" << common::getScalarType<CSRValueType>() << ">" 
@@ -756,15 +762,9 @@ ValueType DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
-    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
+    ContextPtr prefLoc = this->getContextPtr();
 
-    ContextPtr loc = asum.getValidContext( this->getContextPtr() );
-
-	ReadAccess<ValueType> data( mValues, loc );
-
-	SCAI_CONTEXT_ACCESS( loc );
-
-	return asum[loc]( mValues.size(), data.get(), 1 );
+    return utilskernel::HArrayUtils::asum( mValues, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -774,15 +774,11 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
-    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
+    ContextPtr prefLoc = this->getContextPtr();
 
-    ContextPtr loc = dot.getValidContext( this->getContextPtr() );
+    ValueType res = HArrayUtils::dotProduct( mValues, mValues, prefLoc );
 
-	ReadAccess<ValueType> data( mValues, loc );
-
-	SCAI_CONTEXT_ACCESS( loc );
-
-	return common::Math::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
+    return common::Math::sqrt( res );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -794,7 +790,8 @@ ValueType DIAStorage<ValueType>::maxNorm() const
 
     static LAMAKernel<DIAKernelTrait::absMaxVal<ValueType> > absMaxVal;
 
-    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    absMaxVal.getSupportedContext( loc );
 
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
@@ -917,14 +914,21 @@ void DIAStorage<ValueType>::matrixTimesVector(
                     << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+
+    if ( beta != common::constants::ZERO )
+    {
+        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
+    }
 
     static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEMV.getSupportedContext( loc );
 
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
+
+    // Note: read access to y must appear before write access to result in case of alias
 
     ReadAccess<ValueType> rX( x, loc );
     ReadAccess<ValueType> rY( y, loc );
@@ -953,7 +957,6 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     SCAI_REGION( "Storage.DIA.VectorTimesMatrix" )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
@@ -962,7 +965,8 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
     static LAMAKernel<DIAKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEVM.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
 
@@ -970,32 +974,14 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     ReadAccess<ValueType> diaValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
-    if( &result == &y )
-    {
-        // only write access for y, no read access for result
+    SCAI_CONTEXT_ACCESS( loc )
 
-        WriteAccess<ValueType> wResult( result, loc );
-
-        // we assume that normalGEVM can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-    }
-    else
-    {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-    }
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                     diaOffsets.get(), diaValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1012,7 +998,8 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEMV.getSupportedContext( loc );
 
     // logging + checks not needed when started as a task
 
@@ -1068,7 +1055,8 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     static LAMAKernel<DIAKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    normalGEVM.getSupportedContext( loc );
 
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
@@ -1176,21 +1164,24 @@ void DIAStorage<ValueType>::jacobiIterate(
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, rhs.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+
     // matrix must be square
 
     static LAMAKernel<DIAKernelTrait::jacobi<ValueType> > jacobi;
 
-    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    jacobi.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> diaOffset( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
+
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
 
     jacobi[loc]( wSolution.get(), mNumColumns, mNumDiagonals, diaOffset.get(), diaValues.get(),
                  rOldSolution.get(), rRhs.get(), omega, mNumRows );
@@ -1249,7 +1240,7 @@ MatrixStorageCreateKeyType DIAStorage<ValueType>::createValue()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DIAStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

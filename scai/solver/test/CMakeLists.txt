@@ -44,7 +44,7 @@ scai_project (
     	BiCGstabTest
     	BiCGTest
         CGTest
-        # not yet: CGNETest
+        CGNETest # here may be problems in convergence ?!
         CGNRTest
         CGSTest
         CommonLoggerTest

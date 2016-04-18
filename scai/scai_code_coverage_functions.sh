@@ -32,7 +32,7 @@
 #  @since 1.0.0
 #
 
-#!/bin/bash
+#!/bin/bash -e
 
 function create_dir
 {
@@ -40,6 +40,21 @@ function create_dir
 	local dirname=coverage_$(date +%s)
 	mkdir ${dirname}
 	echo "${dirname}"
+}
+
+# search for newest coverage_dir
+function find_dir
+{
+	local dirs=($(ls -d coverage_*))
+
+	biggest=0
+	for _dir in ${dirs[@]}; do
+		my_val=$(echo "${_dir}" | cut -d'_' -f2)
+		if [ ${my_val} -ge ${biggest} ]; then
+			biggest=${my_val}
+		fi
+	done
+	echo "coverage_${biggest}"
 }
 
 # $1: code coveage dirname $2: base coverage dir

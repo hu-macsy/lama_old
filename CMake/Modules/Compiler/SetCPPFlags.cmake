@@ -47,6 +47,8 @@
 #  Note: most common flags will be set by CMAKE itself, like -g for Debug or -O3 for Release, so these
 #        flags do not have to be defined here.
 
+set ( SCAI_LINKER_FLAGS "" )
+
 # GNU C++ compiler
 
 if ( CMAKE_COMPILER_IS_GNUCXX )
@@ -65,6 +67,12 @@ endif ( CMAKE_COMPILER_IS_GNUCXX )
 # INTEL compiler
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+
+    set ( MIC_NO_OFFLOAD_FLAG "-no-offload" )
+
+    if    ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
+        set ( MIC_NO_OFFLOAD_FLAG "-qno-offload" )
+    endif ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
 
     # -fPIC should always be enabled so static libraries can be linked with shared libraries
 

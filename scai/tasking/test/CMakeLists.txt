@@ -31,9 +31,9 @@
 ###
 
 set ( CXX_SOURCES
-      taskingTest.cpp
-      ThreadPoolTest.cpp  
-      TaskSyncTokenTest.cpp  
+      taskingTest
+      ThreadPoolTest  
+      TaskSyncTokenTest  
 ) 
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )

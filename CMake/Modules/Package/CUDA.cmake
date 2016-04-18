@@ -33,9 +33,9 @@
 
 ### CUDA_FOUND            - if CUDA is found
 ### USE_CUDA              - if CUDA is enabled
+### CUDA_ENABLED          - if CUDA_FOUND and USE_CUDA
 ### SCAI_CUDA_INCLUDE_DIR - CUDA include directory
 ### SCAI_CUDA_LIBRARIES   - all needed CUDA libraries
-### CUDA_ENABLED          - if CUDA_FOUND and USE_CUDA
 
 set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
 
@@ -44,47 +44,26 @@ find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
 # find out if host compiler version is supported by CUDA installation
 include ( Compiler/cuda/CheckHostCompilerCompatibility )
 
-# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
-mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR
-				   CUDA_VERBOSE_BUILD CUDA_HOST_COMPILER CUDA_SEPARABLE_COMPILATION )
+# find out CUDA compute capability by test program
+include ( Compiler/cuda/ComputeCapabilityCheck )
 
 # ALLOW to switch off CUDA explicitly
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( CUDA )
+set ( USE_CUDA ${USE_CUDA} CACHE BOOL "Enable / Disable use of CUDA" )
 
 set ( CUDA_ENABLED FALSE )
 if ( CUDA_FOUND AND USE_CUDA )
 	set ( CUDA_ENABLED TRUE )
 
-	# find out CUDA compute capability by test program
-	include ( Compiler/cuda/ComputeCapabilityCheck )
-	
+	if    ( ${CUDA_VERSION_MAJOR} LESS 5 )
+		message ( FATAL_ERROR "LAMA supports CUDA with SDK greater 5.0, your installation is ${CUDA_VERSION}. Use a newer CUDA installation or disable CUDA." )
+	endif ( ${CUDA_VERSION_MAJOR} LESS 5 )
+
 	# set nvcc compiler flags, if not added as external project (has flags from parent)
 	if    ( NOT SCAI_COMPLETE_BUILD )
 		include ( Compiler/cuda/SetNVCCFlags )
 	endif ( NOT SCAI_COMPLETE_BUILD )
-	
-	### Check for cuSPASE library, Version 2 (since CUDA 5.0)
-	
-	if ( CUDA_VERSION_MAJOR MATCHES "5" )
-	
-	    #message( STATUS "Check for cuSPARSE V2 include file in ${CUDA_INCLUDE_DIRS}" )
-	    
-	    set ( CUSPARSE_V2 false )
-	    
-	    foreach( dir "${CUDA_INCLUDE_DIRS}" )
-	       if ( EXISTS "${dir}/cusparse_v2.h" )
-	          set ( CUSPARSE_V2 true )
-	       endif ( EXISTS "${dir}/cusparse_v2.h" )
-	    endforeach( dir "${CUDA_INCLUDE_DIRS}" )
-	    
-	    if ( CUSPARSE_V2 )
-	        message( STATUS "cuSPARSE Version 2 is supported and will be used" )
-	    else( CUSPARSE_V2 )
-	        message( STATUS "cuSPARSE Version 2 not supported" )
-	    endif( CUSPARSE_V2 )
-	    
-	endif ( CUDA_VERSION_MAJOR MATCHES "5" )
 	
 	### Older cmake version have not set CUDA_cusparse_LIBRARY
 	
@@ -110,6 +89,17 @@ if ( CUDA_FOUND AND USE_CUDA )
 	get_filename_component ( SCAI_CUDA_LIBRARY_PATH ${CUDA_CUDART_LIBRARY} PATH CACHE )
 
 endif ( CUDA_FOUND AND USE_CUDA )
+
+# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
+mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD CUDA_HOST_COMPILER )
+
+# LAMA irrelevant entries will be removed from cmake GUI completely
+set ( CUDA_BUILD_CUBIN "${CUDA_BUILD_CUBIN}" CACHE INTERNAL "" )
+set ( CUDA_BUILD_EMULATION "${CUDA_BUILD_EMULATION}" CACHE INTERNAL "" )
+set ( CUDA_SEPARABLE_COMPILATION "${CUDA_SEPARABLE_COMPILATION}" CACHE INTERNAL "" )
+# CUDA_64_BIT_DEVICE_CODE CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE CUDA_GENERATED_OUTPUT_DIR CUDA_TARGET_CPU_ARCH
+# CUDA_TOOLKIT_INCLUDE CUDA_TOOLKIT_ROOT_DIR CUDA_TOOLKIT_TARGET_DIR
+# CUDA_cublasemu_LIBRARY CUDA_cufft_LIBRARY CUDA_cufftemu_LIBRARY
 
 if    ( USE_CUDA AND NOT CUDA_FOUND )
     message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")

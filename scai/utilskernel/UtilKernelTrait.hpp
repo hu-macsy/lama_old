@@ -120,14 +120,14 @@ struct UtilKernelTrait
      *  @tparam ValueType specifies the value type used in the set operations.
      */
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     struct setVal
     {
         /** Set all elements of a contiguous array with a value. 
          *  A reduction operator like ADD, MULT can be used to combine the new value with the old value.
          */
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
         static const char* getId() { return "Util.setVal"; }
     };
 
@@ -300,6 +300,52 @@ struct UtilKernelTrait
             const IndexType n );
 
         static const char* getId() { return "Util.swapEndian"; }
+    };
+
+    template<typename ValueType>
+    struct scan
+    {
+        /** This method computes runnings sums of values
+         *
+         *  @param[in,out] array contains  values and later the running sums
+         *  @param[in]    n is the number of values, array must contain one additional value
+         *  @returns      the total sum of values
+         *
+         *  \code
+         *    array  :    3    7   8   4   2  x
+         *    array  :    0   10  15  12  16  18  -> returns 18
+         *  \endcode
+         *
+         *  Important: sizes must have numRows + 1 allocated entries.
+         *
+         */
+
+        typedef ValueType ( *FuncType ) ( ValueType array[], const IndexType n );
+
+        static const char* getId() { return "Util.scan"; }
+    };
+
+    template<typename ValueType>
+    struct sort
+    {
+        /** Stable sorting of values in array in descending order.
+         *
+         *  @param[in,out] array are the values to be sorted
+         *  @param[in,out] perm, where perm[i] has the value of the original position
+         *  @param[in]    n is the number of values to be sorted
+         *
+         *  \code
+         *           array =   1  4   1  8  5  7
+         *           perm  =   0  1   2  3  4  5
+         +
+         *           array =   8  7   5  4  1  1
+         *           perm  =   3  5   4  1  0  2
+         *  \endcode
+         */
+
+        typedef void ( *FuncType ) ( ValueType array[], IndexType perm[], const IndexType n );
+        
+        static const char* getId() { return "Utils.sort"; }
     };
 };
 

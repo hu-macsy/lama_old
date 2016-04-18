@@ -31,23 +31,28 @@
 ###
 
 set ( CXX_SOURCES
-	  atomicOpenMPTest.cpp
-	  bindFunctionTest.cpp
-      commonTest.cpp
-      ContextTypeTest.cpp
-      FactoryTest.cpp  
-      Factory1Test.cpp  
-      ComplexTest.cpp
-      FactoryTest.cpp
-      LibModuleTest.cpp
-      ptrTest.cpp
-      PrintableTest.cpp
-      ReductionOpTest.cpp  
-      ThreadTest.cpp  
-      TypeTraitsTest.cpp  
-      ScalarTypeTest.cpp  
-      SettingsTest.cpp  
-      WalltimeTest.cpp  
+	  atomicOpenMPTest
+	  bindFunctionTest
+      commonTest
+      ComplexTest
+      ConstantsTest
+      ContextTypeTest
+      FactoryTest  
+      Factory1Test  
+      FactoryTest
+      LibModuleTest
+      MathTest
+      ptrTest
+      PrintableTest
+      ReductionOpTest  
+      ThreadTest  
+      TypeConversionTest
+      TypeListTest
+      TypeLoopTest
+      TypeTraitsTest  
+      ScalarTypeTest  
+      SettingsTest  
+      WalltimeTest  
 )
 
 include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )

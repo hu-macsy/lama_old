@@ -32,18 +32,11 @@
 #  @since 1.0.0
 #
 
-#!/bin/bash
-
-. scai_code_coverage_functions.sh
-
-dirname=$(create_dir)
-echo "Create coverage directory: ${dirname}"
-
-prepare_coverage $dirname ../..
+#!/bin/bash -e
 
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
-	
+
 # Running blaskernel serial
 echo "Running serial tests"
 ./blaskernelTest >/dev/null
@@ -64,12 +57,3 @@ fi
         error_count=$(($error_count + $?))
     fi
 #fi
-
-do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
-
-if [ $? == 1 ];
-then
-    exit 1
-fi
-
-zip -qr ../blaskernel_coverage.zip *

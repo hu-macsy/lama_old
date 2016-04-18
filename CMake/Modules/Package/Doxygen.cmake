@@ -31,4 +31,8 @@
  # @since 1.0.0
 ###
 
+### DOXYGEN_FOUND
+### DOXYGEN_DOT_EXECUTABLE
+### DOXYGEN_EXECUTABLE
+
 find_package ( Doxygen ${SCAI_FIND_PACKAGE_FLAGS} )

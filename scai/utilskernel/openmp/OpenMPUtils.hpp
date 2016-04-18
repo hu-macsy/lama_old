@@ -82,8 +82,8 @@ public:
 
     /** OpenMP implementation for UtilKernelTrait::Setter::setVal */
 
-    template<typename ValueType, typename OtherValueType>
-    static void setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op );
+    template<typename ValueType>
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
 
     /** OpenMP implementation for UtilKernelTrait::Setter::setOrder */
 
@@ -138,6 +138,20 @@ public:
     template<typename ValueType>
     static void swapEndian( ValueType mValues[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::scan */
+
+    template<typename ValueType>
+    static ValueType scan( ValueType array[], const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::sort, uses bucket sort */
+
+    template<typename ValueType>
+    static void sort( ValueType array[], IndexType perm[], const IndexType n );
+
+    /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
+
+    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
+
 private:
 
     template<typename ValueType>
@@ -151,6 +165,12 @@ private:
 
     template<typename ValueType>
     static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType scanSerial( ValueType array[], const IndexType numValues );
+
+    template<typename ValueType>
+    static ValueType scanParallel( PartitionId numThreads, ValueType array[], const IndexType numValues );
 
     /** Routine that registers all methods at the kernel registry. */
 

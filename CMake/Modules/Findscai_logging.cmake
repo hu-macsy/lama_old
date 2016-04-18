@@ -37,6 +37,7 @@ find_library ( SCAI_LOGGING_LIBRARY scai_logging
     ${SCAI_LOGGING_ROOT}/lib
 )
 
+set ( SCAI_LOGGING_FOUND FALSE )
 if ( SCAI_LOGGING_INCLUDE_DIR )
     if ( SCAI_LOGGING_LIBRARY)
         set ( SCAI_LOGGING_FOUND TRUE )

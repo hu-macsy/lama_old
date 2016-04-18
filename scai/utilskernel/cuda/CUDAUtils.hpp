@@ -67,8 +67,8 @@ public:
 
     /*  CUDA implementation of UtilKernelTrait::setVal  */
 
-    template<typename ValueType, typename OtherValueType>
-    static void setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op );
+    template<typename ValueType>
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
 
     /*  CUDA implementation of UtilKernelTrait::setOrder  */
 
@@ -133,6 +133,16 @@ public:
 
     template<typename ValueType>
     static void addScalar( ValueType array[], const IndexType n, const ValueType scalar );
+
+    /** CUDA implementation for UtilKernelTrait::scan */
+
+    template<typename ValueType>
+    static ValueType scan( ValueType array[], const IndexType n );
+
+    /** CUDA implementation for UtilKernelTrait::sort */
+
+    template<typename ValueType>
+    static void sort( ValueType array[], IndexType perm[], const IndexType n );
 
 private:
 

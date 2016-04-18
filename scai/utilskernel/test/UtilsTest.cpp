@@ -66,9 +66,11 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayTest" )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
 {
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-    ContextPtr loc = setVal.getValidContext( testContext );
+    ContextPtr loc = testContext;
+
+    setVal.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
@@ -100,7 +102,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = reduce.getValidContext( testContext );
+    ContextPtr loc = testContext;
+
+    reduce.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
 
@@ -131,9 +135,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 {
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-    ContextPtr loc = setVal.getValidContext( testContext );
+    ContextPtr loc = testContext;
+
+    setVal.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger, "setValTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
@@ -175,7 +181,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
 
-    ContextPtr loc = isSorted.getValidContext( testContext );
+    ContextPtr loc = testContext;
+
+    isSorted.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
 
@@ -259,7 +267,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types
 {
     static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
 
-    ContextPtr loc = invert.getValidContext( testContext );
+    ContextPtr loc = testContext;
+
+    invert.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
 

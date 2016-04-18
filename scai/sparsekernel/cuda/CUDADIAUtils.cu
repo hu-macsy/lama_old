@@ -772,7 +772,12 @@ __global__ void normal_gevm_kernel(
 
     if ( k < numColumns )
     {
-        ValueType summand = beta * y[k];
+        ValueType summand = 0;
+
+        if ( beta != 0 )
+        {
+            summand = beta * y[k];
+        }
 
         ValueType temp = 0.0;
 
@@ -936,14 +941,14 @@ CUDADIAUtils::CUDADIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDADIAUtils::~CUDADIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDADIAUtils CUDADIAUtils::guard;    // guard variable for registration

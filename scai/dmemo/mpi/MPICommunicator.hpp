@@ -248,6 +248,7 @@ protected:
     MPI_Comm mComm;
     MPI_Comm mCommTask;
 
+#ifdef SCAI_COMPLEX_SUPPORTED
     static MPI_Op mSumComplexLongDouble;
 
     static void sum_complex_long_double( void* in, void* out, int* count,
@@ -266,6 +267,7 @@ protected:
 
     template<typename ValueType>
     static void min_operator( void* in, void *out, int *count, MPI_Datatype *dtype );
+#endif
 
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
 

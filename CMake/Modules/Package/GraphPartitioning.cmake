@@ -44,6 +44,7 @@ endif ( METIS_FOUND )
 ## ALLOW to switch off GRAPHPARTITIONING explicitly ( doing something linke setAndCheckCache )
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( METIS GRAPHPARTITIONING )
+set ( USE_GRAPHPARTITIONING ${USE_GRAPHPARTITIONING} CACHE BOOL "Enable / Disable use of Graphpartitioning" )
 
 set ( GRAPHPARTITIONING_ENABLED FALSE )
 if    ( METIS_FOUND )

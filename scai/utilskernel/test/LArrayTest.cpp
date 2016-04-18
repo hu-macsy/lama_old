@@ -36,10 +36,12 @@
 #include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
+#include <scai/common/TypeTraits.hpp>
 
-using namespace scai::utilskernel;
-using namespace scai::hmemo;
-using namespace scai::common;
+using namespace scai;
+using namespace utilskernel;
+using namespace hmemo;
+using namespace common;
 
 extern ContextPtr testContext;
 
@@ -139,34 +141,110 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, scai_array_test_types )
+typedef boost::mpl::list<IndexType, SCAI_ARITHMETIC_CUDA> ArrayRedTypes;
+
+// ToDo: introduce a predicate in COMMON to check if a certain type is supported on a context
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 {
     testContext = Context::getContextPtr();
 
     SCAI_LOG_INFO( logger, "reductionTest on " << *testContext )
 
-    // the LArray allows indexed access, but attention: can be very slow
+    // ToDo: example with complex numbers 
 
     const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
-
     const IndexType N = sizeof( myVals ) / sizeof( ValueType );
+
+    ValueType expectedMin = TypeTraits<ValueType>::getMax();
+    ValueType expectedMax = TypeTraits<ValueType>::getMin();;
+    ValueType expectedSum = 0;
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        expectedMin = Math::min( expectedMin, myVals[i] );
+        expectedMax = Math::max( expectedMax, myVals[i] );
+        expectedSum += myVals[i];
+    }
 
     LArray<ValueType> array( N, myVals, testContext );
 
+    // Constructor should have provided a valid copy on testContext
+
     BOOST_CHECK( array.isValid( testContext ) );
 
-    BOOST_CHECK_EQUAL( 0, array.min() );
-    BOOST_CHECK_EQUAL( 9, array.max() );
-    BOOST_CHECK_EQUAL( 45, array.sum() );
+    // reduction ops will be executed on testContext
+
+    BOOST_CHECK_EQUAL( expectedMin, array.min() );
+    BOOST_CHECK_EQUAL( expectedMax, array.max() );
+    BOOST_CHECK_EQUAL( expectedSum, array.sum() );
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, ValueType, scai_array_test_types )
+typedef boost::mpl::list<SCAI_ARITHMETIC_CUDA> ArithmeticRedTypes;
+
+// ToDo: introduce a predicate in COMMON to check if a certain type is supported on a context
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
 {
     testContext = Context::getContextPtr();
 
-    SCAI_LOG_INFO( logger, "maxDiffNormTest on " << *testContext )
+    SCAI_LOG_INFO( logger, "normTest on " << *testContext )
+
+    // ToDo: example with complex numbers 
+
+    const IndexType N = 13;
+
+    scoped_array<ValueType> myVals( new ValueType[N] );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        // random numbers between -1.0 and 1.0, real and imag part for complex
+
+        Math::random( myVals[i] );
+    }
+
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType expectedL1Norm = 0;
+    AbsType expectedL2Norm = 0;
+    AbsType expectedMaxNorm = 0;
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        expectedL1Norm += Math::abs( Math::real( myVals[i] ) );
+        expectedL1Norm += Math::abs( Math::imag( myVals[i] ) );
+        expectedL2Norm += Math::real( myVals[i] * Math::conj( myVals[i] ) );
+        expectedMaxNorm = Math::max( expectedMaxNorm, Math::abs( myVals[i] ) );
+    }
+
+    expectedL2Norm = Math::sqrt( expectedL2Norm );
+
+    LArray<ValueType> array( N, myVals.get(), testContext );
+
+    // Constructor should have provided a valid copy on testContext
+
+    BOOST_CHECK( array.isValid( testContext ) );
+
+    // reduction ops will be executed on testContext
+
+    BOOST_CHECK_CLOSE( expectedL1Norm, AbsType( array.l1Norm() ), 0.1  );
+    BOOST_CHECK_CLOSE( expectedL2Norm, AbsType( array.l2Norm() ), 0.1 );
+    BOOST_CHECK_CLOSE( expectedMaxNorm, AbsType( array.maxNorm() ), 0.1 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( binReductionTest, ValueType, ArithmeticRedTypes )
+{
+    testContext = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "binReductionTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
 
     // the LArray allows indexed access, but attention: can be very slow
 
@@ -175,13 +253,101 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, ValueType, scai_array_test_types
 
     const IndexType N = sizeof( myVals1 ) / sizeof( ValueType );
 
+    ValueType expectedDotProduct = 0;
+    ValueType expectedMaxDiffNorm = 0;
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        expectedDotProduct += myVals1[i] * Math::conj( myVals2[i] );
+        ValueType absDiff = Math::abs( myVals2[i] - myVals1[i] );
+        expectedMaxDiffNorm = Math::max( expectedMaxDiffNorm, absDiff );
+    }
+
     LArray<ValueType> array1( N, myVals1, testContext );
     LArray<ValueType> array2( N, myVals2, testContext );
 
     BOOST_CHECK( array1.isValid( testContext ) );
     BOOST_CHECK( array2.isValid( testContext ) );
 
-    BOOST_CHECK_EQUAL( 1, array1.maxDiffNorm( array2 ) );
+    BOOST_CHECK_EQUAL( expectedMaxDiffNorm, array1.maxDiffNorm( array2 ) );
+    BOOST_CHECK_EQUAL( expectedDotProduct, array1.dotProduct( array2 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, ArithmeticRedTypes )
+{
+    testContext = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "invertTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
+
+    // the LArray allows indexed access, but attention: can be very slow
+
+    const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 3 };
+
+    const IndexType N = sizeof( myVals ) / sizeof( ValueType );
+
+    LArray<ValueType> array( N, myVals, testContext );
+
+    // make sure not to divide by zero
+
+    BOOST_CHECK( Math::real( array.maxNorm() ) > 0 );
+
+    array.invert();
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+        ValueType x1 = 1 / myVals[i];
+        ValueType x2 = array[i];
+
+        BOOST_CHECK_CLOSE( AbsType( x1 ), AbsType( x2 ), 0.01 );
+    }
+
+    array.invert();
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+        AbsType x1 =  myVals[i];
+        ValueType x2 = array[i];
+        BOOST_CHECK_CLOSE( x1, AbsType( x2 ), 0.01 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignOperatorTest, ValueType, ArithmeticRedTypes )
+{
+    testContext = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "assignOperatorTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
+
+    // the LArray allows indexed access, but attention: can be very slow
+
+    const ValueType myVals[]  = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
+    const ValueType myVals1[] = { 1, -1, 2, -2, 3, -3, 2, -1, -2, 1 };
+
+    const IndexType N = sizeof( myVals ) / sizeof( ValueType );
+
+    LArray<ValueType> array( N, myVals, testContext );
+    LArray<ValueType> other( N, myVals1, testContext );
+
+    array /= ValueType( 2 );
+    array *= ValueType( 2 );
+    array += ValueType( 2 );
+    array -= ValueType( 2 );
+    array /= other;
+    array *= other;
+    array += other;
+    array -= other;
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_CHECK_CLOSE( Math::real( myVals[i] ), Math::real( array[i] ), 0.01 );
+    }
 }
 
 /* --------------------------------------------------------------------- */

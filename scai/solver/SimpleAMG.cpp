@@ -297,7 +297,7 @@ void SimpleAMG::setReplicatedLevel( IndexType replicatedLevel )
 
 void SimpleAMG::setCoarseLevelSolver( SolverPtr solver )
 {
-    SCAI_LOG_DEBUG( logger, "Defined smoother for all level " << *solver )
+    SCAI_LOG_DEBUG ( logger, "Set Coarse Level Solver to" << *solver )
     mCoarseLevelSolver = solver;
 }
 

@@ -75,7 +75,6 @@ addInternalAndExternalPackages()
 
 ### finalize build flags
 include ( ConcludeFlags )
-include ( SetCacheVariableTexts )
 
 ### add definitions
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
@@ -133,9 +132,7 @@ if ( USE_MIC )
     add_subdirectory ( mic )
 endif ( USE_MIC )
 
-if ( OPENMP_FOUND AND USE_OPENMP )
-    add_subdirectory ( openmp )
-endif ( OPENMP_FOUND AND USE_OPENMP )
+add_subdirectory ( openmp )
 
 if    ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )

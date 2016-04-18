@@ -219,7 +219,10 @@ IndexType _MatrixStorage::getNumValues() const
     buildCSRSizes( sizes );
 
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-    ContextPtr loc = reduce.getValidContext( sizes.getValidContext() );
+
+    ContextPtr loc = sizes.getValidContext();
+    reduce.getSupportedContext( loc);
+
     ReadAccess<IndexType> csrSizes( sizes, loc );
     IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, common::reduction::ADD );
     return numValues;
@@ -386,7 +389,10 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
 
     static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
-    ContextPtr loc = convertCSR2CSC.getValidContext( preferredLoc );
+
+    ContextPtr loc = preferredLoc;
+    convertCSR2CSC.getSupportedContext( loc );
+
     SCAI_LOG_INFO( logger,
                    "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
     SCAI_REGION( "Storage.CSR2CSC" )
@@ -1208,7 +1214,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
     const OtherValueType values[],
     const ValueType epsilon )
 {
-    SCAI_ASSERT_ERROR( epsilon >= 0, "epsilon = " << epsilon << ", must not be negative" )
+    SCAI_ASSERT_ERROR( epsilon > 0, "epsilon = " << epsilon << ", must not be negative" )
     mEpsilon = epsilon;
     // wrap all the data in a dense storage and make just an assign
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )
@@ -1230,7 +1236,7 @@ void MatrixStorage<ValueType>::setDenseData(
 {
     mEpsilon = epsilon;
 
-    mepr::MatrixStorageWrapper<ValueType, ARITHMETIC_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
+    mepr::MatrixStorageWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
 }
 
 /* ========================================================================= */
@@ -1377,23 +1383,23 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
     void MatrixStorage<TYPE>::setRawDenseData(                     \
             const IndexType numRows,                               \
             const IndexType numColumns,                            \
-            const ARITHMETIC_HOST_TYPE_##J values[],               \
+            const SCAI_ARITHMETIC_HOST_TYPE_##J values[],               \
             const TYPE );
 
 #define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                                      \
                                                                                       \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                        \
+    BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT,                                        \
                      LAMA_MATRIX_STORAGE2_INSTANTIATE,                                \
-                     ARITHMETIC_HOST_TYPE_##I )                                       \
+                     SCAI_ARITHMETIC_HOST_TYPE_##I )                                       \
 
 
-BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_MATRIX_STORAGE_INSTANTIATE
 #undef LAMA_MATRIX_STORAGE2_INSTANTIATE
 
 
-SCAI_COMMON_INST_CLASS( MatrixStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

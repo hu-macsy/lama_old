@@ -1,25 +1,25 @@
-/**
- * @file OpenMPUtils.cpp
- *
- * @license
- * Copyright (c) 2009-2015
- * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
- * for Fraunhofer-Gesellschaft
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		/**
+		 * @file OpenMPUtils.cpp
+		 *
+		 * @license
+		 * Copyright (c) 2009-2015
+		 * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+		 * for Fraunhofer-Gesellschaft
+		 *
+		 * Permission is hereby granted, free of charge, to any person obtaining a copy
+		 * of this software and associated documentation files (the "Software"), to deal
+		 * in the Software without restriction, including without limitation the rights
+		 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+		 * copies of the Software, and to permit persons to whom the Software is
+		 * furnished to do so, subject to the following conditions:
+		 *
+		 * The above copyright notice and this permission notice shall be included in
+		 * all copies or substantial portions of the Software.
+		 *
+		 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
@@ -45,6 +45,7 @@
 #include <scai/common/Complex.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/unique_ptr.hpp>
 #include <scai/common/OpenMP.hpp>
 
 namespace scai
@@ -269,8 +270,8 @@ ValueType OpenMPUtils::reduce( const ValueType array[], const IndexType n, const
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, typename OtherValueType>
-void OpenMPUtils::setVal( ValueType array[], const IndexType n, const OtherValueType val, const common::reduction::ReductionOp op )
+template<typename ValueType>
+void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
 {
     SCAI_REGION( "OpenMP.Utils.setVal" )
 
@@ -306,6 +307,20 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const OtherValue
             }
             break;
         }
+        case common::reduction::SUB :
+        {
+            if ( val == common::constants::ZERO ) 
+            {
+                return;
+            }
+
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] -= value;
+            }
+            break;
+        }
         case common::reduction::MULT :
         {
             // scale all values of the array 
@@ -325,6 +340,29 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const OtherValue
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     array[i] *= value;
+                }
+            }
+            break;
+        }
+        case common::reduction::DIVIDE :
+        {
+            // scale all values of the array 
+
+            if ( val == common::constants::ONE ) 
+            {
+                // skip it
+            }
+            else if ( val == common::constants::ZERO )
+            {
+                COMMON_THROWEXCEPTION( "DIVIDE by ZEROR, val = " << val )
+            }
+            else
+            {
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    array[i] /= value;
                 }
             }
             break;
@@ -471,6 +509,26 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
             for ( IndexType i = 0; i < n; i++ )
             {
                 out[i] += static_cast<ValueType1>( in[i] );
+            }
+            break;
+        }
+        case common::reduction::SUB :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] -= static_cast<ValueType1>( in[i] );
+            }
+            break;
+        }
+        case common::reduction::DIVIDE :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] /= static_cast<ValueType1>( in[i] );
             }
             break;
         }
@@ -622,6 +680,75 @@ void OpenMPUtils::addScalar( ValueType mValues[], const IndexType n, const Value
     }
 }
 
+template<typename ValueType>
+ValueType OpenMPUtils::scanSerial( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger, "scanSerial: " << n << " entries" )
+
+    // In this case we do it just serial, probably faster
+
+    ValueType runningSum = 0;
+
+    for( IndexType i = 0; i < n; i++ )
+    {
+        ValueType tmp = runningSum;
+        runningSum += array[i];
+        SCAI_LOG_TRACE( logger, "scan, row = " << i << ", size = " << array[i] << ", offset = " << runningSum )
+        array[i] = tmp;
+    }
+
+    return runningSum;;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType OpenMPUtils::scanParallel( PartitionId numThreads, ValueType array[], const IndexType n )
+{
+    // std::cout << "Scan with " << numThreads << " in parallel" << std::endl;
+
+    // For more threads, we do it in parallel
+    // Attention: MUST USE schedule(static)
+
+    common::scoped_array<ValueType> threadCounter( new ValueType[numThreads] );
+
+    SCAI_LOG_DEBUG( logger, "scanParallel: " << n << " entries for " << numThreads << " threads" )
+
+    #pragma omp parallel
+    {
+        ValueType myCounter = 0;
+
+        #pragma omp for schedule(static)
+
+        for( IndexType i = 0; i < n; i++ )
+        {
+            myCounter += array[i];
+        }
+
+        threadCounter[omp_get_thread_num()] = myCounter;
+    }
+
+    ValueType runningSum = scanSerial( threadCounter.get(), numThreads );
+
+    // Each thread sets now its offsets
+
+    #pragma omp parallel
+    {
+        ValueType myRunningSum = threadCounter[omp_get_thread_num()];
+
+        #pragma omp for schedule(static)
+
+        for( IndexType i = 0; i < n; i++ )
+        {
+            ValueType tmp = myRunningSum;
+            myRunningSum += array[i];
+            array[i] = tmp;
+        }
+    }
+
+    return runningSum;;
+}
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -656,7 +783,86 @@ void OpenMPUtils::swapEndian( ValueType mValues[], const IndexType n )
 
 
 
-        mValues[i] += scalar;
+            mValues[i] += scalar;
+
+        }
+    }
+}
+
+template<typename ValueType>
+ValueType OpenMPUtils::scan( ValueType array[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.scan" )
+
+    SCAI_LOG_INFO( logger, "scan array[ " << n << " ]" )
+
+    int numThreads = 1; // will be set to available threads in parallel region
+
+    #pragma omp parallel
+    #pragma omp master
+    {
+        numThreads = omp_get_num_threads();
+    }
+
+    SCAI_LOG_INFO( logger, "scan " << n << " entries, #threads = " << numThreads )
+
+    static int minThreads = 3;  
+
+    ValueType total;
+
+    if ( numThreads < minThreads )
+    {
+        total = scanSerial( array, n );
+    }
+    else
+    {
+        total = scanParallel( numThreads, array, n );
+    }
+
+    array[n] = total;
+
+    return total;
+}
+
+/* --------------------------------------------------------------------------- */
+
+static void* ptr = NULL;
+
+template<typename ValueType>
+void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.sort" )
+
+    for ( int i = 0; i < n; ++i )
+    {
+        perm[i] = i;
+    }
+
+    // sort using a custom function object
+
+    struct compare
+    {
+        static bool f( IndexType a, IndexType b )
+        {   
+            ValueType* arr = reinterpret_cast<ValueType*>( ptr );
+            return arr[a] < arr[b];
+        }   
+    };
+
+    ptr = array;
+
+    std::sort( perm, perm + n, compare::f );
+
+    common::scoped_array<ValueType> tmp( new ValueType[n] );
+
+    for ( int i = 0; i < n; ++i )
+    {
+        tmp[i] = array[i];
+    }
+
+    for ( int i = 0; i < n; ++i )
+    {
+        array[i] = tmp[perm[i]];
     }
 }
 
@@ -693,10 +899,13 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::addScalar<ValueType> >( addScalar, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
@@ -709,7 +918,6 @@ void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<UtilKernelTrait::setVal<ValueType, OtherValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
@@ -726,8 +934,8 @@ OpenMPUtils::OpenMPUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_ARRAY_HOST_LIST, ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
 
 }
 
@@ -736,8 +944,8 @@ OpenMPUtils::~OpenMPUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, ARITHMETIC_ARRAY_HOST_LIST, ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -82,7 +82,7 @@ Criterion* ResidualThreshold::copy() const
 inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
 {
     lama::Scalar normResult = ( *mNorm )( solver.getResidual() );
-    SCAI_ASSERT( normResult >= 0.0, "A norm should be always positive but is " << normResult );
+    SCAI_ASSERT( normResult > 0.0 || normResult == 0.0, "A norm should be always positive but is " << normResult );
 
     switch( mCheckMode )
     {

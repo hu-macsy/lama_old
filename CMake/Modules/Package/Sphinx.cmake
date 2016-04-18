@@ -31,6 +31,8 @@
  # @since 1.0.1
 ###
 
+### SPHINX_FOUND
+
 # included with Package/doc and for every project with external packages in scaiFunctions
 
 find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )

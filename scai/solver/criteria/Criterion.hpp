@@ -168,7 +168,8 @@ public:
      */
     bool hasRightChild() const;
 
-    Criterion& operator =( const Criterion& other );
+    // unused: operator= always used on CriterionPtr
+    // Criterion& operator =( const Criterion& other );
 
     virtual void writeAt( std::ostream& stream ) const;
 

@@ -1772,20 +1772,20 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     // vectorPlusVector: result = alpha * x^ + beta * y
 
     void (*vPlusV)(
-        ContextPtr context,
         HArray<ValueType>& result,
         const ValueType alpha,
         const HArray<ValueType>& x,
         const ValueType beta,
-        const HArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector;
+        const HArray<ValueType>& y,
+        ContextPtr context ) = &HArrayUtils::arrayPlusArray<ValueType>;
 
     /*tasking::SyncToken**/void (*vPlusVAsync)(
-        ContextPtr context,
         HArray<ValueType>& result,
         const ValueType alpha,
         const HArray<ValueType>& x,
         const ValueType beta,
-        const HArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector; //TODO use async: Exception not yet implemented
+        const HArray<ValueType>& y,
+        ContextPtr context ) = &HArrayUtils::arrayPlusArray<ValueType>; //TODO use async: Exception not yet implemented
 
     // after gather of vector values x^ is on the host
     // todo: think about this if its useful to upload the vector (again)
@@ -1806,8 +1806,8 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         void(
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX,
-            const HArray<ValueType>& localY )> addF = bind( vPlusV, hostContext, _1,
-                    alphaValue, _2, betaValue, _3 );
+            const HArray<ValueType>& localY )> addF = bind( vPlusV, _1,
+                    alphaValue, _2, betaValue, _3, hostContext );
 
         vectorHaloOperationSync( localResult, localX, localY, calcF, addF );
     }
@@ -1824,9 +1824,9 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         /*tasking::SyncToken**/void(
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX,
-            const HArray<ValueType>& localY )> addAsyncF = bind( vPlusVAsync, hostContext, _1,
+            const HArray<ValueType>& localY )> addAsyncF = bind( vPlusVAsync, _1,
                     alphaValue, _2, betaValue,
-                    _3 );
+                    _3, hostContext );
 
         vectorHaloOperationAsync( localResult, localX, localY, calcAsyncF, addAsyncF );
     }
@@ -2501,7 +2501,7 @@ const char* SparseMatrix<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( SparseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( SparseMatrix, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

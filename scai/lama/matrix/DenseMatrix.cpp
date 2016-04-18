@@ -875,7 +875,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
     {
         SCAI_LOG_INFO( logger, "copy dense matrix" )
 
-        mepr::DenseMatrixWrapper<ValueType, ARITHMETIC_HOST_LIST>::assignDenseImpl( *this, other );
+        mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::assignDenseImpl( *this, other );
 
         return;
     }
@@ -883,7 +883,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
     {
     	SCAI_LOG_INFO( logger, "copy sparse matrix")
 
-        mepr::DenseMatrixWrapper<ValueType, ARITHMETIC_HOST_LIST>::assignSparseImpl( *this, other );
+        mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::assignSparseImpl( *this, other );
 
     	return;
     }
@@ -1503,7 +1503,7 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
     {
 // Dense vector with this row distribution, so we do not need a temporary array
 
-        mepr::DenseMatrixWrapper<ValueType, ARITHMETIC_HOST_LIST>::getDiagonalImpl( *this, diagonal );
+        mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::getDiagonalImpl( *this, diagonal );
         return;
     }
 
@@ -1775,7 +1775,9 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             {
                 static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
-                ContextPtr loc = copy.getValidContext( this->getContextPtr() );
+                ContextPtr loc = this->getContextPtr();
+ 
+                copy.getSupportedContext( loc );
 
                 SCAI_CONTEXT_ACCESS( loc )
 
@@ -2339,7 +2341,7 @@ const char* DenseMatrix<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseMatrix, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseMatrix, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

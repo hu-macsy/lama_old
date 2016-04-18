@@ -77,9 +77,8 @@ endforeach ( module ${LAMA_ALL_EXTERNAL_DEPS} )
 include ( Settings/logging )
 include ( Settings/tracing )
 
+### finalize build flags
 include ( ConcludeFlags )
-
-include ( SetCacheVariableTexts )
 
 ## summary of what is found
 include ( Summaries/scai )

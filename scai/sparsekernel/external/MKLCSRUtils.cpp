@@ -35,7 +35,7 @@
 #include <scai/sparsekernel/external/MKLCSRUtils.hpp>
 
 // local library
-#include <scai/sparsekernel/openmp/OpenMPUtils.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
  
 #include <scai/sparsekernel/external/MKLCSRTrait.hpp>
@@ -59,6 +59,8 @@
 
 // extern
 #include <mkl_spblas.h>
+
+using namespace scai::utilskernel;
 
 namespace scai
 {
@@ -175,13 +177,13 @@ void MKLCSRUtils::convertCSR2CSC(
 template<typename ValueType>
 void MKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    using common::context::Host;
+    const common::context::ContextType ctx = common::context::Host;
     using kregistry::KernelRegistry;
 
     SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for Host at kernel registry [" << flag
         << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -192,14 +194,14 @@ MKLCSRUtils::MKLCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );
 }
 
 MKLCSRUtils::~MKLCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    kregistry::mepr::RegistratorV<RegistratorV, ARITHMETIC_EXT_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

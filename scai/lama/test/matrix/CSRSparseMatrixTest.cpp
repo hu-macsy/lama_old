@@ -50,7 +50,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRSparseMatrixTest" );
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
+typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
 
 /* ------------------------------------------------------------------------- */
 

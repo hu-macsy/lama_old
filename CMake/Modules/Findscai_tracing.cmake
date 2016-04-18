@@ -27,6 +27,7 @@ find_library ( SCAI_TRACING_LIBRARY scai_tracing
     ${SCAI_TRACING_ROOT}/lib
 )
 
+set ( SCAI_TRACING_FOUND FALSE )
 if ( SCAI_TRACING_INCLUDE_DIR )
     if ( SCAI_TRACING_LIBRARY)
         set ( SCAI_TRACING_FOUND TRUE )

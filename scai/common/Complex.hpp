@@ -506,6 +506,16 @@ public:
     COMPLEX_OPERATOR_CUDA( operator=, Complex<float>, COMPLEX_SET_COMPLEX )
     COMPLEX_OPERATOR_CUDA( operator=, Complex<double>, COMPLEX_SET_COMPLEX )
     COMPLEX_OPERATOR_NONCUDA( operator=, Complex<long double>, COMPLEX_SET_COMPLEX )
+#ifdef __CUDACC__
+    template<typename OtherValueType>
+    CUDA_CALLABLE_MEMBER Complex<ValueType>& operator=( const thrust::device_reference<Complex<OtherValueType> >& value )
+    {
+        Complex<OtherValueType> x = value;
+    	real( static_cast<ValueType>( x.real() ) );
+    	imag( static_cast<ValueType>( x.imag() ) );
+    	return *this;
+    }
+#endif
 
     COMPLEX_OPERATOR_CUDA( operator+=, int, COMPLEX_OP_REAL( + ) )
     COMPLEX_OPERATOR_CUDA( operator+=, long, COMPLEX_OP_REAL( + ) )
@@ -739,11 +749,11 @@ COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>, > , long double )
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is lower than b or equal to b
  */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <= , long double )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , int )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , long )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , float )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , double )
+//COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <= , long double )
 
 /*
  * @brief Check if a is greater than b or equal to b.
@@ -752,11 +762,11 @@ COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <= , long double )
  * @param[in] b     the 2nd Complex to compare this to.
  * @return          if a is greater than b or equal to b
  */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>=, >= , long double )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , int )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , long )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , float )
+//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , double )
+//COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>=, >= , long double )
 
 /*
  * @brief Check equality of a and b.
@@ -1000,7 +1010,6 @@ long double Math::abs( const Complex<long double>& a )
 }
 
 // ------------------ Math::conj --------------------------------
-
 Complex<float> Math::conj( const Complex<float>& a )
 {
     return Complex<float>( a.real(), -a.imag() );
@@ -1015,7 +1024,6 @@ Complex<long double> Math::conj( const Complex<long double>& a )
 }
 
 // ------------------ Math::real --------------------------------
-
 float Math::real( const Complex<float>& a )
 {
     return a.real();
@@ -1032,7 +1040,6 @@ long double Math::real( const Complex<long double>& a )
 }
 
 // ------------------ Math::imag --------------------------------
-
 float Math::imag( const Complex<float>& a )
 {
     return a.imag();
@@ -1046,6 +1053,72 @@ double Math::imag( const Complex<double>& a )
 long double Math::imag( const Complex<long double>& a )
 {
     return a.imag();
+}
+
+// ------------------ Math::min ---------------------------------
+Complex<float> Math::min( const Complex<float>& x, const Complex<float>& y )
+{
+    return Math::abs( x ) < Math::abs( y ) ? x : y;
+}
+
+Complex<double> Math::min( const Complex<double>& x, const Complex<double>& y )
+{
+    return Math::abs( x ) < Math::abs( y ) ? x : y;
+}
+
+Complex<long double> Math::min( const Complex<long double>& x, const Complex<long double>& y )
+{
+    return Math::abs( x ) < Math::abs( y ) ? x : y;
+}
+
+// ------------------ Math::max ---------------------------------
+Complex<float> Math::max( const Complex<float>& x, const Complex<float>& y )
+{
+    return Math::abs( x ) > Math::abs( y ) ? x : y;
+}
+
+Complex<double> Math::max( const Complex<double>& x, const Complex<double>& y )
+{
+    return Math::abs( x ) > Math::abs( y ) ? x : y;
+}
+
+Complex<long double> Math::max( const Complex<long double>& x, const Complex<long double>& y )
+{
+    return Math::abs( x ) > Math::abs( y ) ? x : y;
+}
+
+// ------------------ Math::random ------------------------------
+void Math::random( Complex<float>& x )
+{
+    float val;
+
+    Math::random( val );
+    x.real( val );
+
+    Math::random( val );
+    x.imag( val );
+}
+
+void Math::random( Complex<double>& x )
+{
+    double val;
+
+    Math::random( val );
+    x.real( val );
+
+    Math::random( val );
+    x.imag( val );
+}
+
+void Math::random( Complex<long double>& x )
+{
+    long double val;
+
+    Math::random( val );
+    x.real( val );
+
+    Math::random( val );
+    x.imag( val );
 }
 
 } /* end namespace common */

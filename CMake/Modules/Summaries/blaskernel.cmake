@@ -60,14 +60,7 @@ endif ( SCAI_BLAS_FOUND )
 
 heading2 ( "External Libraries" "REQUIRED_FOUND" )
 
-    # BLAS (Lapack)
-    found_message ( "BLAS" "SCAI_BLAS_FOUND" "REQUIRED" "${SCAI_BLAS_NAME} Version ${BLAS_VERSION} with:" )
-    foreach    ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
-        message ( STATUS "                                 ${_B_LIB}" )
-    endforeach ( _B_LIB ${SCAI_SCAI_BLAS_LIBRARIES} )
-    if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-        found_message ( "Lapack" "LAPACK_FOUND" "REQUIRED" "" )
-    endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
+    include ( Summaries/Modules/BLAS )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_KREGISTRY_FOUND )

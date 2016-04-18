@@ -66,7 +66,7 @@ void _ContextFunction::assign( const _ContextFunction& other )
     }
 }
 
-common::context::ContextType _ContextFunction::validContext( common::context::ContextType preferedCtx )
+common::context::ContextType _ContextFunction::validContext( common::context::ContextType preferedCtx ) const
 {
     if ( mContextFuncArray[preferedCtx] != NULL )
     {
@@ -86,7 +86,7 @@ common::context::ContextType _ContextFunction::validContext( common::context::Co
     return static_cast<context::ContextType>( common::context::MaxContext );
 }
 
-common::context::ContextType _ContextFunction::validContext( const _ContextFunction& other, common::context::ContextType preferedCtx )
+common::context::ContextType _ContextFunction::validContext( const _ContextFunction& other, common::context::ContextType preferedCtx ) const
 {
     if ( mContextFuncArray[preferedCtx] != NULL && other.mContextFuncArray[preferedCtx] != NULL )
     {
@@ -111,7 +111,7 @@ common::context::ContextType _ContextFunction::validContext( const _ContextFunct
 _ContextFunction::ContextType _ContextFunction::validContext( 
     const _ContextFunction& other1, 
     const _ContextFunction& other2,
-    ContextType preferedCtx )
+    ContextType preferedCtx ) const
 {
     if ( mContextFuncArray[preferedCtx] != NULL && other1.mContextFuncArray[preferedCtx] != NULL 
                                                 && other2.mContextFuncArray[preferedCtx] != NULL )

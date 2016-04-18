@@ -47,6 +47,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/typeloop.hpp>
+#include <scai/common/Math.hpp>
 
 // std
 #include <iostream>
@@ -65,6 +66,8 @@ namespace dmemo
 {
 
 const int MPICommunicator::defaultTag = 1;
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
 MPI_Op MPICommunicator::mMaxComplexFloat = 0;
@@ -74,6 +77,7 @@ MPI_Op MPICommunicator::mMaxComplexLongDouble = 0;
 MPI_Op MPICommunicator::mMinComplexFloat = 0;
 MPI_Op MPICommunicator::mMinComplexDouble = 0;
 MPI_Op MPICommunicator::mMinComplexLongDouble = 0;
+#endif
 
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
@@ -275,7 +279,7 @@ void MPICommunicator::max_operator( void* in, void *out, int *count, MPI_Datatyp
     ValueType* b = reinterpret_cast<ValueType*>( out );
     for( IndexType i = 0; i < *count; ++i )
     {
-        b[i] = a[i] > b[i] ? a[i] : b[i];
+        b[i] = common::Math::max( a[i], b[i] );
     }
 }
 
@@ -286,7 +290,7 @@ void MPICommunicator::min_operator( void* in, void *out, int *count, MPI_Datatyp
     ValueType* b = reinterpret_cast<ValueType*>( out );
     for( IndexType i = 0; i < *count; ++i )
     {
-        b[i] = a[i] < b[i] ? a[i] : b[i];
+        b[i] = common::Math::min( a[i], b[i] );
     }
 }
 
@@ -1135,7 +1139,7 @@ Communicator::CommunicatorKind MPICommunicator::createValue()
     void MPICommunicator::maxlocImpl(                             \
             _type &, IndexType&, PartitionId) const;
 
-SCAI_COMMON_TYPELOOP( ARITHMETIC_ARRAY_HOST_CNT, SCAI_DMEMO_MPI_METHODS_INSTANTIATE, ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, SCAI_DMEMO_MPI_METHODS_INSTANTIATE, SCAI_ARITHMETIC_ARRAY_HOST )
 
 #undef SCAI_DMEMO_MPI_METHODS_INSTANTIATE
 

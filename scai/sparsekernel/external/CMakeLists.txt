@@ -33,12 +33,9 @@
 
 ### Add classes and header files ###
 
-if    ( CUSPARSE_V2 )
-	set ( set CLASSES ${CLASSES} CUSparseCSRUtils )
-	set ( set HEADERS ${HEADERS} CUSPARSETrait CUSPARSEWrapper )
-endif ( CUSPARSE_V2 )
+if    ( SCAI_BLAS_NAME MATCHES "MKL" )
+	set ( CLASSES ${CLASSES} MKLCSRUtils )
+	set ( HEADERS ${HEADERS} MKLCSRTrait MKLCSRWrapper )
+endif ( SCAI_BLAS_NAME MATCHES "MKL" )
 
 scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )
-
-
-

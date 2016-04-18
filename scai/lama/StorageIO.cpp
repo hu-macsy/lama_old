@@ -237,7 +237,7 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         IOUtils::writeXDR<ValueType, ValueType>( outFile, dataRead.get(), numValues );
     }
-    else if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::writeXDR( dataTypeSize, outFile, dataRead.get(), numValues ) )
+    else if( mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::writeXDR( dataTypeSize, outFile, dataRead.get(), numValues ) )
     {
         SCAI_LOG_INFO( logger, "writeXDR conversion neeeded" )
     }
@@ -361,7 +361,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
-    if( mepr::IOWrapper<ValueType, ARITHMETIC_HOST_LIST>::readXDR( dataTypeSize, xdrFile, m_data.get(), numValues ) )
+    if( mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::readXDR( dataTypeSize, xdrFile, m_data.get(), numValues ) )
     {
         SCAI_LOG_TRACE( logger, "read xdr file")
     }
@@ -1148,7 +1148,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( StorageIO, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( StorageIO, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 /* -------------------------------------------------------------------------- */
 

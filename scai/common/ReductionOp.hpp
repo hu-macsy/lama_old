@@ -63,7 +63,9 @@ namespace reduction
     {
         COPY,     // for assign   x = y
         ADD,      // for operator x += y
+        SUB,      // for operator x -= y
         MULT,     // for operator x *= y
+        DIVIDE,   // for operator x /= y
         MIN,      // for operator x = min( x, y )
         MAX,      // for operator x = max( x, y )
         ABS_MAX   // for operator x = max( x, abs(y) )
@@ -83,8 +85,14 @@ namespace reduction
             case ADD:
                 stream << "ADD";
                 break;
+            case SUB:
+                stream << "SUB";
+                break;
             case MULT:
                 stream << "MULT";
+                break;
+            case DIVIDE:
+                stream << "DIVIDE";
                 break;
             case MIN:
                 stream << "MIN";

@@ -7,7 +7,7 @@ else  ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR )
 endif ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR )
 
 heading2 ( "Configuration" "REQUIRED_FOUND" )
-    found_message ( "C++ Compiler" "CMAKE_CXX_COMPILER" "REQUIRED" "" )
+    found_message ( "C++ Compiler" "CMAKE_CXX_COMPILER" "REQUIRED" "${CMAKE_CXX_COMPILER_ID} Version ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
     found_message ( "with C++11 support" "CXX_SUPPORTS_C11" "REQUIRED" "" )
 
 if    ( NOT CXX_SUPPORTS_C11 )

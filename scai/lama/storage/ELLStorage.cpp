@@ -89,25 +89,19 @@ template<typename ValueType>
 ELLStorage<ValueType>::ELLStorage(
     const IndexType numRows,
     const IndexType numColumns,
-   ContextPtr context /* = Context::getHostPtr() */)
+    ContextPtr context )
 
     : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValuesPerRow( 0 )
 {
-    // TODO in other formats the last parameter is "const ContextPtr loc"
-
     setContextPtr( context );
 
     // Initialization requires correct values for the IA array with 0
 
-    static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+    mIA.resize( mNumRows );
 
-    ContextPtr loc = setVal.getValidContext( context );
+    // ellSizes[] = 0 @ context
 
-    WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    setVal[loc]( ellSizes.get(), mNumRows, 0, common::reduction::COPY );
+    HArrayUtils::setScalar( mIA, 0, common::reduction::COPY, context );
 
     SCAI_LOG_DEBUG( logger, "ELLStorage for matrix " << mNumRows << " x " << mNumColumns << ", no elements" )
 }
@@ -228,15 +222,7 @@ IndexType ELLStorage<ValueType>::getNumValues() const
 {
     SCAI_LOG_INFO( logger, "getNumValues" )
 
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-
-    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
-
-    ReadAccess<IndexType> ia( mIA, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    IndexType numValues = reduce[ loc ]( ia.get(), mNumRows, common::reduction::ADD );
+    IndexType numValues = HArrayUtils::reduce( mIA, common::reduction::ADD, this->getContextPtr() );
 
     return numValues;
 }
@@ -271,42 +257,17 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
     mNumColumns = size;
     mNumValuesPerRow = 1;
 
-    {
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+    const ContextPtr loc = this->getContextPtr();
 
-        ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
+    mIA.clear();
+    mIA.resize( mNumRows);
+    HArrayUtils::setScalar( mIA, 1, common::reduction::COPY, loc );
 
-        SCAI_CONTEXT_ACCESS( loc )
+    HArrayUtils::setOrder( mJA, mNumRows );
 
-        WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
-
-        setVal[loc]( ia.get(), mNumRows, 1, common::reduction::COPY );
-    }
-
-    {
-        static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
-
-        ContextPtr loc = setOrder.getValidContext( this->getContextPtr() );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        WriteOnlyAccess<IndexType> ja( mJA, loc, mNumRows );
-
-        setOrder[loc]( ja.get(), mNumRows );
-    }
-
-    // extra block caused by differnt types of setVal()
-    {
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
-
-        ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        WriteOnlyAccess<ValueType> data( mValues, loc, mNumRows );
-
-        setVal[loc]( data.get(), mNumRows, ValueType( 1 ), common::reduction::COPY );
-    }
+    mValues.clear();  
+    mValues.resize( mNumRows );
+    HArrayUtils::setScalar( mValues, ValueType( 1 ), common::reduction::COPY, loc );
 
     mDiagonalProperty = true;
 
@@ -342,7 +303,8 @@ bool ELLStorage<ValueType>::checkDiagonalProperty() const
 
         // check it where the JA array has a valid copy
 
-        ContextPtr loc = ellHasDiagonalProperty.getValidContext( mJA.getValidContext() );
+        ContextPtr loc = mJA.getValidContext();
+        ellHasDiagonalProperty.getSupportedContext( loc );
 
         ReadAccess<IndexType> ja( mJA, loc );
 
@@ -396,33 +358,24 @@ void ELLStorage<ValueType>::buildCSR(
 
     IndexType numValues = 0;
 
+    ia.clear();
+    ia.reserve( context, mNumRows + 1 );  // reserve one more entry
+
+    HArrayUtils::setArray( ia, mIA, common::reduction::COPY, context );
+
+    if ( ja == NULL || values == NULL )
     {
-        static LAMAKernel<UtilKernelTrait::set<IndexType, IndexType> > set;
-        static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-
-        const ContextPtr loc = set.getValidContext( sizes2offsets, set, context );
-  
-        ReadAccess<IndexType> ellSizes( mIA, loc );
-        WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // just copy the size array mIA
-
-        set[loc]( csrIA.get(), ellSizes.get(), mNumRows, common::reduction::COPY );
-
-        if( ja == NULL || values == NULL )
-        {
-            csrIA.resize( mNumRows );
-            return;
-        }
-
-        numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
+        return;
     }
+
+    numValues = HArrayUtils::scan( ia, context );
+
+    // step 2 : compute the arrays ja and values
 
     static LAMAKernel<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
 
-    const ContextPtr loc = getCSRValues.getValidContext( context );
+    ContextPtr loc = context;
+    getCSRValues.getSupportedContext( loc );
 
     ReadAccess<IndexType> ellJA( mJA, loc );
     ReadAccess<ValueType> ellValues( mValues, loc );
@@ -472,10 +425,10 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     static LAMAKernel<CSRKernelTrait::offsets2sizes > offsets2sizes;
     static LAMAKernel<ELLKernelTrait::hasDiagonalProperty > hasDiagonalProperty;
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
-    ContextPtr loc = offsets2sizes.getValidContext( hasDiagonalProperty, setCSRValues, context );
+    ContextPtr loc = context;
+    offsets2sizes.getSupportedContext( loc, hasDiagonalProperty, setCSRValues );
 
     // build array with non-zero values per row
 
@@ -489,11 +442,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     // determine the maximal number of non-zero in one row
 
-    {
-        ReadAccess<IndexType> ellSizes( mIA, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        mNumValuesPerRow = reduce[loc]( ellSizes.get(), mNumRows, common::reduction::MAX );
-    }
+    mNumValuesPerRow = HArrayUtils::reduce( mIA, common::reduction::MAX, loc );
 
     SCAI_LOG_INFO( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
 
@@ -584,17 +533,20 @@ void ELLStorage<ValueType>::setELLData(
 
     ContextPtr loc = getContextPtr();
 
-    HArrayUtils::setImpl( mIA, ia, common::reduction::COPY, loc );
-    HArrayUtils::setImpl( mJA, ja, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mIA, ia, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mJA, ja, common::reduction::COPY, loc );
 
-    HArrayUtils::set( mValues, values, common::reduction::COPY, loc );  // also type conversion
+    // assign works in contrary to setArray with each typed array
+
+    HArrayUtils::assignOp( mValues, values, common::reduction::COPY, loc );  // also type conversion
 
     // fill up my arrays ja and values to make matrix-multiplication fast
 
     {
         static LAMAKernel<ELLKernelTrait::fillELLValues<ValueType> > fillELLValues;
 
-        ContextPtr loc = fillELLValues.getValidContext( this->getContextPtr() );
+        ContextPtr loc = this->getContextPtr();
+        fillELLValues.getSupportedContext( loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -632,9 +584,10 @@ void ELLStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "setDiagonalImpl # value = " << value )
 
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-    ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    setVal.getSupportedContext( loc );
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -657,7 +610,8 @@ void ELLStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 
     static LAMAKernel<UtilKernelTrait::set<ValueType, OtherType> > set;
 
-    ContextPtr loc = set.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    set.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -681,7 +635,8 @@ void ELLStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
     static LAMAKernel<ELLKernelTrait::getRow<ValueType, OtherType> > getRow;
 
-    ContextPtr loc = getRow.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    getRow.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -708,7 +663,8 @@ void ELLStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
 
-    ContextPtr loc = set.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    set.getSupportedContext( loc );
 
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
@@ -727,7 +683,7 @@ void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "scaleImpl # value = " << value )
 
-    HArrayUtils::scale( mValues, value, this->getContextPtr() );
+    HArrayUtils::setScalar( mValues, value, common::reduction::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -748,7 +704,8 @@ void ELLStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& values )
 
     static LAMAKernel<ELLKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
 
-    ContextPtr loc = scaleValue.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    scaleValue.getSupportedContext( loc );
 
     ReadAccess<OtherValueType> rValues( values, loc );
     ReadAccess<IndexType> rIa( mIA, loc );
@@ -805,7 +762,8 @@ void ELLStorage<ValueType>::check( const char* msg ) const
 
     static LAMAKernel<ELLKernelTrait::check> check;
 
-    ContextPtr loc = check.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    check.getSupportedContext( loc );
 
     ReadAccess<IndexType> rIa( mIA, loc );
     ReadAccess<IndexType> rJa( mJA, loc );
@@ -832,9 +790,10 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // Intialize array mIA with 0
 
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType, IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
 
-        ContextPtr loc = setVal.getValidContext( getContextPtr() );
+        ContextPtr loc = this->getContextPtr();
+        setVal.getSupportedContext( loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -868,7 +827,8 @@ ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     static LAMAKernel<ELLKernelTrait::getValue<ValueType> > getValue;
 
-    ContextPtr loc = getValue.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    getValue.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -929,7 +889,9 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
 
     // choose location where both routines are available
 
-    ContextPtr loc = countNonEmptyRowsBySizes.getValidContext( setNonEmptyRowsBySizes, context );
+    ContextPtr loc = context;
+
+    countNonEmptyRowsBySizes.getSupportedContext( loc, setNonEmptyRowsBySizes );
 
     ReadAccess<IndexType> ellIA( mIA, loc );
 
@@ -962,7 +924,10 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
 
-    ContextPtr loc = compressIA.getValidContext( compressValues, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    reduce.getSupportedContext( loc );
+    compressIA.getSupportedContext( loc, compressValues );
 
     ReadAccess<IndexType> IA( mIA, loc );
     ReadAccess<IndexType> JA( mJA, loc );
@@ -1058,7 +1023,6 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
     SCAI_REGION( "Storage.ELL.VectorTimesMatrix" )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
@@ -1068,7 +1032,8 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
     static LAMAKernel<ELLKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
     static LAMAKernel<ELLKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    ContextPtr loc = sparseGEVM.getValidContext( normalGEVM, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    sparseGEVM.getSupportedContext( loc, normalGEVM );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
 
@@ -1210,7 +1175,9 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
 {
     static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( normalGEMV, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    normalGEMV.getSupportedContext( loc );
 
     unique_ptr<SyncToken> syncToken;
 
@@ -1261,7 +1228,9 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
 {
     static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( normalGEMV, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    normalGEMV.getSupportedContext( loc );
 
     unique_ptr<SyncToken> syncToken;
 
@@ -1307,7 +1276,8 @@ SyncToken* ELLStorage<ValueType>::sparseGEMV(
 {
     static LAMAKernel<ELLKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
 
-    ContextPtr loc = sparseGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    sparseGEMV.getSupportedContext( loc );
 
     unique_ptr<SyncToken> syncToken;
 
@@ -1369,7 +1339,9 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     // default location is context of this storage
 
-    ContextPtr loc = normalGEVM.getValidContext( sparseGEVM, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+
+    sparseGEVM.getSupportedContext( loc, normalGEVM );
 
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
@@ -1496,25 +1468,27 @@ void ELLStorage<ValueType>::jacobiIterate(
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, rhs.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
 
     // matrix must be square
 
     static LAMAKernel<ELLKernelTrait::jacobi<ValueType> > jacobi;
 
-    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    jacobi.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     // make all needed data available at loc
 
-    WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> ellSizes( mIA, loc );
     ReadAccess<IndexType> ellJA( mJA, loc );
     ReadAccess<ValueType> ellValues( mValues, loc );
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
+
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
 
     jacobi[loc] ( wSolution.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get(),
                   rOldSolution.get(), rRhs.get(), omega );
@@ -1533,7 +1507,8 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     static LAMAKernel<ELLKernelTrait::jacobi<ValueType> > jacobi;
 
-    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    jacobi.getSupportedContext( loc );
 
     if ( loc->getType() == Context::Host )
     {
@@ -1668,7 +1643,8 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
     static LAMAKernel<ELLKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
 
-    ContextPtr loc = jacobiHalo.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    jacobiHalo.getSupportedContext( loc );
 
     {
         SCAI_CONTEXT_ACCESS( loc )
@@ -1715,7 +1691,8 @@ ValueType ELLStorage<ValueType>::l1Norm() const
 
     static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
-    ContextPtr loc = asum.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    asum.getSupportedContext( loc );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
@@ -1738,7 +1715,8 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 
     static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
-    ContextPtr loc = dot.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    dot.getSupportedContext( loc );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
@@ -1761,7 +1739,8 @@ ValueType ELLStorage<ValueType>::maxNorm() const
 
     static LAMAKernel<ELLKernelTrait::absMaxVal<ValueType> > absMaxVal;
 
-    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    absMaxVal.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -1930,7 +1909,8 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
 
-    ContextPtr loc = matrixAddSizes.getValidContext( reduce, matrixAdd, this->getContextPtr() );
+    ContextPtr loc = this->getContextPtr();
+    matrixAddSizes.getSupportedContext( loc, reduce, matrixAdd );
 
     SCAI_ASSERT_ERROR( &a != this, "matrixAddMatrix: alias of a with this result matrix" )
     SCAI_ASSERT_ERROR( &b != this, "matrixAddMatrix: alias of b with this result matrix" )
@@ -2034,7 +2014,7 @@ const char* ELLStorage<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( ELLStorage, ARITHMETIC_HOST_CNT, ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 
