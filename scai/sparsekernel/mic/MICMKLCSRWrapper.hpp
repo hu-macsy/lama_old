@@ -22,15 +22,15 @@ namespace sparsekernel
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT MICMKLCSRWrapper;
 
-#define MICMKLCSRWRAPPER_DEF( ValueType, MKLCSRValueType, prefix ) 								                                                \
-template<>																												                                                              \
-class COMMON_DLL_IMPORTEXPORT MICMKLCSRWrapper<ValueType>								                              								            \
-{																														                                                                    \
-public:																													                                                                \
-	  typedef MICMKLCSRTrait::BLASIndexType BLASIndexType;																	                                          \
-	  typedef MICMKLCSRTrait::BLASTrans BLASTrans;																	                                                  \
-	  typedef MICMKLCSRTrait::BLASMatrix BLASMatrix;																	                                                \
-																														                                                                    \
+#define MICMKLCSRWRAPPER_DEF( ValueType, MKLCSRValueType, prefix ) 								                                \
+template<>																												        \
+class COMMON_DLL_IMPORTEXPORT MICMKLCSRWrapper<ValueType>								                              			\
+{																														        \
+public:																													        \
+	  typedef MICMKLCSRTrait::BLASIndexType BLASIndexType;																	    \
+	  typedef MICMKLCSRTrait::BLASTrans BLASTrans;																	            \
+	  typedef MICMKLCSRTrait::BLASMatrix BLASMatrix;																	        \
+																														        \
     static BLASIndexType csr2csc(                                                                                               \
         const BLASIndexType* job,                                                                                               \
         const BLASIndexType n,                                                                                                  \
@@ -41,15 +41,15 @@ public:																													                                            
         BLASIndexType *AJ1,                                                                                                     \
         BLASIndexType *AI1 )                                                                                                    \
     {                                                                                                                           \
-	      BLASIndexType info;                                                                                                     \
-        MICMKLCSR_BLAS_NAME( csrcsc, prefix )( const_cast<BLASIndexType*>( job ), const_cast<BLASIndexType*>( &n ),                \
+	      BLASIndexType info;                                                                                                   \
+        MICMKLCSR_BLAS_NAME( csrcsc, prefix )( const_cast<BLASIndexType*>( job ), const_cast<BLASIndexType*>( &n ),             \
                                             const_cast<MKLCSRValueType*>( reinterpret_cast<const MKLCSRValueType*>( Acsr ) ),   \
                                             const_cast<BLASIndexType*>( AJ0 ), const_cast<BLASIndexType*>( AI0 ),               \
                                             const_cast<MKLCSRValueType*>( reinterpret_cast<MKLCSRValueType*>( Acsc ) ),         \
                                             const_cast<BLASIndexType*>( AJ1 ), const_cast<BLASIndexType*>( AI1 ), &info );      \
         return info;                                                                                                            \
     }                                                                                                                           \
-																														                                                                    \
+																														        \
     static void csrmv(                                                                                                          \
         const BLASTrans transA,                                                                                                 \
         const BLASIndexType m,                                                                                                  \
@@ -64,7 +64,7 @@ public:																													                                            
         const ValueType beta,                                                                                                   \
         ValueType *y )                                                                                                          \
     {                                                                                                                           \
-        MICMKLCSR_BLAS_NAME( csrmv, prefix )( const_cast<BLASTrans*>( &transA ), const_cast<BLASIndexType*>( &m ),                 \
+        MICMKLCSR_BLAS_NAME( csrmv, prefix )( const_cast<BLASTrans*>( &transA ), const_cast<BLASIndexType*>( &m ),              \
                                            const_cast<BLASIndexType*>( &k ),                                                    \
                                            const_cast<MKLCSRValueType*>( reinterpret_cast<const MKLCSRValueType*>( &alpha ) ),  \
                                            const_cast<char*>( descrA ),                                                         \

@@ -84,6 +84,10 @@ void MICMKLCSRUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
+    typedef MKLCSRTrait::BLASIndexType BLASIndexType;
+    typedef MKLCSRTrait::BLASTrans BLASTrans;
+    typedef MKLCSRTrait::BLASMatrix BLASMatrix;
+
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -98,94 +102,18 @@ void MICMKLCSRUtils::normalGEMV(
 
     // performs y = alpha * A * x + beta * y
 
-    char transa = 'n';
+    BLASTrans transa = 'n';
 
     // General, - triangular, Non-Unit, C for zero-indexing
 
-    char matdescra[6];
+    BLASMatrix matdescra[6];
 
     matdescra[0] = 'g';
     matdescra[1] = ' ';
     matdescra[2] = 'n';
     matdescra[3] = 'c';
 
-    // const_cast needed, MICMKL interface does not support it
-
     MICMKLCSRWrapper<ValueType>::csrmv( transa, numRows, numColumns, alpha, matdescra, csrValues, csrJA, csrIA, csrIA + 1, x, beta, result );
-
-//    mkl_scsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
-//                const_cast<float*>( &alpha ), matdescra, const_cast<float*>( csrValues ),
-//                const_cast<IndexType*>( csrJA ), const_cast<IndexType*>( csrIA ), const_cast<IndexType*>( csrIA + 1 ),
-//                const_cast<float*>( x ), const_cast<float*>( &beta ), result );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<>
-void MICMKLCSRUtils::normalGEMV(
-    double result[],
-    const double alpha,
-    const double x[],
-    const double beta,
-    const double y[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType /* nnz */,
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const double csrValues[] )
-{
-    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet" )
-    }
-
-    // SCAI_REGION( "MIC.MKLdcsrmv" )
-
-    SCAI_LOG_INFO( logger,
-                   "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
-
-    if( y != result && beta != common::constants::ZERO )
-    {
-        MICUtils::set( result, y, numRows, common::reduction::COPY );
-    }
-
-    // performs y = alpha * A * x + beta * y
-
-    size_t csrIAPtr = (size_t) csrIA;
-    size_t csrJAPtr = (size_t) csrJA;
-    size_t csrValuesPtr = (size_t) csrValues;
-    size_t xPtr = (size_t) x;
-    size_t resultPtr = (size_t) result;
-
-    int device = MICContext::getCurrentDevice();
-
-#pragma offload target( mic : device ), in( numRows, numColumns, alpha, xPtr, beta, resultPtr, \
-                                       csrValuesPtr, csrJAPtr, csrIAPtr )
-    {
-        char transa = 'n';
-
-        // General, - triangular, Non-Unit, C for zero-indexing
-
-        char matdescra[6];
-
-        matdescra[0] = 'g';
-        matdescra[1] = ' ';
-        matdescra[2] = 'n';
-        matdescra[3] = 'c';
-
-        IndexType* csrIA = (IndexType*) csrIAPtr;
-        IndexType* csrJA = (IndexType*) csrJAPtr;
-        double* csrValues = (double*) csrValuesPtr;
-        double* x = (double*) xPtr;
-        double* result = (double*) resultPtr;
-
-        mkl_dcsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
-                    const_cast<double*>( &alpha ), matdescra, csrValues, csrJA, csrIA, csrIA + 1, x,
-                    const_cast<double*>( &beta ), result );
-    }
 }
 
 /* --------------------------------------------------------------------------- */

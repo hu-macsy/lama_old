@@ -84,15 +84,6 @@ private:
 
     /** Helper class for (un) registration of kernel routines at static initialization. */
 
-//    class RegisterGuard
-//    {
-//    public:
-//        RegisterGuard();
-//        ~RegisterGuard();
-//    };
-
-//    static RegisterGuard guard;  // registration of kernels @ static initialization
-
     MICMKLCSRUtils();
     ~MICMKLCSRUtils();
 
