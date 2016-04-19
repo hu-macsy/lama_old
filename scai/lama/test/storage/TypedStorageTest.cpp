@@ -118,6 +118,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_arithmetic_test_types )
 
     SCAI_LOG_INFO( logger, "normTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
 
+    DenseStorage<ValueType> dense;
+    setDenseData( dense );
+    const LArray<ValueType>& denseData = reinterpret_cast<const LArray<ValueType>&>( dense.getData() );
+
+    ValueType expectedL1Norm = denseData.l1Norm();
+    ValueType expectedL2Norm = denseData.l2Norm();
+    ValueType expectedMaxNorm = denseData.maxNorm();
+
     TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
@@ -132,7 +140,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_arithmetic_test_types )
 
         ValueType expected = 9.3f; // maximal absolute value
 
-        SCAI_CHECK_CLOSE( maxNorm, expected, 1 );
+        SCAI_CHECK_CLOSE( expectedMaxNorm, maxNorm, 1 );
+
+        ValueType l1Norm = storage.l1Norm();
+
+        SCAI_CHECK_CLOSE( expectedL1Norm, l1Norm, 1 );
+
+        ValueType l2Norm = storage.l2Norm();
+
+        expected = 9.3f; // l2Norm
+
+        SCAI_CHECK_CLOSE( expectedL2Norm, l2Norm, 1 );
     }
 }
 
@@ -325,10 +343,13 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
     LArray<ValueType> denseResult1;
     LArray<ValueType> denseResult2;
     LArray<ValueType> denseResult3( y );
+    LArray<ValueType> denseResult4;
 
     denseStorage.matrixTimesVector( denseResult1, alpha, x, beta, y );
     denseStorage.matrixTimesVector( denseResult2, alpha, x, 0, yDummy );
     denseStorage.matrixTimesVector( denseResult3, alpha, x, 1, denseResult3 );
+
+    utilskernel::HArrayUtils::assignScaled( denseResult4, beta, y );
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
 
@@ -341,7 +362,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         setDenseData( storage );
 
-        SCAI_LOG_DEBUG( logger, "storage = " << storage )
+        SCAI_LOG_ERROR( logger, "GEMV: storage = " << storage )
 
         // result = alpha * storage * x + beta * y
 
@@ -349,10 +370,12 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
         LArray<ValueType> result2( context );
         LArray<ValueType> result3( y, context );
 
-        // BOOST_CHECK_THROW(
-        // {
-        //     storage.matrixTimesVector( result1, alpha, 1, beta, yDummy );
-        // }, common::AssertException );
+        // wrong sized y, should throw exception in any case
+
+        BOOST_CHECK_THROW(
+        {
+            storage.matrixTimesVector( result1, alpha, x, beta, yDummy );
+        }, common::AssertException );
 
         storage.matrixTimesVector( result1, alpha, x, beta, y );
         storage.matrixTimesVector( result2, alpha, x, 0, yDummy );
@@ -363,6 +386,18 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
         BOOST_CHECK_EQUAL( denseResult1.maxDiffNorm( result1 ), 0 );
         BOOST_CHECK_EQUAL( denseResult2.maxDiffNorm( result2 ), 0 );
         BOOST_CHECK_EQUAL( denseResult3.maxDiffNorm( result3 ), 0 );
+
+        LArray<ValueType> result4( context );
+        storage.allocate( y.size(), x.size() );  // numRows x numCols, all zero
+        // test multiplication with zero matrix
+        storage.matrixTimesVector( result4, alpha, x, beta, y );
+        BOOST_CHECK_EQUAL( denseResult4.maxDiffNorm( result4 ), 0 );
+
+        // result5 = 0 * storage * x + beta * y, storage can be anything as not used at all
+        LArray<ValueType> result5( context );
+        storage.clear();  // with alpha == 0, storage is not used at all
+        storage.matrixTimesVector( result5, ValueType( 0 ), x, beta, y );
+        BOOST_CHECK_EQUAL( denseResult4.maxDiffNorm( result5 ), 0 );
     }
 }
 
@@ -453,6 +488,9 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixTest )
     denseStorage.vectorTimesMatrix( denseResult2, alpha, x, 0, yDummy );
     denseStorage.vectorTimesMatrix( denseResult3, alpha, x, 1, denseResult3 );
 
+    LArray<ValueType> denseResult4( y );
+    denseResult4 *= beta;                  // result4 = beta * y, for zero matrix
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
 
     SCAI_LOG_INFO( logger, "vectorTimesMatrixTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
@@ -470,6 +508,7 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixTest )
         LArray<ValueType> result1( context );
         LArray<ValueType> result2( context );
         LArray<ValueType> result3( y, context );
+        LArray<ValueType> result4( context );
 
         storage.vectorTimesMatrix( result1, alpha, x, beta, y );
         storage.vectorTimesMatrix( result2, alpha, x, 0, yDummy );
@@ -480,6 +519,11 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixTest )
         BOOST_CHECK_EQUAL( denseResult1.maxDiffNorm( result1 ), 0 );
         BOOST_CHECK_EQUAL( denseResult2.maxDiffNorm( result2 ), 0 );
         BOOST_CHECK_EQUAL( denseResult3.maxDiffNorm( result3 ), 0 );
+
+        storage.allocate( x.size(), y.size() );  // numRows x numCols, all zero
+        // test multiplication with zero matrix
+        storage.vectorTimesMatrix( result4, alpha, x, beta, y );
+        // BOOST_CHECK_EQUAL( denseResult4.maxDiffNorm( result4 ), 0 );
     }
 }
 
@@ -646,7 +690,7 @@ BOOST_AUTO_TEST_CASE( matrixVectorTimesSparseTest )
         {
              // these storage format should have sparse row indexes
 
-             // BOOST_CHECK( storage.getRowIndexes().size() > 0 );
+             BOOST_CHECK( storage.getRowIndexes().size() > 0 );
         }
 
         LArray<ValueType> y( denseStorage.getNumColumns(), yVal, context );

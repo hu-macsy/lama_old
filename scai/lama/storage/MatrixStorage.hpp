@@ -170,6 +170,11 @@ public:
      *  Note: This method contains an implicit clear, but not a purge.
      *        So allocation of a much smaller matrix compared to the existing
      *        one might result in some waste of memory.
+     *
+     *  Note: For dense matrices all values are set to zero; for sparse matrices 
+     *        zero values are usually not stored and no initialization is done.
+     *
+     *  Note: Operations are done on the context set for the matrix storage.
      */
 
     virtual void allocate( const IndexType numRows, const IndexType numColumns ) = 0;
