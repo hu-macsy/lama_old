@@ -30,7 +30,7 @@
  # @date 02.12.2015
 ###
 
-foreach ( executable blas1 matrix scalar simple vector )
+foreach ( executable blas1 matrix matrix1 scalar simple vector vector_exp )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 
