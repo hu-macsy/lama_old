@@ -45,7 +45,7 @@ export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
 # Running tests serial
-echo "Running serial tests"
+echo "Running utilskernel tests on Host"
 ./utilskernelTest >/dev/null
 if [ $? -ne 0 ]
 then
@@ -56,7 +56,7 @@ fi
 if [ -d ../cuda ];
 then
     #Running common CUDA tests
-    echo "Running blaskernel tests with CUDA context"
+    echo "Running utilskernel tests on CUDA"
     ./utilskernelTest --SCAI_CONTEXT=CUDA >/dev/null
     if [ $? -ne 0 ]
     then
