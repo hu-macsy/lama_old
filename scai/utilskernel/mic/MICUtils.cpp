@@ -372,7 +372,7 @@ ValueType MICUtils::reduceMaxVal( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "maxval<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
-    const ValueType zero( - common::TypeTraits<ValueType>::getMax() );
+    const ValueType zero( common::TypeTraits<ValueType>::getMin() );
 
     ValueType val = zero;
 

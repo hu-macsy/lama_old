@@ -70,6 +70,3 @@ else ( ${LAPACKeFound} )
 endif ( ${LAPACKeFound} )
 
 scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )
-
-
-

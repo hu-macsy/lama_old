@@ -255,6 +255,11 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
+    static ValueType nrm2( 
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
     static ValueType absMaxDiffVal( 
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
