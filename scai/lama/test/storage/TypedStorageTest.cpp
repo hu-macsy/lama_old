@@ -138,8 +138,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_arithmetic_test_types )
 
         ValueType maxNorm = storage.maxNorm();
 
-        ValueType expected = 9.3f; // maximal absolute value
-
         SCAI_CHECK_CLOSE( expectedMaxNorm, maxNorm, 1 );
 
         ValueType l1Norm = storage.l1Norm();
@@ -147,8 +145,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_arithmetic_test_types )
         SCAI_CHECK_CLOSE( expectedL1Norm, l1Norm, 1 );
 
         ValueType l2Norm = storage.l2Norm();
-
-        expected = 9.3f; // l2Norm
 
         SCAI_CHECK_CLOSE( expectedL2Norm, l2Norm, 1 );
     }
@@ -362,7 +358,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         setDenseData( storage );
 
-        SCAI_LOG_ERROR( logger, "GEMV: storage = " << storage )
+        SCAI_LOG_INFO( logger, "GEMV: storage = " << storage )
 
         // result = alpha * storage * x + beta * y
 
