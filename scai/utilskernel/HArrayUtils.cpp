@@ -523,6 +523,35 @@ ValueType HArrayUtils::asum( const HArray<ValueType>& array, const ContextPtr pr
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+ValueType HArrayUtils::nrm2( const HArray<ValueType>& array, const ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    if ( n == 0 )
+    {
+        return ValueType( 0 );
+    }
+
+    static LAMAKernel<blaskernel::BLASKernelTrait::nrm2<ValueType> > nrm2;
+
+    // preferred location: where valid values of the array are available
+
+    ContextPtr loc = array.getValidContext( prefLoc );
+
+    nrm2.getSupportedContext( loc );
+
+    ReadAccess<ValueType> readArray( array, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ValueType result = nrm2[loc]( n, readArray.get(), 1 );
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType HArrayUtils::absMaxDiffVal(
     const HArray<ValueType>& array1,
     const HArray<ValueType>& array2,
@@ -956,6 +985,7 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
     TemplateSpecifier::set( HArrayUtils::arrayPlusArray<ValueType> );
     TemplateSpecifier::set( HArrayUtils::dotProduct<ValueType> );
     TemplateSpecifier::set( HArrayUtils::asum<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::nrm2<ValueType> );
     TemplateSpecifier::set( HArrayUtils::invert<ValueType> );
     TemplateSpecifier::set( HArrayUtils::isSorted<ValueType> );
     TemplateSpecifier::set( HArrayUtils::scan<ValueType> );

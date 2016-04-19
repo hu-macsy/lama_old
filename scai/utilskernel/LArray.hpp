@@ -331,7 +331,7 @@ public:
 
     ValueType l2Norm() const
     {
-        return common::Math::sqrt( HArrayUtils::dotProduct( *this, *this ) );
+        return HArrayUtils::nrm2( *this );
     }
 
     /** Build the max diff norm with another LAMA array */
