@@ -164,14 +164,14 @@ public:
         hmemo::HArray<ValueType>& result,
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
-        hmemo::ContextPtr context );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Axpy: result += beta * y
      *
      *  @param[in,out] result  output array
      *  @param[in]     beta    scaling factor
      *  @param[in]     y       source array
-     *  @param[in]     context location where operation is done
+     *  @param[in]     prefLoc location where operation is done
      */
 
     template<typename ValueType>
@@ -179,7 +179,7 @@ public:
         hmemo::HArray<ValueType>& result,
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
-        hmemo::ContextPtr context );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Addition of two arrays: result = alpha * x + beta * y
      *
@@ -280,7 +280,15 @@ public:
     template<typename ValueType>
     static bool isSorted( const hmemo::HArray<ValueType>& array, const bool isAscending, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Build the running sums for an array; note that result array will contain one element more. */
+    /** Build the running sums for an array; note that result array will contain one element more. 
+     *
+     *  @param[in,out]  array contains values for which running sum is built
+     *  @param[in]      prefLoc optional the context where computation should be done
+     *
+     *  \code
+     *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 0, 3, 8, 15, 17 }
+     *  \endcode
+     */
 
     template<typename ValueType>
     static ValueType scan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
@@ -288,14 +296,28 @@ public:
     template<typename ValueType>
     static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Initialize an array with the sequence 0, .., n-1 */
+    /** Initialize an array with the sequence 0, .., n-1 
+     *
+     *  @param[out] array will contain the values 0, ..., n-1
+     *  @param[in]  n     becomes size of the array
+     *  @param[in]  prefLoc optional the context where allocation/initialization should be done
+     */
 
     static void setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Get an array with random values. */
+    /** Sete an array with random values. 
+     *
+     *  @param[out] array    will contain random values of its type
+     *  @param[in]  n        number of values, becomes size of array
+     *  @param[in]  fillRate ratio of non-zero values
+     *  @param[in]  prefLoc  optional the context where random numbers should be drawn
+     */
 
     template<typename ValueType>
-    static void setRandom( hmemo::HArray<ValueType>& array, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void setRandom( hmemo::HArray<ValueType>& array, 
+                           IndexType n, 
+                           float fillRate = 1.0f, 
+                           hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
 

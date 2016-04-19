@@ -325,7 +325,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 
     const IndexType n = 100;
 
-    HArrayUtils::setRandom( array, n, loc );
+    float fillRate = 1.0f;
+
+    HArrayUtils::setRandom( array, n, fillRate, loc );
 
     BOOST_CHECK_EQUAL( array.size(), n );
     
@@ -333,6 +335,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 
     if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
     {
+        // no check for integer types
     }
     else
     {
@@ -340,7 +343,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 
         AbsType asum = Math::abs( sum );
 
-        BOOST_CHECK( asum < 20 );
+        // random numbers are between -1.0 and 1.0, so should sum up approximately to 0
+
+        BOOST_CHECK( asum / AbsType( n ) < AbsType( 0.2 ) );
     }
 }
 

@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
     const IndexType N = 16;
 
     LArray<ValueType> array;
-    HArrayUtils::setRandom( array, N, testContext );
+    HArrayUtils::setRandom( array, N, 1.0f, testContext );
 
     LArray<ValueType> conjArray( array );
     conjArray.conj();   // build in place

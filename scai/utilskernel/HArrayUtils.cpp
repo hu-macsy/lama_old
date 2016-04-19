@@ -784,18 +784,43 @@ void HArrayUtils::setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo:
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array, IndexType n, hmemo::ContextPtr prefLoc )
+void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array, 
+                             const IndexType n, 
+                             const float fillRate,
+                             const hmemo::ContextPtr prefLoc )
 {
     ContextPtr loc = Context::getHostPtr();   // currently only available on host
 
     WriteOnlyAccess<ValueType> wArray( array, loc, n );
  
-    for ( IndexType i = 0; i < n; ++i )
+    if ( fillRate >= 1.0f )
     {
-        common::Math::random( wArray[i] );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            common::Math::random( wArray[i] );
+        }
+    }
+    else
+    {
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            float x = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+
+            if ( x < fillRate )
+            { 
+                common::Math::random( wArray[i] );
+            }
+            else
+            {
+                wArray[i] = ValueType( 0 );
+            }
+        }
     }
 
-    array.prefetch( prefLoc );
+    if ( prefLoc != ContextPtr() )
+    {
+        array.prefetch( prefLoc );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
