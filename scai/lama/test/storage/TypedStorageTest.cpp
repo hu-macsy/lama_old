@@ -585,7 +585,7 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixAsyncTest )
 
         setDenseData( storage );
 
-        SCAI_LOG_ERROR( logger, "storage = " << storage )
+        SCAI_LOG_DEBUG( logger, "GEVM asynchron: storage = " << storage )
 
         LArray<ValueType> result( context );
 
@@ -634,7 +634,7 @@ BOOST_AUTO_TEST_CASE( matrixVectorTimesSparseTest )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
  
-        SCAI_LOG_ERROR( logger, "GEMV sparse storage = " << storage << ", set dense halo data" )
+        SCAI_LOG_DEBUG( logger, "GEMV sparse storage = " << storage << ", set dense halo data" )
 
         storage.setCompressThreshold( 1.0f );  // introduce row indexes in any case
 
