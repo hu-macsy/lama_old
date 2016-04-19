@@ -34,7 +34,7 @@
 ## attention OpenMP should be before SCAI_BLAS !!!
 ## need to get rid of boost for boost_repeat in common
 
-set ( SCAI_COMMON_EXTERNAL_DEPS dl Thread Boost OpenMP CUDA ) # 1
+set ( SCAI_COMMON_EXTERNAL_DEPS dl Thread Boost OpenMP CUDA MIC ) # 1
 set ( SCAI_LOGGING_EXTERNAL_DEPS ) # 2
 set ( SCAI_TRACING_EXTERNAL_DEPS Java ) # 3
 set ( SCAI_TASKING_EXTERNAL_DEPS                       CUDA MIC ) # 4

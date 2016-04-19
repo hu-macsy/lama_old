@@ -1838,7 +1838,7 @@ void sparse_gevm_kernel(
 
         for ( int i = 0; i < numNonZeroRows; ++i )
         {
-            int pos = id;
+            int pos = rowIndexes[i];
 
             const int nonZeros = ellSizes[pos];
 
@@ -1858,54 +1858,6 @@ void sparse_gevm_kernel(
         }
 
         result_d[id] += alpha * value;
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename T, bool useTexture>
-__global__
-void sparse_gevm_kernel_alpha_one(
-    T* const result_d,
-    const T* const x_d,
-    const T* const ellValues,
-    const int* const ellSizes,
-    const int* const ellJA,
-    const int* const rowIndexes,
-    const int numNonZeroRows,
-    int numRows,
-    int numColumns )
-{
-    // each thread is assigned to one non-zero row
-
-    const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( id < numColumns )
-    {
-        T value = 0.0;
-
-        for ( int i = 0; i < numNonZeroRows; ++i )
-        {
-            int pos = id;
-
-            const int nonZeros = ellSizes[pos];
-
-            for ( int kk = 0; kk < nonZeros; ++kk )
-            {
-                if ( ellJA[pos] == id )
-                {
-                    const T aValue = ellValues[pos];
-
-                    // compute capability >= 2.0: no benefits to mask with value != 0.0
-
-                    value += aValue * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
-                }
-
-                pos += numRows;
-            }
-        }
-
-        result_d[id] += value;
     }
 }
 
@@ -1949,29 +1901,17 @@ void CUDAELLUtils::sparseGEVM(
 
     if ( useTexture )
     {
-        if ( alpha == scai::common::constants::ONE )
-        {
-            sparse_gevm_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
-            ( result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
-        }
-        else
-        {
-            sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-            ( result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
-        }
+        SCAI_LOG_DEBUG( logger, "sparse_gevm_kernel<useTexture=true>" )
+
+        sparse_gevm_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
+        ( result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
     }
     else
     {
-        if ( alpha == scai::common::constants::ONE )
-        {
-            sparse_gevm_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-            ( result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
-        }
-        else
-        {
-            sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-            ( result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
-        }
+        SCAI_LOG_DEBUG( logger, "sparse_gevm_kernel<useTexture=false>" )
+
+        sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
+        ( result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
     }
 
     if ( !syncToken )

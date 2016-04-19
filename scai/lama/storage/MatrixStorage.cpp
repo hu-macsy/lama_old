@@ -157,7 +157,7 @@ void _MatrixStorage::_assignTranspose( const _MatrixStorage& other )
     mNumColumns = tmpNumRows;
 
     mRowIndexes.clear();
-    mCompressThreshold = other.mCompressThreshold;
+    // remains unchanged: mCompressThreshold = other.mCompressThreshold;
     mDiagonalProperty = false;
 }
 
@@ -168,7 +168,7 @@ void _MatrixStorage::_assign( const _MatrixStorage& other )
     mNumRows = other.mNumRows;
     mNumColumns = other.mNumColumns;
     mRowIndexes.clear();
-    mCompressThreshold = other.mCompressThreshold;
+    // remains unchanged: mCompressThreshold = other.mCompressThreshold;
     mDiagonalProperty = false;
 }
 

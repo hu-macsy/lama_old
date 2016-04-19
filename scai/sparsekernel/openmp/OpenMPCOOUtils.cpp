@@ -367,6 +367,22 @@ void OpenMPCOOUtils::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPCOOUtils::normalGEVM_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax,
+    const std::pair<ValueType, const ValueType*> by,
+    const IndexType numColumns,
+    const IndexType numValues,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[] )
+{
+    normalGEVM( result, ax.first, ax.second, by.first, by.second, numColumns, numValues, cooIA, cooJA, cooValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPCOOUtils::normalGEVM(
     ValueType result[],
     const ValueType alpha,
@@ -380,13 +396,24 @@ void OpenMPCOOUtils::normalGEVM(
     const ValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
+                   << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " 
+                   << beta << " * y " )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
+        // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in pair structs
+
+        SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
+
+        syncToken->run( common::bind( normalGEVM_a<ValueType>,
+                                      result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
+                                      numColumns, numValues, cooIA, cooJA, cooValues ) );
+        return;
     }
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A

@@ -498,6 +498,13 @@ private:
                                     const hmemo::HArray<ValueType>& x,
                                     bool async ) const;
 
+    /** result += alpha * x * (*this) where this storage has sparse rows */
+
+    tasking::SyncToken* sparseGEVM( hmemo::HArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::HArray<ValueType>& x,
+                                    bool async ) const;
+
     /** result = alpha * (*this) * x  */
 
     tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
@@ -505,9 +512,25 @@ private:
                                     const hmemo::HArray<ValueType>& x,
                                     bool async ) const;
 
+    /** result = alpha * x * (*this) */
+
+    tasking::SyncToken* normalGEVM( hmemo::HArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::HArray<ValueType>& x,
+                                    bool async ) const;
+
     /** result = alpha * (*this) * x + beta * y */
 
     tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::HArray<ValueType>& x,
+                                    const ValueType beta,
+                                    const hmemo::HArray<ValueType>& y,
+                                    bool async ) const;
+
+    /** result = alpha * x * (*this) + beta * y */
+
+    tasking::SyncToken* normalGEVM( hmemo::HArray<ValueType>& result,
                                     const ValueType alpha,
                                     const hmemo::HArray<ValueType>& x,
                                     const ValueType beta,

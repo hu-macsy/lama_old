@@ -89,18 +89,20 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
             BLASIndexType b_incX = static_cast<BLASIndexType>( incX );                                                      \
             BLASIndexType b_incY = static_cast<BLASIndexType>( incY );                                                      \
             SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( swap, prefix1 )( handle, b_n,                                               \
-                              reinterpret_cast<CUBLASValueType*>(x), b_incX, reinterpret_cast<CUBLASValueType*>(y), b_incY ),      \
+                              reinterpret_cast<CUBLASValueType*>(x), b_incX,                                                \
+                              reinterpret_cast<CUBLASValueType*>(y), b_incY ),                                              \
                               "CUBLASWrapper::swap<" #ValueType ">");                                                       \
         }                                                                                                                   \
                                                                                                                             \
-        static void copy( cublasHandle_t handle, const IndexType n, const ValueType *x, const IndexType incX, ValueType *y, \
-                          const IndexType incY)                                                                             \
+        static void copy( cublasHandle_t handle, const IndexType n, const ValueType *x, const IndexType incX,               \
+                          ValueType *y, const IndexType incY)                                                               \
         {                                                                                                                   \
             BLASIndexType b_n    = static_cast<BLASIndexType>( n );                                                         \
             BLASIndexType b_incX = static_cast<BLASIndexType>( incX );                                                      \
             BLASIndexType b_incY = static_cast<BLASIndexType>( incY );                                                      \
             SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( copy, prefix1 )( handle, b_n,                                               \
-                              reinterpret_cast<const CUBLASValueType*>(x), b_incX, reinterpret_cast<CUBLASValueType*>(y), b_incY ),       \
+                              reinterpret_cast<const CUBLASValueType*>(x), b_incX,                                          \
+                              reinterpret_cast<CUBLASValueType*>(y), b_incY ),                                              \
                               "CUBLASWrapper::copy<" #ValueType ">");                                                       \
         }                                                                                                                   \
                                                                                                                             \
@@ -111,10 +113,11 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
             BLASIndexType b_incX = static_cast<BLASIndexType>( incX );                                                      \
             BLASIndexType b_incY = static_cast<BLASIndexType>( incY );                                                      \
             SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( axpy, prefix1 )( handle, b_n,                                               \
-                              reinterpret_cast<const CUBLASValueType*>(&alpha), reinterpret_cast<const CUBLASValueType*>(x), \
-                              b_incX, reinterpret_cast<CUBLASValueType*>(y), b_incY),                                      \
-                              "CUBLASWrapper::axpy<" #ValueType ">");                                                      \
-        }                                                                                                                  \
+                              reinterpret_cast<const CUBLASValueType*>(&alpha),                                             \
+                              reinterpret_cast<const CUBLASValueType*>(x),                                                  \
+                              b_incX, reinterpret_cast<CUBLASValueType*>(y), b_incY),                                       \
+                              "CUBLASWrapper::axpy<" #ValueType ">");                                                       \
+        }                                                                                                                   \
                                                                                                                             \
         static ValueType dot( cublasHandle_t handle, const IndexType n, const ValueType *x,                                 \
                               const IndexType incX, const ValueType *y, const IndexType incY)                               \
@@ -123,8 +126,9 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
             BLASIndexType b_incX = static_cast<BLASIndexType>( incX );                                                      \
             BLASIndexType b_incY = static_cast<BLASIndexType>( incY );                                                      \
             ValueType dot;                                                                                                  \
-            SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( DOT, prefix1 )( handle, b_n,                                                 \
-                              reinterpret_cast<const CUBLASValueType*>(x), b_incX, reinterpret_cast<const CUBLASValueType*>(y), b_incY,   \
+            SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( DOT, prefix1 )( handle, b_n,                                                \
+                              reinterpret_cast<const CUBLASValueType*>(x), b_incX,                                          \
+                              reinterpret_cast<const CUBLASValueType*>(y), b_incY,                                          \
                               reinterpret_cast<CUBLASValueType*>(&dot)),                                                    \
                               "CUBLASWrapper::dot<" #ValueType ">");                                                        \
             return dot;                                                                                                     \
@@ -139,31 +143,33 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
             BLASIndexType b_lda  = static_cast<BLASIndexType>( lda );                                                       \
             BLASIndexType b_incX = static_cast<BLASIndexType>( incX );                                                      \
             BLASIndexType b_incY = static_cast<BLASIndexType>( incY );                                                      \
-            SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( gemv, prefix1 )( handle, transA,                                             \
-                              b_m, b_n, reinterpret_cast<const CUBLASValueType*>(&alpha), reinterpret_cast<const CUBLASValueType*>(A), \
-                              b_lda, reinterpret_cast<const CUBLASValueType*>(x), b_incX,                                      \
-                              reinterpret_cast<const CUBLASValueType*>(&beta), reinterpret_cast<CUBLASValueType*>(y), b_incY), \
-                              "CUBLASWrapper::gemv<" #ValueType ">");                                                       \
+            SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( gemv, prefix1 )( handle, transA,                                            \
+                              b_m, b_n, reinterpret_cast<const CUBLASValueType*>(&alpha),                                   \
+                              reinterpret_cast<const CUBLASValueType*>(A),                                                  \
+                              b_lda, reinterpret_cast<const CUBLASValueType*>(x), b_incX,                                   \
+                              reinterpret_cast<const CUBLASValueType*>(&beta), reinterpret_cast<CUBLASValueType*>(y),       \
+                              b_incY), "CUBLASWrapper::gemv<" #ValueType ">");                                              \
         }                                                                                                                   \
-                                                                                                                             \
-        static void gemm(  cublasHandle_t handle, const BLASTrans transA, const BLASTrans transB,                            \
-                           const IndexType m, const IndexType n, const IndexType k,                                          \
-                           const ValueType alpha, const ValueType* A, const IndexType lda, const ValueType* B,               \
-                           const IndexType ldb, const ValueType beta, ValueType* C, const IndexType ldc)                     \
+                                                                                                                            \
+        static void gemm(  cublasHandle_t handle, const BLASTrans transA, const BLASTrans transB,                           \
+                           const IndexType m, const IndexType n, const IndexType k,                                         \
+                           const ValueType alpha, const ValueType* A, const IndexType lda, const ValueType* B,              \
+                           const IndexType ldb, const ValueType beta, ValueType* C, const IndexType ldc)                    \
         {                                                                                                                   \
             BLASIndexType b_m    = static_cast<BLASIndexType>( m );                                                         \
             BLASIndexType b_k    = static_cast<BLASIndexType>( k );                                                         \
             BLASIndexType b_n    = static_cast<BLASIndexType>( n );                                                         \
-            BLASIndexType b_lda  = static_cast<BLASIndexType>( lda );                                                         \
-            BLASIndexType b_ldb  = static_cast<BLASIndexType>( ldb );                                                         \
-            BLASIndexType b_ldc  = static_cast<BLASIndexType>( ldc );                                                         \
-            SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( gemm, prefix1 )( handle, transA, transB,                                      \
-                              b_m, b_n, b_k, reinterpret_cast<const CUBLASValueType*>(&alpha),                                 \
-                              reinterpret_cast<const CUBLASValueType*>(A), b_lda, reinterpret_cast<const CUBLASValueType*>(B), \
-                              b_ldb, reinterpret_cast<const CUBLASValueType*>(&beta),                                          \
-                              reinterpret_cast<CUBLASValueType*>(C), b_ldc),                                                    \
-                              "CUBLASWrapper::gemm<" #ValueType ">");                                                         \
-        }                                                                                                                     \
+            BLASIndexType b_lda  = static_cast<BLASIndexType>( lda );                                                       \
+            BLASIndexType b_ldb  = static_cast<BLASIndexType>( ldb );                                                       \
+            BLASIndexType b_ldc  = static_cast<BLASIndexType>( ldc );                                                       \
+            SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( gemm, prefix1 )( handle, transA, transB,                                    \
+                              b_m, b_n, b_k, reinterpret_cast<const CUBLASValueType*>(&alpha),                              \
+                              reinterpret_cast<const CUBLASValueType*>(A), b_lda,                                           \
+                              reinterpret_cast<const CUBLASValueType*>(B), b_ldb,                                           \
+                              reinterpret_cast<const CUBLASValueType*>(&beta),                                              \
+                              reinterpret_cast<CUBLASValueType*>(C), b_ldc),                                                \
+                              "CUBLASWrapper::gemm<" #ValueType ">");                                                       \
+        }                                                                                                                   \
     };
 
 CUBLASWRAPPER_DEF( float, float, S, S, Is, dot )

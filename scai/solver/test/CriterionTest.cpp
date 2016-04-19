@@ -155,7 +155,11 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     Criterion* boolcondition = new Criterion();
     CriterionPtr testcriterion = CriterionPtr( boolcondition );
-    SCAI_COMMON_WRITEAT_TEST( *testcriterion );
+    SCAI_COMMON_WRITEAT_TEST( *testcriterion ); // no empty string for mModifier = true
+
+    Criterion* boolcondition2 = new Criterion( false );
+    CriterionPtr testcriterion2 = CriterionPtr( boolcondition2 );
+    SCAI_COMMON_WRITEAT_TEST( *testcriterion2 ); // no empty string for mModifier = false
 }
 
 /* ---------------------------------------------------------------------- */
@@ -177,9 +181,45 @@ BOOST_AUTO_TEST_CASE ( isSatisfiedTest )
     cgsolver.initialize( coefficients );
     cgsolver.solve( solution, rhs );
 
-    bool test = mIterationCountCriterion1Ptr->isSatisfied( cgsolver );
+    bool test;
+
+    // isSatisfied for BooleanCondition ( noChildren, returns mModifier )
+    Criterion* condition1 = new Criterion();
+    test = condition1->isSatisfied( cgsolver );
+
+    BOOST_CHECK ( test );
+
+    // isSatisfied for BooleanCondition ( noChildren, returns mModifier )
+    Criterion* condition2 = new Criterion( false );
+    test = condition2->isSatisfied( cgsolver );
 
     BOOST_CHECK ( !test );
+
+    // isSatisfied for Criterion with left
+    Criterion* condition3 = new Criterion( false );
+    condition3->setLeftChild( mIterationCountCriterion1Ptr );
+    test = condition3->isSatisfied( cgsolver );
+
+    BOOST_CHECK ( !test );
+
+    // isSatisfied for Criterion with left
+    Criterion* condition4 = new Criterion( false );
+    condition4->setRightChild( mIterationCountCriterion1Ptr );
+    test = condition4->isSatisfied( cgsolver );
+
+    BOOST_CHECK ( !test );
+
+    // isSatisfied for Criterion with left AND right child
+    Criterion* condition5 = new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, Criterion::AND );
+    test = condition5->isSatisfied( cgsolver );
+
+    BOOST_CHECK ( !test );
+
+    // isSatisfied for Criterion with left OR right child
+    Criterion* condition6 = new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, Criterion::OR );
+    test = condition6->isSatisfied( cgsolver );
+
+    BOOST_CHECK ( test );
 }
 
 /* ---------------------------------------------------------------------- */
