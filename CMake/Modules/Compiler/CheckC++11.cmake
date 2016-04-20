@@ -47,6 +47,8 @@
 
 # use CMake module that provides CHECK_CXX_COMPILER_FLAG 
 
+if    ( NOT WIN32 )
+
 include ( CheckCXXCompilerFlag )
 
 if ( NOT DEFINED CXX_SUPPORTS_C11 )
@@ -58,6 +60,23 @@ if    ( CXX_SUPPORTS_C11 )
 else  ( CXX_SUPPORTS_C11 )
     set ( SCAI_LANG_FLAGS "" )
 endif ( CXX_SUPPORTS_C11 )
+
+else  ( NOT WIN32 )
+	
+	if    ( MSVC ) # if Visual Studio
+		#message ( STATUS "MSVC_VERSION ${MSVC_VERSION} " )
+		if    ( ${MSVC_VERSION} GREATER 1600 ) # 1600 = VS 10.0
+			set ( CXX_SUPPORTS_C11 TRUE )
+			set ( SCAI_LANG_FLAGS "" ) # implicitly compiled with c++11
+		else  ( ${MSVC_VERSION} GREATER 1600 )
+			set ( CXX_SUPPORTS_C11 FALSE )
+			set ( SCAI_LANG_FLAGS "" )
+		endif ( ${MSVC_VERSION} GREATER 1600 )
+	else  ( MSVC )
+		message ( FATAL_ERROR "NO Visual Studio compiler, can not determine if C++11 support given." )
+	endif ( MSVC )
+	
+endif ( NOT WIN32 )
 
 set ( ADDITIONAL_CXX_FLAGS_LANG "${SCAI_LANG_FLAGS}" CACHE STRING "Language flag for using C++11 (if compiler capable)" )
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_LANG )

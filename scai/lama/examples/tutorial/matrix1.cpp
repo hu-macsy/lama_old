@@ -104,8 +104,7 @@ int main()
 
     std::cout << "Communicator = " << *comm << std::endl;
 
-    DenseVector<double> row;     // any type
-    row.redistribute( dist );          // any distribution   
+    DenseVector<double> row( dist );     // any type, any distribution
 
     a.getRow( row, irow );
 

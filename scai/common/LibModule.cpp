@@ -35,16 +35,19 @@
 
 #include <scai/common/macros/throw.hpp>
 
-#include <dlfcn.h>
-#include <dirent.h>
-
 #include <iostream>
 #include <vector>
 #include <string>
 
 #undef DEBUG_HERE
 
-#define SUFFIX "so"
+#if defined(__APPLE__)
+    #define SUFFIX "dylib"
+#elif defined(_WIN32)
+    #define SUFFIX "dll"
+#else // LINUX
+    #define SUFFIX "so"
+#endif
 
 namespace scai
 {
@@ -52,6 +55,102 @@ namespace scai
 namespace common
 {
 
+#if defined(WIN32)
+	// TODO: needs to be tested
+static bool isDirectory(const char* dir)
+{
+	DWORD ftyp = GetFileAttributesA(dir);
+	if (ftyp == INVALID_FILE_ATTRIBUTES)
+	{
+		return false;
+	}
+
+	if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+/* -------------------------------------------------------------------------- */
+
+static void getFilesFromDirectory(const char* dir, const char* suffix, std::vector<std::string>& files)
+{
+	WIN32_FIND_DATA ffd;
+	HANDLE dp = INVALID_HANDLE_VALUE;
+	dp = FindFirstFile(dir, &ffd);
+
+	if (dp == INVALID_HANDLE_VALUE)
+	{
+		COMMON_THROWEXCEPTION("Error (" /* << errno */ << " ) opening directory " << dir)
+	}
+
+	const std::string directory(dir);
+
+	std::string slash;
+
+	if (*directory.rbegin() != '/')
+	{
+		slash = "/";
+	}
+	else
+	{
+		slash = "";
+	}
+
+	do
+	{
+		std::string filename;
+		
+		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			// todo: should we do something here?
+		}
+		else
+		{
+			filename = ffd.cFileName;
+		}
+
+#ifdef DEBUG_HERE
+		std::cout << "File in dir " << dir << ": " << filename << std::endl;
+#endif
+
+		if (filename.substr(filename.find_last_of(".") + 1) == suffix)
+		{
+			files.push_back(directory + slash + filename);
+		}
+	} while ( FindNextFile(dp, &ffd) != 0);
+
+	FindClose(dp);
+}
+
+/* -------------------------------------------------------------------------- */
+
+LibModule::LibHandle LibModule::loadLib(const char* filename)
+{
+	HINSTANCE handle = LoadLibrary(filename);
+
+	if (handle == NULL)
+	{
+		COMMON_THROWEXCEPTION("Cannot load library " << filename ) //<< ", " << dlerror())
+	}
+	return handle;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void LibModule::freeLib(LibHandle handle)
+{
+	int rc = FreeLibrary(handle);
+
+	if (rc)
+	{
+		COMMON_THROWEXCEPTION("Unload library failed " ) // << dlerror())
+	}
+}
+
+#else
 static bool isDirectory( const char* dir )
 {
     DIR *dp = opendir( dir );
@@ -65,6 +164,8 @@ static bool isDirectory( const char* dir )
 
     return true;
 }
+
+/* -------------------------------------------------------------------------- */
 
 static void getFilesFromDirectory( const char* dir, const char* suffix, std::vector<std::string>& files )
 {
@@ -140,6 +241,8 @@ void LibModule::freeLib( LibHandle handle )
         COMMON_THROWEXCEPTION( "Unload library failed, " << dlerror() )
     }
 };
+
+#endif
 
 /* -------------------------------------------------------------------------- */
 
