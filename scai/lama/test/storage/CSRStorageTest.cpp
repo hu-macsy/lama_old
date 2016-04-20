@@ -38,6 +38,8 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 
+#include <scai/lama/test/storage/TestStorages.hpp>
+
 using namespace scai;
 using namespace lama;
 using namespace utilskernel;
@@ -154,6 +156,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_arithmetic_test_typ
     // one zero element (not diagonal) is removed by compress
 
     BOOST_CHECK_EQUAL( numValues - 1, csr.getNumValues() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+{
+    ContextPtr context = Context::getContextPtr();
+
+    CSRStorage<ValueType> csr1;
+    CSRStorage<ValueType> csr2;
+
+    setDenseData( csr1 );
+
+    IndexType n = csr1.getNumRows();
+    IndexType m = csr1.getNumColumns();
+
+    LArray<ValueType> x( context );
+    LArray<ValueType> y( context );
+    LArray<ValueType> z1( context );
+    LArray<ValueType> z2( context );
+    
+    ValueType alpha = 1.3;
+    ValueType beta  = -0.5;
+
+    HArrayUtils::setRandom( x, m, 1.0f );
+    HArrayUtils::setRandom( y, n, 1.0f );
+  
+    csr1.matrixTimesVector( z1, alpha, x, beta, y );
+
+    csr1.swap( csr2 );
+
+    BOOST_CHECK_EQUAL( n, csr2.getNumRows() );
+    BOOST_CHECK_EQUAL( m, csr2.getNumColumns() );
+
+    BOOST_CHECK_EQUAL( 0, csr1.getNumRows() );
+    BOOST_CHECK_EQUAL( 0, csr1.getNumColumns() );
+
+    csr2.matrixTimesVector( z2, alpha, x, beta, y );
+
+    BOOST_CHECK_EQUAL( 0, z1.maxDiffNorm( z2 ) );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

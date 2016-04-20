@@ -523,6 +523,35 @@ ValueType HArrayUtils::asum( const HArray<ValueType>& array, const ContextPtr pr
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+ValueType HArrayUtils::nrm2( const HArray<ValueType>& array, const ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    if ( n == 0 )
+    {
+        return ValueType( 0 );
+    }
+
+    static LAMAKernel<blaskernel::BLASKernelTrait::nrm2<ValueType> > nrm2;
+
+    // preferred location: where valid values of the array are available
+
+    ContextPtr loc = array.getValidContext( prefLoc );
+
+    nrm2.getSupportedContext( loc );
+
+    ReadAccess<ValueType> readArray( array, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ValueType result = nrm2[loc]( n, readArray.get(), 1 );
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType HArrayUtils::absMaxDiffVal(
     const HArray<ValueType>& array1,
     const HArray<ValueType>& array2,
@@ -784,18 +813,43 @@ void HArrayUtils::setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo:
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array, IndexType n, hmemo::ContextPtr prefLoc )
+void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array, 
+                             const IndexType n, 
+                             const float fillRate,
+                             const hmemo::ContextPtr prefLoc )
 {
     ContextPtr loc = Context::getHostPtr();   // currently only available on host
 
     WriteOnlyAccess<ValueType> wArray( array, loc, n );
  
-    for ( IndexType i = 0; i < n; ++i )
+    if ( fillRate >= 1.0f )
     {
-        common::Math::random( wArray[i] );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            common::Math::random( wArray[i] );
+        }
+    }
+    else
+    {
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            float x = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+
+            if ( x < fillRate )
+            { 
+                common::Math::random( wArray[i] );
+            }
+            else
+            {
+                wArray[i] = ValueType( 0 );
+            }
+        }
     }
 
-    array.prefetch( prefLoc );
+    if ( prefLoc != ContextPtr() )
+    {
+        array.prefetch( prefLoc );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -956,6 +1010,7 @@ void HArrayUtils::SpecifierV<ValueType>::specify()
     TemplateSpecifier::set( HArrayUtils::arrayPlusArray<ValueType> );
     TemplateSpecifier::set( HArrayUtils::dotProduct<ValueType> );
     TemplateSpecifier::set( HArrayUtils::asum<ValueType> );
+    TemplateSpecifier::set( HArrayUtils::nrm2<ValueType> );
     TemplateSpecifier::set( HArrayUtils::invert<ValueType> );
     TemplateSpecifier::set( HArrayUtils::isSorted<ValueType> );
     TemplateSpecifier::set( HArrayUtils::scan<ValueType> );

@@ -945,6 +945,14 @@ void JDSStorage<ValueType>::matrixTimesVector(
     SCAI_LOG_DEBUG( logger,
                     "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
+    if ( alpha == common::constants::ZERO )
+    {
+        // so we just have result = beta * y, will be done synchronously
+
+        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        return;
+    }
+
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
 
     if ( beta != common::constants::ZERO )

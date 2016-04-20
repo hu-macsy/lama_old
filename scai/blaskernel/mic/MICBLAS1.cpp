@@ -86,7 +86,7 @@ void MICBLAS1::scal(
     SCAI_LOG_DEBUG( logger,
                     "scal<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
-    if( n < 1 || incX < 1 )
+    if ( n < 1 || incX < 1 )
     {
         return;
     }
@@ -103,7 +103,7 @@ void MICBLAS1::scal(
 
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             x[i * incX] *= *alphaPtr;
         }
@@ -125,9 +125,9 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
     SCAI_LOG_DEBUG( logger,
                     "asum<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
-    ValueType asum = static_cast<ValueType>(0.0);
+    ValueType asum = static_cast<ValueType>( 0.0 );
 
-    if( n < 1 || incX < 1 )
+    if ( n < 1 || incX < 1 )
     {
         return asum;
     }
@@ -142,21 +142,22 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        *asumPtr = static_cast<ValueType>(0.0);
+        *asumPtr = static_cast<ValueType>( 0.0 );
 
         #pragma omp parallel
-	{
-		ValueType local_asum = static_cast<ValueType>( 0.0 );
+        {
+            ValueType local_asum = static_cast<ValueType>( 0.0 );
 
-		#pragma omp for
-	        for( int i = 0; i < n; ++i )
-	        {
-	            local_asum += common::Math::abs( x[i * incX] );
-        	}
+            #pragma omp for
 
-		#pragma omp critical
-		*asumPtr += local_asum;
-	}
+            for ( int i = 0; i < n; ++i )
+            {
+                local_asum += common::Math::abs( common::Math::real( x[i] ) ) + common::Math::abs( common::Math::imag( x[i] ) );
+            }
+
+            #pragma omp critical
+            *asumPtr += local_asum;
+        }
     }
 
     return asum;
@@ -179,7 +180,7 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
 
     IndexType maxIndex = 0;
 
-    if( n < 1 || incX < 1 )
+    if ( n < 1 || incX < 1 )
     {
         return maxIndex;
     }
@@ -203,11 +204,11 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
 
             #pragma omp for
 
-            for( int i = 0; i < n; ++i )
+            for ( int i = 0; i < n; ++i )
             {
                 const ValueType& val = x[i * incX];
 
-                if( val > threadMaxVal )
+                if ( val > threadMaxVal )
                 {
                     threadMaxIndex = i;
                     threadMaxVal = val;
@@ -218,11 +219,11 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
 
             #pragma omp for ordered
 
-            for( int nt = 0; nt < omp_get_num_threads(); ++nt )
+            for ( int nt = 0; nt < omp_get_num_threads(); ++nt )
             {
                 #pragma omp ordered
                 {
-                    if( threadMaxVal > maxVal )
+                    if ( threadMaxVal > maxVal )
                     {
                         maxVal = threadMaxVal;
                         maxIndex = threadMaxIndex;
@@ -255,7 +256,7 @@ void MICBLAS1::swap(
     SCAI_LOG_DEBUG( logger,
                     "iamax<long double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( n < 1 || incX < 1 || incY < 1 )
+    if ( n < 1 || incX < 1 || incY < 1 )
     {
         return;
     }
@@ -272,7 +273,7 @@ void MICBLAS1::swap(
 
         #pragma omp parallel for
 
-        for( int i = 0; i < n; ++i )
+        for ( int i = 0; i < n; ++i )
         {
             std::swap( x[i * incX], y[i * incY] );
         }
@@ -295,9 +296,9 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 
     const void* xPtr = x;
 
-    ValueType sum = static_cast<ValueType>(0.0);
+    ValueType sum = static_cast<ValueType>( 0.0 );
 
-    if( n < 1 || incX < 1 )
+    if ( n < 1 || incX < 1 )
     {
         return sum;
     }
@@ -309,20 +310,21 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        *sumPtr = static_cast<ValueType>(0.0);
+        *sumPtr = static_cast<ValueType>( 0.0 );
 
-        #pragma omp parallel 
-	{
-		ValueType local_sum = static_cast<ValueType>( 0.0 );
-		#pragma omp for
-        	for( int i = 0; i < n; ++i )
-	        {
-	            local_sum += x[i * incX] * x[i * incX];
-	        }
+        #pragma omp parallel
+        {
+            ValueType local_sum = static_cast<ValueType>( 0.0 );
+            #pragma omp for
 
-		#pragma omp critical
-		*sumPtr += local_sum;
-	}
+            for ( int i = 0; i < n; ++i )
+            {
+                local_sum += x[i * incX] * common::Math::conj( x[i * incX] );
+            }
+
+            #pragma omp critical
+            *sumPtr += local_sum;
+        }
     }
 
     return common::Math::sqrt( sum );
@@ -352,24 +354,25 @@ void MICBLAS1::copy(
 
     // SCAI_REGION( "MIC.BLAS1.copy" )
 
-    if( n < 1 || incX < 1 || incY < 1 )
+    if ( n < 1 || incX < 1 || incY < 1 )
     {
         return;
     }
 
     const void* xPtr = x;
+
     void* yPtr = y;
 
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ), in( xPtr, yPtr, n, incX, incY )
     {
-        const ValueType* x = (ValueType*) xPtr;
-        ValueType* y = (ValueType*) yPtr;
+        const ValueType* x = ( ValueType* ) xPtr;
+        ValueType* y = ( ValueType* ) yPtr;
 
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             y[i * incY] = x[i * incX];
         }
@@ -401,12 +404,13 @@ void MICBLAS1::axpy(
         SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
-    if( n < 1 || incX < 1 || incY < 1 )
+    if ( n < 1 || incX < 1 || incY < 1 )
     {
         return;
     }
 
     const void* xPtr = x;
+
     void* yPtr = y;
 
     int device = MICContext::getCurrentDevice();
@@ -420,7 +424,7 @@ void MICBLAS1::axpy(
 
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             y[i * incY] += *alphaPtr * x[i * incX];
         }
@@ -441,8 +445,8 @@ ValueType MICBLAS1::dot(
 {
     // SCAI_REGION( "MIC.BLAS1.dot" )
 
-    SCAI_LOG_INFO( logger, "dot<" << common::TypeTraits<ValueType>::id() << ">" 
-                           << ", n = " << n << ", incX = " << incX << ", incY = " << incY );
+    SCAI_LOG_INFO( logger, "dot<" << common::TypeTraits<ValueType>::id() << ">"
+                   << ", n = " << n << ", incX = " << incX << ", incY = " << incY );
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -451,7 +455,7 @@ ValueType MICBLAS1::dot(
         SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
-    ValueType val = static_cast<ValueType>(0.0);
+    ValueType val = static_cast<ValueType>( 0.0 );
 
     if ( n < 1 || incX < 1 || incY < 1 )
     {
@@ -470,22 +474,23 @@ ValueType MICBLAS1::dot(
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
 
-        *valPtr = static_cast<ValueType>(0.0);
+        *valPtr = static_cast<ValueType>( 0.0 );
 
         #pragma omp parallel
-	{
-		ValueType local_val = static_cast<ValueType>( 0.0 );
-		*valPtr  = static_cast<ValueType>( 0.0 );
-		
-		#pragma omp for
-        	for( IndexType i = 0; i < n; ++i )
-        	{
-	            local_val += common::Math::conj( x[i * incX] ) * y[i * incY];
-	        }
+        {
+            ValueType local_val = static_cast<ValueType>( 0.0 );
+            *valPtr  = static_cast<ValueType>( 0.0 );
 
-		#pragma omp critical
-		*valPtr += local_val;
-	}
+            #pragma omp for
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                local_val += common::Math::conj( x[i * incX] ) * y[i * incY];
+            }
+
+            #pragma omp critical
+            *valPtr += local_val;
+        }
     }
 
     SCAI_LOG_INFO( logger, "dot: result = " << val )
@@ -532,7 +537,7 @@ void MICBLAS1::sum(
 
         #pragma omp parallel for
 
-        for( int i = 0; i < n; i++ )
+        for ( int i = 0; i < n; i++ )
         {
             z[i] = *alphaPtr * x[i] + *betaPtr * y[i];
         }
@@ -571,13 +576,13 @@ void MICBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
 MICBLAS1::RegisterGuard::RegisterGuard()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
-                            kregistry::KernelRegistry::KERNEL_ADD );
+        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 MICBLAS1::RegisterGuard::~RegisterGuard()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
-                            kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 MICBLAS1::RegisterGuard MICBLAS1::guard;    // guard variable for registration

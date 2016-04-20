@@ -700,6 +700,9 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
+    // diagional[0:numDiagonalElements] = mValues[0:numDiagonalElements] 
+    // Note: using HArrayUtils::setArray not possible, as we only need part of mValues
+
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
@@ -805,6 +808,14 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     SCAI_LOG_DEBUG( logger,
                     "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+
+    if ( alpha == common::constants::ZERO )
+    {
+        // so we just have result = beta * y, will be done synchronously
+
+        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        return;
+    }
 
     SCAI_ASSERT_EQUAL( x.size(), mNumColumns, "size mismatch" )
 

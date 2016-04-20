@@ -368,29 +368,16 @@ Format::MatrixStorageFormat DenseStorageView<ValueType>::getFormat() const
 template<typename ValueType>
 void DenseStorageView<ValueType>::setIdentity( const IndexType size )
 {
-    allocate( size, size ); // does not initialize
-    setIdentity();
-}
+    if ( ( mNumRows == size ) && ( mNumColumns == size ) )
+    {
+        setZero();                            // no reallocation needed
+    }
+    else
+    {
+        allocate( size, size );               // initializes also with zero
+    }
 
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DenseStorageView<ValueType>::setIdentity()
-{
-    LAMAKernel<DenseKernelTrait::setValue<ValueType> > setValue;
-    LAMAKernel<DenseKernelTrait::setDiagonalValue<ValueType> > setDiagonalValue;
-
-    ContextPtr loc = this->getContextPtr();
-    setValue.getSupportedContext( loc, setDiagonalValue );
-
-    WriteOnlyAccess<ValueType> data( mData, loc, mNumRows * mNumColumns );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    setValue[loc]( data.get(), mNumRows, mNumColumns, ValueType( 0 ) );
-    setDiagonalValue[loc]( data.get(), mNumRows, mNumColumns, ValueType( 1 ) );
-
-    SCAI_LOG_INFO( logger, *this << " has been set to identity" )
+    setDiagonalImpl( ValueType( 1 ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -585,6 +572,14 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
+    if ( alpha == common::constants::ZERO )
+    {
+        // so we just have result = beta * y, will be done synchronously
+
+        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        return;
+    }
+
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
 
     if ( beta != common::constants::ZERO )
@@ -594,7 +589,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
     if ( mNumRows == 0 )
     {
-        return; // nothing to do
+        result.clear();  // result will get size zero
+        return;          // nothing to do
     }
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector, try on " << *mContext )
@@ -1238,11 +1234,9 @@ void DenseStorageView<ValueType>::allocate( IndexType numRows, IndexType numCols
     mNumRows = numRows;
     mNumColumns = numCols;
 
-    ContextPtr loc = mContext;
+    setZero();
 
-    WriteOnlyAccess<ValueType> data( mData, loc, numRows * numCols );
-
-    SCAI_LOG_DEBUG( logger, *this << " allocated, #values = " << mNumRows * mNumColumns << ", not initialized" )
+    SCAI_LOG_DEBUG( logger, *this << " allocated, #values = " << mNumRows * mNumColumns << ", initialized with 0" )
 }
 
 /* --------------------------------------------------------------------------- */

@@ -122,11 +122,6 @@ public:
     void setIdentity( const IndexType size );
 
     /**
-     *  @brief Sets current dense matrix to identity
-     */
-    void setIdentity();
-
-    /**
      *  @brief Sets allocated dense matrix to zero
      */
     void setZero();

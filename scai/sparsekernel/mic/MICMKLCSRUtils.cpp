@@ -36,6 +36,7 @@
 // local library
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/mic/MICMKLCSRWrapper.hpp>
+#include <scai/sparsekernel/external/MKLCSRTrait.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
@@ -106,7 +107,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     // General, - triangular, Non-Unit, C for zero-indexing
 
-    BLASMatrix matdescra[6];
+    BLASMatrix matdescra;
 
     matdescra[0] = 'g';
     matdescra[1] = ' ';
