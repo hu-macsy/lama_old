@@ -504,7 +504,6 @@ void MatrixStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& 
     // Compressed sparse column data can be used directly to generate the transposed matrix
     // by interpretation as CSR data.
     setCSRData( other.getNumColumns(), other.getNumRows(), cscJA.size(), cscIA, cscJA, cscValues );
-    SCAI_LOG_INFO( logger, "now assigned tranposed: " << *this )
 }
 
 /* --------------------------------------------------------------------------- */

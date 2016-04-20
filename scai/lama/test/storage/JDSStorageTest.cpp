@@ -44,6 +44,8 @@
 
 #include <scai/logging.hpp>
 
+#include <scai/lama/test/storage/StorageTemplateTests.hpp>
+
 using namespace scai;
 using namespace scai::lama;
 using namespace scai::utilskernel;
@@ -274,15 +276,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_arithmetic_test
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+{
+    // use template storage test 
+
+    storageSwapTest<JDSStorage<ValueType> >();
+}
+
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for JDSStorage<" << common::TypeTraits<ValueType>::id() << ">" )
 
-    // context does not matter here, so runs for every context
+    storageTypeNameTest<JDSStorage<ValueType> >( "JDS" );
+}
 
-    std::string s = JDSStorage<ValueType>::typeName();
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-    BOOST_CHECK( s.length() > 0 );
+BOOST_AUTO_TEST_CASE( JDSCopyTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    copyStorageTest<JDSStorage<ValueType> >();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -343,7 +343,7 @@ public:
 
     /** print matrix on cout, helpful for debug. */
 
-    void print() const;
+    void print( std::ostream& stream = std::cout ) const;
 
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContextPtr;
@@ -399,6 +399,14 @@ private:
     static std::string initTypeName();
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
+
+    /** Helper routine */
+
+    tasking::SyncToken* incGEVM(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        bool async ) const;
 
 public:
 

@@ -435,25 +435,24 @@ ValueType SparseAssemblyStorage<ValueType>::operator()( const IndexType i, const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::print() const
+void SparseAssemblyStorage<ValueType>::print( std::ostream& stream ) const
 {
-    using std::cout;
     using std::endl;
 
-    cout << "AssemblyStorage " << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues << endl;
+    stream << "AssemblyStorage " << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues << endl;
 
     for( IndexType i = 0; i < mNumRows; i++ )
     {
         const Row& row = mRows[i];
 
-        cout << "Row " << i << " ( " << row.ja.size() << " ) :";
+        stream << "Row " << i << " ( " << row.ja.size() << " ) :";
 
         for( size_t k = 0; k < row.ja.size(); ++k )
         {
-            cout << " " << row.ja[k] << ":" << row.values[k];
+            stream << " " << row.ja[k] << ":" << row.values[k];
         }
 
-        cout << endl;
+        stream << endl;
     }
 }
 

@@ -815,25 +815,24 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::print() const
+void DenseStorageView<ValueType>::print( std::ostream& stream ) const
 {
-    using std::cout;
     using std::endl;
 
     ReadAccess<ValueType> values( mData );
 
-    cout << "DenseStorage " << mNumRows << " x " << mNumColumns << ", addr  = " << values.get() << endl;
+    stream << "DenseStorage " << mNumRows << " x " << mNumColumns << ", addr  = " << values.get() << endl;
 
     for ( IndexType i = 0; i < mNumRows; i++ )
     {
-        cout << "Row " << i << " :";
+        stream << "Row " << i << " :";
 
         for ( IndexType j = 0; j < mNumColumns; j++ )
         {
-            cout << " " << values[i * mNumColumns + j];
+            stream << " " << values[i * mNumColumns + j];
         }
 
-        cout << endl;
+        stream << endl;
     }
 }
 
