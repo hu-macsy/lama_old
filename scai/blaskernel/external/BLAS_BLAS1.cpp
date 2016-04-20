@@ -160,6 +160,11 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
     SCAI_LOG_INFO( logger,
                    "iamax<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
 
+    if( ( n <= 0 ) || ( incX <= 0 ) )
+    {
+        return 0;
+    }
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
@@ -167,7 +172,7 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return BLASWrapper<ValueType>::iamax( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::iamax( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX )) - 1;
 }
 
 /* ---------------------------------------------------------------------------------------*/
