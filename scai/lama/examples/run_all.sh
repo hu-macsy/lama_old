@@ -70,10 +70,7 @@ RUN 1 tutorial/matrix1.exe
 RUN 1 tutorial/scalar.exe
 RUN 1 tutorial/simple.exe
 RUN 1 tutorial/vector.exe
-# currently disabled!!!!! (change check when enabling again!)
 RUN 1  tutorial/vector_exp.exe
-#i=$((i+1))
-
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/tutorial/*.exe | wc -l`
