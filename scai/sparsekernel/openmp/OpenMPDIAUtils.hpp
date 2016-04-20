@@ -154,6 +154,17 @@ private:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
+    template<typename ValueType>
+    static void normalGEVM_a(
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,  // alpha, x
+        const std::pair<ValueType, const ValueType*> by,  // beta, y
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const IndexType diaOffsets[],
+        const ValueType diaValues[] );
+
     /** Routine that registers all methods at the kernel registry. */
 
     SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )

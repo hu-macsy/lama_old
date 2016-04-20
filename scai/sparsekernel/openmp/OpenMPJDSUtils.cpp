@@ -255,6 +255,8 @@ void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType pe
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexType n )
 {
     if ( n <= 0 )
@@ -579,6 +581,24 @@ void OpenMPJDSUtils::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPJDSUtils::normalGEVM_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax, 
+    const std::pair<ValueType, const ValueType*> by,
+    const std::pair<IndexType, const IndexType*> rows,
+    const IndexType perm[],
+    const std::pair<IndexType, const IndexType*> dlg,
+    const IndexType jdsJA[],
+    const ValueType jdsValues[] )
+{
+    normalGEVM( result, ax.first, ax.second, by.first, by.second, 
+                rows.first, perm, rows.second, dlg.first, dlg.second,
+                jdsJA, jdsValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPJDSUtils::normalGEVM(
     ValueType result[],
     const ValueType alpha,
@@ -593,6 +613,21 @@ void OpenMPJDSUtils::normalGEVM(
     const IndexType jdsJA[],
     const ValueType jdsValues[] )
 {
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+ 
+    if ( syncToken )
+    {
+        syncToken->run( common::bind( normalGEVM_a<ValueType>, 
+                                      result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
+                                      std::pair<IndexType, const IndexType*>( numColumns, jdsILG ),
+                                      perm,
+                                      std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
+                                      jdsJA, jdsValues ) );
+        return;
+    }
+
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
