@@ -545,13 +545,32 @@ template<typename OtherValueType>
 void DIAStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType UNUSED( numValues ),
+    const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
     const HArray<OtherValueType>& values,
-    ContextPtr UNUSED( prefLoc ) )
+    ContextPtr prefLoc )
 {
     SCAI_REGION( "Storage.DIA<-CSR" )
+
+    if ( ia.size() == numRows )
+    {
+        // offset array required
+
+        HArray<IndexType> offsets;
+
+        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
+
+        SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
+
+        setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
+
+        return;
+    }
+
+    SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
 
     static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
 

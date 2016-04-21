@@ -289,6 +289,7 @@ public:
      *
      *  @param[in,out]  array contains values for which running sum is built
      *  @param[in]      prefLoc optional the context where computation should be done
+     *  @returns        the total sum and last value in the array is returned
      *
      *  \code
      *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 0, 3, 8, 15, 17 }

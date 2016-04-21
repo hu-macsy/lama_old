@@ -770,8 +770,23 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
     const HArray<OtherValueType>& values,
-    const ContextPtr )
+    const ContextPtr prefLoc )
 {
+    if ( ia.size() == numRows )
+    {
+        // offset array required
+
+        HArray<IndexType> offsets;
+
+        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
+
+        SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
+
+        setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
+
+        return;
+    }
+
     SCAI_REGION( "Storage.JDS<-CSR" )
 
     SCAI_LOG_INFO( logger,

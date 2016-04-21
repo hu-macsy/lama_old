@@ -475,8 +475,20 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
     mNumRows = numRows;
     mNumColumns = numColumns;
 
+    common::unique_ptr<HArray<IndexType> > tmpOffsets;
+
+    const HArray<IndexType>* offsets = &ia;
+
+    if ( ia.size() == numRows )
     {
-        ReadAccess<IndexType> csrIA( ia, loc );
+        tmpOffsets.reset( ia.copy() );
+        IndexType total = HArrayUtils::scan( *tmpOffsets, loc );
+        SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
+        offsets = tmpOffsets.get();
+    }
+
+    {
+        ReadAccess<IndexType> csrIA( *offsets, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
         ReadAccess<OtherValueType> csrValues( values, loc );
 

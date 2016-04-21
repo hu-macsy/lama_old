@@ -316,6 +316,19 @@ IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& sizes )
 
 /* ---------------------------------------------------------------------------------- */
 
+IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& offsets, const HArray<IndexType>& sizes, ContextPtr loc )
+{
+    {
+        // allocate offsets with one more element that sizes
+        WriteOnlyAccess<IndexType> wOffsets( offsets, loc, sizes.size() + 1 );
+    }
+
+    utilskernel::HArrayUtils::assign( offsets, sizes, loc );
+    return utilskernel::HArrayUtils::scan( offsets, loc );
+}
+
+/* ---------------------------------------------------------------------------------- */
+
 size_t _MatrixStorage::getMemoryUsage() const
 {
     size_t memoryUsage = 0;

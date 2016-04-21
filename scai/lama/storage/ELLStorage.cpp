@@ -406,8 +406,8 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     SCAI_REGION( "Storage.ELL<-CSR" )
 
     SCAI_LOG_INFO( logger,
-                   "set CSR data on " << *context << ": numRows = " << numRows << ", numColumns = " << numColumns 
-                   << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
+                    "set CSR data on " << *context << ": numRows = " << numRows << ", numColumns = " << numColumns 
+                    << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
 
     if( numRows == 0 )
     {
@@ -420,30 +420,46 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
-    // Get function pointers for needed routines at the LAMA interface
-
-    static LAMAKernel<CSRKernelTrait::offsets2sizes > offsets2sizes;
-    static LAMAKernel<ELLKernelTrait::hasDiagonalProperty > hasDiagonalProperty;
-    static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
-
-    ContextPtr loc = context;
-    offsets2sizes.getSupportedContext( loc, hasDiagonalProperty, setCSRValues );
-
     // build array with non-zero values per row
 
+    common::unique_ptr<HArray<IndexType> > tmpOffsets;
+
+    const HArray<IndexType>* offsets = &ia;
+
+    if ( ia.size() == numRows + 1 )
     {
+        ContextPtr loc = context;
+
+        static LAMAKernel<CSRKernelTrait::offsets2sizes > offsets2sizes;
+
+        offsets2sizes.getSupportedContext( loc );
+
         ReadAccess<IndexType> csrIA( ia, loc );
         WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
 
         SCAI_CONTEXT_ACCESS( loc )
         offsets2sizes[ loc ]( ellSizes.get(), csrIA.get(), mNumRows );
     }
+    else if ( ia.size() == numRows )
+    {
+        HArrayUtils::assign( mIA, ia, context );
+
+        // as the offset array is also needed 
+        tmpOffsets.reset( ia.copy() );
+        IndexType total = HArrayUtils::scan( *tmpOffsets, context );
+        SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
+        offsets = tmpOffsets.get();
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "ia array has illegal size " << ia.size() << " for #rows = " << numRows )
+    }
 
     // determine the maximal number of non-zero in one row
 
-    mNumValuesPerRow = HArrayUtils::reduce( mIA, common::reduction::MAX, loc );
+    mNumValuesPerRow = HArrayUtils::reduce( mIA, common::reduction::MAX, context );
 
-    SCAI_LOG_INFO( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
+    SCAI_LOG_DEBUG( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
 
     //  Now we know the size of the ja and values arrays for the ELL format
 
@@ -462,10 +478,19 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         }
     }
 
+    // Get function pointers for needed routines at the LAMA interface
+
+    static LAMAKernel<ELLKernelTrait::hasDiagonalProperty > hasDiagonalProperty;
+    static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
+
+    ContextPtr loc = context;
+
+    setCSRValues.getSupportedContext( loc, hasDiagonalProperty );
+
     {
         // now fill the matrix values and column indexes
 
-        ReadAccess<IndexType> csrIA( ia, loc );
+        ReadAccess<IndexType> csrIA( *offsets, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
         ReadAccess<OtherValueType> csrValues( values, loc );
 
@@ -1599,7 +1624,6 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     // matrix must be square, solution vectors must have right size
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
@@ -1614,7 +1638,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
 
-    WriteAccess<ValueType> wSolution(  solution, loc );
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
 
     SCAI_CONTEXT_ACCESS( loc )
 

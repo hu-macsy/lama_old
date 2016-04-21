@@ -423,9 +423,9 @@ public:
 
     static void offsets2sizes( hmemo::HArray<IndexType>& sizes, const hmemo::HArray<IndexType>& offsets );
 
-    /** Utitily to compute the offset array from a sizes array. */
+    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets );
 
-    static IndexType sizes2offsets( hmemo::HArray<IndexType>& sizes );
+    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets, const hmemo::HArray<IndexType>& sizes, const hmemo::ContextPtr loc );
 
     /** Returns the number of bytes needed for the current matrix.
      *

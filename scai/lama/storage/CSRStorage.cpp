@@ -355,21 +355,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
         }
 
         HArrayUtils::assign( mIa, ia, loc );
-
-        {
-            static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-
-            ContextPtr loc1 = loc;
-            sizes2offsets.getSupportedContext( loc1 );
-
-            WriteAccess<IndexType> myIA( mIa, loc1 );
-
-            myIA.resize( mNumRows + 1 ); // no realloc as capacity is sufficient
-
-            SCAI_CONTEXT_ACCESS( loc1 )
-
-            sizes2offsets[loc1]( myIA.get(), numRows );
-        }
+        HArrayUtils::scan( mIa, loc );
     }
     else
     {
@@ -641,20 +627,8 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
 
     // now compute the new offsets from the sizes, gives also new numValues
 
-    IndexType newNumValues = 0;
+    IndexType newNumValues = HArrayUtils::scan( newIa, this->getContextPtr() );
   
-    {
-        static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-
-        ContextPtr loc = this->getContextPtr();
-        sizes2offsets.getSupportedContext( loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        WriteAccess<IndexType> new_ia( newIa, loc );
-        newNumValues = sizes2offsets[loc]( new_ia.get(), mNumRows );
-    }
-
     SCAI_LOG_INFO( logger, "compress: " << newNumValues << " non-diagonal zero elements" )
 
     // ready if there are no new non-zero values

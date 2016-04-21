@@ -389,15 +389,30 @@ void COOStorage<ValueType>::setCSRDataImpl(
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
     const HArray<OtherValueType>& values,
-    const ContextPtr )
+    const ContextPtr prefLoc )
 {
     SCAI_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues )
+
+    if ( ia.size() == numRows )
+    {
+        // offset array required
+
+        HArray<IndexType> offsets;
+
+        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
+
+        SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
+
+        setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
+
+        return;
+    }
 
     SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
 
-    ContextPtr loc = getContextPtr();
+    ContextPtr loc = prefLoc;
 
     // ReadAccess<IndexType> csrJA( ja, loc );
     // ReadAccess<OtherValueType> csrValues( values, loc );
