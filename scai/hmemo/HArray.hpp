@@ -167,7 +167,7 @@ public:
      *  constructor is called.
      */
 
-    HArray<ValueType>* copy();
+    HArray<ValueType>* copy() const;
 
     /** 
      *  Static create routine that is used for the _HArray factory.
@@ -410,7 +410,7 @@ _HArray* HArray<ValueType>::create()
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>* HArray<ValueType>::copy()
+HArray<ValueType>* HArray<ValueType>::copy() const
 {
     return new HArray<ValueType>( *this );
 }

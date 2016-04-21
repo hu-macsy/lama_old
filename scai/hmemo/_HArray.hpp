@@ -121,7 +121,7 @@ public:
      *  Note: will be the same as _HArray::create( this->getValueType() )
      */
 
-    virtual _HArray* copy() = 0;
+    virtual _HArray* copy() const = 0;
 
     /**
      * @brief Query the current size of the LAMA array, i.e. number of entries.
