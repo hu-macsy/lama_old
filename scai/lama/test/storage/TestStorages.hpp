@@ -50,6 +50,20 @@ void getMatrix_7_4 ( IndexType& numRows,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void setRandomData( scai::lama::MatrixStorage<ValueType>& storage, const IndexType numRows, const IndexType numColumns )
+{
+    scai::hmemo::HArray<ValueType> values;
+
+    float fillRate = 0.5f;
+
+    scai::utilskernel::HArrayUtils::setRandom( values, numRows * numColumns, fillRate );
+    
+    storage.setDenseData( numRows, numColumns, values );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void setDenseData( scai::lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 8;
