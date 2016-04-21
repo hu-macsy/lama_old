@@ -37,6 +37,7 @@
 
 #include <scai/lama/test/storage/Storages.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
+#include <scai/lama/storage/DIAStorage.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/unique_ptr.hpp>
@@ -358,7 +359,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         setDenseData( storage );
 
-        SCAI_LOG_INFO( logger, "GEMV: storage = " << storage )
+        SCAI_LOG_DEBUG( logger, "GEMV: storage = " << storage )
 
         // result = alpha * storage * x + beta * y
 
@@ -698,6 +699,65 @@ BOOST_AUTO_TEST_CASE( matrixVectorTimesSparseTest )
         // should be the same as computed with dense storage
 
         BOOST_CHECK_EQUAL( denseY.maxDiffNorm( y ), 0 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( transposeTest )
+{
+    // storage1 = transpose( storage2 ), verify storage1 * x = x * storage 2, for all formats each storage
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "transposeTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages1( context );    // storage for each storage format
+    TypedStorages<ValueType> allMatrixStorages2( context );    // storage for each storage format
+
+    for ( size_t s1 = 0; s1 < allMatrixStorages1.size(); ++s1 )
+    {
+        MatrixStorage<ValueType>& storage1 = *allMatrixStorages1[s1];
+
+        setDenseData( storage1 );
+
+        SCAI_LOG_DEBUG( logger, "storage1 " << s1 << " of " << allMatrixStorages1.size() << " =  " << storage1 )
+
+        // we do a matrix multiplication y = A * x with this storage
+
+        LArray<ValueType> x( context );
+        LArray<ValueType> y( storage1.getNumRows(), 0 );
+        LArray<ValueType> result1( context );
+        utilskernel::HArrayUtils::setRandom( x, storage1.getNumColumns(), 1.0f );
+
+        ValueType alpha = 1;
+        ValueType beta  = 0;
+
+        storage1.matrixTimesVector( result1, alpha, x, beta, result1 );
+
+        for ( size_t s2 = 0; s2 < allMatrixStorages1.size(); ++s2 )
+        {
+            MatrixStorage<ValueType>& storage2 = *allMatrixStorages2[s2];
+
+            SCAI_LOG_DEBUG( logger, "storage1 " << s1 << " of " << allMatrixStorages1.size() << " =  " << storage1 
+                                   << ", assign transpose to storage2 " << s2 << " = " << storage2 );
+
+            storage2.assignTranspose( storage1 );   
+
+            BOOST_CHECK_EQUAL( storage1.getNumRows(), storage2.getNumColumns() );
+            BOOST_CHECK_EQUAL( storage2.getNumRows(), storage1.getNumColumns() );
+
+            LArray<ValueType> result2( context );
+            LArray<ValueType> y(  storage2.getNumRows(), 0 );
+
+            storage2.vectorTimesMatrix( result2, alpha, x, beta, result2 );
+
+            // results should be the same
+
+            // BOOST_CHECK_EQUAL( result1.maxDiffNorm( result2 ), 0 );
+        }
     }
 }
 

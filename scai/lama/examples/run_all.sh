@@ -54,7 +54,7 @@ RUN 1 labelrank/labelrank.exe $MYDIR/labelrank/affinity.mtx $MYDIR//labelrank/la
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/labelrank/*.exe | wc -l`
-if [ $count -ne 1 ]; then
+if [ $count -ne $i ]; then
     echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
     exit 1
 fi
@@ -74,7 +74,7 @@ RUN 1  tutorial/vector_exp.exe
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/tutorial/*.exe | wc -l`
-if [ $count -ne 5 ]; then
+if [ $count -ne $i ]; then
     echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
     exit 1
 fi

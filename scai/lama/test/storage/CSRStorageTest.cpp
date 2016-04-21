@@ -39,6 +39,7 @@
 #include <scai/common/TypeTraits.hpp>
 
 #include <scai/lama/test/storage/TestStorages.hpp>
+#include <scai/lama/test/storage/StorageTemplateTests.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -162,40 +163,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_arithmetic_test_typ
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr context = Context::getContextPtr();
+    SCAI_LOG_INFO( logger, "swapTest for CSRStorage<" << common::TypeTraits<ValueType>::id() << ">" )
 
-    CSRStorage<ValueType> csr1;
-    CSRStorage<ValueType> csr2;
+    // use template storage test 
 
-    setDenseData( csr1 );
-
-    IndexType n = csr1.getNumRows();
-    IndexType m = csr1.getNumColumns();
-
-    LArray<ValueType> x( context );
-    LArray<ValueType> y( context );
-    LArray<ValueType> z1( context );
-    LArray<ValueType> z2( context );
-    
-    ValueType alpha = 1.3;
-    ValueType beta  = -0.5;
-
-    HArrayUtils::setRandom( x, m, 1.0f );
-    HArrayUtils::setRandom( y, n, 1.0f );
-  
-    csr1.matrixTimesVector( z1, alpha, x, beta, y );
-
-    csr1.swap( csr2 );
-
-    BOOST_CHECK_EQUAL( n, csr2.getNumRows() );
-    BOOST_CHECK_EQUAL( m, csr2.getNumColumns() );
-
-    BOOST_CHECK_EQUAL( 0, csr1.getNumRows() );
-    BOOST_CHECK_EQUAL( 0, csr1.getNumColumns() );
-
-    csr2.matrixTimesVector( z2, alpha, x, beta, y );
-
-    BOOST_CHECK_EQUAL( 0, z1.maxDiffNorm( z2 ) );
+    storageSwapTest<CSRStorage<ValueType> >();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -204,11 +176,66 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_typ
 {
     SCAI_LOG_INFO( logger, "typeNameTest for CSRStorage<" << common::TypeTraits<ValueType>::id() << ">" )
 
-    // context does not matter here, so runs for every context
+    storageTypeNameTest<CSRStorage<ValueType> >( "CSR" );
+}
 
-    std::string s = CSRStorage<ValueType>::typeName();
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-    BOOST_CHECK( s.length() > 0 );
+BOOST_AUTO_TEST_CASE( sortRowTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 4;
+    const IndexType numColumns = 4;
+
+    const IndexType ia[] = { 0, 2, 4, 6, 8 };
+    const IndexType ja[] = { 1, 0, 2, 1, 3, 2, 0, 3 };
+    const IndexType sorted_ja[] = { 0, 1, 1, 2, 2, 3, 0, 3 };
+    const IndexType values[] = { 1, 0, 2, 1, 3, 2, 0, 3 };
+
+    const IndexType numValues = ia[numRows];
+
+    LArray<IndexType> csrIA( numRows + 1, ia, context );
+    LArray<IndexType> csrJA( numValues, ja, context );
+    LArray<ValueType> csrValues( numValues, values, context );
+
+    CSRStorage<ValueType> csrStorage;
+
+    csrStorage.setContextPtr( context );
+    csrStorage.allocate( numRows, numColumns );
+
+    csrStorage.swap( csrIA, csrJA, csrValues );
+
+    BOOST_CHECK_EQUAL( 0, csrJA.size() );
+    BOOST_CHECK_EQUAL( 0, csrValues.size() );
+    BOOST_CHECK_EQUAL( numValues, csrStorage.getNumValues() );
+
+    bool diagonalProperty = csrStorage.hasDiagonalProperty();
+
+    csrStorage.sortRows( diagonalProperty );
+
+    const LArray<IndexType>& sortedJA = csrStorage.getJA();
+    const LArray<ValueType>& sortedVals = csrStorage.getValues();
+
+    BOOST_REQUIRE_EQUAL( numValues, sortedJA.size() );
+    BOOST_REQUIRE_EQUAL( numValues, sortedVals.size() );
+ 
+    for ( IndexType i = 0; i < numValues; ++i )
+    {
+        BOOST_CHECK_EQUAL( sorted_ja[i], sortedJA[i] );
+        BOOST_CHECK_EQUAL( ValueType( sorted_ja[i] ), sortedVals[i] );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( CSRCopyTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    copyStorageTest<CSRStorage<ValueType> >();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

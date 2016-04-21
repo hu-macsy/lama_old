@@ -39,6 +39,7 @@ scai_project (
 
         Storages
         TestStorages
+        StorageTemplateTests
         
     SOURCES
 

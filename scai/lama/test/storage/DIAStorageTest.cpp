@@ -38,6 +38,8 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/utilskernel/LArray.hpp>
 
+#include <scai/lama/test/storage/StorageTemplateTests.hpp>
+
 using namespace scai;
 using namespace lama;
 using namespace utilskernel;
@@ -139,15 +141,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+{
+    // use template storage test 
+
+    storageSwapTest<DIAStorage<ValueType> >();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for DIAStorage<" << common::TypeTraits<ValueType>::id() << ">" )
 
-    // context does not matter here, so runs for every context
+    storageTypeNameTest<DIAStorage<ValueType> >( "DIA" );
+}
 
-    std::string s = DIAStorage<ValueType>::typeName();
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-    BOOST_CHECK( s.length() > 0 );
+BOOST_AUTO_TEST_CASE( DIACopyTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    copyStorageTest<DIAStorage<ValueType> >();
 }
 
 /* ------------------------------------------------------------------------- */

@@ -108,9 +108,18 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::_HArray& values );
 
-    /** Copy constructor can take any matrix storage. */
+    /** Copy constructor that can take any matrix storage. */
 
     explicit CSRStorage( const _MatrixStorage& other )
+    {
+        assign( other );
+    }
+
+    /** Override default copy constructor to guarantee same behavior */
+
+    CSRStorage( const CSRStorage<ValueType>& other )
+
+        : CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>()
     {
         assign( other );
     }
@@ -515,9 +524,9 @@ public:
 
     virtual ValueType maxDiffNormImpl( const CSRStorage<ValueType>& other ) const;
 
-    /** print matrix on cout, helpful for debug. */
+    /** Implemenation of pure method of class MatrixStorage. */
 
-    void print() const;
+    virtual void print( std::ostream& ) const;
 
     /** Method that returns an array with number of values for each row.
      *
@@ -588,9 +597,16 @@ private:
                                const CSRStorage<ValueType>& b,
                                const hmemo::ContextPtr loc );
 
-    /** result += alpha (*this) * x, where this storage has sparse rows */
+    /** result += alpha * (*this) * x, where this storage has sparse rows */
 
     tasking::SyncToken* sparseGEMV( hmemo::HArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::HArray<ValueType>& x,
+                                    bool async ) const;
+
+    /** result += alpha * x * (*this), where this storage has sparse rows */
+
+    tasking::SyncToken* sparseGEVM( hmemo::HArray<ValueType>& result,
                                     const ValueType alpha,
                                     const hmemo::HArray<ValueType>& x,
                                     bool async ) const;
@@ -598,6 +614,13 @@ private:
     /** result = alpha * (*this) * x  */
 
     tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::HArray<ValueType>& x,
+                                    bool async ) const;
+
+    /** result = alpha * x * (*this)  */
+
+    tasking::SyncToken* normalGEVM( hmemo::HArray<ValueType>& result,
                                     const ValueType alpha,
                                     const hmemo::HArray<ValueType>& x,
                                     bool async ) const;
@@ -611,9 +634,28 @@ private:
                                     const hmemo::HArray<ValueType>& y,
                                     bool async ) const;
 
+    /** result = alpha * x * (*this) + beta * y */
+
+    tasking::SyncToken* normalGEVM( hmemo::HArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::HArray<ValueType>& x,
+                                    const ValueType beta,
+                                    const hmemo::HArray<ValueType>& y,
+                                    bool async ) const;
+
     /** matrixTimesVector for synchronous and asynchronous execution */
 
     virtual tasking::SyncToken* gemv(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        bool async ) const;
+
+    /** vectorTimesMatrix for synchronous and asynchronous execution */
+
+    virtual tasking::SyncToken* gevm(
         hmemo::HArray<ValueType>& result,
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,

@@ -229,12 +229,18 @@ public:
     
         ScopedAsynchronous( SyncToken* token ) : mToken( token )
         {
-            mToken->setCurrent();
+            if ( mToken != NULL )
+            {
+                mToken->setCurrent();
+            }
         }
     
         ~ScopedAsynchronous()
         {
-            mToken->unsetCurrent();
+            if ( mToken != NULL )
+            {
+                mToken->unsetCurrent();
+            }
         }
 
     private:

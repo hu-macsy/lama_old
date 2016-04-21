@@ -435,7 +435,7 @@ public:
 
     /** Print out the ELL storage on std::out, use only for debug. */
 
-    void print() const;
+    virtual void print( std::ostream& ) const;
 
 protected:
 
@@ -540,6 +540,14 @@ private:
     /** matrixTimesVector for synchronous and asynchronous execution */
 
     virtual tasking::SyncToken* gemv(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        bool async ) const;
+
+    virtual tasking::SyncToken* gevm(
         hmemo::HArray<ValueType>& result,
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,

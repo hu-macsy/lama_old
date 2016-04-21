@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <scai/common/SCAITypes.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
@@ -50,8 +52,8 @@ void getMatrix_7_4 ( IndexType& numRows,
 template<typename ValueType>
 void setDenseData( scai::lama::MatrixStorage<ValueType>& storage )
 {
-    const IndexType numRows = 2;
-    const IndexType numColumns = 8;
+    const IndexType numRows = 8;
+    const IndexType numColumns = 2;
     static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );

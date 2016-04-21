@@ -164,6 +164,17 @@ public:
 
     virtual void purge() = 0;
 
+    /** Each storage provides a routine that prints the storage values. */
+
+    virtual void print( std::ostream& stream ) const = 0;
+
+    /** print vithout an argument for stream takes std::cout */
+
+    void print() const
+    {
+        print( std::cout );
+    }
+
     /** This method allocates new matrix storage for the matrix. The
      *  matrix contains only zero elements.
      *
@@ -215,6 +226,13 @@ public:
     /** Allow for additional row compression. */
 
     void setCompressThreshold( float ratio );
+
+    /** Query the threshold  */
+
+    float getCompressThreshold() const
+    {
+        return mCompressThreshold;
+    }
 
     /** Getter routine for the number of rows. */
 

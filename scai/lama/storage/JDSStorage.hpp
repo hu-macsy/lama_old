@@ -422,7 +422,7 @@ private:
 
     void setupData( hmemo::ContextPtr context );
 
-    void print() const;
+    void print( std::ostream& ) const;
 
     static std::string initTypeName();
 

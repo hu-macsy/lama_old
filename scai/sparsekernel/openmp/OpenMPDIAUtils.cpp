@@ -403,6 +403,23 @@ void OpenMPDIAUtils::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPDIAUtils::normalGEVM_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax,
+    const std::pair<ValueType, const ValueType*> by,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType diaOffsets[],
+    const ValueType diaValues[] )
+{
+    normalGEVM( result, ax.first, ax.second, by.first, by.second,
+                numRows, numColumns, numDiagonals, diaOffsets, diaValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPDIAUtils::normalGEVM(
     ValueType result[],
     const ValueType alpha,
@@ -425,7 +442,17 @@ void OpenMPDIAUtils::normalGEVM(
 
     if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        // bind has limited number of arguments, so take help routine for call
+
+        SCAI_LOG_INFO( logger, 
+                       "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
+
+        syncToken->run( common::bind( normalGEVM_a<ValueType>,
+                                      result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
+                                      numRows, numColumns, numDiagonals, diaOffsets, diaValues ) );
+        return;
     }
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
