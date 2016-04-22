@@ -234,7 +234,7 @@ ExternalProject_Add ( scai_blaskernel
             )
             
 concatCacheArguments ( scai_utilskernel "CACHE_ARGS" )
-#message ( STATUS "blaskernel CACHE_ARGS ${CACHE_ARGS}" )
+#message ( STATUS "utilskernel CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_utilskernel
             DEPENDS ${SCAI_UTILSKERNEL_INTERNAL_DEPS}
@@ -246,7 +246,7 @@ ExternalProject_Add ( scai_utilskernel
             )
             
 concatCacheArguments ( scai_sparsekernel "CACHE_ARGS" )
-#message ( STATUS "blaskernel CACHE_ARGS ${CACHE_ARGS}" )
+#message ( STATUS "sparsekernel CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_sparsekernel
             DEPENDS ${SCAI_SPARSEKERNEL_INTERNAL_DEPS}
