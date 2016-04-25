@@ -164,6 +164,10 @@ public:
 
     virtual void purge();
 
+    /** Implemenation of pure method of class MatrixStorage. */
+
+    virtual void print( std::ostream& ) const;
+
     /** Implementation of pure method for COO matrix. */
 
     virtual void setIdentity( const IndexType size );
@@ -391,6 +395,20 @@ protected:
     hmemo::HArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
 
 private:
+
+    /** result += alpha * (*this) * x */
+
+    tasking::SyncToken* incGEMV( hmemo::HArray<ValueType>& result,
+                                 const ValueType alpha,
+                                 const hmemo::HArray<ValueType>& x,
+                                 bool async ) const;
+
+    /** result += alpha * x * (*this) */
+
+    tasking::SyncToken* incGEVM( hmemo::HArray<ValueType>& result,
+                                 const ValueType alpha,
+                                 const hmemo::HArray<ValueType>& x,
+                                 bool async ) const;
 
     /** Function that checks the diagonal property of the COO matrix. If on
      *  the first column index for each row is the row (diagonal element).

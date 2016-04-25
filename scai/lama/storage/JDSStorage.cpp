@@ -770,8 +770,23 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
     const HArray<OtherValueType>& values,
-    const ContextPtr )
+    const ContextPtr prefLoc )
 {
+    if ( ia.size() == numRows )
+    {
+        // offset array required
+
+        HArray<IndexType> offsets;
+
+        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
+
+        SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
+
+        setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
+
+        return;
+    }
+
     SCAI_REGION( "Storage.JDS<-CSR" )
 
     SCAI_LOG_INFO( logger,
@@ -945,6 +960,14 @@ void JDSStorage<ValueType>::matrixTimesVector(
     SCAI_LOG_DEBUG( logger,
                     "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
+    if ( alpha == common::constants::ZERO )
+    {
+        // so we just have result = beta * y, will be done synchronously
+
+        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        return;
+    }
+
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
 
     if ( beta != common::constants::ZERO )
@@ -966,15 +989,24 @@ void JDSStorage<ValueType>::matrixTimesVector(
     ReadAccess<ValueType> jdsValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
-    ReadAccess<ValueType> rY( y, loc );
-    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     // this call will finish the computation, syncToken == NULL
 
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
-                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+    if ( beta != common::constants::ZERO )
+    {
+        ReadAccess<ValueType> rY( y, loc );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+    }
+    else
+    {
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, NULL, mNumRows, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+    }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -994,14 +1026,27 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
 
-    if ( beta != common::constants::ZERO )
+    ContextPtr loc = this->getContextPtr();
+
+    // Step 1: result = beta * y 
+
+    if ( beta == common::constants::ZERO )
     {
-        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
+        result.clear();
+        result.resize( mNumColumns );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
     }
+    else
+    {
+        // Note: assignScaled will deal with 
+        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
+        HArrayUtils::assignScaled( result, beta, y, loc );
+    }
+
+    // Step 2: result = alpha * x * this + 1 * result
 
     static LAMAKernel<JDSKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    ContextPtr loc = this->getContextPtr();
     normalGEVM.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
@@ -1013,14 +1058,14 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
     ReadAccess<ValueType> jdsValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
-    ReadAccess<ValueType> rY( y, loc );
-    WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+    WriteAccess<ValueType> wResult( result, loc, mNumColumns );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     // this call will finish the computation, syncToken == NULL
 
-    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), ValueType( 1 ), wResult.get(), 
+                     mNumColumns, jdsPerm.get(), jdsILG.get(),
                      mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
 }
 
@@ -1035,27 +1080,6 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
     const HArray<ValueType>& y ) const
 {
     ContextPtr loc = getContextPtr();
-
-    if ( loc->getType() == Context::MaxContext )
-    {
-        // workaround as common::bind has limited number of arguments and cannot be
-        // used later in OpenMP to generate a TaskSyncToken
-
-        void (JDSStorage::*mv)(
-            HArray<ValueType>&,
-            const ValueType,
-            const HArray<ValueType>&,
-            const ValueType,
-            const HArray<ValueType>& ) const
-
-            = &JDSStorage<ValueType>::matrixTimesVector;
-
-        using scai::common::bind;
-        using scai::common::ref;
-        using scai::common::cref;
-
-        return new tasking::TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
-    }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
 
@@ -1075,7 +1099,7 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
-    syncToken->setCurrent();
+    SCAI_ASYNCHRONOUS( syncToken.get() )
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1087,48 +1111,24 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
     ReadAccess<ValueType> jdsValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
-    if ( &result == &y )
-    {
-        WriteAccess<ValueType> wResult( result, loc );
+    SCAI_CONTEXT_ACCESS( loc )
 
-        // we assume that normalGEMV can deal with the alias of result, y
+    // this call will only start the computation
 
-        SCAI_CONTEXT_ACCESS( loc )
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
 
-        // this call will only start the computation
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-    }
-    else
-    {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // this call will only start the computation
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rY.releaseDelayed() );
-    }
-
+    syncToken->pushRoutine( wResult.releaseDelayed() );
     syncToken->pushRoutine( jdsPerm.releaseDelayed() );
     syncToken->pushRoutine( jdsDLG.releaseDelayed() );
     syncToken->pushRoutine( jdsILG.releaseDelayed() );
     syncToken->pushRoutine( jdsJA.releaseDelayed() );
     syncToken->pushRoutine( jdsValues.releaseDelayed() );
     syncToken->pushRoutine( rX.releaseDelayed() );
-
-    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1148,27 +1148,6 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     ContextPtr loc = this->getContextPtr();
     normalGEVM.getSupportedContext( loc );
 
-    if ( loc->getType() == Context::Host )
-    {
-        // workaround as common::bind has limited number of arguments and cannot be
-        // used later in OpenMP to generate a TaskSyncToken
-
-        void (JDSStorage::*vm)(
-            HArray<ValueType>& result,
-            const ValueType alpha,
-            const HArray<ValueType>& x,
-            const ValueType beta,
-            const HArray<ValueType>& y ) const
-
-            = &JDSStorage<ValueType>::vectorTimesMatrix;
-
-        using scai::common::bind;
-        using scai::common::ref;
-        using scai::common::cref;
-
-        return new tasking::TaskSyncToken( bind( vm, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
-    }
-
     // For CUDA a solution using stream synchronization is more efficient than using a task
 
     SCAI_REGION( "Storage.JDS.vectorTimesMatrixAsync" )
@@ -1183,7 +1162,8 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
-    syncToken->setCurrent();
+    SCAI_ASYNCHRONOUS( syncToken.get() )
+    SCAI_CONTEXT_ACCESS( loc )
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1196,35 +1176,31 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     ReadAccess<ValueType> rX( x, loc );
 
-    // Possible alias of result and y must be handled by coressponding accesses
-
-    if ( &result == &y )
+    if ( beta == scai::common::constants::ZERO )
     {
-        WriteAccess<ValueType> wResult( result, loc );
+        // alias of result and y handled by correct order
 
-        // we assume that normalGEVM can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
         // this call will only start the computation
 
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, NULL, mNumColumns, jdsPerm.get(), jdsILG.get(),
                          mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-
+    
         syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
-        ReadAccess<ValueType> rY( y, loc );
+        // alias of result and y handled by correct order
 
-        SCAI_CONTEXT_ACCESS( loc )
+        ReadAccess<ValueType> rY( y, loc );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
         // this call will only start the computation
 
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
                          mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-
+    
         syncToken->pushRoutine( wResult.releaseDelayed() );
         syncToken->pushRoutine( rY.releaseDelayed() );
     }
@@ -1235,8 +1211,6 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     syncToken->pushRoutine( jdsJA.releaseDelayed() );
     syncToken->pushRoutine( jdsValues.releaseDelayed() );
     syncToken->pushRoutine( rX.releaseDelayed() );
-
-    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1504,13 +1478,12 @@ ValueType JDSStorage<ValueType>::maxNorm() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::print() const
+void JDSStorage<ValueType>::print( std::ostream& stream ) const
 {
-    using std::cout;
     using std::endl;
 
-    cout << "JDSStorage of matrix " << mNumRows << " x " << mNumColumns;
-    cout << ", #non-zero values = " << mNumValues << endl;
+    stream << "JDSStorage of matrix " << mNumRows << " x " << mNumColumns;
+    stream << ", #non-zero values = " << mNumValues << endl;
     ReadAccess<IndexType> perm( mPerm );
     ReadAccess<IndexType> ilg( mIlg );
     ReadAccess<IndexType> dlg( mDlg );
@@ -1519,29 +1492,29 @@ void JDSStorage<ValueType>::print() const
 
     for( IndexType ii = 0; ii < mNumRows; ii++ )
     {
-        cout << "   row " << ii << " is original row " << perm[ii];
-        cout << ", #non-zero values = " << ilg[ii] << endl;
+        stream << "   row " << ii << " is original row " << perm[ii];
+        stream << ", #non-zero values = " << ilg[ii] << endl;
         IndexType offset = ii;
-        cout << "     column indexes = ";
+        stream << "     column indexes = ";
 
         for( IndexType d = 0; d < ilg[ii]; d++ )
         {
-            cout << " " << ja[offset];
+            stream << " " << ja[offset];
             offset += dlg[d];
         }
 
-        cout << endl;
+        stream << endl;
 
         offset = ii;
-        cout << "     values   = ";
+        stream << "     values   = ";
 
         for( IndexType d = 0; d < ilg[ii]; d++ )
         {
-            cout << " " << values[offset];
+            stream << " " << values[offset];
             offset += dlg[d];
         }
 
-        cout << endl;
+        stream << endl;
     }
 }
 

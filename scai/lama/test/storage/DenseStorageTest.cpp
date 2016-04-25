@@ -38,6 +38,8 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 
+#include <scai/lama/test/storage/StorageTemplateTests.hpp>
+
 using namespace scai;
 using namespace lama;
 using namespace hmemo;
@@ -47,19 +49,6 @@ using namespace hmemo;
 BOOST_AUTO_TEST_SUITE( DenseStorageTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" )
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
-{
-    SCAI_LOG_INFO( logger, "typeNameTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
-    // context does not matter here, so runs for every context
-
-    std::string s = DenseStorage<ValueType>::typeName();
-
-    BOOST_CHECK( s.length() > 0 );
-}
 
 /* ------------------------------------------------------------------------- */
 
@@ -118,9 +107,38 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
     {
         for ( int j = 0; j < denseStorage.getNumColumns(); ++j )
         {
-            BOOST_CHECK_EQUAL( denseStorage.getValue( i, j ), 0.0 );
+            BOOST_CHECK_EQUAL( denseStorage.getValue( i, j ), ValueType( 0 ) );
         }
     }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+{
+    SCAI_LOG_INFO( logger, "swapTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << ">" )
+
+    // use template storage test 
+
+    storageSwapTest<DenseStorage<ValueType> >();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
+{
+    SCAI_LOG_INFO( logger, "typeNameTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << ">" )
+
+    storageTypeNameTest<DenseStorage<ValueType> >( "Dense" );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( DenseCopyTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    copyStorageTest<DenseStorage<ValueType> >();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

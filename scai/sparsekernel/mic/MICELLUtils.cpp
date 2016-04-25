@@ -399,17 +399,19 @@ ValueType MICELLUtils::getValue(
     const void* ellSizesPtr = ellSizes;
     const void* ellJAPtr = ellJA;
     const void* ellValuesPtr = ellValues;
+    ValueType* valuePtr = &value;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), out( value ), in( ellSizesPtr, ellJAPtr, ellValuesPtr, \
+#pragma offload target( mic : device ), out( valuePtr[0:1] ), in( ellSizesPtr, ellJAPtr, ellValuesPtr, \
                                                               i, j, numRows, numValuesPerRow )
     {
         const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
+	ValueType& valueRef = *valuePtr;
 
-        value = 0;  // new initialiation, has not been copied in
+        valueRef = 0;  // new initialiation, has not been copied in
 
         for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
         {
@@ -417,7 +419,7 @@ ValueType MICELLUtils::getValue(
 
             if( ellJA[pos] == j )
             {
-                value = ellValues[pos];
+                valueRef = ellValues[pos];
             }
         }
     }
@@ -927,9 +929,11 @@ void MICELLUtils::jacobi(
     const void* ellJAPtr = ellJA;
     const void* ellValuesPtr = ellValues;
 
+    const ValueType* omegaPtr = &omega;
+
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, ellSizesPtr, ellJAPtr, ellValuesPtr, omega, numRows )
+#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, ellSizesPtr, ellJAPtr, ellValuesPtr, omegaPtr[0:1], numRows )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
         const ValueType* oldSolution = static_cast<const ValueType*>( oldSolutionPtr );
@@ -938,7 +942,9 @@ void MICELLUtils::jacobi(
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
-        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
+	const ValueType& omegaRef = *omegaPtr;
+
+        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omegaRef;
 
         #pragma omp parallel for
 
@@ -954,17 +960,17 @@ void MICELLUtils::jacobi(
                 temp -= ellValues[pos] * oldSolution[ellJA[pos]];
             }
 
-            if( omega == static_cast<ValueType>( 1.0 ) )
+            if( omegaRef == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] = temp / diag;
             }
-            else if( omega == 0.5 )
+            else if( omegaRef == 0.5 )
             {
-                solution[i] = omega * ( temp / diag + oldSolution[i] );
+                solution[i] = omegaRef * ( temp / diag + oldSolution[i] );
             }
             else
             {
-                solution[i] = omega * ( temp / diag ) + oneMinusOmega * oldSolution[i];
+                solution[i] = omegaRef * ( temp / diag ) + oneMinusOmega * oldSolution[i];
             }
         }
     }
@@ -1003,11 +1009,12 @@ void MICELLUtils::jacobiHalo(
     const void* ellSizesPtr = ellSizes;
     const void* ellJAPtr = ellJA;
     const void* ellValuesPtr = ellValues;
+    const ValueType* omegaPtr = &omega;
 
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, diagonalPtr, rowIndexesPtr, \
-                                            ellSizesPtr, ellJAPtr, ellValuesPtr, omega, numRows, numNonEmptyRows )
+                                            ellSizesPtr, ellJAPtr, ellValuesPtr, omegaPtr[0:1], numRows, numNonEmptyRows )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
 
@@ -1017,6 +1024,8 @@ void MICELLUtils::jacobiHalo(
         const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
+
+	const ValueType& omegaRef = *omegaPtr;
 
         #pragma omp parallel for
 
@@ -1040,7 +1049,7 @@ void MICELLUtils::jacobiHalo(
 
             const ValueType diag = diagonal[i];
 
-            solution[i] -= temp * ( omega / diag );
+            solution[i] -= temp * ( omegaRef / diag );
         }
     }
 }
@@ -1087,10 +1096,12 @@ void MICELLUtils::normalGEMV(
     const void* ellSizesPtr = ellSizes;
     const void* ellJAPtr = ellJA;
     const void* ellValuesPtr = ellValues;
+    const ValueType* alphaPtr = &alpha;
+    const ValueType* betaPtr = &beta;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( resultPtr, xPtr, yPtr, ellSizesPtr, ellJAPtr, ellValuesPtr, alpha, numRows )
+#pragma offload target( mic : device ), in( resultPtr, xPtr, yPtr, ellSizesPtr, ellJAPtr, ellValuesPtr, alphaPtr[0:1], betaPtr[0:1], numRows )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
 
@@ -1099,6 +1110,9 @@ void MICELLUtils::normalGEMV(
         const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
+
+	const ValueType& alphaRef = *alphaPtr;
+	const ValueType& betaRef = *betaPtr;
 
         #pragma omp parallel for
 
@@ -1112,19 +1126,19 @@ void MICELLUtils::normalGEMV(
                 temp += ellValues[i + jj * numRows] * x[j];
             }
 
-            if( 0 == beta )
+            if( 0 == betaRef )
             {
                 // must be handled separately as y[i] might be uninitialized
 
-                result[i] = alpha * temp;
+                result[i] = alphaRef * temp;
             }
-            else if( alpha == static_cast<ValueType>( 1.0 ) )
+            else if( alphaRef == static_cast<ValueType>( 1.0 ) )
             {
-                result[i] = temp + beta * y[i];
+                result[i] = temp + betaRef * y[i];
             }
             else
             {
-                result[i] = alpha * temp + beta * y[i];
+                result[i] = alphaRef * temp + betaRef * y[i];
             }
         }
     }
@@ -1167,10 +1181,12 @@ void MICELLUtils::sparseGEMV(
     const void* ellJAPtr = ellJA;
     const void* ellValuesPtr = ellValues;
 
+    const ValueType* alphaPtr = &alpha;
+
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ), in( resultPtr, xPtr, rowIndexesPtr, ellSizesPtr, ellJAPtr, ellValuesPtr, \
-                                                alpha, numRows, numNonZeroRows )
+                                                alphaPtr[0:1], numRows, numNonZeroRows )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
 
@@ -1179,6 +1195,8 @@ void MICELLUtils::sparseGEMV(
         const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
+
+	const ValueType& alphaRef = *alphaPtr;
 
         #pragma omp parallel
         {
@@ -1198,13 +1216,13 @@ void MICELLUtils::sparseGEMV(
                     temp += ellValues[pos] * x[j];
                 }
 
-                if( alpha == static_cast<ValueType>( 1.0 ) )
+                if( alphaRef == static_cast<ValueType>( 1.0 ) )
                 {
                     result[i] += temp;
                 }
                 else
                 {
-                    result[i] += alpha * temp;
+                    result[i] += alphaRef * temp;
                 }
             }
         }

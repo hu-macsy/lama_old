@@ -33,6 +33,12 @@
 
 ### SCAI_DL_LIBRARIES   - needed dl libraries
 
-find_library( SCAI_DL_LIBRARIES dl )
+if    ( NOT WIN32 )
 
-mark_as_advanced ( SCAI_DL_LIBRARIES )
+	find_library( SCAI_DL_LIBRARIES dl )
+	
+else  ( NOT WIN32 )
+	set ( SCAI_DL_LIBRARIES "" )
+endif ( NOT WIN32 )
+
+#mark_as_advanced ( SCAI_DL_LIBRARIES )

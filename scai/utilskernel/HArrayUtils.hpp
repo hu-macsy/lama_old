@@ -164,14 +164,14 @@ public:
         hmemo::HArray<ValueType>& result,
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
-        hmemo::ContextPtr context );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Axpy: result += beta * y
      *
      *  @param[in,out] result  output array
      *  @param[in]     beta    scaling factor
      *  @param[in]     y       source array
-     *  @param[in]     context location where operation is done
+     *  @param[in]     prefLoc location where operation is done
      */
 
     template<typename ValueType>
@@ -179,7 +179,7 @@ public:
         hmemo::HArray<ValueType>& result,
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
-        hmemo::ContextPtr context );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Addition of two arrays: result = alpha * x + beta * y
      *
@@ -212,7 +212,7 @@ public:
     /** Replace in a complex array its values with the conjugate values */
 
     template<typename ValueType>
-    static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc );
+    static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Adds a scalar to each element of a given array */
 
@@ -260,6 +260,11 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
+    static ValueType nrm2( 
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
     static ValueType absMaxDiffVal( 
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
@@ -274,7 +279,7 @@ public:
     /** array = 1.0 / array elementwise */
 
     template<typename ValueType>
-    static void invert( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static void invert( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Check for an index array whether all values are smaller than n */
 
@@ -285,33 +290,83 @@ public:
     template<typename ValueType>
     static bool isSorted( const hmemo::HArray<ValueType>& array, const bool isAscending, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Build the running sums for an array; note that result array will contain one element more. */
+    /** Build the running sums for an array; note that result array will contain one element more. 
+     *
+     *  @param[in,out]  array contains values for which running sum is built
+     *  @param[in]      prefLoc optional the context where computation should be done
+     *  @returns        the total sum and last value in the array is returned
+     *
+     *  \code
+     *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 0, 3, 8, 15, 17 }
+     *  \endcode
+     */
 
     template<typename ValueType>
-    static ValueType scan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static ValueType scan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Initialize an array with the sequence 0, .., n-1 */
+    /** Initialize an array with the sequence 0, .., n-1 
+     *
+     *  @param[out] array will contain the values 0, ..., n-1
+     *  @param[in]  n     becomes size of the array
+     *  @param[in]  prefLoc optional the context where allocation/initialization should be done
+     */
 
-    static void setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static void setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Get an array with random values. */
+    /** Sete an array with random values. 
+     *
+     *  @param[out] array    will contain random values of its type
+     *  @param[in]  n        number of values, becomes size of array
+     *  @param[in]  fillRate ratio of non-zero values
+     *  @param[in]  prefLoc  optional the context where random numbers should be drawn
+     */
 
     template<typename ValueType>
-    static void setRandom( hmemo::HArray<ValueType>& array, IndexType n, hmemo::ContextPtr prefContext = hmemo::ContextPtr() );
+    static void setRandom( hmemo::HArray<ValueType>& array, 
+                           IndexType n, 
+                           float fillRate = 1.0f, 
+                           hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
+
+    template<typename ValueType>
+    static void buildSparseArray( 
+        hmemo::HArray<ValueType>& sparseArray,
+        hmemo::HArray<IndexType>& sparseIndexes,
+        const hmemo::HArray<ValueType>& denseArray,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Build dense array from sparse array, needed for conversion SparseVector -> DenseVector 
+     *
+     *  @param[out]  denseArray will contain the dense data (input its only its size)
+     *  @param[in]   denseN is the size of the dense array
+     *  @param[in]   sparseArray contains non-zero values
+     *  @param[in]   sparseIndexes are the positions of the non-zero values
+     *  @param[in]   prefLoc is the context where operation should be done
+     *
+     *  Note: sparseIndexes must contain only indexes between 0 and denseN - 1
+     */
+
+    template<typename ValueType>
+    static void buildDenseArray( 
+        hmemo::HArray<ValueType>& denseArray,
+        const IndexType denseN,
+        const hmemo::HArray<ValueType>& sparseArray,
+        const hmemo::HArray<IndexType>& sparseIndexes,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
 private:
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     SCAI_DECLARE_TEMPLATESPECIFIER( SpecifierV, template<typename ValueType> )
 
-    HArrayUtils();
-    ~HArrayUtils(){}
-    HArrayUtils( const HArrayUtils& );
+    HArrayUtils();  // static class, no objects outside
 
-    static HArrayUtils guard;
+    static HArrayUtils guard;   // dummy object guarantees template method instantiation
 };
 
 } /* end namespace utilskernel */

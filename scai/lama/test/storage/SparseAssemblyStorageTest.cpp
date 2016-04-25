@@ -39,6 +39,8 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
+#include <scai/lama/test/storage/StorageTemplateTests.hpp>
+
 using namespace scai;
 using namespace lama;
 using namespace hmemo;
@@ -118,16 +120,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, ValueType, scai_arithmetic_test_types
     }
 }
 
-/* --------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( typeNameTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
-    SparseAssemblyStorage<double> aStoraged;
-    std::string s = aStoraged.typeName();
-    BOOST_CHECK_EQUAL( s, "SparseAssemblyStorage<double>" );
-    SparseAssemblyStorage<float> aStoragef;
-    s = aStoragef.typeName();
-    BOOST_CHECK_EQUAL( s, "SparseAssemblyStorage<float>" );
+    // use template storage test 
+
+    storageSwapTest<SparseAssemblyStorage<ValueType> >();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -136,17 +135,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_typ
 {
     SCAI_LOG_INFO( logger, "typeNameTest for SparseAssemblyStorage<" << common::TypeTraits<ValueType>::id() << ">" )
 
-    // context does not matter here, so runs for every context
-
-    std::string s1 = SparseAssemblyStorage<ValueType>::typeName();
-
-    std::string s2 = "SparseAssemblyStorage<" ;
-    s2 += common::TypeTraits<ValueType>::id();
-    s2 += ">";
-
-    BOOST_CHECK_EQUAL( s1, s2 );
+    storageTypeNameTest<SparseAssemblyStorage<ValueType> >( "SparseAssembly" );
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( SparseAssemblyCopyTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    copyStorageTest<SparseAssemblyStorage<ValueType> >();
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();

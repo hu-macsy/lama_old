@@ -319,6 +319,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, ArithmeticRedTypes )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
+{
+    testContext = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "conjTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
+
+    const IndexType N = 16;
+
+    LArray<ValueType> array;
+    HArrayUtils::setRandom( array, N, 1.0f, testContext );
+
+    LArray<ValueType> conjArray( array );
+    conjArray.conj();   // build in place
+
+
+    if ( scalar::isComplex( TypeTraits<ValueType>::stype )  ) 
+    {
+        BOOST_CHECK( Math::real( array.maxDiffNorm( conjArray ) ) > 0 );
+        conjArray.conj();
+        BOOST_CHECK_EQUAL( 0, Math::real( array.maxDiffNorm( conjArray ) ) );
+    }
+    else
+    {
+        // not complex: both arrays should be the same
+
+        BOOST_CHECK_EQUAL( 0, Math::real( array.maxDiffNorm( conjArray ) ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignOperatorTest, ValueType, ArithmeticRedTypes )
 {
     testContext = Context::getContextPtr();

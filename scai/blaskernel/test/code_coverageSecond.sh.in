@@ -39,7 +39,7 @@ export SCAI_TRACE=time
 
 # Running blaskernel serial
 echo "Running serial tests"
-./blaskernelTest >/dev/null
+./blaskernelTest --SCAI_CONTEXT=Host >/dev/null
 if [ $? -ne 0 ]
 then
 	echo "ERROR in blaskernelTest"

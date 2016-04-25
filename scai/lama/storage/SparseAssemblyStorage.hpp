@@ -366,7 +366,9 @@ public:
 
 private:
 
-    void print() const;
+    /** Implementation of pure method. */
+
+    void print( std::ostream& stream ) const;
 
     using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mDiagonalProperty;
     using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mNumRows;

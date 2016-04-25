@@ -160,6 +160,11 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
     SCAI_LOG_INFO( logger,
                    "iamax<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
 
+    if( ( n <= 0 ) || ( incX <= 0 ) )
+    {
+        return 0;
+    }
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
@@ -167,7 +172,7 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return BLASWrapper<ValueType>::iamax( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::iamax( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX )) - 1;
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -346,7 +351,21 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
     KernelRegistry::set<BLASKernelTrait::swap<ValueType> >( BLAS_BLAS1::swap, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( BLAS_BLAS1::copy, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( BLAS_BLAS1::axpy, ctx, flag );
-    KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( BLAS_BLAS1::dot, ctx, flag );
+
+    if( common::scalar::isComplex( common::TypeTraits<ValueType>::stype ) )
+    {
+        /*
+         * don't register dot-product due to different fortran ABSs the handling of returning
+         * ComplexTypes can't be determined
+         *
+         * see: http://scicomp.stackexchange.com/questions/5380/intel-mkl-difference-between-mkl-intel-lp64-and-mkl-gf-lp64
+         */
+
+    }
+    else
+    {
+        KernelRegistry::set<BLASKernelTrait::dot<ValueType> >( BLAS_BLAS1::dot, ctx, flag );
+    }
 }
 
 /* --------------------------------------------------------------------------- */

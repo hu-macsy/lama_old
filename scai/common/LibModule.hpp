@@ -33,8 +33,16 @@
 
 #pragma once
 
-#include <dlfcn.h> 
-
+#if defined(__APPLE__)
+	//todo
+#elif defined(WIN32)
+	#include <Windows.h>
+	#include <WinBase.h>
+	#include <direct.h>
+#else // LINUX
+	#include <dlfcn.h>
+	#include <dirent.h>
+#endif
 
 namespace scai
 {
@@ -50,7 +58,11 @@ public:
 
     /** Data type definition for library handle, might be OS specific. */
 
+#if defined(_WIN32)
+	typedef HINSTANCE LibHandle;
+#else
     typedef void* LibHandle;
+#endif
 
     /** Load a library with its full name i.e. include suffix .so, might be absolute or relative */
 

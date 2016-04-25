@@ -337,10 +337,11 @@ void MICDIAUtils::normalGEMV(
     const void* xPtr = x;
     const void* diaOffsetsPtr = diaOffsets;
     const void* diaValuesPtr = diaValues;
+    const ValueType* alphaPtr = &alpha;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( alpha, xPtr, numRows, numColumns, numDiagonals, \
+#pragma offload target( mic : device ), in( alphaPtr[0:1], xPtr, numRows, numColumns, numDiagonals, \
                                        diaOffsetsPtr, diaValuesPtr, resultPtr )
     {
         const IndexType* diaOffsets = static_cast<const IndexType*>( diaOffsetsPtr );
@@ -348,6 +349,8 @@ void MICDIAUtils::normalGEMV(
 
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         ValueType* result = static_cast<ValueType*>( resultPtr );
+
+	const ValueType& alphaRef = *alphaPtr;
 
         #pragma omp parallel for
 
@@ -370,7 +373,7 @@ void MICDIAUtils::normalGEMV(
                 }
             }
 
-            result[i] += alpha * accu;
+            result[i] += alphaRef * accu;
         }
     }
 }
@@ -410,13 +413,14 @@ void MICDIAUtils::jacobi(
     const void* rhsPtr = rhs;
     const void* diaOffsetPtr = diaOffset;
     const void* diaValuesPtr = diaValues;
+    const ValueType* omegaPtr = &omega;
 
     bool error = false; // will be set true if diagonal is not first
 
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ) in( diaOffsetPtr, diaValuesPtr, numRows, numDiagonals, numColumns, \
-                                      solutionPtr, oldSolutionPtr, rhsPtr, omega ), out( error )
+                                      solutionPtr, oldSolutionPtr, rhsPtr, omegaPtr[0:1] ), out( error )
     {
         const IndexType* diaOffset = static_cast<const IndexType*>( diaOffsetPtr );
 
@@ -430,7 +434,8 @@ void MICDIAUtils::jacobi(
             const ValueType* rhs = static_cast<const ValueType*>( rhsPtr );
             ValueType* solution = static_cast<ValueType*>( solutionPtr );
 
-            const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
+	    const ValueType& omegaRef = *omegaPtr;
+            const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omegaRef;
 
             #pragma omp parallel for
 
@@ -454,7 +459,7 @@ void MICDIAUtils::jacobi(
                     }
                 }
 
-                solution[i] = omega * ( temp / diag ) + oneMinusOmega * oldSolution[i];
+                solution[i] = omegaRef * ( temp / diag ) + oneMinusOmega * oldSolution[i];
             }
         }
         else

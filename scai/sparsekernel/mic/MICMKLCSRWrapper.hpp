@@ -8,7 +8,7 @@
 #pragma once
 
 // internal scai libraries
-#include <scai/sparsekernel/external/MKLCSRTrait.hpp>
+#include <scai/sparsekernel/mic/MICMKLCSRTrait.hpp>
 
 // extern
 #include <mkl_spblas.h>
@@ -20,16 +20,16 @@ namespace sparsekernel
 {
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT MKLCSRWrapper;
+class COMMON_DLL_IMPORTEXPORT MICMKLCSRWrapper;
 
-#define MKLCSRWRAPPER_DEF( ValueType, MKLCSRValueType, prefix ) 								                                \
+#define MICMKLCSRWRAPPER_DEF( ValueType, MKLCSRValueType, prefix ) 								                                \
 template<>																												        \
-class COMMON_DLL_IMPORTEXPORT MKLCSRWrapper<ValueType>								                              				\
+class COMMON_DLL_IMPORTEXPORT MICMKLCSRWrapper<ValueType>								                              			\
 {																														        \
 public:																													        \
-	  typedef MKLCSRTrait::BLASIndexType BLASIndexType;																	        \
-	  typedef MKLCSRTrait::BLASTrans BLASTrans;																	                \
-	  typedef MKLCSRTrait::BLASMatrix BLASMatrix;																	            \
+	  typedef MICMKLCSRTrait::BLASIndexType BLASIndexType;																	    \
+	  typedef MICMKLCSRTrait::BLASTrans BLASTrans;																	            \
+	  typedef MICMKLCSRTrait::BLASMatrix BLASMatrix;																	        \
 																														        \
     static BLASIndexType csr2csc(                                                                                               \
         const BLASIndexType* job,                                                                                               \
@@ -42,7 +42,7 @@ public:																													        \
         BLASIndexType *AI1 )                                                                                                    \
     {                                                                                                                           \
 	      BLASIndexType info;                                                                                                   \
-        MKLCSR_BLAS_NAME( csrcsc, prefix )( const_cast<BLASIndexType*>( job ), const_cast<BLASIndexType*>( &n ),                \
+        MICMKLCSR_BLAS_NAME( csrcsc, prefix )( const_cast<BLASIndexType*>( job ), const_cast<BLASIndexType*>( &n ),             \
                                             const_cast<MKLCSRValueType*>( reinterpret_cast<const MKLCSRValueType*>( Acsr ) ),   \
                                             const_cast<BLASIndexType*>( AJ0 ), const_cast<BLASIndexType*>( AI0 ),               \
                                             const_cast<MKLCSRValueType*>( reinterpret_cast<MKLCSRValueType*>( Acsc ) ),         \
@@ -64,7 +64,7 @@ public:																													        \
         const ValueType beta,                                                                                                   \
         ValueType *y )                                                                                                          \
     {                                                                                                                           \
-        MKLCSR_BLAS_NAME( csrmv, prefix )( const_cast<BLASTrans*>( &transA ), const_cast<BLASIndexType*>( &m ),                 \
+        MICMKLCSR_BLAS_NAME( csrmv, prefix )( const_cast<BLASTrans*>( &transA ), const_cast<BLASIndexType*>( &m ),              \
                                            const_cast<BLASIndexType*>( &k ),                                                    \
                                            const_cast<MKLCSRValueType*>( reinterpret_cast<const MKLCSRValueType*>( &alpha ) ),  \
                                            const_cast<char*>( descrA ),                                                         \
@@ -77,15 +77,15 @@ public:																													        \
     }                                                                                                                           \
 };
 
-MKLCSRWRAPPER_DEF( float, float, s )
-MKLCSRWRAPPER_DEF( double, double, d )
+MICMKLCSRWRAPPER_DEF( float, float, s )
+MICMKLCSRWRAPPER_DEF( double, double, d )
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-    MKLCSRWRAPPER_DEF( ComplexFloat,  MKL_Complex8,  c )
-    MKLCSRWRAPPER_DEF( ComplexDouble, MKL_Complex16, z )
+    MICMKLCSRWRAPPER_DEF( ComplexFloat,  MKL_Complex8,  c )
+    MICMKLCSRWRAPPER_DEF( ComplexDouble, MKL_Complex16, z )
 #endif
 
-#undef MKLCSRWRAPPER_DEF
+#undef MICMKLCSRWRAPPER_DEF
 
 } /* end namespace sparsekernel */
 

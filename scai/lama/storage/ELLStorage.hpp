@@ -435,7 +435,7 @@ public:
 
     /** Print out the ELL storage on std::out, use only for debug. */
 
-    void print() const;
+    virtual void print( std::ostream& ) const;
 
 protected:
 
@@ -498,9 +498,23 @@ private:
                                     const hmemo::HArray<ValueType>& x,
                                     bool async ) const;
 
+    /** result += alpha * x * (*this) where this storage has sparse rows */
+
+    tasking::SyncToken* sparseGEVM( hmemo::HArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::HArray<ValueType>& x,
+                                    bool async ) const;
+
     /** result = alpha * (*this) * x  */
 
     tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::HArray<ValueType>& x,
+                                    bool async ) const;
+
+    /** result = alpha * x * (*this) */
+
+    tasking::SyncToken* normalGEVM( hmemo::HArray<ValueType>& result,
                                     const ValueType alpha,
                                     const hmemo::HArray<ValueType>& x,
                                     bool async ) const;
@@ -514,9 +528,26 @@ private:
                                     const hmemo::HArray<ValueType>& y,
                                     bool async ) const;
 
+    /** result = alpha * x * (*this) + beta * y */
+
+    tasking::SyncToken* normalGEVM( hmemo::HArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::HArray<ValueType>& x,
+                                    const ValueType beta,
+                                    const hmemo::HArray<ValueType>& y,
+                                    bool async ) const;
+
     /** matrixTimesVector for synchronous and asynchronous execution */
 
     virtual tasking::SyncToken* gemv(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        bool async ) const;
+
+    virtual tasking::SyncToken* gevm(
         hmemo::HArray<ValueType>& result,
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,

@@ -46,7 +46,7 @@
 
 #include <scai/hmemo.hpp>
 
-#include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -141,6 +141,27 @@ template<typename ValueType>
 Format::MatrixStorageFormat COOStorage<ValueType>::getFormat() const
 {
     return Format::COO;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::print( std::ostream& stream ) const
+{
+    using std::endl;
+
+    stream << "COOStorage " << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues << endl;
+
+    ContextPtr host = Context::getHostPtr();
+
+    ReadAccess<IndexType> ia( mIA, host );
+    ReadAccess<IndexType> ja( mJA, host );
+    ReadAccess<ValueType> values( mValues, host );
+
+    for( IndexType i = 0; i < mNumValues; i++ )
+    {
+        stream << "@[ " << ia[i] << ", " << ja[i] << " ] = " << values[i] << endl;
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -368,18 +389,33 @@ void COOStorage<ValueType>::setCSRDataImpl(
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
     const HArray<OtherValueType>& values,
-    const ContextPtr )
+    const ContextPtr prefLoc )
 {
     SCAI_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues )
+
+    if ( ia.size() == numRows )
+    {
+        // offset array required
+
+        HArray<IndexType> offsets;
+
+        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
+
+        SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
+
+        setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
+
+        return;
+    }
 
     SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
 
-    ContextPtr loc = getContextPtr();
+    ContextPtr loc = prefLoc;
 
-    ReadAccess<IndexType> csrJA( ja, loc );
-    ReadAccess<OtherValueType> csrValues( values, loc );
+    // ReadAccess<IndexType> csrJA( ja, loc );
+    // ReadAccess<OtherValueType> csrValues( values, loc );
 
     mNumRows = numRows;
     mNumColumns = numColumns;
@@ -700,6 +736,9 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
+    // diagional[0:numDiagonalElements] = mValues[0:numDiagonalElements] 
+    // Note: using HArrayUtils::setArray not possible, as we only need part of mValues
+
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
@@ -792,6 +831,61 @@ size_t COOStorage<ValueType>::getMemoryUsageImpl() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+SyncToken* COOStorage<ValueType>::incGEMV(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    bool async ) const
+{
+    SCAI_LOG_INFO( logger, "incGEMV ( async = " << async << " ) , result += " << alpha << " * storage * x" )
+
+    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = this->getContextPtr();
+    normalGEMV.getSupportedContext( loc );
+
+    common::unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> cooIA( mIA, loc );
+    ReadAccess<IndexType> cooJA( mJA, loc );
+    ReadAccess<ValueType> cooValues( mValues, loc );
+
+    ReadAccess<ValueType> rX( x, loc );
+
+    WriteAccess<ValueType> wResult( result, loc );
+
+    // use general kernel, might change
+
+    ValueType beta = 1;
+
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), 
+                     mNumColumns, mNumValues, 
+                     cooIA.get(), cooJA.get(), cooValues.get() );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( cooValues.releaseDelayed() );
+        syncToken->pushRoutine( cooIA.releaseDelayed() );
+        syncToken->pushRoutine( cooJA.releaseDelayed() );
+    }
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void COOStorage<ValueType>::matrixTimesVector(
 
     HArray<ValueType>& result,
@@ -801,41 +895,99 @@ void COOStorage<ValueType>::matrixTimesVector(
     const HArray<ValueType>& y ) const
 
 {
-    SCAI_REGION( "Storage.COO.timesVector" )
+    SCAI_LOG_INFO( logger,
+                   *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    SCAI_LOG_DEBUG( logger,
-                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+    SCAI_REGION( "Storage.COO.matrixTimesVector" )
 
-    SCAI_ASSERT_EQUAL( x.size(), mNumColumns, "size mismatch" )
-
-    // beta == ZERO: do not check size of y as it might be any dummy
-
-    if ( beta != scai::common::constants::ZERO )
+    if ( alpha == common::constants::ZERO || mNumValues == 0 )
     {
-        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch" )
+        // so we just have result = beta * y, will be done synchronously
+
+        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        return;
     }
 
-    // Method on CUDA is not safe due to atomic
+    ContextPtr loc = this->getContextPtr();
 
-    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
+    // Due to COO format GEMV does not benefit of coupling all in one operation, so split it
+
+    // Step 1: result = beta * y 
+
+    if ( beta == common::constants::ZERO )
+    {
+        result.clear();
+        result.resize( mNumRows );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+    }
+    else
+    {
+        // Note: assignScaled will deal with 
+        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
+        HArrayUtils::assignScaled( result, beta, y, loc );
+    }
+
+    bool async = false;
+
+    SyncToken* token = incGEMV( result, alpha, x, async );
+
+    SCAI_ASSERT( token == NULL, "syncrhonous execution cannot have token" )
+}
+
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* COOStorage<ValueType>::incGEVM(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    bool async ) const
+{
+    SCAI_LOG_INFO( logger, "incGEVM ( async = " << async << " ) , result += " << alpha << " * x * storage" )
+
+    static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
     ContextPtr loc = this->getContextPtr();
-    normalGEMV.getSupportedContext( loc );
+    normalGEVM.getSupportedContext( loc );
 
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+    common::unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     ReadAccess<IndexType> cooIA( mIA, loc );
     ReadAccess<IndexType> cooJA( mJA, loc );
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
-    ReadAccess<ValueType> rY( y, loc );
-    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
-    SCAI_CONTEXT_ACCESS( loc )
+    WriteAccess<ValueType> wResult( result, loc, mNumColumns );
 
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                     cooValues.get() );
+    // use general kernel, might change
+
+    ValueType beta = 1;
+
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), 
+                     mNumColumns, mNumValues, 
+                     cooIA.get(), cooJA.get(), cooValues.get() );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( cooValues.releaseDelayed() );
+        syncToken->pushRoutine( cooIA.releaseDelayed() );
+        syncToken->pushRoutine( cooJA.releaseDelayed() );
+    }
+
+    return syncToken.release();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -853,32 +1005,32 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
     SCAI_REGION( "Storage.COO.VectorTimesMatrix" )
 
-    SCAI_ASSERT_EQUAL( x.size(), mNumRows, "size mismatch" )
+    ContextPtr loc = this->getContextPtr();
 
-    if ( beta != scai::common::constants::ZERO ) 
+    // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
+
+    // Step 1: result = beta * y 
+
+    if ( beta == common::constants::ZERO )
     {
-        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch" )
+        result.clear();
+        result.resize( mNumColumns );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+    }
+    else
+    {
+        // Note: assignScaled will deal with 
+        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
+        HArrayUtils::assignScaled( result, beta, y, loc );
     }
 
-    static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
+    // Step 2: result = alpha * x * this + 1 * result
 
-    ContextPtr loc = this->getContextPtr();
-    normalGEVM.getSupportedContext( loc );
+    bool async = false;
 
-    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
+    SyncToken* token = incGEVM( result, alpha, x, async );
 
-    ReadAccess<IndexType> cooIA( mIA, loc );
-    ReadAccess<IndexType> cooJA( mJA, loc );
-    ReadAccess<ValueType> cooValues( mValues, loc );
-
-    ReadAccess<ValueType> rX( x, loc );
-    ReadAccess<ValueType> rY( y, loc );
-    WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
-                     cooValues.get() );
+    SCAI_ASSERT( NULL == token, "syncrhonous execution has no token" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -891,52 +1043,45 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     const ValueType beta,
     const HArray<ValueType>& y ) const
 {
-    SCAI_LOG_DEBUG( logger,
-                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+    SCAI_LOG_INFO( logger,
+                   *this << ": matrixTimesVectorAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
-
-    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
+    SCAI_REGION( "Storage.COO.matrixTimesVectorAsync" )
 
     ContextPtr loc = this->getContextPtr();
-    normalGEMV.getSupportedContext( loc );
 
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
+    if ( alpha == common::constants::ZERO || mNumValues == 0 )
+    {
+        // so we just have result = beta * y, will be done synchronously
 
-    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+        HArrayUtils::assignScaled( result, beta, y, loc );
+        return new tasking::NoSyncToken();
+    }
 
-    // Kernels will be started asynchronously
+    // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
 
-    SCAI_ASYNCHRONOUS( *syncToken )
+    // Step 1: result = beta * y 
 
-    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
-    // to the end of the computations.
+    if ( beta == common::constants::ZERO )
+    {
+        result.clear();
+        result.resize( mNumRows );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+    }
+    else
+    {
+        // Note: assignScaled will deal with 
+        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
+        HArrayUtils::assignScaled( result, beta, y, loc );
+    }
 
-    ReadAccess<IndexType> cooIA( mIA, loc );
-    ReadAccess<IndexType> cooJA( mJA, loc );
-    ReadAccess<ValueType> cooValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-    ReadAccess<ValueType> rY( y, loc );
+    bool async = true;
 
-    // Possible alias of result and y is no problem if WriteOnlyAccess follows ReadAccess 
+    SyncToken* token = incGEMV( result, alpha, x, async );
 
-    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+    SCAI_ASSERT( token, "asyncrhonous execution cannot have NULL token" )
 
-    SCAI_CONTEXT_ACCESS( loc )
-
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                     cooValues.get() );
-
-    syncToken->pushRoutine( wResult.releaseDelayed() );
-    syncToken->pushRoutine( rY.releaseDelayed() );
-
-    syncToken->pushRoutine( cooIA.releaseDelayed() );
-    syncToken->pushRoutine( cooJA.releaseDelayed() );
-    syncToken->pushRoutine( cooValues.releaseDelayed() );
-    syncToken->pushRoutine( rX.releaseDelayed() );
-
-    return syncToken.release();
+    return token;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -954,96 +1099,34 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_REGION( "Storage.COO.vectorTimesMatrixAsync" )
 
-    static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
-
     ContextPtr loc = this->getContextPtr();
-    normalGEVM.getSupportedContext( loc );
 
-    if( loc->getType() == common::context::Host )
+    // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
+
+    // Step 1: result = beta * y 
+
+    if ( beta == common::constants::ZERO )
     {
-        // execution as separate thread
-
-        void (COOStorage::*pf)(
-            HArray<ValueType>&,
-            const ValueType,
-            const HArray<ValueType>&,
-            const ValueType,
-            const HArray<ValueType>& ) const
-
-            = &COOStorage<ValueType>::vectorTimesMatrix;
-
-        SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
-
-        using scai::common::bind;
-        using scai::common::ref;
-
-        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
-    }
-
-    // Note: checks will be done by asynchronous task in any case
-    //       and exception in tasks are handled correctly
-
-    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
-
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
-
-    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
-    {
-        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
-    }
-
-    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
-
-    syncToken->setCurrent();
-
-    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
-    // to the end of the computations.
-
-    ReadAccess<IndexType> cooIA( mIA, loc );
-    ReadAccess<IndexType> cooJA( mJA, loc );
-    ReadAccess<ValueType> cooValues( mValues, loc );
-    ReadAccess<ValueType> rX(  x, loc );
-
-    // Possible alias of result and y must be handled by coressponding accesses
-
-    if( &result == &y )
-    {
-        // only write access for y, no read access for result
-
-        WriteAccess<ValueType> wResult( result, loc );
-
-        // we assume that normalGEVM can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEVM[loc] ( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, 
-                          cooIA.get(), cooJA.get(), cooValues.get() );
-
-        syncToken->pushRoutine( wResult.releaseDelayed() );
+        result.clear();
+        result.resize( mNumColumns );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
     }
     else
     {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues,
-                         cooIA.get(), cooJA.get(), cooValues.get() );
-
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rY.releaseDelayed() );
+        // Note: assignScaled will deal with 
+        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
+        HArrayUtils::assignScaled( result, beta, y, loc );
     }
 
-    syncToken->pushRoutine( cooIA.releaseDelayed() );
-    syncToken->pushRoutine( cooJA.releaseDelayed() );
-    syncToken->pushRoutine( cooValues.releaseDelayed() );
-    syncToken->pushRoutine( rX.releaseDelayed() );
+    // Step 2: result = alpha * x * this + 1 * result
 
-    syncToken->unsetCurrent();
+    bool async = true;
 
-    return syncToken.release();
+    SyncToken* token = incGEVM( result, alpha, x, async );
+
+    SCAI_ASSERT( token, "asyncrhonous execution cannot have NULL token" )
+
+    return token;
 }
 
 /* --------------------------------------------------------------------------- */

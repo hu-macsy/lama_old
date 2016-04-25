@@ -42,6 +42,8 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
+#include <scai/lama/test/storage/StorageTemplateTests.hpp>
+
 using namespace scai;
 using namespace lama;
 using namespace utilskernel;
@@ -223,15 +225,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+{
+    // use template storage test 
+
+    storageSwapTest<ELLStorage<ValueType> >();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for ELLStorage<" << common::TypeTraits<ValueType>::id() << ">" )
 
-    // context does not matter here, so runs for every context
+    storageTypeNameTest<ELLStorage<ValueType> >( "ELL" );
+}
 
-    std::string s = ELLStorage<ValueType>::typeName();
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-    BOOST_CHECK( s.length() > 0 );
+BOOST_AUTO_TEST_CASE( ELLCopyTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    copyStorageTest<ELLStorage<ValueType> >();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

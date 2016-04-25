@@ -124,14 +124,18 @@ __device__ inline void cooAtomicAdd( float* address, float val )
 
 __device__ inline void cooAtomicAdd( ComplexFloat* address, ComplexFloat val )
 {
-    cooAtomicAdd( ( float* )&address[0], val.real() );
-    cooAtomicAdd( ( float* )&address[1], val.imag() );
+    float* faddress = ( float* ) address;
+
+    cooAtomicAdd( &faddress[0], val.real() );
+    cooAtomicAdd( &faddress[1], val.imag() );
 }
 
 __device__ inline void cooAtomicAdd( ComplexDouble* address, ComplexDouble val )
 {
-    cooAtomicAdd( ( double* )&address[0], val.real() );
-    cooAtomicAdd( ( double* )&address[1], val.imag() );
+    double* daddress = ( double* ) address;
+
+    cooAtomicAdd( &daddress[0], val.real() );
+    cooAtomicAdd( &daddress[1], val.imag() );
 }
 
 #endif

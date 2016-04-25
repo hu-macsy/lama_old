@@ -225,6 +225,17 @@ private:
         const IndexType jdsJA[],
         const ValueType jdsValues[] );
 
+    template<typename ValueType>
+    static void normalGEVM_a( 
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,     // alpha, x
+        const std::pair<ValueType, const ValueType*> by,     // beta, y
+        const std::pair<IndexType, const IndexType*> rows,   // nrows, jdsILG,
+        const IndexType perm[],
+        const std::pair<IndexType, const IndexType*> dlg,    // ndlg, jdsDLG
+        const IndexType jdsJA[],
+        const ValueType jdsValues[] );
+
     /** Routine that registers all methods at the kernel registry. */
 
     SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )

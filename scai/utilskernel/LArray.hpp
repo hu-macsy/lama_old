@@ -83,7 +83,7 @@ public:
 
         operator ValueType() const
         {
-            return HArrayUtils::getVal<ValueType>( mArray, mIndex );
+            return HArrayUtils::getValImpl( mArray, mIndex );
         }
 
         /** indexed value proxy can be assigned a value */
@@ -291,7 +291,7 @@ public:
 
     ValueType operator[] ( const IndexType i ) const
     {
-        return HArrayUtils::getVal( *this, i );
+        return HArrayUtils::getValImpl( *this, i );
     }
 
     /** Get the minimal value of an array */
@@ -331,7 +331,7 @@ public:
 
     ValueType l2Norm() const
     {
-        return common::Math::sqrt( HArrayUtils::dotProduct( *this, *this ) );
+        return HArrayUtils::nrm2( *this );
     }
 
     /** Build the max diff norm with another LAMA array */
@@ -354,6 +354,14 @@ public:
     {
         HArrayUtils::invert( *this );
     }
+
+    /** Compute the conj in-place */
+
+    void conj()
+    {
+        HArrayUtils::conj( *this );
+    }
+
 };
 
 } /* end namespace utilskernel */

@@ -216,13 +216,6 @@ BOOST_AUTO_TEST_CASE( allocateTest )
         BOOST_REQUIRE_EQUAL( numRows, storage.getNumRows() );
         BOOST_REQUIRE_EQUAL( numColumns, storage.getNumColumns() );
 
-        if ( storage.getFormat() == Format::DENSE )
-        {
-            // DenseStorage has all values and might be uninitialized
-
-            continue;
-        }
-        
         BOOST_REQUIRE_EQUAL( 0, storage.getNumValues() );
 
         LArray<ScalarRepType> row;
@@ -288,6 +281,30 @@ BOOST_AUTO_TEST_CASE( assignDenseTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( printTest )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    Storages allMatrixStorages( context );    // is created by factory
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages assign dense data" )
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        _MatrixStorage& storage = *allMatrixStorages[s];
+
+        initStorage( storage );
+
+        std::ostringstream os;
+
+        storage.print( os );
+
+        BOOST_CHECK( os.str().length()  > 0 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( conversionTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
@@ -321,5 +338,7 @@ BOOST_AUTO_TEST_CASE( conversionTest )
         }
     }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END();

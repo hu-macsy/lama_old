@@ -37,6 +37,7 @@
 
 #include <scai/lama/test/storage/Storages.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
+#include <scai/lama/storage/DIAStorage.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/unique_ptr.hpp>
@@ -118,6 +119,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_arithmetic_test_types )
 
     SCAI_LOG_INFO( logger, "normTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
 
+    DenseStorage<ValueType> dense;
+    setDenseData( dense );
+    const LArray<ValueType>& denseData = reinterpret_cast<const LArray<ValueType>&>( dense.getData() );
+
+    ValueType expectedL1Norm = denseData.l1Norm();
+    ValueType expectedL2Norm = denseData.l2Norm();
+    ValueType expectedMaxNorm = denseData.maxNorm();
+
     TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
@@ -130,9 +139,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_arithmetic_test_types )
 
         ValueType maxNorm = storage.maxNorm();
 
-        ValueType expected = 9.3f; // maximal absolute value
+        SCAI_CHECK_CLOSE( expectedMaxNorm, maxNorm, 1 );
 
-        SCAI_CHECK_CLOSE( maxNorm, expected, 1 );
+        ValueType l1Norm = storage.l1Norm();
+
+        SCAI_CHECK_CLOSE( expectedL1Norm, l1Norm, 1 );
+
+        ValueType l2Norm = storage.l2Norm();
+
+        SCAI_CHECK_CLOSE( expectedL2Norm, l2Norm, 1 );
     }
 }
 
@@ -165,6 +180,60 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_arithmetic_test_types 
                 BOOST_CHECK_EQUAL( 2.0 * cmpStorage.getValue( i, j ), storage.getValue( i, j ) );
             }
         }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, scai_arithmetic_test_types )
+{
+    // Use random data for the matrix to have complex numbers
+
+    const IndexType numRows    = 3;
+    const IndexType numColumns = 3;
+
+    const float fillRate = 0.2f;
+
+    LArray<ValueType> denseValues;
+    LArray<ValueType> x;
+
+    utilskernel::HArrayUtils::setRandom( denseValues, numRows * numColumns, fillRate );
+    utilskernel::HArrayUtils::setRandom( x, numColumns, 1.0f );
+
+    LArray<ValueType> xconj( x );
+    xconj.conj();
+
+    const ValueType alpha = 1.0;
+    const ValueType beta  = 0.0;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        // y1 = storage * x;
+        // y2 = ( storage.conj * x.conj ). conj
+        // Proof: y1 == y2
+
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        SCAI_LOG_INFO( logger, "conj test for storage : " << storage << " on " << *context );
+
+        storage.setDenseData( numRows, numColumns, denseValues );
+
+        LArray<ValueType> z( storage.getNumRows(), 0, context );
+
+        LArray<ValueType> y1( storage.getNumRows(), 0, context );
+        LArray<ValueType> y2( storage.getNumRows(), 0, context );
+
+        storage.matrixTimesVector( y1, alpha, x, beta, z );
+
+        storage.conj();
+        storage.matrixTimesVector( y2, alpha, xconj, beta, z );
+        y2.conj();
+  
+        BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
     }
 }
 
@@ -314,7 +383,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
 
     DenseStorage<ValueType> denseStorage;
 
-    setDenseData( denseStorage );
+    setRandomData( denseStorage, 3, 4 );
 
     const LArray<ValueType> x( denseStorage.getNumColumns(), xVal );
     const LArray<ValueType> y( denseStorage.getNumRows(), yVal );
@@ -325,10 +394,92 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
     LArray<ValueType> denseResult1;
     LArray<ValueType> denseResult2;
     LArray<ValueType> denseResult3( y );
+    LArray<ValueType> denseResult4;
 
     denseStorage.matrixTimesVector( denseResult1, alpha, x, beta, y );
     denseStorage.matrixTimesVector( denseResult2, alpha, x, 0, yDummy );
     denseStorage.matrixTimesVector( denseResult3, alpha, x, 1, denseResult3 );
+
+    utilskernel::HArrayUtils::assignScaled( denseResult4, beta, y );
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "matrixTimesVectorTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        storage.assign( denseStorage );
+
+        SCAI_LOG_DEBUG( logger, "GEMV: storage = " << storage )
+
+        // result = alpha * storage * x + beta * y
+
+        LArray<ValueType> result1( context );
+        LArray<ValueType> result2( context );
+        LArray<ValueType> result3( y, context );
+
+        // wrong sized y, should throw exception in any case
+
+        BOOST_CHECK_THROW(
+        {
+            storage.matrixTimesVector( result1, alpha, x, beta, yDummy );
+        }, common::AssertException );
+
+        storage.matrixTimesVector( result1, alpha, x, beta, y );
+        storage.matrixTimesVector( result2, alpha, x, 0, yDummy );
+        storage.matrixTimesVector( result3, alpha, x, 1, result3 );
+
+        // should be the same as computed with dense storage
+
+        ValueType eps = 0.001;
+
+        BOOST_CHECK( denseResult1.maxDiffNorm( result1 ) < eps );
+        BOOST_CHECK( denseResult2.maxDiffNorm( result2 ) < eps );
+        BOOST_CHECK( denseResult3.maxDiffNorm( result3 ) < eps );
+
+        LArray<ValueType> result4( context );
+        storage.allocate( y.size(), x.size() );  // numRows x numCols, all zero
+        // test multiplication with zero matrix
+        storage.matrixTimesVector( result4, alpha, x, beta, y );
+        BOOST_CHECK( denseResult4.maxDiffNorm( result4 ) < eps );
+
+        // result5 = 0 * storage * x + beta * y, storage can be anything as not used at all
+        LArray<ValueType> result5( context );
+        storage.clear();  // with alpha == 0, storage is not used at all
+        storage.matrixTimesVector( result5, ValueType( 0 ), x, beta, y );
+        BOOST_CHECK( denseResult4.maxDiffNorm( result5 ) < eps );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( matrixTimesVectorAsyncTest )
+{
+    // test of result = alpha * storage * x + beta * y, asynchronous, general case only
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    const ValueType alpha = 1;
+    const ValueType beta  = 2;
+    const ValueType xVal  = 1.5;
+    const ValueType yVal  = 0.5;
+
+    DenseStorage<ValueType> denseStorage;
+
+    setDenseData( denseStorage );
+
+    const LArray<ValueType> x( denseStorage.getNumColumns(), xVal );
+    const LArray<ValueType> y( denseStorage.getNumRows(), yVal );
+
+    // for comparison: denseResult = alpha * DenseStorage * x + beta * y
+
+    LArray<ValueType> denseResult;
+
+    denseStorage.matrixTimesVector( denseResult, alpha, x, beta, y );
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
 
@@ -345,24 +496,15 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
 
         // result = alpha * storage * x + beta * y
 
-        LArray<ValueType> result1( context );
-        LArray<ValueType> result2( context );
-        LArray<ValueType> result3( y, context );
+        LArray<ValueType> result( context );
 
-        // BOOST_CHECK_THROW(
-        // {
-        //     storage.matrixTimesVector( result1, alpha, 1, beta, yDummy );
-        // }, common::AssertException );
+        common::unique_ptr<tasking::SyncToken> token( storage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
 
-        storage.matrixTimesVector( result1, alpha, x, beta, y );
-        storage.matrixTimesVector( result2, alpha, x, 0, yDummy );
-        storage.matrixTimesVector( result3, alpha, x, 1, result3 );
+        token->wait();
 
         // should be the same as computed with dense storage
 
-        BOOST_CHECK_EQUAL( denseResult1.maxDiffNorm( result1 ), 0 );
-        BOOST_CHECK_EQUAL( denseResult2.maxDiffNorm( result2 ), 0 );
-        BOOST_CHECK_EQUAL( denseResult3.maxDiffNorm( result3 ), 0 );
+        BOOST_CHECK_EQUAL( denseResult.maxDiffNorm( result ), 0 );
     }
 }
 
@@ -384,7 +526,7 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixTest )
 
     DenseStorage<ValueType> denseStorage;
 
-    setDenseData( denseStorage );
+    setRandomData( denseStorage, 5, 8 );
 
     const LArray<ValueType> x( denseStorage.getNumRows(), xVal );
     const LArray<ValueType> y( denseStorage.getNumColumns(), yVal );
@@ -400,6 +542,9 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixTest )
     denseStorage.vectorTimesMatrix( denseResult2, alpha, x, 0, yDummy );
     denseStorage.vectorTimesMatrix( denseResult3, alpha, x, 1, denseResult3 );
 
+    LArray<ValueType> denseResult4( y );
+    denseResult4 *= beta;                  // result4 = beta * y, for zero matrix
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
 
     SCAI_LOG_INFO( logger, "vectorTimesMatrixTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
@@ -410,23 +555,268 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixTest )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
 
-        setDenseData( storage ); 
+        storage.assign( denseStorage );
 
         SCAI_LOG_DEBUG( logger, "storage = " << storage )
 
         LArray<ValueType> result1( context );
         LArray<ValueType> result2( context );
         LArray<ValueType> result3( y, context );
+        LArray<ValueType> result4( context );
 
         storage.vectorTimesMatrix( result1, alpha, x, beta, y );
         storage.vectorTimesMatrix( result2, alpha, x, 0, yDummy );
         storage.vectorTimesMatrix( result3, alpha, x, 1, result3 );
 
+        ValueType eps = 0.001;
+
         // should be the same as computed with dense storage
 
-        BOOST_CHECK_EQUAL( denseResult1.maxDiffNorm( result1 ), 0 );
-        BOOST_CHECK_EQUAL( denseResult2.maxDiffNorm( result2 ), 0 );
-        BOOST_CHECK_EQUAL( denseResult3.maxDiffNorm( result3 ), 0 );
+        BOOST_CHECK( denseResult1.maxDiffNorm( result1 ) < eps );
+        BOOST_CHECK( denseResult2.maxDiffNorm( result2 ) < eps );
+        BOOST_CHECK( denseResult3.maxDiffNorm( result3 ) < eps );
+
+        storage.allocate( x.size(), y.size() );  // numRows x numCols, all zero
+        // test multiplication with zero matrix
+        storage.vectorTimesMatrix( result4, alpha, x, beta, y );
+        BOOST_CHECK( denseResult4.maxDiffNorm( result4 ) < eps );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( matrixTimesVectorSparseTest )
+{
+    // test of y += alpha * storage, where only some rows are filled in storage
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    const ValueType alpha = 2;
+    const ValueType beta  = 1;
+    const ValueType xVal  = 1.5;
+    const ValueType yVal  = 2.1;
+
+    DenseStorage<ValueType> denseStorage;
+
+    setDenseHalo( denseStorage );
+
+    const LArray<ValueType> x( denseStorage.getNumColumns(), xVal );
+    LArray<ValueType> denseY( denseStorage.getNumRows(), yVal );
+
+    // for comparison: denseY += alpha * DenseStorage * x 
+
+    denseStorage.matrixTimesVector( denseY, alpha, x, beta, denseY );
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "matrixTimesVectoriSparseTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+ 
+        SCAI_LOG_DEBUG( logger, "GEMV sparse storage = " << storage << ", set dense halo data" )
+
+        storage.setCompressThreshold( 1.0f );  // introduce row indexes in any case
+
+        setDenseHalo( storage );
+
+        Format::MatrixStorageFormat format = storage.getFormat();
+
+        if ( format == Format::CSR || format == Format::ELL )
+        {
+             // these storage format should have sparse row indexes
+
+             BOOST_CHECK( storage.getRowIndexes().size() > 0 );
+        }
+
+        LArray<ValueType> y( denseStorage.getNumRows(), yVal, context );
+
+        // y += alpha * storage * x , where only some rows are filled
+
+        storage.matrixTimesVector( y, alpha, x, beta, y );
+
+        // should be the same as computed with dense storage
+
+        BOOST_CHECK_EQUAL( denseY.maxDiffNorm( y ), 0 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( vectorTimesMatrixAsyncTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    // test of result = alpha * storage * x + beta * y, asynchronous, general case
+    // case 1: general
+    // case 2: beta = 0, y is zero array
+    // case 3: beta = 1, y == result, result += alpha * storage * x + beta
+
+    const ValueType alpha = 1;
+    const ValueType beta  = 2;
+    const ValueType xVal  = 1.5;
+    const ValueType yVal  = 0.5;
+
+    DenseStorage<ValueType> denseStorage;
+
+    setDenseData( denseStorage );
+
+    const LArray<ValueType> x( denseStorage.getNumRows(), xVal );
+    const LArray<ValueType> y( denseStorage.getNumColumns(), yVal );
+
+    // for comparison: denseResult = alpha * x * DenseStorage + beta * y
+
+    LArray<ValueType> denseResult;
+
+    denseStorage.vectorTimesMatrix( denseResult, alpha, x, beta, y );
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "vectorTimesMatrixAsyncTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        setDenseData( storage );
+
+        SCAI_LOG_DEBUG( logger, "GEVM asynchron: storage = " << storage )
+
+        LArray<ValueType> result( context );
+
+        common::unique_ptr<tasking::SyncToken> token;
+
+        token.reset( storage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+        token->wait();
+
+        // should be the same as computed with dense storage
+
+        BOOST_CHECK_EQUAL( denseResult.maxDiffNorm( result ), 0 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( matrixVectorTimesSparseTest )
+{
+    // test of y += alpha * x * storage, where only some rows are filled in storage
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    const ValueType alpha = 2;
+    const ValueType beta  = 1;
+    const ValueType xVal  = 1.5;
+    const ValueType yVal  = 2.1;
+
+    DenseStorage<ValueType> denseStorage;
+
+    setDenseHalo( denseStorage );
+
+    const LArray<ValueType> x( denseStorage.getNumRows(), xVal );
+    LArray<ValueType> denseY( denseStorage.getNumColumns(), yVal );
+
+    // for comparison: denseY += alpha * x * DenseStorage 
+
+    denseStorage.vectorTimesMatrix( denseY, alpha, x, beta, denseY );
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "matrixVecotrTimesSparseTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+ 
+        SCAI_LOG_DEBUG( logger, "GEMV sparse storage = " << storage << ", set dense halo data" )
+
+        storage.setCompressThreshold( 1.0f );  // introduce row indexes in any case
+
+        setDenseHalo( storage );
+
+        Format::MatrixStorageFormat format = storage.getFormat();
+
+        if ( format == Format::CSR || format == Format::ELL )
+        {
+             // these storage format should have sparse row indexes
+
+             BOOST_CHECK( storage.getRowIndexes().size() > 0 );
+        }
+
+        LArray<ValueType> y( denseStorage.getNumColumns(), yVal, context );
+
+        // y += alpha * storage * x , where only some rows are filled
+
+        storage.vectorTimesMatrix( y, alpha, x, beta, y );
+
+        // should be the same as computed with dense storage
+
+        BOOST_CHECK_EQUAL( denseY.maxDiffNorm( y ), 0 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( transposeTest )
+{
+    // storage1 = transpose( storage2 ), verify storage1 * x = x * storage 2, for all formats each storage
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "transposeTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages1( context );    // storage for each storage format
+    TypedStorages<ValueType> allMatrixStorages2( context );    // storage for each storage format
+
+    for ( size_t s1 = 0; s1 < allMatrixStorages1.size(); ++s1 )
+    {
+        MatrixStorage<ValueType>& storage1 = *allMatrixStorages1[s1];
+
+        setDenseData( storage1 );
+
+        SCAI_LOG_DEBUG( logger, "storage1 " << s1 << " of " << allMatrixStorages1.size() << " =  " << storage1 )
+
+        // we do a matrix multiplication y = A * x with this storage
+
+        LArray<ValueType> x( context );
+        LArray<ValueType> y( storage1.getNumRows(), 0 );
+        LArray<ValueType> result1( context );
+        utilskernel::HArrayUtils::setRandom( x, storage1.getNumColumns(), 1.0f );
+
+        ValueType alpha = 1;
+        ValueType beta  = 0;
+
+        storage1.matrixTimesVector( result1, alpha, x, beta, result1 );
+
+        for ( size_t s2 = 0; s2 < allMatrixStorages1.size(); ++s2 )
+        {
+            MatrixStorage<ValueType>& storage2 = *allMatrixStorages2[s2];
+
+            SCAI_LOG_DEBUG( logger, "storage1 " << s1 << " of " << allMatrixStorages1.size() << " =  " << storage1 
+                                   << ", assign transpose to storage2 " << s2 << " = " << storage2 );
+
+            storage2.assignTranspose( storage1 );   
+
+            BOOST_CHECK_EQUAL( storage1.getNumRows(), storage2.getNumColumns() );
+            BOOST_CHECK_EQUAL( storage2.getNumRows(), storage1.getNumColumns() );
+
+            LArray<ValueType> result2( context );
+            LArray<ValueType> y(  storage2.getNumRows(), 0 );
+
+            storage2.vectorTimesMatrix( result2, alpha, x, beta, result2 );
+
+            // results should be the same
+
+            // BOOST_CHECK_EQUAL( result1.maxDiffNorm( result2 ), 0 );
+        }
     }
 }
 
@@ -489,6 +879,55 @@ BOOST_AUTO_TEST_CASE( jacobiTest )
 
             // solution1 and solution2 must be the same
     
+            BOOST_CHECK( solution1.maxDiffNorm( solution2 ) < common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( jacobiAsyncTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "jacobiTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        setDenseSquareData( storage ); 
+
+        // must be square matrix
+
+        SCAI_ASSERT_EQUAL( storage.getNumRows(), storage.getNumColumns(), "storage not square" );
+
+        SCAI_LOG_DEBUG( logger, "storage for jacobiIterate = " << storage )
+
+        const LArray<ValueType> oldSolution( storage.getNumRows(), 1 );
+        const LArray<ValueType> rhs( storage.getNumRows(), 2 );
+
+        ValueType omegas[] = { 1.0, 0.8, 0.5 };
+        const int NCASES = sizeof( omegas ) / sizeof( ValueType );
+
+        for ( int k = 0; k < NCASES; ++k )
+        {
+            ValueType omega = omegas[k];
+
+            LArray<ValueType> solution1( context );
+            LArray<ValueType> solution2( context );
+
+            storage.jacobiIterate( solution1, oldSolution, rhs, omega );
+
+            {
+                common::unique_ptr<tasking::SyncToken> token;
+                token.reset( storage.jacobiIterateAsync( solution2, oldSolution, rhs, omega ));
+            }
+
             BOOST_CHECK( solution1.maxDiffNorm( solution2 ) < common::TypeTraits<ValueType>::small() );
         }
     }
@@ -724,9 +1163,12 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
 
-        SCAI_LOG_INFO( logger, "setCSRData for " << storage )
+        common::unique_ptr<MatrixStorage<ValueType> > storageDense( storage.copy() );
+
+        SCAI_LOG_DEBUG( logger, "setCSRData for " << storage )
 
         storage.clear();
+
         IndexType numRows;
         IndexType numColumns;
         LArray<IndexType> matrixRowSizes( context );
@@ -735,7 +1177,7 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
         LArray<ValueType> matrixDense( context );
         getMatrix_7_4 ( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues, matrixDense );
         IndexType numValues = matrixJA.size();
-        _MatrixStorage::sizes2offsets( matrixRowSizes );
+
 
         // Now we can use matrixRowSizes as IA array
 
@@ -743,18 +1185,24 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
 
         SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
                        << ", nnz = " << numValues << ") : matrix = " << storage )
-        storage.prefetch();
-        hmemo::ReadAccess<ValueType> results( matrixDense );
 
-        for ( IndexType i = 0; i < numRows; i++ )
-        {
-            for ( IndexType j = 0; j < numColumns; j++ )
-            {
-                BOOST_CHECK_EQUAL( storage.getValue( i, j ) , results[ i * numColumns + j ] );
-            }
-        }
+        storage.prefetch();
+
+        storageDense->setDenseData( numRows, numColumns, matrixDense );
 
         storage.wait();
+
+        BOOST_CHECK_EQUAL( 0, storageDense->maxDiffNorm( storage ) );
+
+        storage.purge();
+
+        // Now set CSR data with an offset array
+
+        utilskernel::HArrayUtils::scan( matrixRowSizes, context );
+
+        storage.setCSRData( numRows, numColumns, numValues, matrixRowSizes, matrixJA, matrixValues );
+
+        BOOST_CHECK_EQUAL( 0, storageDense->maxDiffNorm( storage ) );
 
         // now we make some checks with incorrect CSR data
 

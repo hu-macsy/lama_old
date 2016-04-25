@@ -164,12 +164,28 @@ public:
 
     virtual void purge() = 0;
 
+    /** Each storage provides a routine that prints the storage values. */
+
+    virtual void print( std::ostream& stream ) const = 0;
+
+    /** print vithout an argument for stream takes std::cout */
+
+    void print() const
+    {
+        print( std::cout );
+    }
+
     /** This method allocates new matrix storage for the matrix. The
      *  matrix contains only zero elements.
      *
      *  Note: This method contains an implicit clear, but not a purge.
      *        So allocation of a much smaller matrix compared to the existing
      *        one might result in some waste of memory.
+     *
+     *  Note: For dense matrices all values are set to zero; for sparse matrices 
+     *        zero values are usually not stored and no initialization is done.
+     *
+     *  Note: Operations are done on the context set for the matrix storage.
      */
 
     virtual void allocate( const IndexType numRows, const IndexType numColumns ) = 0;
@@ -210,6 +226,13 @@ public:
     /** Allow for additional row compression. */
 
     void setCompressThreshold( float ratio );
+
+    /** Query the threshold  */
+
+    float getCompressThreshold() const
+    {
+        return mCompressThreshold;
+    }
 
     /** Getter routine for the number of rows. */
 
@@ -400,9 +423,9 @@ public:
 
     static void offsets2sizes( hmemo::HArray<IndexType>& sizes, const hmemo::HArray<IndexType>& offsets );
 
-    /** Utitily to compute the offset array from a sizes array. */
+    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets );
 
-    static IndexType sizes2offsets( hmemo::HArray<IndexType>& sizes );
+    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets, const hmemo::HArray<IndexType>& sizes, const hmemo::ContextPtr loc );
 
     /** Returns the number of bytes needed for the current matrix.
      *

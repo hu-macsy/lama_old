@@ -36,7 +36,7 @@
 
 // internal scai libraries
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
-#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -48,7 +48,7 @@ namespace scai
 
 using namespace hmemo;
 
-using utilskernel::OpenMPUtils;
+using utilskernel::HArrayUtils;
 using sparsekernel::OpenMPCSRUtils;
 
 namespace lama
@@ -435,25 +435,24 @@ ValueType SparseAssemblyStorage<ValueType>::operator()( const IndexType i, const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::print() const
+void SparseAssemblyStorage<ValueType>::print( std::ostream& stream ) const
 {
-    using std::cout;
     using std::endl;
 
-    cout << "AssemblyStorage " << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues << endl;
+    stream << "AssemblyStorage " << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues << endl;
 
     for( IndexType i = 0; i < mNumRows; i++ )
     {
         const Row& row = mRows[i];
 
-        cout << "Row " << i << " ( " << row.ja.size() << " ) :";
+        stream << "Row " << i << " ( " << row.ja.size() << " ) :";
 
         for( size_t k = 0; k < row.ja.size(); ++k )
         {
-            cout << " " << row.ja[k] << ":" << row.values[k];
+            stream << " " << row.ja[k] << ":" << row.values[k];
         }
 
-        cout << endl;
+        stream << endl;
     }
 }
 
@@ -649,23 +648,41 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
     const HArray<OtherValueType>& values,
-    const ContextPtr /* loc */)
+    const ContextPtr prefLoc )
 {
+    if ( ia.size() == numRows )
+    {
+        // offset array required
+
+        HArray<IndexType> offsets;
+
+        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
+
+        SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
+
+        setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
+
+        return;
+    }
+
+    SCAI_ASSERT_EQUAL( ja.size(), numValues, "size misamtch" );
+    SCAI_ASSERT_EQUAL( values.size(), numValues, "size misamtch" );
+    SCAI_ASSERT_EQUAL( ia.size(), numRows + 1, "size misamtch" );
+
+    SCAI_ASSERT( HArrayUtils::isSorted( ia, true, prefLoc ), 
+                 "illegal offset array, not ascending entries" );
+
+    SCAI_ASSERT_EQUAL( HArrayUtils::getValImpl( ia, numRows ), numValues, 
+                 "illegal offset array, not ascending entries" );
+
+    SCAI_ASSERT( HArrayUtils::validIndexes( ja, numColumns ), 
+                 "illegal column indexes, #colums = " << numColumns );
+
     // no more error checks here on the sizes, but on the content
 
     ReadAccess<IndexType> csrIA( ia );
     ReadAccess<IndexType> csrJA( ja );
     ReadAccess<OtherValueType> csrValues( values );
-
-    if( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
-    {
-        COMMON_THROWEXCEPTION( "invalid offset array" )
-    }
-
-    if( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
-    {
-        COMMON_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
-    }
 
     mNumRows = numRows;
     mNumColumns = numColumns;

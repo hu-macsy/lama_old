@@ -572,7 +572,7 @@ void MICCSRUtils::normalGEMV(
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
-    SCAI_REGION( "MIC.CSRUtils.normalGEMV" )
+    //SCAI_REGION( "MIC.CSRUtils.normalGEMV" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )

@@ -157,7 +157,7 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr rowDist, DistributionPtr co
     CRTPMatrix<DenseMatrix<ValueType>, ValueType>( rowDist, colDist )
 {
     computeOwners();
-    allocateData();
+    allocateData();   // will initialize it with zero
 }
 
 template<typename ValueType>
@@ -370,7 +370,7 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
             mData[i].reset( new DenseStorage<ValueType>( numLocalRows, numCols[i] ) );
         }
 
-        mData[0]->setIdentity();
+        mData[0]->setDiagonalImpl( ValueType( 1 ) );
 
         SCAI_LOG_DEBUG( logger, "mData[0] : " << *mData[0] << ", with data = " << mData[0]->getData() )
     }
@@ -386,7 +386,7 @@ void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
     Matrix::setDistributedMatrix( dist, dist );
 
     computeOwners();
-    allocateData();
+    allocateData();   // initialized with zero
 
     // Note: data is already allocated, so we just set it
 
@@ -403,11 +403,7 @@ void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 
         if ( i == rank )
         {
-            mData[i]->setIdentity();
-        }
-        else
-        {
-            mData[i]->setZero();
+            mData[i]->setDiagonal( ValueType( 1 ) );
         }
     }
 }

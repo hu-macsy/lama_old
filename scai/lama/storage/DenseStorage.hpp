@@ -122,11 +122,6 @@ public:
     void setIdentity( const IndexType size );
 
     /**
-     *  @brief Sets current dense matrix to identity
-     */
-    void setIdentity();
-
-    /**
      *  @brief Sets allocated dense matrix to zero
      */
     void setZero();
@@ -329,7 +324,7 @@ public:
 
     /** Print dense matrix on output; use it carefully */
 
-    void print() const;
+    virtual void print( std::ostream& ) const;
 
     template<typename OtherType>
     void assignDenseStorageImpl( const DenseStorageView<OtherType>& otherDenseStorage );

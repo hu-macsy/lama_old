@@ -47,6 +47,7 @@
 
 using namespace scai;
 using namespace hmemo;
+using namespace dmemo;
 using namespace lama;
 
 //
@@ -82,7 +83,7 @@ int main()
 
     a.setRawDenseData( rep, rep, values.get() );
 
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     std::vector<IndexType> myGlobalIndexes;
 
@@ -103,8 +104,7 @@ int main()
 
     std::cout << "Communicator = " << *comm << std::endl;
 
-    DenseVector<double> row;     // any type
-    row.resize( dist );          // any distribution   
+    DenseVector<double> row( dist );     // any type, any distribution
 
     a.getRow( row, irow );
 

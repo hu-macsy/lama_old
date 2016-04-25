@@ -157,7 +157,7 @@ void _MatrixStorage::_assignTranspose( const _MatrixStorage& other )
     mNumColumns = tmpNumRows;
 
     mRowIndexes.clear();
-    mCompressThreshold = other.mCompressThreshold;
+    // remains unchanged: mCompressThreshold = other.mCompressThreshold;
     mDiagonalProperty = false;
 }
 
@@ -168,7 +168,7 @@ void _MatrixStorage::_assign( const _MatrixStorage& other )
     mNumRows = other.mNumRows;
     mNumColumns = other.mNumColumns;
     mRowIndexes.clear();
-    mCompressThreshold = other.mCompressThreshold;
+    // remains unchanged: mCompressThreshold = other.mCompressThreshold;
     mDiagonalProperty = false;
 }
 
@@ -312,6 +312,19 @@ IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& sizes )
     WriteAccess<IndexType> writeOffsets( sizes );
     writeOffsets.resize( n + 1 );
     return OpenMPCSRUtils::sizes2offsets( writeOffsets, n );
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& offsets, const HArray<IndexType>& sizes, ContextPtr loc )
+{
+    {
+        // allocate offsets with one more element that sizes
+        WriteOnlyAccess<IndexType> wOffsets( offsets, loc, sizes.size() + 1 );
+    }
+
+    utilskernel::HArrayUtils::assign( offsets, sizes, loc );
+    return utilskernel::HArrayUtils::scan( offsets, loc );
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -504,7 +517,6 @@ void MatrixStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& 
     // Compressed sparse column data can be used directly to generate the transposed matrix
     // by interpretation as CSR data.
     setCSRData( other.getNumColumns(), other.getNumRows(), cscJA.size(), cscIA, cscJA, cscValues );
-    SCAI_LOG_INFO( logger, "now assigned tranposed: " << *this )
 }
 
 /* --------------------------------------------------------------------------- */
