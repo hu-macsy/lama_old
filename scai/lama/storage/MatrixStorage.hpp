@@ -491,10 +491,11 @@ public:
 
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::BINARY,
+        const File::FileType fileType = File::SAMG,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE ) const = 0;
+        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
+        const bool writeBinary = false ) const = 0;
 
     virtual bool checkSymmetry() const = 0;
 
@@ -802,19 +803,21 @@ public:
 
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::BINARY,
+        const File::FileType fileType = File::SAMG,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE ) const;
+        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
+        const bool writeToFile = false ) const;
 
     virtual void writeToFile(
         const PartitionId size,
         const PartitionId rank,
         const std::string& fileName,
-        const File::FileType fileType = File::BINARY,
+        const File::FileType fileType = File::SAMG,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE ) const;
+        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
+        const bool writeToFile = false ) const;
 
     virtual void readFromFile( const std::string& fileName );
 

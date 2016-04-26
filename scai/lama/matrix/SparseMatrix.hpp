@@ -550,10 +550,11 @@ public:
 
     void writeToFile1(
         const std::string& fileName,
-        const File::FileType fileType = File::BINARY,
+        const File::FileType fileType = File::SAMG,
         const common::scalar::ScalarType valuesType = common::scalar::INTERNAL,
         const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE ) const;
+        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
+        const bool writeBinary = false ) const;
 
     /**
      * @brief Assigns this matrix with a replicated sparse matrix read from file.

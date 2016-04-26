@@ -42,6 +42,7 @@
 
 #include <scai/lama/io/FileType.hpp>
 #include <scai/lama/io/IOUtils.hpp>
+#include <scai/lama/io/FileStream.hpp>
 
 #include <scai/lama/mepr/IOWrapper.hpp>
 
@@ -152,81 +153,30 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 {
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
+
     // Take the current default communicator
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor
 
-    IndexType numElements = 0; // will be the size of the vector
-
-    File::FileType fileType; // = File::BINARY;
-    std::string suffix;
-	std::string baseFileName = filename;
-	std::string vecFileName;
-    long dataTypeSize = -1;
-
-    if( filename.size() >= 4 )
-    {
-        suffix = filename.substr( filename.size() - 4, 4 );
-    }
-
-    if( suffix == ".frv" )
-    {
-        baseFileName = filename.substr( 0, filename.size() - 4 );
-    }
-
-    if( suffix == ".mtx" )
-    {
-    	fileType = File::MATRIX_MARKET;
-    } else
-    {
-    	std::string frvFileName = baseFileName + ".frv";
-
-		if( myRank == host )
-		{
-			readVectorHeader( frvFileName, fileType, dataTypeSize );
-
-			// broadcast the size to all other processors
-
-			numElements = size();
-		}
-
-		vecFileName = baseFileName + ".vec";
-
-		comm->bcast( &numElements, 1, host );
-
-		// host gets all elements
-
-		DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
-
-		allocate( dist );
-    }
-
     if( myRank == host )
     {
-        // host owns all elements, all others have no elements
 
-        switch( fileType )
-        {
-            case File::FORMATTED: //ASCII
-                readVectorFromFormattedFile( vecFileName );
-                break;
+        IndexType numColumns;
+        StorageIO<ValueType>::readDenseFromFile( mLocalValues, numColumns, filename );
 
-            case File::BINARY: //Binary without number of elements in the vector file
-                readVectorFromBinaryFile( vecFileName, getDataType<ValueType>( dataTypeSize ) );
-                break;
-
-            case File::MATRIX_MARKET:
-            	readVectorFromMMFile( filename );
-            	break;
-
-            default:
-                COMMON_THROWEXCEPTION( "Unknown File Type." );
-        }
-
-        // @TODO do not throw exception as application will hang
+        SCAI_ASSERT_EQ_ERROR( numColumns, 1, "vector must have exact one column in MatrixMarket file" )
     }
+
+    IndexType numElements = mLocalValues.size();
+    comm->bcast( &numElements, 1, host );
+
+    DistributionPtr distribution( new NoDistribution( numElements ) );
+    setDistributionPtr( distribution );
+
+//    DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
+//    allocate( dist );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -827,355 +777,13 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 /* -- IO ------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::readVectorHeader(
-    const std::string& filename,
-    File::FileType& fileType,
-    long& dataTypeSize )
-{
-    SCAI_LOG_INFO( logger, "Read Vector Header" )
-
-    char charFileType;
-    std::ifstream inFile( filename.c_str(), std::ios::in );
-
-    if( !inFile.is_open() )
-    {
-        COMMON_THROWEXCEPTION( "Unable to open vector header file " + filename + "." )
-    }
-
-    IndexType numrows;
-
-    inFile >> charFileType;
-    inFile >> numrows;
-    inFile >> dataTypeSize;
-    inFile.close();
-
-    // Cyclic distribution where first processor gets all
-
-    DistributionPtr distribution( new NoDistribution( numrows ) );
-    setDistributionPtr( distribution );
-
-    switch( charFileType )
-    {
-        case 'b':
-            fileType = File::BINARY;
-            break;
-
-        case 'f':
-            fileType = File::FORMATTED;
-            break;
-
-        default:
-            COMMON_THROWEXCEPTION( "Invalid header file." )
-    }
-
-    SCAI_LOG_TRACE( logger, "Read Vector Header, size = " << size() )
-}
-
-template<typename ValueType>
 void DenseVector<ValueType>::writeToFile(
     const std::string& fileBaseName,
-    const File::FileType fileType/*= File::BINARY*/,
-    const common::scalar::ScalarType dataType/*=DOUBLE*/) const
+    const File::FileType fileType /* = File::SAMG */,
+    const common::scalar::ScalarType dataType /* = DOUBLE */,
+    const bool writeBinary /* = false */ ) const
 {
-    std::string file = fileBaseName.c_str();
-    file += ".vec";
-
-    switch( fileType )
-    {
-        case File::FORMATTED:
-        {
-            writeVectorToFormattedFile( file );
-            break;
-        }
-
-        case File::BINARY:
-        {
-            writeVectorToBinaryFile( file, dataType );
-            break;
-        }
-
-        case File::MATRIX_MARKET:
-        {
-            writeVectorToMMFile( fileBaseName, dataType );
-            break;
-        }
-
-        default:
-            COMMON_THROWEXCEPTION( "Unknown file type definition." );
-    } //switch(fileType)
-
-    long dataTypeSize = getDataTypeSize<ValueType>( dataType );
-
-    if( fileType != File::MATRIX_MARKET )
-    {
-		writeVectorHeader( fileBaseName + ".frv", fileType, dataTypeSize );
-    }
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::writeVectorHeader(
-    const std::string& fileName,
-    const File::FileType& fileType,
-    const long dataTypeSize ) const
-{
-    char charFileType;
-
-    switch( fileType )
-    {
-        case File::BINARY:
-            charFileType = 'b';
-            break;
-
-        case File::FORMATTED:
-            charFileType = 'f';
-            break;
-
-        case File::MATRIX_MARKET:
-            // nothing to do for MATRIX_MARKET
-            return;
-
-        default:
-            COMMON_THROWEXCEPTION( "Invalid header file." )
-    }
-
-    std::ofstream outFile( fileName.c_str(), std::ios::out );
-
-    if( !outFile.is_open() )
-    {
-        COMMON_THROWEXCEPTION( "Unable to open vector header file " + fileName + "." )
-    }
-
-    outFile << charFileType << std::endl;
-    outFile << size() << std::endl;
-    outFile << dataTypeSize;
-    outFile.close();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, const common::scalar::ScalarType& dataType ) const
-{
-	IndexType numRows = size();
-
-	std::string fullFilename = filename;
- 
-    if ( !_StorageIO::hasSuffix( filename, ".mtx" ) )
-    {
-        fullFilename += ".mtx";
-    }
-
-	_StorageIO::writeMMHeader( true, numRows, 1, numRows, fullFilename, dataType );
-
-    std::ofstream ofile;
-    ofile.open( fullFilename.c_str(), std::ios::out | std::ios::app );
-
-    if( ofile.fail() )
-    {
-        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + fullFilename + "' could not be reopened." )
-    }
-
-    ContextPtr hostContext = Context::getHostPtr();
-
-    ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
-
-    for( IndexType ii = 0; ii < numRows; ++ii )
-    {
-
-        if( dataType == common::scalar::PATTERN )
-        {
-            ofile << ii + 1;
-        }
-        else
-        {
-            ofile << " " << dataRead[ii];
-        }
-
-        ofile << "\n"; //std::endl;
-    }
-
-    ofile.close();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::writeVectorToBinaryFile( const std::string& file, const common::scalar::ScalarType type ) const
-{
-    std::fstream outFile( file.c_str(), std::ios::out | std::ios::binary );
-
-    writeVectorDataToBinaryFile( outFile, type );
-
-    outFile.close();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile, const common::scalar::ScalarType type ) const
-{
-    IndexType numRows = size();
-
-    ContextPtr contextPtr = Context::getHostPtr();
-
-    ReadAccess<ValueType> dataRead( mLocalValues, contextPtr );
-
-    if( type == common::scalar::INTERNAL )
-    {
-        IOUtils::writeBinary<ValueType, ValueType>( outFile, dataRead.get(), numRows );
-    }
-    else
-    {
-        mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::writeBinary( type, outFile, dataRead.get(), numRows );
-    }
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file ) const
-{
-    ContextPtr hostContext = Context::getHostPtr();
-
-    std::fstream outFile( file.c_str(), std::ios::out );
-
-    ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
-
-    for( IndexType i = 0; i < size(); ++i )
-    {
-        outFile << dataRead[i] << std::endl;
-    }
-
-    outFile.close();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fileName )
-{
-    ContextPtr hostContext = Context::getHostPtr();
-
-    std::ifstream inFile( fileName.c_str(), std::ios::in );
-
-    if( !inFile.is_open() )
-    {
-        COMMON_THROWEXCEPTION( "Could not open formatted ascii vector file." )
-    }
-
-    const IndexType n = size();
-
-    WriteOnlyAccess<ValueType> dataWrite( mLocalValues, hostContext, n );
-
-    for( IndexType i = 0; i < n; ++i )
-    {
-        inFile >> dataWrite[i];
-    }
-
-    inFile.close();
-    SCAI_LOG_TRACE( logger, "read Vector From Formatted File, " << size() << " values" )
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::readVectorFromBinaryFile( const std::string& fileName, const common::scalar::ScalarType type )
-{
-    std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
-
-    if( !inFile.is_open() )
-    {
-        COMMON_THROWEXCEPTION( "Could not open binary vector file " << fileName << "." )
-    }
-
-    readVectorDataFromBinaryFile( inFile, type );
-
-    inFile.close();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
-{
-    bool isSymmetric, isPattern;
-    IndexType numRows, numColumns, numValues;
-
-    _StorageIO::readMMHeader( numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
-
-    SCAI_ASSERT_EQ_ERROR( numColumns, 1, "vector must have exact one column in MatrixMarket file" )
-
-    std::ifstream ifile;
-    ifile.open( fileName.c_str(), std::ios::in );
-
-    if( ifile.fail() )
-    {
-        COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
-    }
-
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
-
-    allocate( dist );
-
-    // First reading in the beginning of the rows
-    // then reading in the values and columns of the rows
-    //Jump to the beginning of the Values
-    char c = '%';
-
-    while( c == '%' )
-    {
-        ifile >> c;
-        ifile.ignore( 1024, '\n' );
-    }
-
-    IndexType lines = numValues;
-
-    IndexType i;
-    ValueType val;
-
-    std::string line;
-
-    WriteOnlyAccess<ValueType> vector( mLocalValues, numValues );
-    ValueType* vPtr = vector.get();
-
-    for( int l = 0; l < lines && !ifile.eof(); ++l )
-    {
-        std::getline( ifile, line );
-        std::istringstream reader( line );
-
-        if( isPattern )
-        {
-            reader >> i;
-            val = 1.0;
-            i--;
-        }
-        else
-        {
-            reader >> val;
-            i = l;
-        }
-
-        vPtr[i] = val;
-
-    }
-
-    if( ifile.eof() )
-    {
-    	COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
-    }
-
-    ifile.close();
-    ifile.close();
-    SCAI_LOG_INFO( logger, "construct vector " << numRows )
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile, const common::scalar::ScalarType type )
-{
-    IndexType n = size();
-
-    SCAI_LOG_INFO( logger,
-                   "read DenseVector<" << TypeTraits<ValueType>::id() << "> from binary file, size = " << n << ", dataType = " << ( ( common::scalar::ScalarType ) type ) )
-
-    WriteOnlyAccess<ValueType> writeData( mLocalValues, n );
-
-    if( type == common::scalar::INTERNAL )
-    {
-        IOUtils::readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );
-    }
-    else
-    {
-        mepr::IOWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::readBinary( type, inFile, writeData.get(), n );
-    }
+    StorageIO<ValueType>::writeDenseToFile( mLocalValues, 1, fileBaseName, fileType, dataType, writeBinary );
 }
 
 /* ---------------------------------------------------------------------------------*/

@@ -37,6 +37,9 @@
 #include <scai/lama/StorageIO.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+
+using namespace scai::common;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
@@ -77,8 +80,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, test_types )
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
     std::string filename = "out_formatted";
-    csrMatrix.writeToFile( filename, File::FORMATTED );
-    readMatrix.readFromFile( filename );
+    csrMatrix.writeToFile( filename, File::SAMG );
+    readMatrix.readFromFile( filename + ".frm" );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
 
@@ -102,9 +105,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, test_types )
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
-    std::string filename = "out_matrix_market.mtx";
+    std::string filename = "out_matrix_market";
     csrMatrix.writeToFile( filename, File::MATRIX_MARKET );
-    readMatrix.readFromFile( filename );
+    readMatrix.readFromFile( filename + ".mtx" );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
 
@@ -117,8 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, test_types )
         }
     }
 
-    // TODO:
-    //std::remove( filename.c_str() );
+    std::remove( filename.c_str() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -129,8 +131,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, test_types )
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
     std::string filename = "out_binary";
-    csrMatrix.writeToFile( filename, File::BINARY );
-    readMatrix.readFromFile( filename );
+    csrMatrix.writeToFile( filename, File::SAMG, TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, TypeTraits<IndexType>::stype, true );
+    readMatrix.readFromFile( filename + ".frm" );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
 
@@ -145,8 +147,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, test_types )
         }
     }
 
-    std::remove( ( filename + ".amg" ).c_str() );
-    std::remove( ( filename + ".frm" ).c_str() );
+    // TODO: uncomment
+//    std::remove( ( filename + ".amg" ).c_str() );
+//    std::remove( ( filename + ".frm" ).c_str() );
 }
 
 /* ------------------------------------------------------------------------- */

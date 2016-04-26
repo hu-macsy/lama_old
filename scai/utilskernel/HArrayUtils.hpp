@@ -214,11 +214,6 @@ public:
     template<typename ValueType>
     static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Adds a scalar to each element of a given array */
-
-    template<typename ValueType>
-    static void addScalar( hmemo::HArray<ValueType>& array, const ValueType scalar, hmemo::ContextPtr prefLoc );
-
     /*
      * Implementation of functions
      */

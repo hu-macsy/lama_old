@@ -271,23 +271,6 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
-    struct addScalar
-    {
-        /** @brief adds a scalar value to each element of a vector
-         *
-         *  @param[in,out]  values is the array
-         *  @param[in]      n      is the number of entries in values
-         *  @param[in]      scalar is the scalar that should be added
-         */
-        typedef void ( *FuncType ) (
-            ValueType values[],
-            const IndexType n,
-            const ValueType scalar );
-
-        static const char* getId() { return "Util.addScalar"; }
-    };
-
-    template<typename ValueType>
     struct scan
     {
         /** This method computes runnings sums of values

@@ -128,11 +128,6 @@ public:
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::addScalar */
-
-    template<typename ValueType>
-    static void addScalar( ValueType mValues[], const IndexType n, const ValueType scalar );
-
     /** OpenMP implementation for UtilKernelTrait::scan */
 
     template<typename ValueType>

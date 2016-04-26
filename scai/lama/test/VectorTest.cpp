@@ -171,16 +171,17 @@ BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
     std::string prefix = scai::test::Configuration::getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
-    vector.writeToFile( prefix + "/" + testfilename, File::FORMATTED, scai::common::scalar::DOUBLE );
-    DenseVector<double> vector2( prefix + "/" + testfilename );
+    vector.writeToFile( prefix + "/" + testfilename, File::SAMG, scai::common::scalar::DOUBLE );
+    DenseVector<double> vector2( prefix + "/" + testfilename + ".frv" );
     verifySameVector<double>( vector2, result );
     cleanupfiles( testfilename );
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
-    vector.writeToFile( fileName, File::BINARY, scai::common::scalar::FLOAT );
+
+    vector.writeToFile( fileName, File::SAMG, scai::common::scalar::FLOAT, true );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
-    DenseVector<double> vector3( prefix + "/" + testfilename );
+    DenseVector<double> vector3( prefix + "/" + testfilename + ".frv" );
     verifySameVector<double>( vector3, result );
     cleanupfiles( testfilename );
 	// write and read mtx

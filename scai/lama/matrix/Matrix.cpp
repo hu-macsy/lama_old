@@ -581,7 +581,8 @@ void Matrix::writeToFile(
     const File::FileType fileType /* = UNFORMATTED */,
     const common::scalar::ScalarType valuesType /* = INTERNAL */,
     const common::scalar::ScalarType iaType /* = INDEX_TYPE */,
-    const common::scalar::ScalarType jaType /* = INDEX_TYPE */ ) const
+    const common::scalar::ScalarType jaType /* = INDEX_TYPE */,
+    const bool writeBinary /* = false */ ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << valuesType << " )" )
@@ -594,7 +595,7 @@ void Matrix::writeToFile(
 
         if ( comm.getRank() == 0 )
         {
-            getLocalStorage().writeToFile( fileName, fileType, valuesType, iaType, jaType );
+            getLocalStorage().writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
         }
 
         // synchronization to avoid that other processors start with
@@ -609,7 +610,7 @@ void Matrix::writeToFile(
 
         common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
 
-        repM->writeToFile( fileName, fileType, valuesType, iaType, jaType );
+        repM->writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
     }
 }
 

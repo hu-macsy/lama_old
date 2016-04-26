@@ -87,6 +87,7 @@ struct CommandLineOptions
     string matFileName;
 
     File::FileType outFileType;
+    bool writeBinary;
     common::scalar::ScalarType outDataType;
 
     Scalar value;   // value for the vector
@@ -99,6 +100,7 @@ struct CommandLineOptions
     {
         outFileName = "";
         matFileName = "";
+        writeBinary = false;
         outFileType = File::DEFAULT;
         outDataType = common::scalar::INTERNAL;       // same as input data type
         value       = Scalar( 1 );
@@ -110,7 +112,7 @@ struct CommandLineOptions
     {
         if ( option == "-a" )
         {
-            outFileType = File::FORMATTED;
+            outFileType = File::SAMG;
         }
         else if ( option == "-mm" )
         {
@@ -118,7 +120,8 @@ struct CommandLineOptions
         }
         else if ( option == "-b" )
         {
-            outFileType = File::BINARY;
+            outFileType = File::SAMG;
+            writeBinary = true;
         } 
         else if ( option == "-s" )
         {
@@ -189,7 +192,8 @@ struct CommandLineOptions
         }
         else
         {
-             outFileType = File::BINARY;
+             outFileType = File::SAMG;
+             writeBinary = true;
         }
 
         cout << "No output file type specified, take " << outFileType << endl;
@@ -335,7 +339,7 @@ int main( int argc, char* argv[] )
     cout << ", data type = " << options.outDataType;
     cout << endl;
 
-    v->writeToFile( options.outFileName, options.outFileType, common::scalar::INTERNAL );
+    v->writeToFile( options.outFileName, options.outFileType, common::scalar::INTERNAL, options.writeBinary );
 
     cout << "Done." << endl;
 }

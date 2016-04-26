@@ -40,10 +40,10 @@ scai_project (
         mmio
         XDRFileStream
         IOUtils
+        FileStream
 
     HEADERS
 
-        BinaryStream
         FileType
 
     ADD_PARENT_SCOPE

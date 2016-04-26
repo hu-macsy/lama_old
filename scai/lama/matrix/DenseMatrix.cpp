@@ -263,12 +263,12 @@ void DenseMatrix<ValueType>::readFromFile( const std::string& fileName )
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::writeToFile1(
-
     const std::string& fileName,
     const File::FileType fileType /* = UNFORMATTED */,
     const common::scalar::ScalarType valuesType /* = INTERNAL */,
     const common::scalar::ScalarType iaType /* = INDEX_TYPE */,
-    const common::scalar::ScalarType jaType /* = INDEX_TYPE */ ) const
+    const common::scalar::ScalarType jaType /* = INDEX_TYPE */,
+    const bool writeBinary /* = false */ ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << valuesType << " )" )
@@ -281,7 +281,7 @@ void DenseMatrix<ValueType>::writeToFile1(
 
         if ( comm.getRank() == 0 )
         {
-            getLocalStorage().writeToFile( fileName, fileType, valuesType, iaType, jaType );
+            getLocalStorage().writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
         }
 
         // synchronization to avoid that other processors start with
@@ -298,7 +298,7 @@ void DenseMatrix<ValueType>::writeToFile1(
 
         // repM.redistribute( rowDist, colDist );
 
-        repM.writeToFile1( fileName, fileType, valuesType, iaType, jaType );
+        repM.writeToFile1( fileName, fileType, valuesType, iaType, jaType, writeBinary );
     }
 }
 

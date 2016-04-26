@@ -298,11 +298,13 @@ public:
      * @param[in] fileName is the name of the output file (suffix might be added according to the file type)
      * @param[in] fileType format of the output file, default is binary
      * @param[in] dataType representation type for output values, default is same type as vector
+     * @param[in] writeBinary whether the data should be write binary
      */
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::BINARY,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL ) const = 0;
+        const File::FileType fileType = File::SAMG,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
+        const bool writeBinary = false ) const = 0;
 
     /**
      * @brief get a vector with all local values

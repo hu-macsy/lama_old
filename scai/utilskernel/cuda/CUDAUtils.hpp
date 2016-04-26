@@ -129,11 +129,6 @@ public:
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::addScalar */
-
-    template<typename ValueType>
-    static void addScalar( ValueType array[], const IndexType n, const ValueType scalar );
-
     /** CUDA implementation for UtilKernelTrait::scan */
 
     template<typename ValueType>

@@ -1,5 +1,5 @@
 /**
- * @file FileType.hpp
+ * @file FileStream.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,20 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief FileType.hpp
- * @author Kai Buschulte
- * @date 12.05.2010
- * @since 1.0.0
+ * @brief Expansion of the std::fstream class
+ * @author Jan Ecker
+ * @date 16.03.2016
+ * @since 2.0.0
  */
 
-#pragma once
-
-// internal scai libraries
-
-#include <scai/common/SCAITypes.hpp>
-#include <scai/common/ScalarType.hpp>
-#include <scai/common/TypeTraits.hpp>
-#include <scai/common/mepr/ScalarTypeHelper.hpp>
+#include <scai/lama/io/FileStream.hpp>
 
 namespace scai
 {
@@ -46,54 +39,8 @@ namespace scai
 namespace lama
 {
 
-/** Define an own namespace for enumeration types. */
+SCAI_LOG_DEF_LOGGER( FileStream::logger, "IO.FileStream" )
 
-namespace File
-{
-/**
- * @brief Defines the supported file types
- */
-enum FileType
-{
-    /**
-     * @brief the SAMG format
-     */
-    SAMG,
-
-    /**
-     * @brief the Matrix Market Format
-     *        (see http://math.nist.gov/matrixMarket for details).
-     */
-    MATRIX_MARKET,
-
-    /**
-     * @brief unspecified, used internally 
-     */
-    DEFAULT
-};
-
-/*
- * Output of ScalarType in stream by writing strings instead of numbers
- */
-
-static inline std::ostream& operator<<( std::ostream& stream, const FileType& object )
-{
-    switch ( object ) 
-    {
-        case SAMG:
-            stream << "SAMG";
-            break;
-        case MATRIX_MARKET:
-            stream << "MATRIX_MARKET";
-            break;
-        default:
-            stream << "<unknown_file_type>";
-     }
-     return stream;
 }
 
-}  // namespace File
-
-} /* end namespace lama */
-
-} /* end namespace scai */
+}

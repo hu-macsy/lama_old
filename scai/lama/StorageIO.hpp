@@ -39,6 +39,7 @@
 #include <scai/hmemo/HArray.hpp>
 
 #include <scai/lama/io/FileType.hpp>
+#include <scai/lama/io/FileStream.hpp>
 
 // std
 #include <fstream>
@@ -82,21 +83,12 @@ public:
         const PartitionId size,
         const PartitionId rank );
 
-    static void readCSRHeader(
-        IndexType& numRows,
-        IndexType& numColumns,
-        IndexType& numValues,
-        PartitionId& size,
-        PartitionId& rank,
-        File::FileType& fileType,
-        const std::string& fileName );
-
     static void writeMMHeader(
     	const bool& vector,
 		const IndexType& numRows,
 		const IndexType& numColumns,
 		const IndexType& numValues,
-		const std::string& fileName,
+		FileStream& fileName,
 		const common::scalar::ScalarType& dataType);
 
     static void readMMHeader(
@@ -105,21 +97,8 @@ public:
 		IndexType& numValues,
 		bool& isPattern,
 		bool& isSymmetric,
-		const std::string& fileName	);
+		FileStream& inFile	);
 
-
-    /** This method determines some properties of an input file containing matrix data.
-     *
-     *  param[out] fileType is the type of the file.
-     *  param[out] size is the number of files that contain the distributed matrix
-     *  param[out] baseFileName is the base name of the file, suffix is given by file type
-     *  param[in]  fileName is the name of the input file to read
-     */
-    static void getFileInfo(
-        File::FileType& fileType,
-        PartitionId& size,
-        std::string& baseFileName,
-        const std::string& fileName );
 
     /** Help routine that determines the availability of a given file by its name. */
 
@@ -160,6 +139,7 @@ public:
      *  @param[in] valuesType       type in which the values should written to the file
      *  @param[in] iaType           type in which the ia array should written to the file
      *  @param[in] jaType           type in which the ja array should written to the file
+     *  @param[in] writeBinary      whether the matrix should be written binary
      */
     static void writeCSRToFile(
         const PartitionId size,
@@ -172,8 +152,8 @@ public:
         const File::FileType& fileType,
         const common::scalar::ScalarType& valuesType,
         const common::scalar::ScalarType& iaType,
-        const common::scalar::ScalarType& jaType
-        );
+        const common::scalar::ScalarType& jaType,
+        const bool writeBinary = false );
 
     /** @brief Writing CSR storage to a formatted file.
      *
@@ -190,6 +170,8 @@ public:
 
     /** @brief Writing CSR storage to a binary file.
      *
+     *  @param[in] size                 header information in case of distributed matrices
+     *  @param[in] rank                 header information in case of distributed matrices
      *  @param[in] csrIA                CSR ia array
      *  @param[in] csrJA                CSR ja array
      *  @param[in] csrValues            CSR values array
@@ -197,15 +179,19 @@ public:
      *  @param[in] iaType               Type as which the ja data should be written
      *  @param[in] jaType               Type as which the ia data should be written
      *  @param[in] valuesType           Type as which the value data should be written
+     *  @param[in] writeBinary          whether the matrix should be written binary
      */
-    static void writeCSRToBinaryFile(
+    static void writeCSRToSAMGFile(
+        const PartitionId size,
+        const PartitionId rank,
         const hmemo::HArray<IndexType>& csrIA,
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const common::scalar::ScalarType iaType,
         const common::scalar::ScalarType jaType,
-        const common::scalar::ScalarType valuesType );
+        const common::scalar::ScalarType valuesType,
+        const bool writeBinary );
 
     /** Writing CSR storage to an mm file.
      *
@@ -239,38 +225,20 @@ public:
         hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName );
 
-    /** @brief Reading a CSR storage from a formatted file.
+    /** @brief Reading a CSR storage from a SAMG file.
      *
      *  @param[out] csrIA           CSR ia array
      *  @param[out] csrJA           CSR ja array
      *  @param[out] csrValues       CSR values array
+     *  @param[out] numColumns      number of columns
      *  @param[in]  fileName        name of input file
-     *  @param[in]  numRows         number of rows
      */
-    static void readCSRFromFormattedFile(
+    static void readCSRFromSAMGFile(
         hmemo::HArray<IndexType>& csrIA,
         hmemo::HArray<IndexType>& csrJA,
         hmemo::HArray<ValueType>& csrValues,
-        const std::string& fileName,
-        const IndexType numRows );
-
-    /** @brief Reading a CSR storage from a binary file.
-     *
-     *  @param[out] csrIA           CSR ia array
-     *  @param[out] csrJA           CSR ja array
-     *  @param[out] csrValues       CSR values array
-     *  @param[in]  fileName        name of input file
-     *  @param[in]  numRows         number of rows
-     *
-     *  Be careful: no implicit conversions are supported here, so
-     *  the binary file must contain data of exact the same type as needed.
-     */
-    static void readCSRFromBinaryFile(
-        hmemo::HArray<IndexType>& csrIA,
-        hmemo::HArray<IndexType>& csrJA,
-        hmemo::HArray<ValueType>& csrValues,
-        const std::string& fileName,
-        const IndexType numRows );
+        IndexType& numColumns,
+        const std::string& fileName );
 
     /** @brief Reading a CSR storage from an mm file.
      *
@@ -286,6 +254,81 @@ public:
         hmemo::HArray<IndexType>& csrJA,
         hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName );
+
+
+    /** @brief Reading a dense matrix from file
+     *
+     *  @param[out] data            data
+     *  @param[out] numColumns      number of columns
+     *  @param[in]  filename        name of input file
+     */
+    static void readDenseFromFile( hmemo::HArray<ValueType>& data,
+                                   IndexType& numColumns,
+                                   const std::string& filename );
+
+    /** @brief Writing a dense matrix to a file
+     *
+     *  @param[in]  data            data
+     *  @param[in]  numColumns      number of columns
+     *  @param[in]  filename        name of input file
+     *  @param[in]  fileType        format of the output file
+     *  @param[in]  dataType        type that should be used for writing the file
+     *  @param[in]  writeBinary     whether the output file should be write binary or not
+     */
+    static void writeDenseToFile( const hmemo::HArray<ValueType>& data,
+                                  const IndexType& numColumns,
+                                  const std::string& filename,
+                                  const File::FileType fileType,
+                                  const common::scalar::ScalarType dataType,
+                                  const bool writeBinary = false );
+
+    /** @brief Reading a dense matrix SAMG file
+    *
+    *  @param[out] data            data
+    *  @param[out] numColumns      number of columns
+    *  @param[in]  filename        name of input file
+    */
+    static void readDenseFromSAMGFile( hmemo::HArray<ValueType>& data,
+                                       IndexType& numColumns,
+                                       const std::string& filename );
+
+    /** @brief Writing a dense matrix to a SAMG file
+     *
+     *  @param[in]  data            data
+     *  @param[in]  numColumns      number of columns
+     *  @param[in]  filename        name of input file
+     *  @param[in]  dataType        type that should be used for writing the file
+     *  @param[in]  writeBinary     whether the output file should be write binary or not
+     */
+    static void writeDenseToSAMGFile( const hmemo::HArray<ValueType>& data,
+                                      const IndexType& numColumns,
+                                      const std::string& filename,
+                                      const common::scalar::ScalarType dataType,
+                                      const bool writeBinary = false );
+
+    /** @brief Reading a dense matrix from matrix market file
+    *
+    *  @param[out] data            data
+    *  @param[out] numColumns      number of columns
+    *  @param[in]  filename        name of input file
+    */
+    static void readDenseFromMMFile( hmemo::HArray<ValueType>& data,
+                                     IndexType& numColumns,
+                                     const std::string& filename );
+
+    /** @brief Writing a dense matrix to a matrix market file
+     *
+     *  @param[in]  data            data
+     *  @param[in]  numColumns      number of columns
+     *  @param[in]  filename        name of input file
+     *  @param[in]  dataType        type that should be used for writing the file
+     *  @param[in]  writeBinary     whether the output file should be write binary or not
+     */
+    static void writeDenseToMMFile( const hmemo::HArray<ValueType>& data,
+                                    const IndexType& numColumns,
+                                    const std::string& filename,
+                                    const common::scalar::ScalarType dataType,
+                                    const bool writeBinary = false );
 };
 
 /* -------------------------------------------------------------------------- */
