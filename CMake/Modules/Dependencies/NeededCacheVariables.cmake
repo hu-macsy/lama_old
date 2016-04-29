@@ -72,7 +72,7 @@ set ( WHITELIST
     
 set ( BOOST_WHITELIST
         BOOST_ROOT
-	Boost_INCLUDE_DIR
+        Boost_INCLUDE_DIR
         Boost_LIBRARY_DIRS
         Boost_NO_BOOST_CMAKE
         Boost_UNIT_TEST_FRAMEWORK_LIBRARY

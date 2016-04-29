@@ -28,7 +28,6 @@
  # @brief scai/blaskernel/CMakeLists.txt
  # @author Eric Schricker
  # @date 11.11.2015
- # @since 2.0.0
 ###
 
 ### Set required CMake version
@@ -58,7 +57,6 @@ if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
     include ( VersionCheck/Compiler )
     include ( Compiler/SetCPPFlags )
-    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Package/doc )
     include ( Functions/CheckValueAtCompleteBuild )

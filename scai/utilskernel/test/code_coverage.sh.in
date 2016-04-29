@@ -46,7 +46,7 @@ export SCAI_TRACE=time
 	
 # Running tests serial
 echo "Running utilskernel tests on Host"
-./utilskernelTest >/dev/null
+./utilskernelTest --SCAI_CONTEXT=Host >/dev/null
 if [ $? -ne 0 ]
 then
 	echo "ERROR in utilskernelTest"

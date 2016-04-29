@@ -39,7 +39,7 @@ export SCAI_TRACE=time
 	
 # Running tests serial
 echo "Running serial tests"
-./sparsekernelTest >/dev/null
+./sparsekernelTest --SCAI_CONTEXT=Host >/dev/null
 if [ $? -ne 0 ]
 then
 	echo "ERROR in sparsekernelTest"
