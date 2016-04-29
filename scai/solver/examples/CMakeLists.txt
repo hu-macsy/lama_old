@@ -33,7 +33,7 @@
 
 add_subdirectory ( lecture )
 if ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
-	add_subdirectory ( myJacobi )
+    add_subdirectory ( myJacobi )
 endif ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
 add_subdirectory ( solver )
 add_subdirectory ( spy )
