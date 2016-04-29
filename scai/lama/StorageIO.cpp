@@ -807,6 +807,7 @@ void StorageIO<ValueType>::readDenseFromSAMGFile( HArray<ValueType>& data,
             break;
 
         default:
+			dataType = common::scalar::UNKNOWN;
             SCAI_LOG_ERROR( logger, "Encountered invalid type size " << dataTypeSize )
     }
 

@@ -206,7 +206,7 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
     SCAI_LOG_INFO( logger, "write array data <" << common::TypeTraits<DataType>::id() << "> to <"
                            << common::TypeTraits<FileType>::id() << ">, offset = " << offset )
 
-    assert( is_open() );
+    SCAI_ASSERT( is_open(), "FileStream is not opened" );
 
 
     if( offset == 0 && typeid(FileType) == typeid(DataType) )
