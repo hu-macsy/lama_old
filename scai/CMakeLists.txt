@@ -144,13 +144,13 @@ include ( Dependencies/internal )
 
 include ( ExternalProject )
 
-message ( STATUS "general ${CMAKE_ARGS}" )
+#message ( STATUS "general ${CMAKE_ARGS}" )
 
 ## TODO: do in foreach loop
 #foreach ( project ${LAMA_ALL_INTERNAL_DEPS} )
 
 concatCacheArguments ( scai_common "CACHE_ARGS" )
-message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )
+#message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_common 
         DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
@@ -258,7 +258,7 @@ ExternalProject_Add ( scai_sparsekernel
             )
 
 concatCacheArguments ( scai_dmemo "CACHE_ARGS" )
-message ( STATUS "dmemo CACHE_ARGS ${CACHE_ARGS}" )
+#message ( STATUS "dmemo CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_dmemo
             DEPENDS ${SCAI_DMEMO_INTERNAL_DEPS}
