@@ -68,9 +68,16 @@ namespace lama
 class COMMON_DLL_IMPORTEXPORT FileStream : public std::fstream
 {
 public:
-    FileStream( const std::string& filename, ios_base::openmode mode, bool useLittleEndian = true );
 
-    inline void open( const std::string& filename, ios_base::openmode mode, bool useLittleEndian = true );
+    typedef enum
+    {
+        BIG,
+        LITTLE
+    } Endian;
+
+    FileStream( const std::string& filename, ios_base::openmode mode, Endian usedEndian = LITTLE );
+
+    inline void open( const std::string& filename, ios_base::openmode mode, Endian usedEndian = LITTLE );
 
     template<typename ValueType>
     inline void write( const hmemo::HArray<ValueType>& data,
@@ -84,11 +91,15 @@ public:
                        const int offset,
                        const common::scalar::ScalarType type,
                        const char delimiter = ' ' );
-
 private:
-    bool isBinary;
-    bool isLittleEndian;
-    bool useLittleEndian;
+    typedef enum
+    {
+        FORMATTED,
+        BINARY
+    } Type;
+
+    Type mType;
+    Endian mUsedEndian;
 
     /** Logger for this class */
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
@@ -104,28 +115,28 @@ private:
                         const int offset,
                         const char delimiter = ' ' );
 
-    inline bool _isLittleEndian();
+    static Endian mMachineEndian;
+    static Endian _determineMachineEndian();
 
 }; // class FileStream
 
-inline FileStream::FileStream( const std::string& filename, ios_base::openmode mode, bool useLittleEndian /* = true */ )
+inline FileStream::FileStream( const std::string& filename, ios_base::openmode mode, Endian usedEndian /* = LITTLE */ )
 {
-    open( filename, mode, useLittleEndian );
+    open( filename, mode, usedEndian );
 }
 
-inline void FileStream::open( const std::string& filename, ios_base::openmode mode, bool useLittleEndian /* = true */ )
+inline void FileStream::open( const std::string& filename, ios_base::openmode mode, Endian usedEndian /* = LITTLE */ )
 {
     std::fstream::open( filename.c_str(), mode );
     if( mode & std::ios::binary )
     {
-        isBinary = true;
+        mType = BINARY;
     }
     else
     {
-        isBinary = false;
+        mType = FORMATTED;
     }
-    this->useLittleEndian = useLittleEndian;
-    isLittleEndian = _isLittleEndian();
+    this->mUsedEndian = usedEndian;
 
     if( !is_open() )
     {
@@ -212,23 +223,28 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
     if( offset == 0 && typeid(FileType) == typeid(DataType) )
     {
         hmemo::ReadAccess<DataType> dataRead( data );
-        if ( isBinary )
+        switch( mType )
         {
-            if( useLittleEndian == isLittleEndian )
+            case BINARY:
             {
-                std::fstream::write( reinterpret_cast<const char*>( dataRead.get() ), sizeof(DataType)*data.size() );
+                if( mUsedEndian == mMachineEndian )
+                {
+                    std::fstream::write( reinterpret_cast<const char*>( dataRead.get() ), sizeof(DataType)*data.size() );
+                }
+                else
+                {
+                    COMMON_THROWEXCEPTION( "Error, wrong Endian!!!" )
+                }
+                break;
             }
-            else
+            case FORMATTED:
             {
-                COMMON_THROWEXCEPTION( "Error, wrong Endian!!!" )
-            }
-        }
-        else
-        {
-            const DataType* dataPtr = dataRead.get();
-            for( IndexType i = 0; i < data.size(); ++i )
-            {
-                *this << dataPtr[i] << delimiter;
+                const DataType* dataPtr = dataRead.get();
+                for( IndexType i = 0; i < data.size(); ++i )
+                {
+                    *this << dataPtr[i] << delimiter;
+                }
+                break;
             }
         }
     }
@@ -250,16 +266,21 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
         }
         hmemo::ReadAccess<FileType> bufferRead( buffer );
 
-        if( isBinary )
+        switch( mType )
         {
-            std::fstream::write( reinterpret_cast<const char*>( bufferRead.get() ), sizeof(FileType)*data.size() );
-        }
-        else
-        {
-            const FileType* bufferPtr = bufferRead.get();
-            for( IndexType i = 0; i < data.size(); ++i )
+            case BINARY:
             {
-                *this << bufferPtr[i] << delimiter;
+                std::fstream::write( reinterpret_cast<const char*>( bufferRead.get() ), sizeof(FileType)*data.size() );
+                break;
+            }
+            case FORMATTED:
+            {
+                const FileType* bufferPtr = bufferRead.get();
+                for( IndexType i = 0; i < data.size(); ++i )
+                {
+                    *this << bufferPtr[i] << delimiter;
+                }
+                break;
             }
         }
     }
@@ -279,29 +300,34 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
 
     if(typeid(FileType) == typeid(DataType) )
     {
-        if( isBinary )
+        switch( mType )
         {
-            std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), sizeof(DataType)*size );
-            if ( !*this )
+            case BINARY:
             {
-                COMMON_THROWEXCEPTION( "Error reading data!" )
+                    std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), sizeof(DataType)*size );
+                    if ( !*this )
+                    {
+                        COMMON_THROWEXCEPTION( "Error reading data!" )
+                    }
+                break;
             }
-        }
-        else
-        {
-            std::string buffer;
-            std::stringstream ssBuffer;
-            for( int i=0; i < size; ++i )
+            case FORMATTED:
             {
-                std::getline(*this, buffer, delimiter );
-                if ( !*this )
+                std::string buffer;
+                std::stringstream ssBuffer;
+                for( int i=0; i < size; ++i )
                 {
-                    COMMON_THROWEXCEPTION( "Unexpected end of file" )
-                }
+                    std::getline(*this, buffer, delimiter );
+                    if ( !*this )
+                    {
+                        COMMON_THROWEXCEPTION( "Unexpected end of file" )
+                    }
 
-                ssBuffer.clear();
-                ssBuffer << buffer;
-                ssBuffer >> dataWrite[i];
+                    ssBuffer.clear();
+                    ssBuffer << buffer;
+                    ssBuffer >> dataWrite[i];
+                }
+                break;
             }
         }
     }
@@ -310,32 +336,36 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
         hmemo::HArray<FileType> buffer;
         hmemo::WriteOnlyAccess<FileType> bufferWrite( buffer, size );
 
-        if( isBinary )
+        switch( mType )
         {
-            std::fstream::read( reinterpret_cast<char*>( bufferWrite.get() ), sizeof(FileType)*size );
-            if ( !*this )
+            case BINARY:
             {
-                COMMON_THROWEXCEPTION( "Error reading data!" )
-            }
-        }
-        else
-        {
-            std::string buffer;
-            std::stringstream ssBuffer;
-            for( int i=0; i < size; ++i )
-            {
-                std::getline(*this, buffer, delimiter );
+                std::fstream::read( reinterpret_cast<char*>( bufferWrite.get() ), sizeof(FileType)*size );
                 if ( !*this )
                 {
-                    COMMON_THROWEXCEPTION( "Unexpected end of file" )
+                    COMMON_THROWEXCEPTION( "Error reading data!" )
                 }
+                break;
+            }
+            case FORMATTED:
+            {
+                std::string buffer;
+                std::stringstream ssBuffer;
+                for( int i=0; i < size; ++i )
+                {
+                    std::getline(*this, buffer, delimiter );
+                    if ( !*this )
+                    {
+                        COMMON_THROWEXCEPTION( "Unexpected end of file" )
+                    }
 
-                ssBuffer.clear();
-                ssBuffer << buffer;
-                ssBuffer >> bufferWrite[i];
+                    ssBuffer.clear();
+                    ssBuffer << buffer;
+                    ssBuffer >> bufferWrite[i];
+                }
+                break;
             }
         }
-
 
         static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<DataType, FileType> > set;
         hmemo::ContextPtr loc = data.getValidContext();
@@ -351,11 +381,19 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
     }
 }
 
-inline bool FileStream::_isLittleEndian()
+inline FileStream::Endian FileStream::_determineMachineEndian()
 {
     int a = 1;
     char *ch = reinterpret_cast<char*>( &a );
-    return static_cast<int>( *ch ) != 0;
+
+    if( static_cast<int>( *ch ) != 0 )
+    {
+        return LITTLE;
+    }
+    else
+    {
+        return BIG;
+    }
 }
 
 

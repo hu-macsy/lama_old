@@ -41,6 +41,8 @@ namespace lama
 
 SCAI_LOG_DEF_LOGGER( FileStream::logger, "IO.FileStream" )
 
+FileStream::Endian FileStream::mMachineEndian = FileStream::_determineMachineEndian();
+
 }
 
 }
