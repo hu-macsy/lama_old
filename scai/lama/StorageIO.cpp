@@ -221,8 +221,6 @@ void StorageIO<ValueType>::writeCSRToMMFile(
 
     writeMMHeader( false, numRows, numColumns, numValues, outFile, dataType );
 
-
-
     // output code runs only for host context
     ContextPtr host = Context::getHostPtr();
 
