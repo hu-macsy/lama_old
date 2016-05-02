@@ -34,10 +34,12 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
+#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/StorageIO.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Complex.hpp>
 
 using namespace scai::common;
 using namespace scai::lama;
@@ -51,6 +53,7 @@ BOOST_AUTO_TEST_SUITE( StorageIOTest )
 SCAI_LOG_DEF_LOGGER( logger, "Test.StorageIOTest" );
 
 typedef boost::mpl::list<float, double> test_types;
+typedef boost::mpl::list<float, double, Complex<float>, Complex<double> > test_types_complex;
 
 /* ------------------------------------------------------------------------- */
 
@@ -100,7 +103,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, test_types_complex )
 {
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
@@ -115,8 +118,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, test_types )
     {
         for ( IndexType j = 0; j < csrMatrix.getNumColumns(); ++j )
         {
-            BOOST_CHECK_CLOSE( csrMatrix.getValue( i, j ),
-                               readMatrix.getValue( i, j ), 0.01f );
+            SCAI_CHECK_CLOSE( csrMatrix.getValue( i, j ), readMatrix.getValue( i, j ), 0.01f );
         }
     }
 

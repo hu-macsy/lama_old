@@ -219,7 +219,15 @@ void StorageIO<ValueType>::writeCSRToMMFile(
 
     FileStream outFile( fileName + ".mtx", std::ios::out | std::ios::trunc );
 
-    writeMMHeader( false, numRows, numColumns, numValues, outFile, dataType );
+    if( dataType != common::scalar::INTERNAL )
+    {
+        writeMMHeader( false, numRows, numColumns, numValues, outFile, dataType );
+    }
+    else
+    {
+        writeMMHeader( false, numRows, numColumns, numValues, outFile, common::TypeTraits<ValueType>::stype );
+    }
+
 
     // output code runs only for host context
     ContextPtr host = Context::getHostPtr();
@@ -295,11 +303,11 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     // Set the right size of the Vector
     if( isSymmetric )
     {
-        values.reserve( numValues * 2 - numRows );
+        values.reserve( numValuesFile * 2 - numRows );
     }
     else
     {
-        values.reserve( numValues );
+        values.reserve( numValuesFile );
     }
 
     //Create Input Vector
@@ -450,7 +458,6 @@ void _StorageIO::writeMMHeader(
     {
         case common::scalar::DOUBLE:
         case common::scalar::FLOAT:
-        case common::scalar::INTERNAL:
             outFile << "real ";
             break;
         case common::scalar::COMPLEX:
@@ -942,7 +949,14 @@ void StorageIO<ValueType>::writeDenseToMMFile( const HArray<ValueType>& data,
 
     FileStream outFile( filename + ".mtx", std::ios::out | std::ios::trunc );
 
-    writeMMHeader( true, data.size(), numColumns, -1, outFile, dataType );
+    if( dataType != common::scalar::INTERNAL )
+    {
+        writeMMHeader( true, data.size(), numColumns, -1, outFile, dataType );
+    }
+    else
+    {
+        writeMMHeader( true, data.size(), numColumns, -1, outFile, common::TypeTraits<ValueType>::stype );
+    }
 
     // output code runs only for host context
     ContextPtr host = Context::getHostPtr();
