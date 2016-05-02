@@ -79,3 +79,4 @@ then
     echo "Running dedicated cuda tests"
     ./cuda/lamaCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/cuda_tests.xml
 fi
+
