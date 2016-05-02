@@ -40,6 +40,7 @@
 #include <scai/lama/storage/DIAStorage.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/utilskernel/LArray.hpp>
@@ -233,7 +234,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, scai_arithmetic_test_types )
         storage.matrixTimesVector( y2, alpha, xconj, beta, z );
         y2.conj();
   
-        BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
+        //BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) ); // not sufficient
+        BOOST_CHECK( y1.maxDiffNorm( y2 ) < common::TypeTraits<ValueType>::small() );
     }
 }
 
@@ -815,7 +817,7 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
             // results should be the same
 
-            // BOOST_CHECK_EQUAL( result1.maxDiffNorm( result2 ), 0 );
+            BOOST_CHECK_EQUAL( result1.maxDiffNorm( result2 ), 0 );
         }
     }
 }

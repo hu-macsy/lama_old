@@ -55,14 +55,32 @@ include ( Functions/parseBoolean )
 
 ## DOC
 
+include( Package/doc )
+
 # Check if doc should be build
 if    ( DEFINED BUILD_DOC )
     parseBoolean( BUILD_DOC )
+
+    if    ( BUILD_DOC AND NOT DOC_FOUND )
+        message( FATAL_ERROR "Build of documentation enabled, but configuration is incomplete!")
+    endif ( BUILD_DOC AND NOT DOC_FOUND )
+
 else  ( DEFINED BUILD_DOC )
-    set ( BUILD_DOC ${BUILD_DOC_DEFAULT} )
+    
+    if    ( DOC_FOUND )
+        set ( BUILD_DOC ON )
+    else  ( DOC_FOUND )
+        set ( BUILD_DOC OFF )
+    endif ( DOC_FOUND )
+
 endif ( DEFINED BUILD_DOC )
 checkValue ( ${BUILD_DOC} "${TRUE_FALSE_CHOICES}" )
 set ( BUILD_DOC ${BUILD_DOC} CACHE BOOL "Enable / Disable building of doc" )
+
+set( DOC_ENABLED OFF )
+if     ( DOC_FOUND AND BUILD_DOC )
+    set( DOC_ENABLED ON )
+endif ( DOC_FOUND AND BUILD_DOC )
 
 # Choose Doc type
 if    ( DEFINED SCAI_DOC_TYPE )

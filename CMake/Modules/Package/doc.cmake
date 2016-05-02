@@ -39,12 +39,3 @@ if    ( SPHINX_FOUND OR DOXYGEN_FOUND )
 else  ( SPHINX_FOUND OR DOXYGEN_FOUND )
 	set ( DOC_FOUND FALSE )
 endif ( SPHINX_FOUND OR DOXYGEN_FOUND )
-
-set ( DOC_ENABLED FALSE )
-if    ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
-  set ( DOC_ENABLED TRUE )
-endif ( ( SPHINX_FOUND OR DOXYGEN_FOUND ) AND BUILD_DOC )
-
-if    ( BUILD_DOC AND NOT DOC_FOUND )
-    message( FATAL_ERROR "Build of documentation enabled, but configuration is incomplete!")
-endif ( BUILD_DOC AND NOT DOC_FOUND )
