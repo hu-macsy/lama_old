@@ -274,12 +274,11 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     const std::string& fileName )
 {
     bool isSymmetric, isPattern;
-    IndexType numRows, numValues;
+    IndexType numRows, numValues, numValuesFile;
 
     FileStream inFile( fileName, std::ios::in );
 
-    readMMHeader( numRows, numColumns, numValues, isPattern, isSymmetric, inFile );
-
+    readMMHeader( numRows, numColumns, numValuesFile, isPattern, isSymmetric, inFile );
 
     ContextPtr host = Context::getHostPtr();
 
@@ -310,8 +309,9 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     std::string line;
 
+    numValues = numValuesFile;
     // TODO: there could be comment or blank lines in the file (allowed by specification?), we should over-read them!
-    for( int l = 0; l < numValues && !inFile.eof(); ++l )
+    for( int l = 0; l < numValuesFile && !inFile.eof(); ++l )
     {
     	std::getline(inFile, line);
     	std::istringstream reader(line);
