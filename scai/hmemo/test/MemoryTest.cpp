@@ -44,8 +44,6 @@ BOOST_AUTO_TEST_CASE( DeviceMemoryTest )
 
     size_t MAX_N = std::numeric_limits<size_t>::max();
 
-    SCAI_LOG_ERROR( logger, "Allocation device memory " << *mem << ", size = " << MAX_N << " should fail" )
-
     BOOST_CHECK_THROW(
     {
         data = mem->allocate( MAX_N );
