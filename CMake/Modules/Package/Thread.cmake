@@ -39,13 +39,13 @@ set ( CMAKE_THREAD_PREFER_PTHREAD 1 )
 set ( THREADS_PREFER_PTHREAD_FLAG 1 )
 
 find_package( Threads ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-set ( SCAI_THREAD_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} CACHE PATH "Pthread library" )
+set ( SCAI_THREAD_LIBRARIES ${CMAKE_USE_PTHREADS_INIT} CACHE PATH "Pthread library" )
 mark_as_advanced( SCAI_THREAD_LIBRARIES )
 
 if    ( NOT WIN32 )
 	## get pthread version
-	execute_process ( COMMAND /usr/bin/getconf GNU_LIBPTHREAD_VERSION OUTPUT_VARIABLE _pthread_output )
-	string ( REGEX MATCH "([0-9]+\\.[0-9]*)" SCAI_THREAD_VERSION ${_pthread_output} )
+#	execute_process ( COMMAND /usr/bin/getconf GNU_LIBPTHREAD_VERSION OUTPUT_VARIABLE _pthread_output )
+#	string ( REGEX MATCH "([0-9]+\\.[0-9]*)" SCAI_THREAD_VERSION ${_pthread_output} )
 endif ( NOT WIN32 )
 
 ###  Here we use PThread library for threads

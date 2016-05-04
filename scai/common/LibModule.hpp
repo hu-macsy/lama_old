@@ -35,6 +35,8 @@
 
 #if defined(__APPLE__)
 	//todo
+	#include <dirent.h>
+	#include <dlfcn.h>
 #elif defined(WIN32)
 	#include <Windows.h>
 	#include <WinBase.h>
