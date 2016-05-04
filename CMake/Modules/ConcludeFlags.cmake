@@ -8,13 +8,16 @@ set ( CMAKE_BUILD_WITH_INSTALL_RPATH FALSE )
 set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
 # for static/dynamic linking
-if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
-	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
-else  ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
-	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
-endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+
+if    ( LINUX )
+    if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+    	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
+    	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
+    else  ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+    	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
+    	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
+    endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+endif ( LINUX )
 
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
