@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
             {
                 write.resize( 2 * N );
             },
-            Exception )
+            Exception );
         }
 
         for ( IndexType i = 0; i < N; ++i )

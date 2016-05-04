@@ -50,7 +50,7 @@ using common::TypeTraits;
 
 // use of Fixture ContextFix provides the testContext
 
-BOOST_GLOBAL_FIXTURE( ContextFix )
+BOOST_GLOBAL_FIXTURE( ContextFix );
 
 /* ------------------------------------------------------------------------- */
 
