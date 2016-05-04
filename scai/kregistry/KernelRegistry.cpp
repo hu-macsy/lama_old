@@ -153,7 +153,7 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
 
 /* -----------------------------------------------------------------------------*/
 
-bool KernelRegistry::Compare::operator()( const KernelRegistryKey& x, const KernelRegistryKey& y )
+bool KernelRegistry::Compare::operator()( const KernelRegistryKey& x, const KernelRegistryKey& y ) const
 {
     // first compare the id of the routine (is second key argument)
 

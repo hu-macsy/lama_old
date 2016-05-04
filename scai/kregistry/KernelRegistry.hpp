@@ -232,7 +232,7 @@ private:
 
         // return x > y
 
-        bool operator()( const KernelRegistryKey& x, const KernelRegistryKey& y );
+        bool operator()( const KernelRegistryKey& x, const KernelRegistryKey& y ) const;
 
     };
 
