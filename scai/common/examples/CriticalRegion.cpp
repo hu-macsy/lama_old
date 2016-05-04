@@ -44,7 +44,7 @@
 using namespace std;
 using namespace scai::common;
 
-Thread::RecursiveMutex mutex;    // recursive mutex needed here
+Thread::RecursiveMutex threadRecursiveMutex;    // recursive threadRecursiveMutex needed here
 
 static int SLEEP_TIME  = 2;
 static int N_THREADS   = 4;
@@ -57,8 +57,8 @@ void* threadRoutine( void* )
 
     cout << "Thread " << self << " starts" << endl;
 
-    Thread::ScopedLock lock( mutex );
-    Thread::ScopedLock lock1( mutex );   // second lock by same thread is okay for recursive mutex
+    Thread::ScopedLock lock( threadRecursiveMutex );
+    Thread::ScopedLock lock1( threadRecursiveMutex );   // second lock by same thread is okay for recursive threadRecursiveMutex
 
     cout << "Thread " << self << " enters critical region" << endl;
     sleep( SLEEP_TIME );
