@@ -49,7 +49,7 @@ SCAI_LOG_DEF_LOGGER( logger, "CreateTest" )
 
 // Template instantiation of LAMArray
 
-template class HArray<double>;
+template class scai::hmemo::HArray<double>;
 
 int main()
 {
