@@ -18,6 +18,7 @@ Contents
    :maxdepth: 1
    
    introduction
+   faq
    installation
    projects
    tutorial
