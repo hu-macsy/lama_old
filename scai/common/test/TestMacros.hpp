@@ -43,7 +43,6 @@
 
 #include <scai/common/test/Configuration.hpp>
 
-#include <scai/common/preprocessor.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/TypeTraits.hpp>
 

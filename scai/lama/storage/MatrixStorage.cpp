@@ -63,7 +63,6 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/instantiate.hpp>
-#include <scai/common/preprocessor.hpp>
 #include <scai/common/macros/typeloop.hpp>
 
 namespace scai

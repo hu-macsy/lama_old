@@ -47,10 +47,6 @@
 #include <scai/common/macros/typeloop.hpp>
 #include <scai/common/SCAITypes.hpp>
 
-// boost
-#include <boost/preprocessor.hpp>
-
-
 namespace scai
 {
 

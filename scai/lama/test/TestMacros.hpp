@@ -36,7 +36,6 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/typeloop.hpp>
-#include <scai/common/preprocessor.hpp>
 #include <scai/logging.hpp>
 #include <scai/hmemo/Context.hpp>
 #include <scai/kregistry/test/TestMacros.hpp>
