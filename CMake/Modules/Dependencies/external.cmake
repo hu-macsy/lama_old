@@ -34,18 +34,20 @@
 ## attention OpenMP should be before SCAI_BLAS !!!
 ## need to get rid of boost for boost_repeat in common
 
-set ( SCAI_COMMON_EXTERNAL_DEPS dl Thread Boost OpenMP CUDA MIC ) # 1
-set ( SCAI_LOGGING_EXTERNAL_DEPS ) # 2
-set ( SCAI_TRACING_EXTERNAL_DEPS Java ) # 3
-set ( SCAI_TASKING_EXTERNAL_DEPS                       CUDA MIC ) # 4
-set ( SCAI_HMEMO_EXTERNAL_DEPS                  OpenMP CUDA MIC ) # 5
-set ( SCAI_KREGISTRY_EXTERNAL_DEPS ) # 6
-set ( SCAI_BLASKERNEL_EXTERNAL_DEPS             OpenMP CUDA MIC SCAI_BLAS ) # 7
-set ( SCAI_UTILSKERNEL_EXTERNAL_DEPS            OpenMP CUDA MIC  ) # 8
-set ( SCAI_SPARSEKERNEL_EXTERNAL_DEPS           OpenMP CUDA MIC SCAI_BLAS ) # 9
-set ( SCAI_DMEMO_EXTERNAL_DEPS    Boost         OpenMP                    MPI GPI GraphPartitioning ) # 10
-set ( SCAI_LAMA_EXTERNAL_DEPS  Boost ) # 11
-set ( SCAI_SOLVER_EXTERNAL_DEPS Boost ) # 12
+#                                     dl Java Thread Boost OpenMP CUDA MIC  SCAI_BLAS MPI GPI GraphPartitioning
+#                                    -----------------------------------------------------------------------------
+set ( SCAI_COMMON_EXTERNAL_DEPS       dl      Thread       OpenMP CUDA MIC                                      ) # 1
+set ( SCAI_LOGGING_EXTERNAL_DEPS                                                                                ) # 2
+set ( SCAI_TRACING_EXTERNAL_DEPS         Java                                                                   ) # 3
+set ( SCAI_TASKING_EXTERNAL_DEPS                                  CUDA MIC                                      ) # 4
+set ( SCAI_HMEMO_EXTERNAL_DEPS                             OpenMP CUDA MIC                                      ) # 5
+set ( SCAI_KREGISTRY_EXTERNAL_DEPS                                                                              ) # 6
+set ( SCAI_BLASKERNEL_EXTERNAL_DEPS                        OpenMP CUDA MIC SCAI_BLAS                            ) # 7
+set ( SCAI_UTILSKERNEL_EXTERNAL_DEPS                       OpenMP CUDA MIC                                      ) # 8
+set ( SCAI_SPARSEKERNEL_EXTERNAL_DEPS                      OpenMP CUDA MIC SCAI_BLAS                            ) # 9
+set ( SCAI_DMEMO_EXTERNAL_DEPS                       Boost OpenMP                     MPI GPI GraphPartitioning ) # 10
+set ( SCAI_LAMA_EXTERNAL_DEPS                        Boost                                                      ) # 11
+set ( SCAI_SOLVER_EXTERNAL_DEPS                      Boost                                                      ) # 12
 
 set ( LAMA_ALL_EXTERNAL_DEPS ${SCAI_COMMON_EXTERNAL_DEPS} ${SCAI_LOGGING_EXTERNAL_DEPS} ${SCAI_TRACING_EXTERNAL_DEPS}
 						 	 ${SCAI_TASKING_EXTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS}
