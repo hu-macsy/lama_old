@@ -1502,6 +1502,25 @@ const char* DenseStorageView<ValueType>::typeName()
 SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
+#define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+     template void DenseStorageView<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+     template void DenseStorageView<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+     template void DenseStorageView<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+     template void DenseStorageView<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+     template void DenseStorageView<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+     template void DenseStorageView<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+
+#define DENSE_STORAGE_INST_LVL1( ValueType )                                                                                  \
+    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_HOST_CNT, ValueType, DENSE_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+
+SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_HOST_CNT, DENSE_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+
+#undef DENSE_STORAGE_INST_LVL2
+#undef DENSE_STORAGE_INST_LVL1
+
 } /* end namespace lama */
 
 } /* end namespace scai */
