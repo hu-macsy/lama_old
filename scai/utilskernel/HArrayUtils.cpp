@@ -1048,6 +1048,7 @@ void HArrayUtils::buildDenseArray(
 SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
+#undef HARRAUTILS_SPECIFIER_LVL2
 
 /* --------------------------------------------------------------------------- */
 
