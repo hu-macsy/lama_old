@@ -42,6 +42,7 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/common/unique_ptr.hpp>
 
 namespace scai
@@ -602,6 +603,91 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
         setCSRData[loc]( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
     }
+}
+
+template<typename ValueType>
+template<typename OtherType>
+void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherType>& diagonal )
+{
+    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+
+    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<ValueType, OtherType> > set;
+
+    hmemo::ContextPtr loc = this->getContextPtr();
+    set.getSupportedContext( loc );
+
+    hmemo::ReadAccess<OtherType> rDiagonal( diagonal, loc );
+    hmemo::WriteAccess<ValueType> wValues( mValues, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    // diagonal elements are the first entries of mValues
+
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::reduction::COPY );
+}
+
+template<typename ValueType>
+template<typename OtherType>
+void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherType>& diagonal ) const
+{
+    // diagional[0:numDiagonalElements] = mValues[0:numDiagonalElements]
+    // Note: using HArrayUtils::setArray not possible, as we only need part of mValues
+
+    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+
+    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<OtherType, ValueType> > set;
+
+    hmemo::ContextPtr loc = this->getContextPtr();
+    set.getSupportedContext( loc );
+
+    hmemo::WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
+    hmemo::ReadAccess<ValueType> rValues( mValues, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    // diagonal elements are the first entries of mValues
+
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::reduction::COPY );
+}
+
+template<typename ValueType>
+template<typename OtherType>
+void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const
+{
+    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+
+                hmemo::ContextPtr hostContext = hmemo::Context::getHostPtr();
+
+    hmemo::WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
+
+    const hmemo::ReadAccess<IndexType> ia( mIA, hostContext );
+    const hmemo::ReadAccess<IndexType> ja( mJA, hostContext );
+    const hmemo::ReadAccess<ValueType> values( mValues, hostContext );
+
+    // ToDo: OpenMP parallelization, interface
+
+    for( IndexType j = 0; j < mNumColumns; ++j )
+    {
+        wRow[j] = static_cast<OtherType>(0.0);
+    }
+
+    for( IndexType kk = 0; kk < mNumValues; ++kk )
+    {
+        if( ia[kk] != i )
+        {
+            continue;
+        }
+
+        wRow[ja[kk]] = static_cast<OtherType>( values[kk] );
+    }
+}
+
+template<typename ValueType>
+void COOStorage<ValueType>::scaleImpl( const ValueType value )
+{
+    // multiply value with each entry of mValues
+
+    utilskernel::HArrayUtils::setScalar( mValues, value, common::reduction::MULT, this->getContextPtr() );
 }
 
 } /* end namespace lama */

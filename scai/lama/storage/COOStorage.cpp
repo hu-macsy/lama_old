@@ -472,16 +472,6 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::scaleImpl( const ValueType value )
-{
-    // multiply value with each entry of mValues
-
-    HArrayUtils::setScalar( mValues, value, common::reduction::MULT, this->getContextPtr() );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void COOStorage<ValueType>::conj()
 {
     HArrayUtils::conj( mValues, this->getContextPtr() ); 
@@ -531,93 +521,6 @@ void COOStorage<ValueType>::swap( COOStorage<ValueType>& other )
 }
 
 /* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
-{
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
-
-    ContextPtr hostContext = Context::getHostPtr();
-
-    WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
-
-    const ReadAccess<IndexType> ia( mIA, hostContext );
-    const ReadAccess<IndexType> ja( mJA, hostContext );
-    const ReadAccess<ValueType> values( mValues, hostContext );
-
-    // ToDo: OpenMP parallelization, interface
-
-    for( IndexType j = 0; j < mNumColumns; ++j )
-    {
-        wRow[j] = static_cast<OtherType>(0.0);
-    }
-
-    for( IndexType kk = 0; kk < mNumValues; ++kk )
-    {
-        if( ia[kk] != i )
-        {
-            continue;
-        }
-
-        wRow[ja[kk]] = static_cast<OtherType>( values[kk] );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-// Note: template instantation of this method for OtherType is
-//       done implicitly by getDiagonal method of CRTPMatrixStorage
-template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
-{
-    // diagional[0:numDiagonalElements] = mValues[0:numDiagonalElements] 
-    // Note: using HArrayUtils::setArray not possible, as we only need part of mValues
-
-    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
-
-    static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
-
-    ContextPtr loc = this->getContextPtr();
-    set.getSupportedContext( loc );
-
-    WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
-    ReadAccess<ValueType> rValues( mValues, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    // diagonal elements are the first entries of mValues
-
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::reduction::COPY );
-}
-
-/* --------------------------------------------------------------------------- */
-
-// Note: template instantation of this method for OtherType is
-//       done implicitly by setDiagonal method of CRTPMatrixStorage
-template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
-{
-    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
-
-    static LAMAKernel<UtilKernelTrait::set<ValueType, OtherType> > set;
-
-    ContextPtr loc = this->getContextPtr();
-    set.getSupportedContext( loc );
-
-    ReadAccess<OtherType> rDiagonal( diagonal, loc );
-    WriteAccess<ValueType> wValues( mValues, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    // diagonal elements are the first entries of mValues
-
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::reduction::COPY );
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 ValueType COOStorage<ValueType>::l1Norm() const
