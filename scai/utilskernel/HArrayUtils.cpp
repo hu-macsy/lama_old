@@ -995,6 +995,20 @@ void HArrayUtils::buildDenseArray(
 
 /* --------------------------------------------------------------------------- */
 
+#define HARRAUTILS_SPECIFIER_LVL2( ValueType, OtherValueType )                                                          \
+    template void HArrayUtils::gather<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                            \
+                                                                const hmemo::HArray<OtherValueType>&,                   \
+                                                                const hmemo::HArray<IndexType>&,                        \
+                                                                const hmemo::ContextPtr );                              \
+    template void HArrayUtils::setArray<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                          \
+                                                                const hmemo::HArray<OtherValueType>&,                   \
+                                                                const common::reduction::ReductionOp,                   \
+                                                                hmemo::ContextPtr );                                    \
+    template void HArrayUtils::scatter<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                           \
+                                                                const hmemo::HArray<IndexType>&,                        \
+                                                                const hmemo::HArray<OtherValueType>&,                   \
+                                                                const hmemo::ContextPtr );
+
 #define HARRAYUTILS_SPECIFIER( ValueType )                                                                              \
     template void HArrayUtils::setVal<ValueType>( hmemo::_HArray&, const IndexType, const ValueType );                  \
     template ValueType HArrayUtils::getVal<ValueType>( const hmemo::_HArray&, const IndexType );                        \
@@ -1026,7 +1040,9 @@ void HArrayUtils::buildDenseArray(
                                                             const hmemo::HArray<ValueType>&, hmemo::ContextPtr );       \
     template void HArrayUtils::buildDenseArray<ValueType>( hmemo::HArray<ValueType>&, const IndexType,                  \
                                                            const hmemo::HArray<ValueType>&,                             \
-                                                           const hmemo::HArray<IndexType>&, hmemo::ContextPtr );
+                                                           const hmemo::HArray<IndexType>&, hmemo::ContextPtr );        \
+                                                                                                                        \
+    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_ARRAY_HOST_CNT, ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARITHMETIC_ARRAY_HOST )
 
 SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
 
