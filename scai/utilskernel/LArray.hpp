@@ -83,7 +83,7 @@ public:
 
         operator ValueType() const
         {
-            return HArrayUtils::getValImpl( mArray, mIndex );
+            return HArrayUtils::getVal<ValueType>( mArray, mIndex );
         }
 
         /** indexed value proxy can be assigned a value */
@@ -291,7 +291,7 @@ public:
 
     ValueType operator[] ( const IndexType i ) const
     {
-        return HArrayUtils::getValImpl( *this, i );
+        return HArrayUtils::getVal<ValueType>( *this, i );
     }
 
     /** Get the minimal value of an array */
