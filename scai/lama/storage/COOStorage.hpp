@@ -39,6 +39,9 @@
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
 // internal scai libraries
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/COOKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/common/unique_ptr.hpp>
 
 namespace scai
@@ -435,6 +438,171 @@ public:
 
     static MatrixStorageCreateKeyType createValue();
 };
+
+template<typename ValueType>
+template<typename OtherValueType>
+void COOStorage<ValueType>::buildCSR(
+    hmemo::HArray<IndexType>& ia,
+    hmemo::HArray<IndexType>* ja,
+    hmemo::HArray<OtherValueType>* values,
+    const hmemo::ContextPtr preferredLoc ) const
+{
+    // multiple kernel routines needed
+
+    static utilskernel::LAMAKernel<sparsekernel::CSRKernelTrait::sizes2offsets> sizes2offsets;
+    static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::getCSRSizes> getCSRSizes;
+    static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+
+    // do it where all routines are avaialble
+
+    hmemo::ContextPtr loc = preferredLoc;
+
+    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    hmemo::WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
+    hmemo::ReadAccess<IndexType> cooIA( mIA, loc );
+
+    getCSRSizes[loc]( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
+
+    if( ja == NULL || values == NULL )
+    {
+        csrIA.resize( mNumRows );
+        return;
+    }
+
+    IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
+
+    SCAI_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
+
+    hmemo::ReadAccess<IndexType> cooJA( mJA, loc );
+    hmemo::ReadAccess<ValueType> cooValues( mValues, loc );
+
+    hmemo::WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
+    hmemo::WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
+
+    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(),
+                       mNumRows, mNumValues, cooIA.get(), cooJA.get(), cooValues.get() );
+}
+
+
+template<typename ValueType>
+template<typename OtherValueType>
+void COOStorage<ValueType>::setCSRDataImpl(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numValues,
+    const hmemo::HArray<IndexType>& ia,
+    const hmemo::HArray<IndexType>& ja,
+    const hmemo::HArray<OtherValueType>& values,
+    const hmemo::ContextPtr prefLoc )
+{
+    SCAI_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues )
+
+    if ( ia.size() == numRows )
+    {
+        // offset array required
+
+        hmemo::HArray<IndexType> offsets;
+
+        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
+
+        SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
+
+        setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
+
+        return;
+    }
+
+    SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
+
+    hmemo::ContextPtr loc = prefLoc;
+
+    // ReadAccess<IndexType> csrJA( ja, loc );
+    // ReadAccess<OtherValueType> csrValues( values, loc );
+
+    mNumRows = numRows;
+    mNumColumns = numColumns;
+
+    // check if input csr data has the diagonal property and inherit it
+
+    int numDiagonals = std::min( numRows, numColumns );
+
+    {
+        SCAI_LOG_DEBUG( logger,
+                        "check CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues << " for diagonal property, #diagonals = " << numDiagonals )
+
+        static utilskernel::LAMAKernel<sparsekernel::CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
+
+        hmemo::ContextPtr loc = this->getContextPtr();
+
+        hasDiagonalProperty.getSupportedContext( loc );
+
+        hmemo::ReadAccess<IndexType> csrIA( ia, loc );
+        hmemo::ReadAccess<IndexType> csrJA( ja, loc );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        mDiagonalProperty = hasDiagonalProperty[loc] ( numDiagonals, csrIA.get(), csrJA.get() );
+    }
+
+    if( !mDiagonalProperty )
+    {
+        numDiagonals = 0; // do not store diagonal data at the beginning in COO data
+    }
+
+    mNumValues = numValues;
+
+    SCAI_LOG_DEBUG( logger,
+                    "input csr data with " << mNumValues << "entries,  has diagonal property = " << mDiagonalProperty )
+
+    {
+        static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::offsets2ia> offsets2ia;
+
+        hmemo::ContextPtr loc = this->getContextPtr();
+        offsets2ia.getSupportedContext( loc );
+
+        hmemo::ReadAccess<IndexType> csrIA( ia, loc );
+        hmemo::WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        offsets2ia[loc]( cooIA.get(), mNumValues, csrIA.get(), mNumRows, numDiagonals );
+    }
+
+    {
+        static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
+
+        hmemo::ContextPtr loc = this->getContextPtr();   // preferred location
+        setCSRData.getSupportedContext( loc );    // supported location
+
+        hmemo::ReadAccess<IndexType> csrIA( ia, loc );
+        hmemo::ReadAccess<IndexType> csrJA( ja, loc );
+        hmemo::WriteOnlyAccess<IndexType> cooJA( mJA, loc, mNumValues );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        setCSRData[loc]( cooJA.get(), csrJA.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+    }
+
+    {
+        static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::setCSRData<ValueType, OtherValueType> > setCSRData;
+
+        hmemo::ContextPtr loc = this->getContextPtr();   // preferred location
+        setCSRData.getSupportedContext( loc );    // supported location
+
+        hmemo::ReadAccess<IndexType> csrIA( ia, loc );
+        hmemo::ReadAccess<OtherValueType> csrValues( values, loc );
+        hmemo::WriteOnlyAccess<ValueType> cooValues( mValues, loc, mNumValues );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        setCSRData[loc]( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+    }
+}
 
 } /* end namespace lama */
 
