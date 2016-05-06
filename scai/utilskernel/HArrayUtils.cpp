@@ -100,7 +100,7 @@ void HArrayUtils::assignOp(
         }
     }
 
-    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setArray( target, source, op, loc );
+    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setArray( target, source, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -158,7 +158,7 @@ void HArrayUtils::assignGather(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the gather version with the correct value types for target and source
-    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gather( target, source, indexes, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gather( target, source, indexes, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -170,7 +170,7 @@ void HArrayUtils::assignScatter(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the scatter version with the correct value types for target and source
-    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatter( target, indexes, source, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatter( target, indexes, source, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
