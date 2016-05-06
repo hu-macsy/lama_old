@@ -418,7 +418,15 @@ void CSRStorage<ValueType>::setCSRDataSwap(
 
     mIa.swap( ia );
     mJa.swap( ja );
-    mValues.swap( values );
+
+    if( common::TypeTraits<ValueType>::stype == common::TypeTraits<OtherValueType>::stype)
+    {
+        mValues.swap( reinterpret_cast<HArray<ValueType>&>( values ) );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "ValueType mismatch" )
+    }
 
     mDiagonalProperty = checkDiagonalProperty();
 
@@ -2529,6 +2537,29 @@ const char* CSRStorage<ValueType>::typeName()
 /* ========================================================================= */
 
 SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+
+#define CSR_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+     template void CSRStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+     template  void CSRStorage<ValueType>::setCSRDataSwap(const IndexType, const IndexType, const IndexType,                \
+                                                          hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>&,             \
+                                                          hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );        \
+     template void CSRStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+     template void CSRStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+     template void CSRStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+     template void CSRStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+     template void CSRStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+
+#define CSR_STORAGE_INST_LVL1( ValueType )                                                                                  \
+    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_HOST_CNT, ValueType, CSR_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+
+SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_HOST_CNT, CSR_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+
+#undef CSR_STORAGE_INST_LVL2
+#undef CSR_STORAGE_INST_LVL1
+
 
 } /* end namespace lama */
 
