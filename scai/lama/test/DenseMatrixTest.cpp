@@ -434,7 +434,7 @@ void cTorTest( )
         DenseMatrix<ValueType> n4m6DMatrix( n4m6SparseMatrix );
         DenseMatrix<ValueType> n6m4DMatrix( n6m4SparseMatrix );
         DenseMatrix<ValueType> resDMatrix( resSparseMatrix );
-        BOOST_MESSAGE( "TODO: DenseMatrixTest - CtorTest" );
+        BOOST_TEST_MESSAGE( "TODO: DenseMatrixTest - CtorTest" );
         DenseMatrix<ValueType> computeMatrix( n6m4DMatrix * n4m6DMatrix );
         verifySameMatrix<ValueType>( computeMatrix, resDMatrix );
         BOOST_CHECK( computeMatrix.getNumRows() == n6m4DMatrix.getNumRows() );

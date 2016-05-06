@@ -41,7 +41,18 @@
 #include <scai/kregistry/test/TestMacros.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#include <boost/test/detail/unit_test_parameters.hpp>
+#if BOOST_VERSION > 105600
+	#include <boost/test/unit_test_parameters.hpp>
+#else
+	#include <boost/test/detail/unit_test_parameters.hpp>
+#endif
+
+#include <boost/test/test_tools.hpp>
+#include <boost/test/detail/global_typedef.hpp>
+#include <boost/test/detail/log_level.hpp>
+
+#include <boost/test/detail/suppress_warnings.hpp>
+
 
 #ifdef SCAI_CHECK_CLOSE
     #undef  SCAI_CHECK_CLOSE
@@ -71,8 +82,13 @@
         BOOST_CHECK_CLOSE( scai::common::Math::imag( xVal ), scai::common::Math::imag( yVal ), tolerance ) ;  \
     }
 
+/*
 #define SCAI_CHECK_SMALL( x, ValueType, eps )                   \
         BOOST_CHECK_SMALL( x, static_cast<ValueType>(eps) );    \
+*/
+
+#define SCAI_CHECK_SMALL( x, ValueType, eps )                   \
+        BOOST_CHECK( x < static_cast<ValueType>(eps) );    \
 
 #define SCAI_CHECK_SMALL_EPS( x, ValueType )                                        \
     SCAI_CHECK_SMALL( x, ValueType, scai::common::TypeTraits<ValueType>::small() )
@@ -90,12 +106,6 @@
  *
  * Static cast is used to convert eps to the right ValueType.
  */
-
-/*#define SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )                     \
-    {                                                                    \
-        ValueType xHelper = (x).getValue<ValueType >();                  \
-        BOOST_CHECK_SMALL( xHelper, static_cast<ValueType >( eps ) );    \
-    }*/
 
 #define SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )                     \
         SCAI_CHECK_SMALL( (x).getValue<ValueType>(), ValueType, eps )    \
@@ -116,9 +126,13 @@
  * log levels are defined in boost/test/detail/log_level.hpp
  */
 
-#define IF_LOG_LEVEL_IS_TEST_SUITE \
-    if ( boost::unit_test::runtime_config::log_level() == boost::unit_test::log_test_units )
-
+#if BOOST_VERSION > 105600
+    #define IF_LOG_LEVEL_IS_TEST_SUITE \
+    	if ( boost::unit_test::runtime_config::LOG_LEVEL == "test_suite" )
+#else
+    #define IF_LOG_LEVEL_IS_TEST_SUITE \
+	if ( boost::unit_test::runtime_config::log_level() == boost::unit_test::log_test_units )
+#endif 
 /*
  * @brief HelperMacro LAMA_AUTO_TEST_CASE_T( name, classname )
  *
