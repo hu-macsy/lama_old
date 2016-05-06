@@ -35,6 +35,7 @@
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/macros/print_string.hpp>
+#include <scai/common/macros/typeloop.hpp>
 #include <scai/common/preprocessor.hpp>
 #include <scai/logging.hpp>
 #include <scai/hmemo/Context.hpp>
@@ -322,13 +323,13 @@
  *  KernelRegistryException is caught with a correpsonding warn message on logger
  */
 
-#define LAMA_RUN_TEST(z, I, method )                                                                            \
+#define LAMA_RUN_TEST( method, ValueType )                                                                      \
     try                                                                                                         \
     {                                                                                                           \
         if ( context->getType() == scai::common::context::CUDA                                                  \
                                || context->getType() == scai::common::context::MIC )                            \
         {                                                                                                       \
-            switch( scai::common::getScalarType<SCAI_ARITHMETIC_HOST_TYPE_##I>() )                              \
+            switch( scai::common::getScalarType<ValueType>() )                                                  \
             {                                                                                                   \
                 case scai::common::scalar::LONG_DOUBLE:                                                         \
                 case scai::common::scalar::LONG_DOUBLE_COMPLEX:                                                 \
@@ -337,11 +338,11 @@
                      ;                                                                                          \
              }                                                                                                  \
         }                                                                                                       \
-        method<SCAI_ARITHMETIC_HOST_TYPE_##I>( context );                                                       \
+        method<ValueType>( context );                                                                           \
     }                                                                                                           \
     catch ( scai::kregistry::KernelRegistryException& )                                                         \
     {                                                                                                           \
-        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( SCAI_ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
+        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( ValueType ) << "> cannot run on "                \
                        << context->getType() << ", corresponding function not implemented yet."        )        \
         return;                                                                                                 \
     }
@@ -355,13 +356,13 @@
  * @param name          name of test method, which will invoke.
  * @param classname     name of the given test class.
 */
-#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                        \
-                                                                                                        \
-    BOOST_AUTO_TEST_CASE( name )                                                                        \
-    {                                                                                                   \
-            ContextPtr context = Context::getContextPtr();                                              \
-            const std::string lama_name = #name;                                                        \
-            const std::string lama_classname = #classname;                                              \
-            BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT, LAMA_RUN_TEST, namespacename::classname::name )  \
+#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                                                        \
+                                                                                                                                        \
+    BOOST_AUTO_TEST_CASE( name )                                                                                                        \
+    {                                                                                                                                   \
+            ContextPtr context = Context::getContextPtr();                                                                              \
+            const std::string lama_name = #name;                                                                                        \
+            const std::string lama_classname = #classname;                                                                              \
+            SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_HOST_CNT, namespacename::classname::name, LAMA_RUN_TEST, SCAI_ARITHMETIC_HOST )  \
     }
 

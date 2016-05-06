@@ -64,6 +64,7 @@
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/typeloop.hpp>
 
 namespace scai
 {
@@ -1390,25 +1391,17 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_MATRIX_STORAGE2_INSTANTIATE(z, J, TYPE )              \
-    template COMMON_DLL_IMPORTEXPORT                               \
-    void MatrixStorage<TYPE>::setRawDenseData(                     \
-            const IndexType numRows,                               \
-            const IndexType numColumns,                            \
-            const SCAI_ARITHMETIC_HOST_TYPE_##J values[],               \
-            const TYPE );
+#define LAMA_MATRIXSTORAGE2_INST( ValueType, OtherValueType )                                                                   \
+    template COMMON_DLL_IMPORTEXPORT void MatrixStorage<ValueType>::setRawDenseData<OtherValueType>(                            \
+                const IndexType, const IndexType, const OtherValueType*, const ValueType );
 
-#define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                                      \
-                                                                                      \
-    BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT,                                        \
-                     LAMA_MATRIX_STORAGE2_INSTANTIATE,                                \
-                     SCAI_ARITHMETIC_HOST_TYPE_##I )                                       \
+#define LAMA_MATRIXSTORAGE_INST( ValueType )                                                                                    \
+    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_HOST_TYPE_CNT, ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
 
+SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
 
-BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_MATRIX_STORAGE_INSTANTIATE
-#undef LAMA_MATRIX_STORAGE2_INSTANTIATE
+#undef LAMA_MATRIXSTORAGE2_INST
+#undef LAMA_MATRIXSTORAGE_INST
 
 
 SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )

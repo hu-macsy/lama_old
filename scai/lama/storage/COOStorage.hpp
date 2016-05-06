@@ -441,53 +441,6 @@ public:
     static MatrixStorageCreateKeyType createValue();
 };
 
-template<typename ValueType>
-template<typename OtherValueType>
-void COOStorage<ValueType>::buildCSR(
-    hmemo::HArray<IndexType>& ia,
-    hmemo::HArray<IndexType>* ja,
-    hmemo::HArray<OtherValueType>* values,
-    const hmemo::ContextPtr preferredLoc ) const
-{
-    // multiple kernel routines needed
-
-    static utilskernel::LAMAKernel<sparsekernel::CSRKernelTrait::sizes2offsets> sizes2offsets;
-    static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::getCSRSizes> getCSRSizes;
-    static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
-
-    // do it where all routines are avaialble
-
-    hmemo::ContextPtr loc = preferredLoc;
-
-    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    hmemo::WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
-    hmemo::ReadAccess<IndexType> cooIA( mIA, loc );
-
-    getCSRSizes[loc]( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
-
-    if( ja == NULL || values == NULL )
-    {
-        csrIA.resize( mNumRows );
-        return;
-    }
-
-    IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
-
-    SCAI_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
-
-    hmemo::ReadAccess<IndexType> cooJA( mJA, loc );
-    hmemo::ReadAccess<ValueType> cooValues( mValues, loc );
-
-    hmemo::WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
-    hmemo::WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
-
-    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(),
-                       mNumRows, mNumValues, cooIA.get(), cooJA.get(), cooValues.get() );
-}
-
 } /* end namespace lama */
 
 } /* end namespace scai */
