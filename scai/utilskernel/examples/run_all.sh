@@ -19,9 +19,9 @@ function RUN ( ) {
 }
 
 echo ""
-echo "======================================================"
-echo "==  Building and executing all scai hmemo examples  =="
-echo "======================================================"
+echo "============================================================"
+echo "==  Building and executing all scai utilskernel examples  =="
+echo "============================================================"
 echo ""
 
 cd $MYDIR
