@@ -42,6 +42,7 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/common/unique_ptr.hpp>
 
