@@ -46,6 +46,8 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/TypeTraits.hpp>
 
+#include <scai/common/boost_check/version.hpp>
+
 // boost
 #include <boost/assign/list_of.hpp>
 #include <boost/mpl/list.hpp>
