@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     Storages allMatrixStorages;    // is created by factory
 
     size_t nFormats = Format::UNDEFINED;
-    size_t nTypes   = SCAI_ARITHMETIC_HOST_TYPE_CNT;
+    size_t nTypes   = SCAI_ARITHMETIC_HOST_CNT;
 
     SCAI_LOG_INFO( logger, "Test all storages of factory to be empty, #storages = " << allMatrixStorages.size() )
 

@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE( FactoryTest )
 {
     HArrays allArrays;    // is created by factory
 
-    size_t nTypes = SCAI_ARRAY_TYPE_CNT;
+    size_t nTypes = SCAI_ARITHMETIC_ARRAY_HOST_CNT;
 
     SCAI_LOG_INFO( logger, "Test all arrys of factory to be zero, #arrays = " << allArrays.size() )
 

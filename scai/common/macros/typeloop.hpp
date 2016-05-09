@@ -9,6 +9,8 @@
 
 #include <scai/common/config.hpp>
 
+#define SCAI_COMMON_FIRST_ENTRY( x, ... ) x
+
 /*
  * Level 1
  */

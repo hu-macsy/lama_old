@@ -43,7 +43,6 @@
 
 #include <scai/common/test/Configuration.hpp>
 
-#include <scai/common/preprocessor.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/TypeTraits.hpp>
 
@@ -67,7 +66,7 @@ typedef boost::mpl::list<SCAI_ARITHMETIC_ARRAY_HOST> scai_array_test_types;
 /*  Define one type used for test where only one ARITHMETIC TYPE is needed          */
 /* -------------------------------------------------------------------------------- */
 
-#define SCAI_TEST_TYPE SCAI_ARITHMETIC_HOST_TYPE_0
+#define SCAI_TEST_TYPE SCAI_COMMON_FIRST_ENTRY( SCAI_ARITHMETIC_HOST )
 
 /* -------------------------------------------------------------------------------- */
 

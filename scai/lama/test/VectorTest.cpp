@@ -66,14 +66,6 @@ using namespace scai::hmemo;
 using namespace scai::dmemo;
 using scai::common::Exception;
 
-#if SCAI_ARITHMETIC_HOST_TYPE_CNT == 1
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST_TYPE_0> test_types;
-#elif SCAI_ARITHMETIC_HOST_TYPE_CNT == 2
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST_TYPE_0, SCAI_ARITHMETIC_HOST_TYPE_1> test_types;
-#else
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST_TYPE_0, SCAI_ARITHMETIC_HOST_TYPE_1, SCAI_ARITHMETIC_HOST_TYPE_2> test_types;
-#endif
-
 /* --------------------------------------------------------------------- */
 
 struct VectorTestConfig
@@ -132,7 +124,7 @@ void verifyVectorWithScalar( Vector& v, Scalar _s )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_arithmetic_test_types )
 {
     IndexType n = 4;
     DenseVector<ValueType> v( n, 1.0 );
@@ -297,7 +289,7 @@ void CtorMatrixExpressionTestmethod()
     SCAI_CHECK_THROW( { DenseVector<ValueType> vec( n4m4IdentityMatrix * vec1 ); }, Exception );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, ValueType, scai_arithmetic_test_types )
 {
     CtorMatrixExpressionTestmethod< CSRSparseMatrix<ValueType> >();
     CtorMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >();
@@ -309,7 +301,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CtorVectorExpressionTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( CtorVectorExpressionTest, ValueType, scai_arithmetic_test_types )
 {
     IndexType n = 4;
     DenseVector<ValueType> vectorA( n , 3.0 );
@@ -466,7 +458,7 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
     SCAI_CHECK_THROW( { vec2 = n4m4IdentityMatrix* vec1; }, Exception );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr(); 
 
@@ -480,7 +472,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, test
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr(); 
 
@@ -539,7 +531,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, test_t
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr(); 
 
@@ -576,7 +568,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr(); 
 
@@ -726,7 +718,7 @@ void operatorMatrixTimesVectorTestmethod()
     SCAI_LOG_INFO( logger, "check for exception done" );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, ValueType, scai_arithmetic_test_types )
 {
     operatorMatrixTimesVectorTestmethod< CSRSparseMatrix<ValueType> >();
     operatorMatrixTimesVectorTestmethod< ELLSparseMatrix<ValueType> >();
@@ -795,7 +787,7 @@ void operatorVectorTimesMatrixTestmethod()
     SCAI_LOG_INFO( logger, "check for exception done" );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, ValueType, scai_arithmetic_test_types )
 {
     operatorVectorTimesMatrixTestmethod< CSRSparseMatrix<ValueType> >();
     operatorVectorTimesMatrixTestmethod< ELLSparseMatrix<ValueType> >();
@@ -807,7 +799,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, ValueType, test
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, ValueType, scai_arithmetic_test_types )
 {
     IndexType n = 4;
     DenseVector<ValueType> v( n, 1.0 );
@@ -828,7 +820,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, ValueType, scai_arithmetic_test_types )
 {
     {
         //y = alpha * A * x + 0 * y
@@ -886,7 +878,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, ValueType, scai_arithmetic_test_types )
 {
     const DenseMatrix<ValueType> A( TestSparseMatrices::n4m4IdentityMatrix<ValueType>() );
     DenseVector<ValueType> x( 4, 1.0 );
