@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
 {
     // it should be okay just to test one ValueType 
 
-    typedef SCAI_ARITHMETIC_HOST_TYPE_0 ValueType;
+    typedef SCAI_TEST_TYPE ValueType;
 
     TypedStorages<ValueType> allMatrixStorages;
 
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE( replicateTest )
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    typedef SCAI_ARITHMETIC_HOST_TYPE_0 ValueType;
+    typedef SCAI_TEST_TYPE ValueType;
 
     TypedStorages<ValueType> allMatrixStorages;
 
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    typedef SCAI_ARITHMETIC_HOST_TYPE_0 ValueType;
+    typedef SCAI_TEST_TYPE ValueType;
 
     TypedStorages<ValueType> allMatrixStorages;
 
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    typedef SCAI_ARITHMETIC_HOST_TYPE_0 ValueType;
+    typedef SCAI_TEST_TYPE ValueType;
 
     TypedStorages<ValueType> allMatrixStorages;
 

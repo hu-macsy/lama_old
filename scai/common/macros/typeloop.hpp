@@ -9,7 +9,9 @@
 
 #include <scai/common/config.hpp>
 
-#define SCAI_COMMON_FIRST_ENTRY( x, ... ) x
+#define __SCAI_COMMON_FIRST_ENTRY( x, ... ) x
+#define _SCAI_COMMON_FIRST_ENTRY( x, ... ) __SCAI_COMMON_FIRST_ENTRY( x, __VA_ARGS__ )
+#define SCAI_COMMON_FIRST_ENTRY( x, ... ) _SCAI_COMMON_FIRST_ENTRY( x, __VA_ARGS__ )
 
 /*
  * Level 1

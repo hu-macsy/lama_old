@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     Matrices allMatrices;    // is created by factory
 
     size_t nFormats = Format::UNDEFINED;
-    size_t nTypes   = SCAI_ARITHMETIC_HOST_TYPE_CNT;
+    size_t nTypes   = SCAI_ARITHMETIC_HOST_CNT;
 
     nFormats--;   // SPARSE_ASSEMBLY_STORAGE not used for a matrix
 
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     // For copy we just take one arithmetic type to reduce number of test cases
 
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_ARITHMETIC_HOST_TYPE_0>::stype;
+    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
     Matrices allMatrices( stype, context );    // is created by factory
 
@@ -260,8 +260,8 @@ BOOST_AUTO_TEST_CASE( transposeTest )
     // For transpose we just take one arithmetic type to reduce number of test cases
     // we also take same type
 
-    common::scalar::ScalarType stype1 = common::TypeTraits<SCAI_ARITHMETIC_HOST_TYPE_0>::stype;
-    common::scalar::ScalarType stype2 = common::TypeTraits<SCAI_ARITHMETIC_HOST_TYPE_0>::stype;
+    common::scalar::ScalarType stype1 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::scalar::ScalarType stype2 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
     Matrices allMatrices1( stype1, context );    // is created by factory
     Matrices allMatrices2( stype2, context );    // is created by factory
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
             if ( matrix.getValueType() == matrixT.getValueType() )
             {
-                BOOST_CHECK_EQUAL( 0, maxDiff.getValue<SCAI_ARITHMETIC_HOST_TYPE_0>() );
+                BOOST_CHECK_EQUAL( 0, maxDiff.getValue<SCAI_TEST_TYPE>() );
             }
             else
             {
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
 
     // For transpose we just take one arithmetic type to reduce number of test cases
 
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_ARITHMETIC_HOST_TYPE_0>::stype;
+    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
     Matrices allMatrices( stype, context );    // is created by factory
 
