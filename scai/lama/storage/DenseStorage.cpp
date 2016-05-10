@@ -45,7 +45,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
 using namespace scai::hmemo;

@@ -50,9 +50,7 @@ public:
 
     /** Constructor for a MIC sychronization token.
      *
-     *  @param[in]  context  is the MICcontext where asynchronous operation takes place
-     *
-     *  A pointer to the MIC context is required to enable/disable it.
+     *  @param[in]  device  is the MIC device where asynchronous operation takes place
      */
 
     MICSyncToken( int device );

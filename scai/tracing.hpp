@@ -1,4 +1,5 @@
 /**
+ * @dir  scai/tracing Source files of the tracing subproject.
  * @file scai/tracing.hpp
  *
  * @license
@@ -25,10 +26,6 @@
  * @brief General header file that provides the tracing macros.
  * @author Lauretta Schubert, Thomas Brandes
  * @date 12.08.2011
- */
-
-/**
- * @dir  scai/tracing Source files of the tracing subproject.
  */
 
 #pragma once

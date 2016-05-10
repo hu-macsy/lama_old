@@ -54,7 +54,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>

@@ -107,6 +107,11 @@ public:
 
     ThreadPool( int size );
 
+    int size() const
+    {
+        return mMaxSize;
+    }
+
     /** Schedules a new function that will be executed by available free thread.
      *
      *  @param[in] work      is function to be executed by available thread
@@ -114,11 +119,6 @@ public:
      *               (if numOmpThreads == 0 omp_get_max_threads() is used)
      *  @return shared pointer for the task
      */
-
-    int size() const
-    {
-        return mMaxSize;
-    }
 
     common::shared_ptr<ThreadPoolTask> schedule( common::function<void()> work, int numOmpThreads = 0 );
 

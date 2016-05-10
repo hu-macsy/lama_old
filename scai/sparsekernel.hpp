@@ -1,4 +1,5 @@
 /**
+ * @dir scai/sparsekernel Source files of subproject sparsekernel
  * @file sparsekernel.hpp
  *
  * @license

@@ -1,4 +1,5 @@
 /**
+ * @dir scai/solver Source files of project solver.
  * @file solver.hpp
  *
  * @license

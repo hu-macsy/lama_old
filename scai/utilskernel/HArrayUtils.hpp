@@ -121,8 +121,8 @@ public:
 
     /**
      *  @brief Setting one scalar element for all elements of HArray
-     *s
-     *  target[i] <op>= value 
+     *
+     *  target[i] _op_= value 
      */
     template<typename ValueType>
     static void assignScalar( 
@@ -152,7 +152,7 @@ public:
      *  @param[out] result  output array
      *  @param[in]  beta    scaling factor
      *  @param[in]  y       source array
-     *  @param[in]  context location where operation is done
+     *  @param[in]  prefLoc location where operation should be done if possible
      */
 
     template<typename ValueType>
@@ -184,7 +184,7 @@ public:
      *  @param[in]  x       source array
      *  @param[in]  beta    scaling factor
      *  @param[in]  y       source array
-     *  @param[in]  context location where operation is done
+     *  @param[in]  prefLoc location where operation should be done if possible
      */
 
     template<typename ValueType>

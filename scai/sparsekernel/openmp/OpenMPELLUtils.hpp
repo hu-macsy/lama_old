@@ -386,8 +386,6 @@ private:
         const IndexType ellJA[],
         const ValueType ellValues[] );
 
-    /** Routine that registers all methods at the kernel registry. */
-
     SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
     SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
     SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )

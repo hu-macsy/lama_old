@@ -1,4 +1,5 @@
 /**
+ * @dir scai/utilskernel Source files of the subproject utilskernel
  * @file utilskernel.hpp
  *
  * @license

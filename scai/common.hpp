@@ -1,4 +1,5 @@
 /**
+ * @dir  scai/common Source files of the common subproject.
  * @file scai/common.hpp
  *
  * @license

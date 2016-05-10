@@ -23,12 +23,11 @@
  * @endlicense
  *
  * @brief Implementation of methods for class Exception.
- * @author Jiri Kraus
+ * @author Jiri Kraus, Thomas Brandes
  * @date 01.03.2011
  */
 
-// hpp
-#include <scai/common/macros/throw.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 // std
 #include <cstdio>
