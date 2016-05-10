@@ -54,7 +54,7 @@ set ( SCAI_LINKER_FLAGS "" )
 if ( CMAKE_COMPILER_IS_GNUCXX )
 
     set ( SCAI_WARNING_FLAGS       "-Wextra -Wall -Werror" )
-    set ( SCAI_CXX_FLAGS_          "" )
+    set ( SCAI_CXX_FLAGS           "" )
     set ( SCAI_CXX_FLAGS_DEBUG     "" )
     set ( SCAI_CXX_FLAGS_RELEASE   "-ffast-math -msse4a " )
     set ( SCAI_CODE_COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )

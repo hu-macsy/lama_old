@@ -105,7 +105,8 @@ void DenseMatrix<ValueType>::computeOwners()
 
             for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
             {
-                  s += " " + requiredIndexes[i];
+		  s += " ";
+		  s += requiredIndexes[i];
             }
 
             s += " }";
@@ -121,7 +122,8 @@ void DenseMatrix<ValueType>::computeOwners()
 
         for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
         {
-            s += " " + mOwners[i];
+            s += " ";
+	    s += mOwners[i];
         }
 
         s += " }";

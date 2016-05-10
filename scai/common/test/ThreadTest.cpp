@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE( barrierTest )
     }
 }
 
-static int SLEEP_TIME  = 1;
-static int C_THREADS   = 4;
+static const int SLEEP_TIME  = 1;
+static const int C_THREADS   = 4;
 
 // Define routine that is executed by one thread
 

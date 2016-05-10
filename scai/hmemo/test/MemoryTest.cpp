@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE( DeviceMemoryTest )
     {
         data = mem->allocate( MAX_N );
     }
-    , MemoryException )
+    , MemoryException );
 }
 
 /* --------------------------------------------------------------------- */

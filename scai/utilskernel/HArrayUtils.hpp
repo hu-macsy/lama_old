@@ -125,7 +125,7 @@ public:
 
     /**
      *  @brief Setting one scalar element for all elements of HArray
-     *
+     *s
      *  target[i] <op>= value 
      */
     template<typename ValueType>
@@ -357,11 +357,9 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    SCAI_DECLARE_TEMPLATESPECIFIER( SpecifierV, template<typename ValueType> )
-
     HArrayUtils();  // static class, no objects outside
+    HArrayUtils( const HArrayUtils& );
 
-    static HArrayUtils guard;   // dummy object guarantees template method instantiation
 };
 
 } /* end namespace utilskernel */

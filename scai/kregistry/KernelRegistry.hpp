@@ -232,7 +232,26 @@ private:
 
         // return x > y
 
-        bool operator()( const KernelRegistryKey& x, const KernelRegistryKey& y );
+        bool operator()( const KernelRegistryKey& x, const KernelRegistryKey& y ) const
+        {
+             // first compare the id of the routine (is second key argument)
+
+            int compareName = std::strcmp( x.second, y.second );
+
+            if ( compareName < 0 )
+            {
+                 return true;
+            }
+
+            if ( compareName > 0 )
+            {
+                 return false;
+            }
+
+            // both have same id, so take typename to distinguish
+
+            return x.first.name() > y.first.name();
+        }
 
     };
 

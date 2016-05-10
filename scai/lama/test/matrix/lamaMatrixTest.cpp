@@ -50,7 +50,7 @@
  * Avoids expensive calls of reserve/release routines of the Context for each test.
  */
 
-BOOST_GLOBAL_FIXTURE( ContextFix )
+BOOST_GLOBAL_FIXTURE( ContextFix );
 
 scai::hmemo::ContextPtr ContextFix::testContext;
 

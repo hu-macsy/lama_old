@@ -44,10 +44,8 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
-
+#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -559,36 +557,20 @@ Distribution* Distribution::getDistribution(
 
 /* ---------------------------------------------------------------------- */
 
-// Instantiation of all relevant replicate routines
-// Macro to instantiate for type pair SCAI_ARRAY_TYPE##I, SCAI_ARRAY_TYPE##J
-#define LAMA_DISTRIBUTE2_INSTANTIATE(z, J, TYPE)                           \
-    \
-    template COMMON_DLL_IMPORTEXPORT void Distribution::replicate(         \
-            TYPE allValues[],                                              \
-            const SCAI_ARRAY_TYPE##J localValues[] ) const;                     \
-     
+#define DMEMO_DISTRIBUTE2_INST( ValueType, OtherValueType )                                                                         \
+    template void Distribution::replicateN<ValueType, OtherValueType>( ValueType*, const OtherValueType*, const IndexType ) const;  \
+    template void Distribution::replicate<ValueType, OtherValueType>( ValueType*, const OtherValueType* ) const;
 
-#define LAMA_DISTRIBUTE_INSTANTIATE(z, I, _)                               \
-    template COMMON_DLL_IMPORTEXPORT void Distribution::replicateRagged(   \
-            SCAI_ARRAY_TYPE##I allValues[],                                     \
-            const SCAI_ARRAY_TYPE##I localValues[],                             \
-            const IndexType allOffsets[] ) const;                          \
-    \
-    template COMMON_DLL_IMPORTEXPORT void Distribution::replicateN(        \
-            SCAI_ARRAY_TYPE##I allValues[],                                     \
-            const SCAI_ARRAY_TYPE##I localValues[],                             \
-            const IndexType n ) const;                                     \
-    \
-    BOOST_PP_REPEAT( SCAI_ARRAY_TYPE_CNT,                                       \
-                     LAMA_DISTRIBUTE2_INSTANTIATE,                         \
-                     SCAI_ARRAY_TYPE##I )                                       \
+#define DMEMO_DISTRIBUTE_INST( ValueType )  \
+    template void Distribution::replicateRagged<ValueType>( ValueType*, const ValueType*, const IndexType* ) const;                 \
+    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_ARRAY_HOST_CNT, ValueType, DMEMO_DISTRIBUTE2_INST, SCAI_ARITHMETIC_ARRAY_HOST )
+
+SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, DMEMO_DISTRIBUTE_INST, SCAI_ARITHMETIC_ARRAY_HOST )
      
 // template instantiation for the supported data types
 
-BOOST_PP_REPEAT( SCAI_ARRAY_TYPE_CNT, LAMA_DISTRIBUTE_INSTANTIATE, _ )
-
-#undef LAMA_DISTRIBUTE_INSTANTIATE
-
+#undef DMEMO_DISTRIBUTE2_INST
+#undef DMEMO_DISTRIBUTE_INST
 /* ---------------------------------------------------------------------- */
 
 } /* end namespace dmemo */

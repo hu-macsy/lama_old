@@ -113,7 +113,6 @@ scai_project (
         Factory1
         Math
         OpenMP
-        preprocessor
         ReductionOp
         NonCopyable
 )
@@ -121,10 +120,12 @@ scai_project (
 ## configure c++11/boost dependent sources
 set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
 
-if    ( NOT CXX_SUPPORTS_C11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
     install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
+if    ( NOT CXX_SUPPORTS_C11 )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CONFIGURE_DIR}/bind.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CONFIGURE_DIR}/function.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CONFIGURE_DIR}/shared_ptr.hpp" )

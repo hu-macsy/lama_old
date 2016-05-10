@@ -39,14 +39,20 @@ set ( CMAKE_THREAD_PREFER_PTHREAD 1 )
 set ( THREADS_PREFER_PTHREAD_FLAG 1 )
 
 find_package( Threads ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-set ( SCAI_THREAD_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} CACHE PATH "Pthread library" )
+
+if     ( CMAKE_THREAD_LIBS_INIT )
+    set ( SCAI_THREAD_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} CACHE PATH "Pthread library" )
+elseif ( ${CMAKE_USE_PTHREADS_INIT} )
+	set ( SCAI_THREAD_LIBRARIES pthread CACHE PATH "Pthread library" )
+endif  ( )
+
 mark_as_advanced( SCAI_THREAD_LIBRARIES )
 
-if    ( NOT WIN32 )
+if    ( LINUX )
 	## get pthread version
 	execute_process ( COMMAND /usr/bin/getconf GNU_LIBPTHREAD_VERSION OUTPUT_VARIABLE _pthread_output )
 	string ( REGEX MATCH "([0-9]+\\.[0-9]*)" SCAI_THREAD_VERSION ${_pthread_output} )
-endif ( NOT WIN32 )
+endif ( LINUX )
 
 ###  Here we use PThread library for threads
 ###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake

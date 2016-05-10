@@ -50,7 +50,6 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/preprocessor.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/common/ReductionOp.hpp>
 #include <scai/common/SCAITypes.hpp>

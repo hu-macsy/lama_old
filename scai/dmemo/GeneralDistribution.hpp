@@ -44,12 +44,7 @@
 
 // std
 #include <vector>
-
-#if (BOOST_VERSION < 103600)
 #include <map>
-#else //(BOOST_VERSION >= 103600)
-#include <boost/unordered_map.hpp>
-#endif //(BOOST_VERSION < 103600)
 
 namespace scai
 {
@@ -123,12 +118,7 @@ protected:
 
     GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator );
 
-    //TODO: Evaluate which one is faster
-#if (BOOST_VERSION < 103600)
     typedef std::map<IndexType, IndexType> Global2LocalMapType;
-#else //(BOOST_VERSION >= 103600)
-    typedef boost::unordered_map<IndexType, IndexType> Global2LocalMapType;
-#endif //(BOOST_VERSION < 103600)
     Global2LocalMapType mGlobal2Local;
     std::vector<IndexType> mLocal2Global;
 

@@ -90,136 +90,89 @@ typedef IndexType PartitionId;
 MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 // List here all arithmetic types for which matrices, storages might be created
+/*
+ * Lists of all used arithmetic types, two possibilities with/without complex
+ */
+#ifdef SCAI_COMPLEX_SUPPORTED
+    /*
+     * Kernel
+     */
+    #define SCAI_ARITHMETIC_HOST_CNT 6
+    #define SCAI_ARITHMETIC_HOST     float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble
 
-#define SCAI_ARITHMETIC_HOST_TYPE_0 float
-#define SCAI_ARITHMETIC_HOST_TYPE_1 double
-#define SCAI_ARITHMETIC_HOST_TYPE_2 ComplexFloat
-#define SCAI_ARITHMETIC_HOST_TYPE_3 ComplexDouble
-#define SCAI_ARITHMETIC_HOST_TYPE_4 long double
-#define SCAI_ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
+    #define SCAI_ARITHMETIC_EXT_HOST_CNT 4
+    #define SCAI_ARITHMETIC_EXT_HOST float, double, ComplexFloat, ComplexDouble
+
+    #define SCAI_ARITHMETIC_CUDA_CNT 4
+    #define SCAI_ARITHMETIC_CUDA     float, double, ComplexFloat, ComplexDouble
+
+    #define SCAI_ARITHMETIC_MIC_CNT 4
+    #define SCAI_ARITHMETIC_MIC      float, double, ComplexFloat, ComplexDouble
+
+    /*
+     * Array
+     */
+
+    #define SCAI_ARITHMETIC_ARRAY_HOST_CNT 7
+    #define SCAI_ARITHMETIC_ARRAY_HOST     IndexType, SCAI_ARITHMETIC_HOST
+
+    #define SCAI_ARITHMETIC_ARRAY_EXT_HOST_CNT 5
+    #define SCAI_ARITHMETIC_ARRAY_EXT_HOST IndexType, SCAI_ARITHMETIC_EXT_HOST
+
+    #define SCAI_ARITHMETIC_ARRAY_CUDA_CNT 5
+    #define SCAI_ARITHMETIC_ARRAY_CUDA     IndexType, SCAI_ARITHMETIC_CUDA
+
+    #define SCAI_ARITHMETIC_ARRAY_MIC_CNT 5
+    #define SCAI_ARITHMETIC_ARRAY_MIC      IndexType, SCAI_ARITHMETIC_MIC
+#else
+    /*
+     * Kernel
+     */
+    #define SCAI_ARITHMETIC_HOST_CNT 3
+    #define SCAI_ARITHMETIC_HOST     float, double, long double
+
+    #define SCAI_ARITHMETIC_EXT_HOST_CNT 2
+    #define SCAI_ARITHMETIC_EXT_HOST float, double
+
+    #define SCAI_ARITHMETIC_CUDA_CNT 2
+    #define SCAI_ARITHMETIC_CUDA     float, double
+
+    #define SCAI_ARITHMETIC_MIC_CNT 2
+    #define SCAI_ARITHMETIC_MIC      float, double
+
+    /*
+     * Array
+     */
+
+    #define SCAI_ARITHMETIC_ARRAY_HOST_CNT 4
+    #define SCAI_ARITHMETIC_ARRAY_HOST     IndexType, SCAI_ARITHMETIC_HOST
+
+    #define SCAI_ARITHMETIC_ARRAY_EXT_HOST_CNT 3
+    #define SCAI_ARITHMETIC_ARRAY_EXT_HOST IndexType, SCAI_ARITHMETIC_EXT_HOST
+
+    #define SCAI_ARITHMETIC_ARRAY_CUDA_CNT 3
+    #define SCAI_ARITHMETIC_ARRAY_CUDA     IndexType, SCAI_ARITHMETIC_CUDA
+
+    #define SCAI_ARITHMETIC_ARRAY_MIC_CNT 3
+    #define SCAI_ARITHMETIC_ARRAY_MIC      IndexType, SCAI_ARITHMETIC_MIC
+#endif
+
 
 /*
- * Kernel
+ * List creation
  */
-
-#define SCAI_ARITHMETIC_HOST_CNT 6
-#define SCAI_ARITHMETIC_HOST     float, double, ComplexFloat, ComplexDouble, long double, ComplexLongDouble
-
-#define SCAI_ARITHMETIC_EXT_HOST_CNT 4
-#define SCAI_ARITHMETIC_EXT_HOST float, double, ComplexFloat, ComplexDouble
-
-#define SCAI_ARITHMETIC_CUDA_CNT 4
-#define SCAI_ARITHMETIC_CUDA     float, double, ComplexFloat, ComplexDouble
-
-#define SCAI_ARITHMETIC_MIC_CNT 4
-#define SCAI_ARITHMETIC_MIC      float, double, ComplexFloat, ComplexDouble
 
 #define SCAI_ARITHMETIC_HOST_LIST TYPELIST(     SCAI_ARITHMETIC_HOST_CNT,     SCAI_ARITHMETIC_HOST )
 #define SCAI_ARITHMETIC_EXT_HOST_LIST TYPELIST( SCAI_ARITHMETIC_EXT_HOST_CNT, SCAI_ARITHMETIC_EXT_HOST )
 #define SCAI_ARITHMETIC_CUDA_LIST TYPELIST(     SCAI_ARITHMETIC_CUDA_CNT,     SCAI_ARITHMETIC_CUDA )
 #define SCAI_ARITHMETIC_MIC_LIST TYPELIST(      SCAI_ARITHMETIC_MIC_CNT,      SCAI_ARITHMETIC_MIC )
 
-/*
- * Array
- */
-
-#define SCAI_ARITHMETIC_ARRAY_HOST_CNT 7
-#define SCAI_ARITHMETIC_ARRAY_HOST     IndexType, SCAI_ARITHMETIC_HOST
-
-#define SCAI_ARITHMETIC_ARRAY_EXT_HOST_CNT 5
-#define SCAI_ARITHMETIC_ARRAY_EXT_HOST IndexType, SCAI_ARITHMETIC_EXT_HOST
-
-#define SCAI_ARITHMETIC_ARRAY_CUDA_CNT 5
-#define SCAI_ARITHMETIC_ARRAY_CUDA     IndexType, SCAI_ARITHMETIC_CUDA
-
-#define SCAI_ARITHMETIC_ARRAY_MIC_CNT 5
-#define SCAI_ARITHMETIC_ARRAY_MIC      IndexType, SCAI_ARITHMETIC_MIC
-
 #define SCAI_ARITHMETIC_ARRAY_HOST_LIST TYPELIST( SCAI_ARITHMETIC_ARRAY_HOST_CNT, SCAI_ARITHMETIC_ARRAY_HOST )
+#define SCAI_ARITHMETIC_ARRAY_EXT_HOST_LIST TYPELIST( SCAI_ARITHMETIC_ARRAY_EXT_HOST_CNT, SCAI_ARITHMETIC_ARRAY_EXT_HOST )
 #define SCAI_ARITHMETIC_ARRAY_CUDA_LIST TYPELIST( SCAI_ARITHMETIC_ARRAY_CUDA_CNT, SCAI_ARITHMETIC_ARRAY_CUDA )
 #define SCAI_ARITHMETIC_ARRAY_MIC_LIST TYPELIST( SCAI_ARITHMETIC_ARRAY_MIC_CNT, SCAI_ARITHMETIC_ARRAY_MIC )
 
-
-
 /** Number of supported types used in REPEAT macros */
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-#define SCAI_ARITHMETIC_HOST_TYPE_CNT 6
-
-#else
-
-#define SCAI_ARITHMETIC_HOST_TYPE_CNT 2
-
-#endif
-
-/** Number of supported types in external libraries like BLAS, LAPACK */
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-#define SCAI_ARITHMETIC_HOST_EXT_TYPE_CNT 4
-
-#else
-
-#define SCAI_ARITHMETIC_HOST_EXT_TYPE_CNT 2
-
-#endif
-
-// List CUDA values on its own
-
-#define SCAI_ARITHMETIC_CUDA_TYPE_0 float
-#define SCAI_ARITHMETIC_CUDA_TYPE_1 double
-#define SCAI_ARITHMETIC_CUDA_TYPE_2 ComplexFloat
-#define SCAI_ARITHMETIC_CUDA_TYPE_3 ComplexDouble
-
-/** Number of suported types by CUDA devices */
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-#define SCAI_ARITHMETIC_CUDA_TYPE_CNT 4
-
-#else
-
-#define SCAI_ARITHMETIC_CUDA_TYPE_CNT 2
-
-#endif
-
-
-// List MIC value types on its own
-
-#define SCAI_ARITHMETIC_MIC_TYPE_0 float
-#define SCAI_ARITHMETIC_MIC_TYPE_1 double
-#define SCAI_ARITHMETIC_MIC_TYPE_2 ComplexFloat
-#define SCAI_ARITHMETIC_MIC_TYPE_3 ComplexDouble
-
-/** Number of supported types by MIC devices */
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-#define SCAI_ARITHMETIC_MIC_TYPE_CNT 4
-
-#else
-
-#define SCAI_ARITHMETIC_MIC_TYPE_CNT 2
-
-#endif
-
-// For convenience we define SCAI_ARRAY_TYPE, must be SCAI_ARITHMETIC_HOST_TYPE_CNT + 1
-
-
-#define SCAI_ARRAY_TYPE0    IndexType
-#define SCAI_ARRAY_TYPE1    float
-#define SCAI_ARRAY_TYPE2    double
-#define SCAI_ARRAY_TYPE3    ComplexFloat
-#define SCAI_ARRAY_TYPE4    ComplexDouble
-#define SCAI_ARRAY_TYPE5    long double
-#define SCAI_ARRAY_TYPE6    ComplexLongDouble
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-#define SCAI_ARRAY_TYPE_CNT 7
-
-#else
-
-#define SCAI_ARRAY_TYPE_CNT 3
-
-#endif
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 

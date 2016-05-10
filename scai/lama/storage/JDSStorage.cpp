@@ -1669,6 +1669,25 @@ const char* JDSStorage<ValueType>::typeName()
 
 SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
+#define JDS_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+     template void JDSStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+     template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+     template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+     template void JDSStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+     template void JDSStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+     template void JDSStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+
+#define JDS_STORAGE_INST_LVL1( ValueType )                                                                                  \
+    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_HOST_CNT, ValueType, JDS_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+
+SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_HOST_CNT, JDS_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+
+#undef JDS_STORAGE_INST_LVL2
+#undef JDS_STORAGE_INST_LVL1
+
 } /* end namespace lama */
 
 } /* end namespace scai */

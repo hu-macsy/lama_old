@@ -5,16 +5,22 @@
 set ( CMAKE_SKIP_BUILD_RPATH FALSE )
 set ( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set ( CMAKE_BUILD_WITH_INSTALL_RPATH FALSE )
+if    ( APPLE )
+    set ( CMAKE_MACOSX_RPATH FALSE )
+endif ( APPLE )
 set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
 # for static/dynamic linking
-if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
-	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
-else  ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
-	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
-endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+
+if    ( LINUX )
+    if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+    	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
+    	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
+    else  ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+    	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
+    	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
+    endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+endif ( LINUX )
 
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
@@ -22,19 +28,20 @@ endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 #set ( ADDITIONAL_CXX_FLAGS_LANG          "${SCAI_LANG_FLAGS}"          CACHE STRING "Addition language flags for using C++11 (if compiler capable)" )
 #set ( ADDITIONAL_CXX_FLAGS_OPENMP        "${OpenMP_CXX_FLAGS}"         CACHE STRING "OpenMP flag (only if enabled)" )
 
+set ( ADDITIONAL_CXX_FLAGS               "${SCAI_CXX_FLAGS}"           CACHE STRING "Additional CXX flags" )
 set ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE "${SCAI_CODE_COVERAGE_FLAGS}" CACHE STRING "CXX flags used for code coverage (only if CC enabled)" )
-set ( ADDITIONAL_CXX_FLAGS_DEBUG         "${SCAI_CXX_FLAGS_DEBUG}"     CACHE STRING "Addtional CXX compiler flags for Debug version" )
+set ( ADDITIONAL_CXX_FLAGS_DEBUG         "${SCAI_CXX_FLAGS_DEBUG}"     CACHE STRING "Additional CXX compiler flags for Debug version" )
 set ( ADDITIONAL_CXX_FLAGS_NO_OFFLOAD    "${MIC_NO_OFFLOAD_FLAG}"      CACHE STRING "MIC no offload flag (only if MIC disabled)" )
-set ( ADDITIONAL_CXX_FLAGS_RELEASE       "${SCAI_CXX_FLAGS_RELEASE}"   CACHE STRING "Addtional CXX compiler flags for Release version" )
+set ( ADDITIONAL_CXX_FLAGS_RELEASE       "${SCAI_CXX_FLAGS_RELEASE}"   CACHE STRING "Additional CXX compiler flags for Release version" )
 set ( ADDITIONAL_LINKER_FLAGS            "${SCAI_LINKER_FLAGS}"        CACHE STRING "Additional linker flags" )
 set ( ADDITIONAL_WARNING_FLAGS           "${SCAI_WARNING_FLAGS}"       CACHE STRING "Compilation flags concerning warnings" )
 
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE  ADDITIONAL_CXX_FLAGS_DEBUG  ADDITIONAL_CXX_FLAGS_RELEASE
                    ADDITIONAL_CXX_FLAGS_NO_OFFLOAD     #ADDITIONAL_CXX_FLAGS_LANG   ADDITIONAL_CXX_FLAGS_OPENMP
-                   ADDITIONAL_LINKER_FLAGS             ADDITIONAL_WARNING_FLAGS
+                   ADDITIONAL_LINKER_FLAGS             ADDITIONAL_WARNING_FLAGS    ADDITIONAL_CXX_FLAGS
                  )
 
-set ( CONCLUDE_CXX_FLAGS "" )
+set ( CONCLUDE_CXX_FLAGS "${ADDITIONAL_CXX_FLAGS}" )
 
 if    ( SCAI_COMMON_FOUND )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${SCAI_COMMON_FLAGS}")

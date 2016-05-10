@@ -47,6 +47,7 @@ endif ( SCAI_BLAS_NAME MATCHES MKL )
 
 ### BLAS
 
+if    ( LINUX )
 if    ( SCAI_BLAS_NAME MATCHES BLAS )
 	get_filename_component ( _LIB_PATH ${BLAS_blas_LIBRARY} PATH )
 	file ( GLOB _LIBRARIES ${_LIB_PATH}/libblas.so.* )
@@ -67,3 +68,4 @@ if    ( SCAI_BLAS_NAME MATCHES BLAS )
     	set ( BLAS_VERSION "unknown BLAS version")
     endif ( DEFINED VAL )
 endif ( SCAI_BLAS_NAME MATCHES BLAS )
+endif ( LINUX )

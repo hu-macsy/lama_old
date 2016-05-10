@@ -31,14 +31,16 @@
  # @since 1.0.0
 ###
 
-if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+if    ( NOT APPLE )
+    if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
 	# Enable Java Compilation
 	# this will set at least CMAKE_Java_COMPILER CMAKE_Java_ARCHIVE 
-    find_package( Java )
+        find_package( Java )
 
-    # LAMA irrelevant entries will be removed from cmake GUI completely
-    set ( Java_JAR_EXECUTABLE "${Java_JAR_EXECUTABLE}" CACHE INTERNAL "" )
-    set ( Java_JAVADOC_EXECUTABLE "${Java_JAVADOC_EXECUTABLE}" CACHE INTERNAL "" )
-    set ( Java_JAVAH_EXECUTABLE "${Java_JAVAH_EXECUTABLE}" CACHE INTERNAL "" )
-    set ( Java_JAVA_EXECUTABLE "${Java_JAVA_EXECUTABLE}" CACHE INTERNAL "" )
-endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+        # LAMA irrelevant entries will be removed from cmake GUI completely
+        set ( Java_JAR_EXECUTABLE "${Java_JAR_EXECUTABLE}" CACHE INTERNAL "" )
+        set ( Java_JAVADOC_EXECUTABLE "${Java_JAVADOC_EXECUTABLE}" CACHE INTERNAL "" )
+        set ( Java_JAVAH_EXECUTABLE "${Java_JAVAH_EXECUTABLE}" CACHE INTERNAL "" )
+        set ( Java_JAVA_EXECUTABLE "${Java_JAVA_EXECUTABLE}" CACHE INTERNAL "" )
+    endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+endif ( NOT APPLE )
