@@ -25,10 +25,14 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Include file that includes all other defintion files of this module.
+ * @brief Header file that includes all other header files of this subproject.
  *
  * @author Thomas Brandes
  * @date 19.07.2015
+ */
+
+/**
+ * @dir  scai/hmemo Source files of the hmemo subproject.
  */
 
 #include <scai/hmemo/Access.hpp> 

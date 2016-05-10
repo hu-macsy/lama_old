@@ -1,5 +1,5 @@
 /**
- * @file logging.hpp
+ * @file scai/logging.hpp
  *
  * @license
  * Copyright (c) 2009-2015

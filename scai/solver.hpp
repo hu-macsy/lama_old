@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief solver.hpp
+ * @brief General header file that includes all solver header files.
  * @author Lauretta Schubert
  * @date 15.01.2016
  */

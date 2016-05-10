@@ -553,21 +553,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = ${CMAKE_SOURCE_DIR}/common  \
-                         ${CMAKE_SOURCE_DIR}/logging  \
-                         ${CMAKE_SOURCE_DIR}/tracing  \
-                         ${CMAKE_SOURCE_DIR}/tasking  \
-                         ${CMAKE_SOURCE_DIR}/hmemo  \
-                         ${CMAKE_SOURCE_DIR}/kregistry  \
-                         ${CMAKE_SOURCE_DIR}/blaskernel  \
-                         ${CMAKE_SOURCE_DIR}/utilskernel  \
-                         ${CMAKE_SOURCE_DIR}/sparsekernel  \
-                         ${CMAKE_SOURCE_DIR}/dmemo  \
-                         ${CMAKE_SOURCE_DIR}/lama  \
-                         ${CMAKE_SOURCE_DIR}/solver
-
-#                        add additional directories
-#                        ../src/logging \
+INPUT                  = ${CMAKE_SOURCE_DIR}
 
 # Note: system contains additional documentation
 

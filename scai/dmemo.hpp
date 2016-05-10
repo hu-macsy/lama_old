@@ -25,10 +25,14 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Include file that includes main defintion files of this project.
+ * @brief General header file that includes the main header files of the dmemo subproject.
  *
  * @author Thomas Brandes
  * @date 09.02.2016
+ */
+
+/**
+ * @dir  scai/dmemo Source files of the dmemo subproject.
  */
 
 // We include only base classes, not derived Communicator or Distribution classes

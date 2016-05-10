@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief sparsekernel.hpp
+ * @brief Header file that includes all header files of this subproject with kernel traits
  * @author Eric Schricker
  * @date 18.02.2016
  */

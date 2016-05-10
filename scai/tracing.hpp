@@ -1,5 +1,5 @@
 /**
- * @file tracing.hpp
+ * @file scai/tracing.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,9 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of macros for tracing/profiling
+ * @brief General header file that provides the tracing macros.
  * @author Lauretta Schubert, Thomas Brandes
  * @date 12.08.2011
+ */
+
+/**
+ * @dir  scai/tracing Source files of the tracing subproject.
  */
 
 #pragma once

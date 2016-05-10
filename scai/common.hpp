@@ -1,5 +1,5 @@
 /**
- * @file common.hpp
+ * @file scai/common.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,9 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief common.hpp
+ * @brief Single header file that includes all header files of the common subproject.
  * @author Thomas Brandes
  * @date 16.06.2015
+ */
+
+/**
+ * @dir scai/common Source files of the common subproject.
  */
 
 #pragma once

@@ -36,9 +36,6 @@
 // base classes
 #include <scai/tasking/SyncToken.hpp>
 
-// local library
-#include <scai/hmemo/mic/MICContext.hpp>
-
 // internal scai libraries
 #include <scai/common/shared_ptr.hpp>
 
