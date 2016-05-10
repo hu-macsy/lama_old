@@ -39,10 +39,10 @@
 #include <scai/common/SCAITypes.hpp>
 
 // boost
+#include <boost/version.hpp>
 #include <boost/interprocess/segment_manager.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/managed_heap_memory.hpp>
-#include <boost/version.hpp>
 
 #include <cstdlib>
 
