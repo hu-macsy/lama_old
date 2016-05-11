@@ -35,9 +35,11 @@ configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in" "${CMAKE_CURRENT_BINAR
 set ( SPHINX_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${SCAI_DOC_TYPE}" )
 set ( SPHINX_DOC_THREE_DIR "${SPHINX_BINARY_DIR}/doctree" )
 
+set ( OUTPUT_NAME ${SPHINX_BINARY_DIR}/index.${DOC_EXTENSION} )
+
 # Add custom command for building the userdoc
 add_custom_command (
-    OUTPUT ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
+    OUTPUT ${OUTPUT_NAME}
     COMMAND ${Sphinx-build_EXECUTABLE} 
                 -b ${SCAI_DOC_TYPE}
                 -c ${CMAKE_CURRENT_BINARY_DIR}
@@ -47,11 +49,32 @@ add_custom_command (
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py scai_solver
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
-	    
+	
+if    ( SCAI_DOC_TYPE STREQUAL latex )
+    set ( PDF_OUTPUT_NAME ${SPHINX_BINARY_DIR}/LAMA.pdf )
+
+    message( STATUS "do ${CMAKE_MAKE_PROGRAM} in ${CMAKE_CURRENT_BINARY_DIR}/latex" )
+    add_custom_command (
+        OUTPUT  ${PDF_OUTPUT_NAME}
+        COMMAND ${CMAKE_MAKE_PROGRAM}
+        DEPENDS ${OUTPUT_NAME}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex
+    )
+endif ( SCAI_DOC_TYPE STREQUAL latex )
+    
 # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
-add_custom_target (
-    doc ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SPHINX_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-documentation/
-    DEPENDS ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
-    COMMENT "Creating sphinx doc."
-)
+if    ( SCAI_DOC_TYPE STREQUAL latex )
+    add_custom_target (
+        doc ALL
+        COMMAND ${CMAKE_COMMAND} -E copy ${SPHINX_BINARY_DIR}/LAMA.pdf ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}
+        DEPENDS ${PDF_OUTPUT_NAME}
+        COMMENT "Creating sphinx doc."
+    )
+else  ( SCAI_DOC_TYPE STREQUAL latex )
+    add_custom_target (
+        doc ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${SPHINX_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-documentation/
+        DEPENDS ${OUTPUT_NAME}
+        COMMENT "Creating sphinx doc."
+    )
+endif ( SCAI_DOC_TYPE STREQUAL latex )

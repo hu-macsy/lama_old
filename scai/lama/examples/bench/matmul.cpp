@@ -123,6 +123,12 @@ static void bench( IndexType size, double fillRate )
 
 int main()
 {
+    if ( !Context::hasContext( Context::CUDA ) )
+    {
+        cout << "This examples compares the Host and CUDA implementation. You build without CUDA, so it's skipped." << endl;
+        return 0;
+    }
+    
     IndexType sizes[] = { 100, 350, 1000, 2500 };
     double fillrates[] = { 0.005, 0.01, 0.02, 0.05 };
 

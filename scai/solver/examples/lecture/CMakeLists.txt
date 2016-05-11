@@ -27,7 +27,13 @@
  # @date 02.12.2015
 ###
 
-foreach ( executable task0 task1a task1b task2 task2a task3 task4 task5 )
+set ( EXECUTABLES task0 task1a task1b task2 task2a task3 task4 )
+
+if    ( CUDA_FOUND AND USE_CUDA )
+	set ( EXECUTABLES ${EXECUTABLES} task5 )
+endif ( CUDA_FOUND AND USE_CUDA )
+
+foreach ( executable ${EXECUTABLES} )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )

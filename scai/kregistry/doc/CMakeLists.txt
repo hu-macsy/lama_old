@@ -41,9 +41,11 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     #set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/ )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
     
+    set ( OUTPUT_NAME ${SPHINX_BINARY_DIR}/index.${DOC_EXTENSION} )
+
     # Add custom command for building the userdoc
     add_custom_command (
-        OUTPUT ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
+        OUTPUT ${OUTPUT_NAME}
         COMMAND ${Sphinx-build_EXECUTABLE}
                     -b ${SCAI_DOC_TYPE}
                     -c ${CMAKE_CURRENT_BINARY_DIR}
@@ -53,16 +55,41 @@ if ( SPHINX_FOUND AND BUILD_DOC )
         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py
         WORKING_DIRECTORY ${${PROJECT_NAME}_DOC_DIR}
     )
+
+    if    ( SCAI_DOC_TYPE STREQUAL latex )
+        set ( PDF_OUTPUT_NAME ${SPHINX_BINARY_DIR}/SCAI${PROJECT_SURNAME}.pdf )
+
+        message( STATUS "do ${CMAKE_MAKE_PROGRAM} in ${CMAKE_CURRENT_BINARY_DIR}/latex" )
+        add_custom_command (
+            OUTPUT  ${PDF_OUTPUT_NAME}
+            COMMAND ${CMAKE_MAKE_PROGRAM}
+            DEPENDS ${OUTPUT_NAME}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex
+        )
+    endif ( SCAI_DOC_TYPE STREQUAL latex )
     
+    set ( OUTPUT_DEPENDENCIES ${OUTPUT_NAME} )
+    if    ( SCAI_DOC_TYPE STREQUAL latex )
+        set ( OUTPUT_DEPENDENCIES ${OUTPUT_NAME} ${PDF_OUTPUT_NAME} )
+    endif ( SCAI_DOC_TYPE STREQUAL latex )
+
     # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
     add_custom_target (
         doc ALL
-        DEPENDS ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
+        DEPENDS ${OUTPUT_DEPENDENCIES}
     )
     
     # Add documentation to the install target
-    install(
-        DIRECTORY ${SPHINX_BINARY_DIR}/
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR}
-    )
+    if    ( SCAI_DOC_TYPE STREQUAL latex )
+        install(
+            FILES ${PDF_OUTPUT_NAME}
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}
+        )
+    else  ( SCAI_DOC_TYPE STREQUAL latex )
+        install(
+            DIRECTORY ${SPHINX_BINARY_DIR}/
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR}
+        )
+    endif ( SCAI_DOC_TYPE STREQUAL latex )
+
 endif ( SPHINX_FOUND AND BUILD_DOC )

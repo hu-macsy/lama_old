@@ -88,11 +88,13 @@ checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_CHOICES}" )
 set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE} CACHE STRING "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_CHOICES}." )
 
 if     ( SCAI_DOC_TYPE STREQUAL json )
-    set ( DOC_EXTENTSION "fjson" )
+    set ( DOC_EXTENSION "fjson" )
 elseif  ( SCAI_DOC_TYPE STREQUAL html )
-    set ( DOC_EXTENTSION "html" )
+    set ( DOC_EXTENSION "html" )
 elseif  ( SCAI_DOC_TYPE STREQUAL xml )
-    set ( DOC_EXTENTSION "xml" )
+    set ( DOC_EXTENSION "xml" )
+elseif  ( SCAI_DOC_TYPE STREQUAL latex )
+    set ( DOC_EXTENSION "tex" )
 endif  ( )
 
 ## EXAMPLES

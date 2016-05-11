@@ -72,7 +72,11 @@ RUN 1 lecture/task2.exe $MYDIR/lecture/gr_30_30.mtx
 RUN 1 lecture/task2a.exe $MYDIR/lecture/gr_30_30.mtx
 RUN 1 lecture/task3.exe $MYDIR/lecture/gr_30_30.mtx
 RUN 1 lecture/task4.exe $MYDIR/lecture/gr_30_30.mtx
-RUN 1 lecture/task5.exe $MYDIR/lecture/gr_30_30.mtx
+
+if [ -e lecture/task5.exe ]
+then
+    RUN 1 lecture/task5.exe $MYDIR/lecture/gr_30_30.mtx
+fi
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/lecture/*.exe | wc -l`
