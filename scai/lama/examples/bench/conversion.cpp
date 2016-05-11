@@ -101,6 +101,12 @@ static void bench( Matrix& b, Matrix& a )
 
 int main()
 {
+    if ( !Context::hasContext( Context::CUDA ) )
+    {
+        cout << "This examples compares the Host and CUDA implementation. You build without CUDA, so it's skipped." << endl;
+        return 0;
+    }
+    
     IndexType sizes[] = { 10000, 30000 };
     double fillrates[] = { 0.001, 0.002, 0.003 };
 
