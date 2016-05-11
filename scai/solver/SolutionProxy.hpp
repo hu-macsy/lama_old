@@ -70,7 +70,7 @@ public:
      *
      * @param[in] solution   The pointer to the vector which the proxy will wrap.
      */
-    // unused: SolutionProxy( lama::Vector* const solution );
+    SolutionProxy( lama::Vector* const solution );
 
     /**
      * @brief SolutionProxy destructor.
@@ -129,10 +129,6 @@ public:
      * @return Reference to the underlying vector.
      */
     lama::Vector& getReference();
-
-    //unused: lama::Vector* create();
-
-    //unused: void swap( lama::Vector*& other );
 
 private:
 

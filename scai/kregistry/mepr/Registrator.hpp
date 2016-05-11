@@ -33,7 +33,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 
 
-/*
+/**
  * Declare Registrator inside a class
  *
  * Functions without template-parameter

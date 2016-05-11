@@ -40,6 +40,8 @@ namespace scai
 namespace common
 {
 
+/** Derived exception class for an exception that is thrown if any assertion fails. */
+
 class COMMON_DLL_IMPORTEXPORT AssertException : public Exception
 {
 public:
@@ -60,6 +62,9 @@ public:
      */
     virtual ~AssertException() throw ();
 
+    /**
+     * @brief Override virtual routine with class specific method.
+     */
     virtual const char* what() const throw();
 
 protected:

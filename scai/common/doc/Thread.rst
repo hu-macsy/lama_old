@@ -1,3 +1,5 @@
+.. _Thread:
+
 Thread
 ======
 

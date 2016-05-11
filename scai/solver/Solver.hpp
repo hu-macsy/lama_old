@@ -210,7 +210,7 @@ public:
     /**
      * @brief Returns the context where this solver would be executed.
      *
-     * @param[out] the context where this solver would be executed.
+     * @returns the context where this solver would be executed.
      */
     hmemo::ContextPtr getContextPtr() { return mContext; }
 

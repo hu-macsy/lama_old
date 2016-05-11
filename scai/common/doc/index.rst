@@ -14,74 +14,81 @@ types, ...).
 
 All classes and type defintions are done in the namespace ``scai/common``.
 
-**********
-SCAI Types
-**********
+*****************
+Enumeration Types
+*****************
+
+Within all SCAI projects, enum types are used when the number of possible values is limited and when
+the values have a special meaning.
+
+The following enum types are defined in common as they are use within multiple projects.
 
 ====================    ==========================================
 Class                   Description
 ====================    ==========================================
-ContextType             Enumeration types ContextType and AccessKind
-ScalarType              Enumeration type for supported value types (allows registration for different types in factories, interfaces, ...)
-TypeTrait               Struct with all specific stuff for any supported arithmetic value type in matrix/vector operations
-Math                    Wrapper for operations from math.h to use them in templated code
-SCAITypes               Supported arithmetic types for template instantiations
-Complex                 Complexnumbers which can be handled on host, CUDA and MIC
-Constants               Operations to compare value to a machine specific eps
+:ref:`ContextType`      Enumeration types ContextType and AccessKind
+:ref:`ScalarType`       Enumeration type for supported value types (allows registration for different types in factories, interfaces, ...)
+:ref:`ReductionOp`      Enumeration type for different binary operators used in reductions
 ====================    ==========================================
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 2
-   
-   Types
-   TypeTrait
-   Constants
-   SCAITypes
-   Complex
+****************
+Arithmetic Types
+****************
+
+LAMA is a library for mathematical operations and here in common it is defined for which arithmetic types
+templated classes and operations will be instantiated, where the template arguments stand for an arithmetic type.
+An arithmetic type that is used for the instantation of these classes must provide a certain number of 
+operations, e.g. +, -, \*, /, and so on. Furthermore some mathematical operations and type properties must be 
+provided. Some additional structures are used to provide these functionalities in a consistent way. 
+
+====================    ==========================================
+Class                   Description
+====================    ==========================================
+:ref:`SCAITypes`        Supported arithmetic types for template instantiations
+:ref:`TypeTrait`        Struct with all specific stuff for any supported arithmetic value type in matrix/vector operations
+:ref:`Math`             Wrapper for mathematical operations (like those in cmath) to use them in templated code
+:ref:`Complex`          Complex numbers which cannot only be used on host, but also on CUDA and MIC devices.
+:ref:`Constants`        Operations to compare value to a machine specific eps
+====================    ==========================================
 
 **************
 Common Classes
 **************
 
-====================    ==========================================
-Class                   Description
-====================    ==========================================
-Exception               Error handling, call stack
-Assertion               Assertion checking, which can be compiled out of code
-Factory                 Template class for Factory
-Factory1                Factory, but create with additional argument
-Thread                  Basic stuff to deal with multithreading (uses pThreads)
-Walltime                Simple and efficient walltime measuring
-Printable               Base class to support stream output
-NonCopyable             Disable default copy constructors
-shared_ptr              Either boost::shared_ptr or std::shared_ptr
-function, bind          Either boost::function or std::function
-LibModule               Load/Unload of Library Modules (dynamic libraries)
-ContextType             Enum types ContextType and AccessKind
-Settings                Access to environment variables
-OpenMP                  Dummy routines if OpenMP is disabled
-====================    ==========================================
+====================         ==========================================
+Class                        Description
+====================         ==========================================
+:ref:`Exception`             Error handling, call stack
+:ref:`Factory`               Template class for Factory
+:ref:`Factory1`              Factory, but create with additional argument
+:ref:`Thread`                Basic stuff to deal with multithreading (uses pThreads)
+:ref:`Walltime`              Simple and efficient walltime measuring
+:ref:`Printable`             Base class to support stream output
+:ref:`NonCopyable`           Disable default copy constructors
+:ref:`LibModule`             Load/Unload of Library Modules (dynamic libraries)
+====================         ==========================================
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 2
-   
-   Exception
-   Assertion
-   Printable
-   Factory
-   Timing
-   LibModule
-   Thread
-   Settings
-   SmartPointers
-   Function
-   OpenMP
+***************
+Common Concepts
+***************
+
+The following stuff stands for general concepts that is or might be used in all SCAI projects.
+
+====================         ==========================================
+Name                         Description
+====================         ==========================================
+:ref:`SmartPointers`         Smart pointers that deallocate object with destructor: unique_ptr or shared_ptr or unique_ptr)
+:ref:`Assertion`             Assertion checking, which can be compiled out of code
+:ref:`Function`              Function objects that might also be created with bound arguments
+:ref:`Settings`              Access to environment variables
+:ref:`OpenMP`                Dummy routines if OpenMP is disabled
+====================         ==========================================
 
 ***********************
 Common Classes for CUDA
 ***********************
+
+Some general stuff used for CUDA is also part of the common project.
 
 .. toctree::
    :titlesonly:
