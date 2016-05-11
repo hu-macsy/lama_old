@@ -57,7 +57,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/macros/typeloop.hpp>
 

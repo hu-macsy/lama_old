@@ -35,7 +35,6 @@
 #include <scai/blaskernel/cblas.hpp>
 #include <scai/blaskernel/external/LAPACKeWrapper.hpp>
 #include <scai/blaskernel/external/LAPACKeTrait.hpp>
-#include <scai/blaskernel/openmp/OpenMPBLAS1.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>

@@ -1,4 +1,5 @@
 /**
+ * @dir  scai/blaskernel Source files of the tracing subproject.
  * @file blaskernel.hpp
  *
  * @license

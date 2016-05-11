@@ -46,7 +46,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Constants.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/unused.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>

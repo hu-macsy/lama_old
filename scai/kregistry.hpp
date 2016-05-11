@@ -1,4 +1,5 @@
 /**
+ * @dir  scai/kregistry Source files of the kregistry subproject.
  * @file kregistry.hpp
  *
  * @license
@@ -25,10 +26,6 @@
  * @brief General header file that includes all header files of this subproject.
  * @author Thomas Brandes
  * @date 17.10.2015
- */
-
-/**
- * @dir  scai/kregistry Source files of the kregistry subproject.
  */
 
 #pragma once

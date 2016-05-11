@@ -208,7 +208,7 @@ public:
     virtual void setContextPtr( hmemo::ContextPtr context );
 
     /**
-     * @ brief Returns the context where this solver would be executed.
+     * @brief Returns the context where this solver would be executed.
      *
      * @param[out] the context where this solver would be executed.
      */

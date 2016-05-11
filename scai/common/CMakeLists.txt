@@ -84,6 +84,9 @@ endif ( WIN32 )
 set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 addInternalAndExternalIncludes()
+if    ( NOT CXX_SUPPORTS_C11 )
+    include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+endif ( NOT CXX_SUPPORTS_C11 )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 scai_project (

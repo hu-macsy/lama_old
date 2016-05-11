@@ -1,5 +1,5 @@
 /**
- * @file UnsupportedException.hpp
+ * @file unsupported.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -22,52 +22,16 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Interface class for context dependent operations to be implemented.
- * @author Eric Schricker
+ * @brief Macro to give user info about an unsupported feature.
+ * @author Thomas Brandes
  * @date 10.08.2015
  */
 
 #pragma once
 
-// base class
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
-namespace scai
-{
-
-namespace common
-{
-
-class COMMON_DLL_IMPORTEXPORT UnsupportedException : public Exception
-{
-public:
-
-    enum UnsupportedType
-    {
-        UNSUPPORTED_WARN, UNSUPPORTED_ERROR, UNSUPPORTED_IGNORE, UNSUPPORTED_UNDEFINED
-    };
-    
-    UnsupportedException();
-    
-    UnsupportedException( const std::string& message );
-    virtual ~UnsupportedException() throw();
-    
-    virtual const char* what() const throw();
-    
-    static UnsupportedType getUnsupportedSetting();
-    
-protected:
-        
-    std::string mMessage;
-
-private:
-
-    static UnsupportedType unsupportedSetting;
-};
-
-} /* end namespace common */
-
-} /* end namespace scai */
+#include <sstream>
 
 /** This macro should be used to give hints about unsupported features.
  *
@@ -79,7 +43,7 @@ private:
  *  is thrown.
  */
  
-#define OLD_SCAI_UNSUPPORTED( msg )                                                \
+#define SCAI_UNSUPPORTED( msg )                                                \
 {                                                                              \
     if ( scai::common::UnsupportedException::getUnsupportedSetting() !=        \
             scai::common::UnsupportedException::UNSUPPORTED_IGNORE )           \
@@ -102,3 +66,4 @@ private:
         }                                                                      \
     }                                                                          \
 }
+

@@ -52,7 +52,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/SCAITypes.hpp>

@@ -52,7 +52,7 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/instantiate.hpp>
 

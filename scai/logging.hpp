@@ -1,4 +1,5 @@
 /**
+ * @dir scai/logging Source files of subproject logging.
  * @file scai/logging.hpp
  *
  * @license
