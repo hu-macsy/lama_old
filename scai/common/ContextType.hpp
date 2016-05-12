@@ -40,10 +40,10 @@ namespace scai
 namespace common
 {
 
-/** Own namespace for the enumeration type ContextType and its values. 
+/** Own struct for the enumeration type ContextType and its values. 
  *
  *  Note: This enumeration type was originally defined in the class Context so
- *        it did not require an own namespace. But this is no longer possible as
+ *        it did not require an own struct. But this is no longer possible as
  *        Context is now a factory where ContextType is the input type to create
  *        a new Context.
  */
@@ -75,7 +75,6 @@ struct context
         Write, //!<  write access to the array, only one at a time
         MaxAccessKind //!<  internal use for dimension of arrays
     } AccessKind;
-
 
 }; /* end struct context */
 

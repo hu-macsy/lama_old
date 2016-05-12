@@ -41,9 +41,9 @@ namespace scai
 namespace common
 {
 
-/** Own namespace for enum type of reduction operators */
+/** Own struct for enum type of reduction operators */
 
-namespace reduction
+struct reduction
 {
     /** Enumeration type for reduction operators used in set/scatter ops  
      *
@@ -68,46 +68,46 @@ namespace reduction
         ABS_MAX   // for operator x = max( x, abs(y) )
     } ReductionOp;
 
-    /*
-     * Output of ReductionOp in stream by writing strings instead of numbers
-     */
+};
 
-    inline std::ostream& operator<<( std::ostream& stream, const ReductionOp& op )
+/*
+ * Output of ReductionOp in stream by writing strings instead of numbers
+ */
+
+inline std::ostream& operator<<( std::ostream& stream, const reduction::ReductionOp& op )
+{
+    switch ( op )
     {
-        switch ( op )
-        {
-            case COPY:
-                stream << "COPY";
-                break;
-            case ADD:
-                stream << "ADD";
-                break;
-            case SUB:
-                stream << "SUB";
-                break;
-            case MULT:
-                stream << "MULT";
-                break;
-            case DIVIDE:
-                stream << "DIVIDE";
-                break;
-            case MIN:
-                stream << "MIN";
-                break;
-            case MAX:
-                stream << "MAX";
-                break;
-            case ABS_MAX:
-                stream << "ABS_MAX";
-                break;
-            default:
-                stream << "<unknown_reduction_op>";
-                break;
-        }
-        return stream;
+        case reduction::COPY:
+            stream << "COPY";
+            break;
+        case reduction::ADD:
+            stream << "ADD";
+            break;
+        case reduction::SUB:
+            stream << "SUB";
+            break;
+        case reduction::MULT:
+            stream << "MULT";
+            break;
+        case reduction::DIVIDE:
+            stream << "DIVIDE";
+            break;
+        case reduction::MIN:
+            stream << "MIN";
+            break;
+        case reduction::MAX:
+            stream << "MAX";
+            break;
+        case reduction::ABS_MAX:
+            stream << "ABS_MAX";
+            break;
+        default:
+            stream << "<unknown_reduction_op>";
+            break;
     }
-
-} /* end namespace reduction */
+    return stream;
+}
 
 } /* end namespace common */
 
