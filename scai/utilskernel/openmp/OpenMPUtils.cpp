@@ -490,7 +490,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
     {
         case common::reduction::COPY :
         {
-            if( in != out )
+            if( in != reinterpret_cast<ValueType2*> ( out ) )
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
