@@ -1,4 +1,5 @@
 /**
+ * @dir  scai/lama All source files of the LAMA project.
  * @file lama.hpp
  *
  * @license
@@ -22,7 +23,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief lama.hpp
+ * @brief Header file that includes all relevant header files of the lama project.
  * @author Jan Ecker
  * @date 27.03.2013
  */

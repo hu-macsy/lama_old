@@ -61,8 +61,8 @@ public:
 
     /** Constructor for a sychronization token.
      *
-     *  @param[in]  context  is the CUDAcontext of the stream
-     *  @param[in]  stream   is the handle of the CUDA stream.
+     *  @param[in]  cuda   is the CUDAcontext of the stream
+     *  @param[in]  type   is the type of the CUDA stream.
      *
      *  A pointer to the CUDA context is required to enable/disable it.
      */

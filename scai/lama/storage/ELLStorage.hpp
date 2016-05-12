@@ -85,7 +85,7 @@ public:
      *
      * @param[in] numRows       the number of rows of the matrix
      * @param[in] numColumns    the number of columns of the matrix
-     * @param[in] con           the context where storage data will be first touched
+     * @param[in] context       the context where storage data will be first touched
      */
     ELLStorage( const IndexType numRows, const IndexType numColumns, 
                 const hmemo::ContextPtr context = hmemo::Context::getHostPtr() );

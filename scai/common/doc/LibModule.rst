@@ -1,3 +1,5 @@
+.. _LibModule:
+
 LibModule
 =========
 

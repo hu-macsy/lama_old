@@ -1,3 +1,5 @@
+.. _Function:
+
 Function/Bind
 =============
 

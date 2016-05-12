@@ -57,11 +57,11 @@ using tasking::CUDAStreamPool;
 namespace hmemo
 {
 
-/**  static variables *****************************************************/
+/* static variables *****************************************************/
 
 SCAI_LOG_DEF_LOGGER( CUDAContext::logger, "Context.CUDAContext" )
 
-/**  constructor  *********************************************************/
+/* constructor  *********************************************************/
 
 CUDAContext::CUDAContext( int deviceNr ) : 
 
@@ -88,7 +88,7 @@ CUDAContext::CUDAContext( int deviceNr ) :
     SCAI_LOG_INFO( logger, *this << " constructed, is disabled" )
 }
 
-/**  destructor   *********************************************************/
+/*  destructor  ---------------------------------------------------------------- */
 
 CUDAContext::~CUDAContext()
 {

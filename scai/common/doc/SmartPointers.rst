@@ -1,3 +1,5 @@
+.. _SmartPointers:
+
 Smart Pointers
 ==============
 
