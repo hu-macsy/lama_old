@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 ###
  # @file xmltest.sh
  #
@@ -28,8 +30,6 @@
  # @date 08.05.2013
 ###
 
-#!/bin/bash
-
 # Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
 dirname=xmlresult_$(date +%s)
 echo "Create result directory: ${dirname}"
@@ -50,4 +50,3 @@ then
     echo "Running dedicated CUDA test"
     ./cuda/hmemoCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/CUDATest.xml
 fi
-
