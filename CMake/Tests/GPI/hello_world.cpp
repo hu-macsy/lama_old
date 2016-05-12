@@ -22,10 +22,11 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./GPI/hello_world.cpp
+ * @brief Simple GPI hello world from each rank.
  * @author Thomas Brandes
  * @date 30.03.2016
  */
+
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>

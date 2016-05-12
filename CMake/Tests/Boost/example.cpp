@@ -22,11 +22,10 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./Boost/example.cpp
+ * @brief Simple example program that runs a single thread and waits for it
  * @author Thomas Brandes
  * @date 01.05.2013
  */
-// Simple example program that runs a single thread and waits for it
 
 #include <boost/thread/thread.hpp>
 #include <iostream>

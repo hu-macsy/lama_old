@@ -22,16 +22,13 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./CUDA/main.cu
+ * @brief Simple CUDA example printing the device properties.
  * @author Jan Ecker
  * @date 20.03.2013
  */
+
 #include <cuda_runtime_api.h>
 #include <iostream>
-
-////////////////////////////////////////////////////////////////////////////////
-// Program main
-////////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
 

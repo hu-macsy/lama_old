@@ -22,10 +22,11 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./MPI/cpi.cpp
+ * @brief Simple mpi example calculating pi.
  * @author Jan Ecker
  * @date 20.03.2013
  */
+
 #include "mpi.h"
 #include <cstdio>
 #include <cmath>
@@ -51,31 +52,36 @@ int main( int argc,char *argv[] )
     MPI_Comm_rank(MPI_COMM_WORLD,&myid);
     MPI_Get_processor_name(processor_name,&namelen);
 
-    fprintf(stdout,"Process %d of %d on %s\n",
-	    myid, numprocs, processor_name);
+    fprintf(stdout,"Process %d of %d on %s\n", myid, numprocs, processor_name);
 
     done = 10;
     n = 0;
-    while (!done)
+    while ( !done )
     {
         if (myid == 0)
         {
-/*
+            /*
             printf("Enter the number of intervals: (0 quits) ");
             scanf("%d",&n);
-*/
-	    if (n==0) n=10000; else n=0;
+            */
 
-	    startwtime = MPI_Wtime();
+	        if (n==0) n=10000; else n=0;
+
+	        startwtime = MPI_Wtime();
         }
+
         MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        
         if (n == 0)
+        {
             done -= 1;
+        }
         else
         {
             h   = 1.0 / (double) n;
             sum = 0.0;
-	    /* A slightly better approach starts from large i and works back */
+
+	        /* A slightly better approach starts from large i and works back */
             for (i = myid + 1; i <= n; i += numprocs)
             {
                 x = h * ((double)i - 0.5);
@@ -86,13 +92,12 @@ int main( int argc,char *argv[] )
             MPI_Reduce(&mypi, &pi, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
             if (myid == 0)
-	    {
-                printf("pi is approximately %.16f, Error is %.16f\n",
-                       pi, fabs(pi - PI25DT));
-		endwtime = MPI_Wtime();
-		printf("wall clock time = %f\n", endwtime-startwtime);	       
-		fflush( stdout );
-	    }
+	        {
+                printf("pi is approximately %.16f, Error is %.16f\n", pi, fabs(pi - PI25DT));
+		        endwtime = MPI_Wtime();
+		        printf("wall clock time = %f\n", endwtime-startwtime);	       
+		        fflush( stdout );
+	        }
         }
     }
     MPI_Finalize();

@@ -22,11 +22,10 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./CXX/example.cpp
+ * @brief Simple example program that prints size of pointer (32-bit or 64-bit)
  * @author Thomas Brandes
  * @date 28.04.2013
  */
-// Simple example program that prints size of pointer (32-bit or 64-bit)
 
 #include <iostream>
 

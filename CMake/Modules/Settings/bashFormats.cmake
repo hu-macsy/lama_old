@@ -1,5 +1,5 @@
 ###
- # @file bashFormats.cmake
+ # @file CMake/Modules/Settings/bashFormats.cmake
  #
  # @license
  # Copyright (c) 2009-2016
