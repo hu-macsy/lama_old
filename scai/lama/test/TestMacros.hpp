@@ -37,7 +37,7 @@
 #include <scai/kregistry/test/TestMacros.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#if BOOST_VERSION > 105900
+#if BOOST_VERSION > 105800
 	#include <boost/test/unit_test_parameters.hpp>
 #else
 	#include <boost/test/detail/unit_test_parameters.hpp>
@@ -122,7 +122,7 @@
  * log levels are defined in boost/test/detail/log_level.hpp
  */
 
-#if BOOST_VERSION > 105900
+#if BOOST_VERSION > 105800
     #define IF_LOG_LEVEL_IS_TEST_SUITE \
     	if ( boost::unit_test::runtime_config::LOG_LEVEL == "test_suite" )
 #else
