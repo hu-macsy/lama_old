@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 ###
  # @file xmltest.sh
  #
@@ -27,8 +29,6 @@
  # @author Thomas Brandes / Jan Ecker
  # @date 08.07.2016
 ###
-
-#!/bin/bash
 
 # Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
 dirname=xmlresult_$(date +%s)

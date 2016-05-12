@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 ###
  # @file sparsekernel/test/code_coverageSecond.sh
  #
@@ -27,8 +29,6 @@
  # @author Alexander Büchel, Lauretta Schubert
  # @date 15.08.2012
 ###
-
-#!/bin/bash -e
 
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time

@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 ###
  # @file scai_code_coverage_functions.sh
  #
@@ -27,8 +29,6 @@
  # @author Alexander Büchel, Lauretta Schubert
  # @date 15.08.2012
 ###
-
-#!/bin/bash -e
 
 function create_dir
 {
