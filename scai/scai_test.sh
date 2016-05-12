@@ -35,19 +35,30 @@ export SCAI_UNSUPPORTED=IGNORE
 
 MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
 
-# Common tests
+declare -a CONTEXTS
 
+# Use Host Context
+CONTEXTS+=(Host)
+
+# Use CUDA
+if [ -d hmemo/cuda ]
+then
+	CONTEXTS+=(CUDA)
+fi
+
+# Use MIC
+if [ -d hmemo/mic ]
+then
+	CONTEXTS+=(MIC)
+fi
+
+echo "## Used Contexts: ${CONTEXTS[*]}"
+
+# Common tests
 echo "### commonTest"
 ./common/test/commonTest
 
-if [ -d cuda ];
-then
-    echo "### commonCUDATest"
-    ./common/test/cuda/commonCUDATest
-fi
-
 # Logging tests
-
 (
     cd logging/test/
     echo "### loggingTest"
@@ -55,100 +66,100 @@ fi
 )
 
 # Tracing tests
-
 (
     cd tracing/test/
     echo "### tracingTest"
     ./test.sh
 )
 
-# Tasking tests
+for CTX in ${CONTEXTS[*]}
+do
+	# Tasking tests
+	echo "### taskingTest on ${CTX}"
+	./tasking/test/taskingTest -SCAI_CONTEXT=${CTX}
 
-echo "### taskingTest"
-./tasking/test/taskingTest
+	# HMemo tests
+	echo "### hmemoTest on ${CTX}"
+	./hmemo/test/hmemoTest -SCAI_CONTEXT=${CTX}
 
-# HMemo tests
+	# KRegistry tests
+	echo "### kregistryTest on ${CTX}"
+	./kregistry/test/kregistryTest -SCAI_CONTEXT=${CTX}
 
-echo "### hmemoTest"
-./hmemo/test/hmemoTest
+	# BLASKernel tests
+	echo "### blaskernelTest on ${CTX}"
+	./blaskernel/test/blaskernelTest -SCAI_CONTEXT=${CTX}
 
-if [ -d cuda ];
-then
-    echo "### hmemoCUDATest"
-    ./hmemo/test/cuda/hmemoCUDATest
-fi
+	# UtilsKernel tests
+	echo "### utilskernelTest on ${CTX}"
+	./utilskernel/test/utilskernelTest -SCAI_CONTEXT=${CTX}
 
-if [ -d mic ];
-then
-    echo "### hmemoMICTest"
-    ./hmemo/test/mic/hmemoMICTest
-fi
+	# SparseKernel tests
+	echo "### sparsekernelTest on ${CTX}"
+	./sparsekernel/test/sparsekernelTest -SCAI_CONTEXT=${CTX}
 
-# KRegistry tests
+	# DMemo tests
+	export SCAI_COMMUNICATOR=NO
+	echo "### dmemoTest on ${CTX}"
+	./dmemo/test/dmemoTest -SCAI_CONTEXT=${CTX}
+	if [ "${MPI_FOUND}" != "" ]
+	then
+		export SCAI_COMMUNICATOR=MPI
+		mpirun -np 1 ./dmemo/test/dmemoTest -SCAI_CONTEXT=${CTX}
+		mpirun -np 2 ./dmemo/test/dmemoTest -SCAI_CONTEXT=${CTX}
+		mpirun -np 3 ./dmemo/test/dmemoTest -SCAI_CONTEXT=${CTX}
+		mpirun -np 4 ./dmemo/test/dmemoTest -SCAI_CONTEXT=${CTX}
+	fi
 
-echo "### kregistryTest"
-./kregistry/test/kregistryTest
+	# LAMA tests
+	echo "### lama_test on ${CTX}"
+	( # lamaTest
+		./lama/test/lamaTest -SCAI_CONTEXT=${CTX}
+	)
+	( # Storage Test
+		./lama/test/storage/lamaStorageTest -SCAI_CONTEXT=${CTX}
+	)
+# # LAMA Distributed test removed?
+#	(
+#	    export SCAI_COMMUNICATOR=NO
+#	    ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDistTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+#	    if [ "${MPI_FOUND}" != "" ]
+#	    then
+#	        export SCAI_COMMUNICATOR=MPI
+#	        mpirun -np 1 ./lama/test/distributed/lamaDistTest -SCAI_CONTEXT=${CTX}
+#	        mpirun -np 2 ./lama/test/distributed/lamaDistTest -SCAI_CONTEXT=${CTX}
+#	        mpirun -np 3 ./lama/test/distributed/lamaDistTest -SCAI_CONTEXT=${CTX}
+#	        mpirun -np 4 ./lama/test/distributed/lamaDistTest -SCAI_CONTEXT=${CTX}
+#	    fi
+#    )
+ 	( # Matrix Test   
+	    export SCAI_COMMUNICATOR=NO
+	    ./lama/test/matrix/lamaMatrixTest -SCAI_CONTEXT=${CTX}
+	    if [ "${MPI_FOUND}" != "" ]
+	    then
+	        export SCAI_COMMUNICATOR=MPI
+	        mpirun -np 1 ./lama/test/matrix/lamaMatrixTest -SCAI_CONTEXT=${CTX}
+	        mpirun -np 2 ./lama/test/matrix/lamaMatrixTest -SCAI_CONTEXT=${CTX}
+	        mpirun -np 3 ./lama/test/matrix/lamaMatrixTest -SCAI_CONTEXT=${CTX}
+	        mpirun -np 4 ./lama/test/matrix/lamaMatrixTest -SCAI_CONTEXT=${CTX}
+	    fi
+    )
 
-# BLASKernel tests
+	# Solver tests
 
-echo "### blaskernelTest"
-./blaskernel/test/blaskernelTest
+	echo "### solverTest on ${CTX}"
+	export SCAI_COMMUNICATOR=NO
+	./solver/test/solverTest -SCAI_CONTEXT=${CTX}
+	export SCAI_COMMUNICATOR=NO
+	./solver/test/distributed/solverDistTest -SCAI_CONTEXT=${CTX}
+	if [ "${MPI_FOUND}" != "" ]
+	then
+		export SCAI_COMMUNICATOR=MPI
+		mpirun -np 1 ./solver/test/distributed/solverDistTest -SCAI_CONTEXT=${CTX}
+		mpirun -np 2 ./solver/test/distributed/solverDistTest -SCAI_CONTEXT=${CTX}
+		mpirun -np 3 ./solver/test/distributed/solverDistTest -SCAI_CONTEXT=${CTX}
+		mpirun -np 4 ./solver/test/distributed/solverDistTest -SCAI_CONTEXT=${CTX}
+	fi
+done
 
-# UtilsKernel tests
-
-echo "### utilskernelTest"
-./utilskernel/test/utilskernelTest
-
-# SparseKernel tests
-
-echo "### sparsekernelTest"
-./sparsekernel/test/sparsekernelTest
-
-# DMemo tests
-
-export SCAI_COMMUNICATOR=NO
-echo "### dmemoTest"
-./dmemo/test/dmemoTest
-if [ "${MPI_FOUND}" != "" ]
-then
-    export SCAI_COMMUNICATOR=MPI
-    mpirun -np 1 ./dmemo/test/dmemoTest
-    mpirun -np 2 ./dmemo/test/dmemoTest
-    mpirun -np 3 ./dmemo/test/dmemoTest
-    mpirun -np 4 ./dmemo/test/dmemoTest
-fi
-
-# LAMA tests
-
-echo "### lama_test"
-./lama/test/lamaTest
-# TODO: should be removed
-if [ -d distributed ]
-then
-    export SCAI_COMMUNICATOR=NO
-    ./lama/test/distributed/lamaDistTest
-    if [ "${MPI_FOUND}" != "" ]
-    then
-        export SCAI_COMMUNICATOR=MPI
-        mpirun -np 1 ./lama/test/distributed/lamaDistTest
-        mpirun -np 2 ./lama/test/distributed/lamaDistTest
-        mpirun -np 3 ./lama/test/distributed/lamaDistTest
-        mpirun -np 4 ./lama/test/distributed/lamaDistTest
-    fi
-fi
-
-# Solver tests
-
-echo "### solverTest"
-export SCAI_COMMUNICATOR=NO
-./solver/test/solverTest
-export SCAI_COMMUNICATOR=NO
-./solver/test/distributed/solverDistTest
-if [ "${MPI_FOUND}" != "" ]
-then
-    export SCAI_COMMUNICATOR=MPI
-    mpirun -np 1 ./solver/test/distributed/solverDistTest
-    mpirun -np 2 ./solver/test/distributed/solverDistTest
-    mpirun -np 3 ./solver/test/distributed/solverDistTest
-    mpirun -np 4 ./solver/test/distributed/solverDistTest
-fi
+unset CONTEXTS
