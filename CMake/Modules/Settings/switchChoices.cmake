@@ -1,5 +1,5 @@
 ###
- # @file switchChoices.cmake
+ # @file CMake/Modules/Settings/switchChoices.cmake
  #
  # @license
  # Copyright (c) 2009-2016

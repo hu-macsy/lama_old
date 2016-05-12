@@ -22,10 +22,11 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./BLAS/QR.cpp
+ * @brief Example QR decomposition.
  * @author Jan Ecker
  * @date 20.03.2013
  */
+
 /*
   Copyright (C) 2010 Institute for Computational Physics, University of Stuttgart, Pfaffenwaldring 27, 70569 Germany
   Copyright (C) 2009 Fraunhofer SCAI, Schloss Birlinghoven, 53754 Sankt Augustin, Germany

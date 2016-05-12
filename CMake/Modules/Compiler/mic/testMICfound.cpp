@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./Compiler/mic/testMICfound.cpp
+ * @brief Test executable for detecting of a MIC is available.
  * @author Lauretta Schubert
  * @date 04.04.2016
  */

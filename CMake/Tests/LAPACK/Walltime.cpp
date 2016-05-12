@@ -77,4 +77,3 @@ double Walltime::get()
 }
 
 } // namespace lama
-
