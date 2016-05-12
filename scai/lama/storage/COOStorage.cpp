@@ -604,7 +604,7 @@ SyncToken* COOStorage<ValueType>::incGEMV(
     ValueType beta = 1;
 
     normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), 
-                     mNumColumns, mNumValues, 
+                     mNumRows, mNumValues,
                      cooIA.get(), cooJA.get(), cooValues.get() );
 
     if ( async )
