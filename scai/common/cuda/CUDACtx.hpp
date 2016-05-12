@@ -50,6 +50,12 @@ namespace common
 
 /* --------------------------------------------------------------------- */
 
+/** @brief This class defines a context on a CUDA device.
+ *
+ *  Note: it is possible to define more than one context on a CUDA device,
+ *  this is similiar to having multiple processes on one CPU.
+ */
+
 class COMMON_DLL_IMPORTEXPORT CUDACtx : private NonCopyable
 {   
 

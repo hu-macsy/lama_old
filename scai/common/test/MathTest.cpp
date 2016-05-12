@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_arithmetic_test_types )
     x = static_cast<ValueType>( ComplexFloat(3, 4) );
     imag_val = Math::imag( x );
 
-    if( scai::common::scalar::isComplex( scai::common::TypeTraits<ValueType>::stype ))
+    if ( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ))
     {
         BOOST_CHECK( imag_val == 4 );
     }

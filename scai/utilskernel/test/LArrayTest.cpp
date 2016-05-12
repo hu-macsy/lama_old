@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
     conjArray.conj();   // build in place
 
 
-    if ( scalar::isComplex( TypeTraits<ValueType>::stype )  ) 
+    if ( isComplex( TypeTraits<ValueType>::stype )  ) 
     {
         BOOST_CHECK( Math::real( array.maxDiffNorm( conjArray ) ) > 0 );
         conjArray.conj();

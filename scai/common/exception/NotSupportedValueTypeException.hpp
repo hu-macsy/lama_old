@@ -22,8 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief The default constructor creates an NotSupportedValueTypeException with no message.
- *        /
+ * @brief Definition of derived exception class for unsupported values.
  * @author Eric Schricker
  * @date 12.11.2015
  */
@@ -39,6 +38,10 @@ namespace scai
 
 namespace common
 {
+
+/** Derived exception class that is used to throw an exception in all cases
+ *  where an illegal or unsupported value is used. 
+ */
 
 class COMMON_DLL_IMPORTEXPORT NotSupportedValueTypeException : public Exception
 {
