@@ -348,7 +348,7 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
     KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( BLAS_BLAS1::copy, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( BLAS_BLAS1::axpy, ctx, flag );
 
-    if( common::scalar::isComplex( common::TypeTraits<ValueType>::stype ) )
+    if( common::isComplex( common::TypeTraits<ValueType>::stype ) )
     {
         /*
          * don't register dot-product due to different fortran ABSs the handling of returning

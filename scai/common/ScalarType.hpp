@@ -48,7 +48,7 @@ namespace common
 
 /** Own namespace for the enumeration type ScalarType and its values. */
 
-namespace scalar
+struct scalar
 {
     /** Enumeration type for supported value types in LAMA.
      *
@@ -78,17 +78,17 @@ namespace scalar
         UNKNOWN
     } ScalarType;
 
-    /** Query an enum value whether it is complex or not. */
+}; /* end struct scalar */
 
-    bool isComplex( const ScalarType t );
+/** Query an enum value whether it is complex or not. */
 
-    /*
-     * Output of ScalarType in stream by writing strings instead of numbers
-     */
+COMMON_DLL_IMPORTEXPORT bool isComplex( const scalar::ScalarType t );
+
+/*
+ * Output of ScalarType in stream by writing strings instead of numbers
+ */
     
-    COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ScalarType& object );
-
-} /* end namespace scalar */
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scalar::ScalarType& object );
 
 /**
  * @brief Conversion of a ScalarType to string

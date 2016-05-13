@@ -38,18 +38,26 @@ namespace scai
 namespace common
 {
 
+/** Derived exception class that is used when an unsupported feature should result in error. */
+
 class COMMON_DLL_IMPORTEXPORT UnsupportedException : public Exception
 {
 public:
 
+    /** Enumeration type for the different handlings of unsupported features. */
+
     enum UnsupportedType
     {
-        UNSUPPORTED_WARN, UNSUPPORTED_ERROR, UNSUPPORTED_IGNORE, UNSUPPORTED_UNDEFINED
+        UNSUPPORTED_WARN,      //!< give a warning if an unsupported feature is used
+        UNSUPPORTED_ERROR,     //!< throw an Unspupprted exception
+        UNSUPPORTED_IGNORE,    //!< neither warning nor error 
+        UNSUPPORTED_UNDEFINED  //!< for convenience
     };
     
     UnsupportedException();
     
     UnsupportedException( const std::string& message );
+
     virtual ~UnsupportedException() throw();
     
     virtual const char* what() const throw();
@@ -68,37 +76,3 @@ private:
 } /* end namespace common */
 
 } /* end namespace scai */
-
-/** This macro should be used to give hints about unsupported features.
- *
- *  It should only be used in cases where less performant solutions are still
- *  available.
- *
- *  By setting the environment variable COMMON_UNSUPPORTED to WARN only warnings
- *  will be given. For IGNORE no message is given at all. Otherwise an exception
- *  is thrown.
- */
- 
-#define OLD_SCAI_UNSUPPORTED( msg )                                                \
-{                                                                              \
-    if ( scai::common::UnsupportedException::getUnsupportedSetting() !=        \
-            scai::common::UnsupportedException::UNSUPPORTED_IGNORE )           \
-    {                                                                          \
-        std::ostringstream errorStr;                                           \
-        errorStr << "Unsupported at line ";                                    \
-        errorStr << __LINE__ << " of file " << __FILE__ << "\n";               \
-        errorStr << "    Message: " << msg << std::endl;                       \
-        errorStr << "Use environment variable SCAI_UNSUPPORTED";               \
-        errorStr << " (WARN or IGNORE) to get rid of this message";            \
-        errorStr << std::endl;                                                 \
-        if ( scai::common::UnsupportedException::getUnsupportedSetting() ==    \
-        		scai::common::UnsupportedException::UNSUPPORTED_ERROR )        \
-        {                                                                      \
-            throw scai::common::UnsupportedException( errorStr.str() );        \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            std::cout << errorStr.str() << std::endl;                          \
-        }                                                                      \
-    }                                                                          \
-}

@@ -42,9 +42,9 @@ namespace scai
 namespace common
 {
 
-/** Own namespace for the enum type ConstantType and its values. */
+/** Own struct for the enum type ConstantType and its values. */
 
-namespace constants
+struct constants
 {
 
 /** Enumeration type for constants for which type-specific values are provided */
@@ -55,19 +55,21 @@ typedef enum
     ZERO   //!< stands for value 0
 } ConstantType;
 
+}; /* struct constants */
+
 /** This method returns the type specific value for each constant */
 
 template<typename ValueType>
-inline ValueType getConstant( const ConstantType& c )
+inline ValueType getConstant( const constants::ConstantType& c )
 {
     ValueType val( 0 );
 
     switch( c )
     {
-        case ONE:
+        case constants::ONE:
             val = ValueType( 1 );
             break;
-        case ZERO:
+        case constants::ZERO:
             val = ValueType( 0 );
             break;
     }
@@ -77,13 +79,13 @@ inline ValueType getConstant( const ConstantType& c )
 /** Comparison against constant ZERO or ONE uses machine-specific EPS */
 
 template<typename ValueType>
-bool operator==( const ValueType& x, const ConstantType& c )
+bool operator==( const ValueType& x, const constants::ConstantType& c )
 {
     return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
 }
 
 template<typename ValueType>
-bool operator==( const ConstantType& c, const ValueType& x )
+bool operator==( const constants::ConstantType& c, const ValueType& x )
 {
     return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
 }
@@ -91,18 +93,16 @@ bool operator==( const ConstantType& c, const ValueType& x )
 /** Operator not equal also provided for convenience */
 
 template<typename ValueType>
-bool operator!=( const ValueType& x, const ConstantType& c )
+bool operator!=( const ValueType& x, const constants::ConstantType& c )
 {
     return ! ( x == c );
 }
 
 template<typename ValueType>
-bool operator!=( const ConstantType& c, const ValueType& x )
+bool operator!=( const constants::ConstantType& c, const ValueType& x )
 {
     return ! ( x == c );
 }
-
-} /* end namespace constants */
 
 } /* end namespace common */
 

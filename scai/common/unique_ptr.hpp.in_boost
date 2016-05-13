@@ -45,6 +45,8 @@ namespace common
 {
     using boost::scoped_array;
 
+    /** Smart pointer where only one single reference exists. */
+
     template<typename T>
     class unique_ptr : public std::auto_ptr<T>
     {
@@ -56,6 +58,7 @@ namespace common
         {
         }
     };
+
 } /* end namespace common */
 
 } /* end namespace scai */

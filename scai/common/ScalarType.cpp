@@ -85,18 +85,15 @@ scalar::ScalarType str2ScalarType( const char* str )
     return scalar::UNKNOWN;
 }
 
-namespace scalar
-{
-
-bool isComplex( const ScalarType t )
+bool isComplex( const scalar::ScalarType t )
 {
     bool is = false;
 
     switch ( t )
     {
-        case DOUBLE_COMPLEX:
-        case COMPLEX:
-        case LONG_DOUBLE_COMPLEX :
+        case scalar::DOUBLE_COMPLEX:
+        case scalar::COMPLEX:
+        case scalar::LONG_DOUBLE_COMPLEX :
             is = true;
             break;
 
@@ -107,13 +104,11 @@ bool isComplex( const ScalarType t )
     return is;
 }
 
-std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
+std::ostream& operator<<( std::ostream& stream, const scalar::ScalarType& object )
 {
     stream << scalarType2str( object );
     return stream;
 }
-
-} /* end namespace scalar */
 
 } /* end namespace common */
 

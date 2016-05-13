@@ -35,6 +35,8 @@ namespace scai
 namespace common
 {
 
+/** Own namespace for all stuff belonging to metaprogramming */
+
 namespace mepr
 {
 
@@ -42,6 +44,13 @@ namespace mepr
  * NullType, used for termination
  */
 class NullType {};
+
+/**
+ * Definition of struct to build list of types.
+ *
+ * @tparam H head type
+ * @tparam T struct of tail of the list, terminates with NullType
+ */
 
 template<typename H, typename T>
 struct TypeList

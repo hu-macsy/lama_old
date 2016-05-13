@@ -46,7 +46,7 @@ using namespace common;
 template<typename T>
 void output()
 {
-    bool isCmp = scalar::isComplex( TypeTraits<T>::stype );
+    bool isCmp = isComplex( TypeTraits<T>::stype );
 
     std::cout << "Running output<" << TypeTraits<T>::id() << ">, is complex = " << isCmp << std::endl;
     T x = 1;

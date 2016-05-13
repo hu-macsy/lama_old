@@ -61,7 +61,7 @@ void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.conj" )
 
-    if ( n > 0 && common::scalar::isComplex( TypeTraits<ValueType>::stype ) )
+    if ( n > 0 && common::isComplex( TypeTraits<ValueType>::stype ) )
     {
         SCAI_LOG_INFO( logger, "conj, #n = " << n )
 

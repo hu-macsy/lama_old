@@ -443,7 +443,7 @@ void HArrayUtils::conj( HArray<ValueType>& array, ContextPtr prefLoc )
 {
     IndexType n = array.size();
 
-    if ( ( n > 0 ) && common::scalar::isComplex( common::TypeTraits<ValueType>::stype ) )
+    if ( ( n > 0 ) && common::isComplex( common::TypeTraits<ValueType>::stype ) )
     {
         static LAMAKernel<UtilKernelTrait::conj<ValueType> > conj;
 

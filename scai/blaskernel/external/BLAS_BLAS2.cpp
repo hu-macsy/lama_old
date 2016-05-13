@@ -135,7 +135,7 @@ void BLAS_BLAS2::gemv(
 				break;
 		}
 
-		if( common::scalar::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
+		if( common::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
 		{
 			COMMON_THROWEXCEPTION( "conj matrix vector multiply on complex numbers currently not supported" )
 		}
