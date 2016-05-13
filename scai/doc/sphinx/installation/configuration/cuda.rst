@@ -12,7 +12,9 @@ If not, you can give it a hint where to find it:: bash
 
    cmake -D CUDA_TOOLKIT_ROOT=<path/to/cuda/installation>
 
-If CUDA is available on your system but you do not want to use it, you can switch off its use as follows:: bash
+If CUDA is available on your system but you do not want to use it, you can switch off its use as follows
+
+:: bash
 
    cmake -D USE_CUDA=OFF
 
@@ -31,10 +33,14 @@ Beside the CUDA compiler, LAMA uses also:
 
 Known problems:
 
-Thrust might be confused about system files:: bash
+Thrust might be confused about system files
+
+:: bash
 
    error: kernel launches from templates are not allowed in system files
 
-Workaround:: bash
+Workaround
+
+:: bash
 
    unset CPLUS_INCLUDE_PATH

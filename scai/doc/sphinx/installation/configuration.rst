@@ -10,7 +10,7 @@ For the creation of a Visual Studio project under Windows see :doc:`here <window
 
 This CMake utility should be called in a seperate build directory. Although in-source builds are supported we recommend an out-of-source build. So after extracting your tar ball and changing into the new directory create a build directory and change to it.
 
-.. code-block:: bash 
+:: bash 
 
    tar -xzvf libama-x.x.x.tar.gz
    cd libama-x.x.x
@@ -22,7 +22,7 @@ If you do not install as root you have to set the CMAKE_INSTALL_PREFIX, because 
 Due to the use of ExternalProjects for LAMAs sublibraries installation will automatically take place after compilation.
 There are a couple of advanced :ref:`options <options>` for defining special build-types or to switch on/off particular features, but the general cmake-call looks like this:
 
-.. code-block:: bash
+:: bash
 
    cmake -DCMAKE_INSTALL_PREFIX=<path/to/install/dir> [options] ../scai
 
@@ -38,7 +38,7 @@ CMake
 
 If you have not installed CMake in the system path you need to specify to CMake include and library path by:
 
-.. code-block:: bash
+:: bash
 
    cmake -DCMAKE_INSTALL_PREFIX=<path/to/install/dir>
          [-DCMAKE_INCLUDE_PATH=<install/dir/cmake>/include \]
@@ -50,7 +50,7 @@ Build_Type
 
 For an optimized installation of LAMA call define CMAKE_BUILD_TYPE=Release. Otherwise you build a debug version of LAMA.
 
-.. code-block:: bash
+:: bash
 
    cmake -DCMAKE_INSTALL_PREFIX=<path/to/install/dir> -DCMAKE_BUILD_TYPE=Release ../scai
 
@@ -122,7 +122,7 @@ A summary of possible hint-variables for the packages are given in the following
 
 Your cmake-call may look like this then:
 
-.. code-block:: bash
+:: bash
 
    cmake -DMKL_ROOT=/opt/intel/mkl -DCMAKE_INSTALL_PREFIX=<path/to/install/dir> -DCMAKE_BUILD_TYPE=Release ../src
 
@@ -133,7 +133,7 @@ Check
 
 To check the configuration you may call in the build directory:
 
-.. code-block:: bash
+:: bash
 
    ccmake .
 
