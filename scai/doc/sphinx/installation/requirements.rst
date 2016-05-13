@@ -120,7 +120,7 @@ For the combination of gcc 4.8.2 and boost 1.55.0 we needed some more patches (s
 for known issues and needed to add the following to boost/tuple/detail/tuple_basic.hpp for suppression:
 
 
-.. code-block:: c++
+:: c++
    :emphasize-lines: 1,2,3,4,5,14,15,16,17
 
     +#if BOOST_GCC >= 40700

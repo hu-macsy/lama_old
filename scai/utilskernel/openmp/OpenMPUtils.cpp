@@ -271,7 +271,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 {
     SCAI_REGION( "OpenMP.Utils.setVal" )
 
-    SCAI_LOG_DEBUG( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = "
+    SCAI_LOG_INFO( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = "
                             << val << ", op = " << op )
 
     ValueType value = static_cast<ValueType>( val );
@@ -490,11 +490,14 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
     {
         case common::reduction::COPY :
         {
-            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-            for ( IndexType i = 0; i < n; i++ )
+            if( in != reinterpret_cast<ValueType2*> ( out ) )
             {
-                out[i] = static_cast<ValueType1>( in[i] );
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = static_cast<ValueType1>( in[i] );
+                }
             }
             break;
         }

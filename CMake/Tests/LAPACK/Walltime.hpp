@@ -26,8 +26,8 @@
  * @author Thomas Brandes
  * @date 25.04.2013
  */
-#ifndef LAMA_WALLTIME_HPP_
-#define LAMA_WALLTIME_HPP_
+
+#pragma once
 
 namespace lama
 {
@@ -53,5 +53,3 @@ private:
 };
 
 } // namespace lama
-
-#endif // LAMA_WALLTIME_HPP

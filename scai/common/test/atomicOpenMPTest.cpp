@@ -30,6 +30,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 #include <scai/common/OpenMP.hpp>
@@ -39,11 +40,7 @@ using namespace common;
 
 /* -------------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
-
-/* -------------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, SCAI_ARITHMETIC_TYPES )
+BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, scai_arithmetic_test_types )
 {
 	int size = 100;
 

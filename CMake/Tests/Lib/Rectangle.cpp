@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./Lib/Rectangle.cpp
+ * @brief Simple rectangle class.
  * @author Thomas Brandes
  * @date 01.05.2013
  */

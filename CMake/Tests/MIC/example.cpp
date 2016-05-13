@@ -26,6 +26,7 @@
  * @author Thomas Brandes
  * @date 12.06.2014
  */
+
 #pragma offload_attribute (push,target(mic))
 #include <iostream>
 #include <omp.h>

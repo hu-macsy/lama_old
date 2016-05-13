@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 ###
  # @file sparsekernel/test/code_coverageThird.sh
  #
@@ -27,8 +29,6 @@
  # @author Alexander Büchel, Lauretta Schubert
  # @date 15.08.2012
 ###
-
-#!/bin/bash -e
 
 source scai_code_coverage_functions.sh
 

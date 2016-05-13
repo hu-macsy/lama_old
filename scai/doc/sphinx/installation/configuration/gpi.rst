@@ -9,7 +9,9 @@ GPI-2 depends on ibverbs (Verbs library from OFED). Therefore LAMA looks for a G
 
 If your GPI-2 installation is not in the default path define the METIS_ROOT in the cmake call with -DGPI2_ROOT=<path_to_metis> or define the environment variables GPI2_INCLUDE_PATH and GPI2_LIBRARY_PATH with:
 
-.. code-block:: bash 
+.. code-block
+
+:: bash 
 
    export GPI2_INCLUDE_PATH=<path_to_gpi>/include
    export GPI2_LIBRARY_PATH=<path_to_gpi>/lib

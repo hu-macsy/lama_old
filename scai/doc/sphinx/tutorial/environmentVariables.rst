@@ -10,7 +10,7 @@ SCAI_LOG
 
 The variable ``SCAI_LOG`` specifies the detail of logging or the logger configuration file.
 
-::
+:: bash
 
     export SCAI_LOG=WARN  ( is default )
     export SCAI_LOG=INFO
@@ -20,7 +20,7 @@ The variable ``SCAI_LOG`` specifies the detail of logging or the logger configur
 For specific logging of certain classes a configuration file is required. The entries in this file could be
 as follows:
 
-::
+:: bash
 
     Matrix = DEBUG
     Matrix.DenseMatrix = INFO
@@ -33,7 +33,7 @@ that are not efficiently implemented. These might be operations
 that will not be executed at the intended location (e.g. on the CPU instead on the GPU) 
 or not in the desired matrix format (e.g. implicit conversion to CSR format and back).
 
-::
+:: bash
 
     export SCAI_UNSUPPORTED=WARN (default)
     export SCAI_UNSUPPORTED=ERROR
@@ -49,7 +49,7 @@ SCAI_DEVICE
 This variable specifies the default device for creation of a CUDA Context in case operations should be
 executed on a GPU.
 
-Example::
+Example:: bash
 
     export SCAI_DEVICE=1
 
@@ -59,7 +59,7 @@ LAMA_TEST_DEVICE
 This variable is only used for the LAMA unit test to restrict execution of the test on a 
 specific device. If not set, tests will run on all devices.
 
-::
+:: bash
 
     export LAMA_TEST_DEVICE=Host
     export LAMA_TEST_DEVICE=CUDA
@@ -70,7 +70,7 @@ LAMA_NP
 This variable specifies the configuration of a processor array. It is used for Poisson input setgenerators
 that generates sparse matrices for 2D and 3D problems. 
 
-Examples::
+Examples:: bash
 
     export LAMA_NP="2 4 2"
     export LAMA_NP=2x2

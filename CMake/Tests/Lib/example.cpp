@@ -22,11 +22,11 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./Lib/example.cpp
+ * @brief Simple example executable for testing dllimport/dllexport with
+ 		  simple rectangle class.
  * @author Thomas Brandes
  * @date 01.05.2013
  */
-// Simple example program that prints size of pointer (32-bit or 64-bit)
 
 #include <iostream>
 #include "Rectangle.hpp"

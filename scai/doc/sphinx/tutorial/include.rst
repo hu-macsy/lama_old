@@ -7,7 +7,7 @@ Include
 
 Data container can be found here:
 
-::
+:: c++
    
    #include <scai/lama/matrices/...>        // sparse or dense matrices
    #include <scai/lama/...>                 // vectors, scalars
@@ -15,7 +15,7 @@ Data container can be found here:
 
 Data container related:
 
-::
+:: c++
   
    #include <scai/lama/expression/...>      // Vector-Vector, Matrix-Vector or Matrix-Matrix expressions 
    #include <scai/lama/distribution/...>    // assigned to matrices and vectors for distributed use of data container
@@ -24,7 +24,7 @@ Data container related:
 
 Linear equation solvers:
 
-::
+:: c++
 
    #include <scai/lama/solver/...>          // solver itself
    #include <scai/lama/solver/criteria/...> // Stopping criteria

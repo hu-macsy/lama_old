@@ -37,7 +37,7 @@
 #include <scai/kregistry/test/TestMacros.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#if BOOST_VERSION > 105900
+#if BOOST_VERSION > 105800
 	#include <boost/test/unit_test_parameters.hpp>
 #else
 	#include <boost/test/detail/unit_test_parameters.hpp>

@@ -7,8 +7,6 @@ The following C++ program shows a very simple example program of how to use LAMA
    :language: c++
    :lines: 34-
 
-
-
 :download:`Download source file <../../../lama/examples/tutorial/simple.cpp>`
 
 The include file lama.hpp contains some definitions how far assertions, logging and tracing statements
