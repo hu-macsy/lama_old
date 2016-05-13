@@ -122,7 +122,7 @@
  * log levels are defined in boost/test/detail/log_level.hpp
  */
 
-#if BOOST_VERSION > 105800
+#if BOOST_VERSION > 105900
     #define IF_LOG_LEVEL_IS_TEST_SUITE \
     	if ( boost::unit_test::runtime_config::LOG_LEVEL == "test_suite" )
 #else
