@@ -14,7 +14,7 @@ to the basic usage of LAMA. The following tasks are only giving hints which
 functions and classes you should use to complete them. Please consult the
 `online API documentation`_ on how to use these classes.
 
-.. _online API documentation: http://libama.sourceforge.net/doc/index.html
+.. _online API documentation: https://test.libama.org/doxygen/index.html
 
 Requirements
 ------------
