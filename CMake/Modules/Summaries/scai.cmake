@@ -62,8 +62,8 @@ include ( Summaries/Modules/Distributed )
 include ( Summaries/Modules/Graphpartitioning )
 
 heading ( "Optional components:" "" )
-heading3 ( "Java:" "Java_JAVAC_EXECUTABLE" )
-    found_message ( "Java Exexutable" "Java_JAVAC_EXECUTABLE" "OPTIONAL" "with ${Java_JAVAC_EXECUTABLE}" )
+heading3 ( "Java:" "JAVA_FOUND" )
+    found_message ( "Java Exexutable" "JAVA_FOUND" "OPTIONAL" "with ${Java_JAVAC_EXECUTABLE}" )
 
 include ( Summaries/Modules/Build )
 
