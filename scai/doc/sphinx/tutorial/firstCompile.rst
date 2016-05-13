@@ -3,11 +3,11 @@ Compilation and Execution of LAMA Programs on Linux Systems
 
 .. TODO: needs update
 
-The environment variable LAMA_ROOT refers the directory of your LAMA installation::
+The environment variable LAMA_ROOT refers the directory of your LAMA installation:: bash
 
     export LAMA_ROOT=<installation/directory>
 
-The following command compiles and links your example program simple.cpp::
+The following command compiles and links your example program simple.cpp:: bash
 
     g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama 
 
@@ -22,11 +22,11 @@ If this step was successful, you can run the executable::
 
 Due to the dynamic linking of libraries, the executable **simple** will not contain the LAMA codes itself.
 Instead, it contains a reference to the LAMA library and references will be resolved when the executable
-is started. Here, it is very likely that you get the following error message::
+is started. Here, it is very likely that you get the following error message:: bash
 
     simple: error while loading shared libraries: libscai_lama.so: cannot open shared object file: No such file or directory
 
-Information about dynamically linked libraries is available by the following command::
+Information about dynamically linked libraries is available by the following command:: bash
 
     ldd ./simple
 
@@ -42,14 +42,14 @@ There are two solutions to solve this problem.
 
    You can add the lib directory to your library path. At program start, unresolved library links
    will be searched in all directories of your library path. The correspoding setting should be added
-   to your bashrc file::
+   to your bashrc file:: bash
 
        export LD_LIBRARY_PATH=${LAMA_ROOT}/lib:${LD_LIBRARY_PATH}
 
 2) Setting resolution path in the executable
 
    You generate a link to the LAMA lib directory within the executable. This solution is the
-   preferred solution if you want to share the executable with other users::
+   preferred solution if you want to share the executable with other users:: bash
 
       g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama -Wl,-rpath=${LAMA_ROOT}/lib
 
