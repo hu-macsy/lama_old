@@ -7,7 +7,7 @@ over all available contexts and test the same function on different hardware arc
 
 The usage of this loop is shown here ( part of CGTest.cpp ):
 
-:: 
+.. code-block:: c++
 
 	BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
 	{
