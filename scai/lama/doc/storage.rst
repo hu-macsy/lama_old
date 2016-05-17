@@ -69,7 +69,7 @@ The CSR format with diagonal element shifting for the example matrix looks like 
 1.0     2.0     *
 ======= ======= =======
 
-::
+.. code-block:: c++
 
     numValues  = 13
     numRows    =  6
@@ -90,7 +90,7 @@ The CSR format without diagonal element shifting looks like this:
 1.0     2.0     *
 ======= ======= =======
 
-::
+.. code-block:: c++
 
     numValues  = 12
     numRows    =  7
@@ -140,7 +140,7 @@ The ELL format with diagonal element shifting for the example matrix looks like 
 1.0     2.0     0.0
 ======= ======= =======
 
-::
+.. code-block:: c++
 
     numRows         =  7
     numColumns      =  4
@@ -161,7 +161,7 @@ The ELL format without diagonal element shifting for the example matrix looks li
 1.0     2.0     0.0
 ======= ======= =======
 
-::
+.. code-block:: c++
 
     numRows         =  7
     numColumns      =  4
@@ -212,7 +212,7 @@ The JDS format with diagonal element shifting for the example matrix looks like 
 *       *       *
 ======= ======= =======
 
-::
+.. code-block:: c++
 
     numValues    = 13
     numRows      =  7
@@ -236,7 +236,7 @@ The JDS format without diagonal element shifting for the example matrix looks li
 *       *       *
 ======= ======= =======
 
-::
+.. code-block:: c++
 
     numValues    = 12
     numRows      =  7
@@ -324,7 +324,7 @@ The DIA format with diagonal element shifting for the example matrix looks like 
 *       *       *       *       *       *       0.0     1.0     0.0     2.0     0.0     0.0     0.0     *       0.0
 ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= 
 
-::
+.. code-block:: c++
 
     numValues              = 56
     numRows                =  7
@@ -353,7 +353,7 @@ The DIA format without diagonal element shifting for the example matrix looks li
 *       *       *       *       *       *       1.0     0.0     2.0     0.0     0.0     0.0     0.0     *       0.0
 ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= 
 
-::
+.. code-block:: c++
 
     numValues              = 56
     numRows                =  7
@@ -412,7 +412,7 @@ The COO format with diagonal element shifting for the example matrix looks like 
 *       1.0     *       2.0
 ======= ======= ======= =======
 
-::
+.. code-block:: c++
 
     numValues  = 13
     numRows    =  7
@@ -433,7 +433,7 @@ The COO format without diagonal element shifting for the example matrix looks li
 *       1.0     *       2.0
 ======= ======= ======= =======
 
-::
+.. code-block:: c++
 
     numValues  = 12
     numRows    =  7

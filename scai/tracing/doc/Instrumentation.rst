@@ -42,7 +42,7 @@ Name of Regions
 
 Regions can be structured hierarchically by using the dot nation.
 
-::
+.. code-block:: c++
 
     SCAI_REGION( "CUDA.CSRUtils.hasDiagonalProperty" )
     SCAI_REGION( "CUDA.CSRUtils.CSR2CSC" )
