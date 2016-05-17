@@ -18,6 +18,7 @@ Now its your turn: Set the environment variable with a configure file and change
 the logging level of your CSRSparseMatrixLogger (e.g. "Matrix.CSRSparseMatrix =
 DEBUG"). If you are using the LAMA Provided CG solver you can activate logging
 for it with "Solver.IterativeSolver.CG = INFO".
+For a detailed explanation on loggin refer to :ref:`scailogging:main-page_logging`.
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"
