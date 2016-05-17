@@ -68,6 +68,12 @@ public:
      */
     static double get();
 
+    /**
+     *  sleep routine for milliseconds
+     */
+
+    static void sleep( unsigned milliseconds );
+
 private:
 
     /** Private constructor for a static class. */

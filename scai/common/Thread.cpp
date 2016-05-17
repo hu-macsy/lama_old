@@ -215,7 +215,7 @@ const char* Thread::getCurrentThreadName()
 
 void Thread::start( pthread_routine start_routine, void* arg )
 {
-    SCAI_SYSTEM_CALL( pthread_create( &mTId, NULL, start_routine, arg ), "start" );
+    SCAI_SYSTEM_CALL( pthread_create( &mHandle, NULL, start_routine, arg ), "start" );
 
     running = true;
 }
@@ -224,7 +224,7 @@ void Thread::join()
 {
     if ( running )
     {
-        SCAI_SYSTEM_CALL_NOTHROW( pthread_join( mTId, NULL ), "join" )
+        SCAI_SYSTEM_CALL_NOTHROW( pthread_join( mHandle, NULL ), "join" )
     }
 
     running = false;

@@ -35,7 +35,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
-#include <unistd.h>
 
 using namespace scai;
 using namespace common;
@@ -107,7 +106,7 @@ BOOST_AUTO_TEST_CASE( barrierTest )
     }
 }
 
-static const int SLEEP_TIME  = 1;
+static const int SLEEP_TIME  = 1;  // in seconds
 static const int C_THREADS   = 4;
 
 // Define routine that is executed by one thread
@@ -124,7 +123,7 @@ static void criticalRoutine( int& n )
     Thread::ScopedLock lock( critMutex );
     Thread::ScopedLock lock1( critMutex );   // second lock by same thread is okay for recursive mutex
 
-    sleep( SLEEP_TIME );
+    Walltime::sleep( SLEEP_TIME * 1000 );
 
     BOOST_CHECK_EQUAL( nstream.str(), Thread::getCurrentThreadName() );
 }
@@ -160,7 +159,7 @@ BOOST_AUTO_TEST_CASE( criticalRegionTest )
 
 static void runRoutine( int& )
 {
-    sleep( SLEEP_TIME );
+    Walltime::sleep( SLEEP_TIME * 1000 );
 }
 
 BOOST_AUTO_TEST_CASE( concurrentTest )

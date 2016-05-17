@@ -35,7 +35,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
-#include <unistd.h>
 
 using namespace std;
 using namespace scai::common;
@@ -57,7 +56,7 @@ void* threadRoutine( void* )
     Thread::ScopedLock lock1( threadRecursiveMutex );   // second lock by same thread is okay for recursive threadRecursiveMutex
 
     cout << "Thread " << self << " enters critical region" << endl;
-    sleep( SLEEP_TIME );
+    Walltime::sleep( SLEEP_TIME * 1000 );
     cout << "Thread " << self << " leaves critical region" << endl;
 
     return NULL;

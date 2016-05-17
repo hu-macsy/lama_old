@@ -144,7 +144,12 @@ struct CommandLineOptions
         }
         else if ( isValue( option.c_str() ) )
         {
+
+#ifdef SCAI_COMPLEX_SUPPORTED
             ComplexDouble x;
+#else
+            double x;
+#endif
             std::string vstr = option;
             std::replace( vstr.begin(), vstr.end(), ',', ' '); // replace all ',' to ' '
             std::istringstream is( vstr );

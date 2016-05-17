@@ -31,7 +31,7 @@
 
 #include <scai/common/test/TestMacros.hpp>
 
-#include <scai/common/Complex.hpp>
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/Constants.hpp>
 
 using namespace scai::common;

@@ -33,8 +33,6 @@
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 
-#include <unistd.h>
-
 using namespace scai::common;
 using namespace scai::tasking;
 
@@ -42,7 +40,7 @@ using namespace scai::tasking;
 
 void work( const int in )
 {
-    sleep( in );
+    Walltime::sleep( in * 1000 );
 }
 
 int main( int argc, const char** argv )

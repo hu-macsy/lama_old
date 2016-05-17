@@ -31,8 +31,6 @@
 
 #include <scai/common/Walltime.hpp>
 
-#include <unistd.h>
-
 BOOST_AUTO_TEST_CASE( WalltimeTest )
 {
 
@@ -42,7 +40,7 @@ BOOST_AUTO_TEST_CASE( WalltimeTest )
     INTEGER_8 i0 = Walltime::timestamp();
     double t0 = Walltime::get();
 
-    sleep( 1 );
+    Walltime::sleep( 1000 );
     double t1 = Walltime::get();
     INTEGER_8 i1 = Walltime::timestamp();
 

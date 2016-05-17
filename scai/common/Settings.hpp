@@ -28,7 +28,10 @@
  */
 #pragma once
 
+#include <scai/common/config.hpp>
+
 // std
+
 #include <string>
 #include <vector>
 
@@ -46,7 +49,7 @@ namespace common
  *        as this operation is OS specific.
  */
 
-class Settings
+class COMMON_DLL_IMPORTEXPORT Settings
 {
 public:
 

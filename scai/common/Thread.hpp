@@ -193,7 +193,7 @@ public:
 
     Id getId()
     {
-        return mTId;
+        return mHandle;
     }
 
     /** Destructor of thread, waits for its termination. */
@@ -202,7 +202,7 @@ public:
 
 private:
 
-    Id    mTId;
+    pthread_t mHandle; //!< Handle for the corresponding pthread
     bool  running;
 };
 
