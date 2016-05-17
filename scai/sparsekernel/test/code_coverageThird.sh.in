@@ -36,7 +36,7 @@ dirname=$(find_dir)
 echo "Found coverage directory: ${dirname}"
 
 # problem with these, so first ignore
-rm sparsekernelTest.gcno sparsekernelTest.gcda
+rm sparsekernelTest.cpp.gcno sparsekernelTest.cpp.gcda
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
