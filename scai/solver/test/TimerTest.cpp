@@ -32,19 +32,9 @@
 #include <scai/solver/logger/Timer.hpp>
  
 #include <scai/common/macros/throw.hpp>
+#include <scai/common/Walltime.hpp>
 
 #include <scai/solver/test/TestMacros.hpp>
-
-//Adding support for Timers under Windows
-#ifdef _WIN32
-#include <windows.h>
-inline void usleep( int t )
-{
-    Sleep( t / 1000 );
-}
-#elif _WIN32
-#include <unistd.h>
-#endif
 
 using namespace scai::solver;
 using namespace scai::hmemo;
@@ -78,12 +68,12 @@ BOOST_AUTO_TEST_CASE( ResetTest )
     Timer timer;
     SCAI_CHECK_THROW( { timer.reset( "Timer" ) ; }, Exception );
     timer.start( "Timer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );  // 100 ms, 0.1 s
     double time1 = timer.getTime( "Timer" );
     BOOST_CHECK( 0.0 < timer.getTime( "Timer" ) );
     //Call reset, but do not stop the timer
     timer.reset( "Timer" );
-    usleep( 10000 );
+    scai::common::Walltime::sleep( 10 );  // 10 ms, 0.01 s
     double time2 = timer.getTime( "Timer" );
     timer.stop( "Timer" );
     BOOST_CHECK( time2 < time1 );
@@ -97,7 +87,7 @@ BOOST_AUTO_TEST_CASE( StartAndStopTimerTest )
 {
     Timer timer;
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
 }
@@ -109,17 +99,17 @@ BOOST_AUTO_TEST_CASE( ResumeTimerTest )
     Timer timer;
     timer.start( "TestTimer2" );
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), 2 );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.3, timer.getTime( "TestTimer" ), 2 );
     timer.stop( "TestTimer2" );
@@ -132,12 +122,12 @@ BOOST_AUTO_TEST_CASE( ResetTimerTest )
 {
     Timer timer;
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );  // 100 ms, 0.1 s
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
     timer.stopAndReset( "TestTimer" );
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
     timer.stopAndReset( "TestTimer" );
@@ -150,9 +140,9 @@ BOOST_AUTO_TEST_CASE( GetTimeTest )
     Timer timer;
     timer.start( "TestTimer" );
     timer.start( "TestTimer2" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), 2 );
     BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer2" ), 2 );
 }

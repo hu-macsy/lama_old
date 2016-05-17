@@ -45,5 +45,9 @@ int main()
 {
     testRoutine<float>();
     testRoutine<double>();
+
+#ifdef SCAI_COMPLEX_SUPPORTED
     testRoutine<ComplexFloat>();
+#endif
+
 }

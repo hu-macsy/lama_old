@@ -28,19 +28,19 @@
  */
 
 #include <scai/tracing.hpp>
-#include <unistd.h>
+#include <scai/common/Walltime.hpp>
 
 void subA()
 {
     SCAI_REGION( "A" )
-    sleep( 1 );
+    scai::common::Walltime::sleep( 1000 );
 }
 
 void subB()
 {
     SCAI_REGION( "B" )
     subA();
-    sleep( 2 );
+    scai::common::Walltime::sleep( 2000 );
 }
 
 int main()
@@ -49,6 +49,6 @@ int main()
     SCAI_REGION( "main" )
     subA();
     subB();
-    sleep( 3 );
+    scai::common::Walltime::sleep( 3000 );
 }
 

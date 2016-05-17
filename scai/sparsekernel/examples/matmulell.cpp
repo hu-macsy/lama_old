@@ -164,6 +164,8 @@ int main()
     std::cout << "long double --> ";
     multiplication<long double>();
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
     std::cout << "ComplexFloat --> ";
     multiplication<ComplexFloat>();
 
@@ -172,6 +174,9 @@ int main()
 
     std::cout << "ComplexLongDouble --> ";
     multiplication<ComplexLongDouble>();
+
+#endif
+
 }
 
 

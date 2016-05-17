@@ -91,9 +91,11 @@ int main()
         bench<float>( sizes[i] );
         bench<double>( sizes[i] );
         bench<long double>( sizes[i] );
+#ifdef SCAI_COMPLEX_SUPPORTED
         bench<ComplexFloat>( sizes[i] );
         bench<ComplexDouble>( sizes[i] );
         bench<ComplexLongDouble>( sizes[i] );
+#endif
         std::cout << std::endl;
     }
 

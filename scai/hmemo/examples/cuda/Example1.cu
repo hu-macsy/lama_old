@@ -35,6 +35,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Walltime.hpp>
 
 #include <iostream>
 #include <unistd.h>
@@ -154,7 +155,7 @@ int main()
     {
         SCAI_LOG_INFO( logger, "read on host" )
         ReadAccess<double> read( data, hostContext );
-        sleep( 1 );
+        common::Walltime::sleep( 1000 );
         for ( IndexType i = 0; i < N; ++i )
         {
             SCAI_ASSERT_EQUAL( read[i], 2 * 1.0, "wrong value after add, i = " << i )

@@ -31,8 +31,6 @@
 
 #include <scai/common/Printable.hpp>
 
-#include <unistd.h>
-
 // Printable class uses defaults writeAt
 
 class X1 : public scai::common::Printable

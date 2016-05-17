@@ -37,6 +37,7 @@
 #else
 
 #include <sys/time.h>
+#include <unistd.h>
 
 #endif
 
@@ -100,6 +101,16 @@ double Walltime::get()
 
     return (double) tp.tv_sec + tp.tv_usec * 0.000001;
 
+#endif
+
+}
+
+void Walltime::sleep( unsigned milliseconds )
+{
+#if defined( WIN32 )
+    Sleep( milliseconds );
+#else
+    usleep( milliseconds * 1000 );
 #endif
 
 }

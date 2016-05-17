@@ -33,7 +33,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
-#include <unistd.h>
 
 using scai::common::Thread;
 

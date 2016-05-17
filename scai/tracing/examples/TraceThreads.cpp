@@ -29,7 +29,7 @@
 
 #include <scai/common/Thread.hpp>
 #include <scai/tracing.hpp>
-#include <unistd.h>
+#include <scai/common/Walltime.hpp>
 
 using scai::common::Thread;
 
@@ -37,14 +37,14 @@ void subA( int& )
 {
     SCAI_LOG_THREAD( "Thread1" )
     SCAI_REGION( "A" )
-    sleep( 2 );
+    scai::common::Walltime::sleep( 2000 );
 }
 
 void subB( int& )
 {
     SCAI_LOG_THREAD( "Thread2" )
     SCAI_REGION( "B" )
-    sleep( 2 );
+    scai::common::Walltime::sleep( 2000 );
 }
 
 int main()

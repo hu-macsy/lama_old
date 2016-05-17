@@ -38,7 +38,6 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Constants.hpp>
-#include <scai/common/Complex.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/unique_ptr.hpp>
