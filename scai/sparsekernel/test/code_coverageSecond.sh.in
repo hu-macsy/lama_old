@@ -53,3 +53,9 @@ then
         error_count=$(($error_count + $?))
     fi
 fi
+
+if [ $error_count -eq 0 ]; then
+    exit
+else
+    exit 1
+fi
