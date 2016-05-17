@@ -13,3 +13,4 @@ the CG solver of task 0. The logging level should be set to convergenceHistory.
    :widths: 330, 340, 330
 
    ":doc:`task_2`", ":doc:`solution_task_3`", ":doc:`task_4`"
+s

@@ -8,13 +8,15 @@ __ https://developer.nvidia.com/cuda-downloads
 CUDA is optional and LAMA can be built without it. But you will not be able to take advantage of GPUs.
 
 The configuration of LAMA usually finds an available CUDA installation on your system.
-If not, you can give it a hint where to find it:: bash
+If not, you can give it a hint where to find it
+
+.. code-block::
 
    cmake -D CUDA_TOOLKIT_ROOT=<path/to/cuda/installation>
 
 If CUDA is available on your system but you do not want to use it, you can switch off its use as follows
 
-:: bash
+.. code-block:: bash
 
    cmake -D USE_CUDA=OFF
 
@@ -35,12 +37,12 @@ Known problems:
 
 Thrust might be confused about system files
 
-:: bash
+.. code-block:: bash
 
    error: kernel launches from templates are not allowed in system files
 
 Workaround
 
-:: bash
+.. code-block:: bash
 
    unset CPLUS_INCLUDE_PATH

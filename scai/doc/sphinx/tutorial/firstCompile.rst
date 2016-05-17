@@ -5,20 +5,20 @@ Compilation and Execution of LAMA Programs on Linux Systems
 
 The environment variable LAMA_ROOT refers the directory of your LAMA installation
 
-:: bash
+.. code-block:: bash
 
     export LAMA_ROOT=<installation/directory>
 
 The following command compiles and links your example program simple.cpp
 
-:: bash
+.. code-block:: bash
 
     g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama 
 
 If you have an own Boost installation, you have to add also the corresponding
 include directory to the include paths
 
-:: bash
+.. code-block:: bash
 
     g++ -o simple simple.cpp -I${LAMA_ROOT}/include -I${BOOST_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama 
 
@@ -30,13 +30,13 @@ Due to the dynamic linking of libraries, the executable **simple** will not cont
 Instead, it contains a reference to the LAMA library and references will be resolved when the executable
 is started. Here, it is very likely that you get the following error message
 
-:: bash
+.. code-block:: bash
 
     simple: error while loading shared libraries: libscai_lama.so: cannot open shared object file: No such file or directory
 
 Information about dynamically linked libraries is available by the following command
 
-:: bash
+.. code-block:: bash
 
     ldd ./simple
 
@@ -54,7 +54,7 @@ There are two solutions to solve this problem.
    will be searched in all directories of your library path. The correspoding setting should be added
    to your bashrc file
 
-:: bash
+.. code-block:: bash
 
        export LD_LIBRARY_PATH=${LAMA_ROOT}/lib:${LD_LIBRARY_PATH}
 
@@ -63,21 +63,21 @@ There are two solutions to solve this problem.
    You generate a link to the LAMA lib directory within the executable. This solution is the
    preferred solution if you want to share the executable with other users
 
-:: bash
+.. code-block:: bash
 
       g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama -Wl,-rpath=${LAMA_ROOT}/lib
 
 Now it should be possible to run the executable. Beside the output it is very likely that you get
 the following warning message
 
-:: bash
+.. code-block:: bash
 
     <root> (GenLogger.cpp::275,func=configure) WARN: SCAI_LOG not set, use default configuration
 
 The environment variable SCAI_LOG should be set with a useful value to get rid of the warning.
 You can set the variable explicitly with the default value
 
-:: bash
+.. code-block:: bash
 
     export SCAI_LOG=WARN
     
@@ -85,7 +85,7 @@ For other useful environment variables see :doc:`here <environmentVariables>`.
 
 Now the output should be as follows
 
-:: c++
+.. code-block:: c++
 
     L1 norm of v = 8.8
 

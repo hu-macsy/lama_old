@@ -7,7 +7,7 @@ where they are grouped by subprojects.
 
 In the build dir the examples will be directly build by CMake. But you can adapt, rebuild and execute them here, if you want to.
 
-:: bash 
+.. code-block:: bash
 
    cd <build_directory>/lama/examples/tutorial
    make
@@ -17,7 +17,7 @@ The same examples can be found in the ``SCAI_ROOT/share/examples`` and can be bu
 All these Makefiles will include a file ``makefile.inc`` that has been generated in such a way that it fits your installation. 
 If the build directory is no more available you can copy the examples in your own directory from the installation directory.
 
-:: bash 
+.. code-block:: bash
 
    mkdir myExamples
    cp -r ${installation_directory}/share/examples/* .

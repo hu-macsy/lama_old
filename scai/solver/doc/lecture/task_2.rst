@@ -16,8 +16,9 @@ following headers to have the needed operators available:
 
 As mentioned before the problem of this task is to write a CG-Solver by creating
 a self-provided implementation. A pseudocode implementation of a CG-Solver can
-be found `here http://en.wikipedia.org/wiki/Conjugate_gradient_method#The_resulting_algorithm`.
-As an input you can take all objects created in task 1.
+be found `here`_ . As an input you can take all objects created in task 1.
+
+.. _here: http://en.wikipedia.org/wiki/Conjugate_gradient_method#The_resulting_algorithm
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"
