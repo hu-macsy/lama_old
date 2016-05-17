@@ -35,9 +35,6 @@ source scai_code_coverage_functions.sh
 dirname=$(find_dir)
 echo "Found coverage directory: ${dirname}"
 
-# problem with these, so first ignore
-rm LAPACKTest.cpp.gcno LAPACKTest.cpp.gcda
-
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
 if [ $? == 1 ];
