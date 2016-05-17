@@ -33,10 +33,10 @@ scai_project(
 
         assert
         inline
-	instantiate
-	print_string
+        instantiate
+        print_string
         throw
-	typeloop
+        typeloop
         unique_name
         unused
 

@@ -31,8 +31,7 @@
 #include <scai/common/Thread.hpp>
 
 // local library
-#include <scai/common/macros/assert.hpp>
-#include <scai/common/macros/throw.hpp>
+#include <scai/common/macros/system_call.hpp>
 
 // std
 #include <map>
@@ -81,65 +80,52 @@ Thread::Mutex::Mutex( bool isRecursive )
 
     if ( isRecursive )
     {
-        pthread_mutexattr_settype( &p_mutexattr, PTHREAD_MUTEX_RECURSIVE );
+        SCAI_SYSTEM_CALL( pthread_mutexattr_settype( &p_mutexattr, PTHREAD_MUTEX_RECURSIVE ), "settype failed" )
     }
 
-    int rc = pthread_mutex_init( &p_mutex, &p_mutexattr );
-
-    if ( rc != 0 )
-    {
-        COMMON_THROWEXCEPTION( "mutex init failed, rc = " << rc )
-    }
+    SCAI_SYSTEM_CALL( pthread_mutex_init( &p_mutex, &p_mutexattr ), "Mutex()" )
 }
 
 Thread::Condition::Condition()
 {
-    int rc = pthread_cond_init( &p_condition, NULL );
-
-    if ( rc != 0 )
-    {
-        COMMON_THROWEXCEPTION( "condition init failed, rc = " << rc )
-    }
+    SCAI_SYSTEM_CALL( pthread_cond_init( &p_condition, NULL ), "Condition()" );
 }
 
 Thread::Mutex::~Mutex()
 {
-    int rc = pthread_mutex_destroy( &p_mutex );
-
-    if ( rc != 0 )
-    {
-        COMMON_THROWEXCEPTION( "mutex destroy failed, rc = " << rc )
-    }
+    SCAI_SYSTEM_CALL_NOTHROW( pthread_mutex_destroy( &p_mutex ), "~Mutex" )
 }
 
 Thread::Condition::~Condition()
 {
-    pthread_cond_destroy( &p_condition );
+    // no throw in destructor
+
+    SCAI_SYSTEM_CALL_NOTHROW( pthread_cond_destroy( &p_condition ), "~Condition" );
 }
 
 void Thread::Mutex::lock()
 {
-    pthread_mutex_lock( &p_mutex );
+    SCAI_SYSTEM_CALL( pthread_mutex_lock( &p_mutex ), "lock" );
 }
 
 void Thread::Mutex::unlock()
 {
-    pthread_mutex_unlock( &p_mutex );
+    SCAI_SYSTEM_CALL_NOTHROW( pthread_mutex_unlock( &p_mutex ), "unlock" );
 }
 
 void Thread::Condition::notifyOne()
 {
-    pthread_cond_signal ( &p_condition );
+    SCAI_SYSTEM_CALL( pthread_cond_signal ( &p_condition ), "notifyOne" );
 }
 
 void Thread::Condition::notifyAll()
 {
-    pthread_cond_broadcast ( &p_condition );
+    SCAI_SYSTEM_CALL( pthread_cond_broadcast ( &p_condition ), "notifyAll" );
 }
 
 void Thread::Condition::wait( ScopedLock& lock )
 {
-    pthread_cond_wait( &p_condition, &lock.mMutex.p_mutex );
+    SCAI_SYSTEM_CALL( pthread_cond_wait( &p_condition, &lock.mMutex.p_mutex ), "wait" );
 }
 
 Thread::ScopedLock::ScopedLock( Mutex& mutex ) : mMutex( mutex )
@@ -229,12 +215,7 @@ const char* Thread::getCurrentThreadName()
 
 void Thread::start( pthread_routine start_routine, void* arg )
 {
-    int rc = pthread_create( &mTId, NULL, start_routine, arg );
-
-    if ( rc != 0 )
-    {
-        COMMON_THROWEXCEPTION( "pthread_create failed, err = " << rc << ", " << strerror( rc ) )
-    }
+    SCAI_SYSTEM_CALL( pthread_create( &mTId, NULL, start_routine, arg ), "start" );
 
     running = true;
 }
@@ -243,10 +224,7 @@ void Thread::join()
 {
     if ( running )
     {
-        int rc = pthread_join( mTId, NULL );
-        SCAI_ASSERT_EQUAL( 0, rc, "pthread_join failed" )
-
-        // std::cout << "PThread " << std::hex << mTId << " terminated." << std::endl;
+        SCAI_SYSTEM_CALL_NOTHROW( pthread_join( mTId, NULL ), "join" )
     }
 
     running = false;
