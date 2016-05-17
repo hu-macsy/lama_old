@@ -89,13 +89,10 @@ else  ( SCAI_COMMON_FOUND )
 endif ( SCAI_COMMON_FOUND )
 
 if    ( DEFINED USE_MIC )
-    message( "DEFINED USE_MIC" )
     if    ( NOT USE_MIC )
-        message( "NOT USE_MIC" )
         set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OFFLOAD}" )
     endif ( NOT USE_MIC )
 else  ( DEFINED USE_MIC )
-    message( "NOT DEFINED USE_MIC" )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OFFLOAD}" )
 endif ( DEFINED USE_MIC )
 
