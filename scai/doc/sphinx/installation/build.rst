@@ -10,13 +10,13 @@ Building and Installing Libraries and Executables
 To build LAMA just invoke make in your build directory. Parallel builds are
 supported.
 
-:: bash 
+.. code-block:: bash
 
    make [-j <number-of-build-processes>]
 
 Due to the use of ExternalProjects for the LAMA subprojects everything is installed as well with the build process, so no additional
 
-:: bash 
+.. code-block:: bash
 
    make install
 
@@ -54,7 +54,7 @@ API Documentation
 
 To build LAMAs API documentation call
 
-:: bash 
+.. code-block:: bash
 
    make doxygendoc
 

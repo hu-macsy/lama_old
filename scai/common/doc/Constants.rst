@@ -34,7 +34,7 @@ The static class ``Constants`` provides an enum type for specific values:
    :language: c++
    :lines: 56-60
 
-..	.. code-block:: c++
+.. code-block:: c++
 	
 	    enum ConstantType
 	    {
@@ -74,4 +74,3 @@ of the TypeTrait is used.
 
 Therefore the class Constants provides a standardized way to compare a variable
 of an arbitrary value type with a constant value.
-

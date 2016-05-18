@@ -55,7 +55,7 @@ Usage
 For using one of the predefined solver you create an instance of it, initialize it with the matrix, set a stopping
 criteria and start to solve it.
 
-::
+.. code-block:: c++
 
     CG cgSolver( "CGSolver" );
     cgSolver.intialize( matrix );
@@ -78,7 +78,7 @@ Possible stopping criteria:
 
 - ResidualThreshold: the residual threshold is the absolute residual
 
-::
+.. code-block:: c++
 
     Scalar eps = 0.00001;
     NormPtr norm = NormPtr( new L2Norm() );
@@ -94,7 +94,7 @@ Preconditioning
 Every iterative solver can be preconditioned by another solver. Create a solver as preconditioner and set it for your
 new solver.
 
-::
+.. code-block:: c++
 
     SolverPtr precon( new CG( "CG preconditioner" ) );
     GMRES preconGMRES( "preconGMRES" );
@@ -111,7 +111,7 @@ The solver logging gives information about the state of the solver, e.g. actual 
 
 Create a *CommonLogger* and pass it to the solver.
 
-::
+.. code-block:: c++
 
    LoggerPtr logger( new CommonLogger( "<LoggerName>: ", LogLevel::solverInformation,
          LoggerWriteBehaviour::toConsoleOnly, std::auto_ptr<Timer>( new Timer() ) ) );

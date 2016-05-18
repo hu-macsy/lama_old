@@ -70,10 +70,10 @@ and the solutions for the lecture tasks at **<project-root>/doc/user_guide/cpp_s
 
 .. code-block:bash
 
-   qsub -Iq gpus -lnodes=1:ppn=2
-   module load bullxmpi/bullxmpi-1.0.2
-   module load intel_compiler/12.0.2.137
-   export SCAI_ROOT=/home_nfs/h4h/LAMA/lama
+..   qsub -Iq gpus -lnodes=1:ppn=2
+..   module load bullxmpi/bullxmpi-1.0.2
+..   module load intel_compiler/12.0.2.137
+..   export SCAI_ROOT=/home_nfs/h4h/LAMA/lama
 
 .. csv-table:: 
    :header: "Tasks", "Solutions"

@@ -7,6 +7,7 @@ The solvers that are implemented in LAMA provide a solver interface to allow
 detailed monitoring of their behavior, e.g. plotting of a convergence history.
 The aim of this task is to pass a CommonLogger instance to the constructor of
 the CG solver of task 0. The logging level should be set to convergenceHistory.
+For explanation on this, refer to :ref:`solver-logging`.
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"

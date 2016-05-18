@@ -31,7 +31,7 @@ assigned to the processes.
     
 You create a BlockDistribution by just passing the global distribution size and a communicator:
 
-::
+.. code-block:: c++
 
    CommunicatorPtr comm( Communicator::getCommunicator( scai::lama::communicator::MPI ) );
    
@@ -49,7 +49,7 @@ The *CyclicDistribution* creates stripes of the given chunk size and assigns the
 
 You create a CyclicDistribution with the shown chunk size of '1' this way:
     
-::
+.. code-block:: c++
 
    DistributionPtr cyclic( new CyclicDistribution( numRows, 1, comm ) );
 
@@ -61,7 +61,7 @@ the sizes have to match the global size.
 
 The following example creates with three parts of size 1, 3 and 2 rows/columns:
 
-::
+.. code-block:: c++
 
    std::vector<IndexType> localSizes;
    int sizes[] = { 1, 3, 2 };
@@ -74,7 +74,7 @@ GeneralDistribution
 With the *GeneralDistribution* a fully free Distribution can be created. Therefor, a vector with the mapping from row to
 partition is given to the distribution. The number of partitions starts by zero. 
 
-::
+.. code-block:: c++
 
    std::vector<IndexType> row2part;
    int dist[] = { 1, 2, 0, 2, 0, 1};
@@ -85,7 +85,7 @@ In this example process 0 has row/column 3 and 5, process 1 row/column 1 and 6 a
 
 An alternative is that each process assigns the global indices of his partition (for process 0):
 
-::
+.. code-block:: c++
 
     std::vector<IndexType> myIndices;
     int indices[] = { 3, 5 };
@@ -99,7 +99,7 @@ Since there are cases you need to assign a *DistributionPtr* to a constructor or
 distribute the data (in one direction) you have the possibility to create a *NoDistribution*. It invokes that there is
 no distribution of the data and all processes have a local copy.
 
-::
+.. code-block:: c++
 
    Distribution no( new NoDistribution ( numRows ) );
 
@@ -108,13 +108,13 @@ Redistribute
 
 Expression Rules:
 
-::
+.. code-block:: c++
 
     A = B + C
 
 versus
 
-::  
+.. code-block:: c++
 
     A( B + C )
 
@@ -123,6 +123,6 @@ Matrix versus Solver Distribution
 
 Force distribution solver related 
 
-::
+.. code-block:: c++
 
     CG.setDistribution( A.getDistributionPtr() )

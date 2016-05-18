@@ -6,7 +6,7 @@ Collection at runtime
 
 The environment variable SCAI_TRACE specifies which trace data is collected at runtime.
 
-::
+.. code-block:: bash
 
     SCAI_TRACE=time
     SCAI_TRACE=ct
@@ -17,7 +17,7 @@ If tracing is disabled the overhead for each region is very low (just comparison
 Timing of Regions
 -----------------
 
-:: 
+.. code-block:: bash 
 
     export SCAI_TRACE=time
     export SCAI_TRACE=time:thread
@@ -25,7 +25,7 @@ Timing of Regions
 The generated output file is called <executable>.time and contains the inclusive and exclusive costs for each region. The inclusive costs are costs for the total region, for the exclusive costs the inclusive costs of all called regions within
 the region are subtracted.
 
-:: 
+.. code-block:: bash
 
     export SCAI_TRACE=time:PREFIX=myTest
 
@@ -34,7 +34,7 @@ Instead of the name of the executable the PREFIX value is used in the filename, 
 Calltree
 --------
 
-:: 
+.. code-block:: bash
 
     export SCAI_TRACE=ct
     export SCAI_TRACE=ct:thread  

@@ -30,20 +30,20 @@ If for any reasons no actual Boost installation is available, you must download 
 Please make sure that you build also the dynamic library versions. After installation of Boost you can tell cmake 
 the location of installation by the variable BOOST_ROOT or by setting an environment variable
 
-:: bash
+.. code-block:: bash
 
     export BOOST_ROOT=<path/to/boost/installation>
     cmake ..
 
 or
 
-:: bash
+.. code-block:: bash
 
     cmake -DBOOST_ROOT=<path/to/boost/installation> ...
 
 Via ccmake you can verify that the Boost variables needed for LAMA have correct values
 
-:: bash
+.. code-block:: bash
 
     BOOST_ROOT                        <path/to/boost/installation>
     Boost_INCLUDE_DIR                 <path/to/boost/installation>/include
@@ -59,7 +59,7 @@ Via ccmake you can verify that the Boost variables needed for LAMA have correct 
 There are known issues with some older Boost Installations with there own Boost.cmake definition.
 If you have error message looking like
 
-:: bash
+.. code-block:: bash
 
     CMake Error at /usr/lib64/boost/Boost.cmake:536 (message):
     The imported target "boost_date_time-static" references the file

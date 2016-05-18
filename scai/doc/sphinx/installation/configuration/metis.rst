@@ -7,9 +7,7 @@ __ http://glaros.dtc.umn.edu/gkhome/views/metis
 
 If your Metis installation is not in the default path define the METIS_ROOT in the cmake call with -DMETIS_ROOT=<path_to_metis> or define the environment variables METIS_INCLUDE_PATH and METIS_LIBRARY_PATH with:
 
-.. code-block
-
-:: bash 
+.. code-block:: bash
 
    export METIS_INCLUDE_PATH=<path_to_metis>/include
    export METIS_LIBRARY_PATH=<path_to_metis>/lib
