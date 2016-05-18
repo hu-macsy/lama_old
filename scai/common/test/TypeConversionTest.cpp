@@ -30,12 +30,13 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/common/Complex.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 using namespace scai;
 using namespace common;
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 /* --------------------------------------------------------------------- */
 
@@ -300,3 +301,6 @@ BOOST_AUTO_TEST_CASE( Complex2ComplexTest )
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
+
+#endif
+

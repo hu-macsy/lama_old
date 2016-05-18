@@ -29,11 +29,13 @@
 
 #pragma once
 
-#if defined(__APPLE__)
+#include <scai/common/config.hpp>
+
+#if defined( __APPLE__ )
 	//todo
 	#include <dirent.h>
 	#include <dlfcn.h>
-#elif defined(WIN32)
+#elif defined( _WIN32 )
 	#include <Windows.h>
 	#include <WinBase.h>
 	#include <direct.h>
@@ -50,14 +52,14 @@ namespace common
 
 /** Static class that provides methods to find, load and unload library modules. */
 
-class LibModule
+class COMMON_DLL_IMPORTEXPORT LibModule
 {
 public:
 
     /** Data type definition for library handle, might be OS specific. */
 
-#if defined(_WIN32)
-	typedef HINSTANCE LibHandle;
+#if defined( _WIN32 )
+	typedef HINSTANCE LibHandle;  //!< use HINSTANCE of MSVC
 #else
     typedef void* LibHandle;
 #endif
@@ -77,7 +79,6 @@ public:
      *  the pattern.
      *
      *  throws an exception if directory does not exist or is not readable
-     *
      */
 
     static void loadLibsInDir( const char* dir );
