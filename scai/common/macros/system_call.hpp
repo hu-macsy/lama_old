@@ -43,14 +43,12 @@
         int rc = call;                                                                  \
         if ( 0 != rc )                                                                  \
         {                                                                               \
-            char buffer[100];                                                           \
-            strerror_r( rc, buffer, 100 );                                              \
             std::ostringstream errorStr;                                                \
             errorStr << "error in line " << __LINE__;                                   \
             errorStr << " of file " << __FILE__ << std::endl;                           \
             errorStr << "  Msg  : " << msg << std::endl;                                \
-            errorStr << "  Call : " #call;                                              \
-            errorStr << "  Error: " << buffer;                                          \
+            errorStr << "  Call : " #call << std::endl;                                 \
+            errorStr << "  Error: " << strerror( rc );                                  \
             errorStr << ", rc = " << rc << std::endl;                                   \
             scai::common::Exception::addCallStack( errorStr );                          \
             throw scai::common::Exception( errorStr.str() );                            \
@@ -68,13 +66,11 @@
         int rc = call;                                                                  \
         if ( 0 != rc )                                                                  \
         {                                                                               \
-            char buffer[100];                                                           \
-            strerror_r( rc, buffer, 100 );                                              \
             std::ostringstream errorStr;                                                \
             errorStr << "error in line " << __LINE__;                                   \
             errorStr << " of file " << __FILE__ << std::endl;                           \
-            errorStr << "  Call : " #call;                                              \
-            errorStr << "  Error: " << buffer << std::endl;                             \
+            errorStr << "  Call : " #call << std::endl;                                 \
+            errorStr << "  Error: " << strerror( rc );                                  \
             errorStr << "  Msg  : " << msg << std::endl;                                \
             errorStr << ", rc = " << rc << std::endl;                                   \
             scai::common::Exception::addCallStack( errorStr );                          \

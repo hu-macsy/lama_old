@@ -54,10 +54,6 @@ namespace tracing
 
 /* -------------------------------------------------------------------------- */
 
-static Thread::Mutex printMutex; // needed to avoid mixing output of threads
-
-/* -------------------------------------------------------------------------- */
-
 SCAI_LOG_DEF_LOGGER( RegionTable::logger, "RegionTable" )
 
 /* ---------------------------------------------------------------------- */
@@ -83,7 +79,7 @@ RegionTable::~RegionTable()
 
     if ( SCAI_LOG_INFO_ON( logger ) )
     {
-        printTimer();
+        printTimer( cout );
     }
 }
 
@@ -164,14 +160,6 @@ RegionEntry& RegionTable::getRegion( int regionId )
 const RegionEntry& RegionTable::getRegion( int regionId ) const
 {
     return array[regionId];
-}
-
-/* ---------------------------------------------------------------------- */
-
-void RegionTable::printTimer()
-{
-    Thread::ScopedLock lock( printMutex );
-    printTimer( cout );
 }
 
 /* ---------------------------------------------------------------------- */

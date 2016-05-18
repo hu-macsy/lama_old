@@ -103,10 +103,6 @@ public:
 
     void printTimer( std::ostream& );
 
-    /** This routine prints timing information in std::cout */
-
-    void printTimer();
-
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
