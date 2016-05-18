@@ -8,7 +8,6 @@ doc/doxygen
 scai/doc/user/conf.py
 scai/logging/doc/user/conf.py
 scai/lama/solver/amg
-scai/common/SCAITypes.hpp
 res/testfiles/*.tmp.*
 .*.swp
 *.*~
