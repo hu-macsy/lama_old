@@ -22,7 +22,7 @@
  # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  # @endlicense
  #
- # @brief Find GPI2
+ # @brief Find Ibverbs
  # @author Lauretta Schubert
  # @date 24.02.2016
 ###
@@ -52,12 +52,12 @@ FIND_LIBRARY( IBVERBS_LIBRARIES ibverbs
 
 #message( STATUS "IBVERBS_LIBRARIES: ${IBVERBS_LIBRARIES}" )
 
-include( FindPackageHandleStandardArgs )
-
-find_package_handle_standard_args( IBVERBS
-    DEFAULT_MSG
-    IBVERBS_INCLUDE_DIR
-    IBVERBS_LIBRARIES
-)
+#include( FindPackageHandleStandardArgs )
+#
+#find_package_handle_standard_args( IBVERBS
+#    DEFAULT_MSG
+#    IBVERBS_INCLUDE_DIR
+#    IBVERBS_LIBRARIES
+#)
 
 mark_as_advanced( IBVERBS_INCLUDE_DIR IBVERBS_LIBRARIES )
