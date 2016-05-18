@@ -92,6 +92,41 @@ if    ( NOT CXX_SUPPORTS_C11 )
     include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 endif ( NOT CXX_SUPPORTS_C11 )
 
+## begin for configuring SCAITypes.hpp
+
+set ( EXT_HOST_TYPES_LIST ${SCAI_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
+set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+
+list ( LENGTH SCAI_HOST_TYPES_LIST NUM_ALL_HOST_TYPES )
+list ( LENGTH EXT_HOST_TYPES_LIST NUM_EXT_HOST_TYPES )
+list ( LENGTH CUDA_TYPES_LIST NUM_CUDA_TYPES )
+list ( LENGTH MIC_TYPES_LIST NUM_MIC_TYPES )
+
+math ( EXPR NUM_ALL_HOST_ARRAY_TYPES "${NUM_ALL_HOST_TYPES}+1" )
+math ( EXPR NUM_EXT_HOST_ARRAY_TYPES "${NUM_EXT_HOST_TYPES}+1" )
+math ( EXPR NUM_CUDA_ARRAY_TYPES "${NUM_CUDA_TYPES}+1" )
+math ( EXPR NUM_MIC_ARRAY_TYPES "${NUM_MIC_TYPES}+1" )
+
+# make strings out of list
+include ( Functions/listToString )
+listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
+listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
+listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
+listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
+
+if    ( ${USE_COMPLEX} )
+    set ( SCAI_SCALAR_REP_TYPE "ComplexLongDouble" )
+else  ( ${USE_COMPLEX} )
+    set ( SCAI_SCALAR_REP_TYPE "long double" )
+endif ( ${USE_COMPLEX} )
+
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp" )
+
+## end for configuring SCAITypes.hpp
+
+
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
 if    ( ${USE_COMPLEX} )

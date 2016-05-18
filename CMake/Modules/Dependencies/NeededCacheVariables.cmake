@@ -59,12 +59,12 @@ set ( WHITELIST
         # SCAI
         SCAI_ASSERT_LEVEL
         SCAI_CMAKE_VERBOSE
+        SCAI_HOST_TYPES_LIST
         SCAI_LIBRARY_TYPE
         SCAI_LOGGING_LEVEL
         SCAI_TRACING
         # USE
         USE_CODE_COVERAGE
-        USE_COMPLEX
     )
     
 set ( BOOST_WHITELIST

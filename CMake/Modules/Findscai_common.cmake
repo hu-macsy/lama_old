@@ -78,10 +78,6 @@ if    ( SCAI_COMMON_FOUND )
         set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${OpenMP_CXX_FLAGS}" )
     endif ( OPENMP_FOUND AND USE_OPENMP )
 
-    if    ( ${USE_COMPLEX} )
-        set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} -DSCAI_COMPLEX_SUPPORTED" )
-    endif ( ${USE_COMPLEX} )
-
     # remove leading and trailing whitespaces
     string ( STRIP "${SCAI_COMMON_FLAGS}" SCAI_COMMON_FLAGS )
 endif ( SCAI_COMMON_FOUND)

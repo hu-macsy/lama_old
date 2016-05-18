@@ -51,6 +51,20 @@ if    ( LINUX )
     endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 endif ( LINUX )
 
+# check if Complex is in SCAI_HOST_TYPES then set USE_COMPLEX true
+include ( Functions/checkValue )
+include ( Functions/parseBoolean )
+
+set ( USE_COMPLEX FALSE )
+foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND COMPLEX_VALUES ${ITEM} BOOLVALUE )
+    if    ( ${BOOLVALUE} )
+        set ( USE_COMPLEX TRUE )
+    endif ( ${BOOLVALUE} )
+endforeach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+parseBoolean( USE_COMPLEX )
+checkValue ( ${USE_COMPLEX} "${TRUE_FALSE_CHOICES}" )
+
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
 # moved to packages
@@ -104,6 +118,10 @@ endif ( USE_CODE_COVERAGE )
 string ( STRIP "${CONCLUDE_CXX_FLAGS}" CONCLUDE_CXX_FLAGS )
 
 set ( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} ${CONCLUDE_CXX_FLAGS}" )
+if    ( ${USE_COMPLEX} )
+    set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSCAI_COMPLEX_SUPPORTED" )
+endif ( ${USE_COMPLEX} )
+
 set ( CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
 set ( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} ${ADDITIONAL_CXX_FLAGS_DEBUG} " )
 set ( CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
