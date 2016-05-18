@@ -64,6 +64,7 @@ set ( WHITELIST
         SCAI_TRACING
         # USE
         USE_CODE_COVERAGE
+        USE_COMPLEX
     )
     
 set ( BOOST_WHITELIST

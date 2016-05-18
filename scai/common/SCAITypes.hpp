@@ -32,7 +32,10 @@
 
 // no support of Complex if this file is not included
 
-#include <scai/common/Complex.hpp>
+#ifdef SCAI_COMPLEX_SUPPORTED
+    #include <scai/common/Complex.hpp>
+#endif
+
 #include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 

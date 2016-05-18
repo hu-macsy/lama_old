@@ -22,8 +22,8 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./blaskernel/examples/CG_BLAS.cpp
- * @author eschricker
+ * @brief Conjugated Gradient implementation based on BLAS calls.
+ * @author Eric Schricker
  * @date 28.01.2016
  */
 

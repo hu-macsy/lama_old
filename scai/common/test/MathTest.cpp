@@ -29,7 +29,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/Complex.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Math.hpp>
@@ -77,6 +76,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( realTest, ValueType, scai_arithmetic_test_types )
 {
     typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
@@ -97,7 +98,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( realTest, ValueType, scai_arithmetic_test_types )
     BOOST_CHECK( real_val == 3 );
 }
 
+#endif
+
 /* --------------------------------------------------------------------- */
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_arithmetic_test_types )
 {
@@ -126,6 +131,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_arithmetic_test_types )
         BOOST_CHECK( imag_val == 0 );
     }
 }
+
+#endif
 
 /* --------------------------------------------------------------------- */
 

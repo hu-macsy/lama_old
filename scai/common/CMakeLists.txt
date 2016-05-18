@@ -73,6 +73,10 @@ addInternalAndExternalPackages()
 include ( ConcludeFlags )
 
 ### add definitions
+if    ( ${USE_COMPLEX} )
+    add_definitions ( -DSCAI_COMPLEX_SUPPORTED )
+endif ( ${USE_COMPLEX} )
+
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
@@ -89,6 +93,11 @@ if    ( NOT CXX_SUPPORTS_C11 )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
+
+if    ( ${USE_COMPLEX} )
+    set ( COMPLEX_HEADER Complex )
+endif ( ${USE_COMPLEX} )
+
 scai_project (
 
     CLASSES                  # .cpp, .hpp
@@ -105,7 +114,7 @@ scai_project (
 
     HEADERS                  # .hpp only
 
-        Complex
+        ${COMPLEX_HEADER}
         config
         Constants
         Factory

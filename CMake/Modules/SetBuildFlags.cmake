@@ -49,6 +49,16 @@ include ( Settings/switchChoices )
 include ( Functions/checkValue )
 include ( Functions/parseBoolean )
 
+## build with Complex
+
+if    ( DEFINED USE_COMPLEX )
+    parseBoolean ( USE_COMPLEX )
+else  ( DEFINED USE_COMPLEX )
+    set ( USE_COMPLEX USE_COMPLEX_DEFAULT )
+endif ( DEFINED USE_COMPLEX )
+checkValue ( ${USE_COMPLEX} "${TRUE_FALSE_CHOICES}" )
+set ( USE_COMPLEX ${USE_COMPLEX} CACHE BOOL "Enable / Disable building of Complex support" )
+
 ## DOC
 
 include( Package/doc )
