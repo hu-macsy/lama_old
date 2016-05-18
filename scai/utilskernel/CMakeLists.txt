@@ -110,9 +110,6 @@ scai_project (
 
 ## add subdirectories
 
-message( STATUS "CUDA_FOUND ${CUDA_FOUND} " )
-message( STATUS "USE_CUDA ${USE_CUDA} " )
-
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
 	cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
