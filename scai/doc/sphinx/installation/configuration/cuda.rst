@@ -10,7 +10,7 @@ CUDA is optional and LAMA can be built without it. But you will not be able to t
 The configuration of LAMA usually finds an available CUDA installation on your system.
 If not, you can give it a hint where to find it
 
-.. code-block::
+.. code-block:: bash
 
    cmake -D CUDA_TOOLKIT_ROOT=<path/to/cuda/installation>
 
