@@ -92,6 +92,8 @@ if    ( NOT CXX_SUPPORTS_C11 )
     include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 endif ( NOT CXX_SUPPORTS_C11 )
 
+set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
+
 ## begin for configuring SCAITypes.hpp
 
 set ( EXT_HOST_TYPES_LIST ${SCAI_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
@@ -116,13 +118,20 @@ listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
 listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
 listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
 
-if    ( ${USE_COMPLEX} )
-    set ( SCAI_SCALAR_REP_TYPE "ComplexLongDouble" )
-else  ( ${USE_COMPLEX} )
-    set ( SCAI_SCALAR_REP_TYPE "long double" )
-endif ( ${USE_COMPLEX} )
+# find "biggest" type as ScalarRepType
+# last found element in TYPE_LIST_VALUES
 
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp" )
+set ( INDEX -1 )
+foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND TYPE_LIST_VALUES ${ITEM} FOUND_INDEX )
+    if    ( FOUND_INDEX GREATER INDEX )
+        set ( INDEX ${FOUND_INDEX})
+    endif ( FOUND_INDEX GREATER INDEX )
+endforeach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+
+list ( GET TYPE_LIST_VALUES ${INDEX} SCAI_SCALAR_REP_TYPE )
+
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )
 
 ## end for configuring SCAITypes.hpp
 
@@ -139,7 +148,7 @@ scai_project (
 
         Printable
         ScalarType
-        SCAITypes
+        #SCAITypes manually added at add_library as Source (problem with generation of .hpp)
         ContextType
         Settings
         Thread
@@ -161,7 +170,6 @@ scai_project (
 )
 
 ## configure c++11/boost dependent sources
-set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
 
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
@@ -187,7 +195,8 @@ else  ( NOT CXX_SUPPORTS_C11 )
 endif ( NOT CXX_SUPPORTS_C11 )
 install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
                 ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
-                ${CONFIGURE_DIR}/weak_ptr.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+                ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
+          DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## add subdirectories
 
@@ -208,7 +217,7 @@ if ( FOUND_BOOST_TEST AND BUILD_TEST )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} SCAITypes.cpp )
 set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
