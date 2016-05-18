@@ -22,7 +22,9 @@ include directory to the include paths
 
     g++ -o simple simple.cpp -I${LAMA_ROOT}/include -I${BOOST_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama 
 
-If this step was successful, you can run the executable::
+If this step was successful, you can run the executable
+
+.. code-block:: bash
 
     ./simple
 
@@ -48,7 +50,7 @@ Information about dynamically linked libraries is available by the following com
 So the executable contains a link to the lama library but it does not know where to find this library.
 There are two solutions to solve this problem.
 
-1) Setting the library path
+1. Setting the library path
 
    You can add the lib directory to your library path. At program start, unresolved library links
    will be searched in all directories of your library path. The correspoding setting should be added
@@ -58,7 +60,7 @@ There are two solutions to solve this problem.
 
        export LD_LIBRARY_PATH=${LAMA_ROOT}/lib:${LD_LIBRARY_PATH}
 
-2) Setting resolution path in the executable
+2. Setting resolution path in the executable
 
    You generate a link to the LAMA lib directory within the executable. This solution is the
    preferred solution if you want to share the executable with other users
