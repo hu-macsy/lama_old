@@ -138,26 +138,26 @@ configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
-if    ( ${USE_COMPLEX} )
-    set ( COMPLEX_HEADER Complex )
-endif ( ${USE_COMPLEX} )
+set ( COMMON_SOURCES 
+        SCAITypes            # SCAITypes.hpp is handled via configuration
+)
 
-scai_project (
+### COMMON classes with .hpp and .cpp file
 
-    CLASSES                  # .cpp, .hpp
+set ( COMMON_CLASSES
 
         Printable
         ScalarType
-        #SCAITypes manually added at add_library as Source (problem with generation of .hpp)
         ContextType
         Settings
-        Thread
         Walltime
         LibModule
         TypeTraits
+)
 
-    HEADERS                  # .hpp only
+#  Header only file of the COMMON project
 
+set ( COMMON_HEADERS 
         ${COMPLEX_HEADER}
         config
         Constants
@@ -168,6 +168,10 @@ scai_project (
         ReductionOp
         NonCopyable
 )
+
+if    ( ${USE_COMPLEX} )
+    list ( APPEND COMMON_HEADERS Complex )
+endif ( ${USE_COMPLEX} )
 
 ## configure c++11/boost dependent sources
 
@@ -193,10 +197,29 @@ else  ( NOT CXX_SUPPORTS_C11 )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CONFIGURE_DIR}/unique_ptr.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CONFIGURE_DIR}/weak_ptr.hpp" )
 endif ( NOT CXX_SUPPORTS_C11 )
+
+## configure c++11/pthread dependent headers, add specific sources
+
+if    ( CXX_SUPPORTS_C11 )
+    list ( APPEND COMMON_SOURCES Thread )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in" "${CONFIGURE_DIR}/Thread.hpp" )
+else  ( CXX_SUPPORTS_C11 )
+    list ( APPEND COMMON_SOURCES Thread_pthread )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in_pthread" "${CONFIGURE_DIR}/Thread.hpp" )
+endif (  CXX_SUPPORTS_C11 )
+
 install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
                 ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
                 ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
+                ${CONFIGURE_DIR}/Thread.hpp 
           DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+
+scai_project( 
+
+    SOURCES ${COMMON_SOURCES}
+    CLASSES ${COMMON_CLASSES}
+    HEADERS ${COMMON_HEADERS}
+)
 
 ## add subdirectories
 
@@ -217,7 +240,7 @@ if ( FOUND_BOOST_TEST AND BUILD_TEST )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} SCAITypes.cpp )
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
