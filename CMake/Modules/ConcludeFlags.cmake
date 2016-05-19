@@ -144,7 +144,7 @@ if ( CUDA_FOUND AND USE_CUDA )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
 
     if    ( ${USE_COMPLEX} )
-        set ( ADDITIONAL_NVCC_FLAGS "${ADDITIONAL_NVCC_FLAGS} -DSCAI_COMPLEX_SUPPORTED" )
+        set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -DSCAI_COMPLEX_SUPPORTED" )
     endif ( ${USE_COMPLEX} )
     
     set ( ADDITIONAL_NVCC_FLAGS         "${SCAI_NVCC_FLAGS}"         CACHE STRING "additional nvcc compiler flags" )
