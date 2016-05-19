@@ -49,6 +49,11 @@ include ( Settings/switchChoices )
 include ( Functions/checkValue )
 include ( Functions/parseBoolean )
 
+## define SCAI_HOST_TYPES
+
+set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
+checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
+
 ## DOC
 
 include( Package/doc )

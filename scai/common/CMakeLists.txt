@@ -73,6 +73,10 @@ addInternalAndExternalPackages()
 include ( ConcludeFlags )
 
 ### add definitions
+if    ( ${USE_COMPLEX} )
+    add_definitions ( -DSCAI_COMPLEX_SUPPORTED )
+endif ( ${USE_COMPLEX} )
+
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
@@ -88,14 +92,63 @@ if    ( NOT CXX_SUPPORTS_C11 )
     include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 endif ( NOT CXX_SUPPORTS_C11 )
 
+set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
+
+## begin for configuring SCAITypes.hpp
+
+set ( EXT_HOST_TYPES_LIST ${SCAI_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
+set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+
+list ( LENGTH SCAI_HOST_TYPES_LIST NUM_ALL_HOST_TYPES )
+list ( LENGTH EXT_HOST_TYPES_LIST NUM_EXT_HOST_TYPES )
+list ( LENGTH CUDA_TYPES_LIST NUM_CUDA_TYPES )
+list ( LENGTH MIC_TYPES_LIST NUM_MIC_TYPES )
+
+math ( EXPR NUM_ALL_HOST_ARRAY_TYPES "${NUM_ALL_HOST_TYPES}+1" )
+math ( EXPR NUM_EXT_HOST_ARRAY_TYPES "${NUM_EXT_HOST_TYPES}+1" )
+math ( EXPR NUM_CUDA_ARRAY_TYPES "${NUM_CUDA_TYPES}+1" )
+math ( EXPR NUM_MIC_ARRAY_TYPES "${NUM_MIC_TYPES}+1" )
+
+# make strings out of list
+include ( Functions/listToString )
+listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
+listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
+listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
+listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
+
+# find "biggest" type as ScalarRepType
+# last found element in TYPE_LIST_VALUES
+
+set ( INDEX -1 )
+foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND TYPE_LIST_VALUES ${ITEM} FOUND_INDEX )
+    if    ( FOUND_INDEX GREATER INDEX )
+        set ( INDEX ${FOUND_INDEX})
+    endif ( FOUND_INDEX GREATER INDEX )
+endforeach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+
+list ( GET TYPE_LIST_VALUES ${INDEX} SCAI_SCALAR_REP_TYPE )
+
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )
+
+## end for configuring SCAITypes.hpp
+
+
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
+
+if    ( ${USE_COMPLEX} )
+    set ( COMPLEX_HEADER Complex )
+endif ( ${USE_COMPLEX} )
+
 scai_project (
 
     CLASSES                  # .cpp, .hpp
 
         Printable
         ScalarType
-        SCAITypes
+        #SCAITypes manually added at add_library as Source (problem with generation of .hpp)
         ContextType
         Settings
         Thread
@@ -105,7 +158,7 @@ scai_project (
 
     HEADERS                  # .hpp only
 
-        Complex
+        ${COMPLEX_HEADER}
         config
         Constants
         Factory
@@ -117,7 +170,6 @@ scai_project (
 )
 
 ## configure c++11/boost dependent sources
-set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
 
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
@@ -143,7 +195,8 @@ else  ( NOT CXX_SUPPORTS_C11 )
 endif ( NOT CXX_SUPPORTS_C11 )
 install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
                 ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
-                ${CONFIGURE_DIR}/weak_ptr.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+                ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
+          DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## add subdirectories
 
@@ -164,7 +217,7 @@ if ( FOUND_BOOST_TEST AND BUILD_TEST )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} SCAITypes.cpp )
 set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries

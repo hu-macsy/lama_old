@@ -13,6 +13,8 @@ before communication.
 Internally these two parts are stored autonomous in two storages, so the calculation can be executed independently and
 the communication can be executed asynchronously to the calculation on the local part. 
 
+.. _dmemo-distributions:
+
 Distribution Types
 ------------------
 

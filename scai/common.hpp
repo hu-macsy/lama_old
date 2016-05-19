@@ -33,7 +33,11 @@
 #pragma message("It is not recommended to include whole common")
 
 #include <scai/common/bind.hpp>
-#include <scai/common/Complex.hpp>
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+	#include <scai/common/Complex.hpp>
+#endif
+ 
 #include <scai/common/config.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/ContextType.hpp>

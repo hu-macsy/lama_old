@@ -31,8 +31,19 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/common/macros/typeloop.hpp>
-#include <scai/common/Complex.hpp>
 #include <scai/common/SCAITypes.hpp>
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    #include <scai/common/Complex.hpp>
+
+    #define TEST_TYPELOOP_LIST float, double, ComplexFloat
+    #define TEST_TYPELOOP_CNT 3
+    #define TEST_STRING "floatdoubleComplexFloat"
+#else
+    #define TEST_TYPELOOP_LIST float, double
+    #define TEST_TYPELOOP_CNT 2
+    #define TEST_STRING "floatdouble"
+#endif
 
 #include <iostream>
 #include <sstream>
@@ -45,26 +56,21 @@ BOOST_AUTO_TEST_SUITE( TypeLoopTest )
 
 BOOST_AUTO_TEST_CASE( outputTest )
 {
-#define TEST_TYPELOOP_LIST float, double, ComplexFloat
-
     std::stringstream s;
 
 #define TEST_TYPELOOP_OUTPUT( type ) s << #type;
 
     SCAI_COMMON_TYPELOOP( 3, TEST_TYPELOOP_OUTPUT, TEST_TYPELOOP_LIST )
 
-    BOOST_CHECK( "floatdoubleComplexFloat" == s.str() );
+    BOOST_CHECK( TEST_STRING == s.str() );
 
 #undef TEST_TYPELOOP_OUTPUT
-#undef TEST_TYPELOOP_LIST
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( countTest )
 {
-#define TEST_TYPELOOP_LIST float, double, ComplexFloat
-
     int i = 0;
 
 #define TEST_TYPELOOP_INC( type ) ++i;
@@ -74,12 +80,9 @@ BOOST_AUTO_TEST_CASE( countTest )
     BOOST_CHECK( 3 == i );
 
 #undef TEST_TYPELOOP_INC
-#undef TEST_TYPELOOP_LIST
 }
 
 /* --------------------------------------------------------------------- */
-
-#define TEST_TYPELOOP_LIST float, double, ComplexFloat
 
 #define TEST_TYPELOOP_DEF( type )       \
     type addOne( const type& x )        \
@@ -89,25 +92,30 @@ BOOST_AUTO_TEST_CASE( countTest )
 
 namespace testing
 {
-    SCAI_COMMON_TYPELOOP( 3, TEST_TYPELOOP_DEF, TEST_TYPELOOP_LIST )
+    SCAI_COMMON_TYPELOOP( TEST_TYPELOOP_CNT, TEST_TYPELOOP_DEF, TEST_TYPELOOP_LIST )
 } /* end namespace testing */
 
 BOOST_AUTO_TEST_CASE( defTest )
 {
     float f = -2.0;
     double d = 3.31;
-    ComplexFloat c = ComplexFloat( 3, 3.1 );
-
 
     BOOST_CHECK_CLOSE( -1.0, testing::addOne( f ), 1e-10 );
     BOOST_CHECK_CLOSE( 4.31, testing::addOne( d ), 1e-12 );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    ComplexFloat c = ComplexFloat( 3, 3.1 );
     BOOST_CHECK_CLOSE( 4.0, (testing::addOne( c )).real(), 1e-10 );
     BOOST_CHECK_CLOSE( 3.1f, (testing::addOne( c )).imag(), 1e-10 );
+#endif
 
-}
 #undef TEST_TYPELOOP_DEF
-#undef TEST_TYPELOOP_LIST
+}
 
 /* --------------------------------------------------------------------- */
+
+#undef TEST_TYPELOOP_LIST
+#undef TEST_STRING
+#undef TEST_TYPELOOP_CNT
 
 BOOST_AUTO_TEST_SUITE_END();

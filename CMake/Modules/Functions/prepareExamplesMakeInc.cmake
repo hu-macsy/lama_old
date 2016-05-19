@@ -41,6 +41,10 @@ macro    ( prepareExamplesMakeInc )
 	endif ( REVERT_LIST )
 
 	## set project specific SCAI_DEFINES
+	if    ( ${USE_COMPLEX} )
+    	set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_COMPLEX_SUPPORTED" )
+	endif ( ${USE_COMPLEX} )
+
 	if    ( SCAI_ASSERT_LEVEL )
 		set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL}" )
 	endif ( SCAI_ASSERT_LEVEL )
