@@ -29,6 +29,10 @@
 
 set ( TRUE_FALSE_CHOICES ON OFF )
 
+set ( TYPE_LIST_VALUES "float" "double" "ComplexFloat" "ComplexDouble" "long double" "ComplexLongDouble" )
+set ( COMPLEX_VALUES "ComplexFloat" "ComplexDouble" "ComplexLongDouble" )
+set ( LONG_DOUBLE_VALUES "long double" "ComplexLongDouble" )
+
 set ( BUILD_DOC_DEFAULT ON )
 set ( BUILD_EXAMPLES_DEFAULT ON )
 set ( BUILD_TEST_DEFAULT ON )

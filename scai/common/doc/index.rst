@@ -4,6 +4,10 @@
 SCAI Common
 ###########
 
+**********************
+Description/Motivation
+**********************
+
 The common library contains different functionality needed in nearly all SCAI projects.
 These are some utitily classes (e.g. for exceptions, factories, timing, ...), some
 classes to abstract from platform-specific features (e.g. threads, loading library modules, ...),
@@ -14,9 +18,12 @@ types, ...).
 
 All classes and type defintions are done in the namespace ``scai/common``.
 
-*****************
+************************
+Common Library Reference
+************************
+
 Enumeration Types
-*****************
+-----------------
 
 Within all SCAI projects, enum types are used when the number of possible values is limited and when
 the values have a special meaning.
@@ -31,9 +38,15 @@ Class                   Description
 :ref:`ReductionOp`      Enumeration type for different binary operators used in reductions
 ====================    ==========================================
 
-****************
+.. toctree::
+   :hidden:
+
+   ContextType
+   ScalarType
+   ReductionOp
+
 Arithmetic Types
-****************
+----------------
 
 LAMA is a library for mathematical operations and here in common it is defined for which arithmetic types
 templated classes and operations will be instantiated, where the template arguments stand for an arithmetic type.
@@ -51,42 +64,72 @@ Class                   Description
 :ref:`Constants`        Operations to compare value to a machine specific eps
 ====================    ==========================================
 
-**************
-Common Classes
-**************
+.. toctree::
+   :hidden:
+
+   SCAITypes
+   TypeTrait
+   Math
+   Complex
+   Constants
+
+Utility Classes
+---------------
+
+The following classes provide some utitilites used in nearly all other
+SCAI projects.
 
 ====================         ==========================================
 Class                        Description
 ====================         ==========================================
-:ref:`Exception`             Error handling, call stack
 :ref:`Factory`               Template class for Factory
-:ref:`Factory1`              Factory, but create with additional argument
-:ref:`Thread`                Basic stuff to deal with multithreading (uses pThreads)
+:ref:`Thread`                Abstraction of a portable thread class
 :ref:`Walltime`              Simple and efficient walltime measuring
 :ref:`Printable`             Base class to support stream output
 :ref:`NonCopyable`           Disable default copy constructors
 :ref:`LibModule`             Load/Unload of Library Modules (dynamic libraries)
 ====================         ==========================================
 
-***************
+.. toctree::
+   :hidden:
+
+   Factory
+   Thread
+   Walltime
+   Printable
+   NonCopyable
+   LibModule
+
 Common Concepts
-***************
+---------------
 
 The following stuff stands for general concepts that is or might be used in all SCAI projects.
 
 ====================         ==========================================
 Name                         Description
 ====================         ==========================================
-:ref:`SmartPointers`         Smart pointers that deallocate object with destructor: unique_ptr or shared_ptr or unique_ptr)
+:ref:`Exception`             Error handling, call stack
 :ref:`Assertion`             Assertion checking, which can be compiled out of code
+:ref:`SmartPointers`         Smart pointers free objects with destructor: unique_ptr or shared_ptr
 :ref:`Function`              Function objects that might also be created with bound arguments
 :ref:`Settings`              Access to environment variables
 :ref:`OpenMP`                Dummy routines if OpenMP is disabled
+:ref:`TypeList`              Meta programming schemes to deal with list of types
 ====================         ==========================================
 
-***********************
+.. toctree::
+   :hidden:
+
+   Exception
+   Assertion
+   SmartPointers
+   Function
+   Settings
+   OpenMP
+   TypeList
+
 Common Classes for CUDA
-***********************
+-----------------------
 
 Some general stuff used for CUDA is also part of the common project.
 
@@ -98,40 +141,42 @@ Name                         Description
 :ref:`CUDAError`             Error handling for CUDA
 ====================         ==========================================
 
-************************
-Content (Common Library)
-************************
-
 .. toctree::
-   :titlesonly:
-   :maxdepth: 2
-
-   ContextType
-   ScalarType
-   ReductionOp
-
-   SCAITypes
-   TypeTrait
-   Math
-   Complex
-   Constants
-
-   SmartPointers
-   Assertion
-   Function
-   Settings
-   OpenMP
-
-   Exception
-   Factory
-   Factory1
-   Thread
-   Walltime
-   Printable
-   NonCopyable
-   LibModule
+   :hidden:
 
    CUDAError
    CUDACtx
    CUDAAccess
+
+*********
+Relations
+*********
+
+* Complex is an example of how to define a new arithmetic type to be used for the SCAI types
+
+
+*****
+Usage
+*****
+
+* Compile flag must be set ``SCAI_ASSERT_LEVEL_DEBUG``
+* When the native C++ compiler does not support the C+11 standard,
+  the Boost header files are needed and the include path
+  for the Boost header files must be specified for the compilation.
+* Using the Settings class requires that the command line arguments are parsed.
+
+************
+Dependencies
+************
+
+* When the C++11 standard is not supported, Boost header libraries must be available
+  and a pthread library.
+
+************
+Related Work
+************
+
+* Boost Libraries, some functionality has been taken over in the C++11 standard.
+* Factory stuff as dynamic extension, similiar to module conecpt of Python
+* Exception handling is common praxis
 

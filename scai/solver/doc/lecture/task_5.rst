@@ -13,6 +13,7 @@ To do so we can obtain a ContextPtr from the ContextFactory, by querying for a
 CUDA context. If we set this context to be the context for all matrices and
 vectors involved in the CG-Solver it implicitly runs on the GPU. You can set the
 context of a matrix or a vector by calling their setContext method.
+For explanation on this, refer to :ref:`scaihmemo:hmemo-contextFactory`.
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"

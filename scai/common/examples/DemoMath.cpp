@@ -27,7 +27,10 @@
  * @date 25.01.2016
  */
 
-#include <scai/common/Complex.hpp>
+#ifdef SCAI_COMPLEX_SUPPORTED
+    #include <scai/common/Complex.hpp>
+#endif
+
 #include <scai/common/Math.hpp>
 
 #include <iostream>
@@ -54,5 +57,7 @@ int main()
 {
     testRoutine<float>( -1 );
     testRoutine<double>( -1 );
+#ifdef SCAI_COMPLEX_SUPPORTED
     testRoutine<ComplexFloat>( ComplexFloat( 2, -1 ) );
+#endif
 }

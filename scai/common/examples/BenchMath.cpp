@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Complex.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/Walltime.hpp>

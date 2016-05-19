@@ -31,7 +31,7 @@
 
 /** Enable preprocessor flag to tell other code that ComplexZZZ is supported */
 
-#define SCAI_COMPLEX_SUPPORTED
+//#define SCAI_COMPLEX_SUPPORTED done by cmake
 
 // local library
 #include <scai/common/config.hpp>

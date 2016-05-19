@@ -36,7 +36,10 @@
 #include <scai/common/TypeTraits.hpp>
 
 // CUDA
-#include <cuComplex.h>
+#ifdef SCAI_COMPLEX_SUPPORTED
+    #include <cuComplex.h>
+#endif
+
 #include <cublas_v2.h>
 
 namespace scai

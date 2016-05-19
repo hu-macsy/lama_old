@@ -31,6 +31,8 @@ Be careful: a device is not freed by the C++ application as long as there is sti
  * zeroCopy disabled: ctx->getMemoryPtr() == ctx->getLocalMemoryPtr()
  * zeroCopy enabled: ctx->getMemoryPtr() == ctx->getHostMemoryPtr()
 
+.. _hmemo-contextFactory:
+
 Context Factory
 ---------------
 

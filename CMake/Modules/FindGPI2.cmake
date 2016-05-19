@@ -52,12 +52,12 @@ find_library ( GPI2_LIBRARIES GPI2
 
 # message( STATUS "GPI2_LIBRARIES: ${GPI2_LIBRARIES}" )
 
-include( FindPackageHandleStandardArgs )
-
-find_package_handle_standard_args( GPI2
-    DEFAULT_MSG
-    GPI2_INCLUDE_DIR
-    GPI2_LIBRARIES
-)
+#include( FindPackageHandleStandardArgs )
+#
+#find_package_handle_standard_args( GPI2
+#    DEFAULT_MSG
+#    GPI2_INCLUDE_DIR
+#    GPI2_LIBRARIES
+#)
 
 mark_as_advanced( GPI2_INCLUDE_DIR GPI2_LIBRARIES )
