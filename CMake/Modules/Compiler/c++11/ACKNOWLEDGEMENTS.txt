@@ -1,0 +1,10 @@
+# Idea and most test programs
+# Taken from: http://ghulbus-inc.de/projects/stuff/cmake_cxx11.zip
+# Linked by:  http://pageant.ghulbus.eu/?p=664
+#
+# Original script by Rolf Eike Beer
+# Modifications by Andreas Weis
+#
+# Adapted for LAMA by Lauretta Schubert
+#
+# for CMake test macro see: CMake/Modules/Functions/checkFeature.cmake
