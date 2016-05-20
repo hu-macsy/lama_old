@@ -41,10 +41,15 @@ function ( checkValue SINGLEVALUE VALUELIST )
 endfunction ( checkValue SINGLEVALUE VALUELIST )
 
 function ( checkValues LIST OPTIONLIST )
+    # need to copy the variable: see CMake docu for this reason
+    #Note that the parameters to a macro and values such as ARGN are not variables in the usual CMake sense.
+    #They are string replacements much like the C preprocessor would do with a macro.
+    set ( MACRO_COPY_OPTION_LIST "${OPTIONLIST}" )
     foreach    ( ITEM ${LIST} )
-    	list ( FIND "${OPTIONLIST}" ${ITEM} BOOLVALUE )
-	    if    ( NOT BOOLVALUE )
+    	list ( FIND MACRO_COPY_OPTION_LIST ${ITEM} INDEX )
+        message ( STATUS "${ITEM} is ${INDEX} in options" )
+	    if    ( ${INDEX} EQUAL -1 )
 	        message ( FATAL_ERROR "Value ${ITEM} is no valid choice out of ${OPTIONLIST}" )
-	    endif ( NOT BOOLVALUE )
+	    endif ( ${INDEX} EQUAL -1 )
     endforeach ( ITEM ${VALUELIST} )
 endfunction ( checkValues LIST OPTIONLIST )
