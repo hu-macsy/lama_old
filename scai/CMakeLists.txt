@@ -294,8 +294,10 @@ endif ( BUILD_DOC )
 include ( CustomCommands/DistClean )
 
 # copy in  scai_test.sh
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test.sh"
-                 "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/scai_test.sh
+       DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+       FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
 
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test_xml.sh"
-                 "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/scai_test_xml.sh
+       DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+       FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
