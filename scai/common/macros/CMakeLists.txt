@@ -32,6 +32,7 @@ scai_project(
     HEADERS
 
         assert
+        count
         inline
         instantiate
         print_string
