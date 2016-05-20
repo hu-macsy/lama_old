@@ -30,7 +30,7 @@
 if    ( CUDA_FOUND )
 
     try_run ( CUDA_RUN_RESULT_VAR CUDA_COMPILE_RESULT_VAR
-              ${CMAKE_BINARY_DIR}
+              ${CMAKE_BINARY_DIR}/Compiler/cuda
               ${CMAKE_MODULE_PATH}/Compiler/cuda/ComputeCapabilityCheck.cpp
               CMAKE_FLAGS 
               -DINCLUDE_DIRECTORIES:STRING=${CUDA_TOOLKIT_INCLUDE}
