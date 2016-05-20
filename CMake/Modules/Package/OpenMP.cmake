@@ -50,7 +50,7 @@ set ( OpenMP_C_FLAGS "${OpenMP_C_FLAGS}" CACHE INTERNAL "" )
 ## get OpenMP version
 if    ( OPENMP_FOUND )
 	    try_run ( OPENMP_RUN_RESULT_VAR OPENMP_COMPILE_RESULT_VAR
-        ${CMAKE_BINARY_DIR}
+        ${CMAKE_BINARY_DIR}/VersionCheck
         ${CMAKE_MODULE_PATH}/VersionCheck/openmp.cpp
         CMAKE_FLAGS 
         -DCOMPILE_DEFINITIONS:STRING=${OpenMP_CXX_FLAGS}
