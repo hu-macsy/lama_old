@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        setVal[loc]( wValues.get(), nValues, mult, common::reduction::MULT );
+        setVal[loc]( wValues.get(), nValues, mult, reduction::MULT );
     }
     ReadAccess<ValueType> rValues( values );
 
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, common::reduction::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, reduction::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
     {
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), common::reduction::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), reduction::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }
@@ -147,9 +147,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), 3 * n, 0, common::reduction::COPY );
+            setVal[loc]( wValues.get(), 3 * n, 0, reduction::COPY );
             // overwrite in the middle to check that there is no out-of-range set
-            setVal[loc]( wValues.get() + n, n, 10, common::reduction::COPY );
+            setVal[loc]( wValues.get() + n, n, 10, reduction::COPY );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), n, 7, common::reduction::COPY );
+            setVal[loc]( wValues.get(), n, 7, reduction::COPY );
         }
     }
 }

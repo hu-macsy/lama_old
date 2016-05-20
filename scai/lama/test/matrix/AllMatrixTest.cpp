@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     Matrices allMatrices;    // is created by factory
 
     size_t nFormats = Format::UNDEFINED;
-    size_t nTypes   = SCAI_ARITHMETIC_HOST_CNT;
+    size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_ARITHMETIC_HOST );
 
     nFormats--;   // SPARSE_ASSEMBLY_STORAGE not used for a matrix
 

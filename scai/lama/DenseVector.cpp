@@ -691,7 +691,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 
     // assign the scalar value on the home of this dense vector.
 
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::reduction::COPY, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::reduction::COPY, mContext );
 }
 
 template<typename ValueType>
@@ -1374,7 +1374,7 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseVector, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseVector, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

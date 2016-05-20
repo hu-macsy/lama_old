@@ -194,7 +194,7 @@ void Jacobi::iterate()
         }                                                                                           \
     }
 
-    SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_HOST_CNT, SCAI_SOLVER_TYPE_CAST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_TYPELOOP( SCAI_SOLVER_TYPE_CAST, SCAI_ARITHMETIC_HOST )
 
 #undef SCAI_SOLVER_TYPE_CAST
 

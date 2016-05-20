@@ -270,7 +270,7 @@ ValueType CUDAUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common::reduction::ReductionOp op )
+ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, reduction::ReductionOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
 
@@ -278,16 +278,16 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common:
 
     switch ( op )
     {
-        case common::reduction::ADD :
+        case reduction::ADD :
             result = reduceSum( array, n );
             break;
-        case common::reduction::MAX :
+        case reduction::MAX :
             result = reduceMaxVal( array, n );
             break;
-        case common::reduction::MIN :
+        case reduction::MIN :
             result = reduceMinVal( array, n );
             break;
-        case common::reduction::ABS_MAX :
+        case reduction::ABS_MAX :
             result = reduceAbsMaxVal( array, n );
             break;
         default:
@@ -300,7 +300,7 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common:
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
+void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op )
 {
     using namespace thrust::placeholders;
 
@@ -315,16 +315,16 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
 
         switch ( op ) 
         {
-            case common::reduction::COPY:
+            case reduction::COPY:
                 thrust::fill( data, data + n, value );
                 break;
-            case common::reduction::ADD:
+            case reduction::ADD:
                 thrust::for_each( data, data + n,  _1 += value);
                 break;
-            case common::reduction::SUB:
+            case reduction::SUB:
                 thrust::for_each( data, data + n,  _1 -= value);
                 break;
-            case common::reduction::MULT:
+            case reduction::MULT:
                 {
                     if ( val == scai::common::constants::ZERO )
                     {
@@ -336,7 +336,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
                     }
                 }
                 break;
-            case common::reduction::DIVIDE:
+            case reduction::DIVIDE:
                 {
                     if ( val == scai::common::constants::ZERO )
                     {
@@ -616,7 +616,7 @@ void setKernelDivide( T1* out, const T2* in, IndexType n )
 }
 
 template<typename ValueType1, typename ValueType2>
-void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op )
+void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op )
 {
     SCAI_LOG_INFO( logger,
                    "set<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
@@ -636,19 +636,19 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n,
 
     switch ( op )
     {
-        case common::reduction::COPY :
+        case reduction::COPY :
             setKernelCopy <<< dimGrid, dimBlock>>>( out, in, n );
             break;
-        case common::reduction::ADD :
+        case reduction::ADD :
             setKernelAdd <<< dimGrid, dimBlock>>>( out, in, n );
             break;
-        case common::reduction::SUB :
+        case reduction::SUB :
             setKernelSub <<< dimGrid, dimBlock>>>( out, in, n );
             break;
-        case common::reduction::MULT :
+        case reduction::MULT :
             setKernelMult <<< dimGrid, dimBlock>>>( out, in, n );
             break;
-        case common::reduction::DIVIDE :
+        case reduction::DIVIDE :
             setKernelDivide <<< dimGrid, dimBlock>>>( out, in, n );
             break;
          default:
@@ -679,7 +679,7 @@ void CUDAUtils::setScale( ValueType1 out[],
     {
         // in array might be undefined
 
-        setVal( out, n, beta, common::reduction::COPY );
+        setVal( out, n, beta, reduction::COPY );
         return;
     }
 

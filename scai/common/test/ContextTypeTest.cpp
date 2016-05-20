@@ -21,8 +21,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
- *
- * @brief Test enum for ReductionOp
+ 
+ * @brief Test enum for different context types.
  * @author Thomas Brandes
  * @date 30.03.2016
  */

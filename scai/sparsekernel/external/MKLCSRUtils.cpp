@@ -109,7 +109,7 @@ void MKLCSRUtils::normalGEMV(
 
     if ( y != result && beta != scai::common::constants::ZERO )
     {
-        OpenMPUtils::set( result, y, numRows, common::reduction::COPY );
+        OpenMPUtils::set( result, y, numRows, utilskernel::reduction::COPY );
     }
 
     // performs y = alpha * A * x + beta * y

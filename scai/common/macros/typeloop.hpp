@@ -30,10 +30,7 @@
 #pragma once
 
 #include <scai/common/config.hpp>
-
-#define __SCAI_COMMON_FIRST_ENTRY( x, ... ) x
-#define _SCAI_COMMON_FIRST_ENTRY( x, ... ) __SCAI_COMMON_FIRST_ENTRY( x, __VA_ARGS__ )
-#define SCAI_COMMON_FIRST_ENTRY( x, ... ) _SCAI_COMMON_FIRST_ENTRY( x, __VA_ARGS__ )
+#include <scai/common/macros/count.hpp>
 
 /*
  * Level 1
@@ -48,9 +45,10 @@
 #define SCAI_COMMON_TYPELOOP_7( _macro, type, ... ) _macro( type ) SCAI_COMMON_TYPELOOP_6( _macro, __VA_ARGS__ )
 #define SCAI_COMMON_TYPELOOP_8( _macro, type, ... ) _macro( type ) SCAI_COMMON_TYPELOOP_7( _macro, __VA_ARGS__ )
 
-#define __SCAI_COMMON_TYPELOOP( _cnt, _macro, ... ) SCAI_COMMON_TYPELOOP_##_cnt( _macro, __VA_ARGS__ )
+#define ___SCAI_COMMON_TYPELOOP( _cnt, _macro, ... ) SCAI_COMMON_TYPELOOP_##_cnt( _macro, __VA_ARGS__ )
+#define __SCAI_COMMON_TYPELOOP( _cnt, _macro, ... ) ___SCAI_COMMON_TYPELOOP( _cnt, _macro, __VA_ARGS__ )
 #define _SCAI_COMMON_TYPELOOP( _cnt, _macro, ... ) __SCAI_COMMON_TYPELOOP( _cnt, _macro, __VA_ARGS__ )
-#define SCAI_COMMON_TYPELOOP( _cnt, _macro, ... ) _SCAI_COMMON_TYPELOOP( _cnt, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_TYPELOOP( _macro, ... ) __SCAI_COMMON_TYPELOOP( SCAI_COMMON_COUNT_NARG( __VA_ARGS__ ), _macro, __VA_ARGS__ )
 
 /*
  * Level 2
@@ -67,5 +65,5 @@
 
 #define __SCAI_COMMON_TYPELOOP_LVL2( _cnt, ValueType, _macro, ... ) SCAI_COMMON_TYPELOOP_LVL2_##_cnt( ValueType, _macro, __VA_ARGS__ )
 #define _SCAI_COMMON_TYPELOOP_LVL2( _cnt, ValueType, _macro, ... ) __SCAI_COMMON_TYPELOOP_LVL2( _cnt, ValueType, _macro, __VA_ARGS__ )
-#define SCAI_COMMON_TYPELOOP_LVL2( _cnt, ValueType, _macro, ... ) _SCAI_COMMON_TYPELOOP_LVL2( _cnt, ValueType, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_TYPELOOP_LVL2( ValueType, _macro, ... ) _SCAI_COMMON_TYPELOOP_LVL2( SCAI_COMMON_COUNT_NARG( __VA_ARGS__ ), ValueType, _macro, __VA_ARGS__ )
 

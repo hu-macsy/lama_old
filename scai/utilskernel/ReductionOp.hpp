@@ -38,7 +38,7 @@
 namespace scai
 {
 
-namespace common
+namespace utilskernel
 {
 
 /** Own struct for enum type of reduction operators */
@@ -109,6 +109,6 @@ inline std::ostream& operator<<( std::ostream& stream, const reduction::Reductio
     return stream;
 }
 
-} /* end namespace common */
+} /* end namespace utilskernel */
 
 } /* end namespace scai */

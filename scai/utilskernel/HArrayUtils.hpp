@@ -35,7 +35,7 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/logging.hpp>
-#include <scai/common/ReductionOp.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 #include <scai/common/mepr/TemplateSpecifier.hpp>
 
 namespace scai
@@ -74,7 +74,7 @@ public:
     static void assignOp( 
         hmemo::_HArray& target, 
         const hmemo::_HArray& source, 
-        const common::reduction::ReductionOp op,
+        const reduction::ReductionOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** 
@@ -128,7 +128,7 @@ public:
     static void assignScalar( 
         hmemo::_HArray& target,
         const ValueType value,
-        const common::reduction::ReductionOp op, 
+        const reduction::ReductionOp op, 
         hmemo::ContextPtr prefLoc  = hmemo::ContextPtr() )
         __attribute__( ( noinline ) );
 
@@ -217,14 +217,14 @@ public:
     static void setArray(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
-        const common::reduction::ReductionOp op,
+        const reduction::ReductionOp op,
         hmemo::ContextPtr context );
 
     template<typename ValueType>
     static void setScalar(
         hmemo::HArray<ValueType>& target,
         const ValueType value,
-        const common::reduction::ReductionOp op, 
+        const reduction::ReductionOp op, 
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
         __attribute__( ( noinline ) );
 
@@ -242,7 +242,7 @@ public:
     template<typename ValueType>
     static ValueType reduce( 
         const hmemo::HArray<ValueType>& array,
-        const common::reduction::ReductionOp redOp,
+        const reduction::ReductionOp redOp,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>

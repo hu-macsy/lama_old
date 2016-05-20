@@ -1299,7 +1299,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( StorageIO, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( StorageIO, SCAI_ARITHMETIC_HOST )
 
 /* -------------------------------------------------------------------------- */
 

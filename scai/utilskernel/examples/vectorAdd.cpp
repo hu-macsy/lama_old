@@ -66,8 +66,8 @@ int main(int, char**)
     hmemo::WriteOnlyAccess<double> writeB( b, loc, size);
     hmemo::WriteOnlyAccess<double> writeC( c, loc, size);
 
-    setVal[loc]( writeB.get(), size, double( 2 ), common::reduction::COPY );
-    setVal[loc]( writeC.get(), size, double( 3 ), common::reduction::COPY );
+    setVal[loc]( writeB.get(), size, double( 2 ), utilskernel::reduction::COPY );
+    setVal[loc]( writeC.get(), size, double( 3 ), utilskernel::reduction::COPY );
 
     writeB.release();
     writeC.release();

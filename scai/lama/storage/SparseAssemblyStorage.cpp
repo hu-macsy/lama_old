@@ -920,7 +920,7 @@ const char* SparseAssemblyStorage<ValueType>::typeName()
 /*       Template specializattions and instantiations                        */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( SparseAssemblyStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( SparseAssemblyStorage, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

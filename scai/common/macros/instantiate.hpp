@@ -44,9 +44,10 @@
 #define SCAI_COMMON_INST_CLASS_7( _class, type, ... )   template class COMMON_DLL_IMPORTEXPORT _class<type>; SCAI_COMMON_INST_CLASS_6( _class, __VA_ARGS__ )
 #define SCAI_COMMON_INST_CLASS_8( _class, type, ... )   template class COMMON_DLL_IMPORTEXPORT _class<type>; SCAI_COMMON_INST_CLASS_7( _class, __VA_ARGS__ )
 
-#define __SCAI_COMMON_INST_CLASS( _class, _cnt, ... ) SCAI_COMMON_INST_CLASS_##_cnt( _class, __VA_ARGS__ )
+#define ___SCAI_COMMON_INST_CLASS( _class, _cnt, ... ) SCAI_COMMON_INST_CLASS_##_cnt( _class, __VA_ARGS__ )
+#define __SCAI_COMMON_INST_CLASS( _class, _cnt, ... ) ___SCAI_COMMON_INST_CLASS( _class, _cnt, __VA_ARGS__ )
 #define _SCAI_COMMON_INST_CLASS( _class, _cnt, ... ) __SCAI_COMMON_INST_CLASS( _class, _cnt, __VA_ARGS__ )
-#define SCAI_COMMON_INST_CLASS( _class, _cnt, ... ) _SCAI_COMMON_INST_CLASS( _class, _cnt, __VA_ARGS__ )
+#define SCAI_COMMON_INST_CLASS( _class, ... ) _SCAI_COMMON_INST_CLASS( _class, SCAI_COMMON_COUNT_NARG( __VA_ARGS__ ), __VA_ARGS__ )
 
 /*
  * Instantiate templated classes which expect a templated class as template argument
@@ -61,6 +62,7 @@
 #define SCAI_COMMON_INST_CLASS_II_7( _class, _sub, type, ... )  template class COMMON_DLL_IMPORTEXPORT _class<_sub<type> >; SCAI_COMMON_INST_CLASS_II_6( _class, _sub, __VA_ARGS__ )
 #define SCAI_COMMON_INST_CLASS_II_8( _class, _sub, type, ... )  template class COMMON_DLL_IMPORTEXPORT _class<_sub<type> >; SCAI_COMMON_INST_CLASS_II_7( _class, _sub, __VA_ARGS__ )
 
-#define __SCAI_COMMON_INST_CLASS_II( _class, _sub, _cnt, ... ) SCAI_COMMON_INST_CLASS_II_##_cnt( _class, _sub, __VA_ARGS__ )
+#define ___SCAI_COMMON_INST_CLASS_II( _class, _sub, _cnt, ... ) SCAI_COMMON_INST_CLASS_II_##_cnt( _class, _sub, __VA_ARGS__ )
+#define __SCAI_COMMON_INST_CLASS_II( _class, _sub, _cnt, ... ) ___SCAI_COMMON_INST_CLASS_II( _class, _sub, _cnt, __VA_ARGS__ )
 #define _SCAI_COMMON_INST_CLASS_II( _class, _sub, _cnt, ... ) __SCAI_COMMON_INST_CLASS_II( _class, _sub, _cnt, __VA_ARGS__ )
-#define SCAI_COMMON_INST_CLASS_II( _class, _sub, _cnt, ... ) _SCAI_COMMON_INST_CLASS_II( _class, _sub, _cnt, __VA_ARGS__ )
+#define SCAI_COMMON_INST_CLASS_II( _class, _sub, ... ) _SCAI_COMMON_INST_CLASS_II( _class, _sub, SCAI_COMMON_COUNT_NARG( __VA_ARGS__), __VA_ARGS__ )

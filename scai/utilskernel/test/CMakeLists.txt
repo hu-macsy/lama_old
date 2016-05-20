@@ -37,6 +37,7 @@ scai_project (
 
     SOURCES
 
+        ReductionOpTest
         UtilsKernelTest
         HArrayUtilsTest
         UtilsTest

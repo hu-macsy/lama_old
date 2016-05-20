@@ -40,7 +40,6 @@ set ( CXX_SOURCES
       MathTest
       ptrTest
       PrintableTest
-      ReductionOpTest  
       ThreadTest  
       TypeListTest
       TypeLoopTest

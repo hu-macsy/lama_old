@@ -2335,7 +2335,7 @@ const char* DenseMatrix<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseMatrix, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseMatrix, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

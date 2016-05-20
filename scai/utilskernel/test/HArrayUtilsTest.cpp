@@ -32,10 +32,11 @@
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
+
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/utilskernel/test/HArrays.hpp>
 
-#include <scai/common/ReductionOp.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -66,7 +67,7 @@ BOOST_AUTO_TEST_CASE( FactoryTest )
 {
     HArrays allArrays;    // is created by factory
 
-    size_t nTypes = SCAI_ARITHMETIC_ARRAY_HOST_CNT;
+    size_t nTypes = SCAI_COMMON_COUNT_NARG( SCAI_ARITHMETIC_ARRAY_HOST );
 
     SCAI_LOG_INFO( logger, "Test all arrys of factory to be zero, #arrays = " << allArrays.size() )
 

@@ -105,6 +105,7 @@ scai_project (
         LArray
         LArrayRef
         UtilKernelTrait
+        ReductionOp
         
 )
 

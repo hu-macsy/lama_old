@@ -46,6 +46,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/macros/count.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/Math.hpp>
@@ -574,7 +575,7 @@ public:
 
     // define communicator methods for all supported data types
 
-    SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, SCAI_DMEMO_COMMUNICATOR_METHODS, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_TYPELOOP( SCAI_DMEMO_COMMUNICATOR_METHODS, SCAI_ARITHMETIC_ARRAY_HOST )
 
 #undef SCAI_DMEMO_COMMUNICATOR_METHODS
 

@@ -34,9 +34,8 @@
 
 // others
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/ReductionOp.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/ReductionOp.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 // logging
 #include <scai/logging.hpp>
@@ -71,12 +70,12 @@ public:
     /** MIC implementation for UtilKernelTrait::Reductions::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
+    static ValueType reduce( const ValueType array[], const IndexType n, const reduction::ReductionOp op );
 
     /** MIC implementation for UtilKernelTrait::Setter::setVal */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op );
 
     /** MIC implementation for UtilKernelTrait::Setter::setOrder */
 
@@ -99,7 +98,7 @@ public:
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
     template<typename ValueType1,typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op );
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
 
     /** Set out[i] = in[ indexes[i] ],  0 <= i < n */
 

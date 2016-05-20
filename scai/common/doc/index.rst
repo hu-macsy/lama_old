@@ -35,7 +35,6 @@ Class                   Description
 ====================    ==========================================
 :ref:`ContextType`      Enumeration types ContextType and AccessKind
 :ref:`ScalarType`       Enumeration type for supported value types (allows registration for different types in factories, interfaces, ...)
-:ref:`ReductionOp`      Enumeration type for different binary operators used in reductions
 ====================    ==========================================
 
 .. toctree::
@@ -43,7 +42,6 @@ Class                   Description
 
    ContextType
    ScalarType
-   ReductionOp
 
 Arithmetic Types
 ----------------

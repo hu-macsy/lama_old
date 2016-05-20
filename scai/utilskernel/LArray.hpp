@@ -159,11 +159,11 @@ public:
 
         if ( context.get() )
         {
-            HArrayUtils::setScalar( *this, value, common::reduction::COPY, context );
+            HArrayUtils::setScalar( *this, value, reduction::COPY, context );
         }
         else
         {
-            HArrayUtils::setScalar( *this, value, common::reduction::COPY, hmemo::Context::getHostPtr() );
+            HArrayUtils::setScalar( *this, value, reduction::COPY, hmemo::Context::getHostPtr() );
         }
     }
 
@@ -218,49 +218,49 @@ public:
 
     LArray& operator*= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::assignOp( *this, other, common::reduction::MULT );
+        HArrayUtils::assignOp( *this, other, reduction::MULT );
         return *this;
     }
 
     LArray& operator*= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, common::reduction::MULT );
+        HArrayUtils::setScalar( *this, val, reduction::MULT );
         return *this;
     }
 
     LArray& operator/= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::assignOp( *this, other, common::reduction::DIVIDE );
+        HArrayUtils::assignOp( *this, other, reduction::DIVIDE );
         return *this;
     }
 
     LArray& operator/= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, common::reduction::DIVIDE );
+        HArrayUtils::setScalar( *this, val, reduction::DIVIDE );
         return *this;
     }
 
     LArray& operator+= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::assignOp( *this, other, common::reduction::ADD );
+        HArrayUtils::assignOp( *this, other, reduction::ADD );
         return *this;
     }
 
     LArray& operator+= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, common::reduction::ADD );
+        HArrayUtils::setScalar( *this, val, reduction::ADD );
         return *this;
     }
 
     LArray& operator-= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::assignOp( *this, other, common::reduction::SUB );
+        HArrayUtils::assignOp( *this, other, reduction::SUB );
         return *this;
     }
 
     LArray& operator-= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, common::reduction::SUB );
+        HArrayUtils::setScalar( *this, val, reduction::SUB );
         return *this;
     }
 
@@ -277,7 +277,7 @@ public:
 
         hmemo::ContextPtr context = this->getFirstTouchContextPtr();
         SCAI_ASSERT( context.get(), "No first touch context" )
-        HArrayUtils::setScalar( *this, val, common::reduction::COPY, this->getFirstTouchContextPtr() );
+        HArrayUtils::setScalar( *this, val, reduction::COPY, this->getFirstTouchContextPtr() );
         return *this;
     }
 
@@ -295,28 +295,28 @@ public:
 
     ValueType min() const
     {
-        return HArrayUtils::reduce( *this, common::reduction::MIN );
+        return HArrayUtils::reduce( *this, reduction::MIN );
     }
 
     /** Get the maximal value of an array */
 
     ValueType max() const
     {
-        return HArrayUtils::reduce( *this, common::reduction::MAX );
+        return HArrayUtils::reduce( *this, reduction::MAX );
     }
 
     /** Get the maximal value of an array */
 
     ValueType maxNorm() const
     {
-        return HArrayUtils::reduce( *this, common::reduction::ABS_MAX );
+        return HArrayUtils::reduce( *this, reduction::ABS_MAX );
     }
 
     /** Get the sum of all array elements */
 
     ValueType sum() const
     {
-        return HArrayUtils::reduce( *this, common::reduction::ADD );
+        return HArrayUtils::reduce( *this, reduction::ADD );
     }
 
     /** Compute the sum of magnitudes, for complex numbers it is the sum of real and imag part */

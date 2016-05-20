@@ -29,11 +29,11 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/ReductionOp.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 #include <sstream>
 
 using namespace scai;
-using namespace common;
+using namespace utilskernel;
 
 BOOST_AUTO_TEST_CASE( ReductionOpTest )
 {

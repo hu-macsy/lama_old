@@ -37,11 +37,9 @@
     #include <scai/common/Complex.hpp>
 
     #define TEST_TYPELOOP_LIST float, double, ComplexFloat
-    #define TEST_TYPELOOP_CNT 3
     #define TEST_STRING "floatdoubleComplexFloat"
 #else
     #define TEST_TYPELOOP_LIST float, double
-    #define TEST_TYPELOOP_CNT 2
     #define TEST_STRING "floatdouble"
 #endif
 
@@ -60,7 +58,7 @@ BOOST_AUTO_TEST_CASE( outputTest )
 
 #define TEST_TYPELOOP_OUTPUT( type ) s << #type;
 
-    SCAI_COMMON_TYPELOOP( 3, TEST_TYPELOOP_OUTPUT, TEST_TYPELOOP_LIST )
+    SCAI_COMMON_TYPELOOP( TEST_TYPELOOP_OUTPUT, TEST_TYPELOOP_LIST )
 
     BOOST_CHECK( TEST_STRING == s.str() );
 
@@ -75,7 +73,7 @@ BOOST_AUTO_TEST_CASE( countTest )
 
 #define TEST_TYPELOOP_INC( type ) ++i;
 
-    SCAI_COMMON_TYPELOOP( 3, TEST_TYPELOOP_INC, TEST_TYPELOOP_LIST )
+    SCAI_COMMON_TYPELOOP( TEST_TYPELOOP_INC, TEST_TYPELOOP_LIST )
 
     BOOST_CHECK( 3 == i );
 
@@ -92,7 +90,7 @@ BOOST_AUTO_TEST_CASE( countTest )
 
 namespace testing
 {
-    SCAI_COMMON_TYPELOOP( TEST_TYPELOOP_CNT, TEST_TYPELOOP_DEF, TEST_TYPELOOP_LIST )
+    SCAI_COMMON_TYPELOOP( TEST_TYPELOOP_DEF, TEST_TYPELOOP_LIST )
 } /* end namespace testing */
 
 BOOST_AUTO_TEST_CASE( defTest )
@@ -116,6 +114,5 @@ BOOST_AUTO_TEST_CASE( defTest )
 
 #undef TEST_TYPELOOP_LIST
 #undef TEST_STRING
-#undef TEST_TYPELOOP_CNT
 
 BOOST_AUTO_TEST_SUITE_END();

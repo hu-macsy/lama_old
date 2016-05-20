@@ -165,7 +165,6 @@ scai_project (
         Factory1
         Math
         OpenMP
-        ReductionOp
         NonCopyable
 )
 
