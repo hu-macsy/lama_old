@@ -32,7 +32,11 @@ if    ( MPI_FOUND )
     set ( _output "${_mpi_output}${_mpi_error}" ) # some version write output to error stream
     if    ( CMAKE_COMPILER_IS_GNUCXX )
     	string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" MPI_VERSION ${_output} )
-    else  ( CMAKE_COMPILER_IS_GNUCXX ) ## icpc
-    	string ( REGEX MATCH "([0-9]+\\.[0-9])" MPI_VERSION ${_output} )
+    	if    ( "${MPI_VERSION}" STREQUAL "" )
+	    	string ( REGEX MATCH "([0-9]+\\.[0-9])" MPI_VERSION ${_output} )
+	    	if    ( "${MPI_VERSION}" STREQUAL "" )
+	    		string ( REGEX MATCH "([0-9])" MPI_VERSION ${_output} )
+    		endif ( "${MPI_VERSION}" STREQUAL "" )
+    	endif ( "${MPI_VERSION}" STREQUAL "" )
     endif ( CMAKE_COMPILER_IS_GNUCXX )
 endif ( MPI_FOUND )
