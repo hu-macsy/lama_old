@@ -116,15 +116,22 @@ add_subdirectory ( macros )
 ## begin subdir test
 # prepare test
 if ( USE_CODE_COVERAGE )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/test/code_coverage.sh" @ONLY)
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../scai_code_coverage_functions.sh" "${CMAKE_CURRENT_BINARY_DIR}/test" @ONLY)
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/test/code_coverage.sh" @ONLY)
+    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/test/code_coverage.sh 
+           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
+           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
+    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../scai_code_coverage_functions.sh 
+           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
+           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
 endif ( USE_CODE_COVERAGE )
 
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
 
 set ( TEST_FILES Makefile README complexLogging.cpp simpleLogging.cpp test.sh )
 foreach    ( TEST_FILE ${TEST_FILES} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/${TEST_FILE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test )
+    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/${TEST_FILE}
+           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
+           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
 endforeach ( TEST_FILE ${TEST_FILES} )
 
 # add test

@@ -43,11 +43,22 @@ target_link_libraries ( blaskernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PR
 
 ### Copy the xmltest.sh file in build directory ### 
 
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
+file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
 
 if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageFirst.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverageFirst.sh" @ONLY)
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageSecond.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverageSecond.sh" @ONLY)
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageThird.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverageThird.sh" @ONLY)
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh" "${CMAKE_CURRENT_BINARY_DIR}/" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageFirst.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageFirst.sh" @ONLY)
+    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageFirst.sh 
+           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageSecond.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageSecond.sh" @ONLY)
+    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageSecond.sh 
+           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageThird.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageThird.sh" @ONLY)
+    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageThird.sh 
+           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
+    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
+           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
 endif ( USE_CODE_COVERAGE )
