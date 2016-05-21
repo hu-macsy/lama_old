@@ -123,6 +123,7 @@ This macro itself is used within other macros that require a temporary variable.
 --------------------
 
 The macro ``SCAI_COMMON_LOOP`` is very useful to apply one macro to multiple arguments.
+Therefore it avoids a great deal of code repitition.
 
 .. code-block:: c++
 
@@ -130,7 +131,13 @@ The macro ``SCAI_COMMON_LOOP`` is very useful to apply one macro to multiple arg
 
    #define MY_MACRO( x ) std::cout << x << std::endl;
 
-   SCAI_COMMON_LOOP( MY_MACRO, 1, 2, 3, 2, 1 )
+   MY_MACRO( 1 )
+   MY_MACRO( 2 )
+   MY_MACRO( 3 )
+
+   // here is the shorter way
+
+   SCAI_COMMON_LOOP( MY_MACRO, 1, 2, 3 )
 
 The macro ``SCAI_COMMON_LOOP_LVL2`` is similiar but has one additional argument that
 can be used within the macro over which will be looped.
@@ -142,9 +149,19 @@ can be used within the macro over which will be looped.
    SCAI_COMMON_LOOP_LVL2( std::err, MY_MACRO1, 1, 2, 3, 2, 1 )
    SCAI_COMMON_LOOP_LVL2( std::cout, MY_MACRO1, 5, 6, 7 )
 
-The combination of the two macros is very helpful for nesting.
+The macro ``SCAI_COMMON_LOOP_LVL3`` is also availabe when two additional
+arguments are needed.
+
+.. code-block:: c++
+
+   #define MY_MACRO2( ARG1, ARG2, x ) ARG1 << ARG2 << x << std::endl;
+   
+   SCAI_COMMON_LOOP_LVL3( std::err, 1, MY_MACRO2, 1, 2, 3, 2, 1 )
+   SCAI_COMMON_LOOP_LVL3( std::cout, 2, MY_MACRO2, 5, 6, 7 )
+
+The combination of the macros is very helpful for nesting.
 
 .. literalinclude:: ../examples/DemoLoopMacro.cpp
    :language: c++
-   :lines: 30-41
+   :lines: 30-
 

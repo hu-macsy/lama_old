@@ -43,7 +43,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 
 // std
 #include <cstdio>
@@ -120,7 +120,7 @@ public:
     inline Scalar( const type value ) : mValue( value ) \
     { }
 
-    SCAI_COMMON_TYPELOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ARITHMETIC_HOST )
 
 #undef SCAI_LAMA_SCALAR_CONSTRUCTORS
 

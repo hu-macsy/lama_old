@@ -52,7 +52,7 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 
 // sqrt for all value types
 #include <cmath> 
@@ -1226,9 +1226,9 @@ SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST )
      template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );
 
 #define COO_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_TYPELOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_TYPELOOP( COO_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( COO_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef COO_STORAGE_INST_LVL2
 #undef COO_STORAGE_INST_LVL1

@@ -59,7 +59,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 
 namespace scai
 {
@@ -1391,9 +1391,9 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
                 const IndexType, const IndexType, const OtherValueType*, const ValueType );
 
 #define LAMA_MATRIXSTORAGE_INST( ValueType )                                                                                    \
-    SCAI_COMMON_TYPELOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_TYPELOOP( LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
 
 #undef LAMA_MATRIXSTORAGE2_INST
 #undef LAMA_MATRIXSTORAGE_INST

@@ -194,6 +194,6 @@ Related Work
 ************
 
 * Boost Libraries, some functionality has been taken over in the C++11 standard.
+* Macros and Meta Programming are techniques that are well described in
+  "C++ Template Metaprogramming," by David Abrahams and Aleksey Gurtovoy. Copyright (c) 2005 by Pearson Education, Inc. 
 * Factory stuff as dynamic extension, similiar to module conecpt of Python
-* Exception handling is common praxis
-
