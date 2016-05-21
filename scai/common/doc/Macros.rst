@@ -144,11 +144,7 @@ can be used within the macro over which will be looped.
 
 The combination of the two macros is very helpful for nesting.
 
-.. code-block:: c++
+.. literalinclude:: ../examples/DemoLoopMacro.cpp
+   :language: c++
+   :lines: 30-41
 
-   #define DOIT( x, y ) std::cout << x << y << std::endl;
-
-   #define INNER_LOOP SCAI_COMMON_LOOP_LVL2( x, DOIT, 5, 6, 7 )
-   #define OUTER_LOOP SCAI_COMMON_LOOP( INNER_LOOP, 1, 2, 3 )
-
-   OUTER_LOOP

@@ -1,5 +1,5 @@
 /**
- * @file macros/typeloop.hpp
+ * @file macros/loop.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./macros/typeloop.hpp
+ * @brief Definition of macro that applies another macro to a variadic argument list
  * @author eschricker
  * @date 16.03.2016
  */
@@ -54,16 +54,33 @@
  * Level 2
  */
 
-#define SCAI_COMMON_LOOP_LVL2_1( ValueType, _macro, type ) _macro( ValueType, type )
-#define SCAI_COMMON_LOOP_LVL2_2( ValueType, _macro, type, ... ) _macro( ValueType, type ) SCAI_COMMON_LOOP_LVL2_1( ValueType, _macro, __VA_ARGS__ )
-#define SCAI_COMMON_LOOP_LVL2_3( ValueType, _macro, type, ... ) _macro( ValueType, type ) SCAI_COMMON_LOOP_LVL2_2( ValueType, _macro, __VA_ARGS__ )
-#define SCAI_COMMON_LOOP_LVL2_4( ValueType, _macro, type, ... ) _macro( ValueType, type ) SCAI_COMMON_LOOP_LVL2_3( ValueType, _macro, __VA_ARGS__ )
-#define SCAI_COMMON_LOOP_LVL2_5( ValueType, _macro, type, ... ) _macro( ValueType, type ) SCAI_COMMON_LOOP_LVL2_4( ValueType, _macro, __VA_ARGS__ )
-#define SCAI_COMMON_LOOP_LVL2_6( ValueType, _macro, type, ... ) _macro( ValueType, type ) SCAI_COMMON_LOOP_LVL2_5( ValueType, _macro, __VA_ARGS__ )
-#define SCAI_COMMON_LOOP_LVL2_7( ValueType, _macro, type, ... ) _macro( ValueType, type ) SCAI_COMMON_LOOP_LVL2_6( ValueType, _macro, __VA_ARGS__ )
-#define SCAI_COMMON_LOOP_LVL2_8( ValueType, _macro, type, ... ) _macro( ValueType, type ) SCAI_COMMON_LOOP_LVL2_7( ValueType, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL2_1( arg1, _macro, type ) _macro( arg1, type )
+#define SCAI_COMMON_LOOP_LVL2_2( arg1, _macro, type, ... ) _macro( arg1, type ) SCAI_COMMON_LOOP_LVL2_1( arg1, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL2_3( arg1, _macro, type, ... ) _macro( arg1, type ) SCAI_COMMON_LOOP_LVL2_2( arg1, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL2_4( arg1, _macro, type, ... ) _macro( arg1, type ) SCAI_COMMON_LOOP_LVL2_3( arg1, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL2_5( arg1, _macro, type, ... ) _macro( arg1, type ) SCAI_COMMON_LOOP_LVL2_4( arg1, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL2_6( arg1, _macro, type, ... ) _macro( arg1, type ) SCAI_COMMON_LOOP_LVL2_5( arg1, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL2_7( arg1, _macro, type, ... ) _macro( arg1, type ) SCAI_COMMON_LOOP_LVL2_6( arg1, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL2_8( arg1, _macro, type, ... ) _macro( arg1, type ) SCAI_COMMON_LOOP_LVL2_7( arg1, _macro, __VA_ARGS__ )
 
-#define __SCAI_COMMON_LOOP_LVL2( _cnt, ValueType, _macro, ... ) SCAI_COMMON_LOOP_LVL2_##_cnt( ValueType, _macro, __VA_ARGS__ )
-#define _SCAI_COMMON_LOOP_LVL2( _cnt, ValueType, _macro, ... ) __SCAI_COMMON_LOOP_LVL2( _cnt, ValueType, _macro, __VA_ARGS__ )
-#define SCAI_COMMON_LOOP_LVL2( ValueType, _macro, ... ) _SCAI_COMMON_LOOP_LVL2( SCAI_COMMON_COUNT_NARG( __VA_ARGS__ ), ValueType, _macro, __VA_ARGS__ )
+#define __SCAI_COMMON_LOOP_LVL2( _cnt, arg1, _macro, ... ) SCAI_COMMON_LOOP_LVL2_##_cnt( arg1, _macro, __VA_ARGS__ )
+#define _SCAI_COMMON_LOOP_LVL2( _cnt, arg1, _macro, ... ) __SCAI_COMMON_LOOP_LVL2( _cnt, arg1, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL2( arg1, _macro, ... ) _SCAI_COMMON_LOOP_LVL2( SCAI_COMMON_COUNT_NARG( __VA_ARGS__ ), arg1, _macro, __VA_ARGS__ )
+
+/*
+ * Level 3
+ */
+
+#define SCAI_COMMON_LOOP_LVL3_1( arg1, arg2, _macro, type ) _macro( arg1, arg2, type )
+#define SCAI_COMMON_LOOP_LVL3_2( arg1, arg2, _macro, type, ... ) _macro( arg1, arg2, type ) SCAI_COMMON_LOOP_LVL3_1( arg1, arg2, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL3_3( arg1, arg2, _macro, type, ... ) _macro( arg1, arg2, type ) SCAI_COMMON_LOOP_LVL3_2( arg1, arg2, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL3_4( arg1, arg2, _macro, type, ... ) _macro( arg1, arg2, type ) SCAI_COMMON_LOOP_LVL3_3( arg1, arg2, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL3_5( arg1, arg2, _macro, type, ... ) _macro( arg1, arg2, type ) SCAI_COMMON_LOOP_LVL3_4( arg1, arg2, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL3_6( arg1, arg2, _macro, type, ... ) _macro( arg1, arg2, type ) SCAI_COMMON_LOOP_LVL3_5( arg1, arg2, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL3_7( arg1, arg2, _macro, type, ... ) _macro( arg1, arg2, type ) SCAI_COMMON_LOOP_LVL3_6( arg1, arg2, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL3_8( arg1, arg2, _macro, type, ... ) _macro( arg1, arg2, type ) SCAI_COMMON_LOOP_LVL3_7( arg1, arg2, _macro, __VA_ARGS__ )
+
+#define __SCAI_COMMON_LOOP_LVL3( _cnt, arg1, arg2, _macro, ... ) SCAI_COMMON_LOOP_LVL3_##_cnt( arg1, arg2, _macro, __VA_ARGS__ )
+#define _SCAI_COMMON_LOOP_LVL3( _cnt, arg1, arg2, _macro, ... ) __SCAI_COMMON_LOOP_LVL3( _cnt, arg1, arg2, _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_LVL3( arg1, arg2, _macro, ... ) _SCAI_COMMON_LOOP_LVL3( SCAI_COMMON_COUNT_NARG( __VA_ARGS__ ), arg1, arg2, _macro, __VA_ARGS__ )
 

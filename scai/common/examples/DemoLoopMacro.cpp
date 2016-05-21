@@ -27,14 +27,14 @@
  * @date 22.05.2016
  */
 
-
 #include <scai/common/macros/loop.hpp>
 #include <iostream>
 
-#define DOIT( x, y ) std::cout << x << y << std::endl;
+#define DOIT( x, y, z ) std::cout << x << y << z << std::endl;
 
-#define INNER_LOOP( x ) SCAI_COMMON_LOOP_LVL2( x, DOIT, 5, 6, 7 )
-#define OUTER_LOOP SCAI_COMMON_LOOP( INNER_LOOP, 1, 2, 3 )
+#define INNER_LOOP( x, y ) SCAI_COMMON_LOOP_LVL3( x, y, DOIT, 7, 8, 9 )
+#define MIDDLE_LOOP( x ) SCAI_COMMON_LOOP_LVL2( x, INNER_LOOP, 4, 5, 6 )
+#define OUTER_LOOP SCAI_COMMON_LOOP( MIDDLE_LOOP, 1, 2, 3 )
 
 int main()
 {
