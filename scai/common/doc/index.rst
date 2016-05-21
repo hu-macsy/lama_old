@@ -22,6 +22,73 @@ All classes and type defintions are done in the namespace ``scai/common``.
 Common Library Reference
 ************************
 
+Utility Classes
+---------------
+
+The following classes provide some utitilites used in nearly all other
+SCAI projects.
+
+====================         ==========================================
+Class                        Description
+====================         ==========================================
+:ref:`Factory`               Template class for Factory
+:ref:`Thread`                Abstraction of a portable thread class
+:ref:`Walltime`              Simple and efficient walltime measuring
+:ref:`Printable`             Base class to support stream output
+:ref:`NonCopyable`           Disable default copy constructors
+:ref:`LibModule`             Load/Unload of Library Modules (dynamic libraries)
+====================         ==========================================
+
+.. toctree::
+   :hidden:
+
+   Factory
+   Thread
+   Walltime
+   Printable
+   NonCopyable
+   LibModule
+
+Common Concepts
+---------------
+
+The following stuff stands for general concepts that are or might be used in all SCAI projects.
+
+====================         ==========================================
+Name                         Description
+====================         ==========================================
+:ref:`Exception`             Error handling, call stack
+:ref:`Assertion`             Assertion checking, which can be compiled out of code
+:ref:`SmartPointers`         Smart pointers free objects with destructor: unique_ptr or shared_ptr
+:ref:`Function`              Function objects that might also be created with bound arguments
+:ref:`Settings`              Access to environment variables
+:ref:`OpenMP`                Dummy routines if OpenMP is disabled
+:ref:`TypeList`              Meta programming schemes to deal with list of types
+====================         ==========================================
+
+.. toctree::
+   :hidden:
+
+   Exception
+   Assertion
+   SmartPointers
+   Function
+   Settings
+   OpenMP
+   TypeList
+
+Macros
+------
+
+The common project provides a lot of useful macros. Usually, each macro is
+defined within a corresponing header file in the subdirectory ``macros``.
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 2
+
+   Macros
+
 Enumeration Types
 -----------------
 
@@ -71,61 +138,6 @@ Class                   Description
    Complex
    Constants
 
-Utility Classes
----------------
-
-The following classes provide some utitilites used in nearly all other
-SCAI projects.
-
-====================         ==========================================
-Class                        Description
-====================         ==========================================
-:ref:`Factory`               Template class for Factory
-:ref:`Thread`                Abstraction of a portable thread class
-:ref:`Walltime`              Simple and efficient walltime measuring
-:ref:`Printable`             Base class to support stream output
-:ref:`NonCopyable`           Disable default copy constructors
-:ref:`LibModule`             Load/Unload of Library Modules (dynamic libraries)
-====================         ==========================================
-
-.. toctree::
-   :hidden:
-
-   Factory
-   Thread
-   Walltime
-   Printable
-   NonCopyable
-   LibModule
-
-Common Concepts
----------------
-
-The following stuff stands for general concepts that is or might be used in all SCAI projects.
-
-====================         ==========================================
-Name                         Description
-====================         ==========================================
-:ref:`Exception`             Error handling, call stack
-:ref:`Assertion`             Assertion checking, which can be compiled out of code
-:ref:`SmartPointers`         Smart pointers free objects with destructor: unique_ptr or shared_ptr
-:ref:`Function`              Function objects that might also be created with bound arguments
-:ref:`Settings`              Access to environment variables
-:ref:`OpenMP`                Dummy routines if OpenMP is disabled
-:ref:`TypeList`              Meta programming schemes to deal with list of types
-====================         ==========================================
-
-.. toctree::
-   :hidden:
-
-   Exception
-   Assertion
-   SmartPointers
-   Function
-   Settings
-   OpenMP
-   TypeList
-
 Common Classes for CUDA
 -----------------------
 
@@ -150,8 +162,9 @@ Name                         Description
 Relations
 *********
 
-* Complex is an example of how to define a new arithmetic type to be used for the SCAI types
+All classes and concepts of the SCAI common project stand on their own.
 
+* SCAI assert macros use Exceptin class.
 
 *****
 Usage
@@ -167,8 +180,14 @@ Usage
 Dependencies
 ************
 
+The common project is on the lowest level of the SCAI project hierarchy.
+Therefore it does not depend on any other SCAI project.
+
+There are the following externale dependencies:
+
 * When the C++11 standard is not supported, Boost header libraries must be available
-  and a pthread library.
+* When the C++11 standard is not supported, a pthread library must be available
+  for the implementation of the Thread class.
 
 ************
 Related Work
