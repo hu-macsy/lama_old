@@ -266,8 +266,8 @@ void CUDACSRUtils::convertCSR2CSC(
 
     // switch cooIA and cooJA, copy values and resort
 
-    CUDAUtils::set( cooIA, csrJA, numValues, common::reduction::COPY );
-    CUDAUtils::set( cscValues, csrValues, numValues, common::reduction::COPY );
+    CUDAUtils::set( cooIA, csrJA, numValues, utilskernel::reduction::COPY );
+    CUDAUtils::set( cscValues, csrValues, numValues, utilskernel::reduction::COPY );
 
     thrust::device_ptr<IndexType> ja_d( cooIA );
     thrust::device_ptr<ValueType> values_d( cscValues );

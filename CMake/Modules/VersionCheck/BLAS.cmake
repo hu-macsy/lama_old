@@ -31,7 +31,7 @@
 
 if    ( SCAI_BLAS_NAME MATCHES MKL )
 	try_run ( MKL_RUN_RESULT_VAR MKL_COMPILE_RESULT_VAR
-		    ${CMAKE_BINARY_DIR}
+		    ${CMAKE_BINARY_DIR}/VersionCheck
 	    	${CMAKE_MODULE_PATH}/VersionCheck/mkl.cpp
 	    	CMAKE_FLAGS 
 	    	-DINCLUDE_DIRECTORIES:STRING=${SCAI_SCAI_BLAS_INCLUDE_DIR}
@@ -43,10 +43,15 @@ endif ( SCAI_BLAS_NAME MATCHES MKL )
 
 ### BLAS
 
-if    ( LINUX )
+if    ( UNIX )
 if    ( SCAI_BLAS_NAME MATCHES BLAS )
 	get_filename_component ( _LIB_PATH ${BLAS_blas_LIBRARY} PATH )
-	file ( GLOB _LIBRARIES ${_LIB_PATH}/libblas.so.* )
+	file ( GLOB _LIBRARIES ${_LIB_PATH}/libblas.so* )
+	file ( GLOB _GF_LIB ${_LIB_PATH}/libblas.so*gf )
+
+	if    ( _GF_LIB )
+		list ( REMOVE_ITEM _LIBRARIES ${_GF_LIB} )
+	endif ( _GF_LIB )
 
 	## look for lib with longest name (version number)
 	set ( LEN 0 )
@@ -60,8 +65,14 @@ if    ( SCAI_BLAS_NAME MATCHES BLAS )
 
 	if    ( DEFINED VAL )
     	string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" BLAS_VERSION ${VAL} )
+    	if    ( "${BLAS_VERSION}" STREQUAL "" )
+    		string ( REGEX MATCH "([0-9]+\\.[0-9])" BLAS_VERSION ${VAL} )
+    		if    ( "${BLAS_VERSION}" STREQUAL "" )
+    			string ( REGEX MATCH "([0-9])" BLAS_VERSION ${VAL} )
+			endif ( "${BLAS_VERSION}" STREQUAL "" ) 
+		endif ( "${BLAS_VERSION}" STREQUAL "" )    	
     else  ( DEFINED VAL )
     	set ( BLAS_VERSION "unknown BLAS version")
     endif ( DEFINED VAL )
 endif ( SCAI_BLAS_NAME MATCHES BLAS )
-endif ( LINUX )
+endif ( UNIX )

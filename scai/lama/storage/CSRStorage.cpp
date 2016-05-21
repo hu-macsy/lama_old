@@ -281,7 +281,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
         SCAI_CONTEXT_ACCESS( loc )
 
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
-        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), common::reduction::COPY );
+        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), utilskernel::reduction::COPY );
     }
 
 
@@ -310,7 +310,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     if( ia.size() == numRows )
     {
-        IndexType sumIA = HArrayUtils::reduce( ia, common::reduction::ADD );
+        IndexType sumIA = HArrayUtils::reduce( ia, utilskernel::reduction::ADD );
 
         SCAI_ASSERT_EQUAL( numValues, sumIA, "sizes do not sum up to numValues" );
     }
@@ -601,7 +601,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
     // make a correct initialization for the offset array
 
-    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), common::reduction::COPY  );
+    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), utilskernel::reduction::COPY  );
 
     mDiagonalProperty = checkDiagonalProperty();
 }
@@ -937,7 +937,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
     WriteOnlyAccess<OtherType> wRow( row, loc, mNumColumns );
 
-    setVal[loc]    ( wRow.get(), mNumColumns, OtherType( 0 ), common::reduction::COPY );
+    setVal[loc]    ( wRow.get(), mNumColumns, OtherType( 0 ), utilskernel::reduction::COPY );
 
     const ReadAccess<IndexType> ja( mJa, loc );
     const ReadAccess<ValueType> values( mValues, loc );
@@ -1169,8 +1169,8 @@ void CSRStorage<ValueType>::buildCSR(
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
 
-        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, common::reduction::COPY );
-        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, common::reduction::COPY );
+        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, utilskernel::reduction::COPY );
+        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, utilskernel::reduction::COPY );
     }
 
     // copy values
@@ -1185,7 +1185,7 @@ void CSRStorage<ValueType>::buildCSR(
         ReadAccess<ValueType> inValues( mValues, loc );
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
 
-        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, common::reduction::COPY );
+        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, utilskernel::reduction::COPY );
     }
 }
 
@@ -2388,7 +2388,7 @@ ValueType CSRStorage<ValueType>::maxNorm() const
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, common::reduction::ABS_MAX );
+    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, utilskernel::reduction::ABS_MAX );
 
     return maxval;
 }
@@ -2532,7 +2532,7 @@ const char* CSRStorage<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST )
 
 #define CSR_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
      template void CSRStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
@@ -2549,9 +2549,9 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HO
                                                     hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define CSR_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_HOST_CNT, ValueType, CSR_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_TYPELOOP_LVL2( ValueType, CSR_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_HOST_CNT, CSR_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_TYPELOOP( CSR_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef CSR_STORAGE_INST_LVL2
 #undef CSR_STORAGE_INST_LVL1

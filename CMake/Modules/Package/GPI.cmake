@@ -41,7 +41,7 @@ find_package ( GPI2 ${SCAI_FIND_PACKAGE_FLAGS} )
 if    ( GPI2_FOUND )
     ## get GPI2 version
     try_run ( GPI2_RUN_RESULT_VAR GPI2_COMPILE_RESULT_VAR
-        ${CMAKE_BINARY_DIR}
+        ${CMAKE_BINARY_DIR}/VersionCheck
         ${CMAKE_MODULE_PATH}/VersionCheck/gpi.cpp
         CMAKE_FLAGS 
         -DINCLUDE_DIRECTORIES:STRING=${GPI2_INCLUDE_DIR}

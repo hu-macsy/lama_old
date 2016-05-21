@@ -31,7 +31,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/ReductionOp.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 namespace scai
 {
@@ -76,7 +76,7 @@ struct UtilKernelTrait
          *  @return reduced value corresponding to the reduction operator
          */
 
-        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
+        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n, const reduction::ReductionOp op );
         static const char* getId() { return "Util.reduce"; }
     };
 
@@ -123,7 +123,7 @@ struct UtilKernelTrait
          *  A reduction operator like ADD, MULT can be used to combine the new value with the old value.
          */
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op );
         static const char* getId() { return "Util.setVal"; }
     };
 
@@ -148,7 +148,7 @@ struct UtilKernelTrait
     {
         /** Set out[i] _op= in[i],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
-        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op );
+        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
         static const char* getId() { return "Util.set"; }
     };
 

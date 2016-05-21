@@ -30,6 +30,7 @@ the logging levels.
 The configuration file should contain lines that specfy the levels of the logger.
 
 .. code-block:: bash
+
     <root> = DEBUG
     Vector = TRACE
     Vector.DenseVector = ERROR
@@ -50,6 +51,7 @@ For Debugging purposes it is also possible to flush the output of the logger, so
 displayed even if the program crashes. Flushing can be activated by the config file:
 
 .. code-block:: bash
+
     flush = true
 
 Formatstring

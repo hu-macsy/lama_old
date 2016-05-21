@@ -27,30 +27,17 @@
  # @date 25.04.2013
 ###
 
-### GNU compiler
-
 ## C Compiler
-if    ( CMAKE_COMPILER_IS_GNUCC )
-    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCC_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_COMPILER_IS_GNUCC )
+#needs not to be enabled, because the language C is not enabled --> not CMAKE_C_COMPILER
+#execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _cc_compiler_output )
+#string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" CC_COMPILER_VERSION ${_cc_compiler_output} )
 
 ## CXX Compiler
-if ( CMAKE_COMPILER_IS_GNUCXX )
-    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" GNUCXX_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_COMPILER_IS_GNUCXX )
-
-### Intel compiler
-
-## C Compiler
-if    ( CMAKE_CC_COMPILER_ID MATCHES Intel )
-    execute_process ( COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" IntelCC_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_CC_COMPILER_ID MATCHES Intel )
-
-## CXX Compiler
-if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _compiler_output )
-    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" IntelCXX_COMPILER_VERSION ${_compiler_output} )
-endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _cxx_compiler_output )
+string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" CXX_COMPILER_VERSION ${_cxx_compiler_output} )
+if    ( "${CXX_COMPILER_VERSION}" STREQUAL "" )
+    string ( REGEX MATCH "([0-9]+\\.[0-9])" CXX_COMPILER_VERSION ${VAL} )
+    if    ( "${CXX_COMPILER_VERSION}" STREQUAL "" )
+    	string ( REGEX MATCH "([0-9])" CXX_COMPILER_VERSION ${VAL} )
+	endif ( "${CXX_COMPILER_VERSION}" STREQUAL "" ) 
+endif ( "${CXX_COMPILER_VERSION}" STREQUAL "" ) 

@@ -67,7 +67,7 @@ SCAI_LOG_DEF_LOGGER( HArrayUtils::logger, "HArrayUtils" )
 
 void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextPtr prefLoc )
 {
-    assignOp( target, source, common::reduction::COPY, prefLoc );
+    assignOp( target, source, reduction::COPY, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -75,14 +75,14 @@ void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextP
 void HArrayUtils::assignOp(
     _HArray& target,
     const _HArray& source,
-    const common::reduction::ReductionOp op,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     ContextPtr loc = prefLoc;
 
     if ( !loc )
     {
-        if ( op == common::reduction::COPY )
+        if ( op == reduction::COPY )
         {
             // if no context is given we assign where source has a valid copy available
 
@@ -105,7 +105,7 @@ template<typename TargetValueType,typename SourceValueType>
 void HArrayUtils::setArray(
     HArray<TargetValueType>& target,
     const HArray<SourceValueType>& source,
-    const common::reduction::ReductionOp op,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     // verify that dynamic cast operations went okay before
@@ -125,7 +125,7 @@ void HArrayUtils::setArray(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    if ( op == common::reduction::COPY )
+    if ( op == reduction::COPY )
     {
         WriteOnlyAccess<TargetValueType> targetVals( target, loc, n );
         ReadAccess<SourceValueType> sourceVals( source, loc );
@@ -252,7 +252,7 @@ template<typename ValueType>
 void HArrayUtils::assignScalar(
     _HArray& target,
     const ValueType value,
-    const common::reduction::ReductionOp op,
+    const reduction::ReductionOp op,
     ContextPtr prefLoc )
 {
     mepr::UtilsWrapperT<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setScalar( target, value, op, prefLoc );
@@ -264,7 +264,7 @@ template<typename ValueType>
 void HArrayUtils::setScalar(
     HArray<ValueType>& target,
     const ValueType value,
-    const common::reduction::ReductionOp op,
+    const reduction::ReductionOp op,
     ContextPtr prefLoc )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
@@ -284,7 +284,7 @@ void HArrayUtils::setScalar(
 
     SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *loc << ", n = " << n )
 
-    if ( op == common::reduction::COPY )
+    if ( op == reduction::COPY )
     {
         // Note: very important is to specify the size n here as it might not have been allocated
 
@@ -334,7 +334,7 @@ void HArrayUtils::setValImpl(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal[loc]( wTarget.get() + index, 1, val, common::reduction::COPY );
+    setVal[loc]( wTarget.get() + index, 1, val, reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -390,7 +390,7 @@ void HArrayUtils::assignScaled(
 
     if ( beta == common::constants::ZERO )
     {
-        setScalar( result, beta, common::reduction::COPY, prefLoc );
+        setScalar( result, beta, reduction::COPY, prefLoc );
     }
     else if( &result == &y )
     {
@@ -401,7 +401,7 @@ void HArrayUtils::assignScaled(
 
         // result := beta * result, use setScalar, op == MULT
 
-        setScalar( result, beta, common::reduction::MULT, prefLoc );
+        setScalar( result, beta, reduction::MULT, prefLoc );
     }
     else
     {
@@ -433,7 +433,7 @@ void HArrayUtils::assignScaled(
 template<typename ValueType>
 void HArrayUtils::scale( HArray<ValueType>& array, const ValueType beta, ContextPtr prefLoc )
 {
-    setScalar( array, beta, common::reduction::MULT, prefLoc );
+    setScalar( array, beta, reduction::MULT, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -469,7 +469,7 @@ void HArrayUtils::conj( HArray<ValueType>& array, ContextPtr prefLoc )
 template<typename ValueType>
 ValueType HArrayUtils::reduce( 
     const HArray<ValueType>& array, 
-    const common::reduction::ReductionOp redOp,
+    const reduction::ReductionOp redOp,
     const ContextPtr prefLoc )
 {
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
@@ -984,7 +984,7 @@ void HArrayUtils::buildDenseArray(
 
     denseArray.clear();
     denseArray.resize( denseN ); 
-    HArrayUtils::setScalar( denseArray, ValueType( 0 ), common::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( denseArray, ValueType( 0 ), reduction::COPY, prefLoc );
 
     HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, prefLoc );
 }
@@ -998,7 +998,7 @@ void HArrayUtils::buildDenseArray(
                                                                 const hmemo::ContextPtr );                              \
     template void HArrayUtils::setArray<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                          \
                                                                 const hmemo::HArray<OtherValueType>&,                   \
-                                                                const common::reduction::ReductionOp,                   \
+                                                                const reduction::ReductionOp,                   \
                                                                 hmemo::ContextPtr );                                    \
     template void HArrayUtils::scatter<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                           \
                                                                 const hmemo::HArray<IndexType>&,                        \
@@ -1010,13 +1010,13 @@ void HArrayUtils::buildDenseArray(
     template ValueType HArrayUtils::getVal<ValueType>( const hmemo::_HArray&, const IndexType );                                  \
     template ValueType HArrayUtils::getValImpl<ValueType>( const hmemo::HArray<ValueType>&, const IndexType );                    \
     template void HArrayUtils::setScalar<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                                  \
-                                                     const common::reduction::ReductionOp, hmemo::ContextPtr);                    \
+                                                     const reduction::ReductionOp, hmemo::ContextPtr);                    \
     template void HArrayUtils::assignScaled<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                               \
                                                         const hmemo::HArray<ValueType>&, hmemo::ContextPtr);                      \
     template void HArrayUtils::scale<ValueType>( hmemo::HArray<ValueType>&, const ValueType, hmemo::ContextPtr );                 \
     template void HArrayUtils::conj<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr);                                    \
     template ValueType HArrayUtils::reduce<ValueType>( const hmemo::HArray<ValueType>&,                                           \
-                                                       const common::reduction::ReductionOp, hmemo::ContextPtr );                 \
+                                                       const reduction::ReductionOp, hmemo::ContextPtr );                 \
     template ValueType HArrayUtils::absMaxDiffVal<ValueType>( const hmemo::HArray<ValueType>&,                                    \
                                                               const hmemo::HArray<ValueType>&, hmemo::ContextPtr );               \
     template void HArrayUtils::axpy<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                                       \
@@ -1039,9 +1039,9 @@ void HArrayUtils::buildDenseArray(
                                                            const hmemo::HArray<ValueType>&,                                       \
                                                            const hmemo::HArray<IndexType>&, hmemo::ContextPtr );                  \
                                                                                                                                   \
-    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_ARRAY_HOST_CNT, ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_TYPELOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARITHMETIC_ARRAY_HOST )
 
-SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_TYPELOOP( HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 #undef HARRAUTILS_SPECIFIER_LVL2

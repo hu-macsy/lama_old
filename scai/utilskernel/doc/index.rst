@@ -14,6 +14,8 @@ Contents
    
    LArray
    LAMAKernel
+   ReductionOp
+
    
 *************
 Specification

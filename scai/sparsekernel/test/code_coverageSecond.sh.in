@@ -32,7 +32,9 @@
 
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
-	
+
+error_count=0
+
 # Running tests serial
 echo "Running serial tests"
 ./sparsekernelTest --SCAI_CONTEXT=Host >/dev/null

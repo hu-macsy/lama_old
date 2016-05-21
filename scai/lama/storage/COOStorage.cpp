@@ -280,7 +280,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     setOrder[loc]( ia.get(), mNumValues );
     setOrder[loc]( ja.get(), mNumValues );
 
-    setVal[loc]( values.get(), mNumValues, ValueType( 1 ), common::reduction::COPY );
+    setVal[loc]( values.get(), mNumValues, ValueType( 1 ), utilskernel::reduction::COPY );
 
     mDiagonalProperty = true;
 }
@@ -548,7 +548,7 @@ ValueType COOStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    return HArrayUtils::reduce( mValues, common::reduction::ABS_MAX, this->getContextPtr() );
+    return HArrayUtils::reduce( mValues, utilskernel::reduction::ABS_MAX, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -654,7 +654,7 @@ void COOStorage<ValueType>::matrixTimesVector(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
     }
     else
     {
@@ -751,7 +751,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
     }
     else
     {
@@ -802,7 +802,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
     }
     else
     {
@@ -955,7 +955,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherType>& dia
 
     // diagonal elements are the first entries of mValues
 
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::reduction::COPY );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::reduction::COPY );
 }
 
 template<typename ValueType>
@@ -979,7 +979,7 @@ void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherType>& diagonal 
 
     // diagonal elements are the first entries of mValues
 
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::reduction::COPY );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::reduction::COPY );
 }
 
 template<typename ValueType>
@@ -1019,7 +1019,7 @@ void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
     // multiply value with each entry of mValues
 
-    utilskernel::HArrayUtils::setScalar( mValues, value, common::reduction::MULT, this->getContextPtr() );
+    utilskernel::HArrayUtils::setScalar( mValues, value, utilskernel::reduction::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1047,7 +1047,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
     }
     else
     {
@@ -1212,7 +1212,7 @@ const char* COOStorage<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST )
 
 #define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
      template void COOStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
@@ -1226,9 +1226,9 @@ SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HO
      template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );
 
 #define COO_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_HOST_CNT, ValueType, COO_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_TYPELOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_HOST_CNT, COO_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_TYPELOOP( COO_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef COO_STORAGE_INST_LVL2
 #undef COO_STORAGE_INST_LVL1

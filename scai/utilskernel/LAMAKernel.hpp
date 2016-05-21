@@ -61,24 +61,10 @@ public:
         return kregistry::KernelTraitContextFunction<KernelTrait>::operator[]( context->getType() );
     }
 
-    hmemo::ContextPtr getValidContext1( hmemo::ContextPtr defaultContext ) 
-    {
-        SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
-
-        common::context::ContextType defCtx = defaultContext->getType();
-        common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( defCtx );
-
-        if ( runCtx == defCtx )
-        {
-            return defaultContext;
-        }
-        else
-        {
-            return hmemo::Context::getHostPtr();  // do it on host
-        }
-    }
-
-    /** Update context if function is not supported on preferred context. */
+    /** Update context if function is not supported on preferred context. 
+     * 
+     *  @param[in,out] context where the kernel should be executed
+     */
 
     void getSupportedContext( hmemo::ContextPtr& context ) const
     {
@@ -92,6 +78,12 @@ public:
             context = hmemo::Context::getHostPtr();
         }
     }
+
+    /** Update context if function is not supported on preferred context. 
+     * 
+     *  @param[in,out] context where the kernel should be executed (in) and can be executed (out)
+     *  @param[in] other another kernel function that is also called
+     */
 
     void getSupportedContext( hmemo::ContextPtr& context, const kregistry::_ContextFunction& other ) const
     {

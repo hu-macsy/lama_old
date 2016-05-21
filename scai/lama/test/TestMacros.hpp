@@ -351,13 +351,13 @@
  * @param name          name of test method, which will invoke.
  * @param classname     name of the given test class.
 */
-#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                                                        \
-                                                                                                                                        \
-    BOOST_AUTO_TEST_CASE( name )                                                                                                        \
-    {                                                                                                                                   \
-            ContextPtr context = Context::getContextPtr();                                                                              \
-            const std::string lama_name = #name;                                                                                        \
-            const std::string lama_classname = #classname;                                                                              \
-            SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_HOST_CNT, namespacename::classname::name, LAMA_RUN_TEST, SCAI_ARITHMETIC_HOST )  \
+#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                       \
+                                                                                                       \
+    BOOST_AUTO_TEST_CASE( name )                                                                       \
+    {                                                                                                  \
+            ContextPtr context = Context::getContextPtr();                                             \
+            const std::string lama_name = #name;                                                       \
+            const std::string lama_classname = #classname;                                             \
+            SCAI_COMMON_TYPELOOP_LVL2( namespacename::classname::name, LAMA_RUN_TEST, SCAI_ARITHMETIC_HOST )  \
     }
 

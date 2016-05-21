@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include <scai/common/macros/count.hpp>
+
 namespace scai
 {
 
@@ -89,3 +91,5 @@ struct TypeList
  */
 
 #define TYPELIST( N, ... ) TYPELIST_N( N, __VA_ARGS__ )
+
+#define SCAI_TYPELIST( ... ) TYPELIST( SCAI_COMMON_COUNT_NARG( __VA_ARGS__ ), __VA_ARGS__ )

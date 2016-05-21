@@ -37,7 +37,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/ReductionOp.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 #include <scai/kregistry/mepr/Registrator.hpp>
 
@@ -74,12 +74,12 @@ public:
     /** OpenMP implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
+    static ValueType reduce( const ValueType array[], const IndexType n, const reduction::ReductionOp op );
 
     /** OpenMP implementation for UtilKernelTrait::Setter::setVal */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op );
 
     /** OpenMP implementation for UtilKernelTrait::Setter::setOrder */
 
@@ -102,7 +102,7 @@ public:
     /** OpenMP implementation for UtilKernelTrait::set */
 
     template<typename ValueType1,typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op );
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
 
     /** OpenMP implementation for UtilKernelTrait::setGather */
 

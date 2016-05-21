@@ -32,11 +32,12 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+#include <scai/utilskernel/ReductionOp.hpp>
+
 // internal scai libraries
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/ReductionOp.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/kregistry/mepr/Registrator.hpp>
 
@@ -59,12 +60,12 @@ public:
     /*  CUDA implementation of UtilKernelTrait::reduce  */
 
     template<typename ValueType>
-    static ValueType reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
+    static ValueType reduce( const ValueType array[], const IndexType n, const reduction::ReductionOp op );
 
     /*  CUDA implementation of UtilKernelTrait::setVal  */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op );
 
     /*  CUDA implementation of UtilKernelTrait::setOrder  */
 
@@ -108,7 +109,7 @@ public:
     /** CUDA implementation for UtilKernelTrait::set */
 
     template<typename ValueType,typename otherValueType>
-    static void set( ValueType out[], const otherValueType in[], const IndexType n, const common::reduction::ReductionOp op );
+    static void set( ValueType out[], const otherValueType in[], const IndexType n, const reduction::ReductionOp op );
 
     /** CUDA implementation for UtilKernelTrait::setGather, out[i]] = in[ indexes[i] ] */
 

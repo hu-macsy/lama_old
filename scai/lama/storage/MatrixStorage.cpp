@@ -220,7 +220,7 @@ IndexType _MatrixStorage::getNumValues() const
     reduce.getSupportedContext( loc);
 
     ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, common::reduction::ADD );
+    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, utilskernel::reduction::ADD );
     return numValues;
 }
 
@@ -553,7 +553,7 @@ void MatrixStorage<ValueType>::joinRows(
     {
         WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
         ReadAccess<IndexType> sizes( outSizes );
-        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, common::reduction::COPY );
+        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, utilskernel::reduction::COPY );
         OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
     }
     WriteAccess<IndexType> tmpIA( IA );
@@ -1391,15 +1391,15 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
                 const IndexType, const IndexType, const OtherValueType*, const ValueType );
 
 #define LAMA_MATRIXSTORAGE_INST( ValueType )                                                                                    \
-    SCAI_COMMON_TYPELOOP_LVL2( SCAI_ARITHMETIC_HOST_CNT, ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_TYPELOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_HOST_CNT, LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_TYPELOOP( LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
 
 #undef LAMA_MATRIXSTORAGE2_INST
 #undef LAMA_MATRIXSTORAGE_INST
 
 
-SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

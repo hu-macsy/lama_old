@@ -98,8 +98,8 @@ set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
 
 set ( EXT_HOST_TYPES_LIST ${SCAI_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
-set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
-set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )      #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} )       #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 
 list ( LENGTH SCAI_HOST_TYPES_LIST NUM_ALL_HOST_TYPES )
 list ( LENGTH EXT_HOST_TYPES_LIST NUM_EXT_HOST_TYPES )
@@ -108,8 +108,8 @@ list ( LENGTH MIC_TYPES_LIST NUM_MIC_TYPES )
 
 math ( EXPR NUM_ALL_HOST_ARRAY_TYPES "${NUM_ALL_HOST_TYPES}+1" )
 math ( EXPR NUM_EXT_HOST_ARRAY_TYPES "${NUM_EXT_HOST_TYPES}+1" )
-math ( EXPR NUM_CUDA_ARRAY_TYPES "${NUM_CUDA_TYPES}+1" )
-math ( EXPR NUM_MIC_ARRAY_TYPES "${NUM_MIC_TYPES}+1" )
+math ( EXPR NUM_CUDA_ARRAY_TYPES     "${NUM_CUDA_TYPES}+1" )
+math ( EXPR NUM_MIC_ARRAY_TYPES      "${NUM_MIC_TYPES}+1" )
 
 # make strings out of list
 include ( Functions/listToString )
@@ -118,18 +118,37 @@ listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
 listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
 listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
 
-# find "biggest" type as ScalarRepType
+# set "biggest" common type as ScalarRepType
 # last found element in TYPE_LIST_VALUES
 
-set ( INDEX -1 )
+set ( INDEX1 -1 )
+set ( INDEX2 -1 )
 foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
-    list ( FIND TYPE_LIST_VALUES ${ITEM} FOUND_INDEX )
-    if    ( FOUND_INDEX GREATER INDEX )
-        set ( INDEX ${FOUND_INDEX})
-    endif ( FOUND_INDEX GREATER INDEX )
+    list ( FIND NONE_COMPLEX_VALUES ${ITEM} FOUND_INDEX1 )
+    if    ( FOUND_INDEX1 GREATER INDEX1 )
+        set ( INDEX1 ${FOUND_INDEX1})
+    endif ( FOUND_INDEX1 GREATER INDEX1 )
+
+    if    ( ${USE_COMPLEX} )
+        list ( FIND COMPLEX_VALUES ${ITEM} FOUND_INDEX2 )
+        if    ( FOUND_INDEX2 GREATER INDEX2 )
+            set ( INDEX2 ${FOUND_INDEX2})
+        endif ( FOUND_INDEX2 GREATER INDEX2 )
+    endif ( ${USE_COMPLEX} )
+
 endforeach ( ITEM ${SCAI_HOST_TYPES_LIST} )
 
-list ( GET TYPE_LIST_VALUES ${INDEX} SCAI_SCALAR_REP_TYPE )
+if    ( ${USE_COMPLEX} )
+    if    ( INDEX1 GREATER INDEX2 )
+        list ( LENGTH NONE_COMPLEX_VALUES INDEX )
+        math ( EXPR INDEX "${INDEX}+${INDEX1}")
+        list ( GET TYPE_LIST_VALUES ${INDEX} SCAI_SCALAR_REP_TYPE ) # take biggest combinatation as value type
+    else  ( INDEX1 GREATER INDEX2 )
+        list ( GET COMPLEX_VALUES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
+    endif ( INDEX1 GREATER INDEX2 )
+else  ( ${USE_COMPLEX} )
+    list ( GET NONE_COMPLEX_VALUES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
+endif ( ${USE_COMPLEX} )
 
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )
 
@@ -165,7 +184,6 @@ set ( COMMON_HEADERS
         Factory1
         Math
         OpenMP
-        ReductionOp
         NonCopyable
 )
 
