@@ -1,4 +1,4 @@
-.. _matrix:
+.. _lama_Matrix:
 
 Matrix
 ======
@@ -18,7 +18,7 @@ LAMA preserves the following sparse matrix formats:
  - coordinate (COO)
  - diagonal (DIA)
  
-For a detailed description on the different storage types, see :doc:`storage`.
+For a detailed description on the different storage types, see :doc:`SetStorage`.
 
 You can create the specific matrix types by the same constructor giving the number of rows and columns:
 
@@ -55,7 +55,7 @@ another:
    ELLSparseMatrix<ValueType> ellMatrix( csrMatrix );
    
 Of course you can create a matrix from file. For a detailed description on supported file formats please refer to
-:doc:`io`. All data read in is stored in CSRStorage and converted to the target format afterwards.
+:doc:`IO`. All data read in is stored in CSRStorage and converted to the target format afterwards.
 
 .. code-block:: c++
 

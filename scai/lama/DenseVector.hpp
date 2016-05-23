@@ -75,10 +75,15 @@ class COMMON_DLL_IMPORTEXPORT DenseVector:
 {
 public:
 
-    /** Default constructor, creates replicated 0 vector */
+    /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
 
     DenseVector();
 
+    /**
+     * @brief creates a not initialized distributed DenseVector of the passed global size.
+     *
+     * @param[in] context  the context to use for the new vector.
+     */
     explicit DenseVector( hmemo::ContextPtr context );
 
     /**
@@ -87,6 +92,14 @@ public:
      * @param[in] distribution  the distribution to use for the new vector.
      */
     explicit DenseVector( dmemo::DistributionPtr distribution );
+
+    /**
+     * @brief creates a not initialized distributed DenseVector of the passed global size.
+     *
+     * @param[in] distribution  the distribution to use for the new vector.
+     * @param[in] context  the context to use for the new vector.
+     */
+    explicit DenseVector ( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
 
     /**
      * @brief creates a replicated DenseVector of the passed size initialized to the passed value.
