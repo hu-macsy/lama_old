@@ -8,7 +8,7 @@ LAMA
 Description
 ***********
 
-LAMA stands for Library of Accelerated Math Applications. It realizes an easy-to-use text-book-syntax for writing algorithms using mathematical notitation. It is intended for the fast development of heterogeneous software in the field of linear algebra. By using the three basic data structures **Scalar**, **Vector and **Matrix** for the formulation of an algorithm shifts the decision of the executing target architecture, distribution strategy, (sparse) storage format and data type to a later time. Implementing algorithms once and choosen the right configuration when implementing different use cases saves the user time and reduce the maintenance of similar codes. Code is only written once and can be executed on any system, reaching from embedded devices to supercomputers fitting the problem.
+LAMA stands for Library of Accelerated Math Applications. It realizes an easy-to-use text-book-syntax for writing algorithms using mathematical notitation. It is intended for the fast development of heterogeneous software in the field of linear algebra. By using the three basic data structures **Scalar**, **Vector** and **Matrix** for the formulation of an algorithm shifts the decision of the executing target architecture, distribution strategy, (sparse) storage format and data type to a later time. Implementing algorithms once and choosen the right configuration when implementing different use cases saves the user time and reduce the maintenance of similar codes. Code is only written once and can be executed on any system, reaching from embedded devices to supercomputers fitting the problem.
 
 This flexibilty is enabled by the underlying layers. Due to the library hmemo the memory of LAMA's data structures is managed hidden from the user on any supported target architecture - for choosing one set a execution **Context**. The library dmemo offers distribution strategies for multi-node installations and prepares communication routines addressed by LAMA, so no explicit formulation for data exchanged is needed - for handling multiple nodes set a **Distribution** with an **Communicator**. Besides the Math Kernel libraries facilitate kernel functions for dense and sparse matrix-vector operations on every back-end - for using a specific data type and storage format use one.
 
@@ -66,7 +66,6 @@ Class                     Description
 
 	expressions
 	io
-	storage
 
 .. *********
 .. Relations
@@ -84,7 +83,12 @@ Examples
 Dependencies
 ************
 
-LAMA is dependant of all underlying libraries dmemo, sparsekernel, utilskernel, blaskernel, kregistry, hmemo, tasking, tracing, logging and common as well as there external libraries MPI*, GPI*, MKL*/BLAS, cuBlas*, cuSparse*, OpenMP*, CUDA*, Java*, pThreads, Boost**, dl (* optional, **only without C++11 compiler).
+LAMA is dependant of all underlying libraries dmemo, sparsekernel, utilskernel, blaskernel, kregistry, hmemo, tasking, tracing, logging and common as well as there external libraries MPI [#f1]_, GPI [#f1]_, MKL [#f1]_/BLAS, cuBlas [#f1]_, cuSparse [#f1]_, OpenMP [#f1]_, CUDA [#f1]_, Java [#f1]_, pThreads, Boost [#f2]_, dl 
+
+.. rubric:: Footnotes
+
+.. [#f1] optional component
+.. [#f2] only needed when the used compiler is not capable of needed C++ 11 features
 
 ************
 Related Work
