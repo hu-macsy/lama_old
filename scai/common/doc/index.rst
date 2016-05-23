@@ -174,7 +174,20 @@ Usage
 * When the native C++ compiler does not support the C+11 standard,
   the Boost header files are needed and the include path
   for the Boost header files must be specified for the compilation.
-* Using the Settings class requires that the command line arguments are parsed.
+
+Using the Settings class requires that the command line arguments are parsed.
+
+.. code-block:: c++
+
+    int main( int argc, const char* argv[] )
+    {
+        common::settings::parseArgs( argc, argv );
+        ...
+    }
+
+The following environment variables are used by the COMMON library:
+
+* ``SCAI_UNSUPPORTED`` (ignore, warn, or error) when using the macro ``SCAI_UNSUPPORTED``
 
 ************
 Dependencies
@@ -197,3 +210,5 @@ Related Work
 * Macros and Meta Programming are techniques that are well described in
   "C++ Template Metaprogramming," by David Abrahams and Aleksey Gurtovoy. Copyright (c) 2005 by Pearson Education, Inc. 
 * Factory stuff as dynamic extension, similiar to module conecpt of Python
+* The Curiously recurring template pattern as an idiom of C++ is well described
+  `here <https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern>`_
