@@ -37,7 +37,7 @@ scai_project(
         instantiate
         print_string
         throw
-        typeloop
+        loop
         unique_name
         unused
 

@@ -125,6 +125,6 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 #define SCAI_ARITHMETIC_ARRAY_CUDA_LIST     SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_CUDA )
 #define SCAI_ARITHMETIC_ARRAY_MIC_LIST      SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_MIC )
 
-/** Representation type for Scalar must be the one with highest precision */
+/** Representation type for Scalar must be the arithmetic type with highest precision */
 
 typedef ${SCAI_SCALAR_REP_TYPE} ScalarRepType;

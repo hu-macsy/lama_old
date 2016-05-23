@@ -1677,9 +1677,9 @@ SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST )
                                                     hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define JDS_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_TYPELOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_TYPELOOP( JDS_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef JDS_STORAGE_INST_LVL2
 #undef JDS_STORAGE_INST_LVL1

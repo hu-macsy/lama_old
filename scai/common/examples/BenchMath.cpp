@@ -188,7 +188,7 @@ double avg_time( const size_t N, const double* time_data )
 
 void parseArguments( int argc, char **argv, size_t& repitions, size_t& N )
 {
-    for( int i = 0; i < argc; ++i )
+    for( int i = 1; i < argc; ++i )
     {
         std::stringstream s( argv[i] );
         std::string content;

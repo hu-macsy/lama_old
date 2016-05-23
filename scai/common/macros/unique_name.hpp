@@ -31,22 +31,22 @@
 
 /** Help macro to concatenate two symbols, can also deal with nested calls. */
 
-#define LAMA_JOIN( symbol1, symbol2 ) _LAMA_DO_JOIN( symbol1, symbol2 )
+#define SCAI_COMMON_JOIN( symbol1, symbol2 ) _SCAI_COMMON_DO_JOIN( symbol1, symbol2 )
 
-/** Help macro to deal with nested calls of LAMA_JOIN */
+/** Help macro to deal with nested calls of SCAI_COMMON_JOIN */
 
-#define _LAMA_DO_JOIN( symbol1, symbol2 ) _LAMA_DO_JOIN2( symbol1, symbol2 )
+#define _SCAI_COMMON_DO_JOIN( symbol1, symbol2 ) _SCAI_COMMON_DO_JOIN2( symbol1, symbol2 )
 
-/** Furtherhelp macro to deal with nested calls of LAMA_JOIN */
+/** Furtherhelp macro to deal with nested calls of SCAI_COMMON_JOIN */
 
-#define _LAMA_DO_JOIN2( symbol1, symbol2 ) symbol1##symbol2
+#define _SCAI_COMMON_DO_JOIN2( symbol1, symbol2 ) symbol1##symbol2
 
 /** @brief Creates a unique symbol name by joining the prefix, the line and the postfix.
  *
  *  \code
- *  LAMA_UNIQUE_NAME( Interface, Registry ) -> Interface17Registry
+ *  SCAI_COMMON_UNIQUE_NAME( Interface, Registry ) -> Interface17Registry
  *  \endcode
  */
 
-#define LAMA_UNIQUE_NAME( prefix, postfix )                                    \
-    LAMA_JOIN( prefix , LAMA_JOIN( __LINE__ , postfix ) )
+#define SCAI_COMMON_UNIQUE_NAME( prefix, postfix )                                    \
+    SCAI_COMMON_JOIN( prefix , SCAI_COMMON_JOIN( __LINE__ , postfix ) )

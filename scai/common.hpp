@@ -75,7 +75,7 @@
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/throw.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 #include <scai/common/macros/unique_name.hpp>
 #include <scai/common/macros/unused.hpp>
 

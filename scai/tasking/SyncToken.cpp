@@ -192,7 +192,7 @@ SyncToken* SyncToken::getCurrentSyncToken()
 
 // we can rely on the fact that thread-private variable is initialized with NULL 
 
-common::ThreadPrivatePtr<SyncToken> SyncToken::currentSyncToken;
+SCAI_THREAD_PRIVATE_PTR( SyncToken, SyncToken::currentSyncToken )
 
 /* ----------------------------------------------------------------------- */
 
