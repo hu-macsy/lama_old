@@ -4,8 +4,16 @@
 SCAI DMemo
 ##########
 
-* Handles distributed memory
-* Provides Communicators and Distributions
+DMemo stands for **Distributed Memory** and is a library that provides distribution and communication
+routines for data structures using heterogeneous arrays.
+
+* A distribution defines a mapping of data (e.g. vectors, arrays) to the processors of the distributed-memory
+  platform.
+* In contrary to the communication primitives provided by the MPI or GPI communication libraries, the 
+  communication routines provided here are more high-level routines that provide operations on arrays or
+  vectors that involve communication, e.g. redistributions or halo exchange. Furthermore, they exploit
+  C++ features like overloading and templates and by using the SCAI heterogeneous arrays they are aware 
+  of valid instantions of the data to be communicated.
 
 ********
 Contents
@@ -15,30 +23,22 @@ Contents
    :titlesonly:
    :maxdepth: 1
    
-   distributions
+   Distribution
+   Communicator
+   CommunicationPlan
 
-**********
-Motivation
-**********
+Here is a list of provided classes of the DMemo library
 
-DMemo stands for **Distributed Memory** and is a library that provides distribution and communication.
-routines.
-
-*************
-DMemo Classes
-*************
-
-Here is a complete list of provided classes of the DMemo library
-
-=================     ================================================================================
-Class                 Description
-=================     ================================================================================
-Communicator          Base class for communication between different partitions
-NoCommunicator        Default communicator 
-MPICommunicator       MPI Communicator
-GPICommunicator       GASPI Communicator
-Distribution          Mapping of an index range to a number of partitions
-=================     ================================================================================
+======================== ================================================================================
+Class                    Description
+======================== ================================================================================
+:ref:`Communicator`      Base class for communication between different partitions
+NoCommunicator           Default communicator 
+MPICommunicator          MPI Communicator
+GPICommunicator          GASPI Communicator
+Distribution             Mapping of an index range to a number of partitions
+:ref:`CommunicationPlan` Communication schedule for exchanging non-local values
+======================== ================================================================================
 
 *************
 Relationships
@@ -95,4 +95,5 @@ External dependencies:
 Related Work
 ************
 
-* Boost MPI 
+* Boost MPI
+* `CUDA Aware MPI <https://devblogs.nvidia.com/parallelforall/introduction-cuda-aware-mpi>`_
