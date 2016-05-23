@@ -41,7 +41,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
@@ -560,9 +560,9 @@ Distribution* Distribution::getDistribution(
 
 #define DMEMO_DISTRIBUTE_INST( ValueType )  \
     template void Distribution::replicateRagged<ValueType>( ValueType*, const ValueType*, const IndexType* ) const;                 \
-    SCAI_COMMON_TYPELOOP_LVL2( ValueType, DMEMO_DISTRIBUTE2_INST, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, DMEMO_DISTRIBUTE2_INST, SCAI_ARITHMETIC_ARRAY_HOST )
 
-SCAI_COMMON_TYPELOOP( DMEMO_DISTRIBUTE_INST, SCAI_ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_LOOP( DMEMO_DISTRIBUTE_INST, SCAI_ARITHMETIC_ARRAY_HOST )
      
 // template instantiation for the supported data types
 

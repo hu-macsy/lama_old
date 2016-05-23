@@ -46,13 +46,24 @@
          19, 18, 17, 16, 15, 14, 13, 12, 11, 10, \
           9,  8,  7,  6,  5,  4,  3,  2,  1,  0
 
-#define SCAI_COMMON_COUNT_NARG_(...) SCAI_COMMON_COUNT_ARG_N(__VA_ARGS__)
+#define SCAI_COMMON_COUNT_NARG_( ... ) SCAI_COMMON_COUNT_ARG_N( __VA_ARGS__ )
 
-/** This macro counts the number of arguments for a variadic list */
+/** This macro counts the number of arguments for a variadic list
+ *
+ *  \code
+ *     SCAI_COMMON_COUT_NARG( A, B, C, D, E ) -> 5
+ *     SCAI_COMMON_COUT_NARG( ) -> 0 
+ *  \endcode
+ */
 
 #define SCAI_COMMON_COUNT_NARG(...) SCAI_COMMON_COUNT_NARG_( __VA_ARGS__, SCAI_COMMON_COUNT_RSEQ_N() )
 
-/** Macro gives the first argument of a variadic argument list. Uses help macro to force evaluation of macro before */
+/** Macro gives the first argument of a variadic argument list. Uses help macro to force evaluation of macro before
+ *
+ *  \code
+ *     SCAI_COMMON_FIRST_ARG( A, B, C, D, E ) -> A
+ *  \endcode
+ */
 
 #define SCAI_COMMON_FIRST_ARG( x, ... ) _SCAI_COMMON_FIRST_ARG( x, __VA_ARGS__ )
 

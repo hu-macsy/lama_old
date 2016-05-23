@@ -31,7 +31,7 @@
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 #include <scai/logging.hpp>
 #include <scai/hmemo/Context.hpp>
 #include <scai/kregistry/test/TestMacros.hpp>
@@ -358,6 +358,6 @@
             ContextPtr context = Context::getContextPtr();                                             \
             const std::string lama_name = #name;                                                       \
             const std::string lama_classname = #classname;                                             \
-            SCAI_COMMON_TYPELOOP_LVL2( namespacename::classname::name, LAMA_RUN_TEST, SCAI_ARITHMETIC_HOST )  \
+            SCAI_COMMON_LOOP_LVL2( namespacename::classname::name, LAMA_RUN_TEST, SCAI_ARITHMETIC_HOST )  \
     }
 

@@ -2549,9 +2549,9 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST )
                                                     hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define CSR_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_TYPELOOP_LVL2( ValueType, CSR_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, CSR_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_TYPELOOP( CSR_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( CSR_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef CSR_STORAGE_INST_LVL2
 #undef CSR_STORAGE_INST_LVL1

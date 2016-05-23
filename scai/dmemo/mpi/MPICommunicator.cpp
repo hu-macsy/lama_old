@@ -42,7 +42,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 #include <scai/common/Math.hpp>
 
 // std
@@ -1135,7 +1135,7 @@ Communicator::CommunicatorKind MPICommunicator::createValue()
     void MPICommunicator::maxlocImpl(                             \
             _type &, IndexType&, PartitionId) const;
 
-SCAI_COMMON_TYPELOOP( SCAI_DMEMO_MPI_METHODS_INSTANTIATE, SCAI_ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_LOOP( SCAI_DMEMO_MPI_METHODS_INSTANTIATE, SCAI_ARITHMETIC_ARRAY_HOST )
 
 #undef SCAI_DMEMO_MPI_METHODS_INSTANTIATE
 

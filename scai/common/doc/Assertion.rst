@@ -21,7 +21,7 @@ Instead of this construct the ``ASSERT`` macro can be used in the following way
 
   #include <scai/common/macros/assert.hpp>
 
-  SCAI_ASSERT( val >= 0, "sub: val must not be negative, val = " << val )
+  SCAI_ASSERT_GE( val, 0, "sub: val must not be negative, val = " << val )
 
 Beside the more convenient usage, one other advantage of the assert macro is
 that it can be compiled out of the code by using the flag:

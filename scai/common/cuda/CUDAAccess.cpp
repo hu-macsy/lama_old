@@ -44,7 +44,9 @@ namespace common
 // The current CUDA device can be accessed globally, but should be thread-private
 // we can rely on the fact that thread-private variable is initialized with NULL 
 
-static common::ThreadPrivatePtr<const CUDACtx> currentCUDACtx;
+// static common::ThreadPrivatePtr<const CUDACtx> currentCUDACtx;
+
+static SCAI_THREAD_PRIVATE_PTR( const CUDACtx, currentCUDACtx )
 
 const CUDACtx* CUDAAccess::enable( const CUDACtx& ctx )
 {

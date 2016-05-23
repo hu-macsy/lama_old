@@ -1,3 +1,5 @@
+.. _setContext:
+
 Setting a Context
 =================
 

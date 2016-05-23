@@ -52,6 +52,7 @@ set ( EXAMPLE_MODULES "Module.so DummyModule.so" ) # for make.inc
 set ( EXECUTABLE_FILES ExceptionDemo CriticalRegion Barrier 
           DemoFactory DemoFactory1 DemoPointer UseModule TimePrecision 
           DemoTypeTrait DemoSettings DemoMath DemoFunction 
+          DemoLoopMacro
           DemoMetaProgramming BenchPointers BenchMath )
 
 if    ( ${USE_COMPLEX} )

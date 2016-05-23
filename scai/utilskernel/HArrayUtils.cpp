@@ -48,7 +48,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/ScalarType.hpp>
 
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 
 // std
 #include <iostream>
@@ -1039,9 +1039,9 @@ void HArrayUtils::buildDenseArray(
                                                            const hmemo::HArray<ValueType>&,                                       \
                                                            const hmemo::HArray<IndexType>&, hmemo::ContextPtr );                  \
                                                                                                                                   \
-    SCAI_COMMON_TYPELOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARITHMETIC_ARRAY_HOST )
 
-SCAI_COMMON_TYPELOOP( HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 #undef HARRAUTILS_SPECIFIER_LVL2
