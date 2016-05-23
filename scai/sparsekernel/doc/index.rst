@@ -56,13 +56,13 @@ Calculate matrix-vector multiplication with given ELL input-set on host.
 Environment-Variables
 *********************
 
-- SCAI_CUDA_USE_CUSPARSE
+- SCAI_CUDA_USE_CUSPARSE=[0|1]
 
   - used to turn on/off the usage of cusparse for the csr format on cuda
   
   - default value: off 
 
-- SCAI_USE_MKL [host and mic]
+- SCAI_USE_MKL=[0|1]
 
   - used to turn on/off the usage of mkl for the csr format on host and mic
   
@@ -108,6 +108,18 @@ inside of SparseKernel.
     - COO, CSR, CSC, HYB (mixed ELL/COO), BSR, BSRX
   
     - provides just functions for Nvidia GPUs
+    
+  - `CUSP`_
+  
+    - COO, CSR, DIA, ELL, HYB, Permutation
+    
+    - useable on x86 CPUs and Nvidia GPUs
+    
+  - `clSPARSE`_
+  
+    - COO, CSR 
+  
+    - useable on devices that can be utilized using OpenCL
   
   - `MKL`_
  
@@ -115,7 +127,7 @@ inside of SparseKernel.
   
     - provides just functions on x86 CPUs 
 
-- Books
+- Papers / Books
 
   - Yousef Saad `Iterative Methods for Sparse Linear Systems`_ 
    
@@ -124,4 +136,6 @@ inside of SparseKernel.
    
 .. _CUSPARSE : http://docs.nvidia.com/cuda/cusparse
 .. _MKL : https://software.intel.com/en-us/articles/intel-mkl-sparse-blas-overview
+.. _CUSP : https://github.com/cusplibrary/cusplibrary
+.. _clSPARSE : https://github.com/clMathLibraries/clSPARSE
 .. _Iterative Methods for Sparse Linear Systems : http://www-users.cs.umn.edu/~saad/books.html
