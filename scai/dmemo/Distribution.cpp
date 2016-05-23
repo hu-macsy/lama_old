@@ -41,7 +41,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
