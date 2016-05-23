@@ -98,3 +98,30 @@ Dependencies
 Related Work
 ************
 
+There are different libraries which provides similar functionality. Some of them can be used
+inside of SparseKernel.
+
+- Software
+
+  - `CUSPARSE`_
+
+    - COO, CSR, CSC, HYB (mixed ELL/COO), BSR, BSRX
+  
+    - provides just functions for Nvidia GPUs
+  
+  - `MKL`_
+ 
+    - BSR, COO, CSC, CSR, DIA, SKY
+  
+    - provides just functions on x86 CPUs 
+
+- Books
+
+  - Yousef Saad `Iterative Methods for Sparse Linear Systems`_ 
+   
+    - describes various sparse storage formats ( COO, CSC, CSR, MSR, DIA, ELL, JDS ) 
+   
+   
+.. _CUSPARSE : http://docs.nvidia.com/cuda/cusparse
+.. _MKL : https://software.intel.com/en-us/articles/intel-mkl-sparse-blas-overview
+.. _Iterative Methods for Sparse Linear Systems : http://www-users.cs.umn.edu/~saad/books.html
