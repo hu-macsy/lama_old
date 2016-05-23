@@ -1,5 +1,5 @@
-Contexts
-========
+Setting a Context
+=================
 
 A *Context* is a concept used by LAMA to define where to execute a calculation and therefor where to store the data.
 The default context is always the **Host** (CPU). Beneath the host context there exists two other contexts in LAMA:
