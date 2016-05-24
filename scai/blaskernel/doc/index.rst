@@ -23,9 +23,9 @@ Contents
    
    Wrapping
    
-*************
+*********
 Relations
-*************
+*********
 
 The provided functions for the different back-ends register theirselfs in the KernelRegistry through the
 BLASKernelTrait. 
