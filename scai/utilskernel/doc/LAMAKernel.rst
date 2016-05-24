@@ -1,4 +1,4 @@
-Class LamaKernel
+Class LAMAKernel
 ================
 
 The class LAMAKernel is a further extension with the only difference that it uses a Context object for
@@ -18,3 +18,4 @@ It is not introduced in the library kregistry.
       hmemo::ContextPtr getValidContext( kregistry::_ContextFunction other, 
                                          hmemo::ContextPtr defaultContext )
   }; 
+  
