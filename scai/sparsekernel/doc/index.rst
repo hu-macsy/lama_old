@@ -47,9 +47,10 @@ Calculate matrix-vector multiplication with given ELL input-set on host.
 
 .. code-block:: c++
 
-	// Get Function from Registry
-	KernelTraitContextFunction<ELLKernelTrait::normalGEMV<ValueType> > gemv;
+	// Get function from Registry
+	kregistry::KernelTraitContextFunction<ELLKernelTrait::normalGEMV<ValueType> > gemv;
 	
+	// Call function on host
 	gemv[context::Host]( b, one, x, zero, b, m, max_nnz, sizes, ja, values );
 	
 
