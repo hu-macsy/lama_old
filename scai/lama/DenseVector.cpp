@@ -100,6 +100,15 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution )
 }
 
 template<typename ValueType>
+DenseVector<ValueType>::DenseVector( DistributionPtr distribution, ContextPtr context )
+                : Vector( distribution, context ), mLocalValues( distribution->getLocalSize() )
+{
+    SCAI_LOG_INFO( logger, "Construct dense vector on context = " << context << ", size = " << distribution->getGlobalSize()
+    // << ", type = " << typename(ValueType)
+                   << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
+}
+
+template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value, ContextPtr context )
                 : Vector( size, context ), mLocalValues( size, value, context )
 {

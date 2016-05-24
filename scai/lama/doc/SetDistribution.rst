@@ -1,4 +1,4 @@
-.. _setDistribution:
+.. _lama_SetDistribution:
 
 Setting a Distribution
 ======================

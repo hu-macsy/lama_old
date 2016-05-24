@@ -4,15 +4,17 @@
 SCAI SparseKernel 
 #################
 
-**********
-Motivation
-**********
+***********
+Description
+***********
 
 The SparseKernel library is used to group functionality for different sparse matrix formats.
-Currently the COO, CSR, DIA, ELL and JDS formats are supported. Additionally some routines 
-for converting dense to CSR are included. The functions are provided for different backends. 
-Every format supports the matrix-vector multiplication. The matrix-matrix multiplication
-is currently just supported by CSR and ELL. 
+Currently the COO, CSR, DIA, ELL and JDS formats are supported. The best supported format is 
+the CSR format. Every of the other formats contains operations to copy to and from CSR. 
+They are additional provided for dense storage. Besides operations for conversion, operations 
+for calculations and property checking are included. The functions are 
+provided for different backends. Every format supports the matrix-vector multiplication. 
+The matrix-matrix multiplication is currently just supported by CSR and ELL. 
 
 *********
 Contents:
@@ -29,12 +31,11 @@ Contents:
    ELLKernelTrait
    JDSKernelTrait
 
-*************
-Relationships
-*************
+*********
+Relations
+*********
 
-The best supported format is the CSR format. Every of the other formats contains operations to
-copy to and from CSR. To avoid code duplications some operations rely on code provided by the
+To avoid code duplications some operations rely on code provided by the
 UtilsKernel-library. For every format a corresponding KernelTrait exists. Through this the
 functions are registered in the KernelRegistry. 
 
@@ -46,9 +47,10 @@ Calculate matrix-vector multiplication with given ELL input-set on host.
 
 .. code-block:: c++
 
-	// Get Function from Registry
-	KernelTraitContextFunction<ELLKernelTrait::normalGEMV<ValueType> > gemv;
+	// Get function from Registry
+	kregistry::KernelTraitContextFunction<ELLKernelTrait::normalGEMV<ValueType> > gemv;
 	
+	// Call function on host
 	gemv[context::Host]( b, one, x, zero, b, m, max_nnz, sizes, ja, values );
 	
 
@@ -74,19 +76,19 @@ Dependencies
 
 - Internal:
 
-  - common
+  - :ref:`SCAI Common - Basic Concepts <scaicommon:main-page_common>`
 
-  - logging
+  - :ref:`SCAI Logging - Logging Macros <scailogging:main-page_logging>`
 
-  - tracing
+  - :ref:`SCAI Tracing - Tracing Macros <scaitracing:main-page_tracing>`
 
-  - tasking
+  - :ref:`SCAI Tasking - Asynchronous Tasks <scaitasking:main-page_tasking>`
 
-  - hmemo (currently just used in testing)
+  - :ref:`SCAI Hmemo - Heterogeneous Memory Architecture <scaihmemo:main-page_hmemo>` (currently just used in testing)
 
-  - kregistry
+  - :ref:`SCAI Kregistry - Generic Kernel Registry <scaikregistry:main-page_kregistry>`
 
-  - utilskernel
+  - :ref:`SCAI UtilsKernel - Utils Kernel <scaiutilskernel:main-page_utilskernel>`
 
 - External:
 
@@ -103,25 +105,25 @@ inside of SparseKernel.
 
 - Software
 
-  - `CUSPARSE`_
+  - |CUSPARSE|
 
     - COO, CSR, CSC, HYB (mixed ELL/COO), BSR, BSRX
   
     - provides just functions for Nvidia GPUs
     
-  - `CUSP`_
+  - |CUSP|
   
     - COO, CSR, DIA, ELL, HYB, Permutation
     
     - useable on x86 CPUs and Nvidia GPUs
     
-  - `clSPARSE`_
+  - |clSPARSE|
   
     - COO, CSR 
   
     - useable on devices that can be utilized using OpenCL
   
-  - `MKL`_
+  - |MKL|
  
     - BSR, COO, CSC, CSR, DIA, SKY
   
@@ -129,13 +131,29 @@ inside of SparseKernel.
 
 - Papers / Books
 
-  - Yousef Saad `Iterative Methods for Sparse Linear Systems`_ 
+  - Yousef Saad |SAAD| 
    
     - describes various sparse storage formats ( COO, CSC, CSR, MSR, DIA, ELL, JDS ) 
    
    
-.. _CUSPARSE : http://docs.nvidia.com/cuda/cusparse
-.. _MKL : https://software.intel.com/en-us/articles/intel-mkl-sparse-blas-overview
-.. _CUSP : https://github.com/cusplibrary/cusplibrary
-.. _clSPARSE : https://github.com/clMathLibraries/clSPARSE
-.. _Iterative Methods for Sparse Linear Systems : http://www-users.cs.umn.edu/~saad/books.html
+.. |CUSPARSE| raw:: html
+
+        <a href="http://docs.nvidia.com/cuda/cusparse" target="_blank">CUSPARSE</a>   
+   
+.. |MKL| raw:: html
+
+		 <a href="https://software.intel.com/en-us/articles/intel-mkl-sparse-blas-overview" target="_blank">MKL</a>
+		 
+.. |CUSP| raw:: html
+
+		 <a href="https://github.com/cusplibrary/cusplibrary" target="_blank">CUSP</a>
+		 		 
+.. |clSPARSE| raw:: html
+
+		 <a href="https://github.com/clMathLibraries/clSPARSE" target="_blank">clSPARSE</a>
+		 
+.. |SAAD| raw:: html
+
+		 <a href="http://www-users.cs.umn.edu/~saad/books.html" target="_blank">Iterative Methods for Sparse Linear Systems</a>
+		 
+		 

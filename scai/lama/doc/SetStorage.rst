@@ -1,4 +1,4 @@
-.. _setStorage:
+.. _lama_SetStorage:
 
 Setting a Storage
 =================
