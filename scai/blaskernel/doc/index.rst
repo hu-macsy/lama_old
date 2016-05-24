@@ -34,11 +34,20 @@ BLASKernelTrait.
 Example
 *******
 
+How to use registered functions from the KernelRegistry:
+
 .. toctree::
    :titlesonly:
    :maxdepth: 1
 
    Usage
+
+How to extend the supported blas functions:
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
    Extension
 
 *********************
@@ -127,11 +136,14 @@ Related Work
   
 - Papers / Books
 
-  - |BLAS1|
+  - Basic Linear Algebra Subprograms for Fortran Usage by Lawson et. al.
   
-  - |BLAS2|
+  - An Extended Set of FORTRAN Basic Linear Algebra Subprograms by Dongarra et. al.
   
-  - |BLAS3|
+  - A Set of Level 3 Basic Linear Algebra Subprograms by Dongarra et. al.
+  
+
+.. Links
   
 .. |MKL| raw:: html
 
@@ -156,16 +168,4 @@ Related Work
 .. |NetLibLAPACK| raw:: html
 
 		 <a href="http://www.netlib.org/lapack/index.html" target="_blank">NetLib LAPACK</a>
-
-.. |BLAS1| raw:: html
-
-		 <a href="http://www.cs.utexas.edu/users/kincaid/blas.pdf" target="_blank">Basic Linear Algebra Subprograms for Fortran Usage by Lawson et. al.</a>
-
-.. |BLAS2| raw:: html
-
-		 <a href="http://www.netlib.org/anl-reports/tm41" target="_blank">An Extended Set of FORTRAN Basic Linear Algebra Subprograms by Dongarra et. al.</a>
-
-.. |BLAS3| raw:: html
-
-		 <a href="www.netlib.org/utk/papers/dmrvRAL95049.ps" target="_blank">A Set of Level 3 Basic Linear Algebra Subprograms by Dongarra et. al.</a>
 
