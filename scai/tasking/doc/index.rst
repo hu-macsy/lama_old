@@ -4,18 +4,13 @@
 SCAI Tasking
 ############
 
-*************
-Specification 
-*************
+***********
+Description 
+***********
 
 * Handles asynchronous executions
 * Supported for asynchronous computations, memory transfer and communication
 * Provides the SyncToken as central concept
-* Internal dependencies: common, logging, tracing
-
-**********
-Motivation
-**********
 
 Tasking is a library that provides support for:
 
@@ -37,3 +32,42 @@ Contents
    TaskSyncToken
    CUDAStreamPool
    CUDAStreamSyncToken
+
+*******
+Example
+*******
+
+.. code-block:: c++
+
+    #include <scai/tasking/Task.hpp>
+
+    using namespace scai;
+
+    void f() { ... }
+    void g() { ... }
+
+    {
+        tasking::Task t1( g );
+        f();
+        t1.wait();
+    }
+
+.. image:: _images/Tasking.png
+    :align: center
+    :width: 1000px
+
+************
+Dependencies
+************
+
+Internal dependencies:
+
+* common
+* logging
+* tracing
+
+************
+Related Work
+************
+
+Thread pools are not provided in the C++ 11 standard, but also by Boost.

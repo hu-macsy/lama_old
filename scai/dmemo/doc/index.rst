@@ -4,6 +4,10 @@
 SCAI DMemo
 ##########
 
+**********
+Description
+***********
+
 DMemo stands for **Distributed Memory** and is a library that provides distribution and communication
 routines for data structures using heterogeneous arrays.
 
@@ -40,13 +44,6 @@ Distribution             Mapping of an index range to a number of partitions
 :ref:`CommunicationPlan` Communication schedule for exchanging non-local values
 ======================== ================================================================================
 
-*************
-Relationships
-*************
-
-The communicator is part of a distribution as it specifies the target processors onto which
-the data is distributed.
-
 *******
 Example
 *******
@@ -56,6 +53,8 @@ Here is a short example:
 .. code-block:: c++
 
     #include <scai/dmemo/Distribution.hpp>
+
+    using namespace scai::dmemo;
 
     // use the default communicator
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();

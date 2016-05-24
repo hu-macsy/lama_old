@@ -94,13 +94,17 @@ Especially for changing the C++ compiler please see the subpage, because there i
 
    configuration/cmake
    configuration/c++
-   configuration/boost
    configuration/blas
-   CUDA <configuration/cuda>
    MIC <configuration/mic>
    MPI <configuration/mpi>
    GPI-2 <configuration/gpi>
    (Par)Metis <configuration/metis>
+
+The following packages are used:
+
+* :ref:`Boost <scaicommon:Boost>` for the Common project and all unit tests 
+* :ref:`CUDA <scaicommon:CUDA>` for all projects that provide separate CUDA functionality (common, tasking, blaskernel, 
+  utilskernel, sparsekernel)
 
 A summary of possible hint-variables for the packages are given in the following table. For advanced help refer to the separate section.
 

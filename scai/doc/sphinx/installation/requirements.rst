@@ -25,11 +25,16 @@ All you need for the LAMA installation are the following software packages:
 
   - optionally: with OpenMP 2.0 capable
 
-  - recommendent but not mandatory: capable of C++11 (e.g. since gcc 4.7 or icc 11.1)
+  - recommended but not mandatory: capable of C++11 (e.g. since gcc 4.7 or icc 11.1)
 
-- :doc:`Boost <configuration/boost>` (version 1.34 or later)
+- :ref:`Boost <scaicommon:Boost>` (version 1.34 or later)
 
-  - For LAMA we need the headers only packages *thread* for the internal thread management. *unit_test_framework* and *regex* are used for the tests (optional).
+  - required if C++11 is not supported by the compiler
+  - required if unit tests for the projects should be generated
+
+- :ref:`PThread <scaicommon:PThread>` (version 1.34 or later)
+
+  - required if C++11 features are not supported by the C++ compiler
 
 .. _recommended:
 

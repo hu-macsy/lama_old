@@ -4,9 +4,9 @@
 SCAI HMemo
 ##########
 
-************
-Introduction 
-************
+***********
+Description 
+***********
 
 HMemo stands for **Heterogeneous Memory** and is a library that provides a C++ container class
 HArray (**Heterogeneous Array**) that manages multiple incarnations of the data on different devices.
@@ -50,6 +50,21 @@ WriteAccess           Template class for write access on HArray
    Memory
    Access
 
+*******
+Example
+*******
+
+ToDo: Example with basic idea.
+
+*****
+Usage
+*****
+
+Environment variables for default context and default device.
+
+* ``SCAI_DEVICE`` 
+* ``SCAI_CONTEXT`` 
+
 ************
 Dependencies
 ************
@@ -65,3 +80,9 @@ External dependencies:
 
 * `CUDA <http://www.nvidia.com/object/cuda_home_new.html>`_ for CUDA Context
 * Compiler supporting Intel MIC Architecture for using the Xeon Phi Coprocessor
+
+************
+Related Work
+************
+
+* `Hemi <http://harrism.github.io/hemi>`_ is very close but restricted to Host and CUDA
