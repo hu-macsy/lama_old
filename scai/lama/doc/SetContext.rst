@@ -1,5 +1,15 @@
 .. _lama_SetContext:
 
+from Vector:
+
+.. code-block:: c++
+
+    x.prefetch( cudaContextPtr );
+    x.setContextPtr( cudaContextPtr );
+    x.prefetch();
+    x.wait();
+    common::ContextPtr contextPtr =  x.getContextPtr();
+
 Setting a Context
 =================
 

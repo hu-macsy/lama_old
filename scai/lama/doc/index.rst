@@ -21,13 +21,13 @@ Basic data structures
 
 For developing your own algorithms with LAMA's mathematical notation, you need to know these three basic data structures:
 
-==========================    ==========================================
-Class                         Description
-==========================    ==========================================
-:ref:`lama_Scalar`            A single value
-:ref:`lama_Vector`            A (distributed) vector of values (on different target architectures)
-:ref:`lama_Matrix`            A (distributed) matrix of values (on different target architectures)
-==========================    ==========================================
+======================    ==========================================
+Class                     Description
+======================    ==========================================
+:doc:`Scalar`             A single value
+:doc:`Vector`             A (distributed) vector of values (on different target architectures)
+:doc:`Matrix`             A (distributed) matrix of values (on different target architectures)
+======================    ==========================================
 
 .. toctree::
    :hidden:
@@ -42,22 +42,22 @@ Usage
 
 For implementing a dedicated application with a choosen data type and storage format, target architecture,and distribution strategy, you need to know how to use and set them.
 
-===========================    ==========================================
-Class                          Description
-===========================    ==========================================
-:ref:`lama_SetValueType`       How to use a value type
-:ref:`lama_SetStorage`         How to use/set a ``MatrixStorage``
-:ref:`lama_SetContext`         How to set a ``Context``
-:ref:`lama_SetDistribution`    How to set a ``Distribution`` with a ``Communicator``
-===========================    ==========================================
+======================    ==========================================
+Class                     Description
+======================    ==========================================
+:doc:`SetValueType`       How to use a value type
+:doc:`SetStorage`         How to use/set a ``MatrixStorage``
+:doc:`SetContext`         How to set a ``Context``
+:doc:`SetDistribution`    How to set a ``Distribution`` with a ``Communicator``
+======================    ==========================================
 
 .. toctree::
    :hidden:
    
+   SetValueType
+   SetStorage
    SetContext
    SetDistribution
-   SetStorage
-   SetValueType
 
 .. remove
 

@@ -2,3 +2,9 @@
 
 Setting a Distribution
 ======================
+
+from vector:
+
+.. code-block:: c++
+
+    z.redistribute( dist );

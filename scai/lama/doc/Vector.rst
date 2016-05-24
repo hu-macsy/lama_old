@@ -18,7 +18,7 @@ For creating a new DenseVector you need two major things:
 For distributed vectors the size can be substituted by a ``Distribution`` (holding the size and distribution strategy). For defining a Distribution, please refer to :ref:`this <scaidmemo:main-page_dmemo>` page.
 
 The values can be passed by raw data pointer. Passing one value, will initilize the whole vector with this one value. 
-Alternatively you can read the whole vector (size and data) from file, by specifing the filename. For a detailed description of the supported file formats, please refer to :ref:`IO <IO>`.
+Alternatively you can read the whole vector (size and data) from file, by specifing the filename. For a detailed description of the supported file formats, please refer to :doc:`IO`.
 
 Optionally you can specify a (initial) ``Context`` for the Vector, to define on which context the (initial) data is valid. For detailed explanation of the Context class, please refer to :ref:`this <scaihmemo:main-page_hmemo>` page. 
 
@@ -54,8 +54,20 @@ In the following you see all possible constructor calls:
   DenseVector<double> zCopy   ( z );
   DenseVector<double> zRedist ( z, dist ); // z with a new Distribution
 
-// from Factory
+You also can create a pointer of a general Vector by calling the vector factory with a ``VectorCreateKeyType`` containing the vector type and the value type. The pointer can be saved as you need it as ``Vector*``, ``shared_ptr<Vector>``, ``unique_ptr<Vector>``. In LAMA we often make use of shared_ptr, so there is typedef to ``VectorPtr`` for that.
 
+.. code-block:: c++
+
+  // creating a DenseVector of value type double from the factory
+  VectorCreateKey v_key( Vector::DENSE, common::getScalarType<double>() );
+  VectorPtr vec_ptr = VectorPtr( Vector::create ( v_key ) );
+
+For creating another Vector of the same type as your origin, you can receive the ``VectorCreateKeyType`` from it by calling ``getCreateValue()`` or ``getValueType`` for just getting the ValueType.
+
+.. code-block:: c++
+
+  VectorPtr z_clone1 = VectorPtr( Vector::create( z.getCreateValue() ) );              // or
+  VectorPtr z_clone2 = VectorPtr( Vector::create( Vector::DENSE, z.getValueType() ) );
 
 Expressions
 -----------
@@ -103,38 +115,46 @@ For initializing a Vector, you can assign one value to the whole vector by the a
     x = 1.0;
     y = 2.0;
 
-General Functions
+Utility Functions
 -----------------
+
+Additionally you have some utility functions that can be called on a vector: for getting the size of the vector, e.g. after reading it from file, for swapping with another vector or creating a copy.
 
 .. code-block:: c++
 
-    IndexType length = x.size(); // getting the size of a vector
+    IndexType length = x.size(); // getting the global size of a vector
 
     x.swap( y ); // swapping the size and values of the vectors
+
+    Vector* zCopy1 = z.copy(); // calls the copy constructor
+
+For accessing single values of a vector you can use ``getValue`` or ``()`` with the global index ``i``. But you must have in mind, that it may be inefficient if the vector is distributed and/or not on the Host Context, because of communication between nodes or CPU and GPU:
+
+.. code-block:: c++
+
+    s = z.getValue( index );
+    s = z( index );
+
+File I/O
+--------
+
+Except from a constructor with a passed string, you can use ``readFromFile`` and ``writeToFile``. The generally excepted format in LAMA for vector and matrices is defined :doc:`here<IO>`.
+
+.. code-block:: c++
 
     x.readFromFile( "vector.mtx" );
     // writing a vector to file in matrix market format in double precision
     y.writeToFile( "result.mtx", File::MATRIX_MARKET, File::DOUBLE );
 
-    z.getValueType(); // returning common::scalar::ScalarType
-    z.getCreateValue(); // returning a VectorCreateKeyType
 
-    // creates an empty(!) copy of the same type as z (e.g. DenseVector<double>)
-    Vector* zCopy1 = z.copy();
-    Vector* zCopy2 = z.newVector();
+Math Functions
+--------------
 
-    // Warning: may be inefficient
-    s = z.getValue( index ); // returning value at global index
-    s = z( index );
-
-The dot product of two vectors is expressed as function:
+The dot product of two vectors is expressed as function ``dotProduct``:
 
 .. code-block:: c++
 
     s = x.dotProduct( y );
-
-Math Functions
---------------
 
 Also the rudimental math functions 'max', 'min', are prepared on a ``Vector``, returning the global maximum/minimum of all entries.
 
