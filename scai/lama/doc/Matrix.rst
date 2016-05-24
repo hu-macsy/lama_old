@@ -3,22 +3,65 @@
 Matrix
 ======
 
-The class Matrix is a generic mathematical matrix. A specific representation of a matrix can be a DenseMatrix or a sparse
-matrix of a specific storage type (e.g. compressed sparse rows (CSR): CSRSparseMatrix). A DenseMatrix saves all entries
-of the m times n matrix, while a sparse matrix only stores the non-zero entries in a well defined format.
+The class ``Matrix`` is a generic mathematical matrix. The index and data arrays are internally stored in a ``HArray`` out of :ref:`hmemo <scaihmemo:main-page_hmemo>` so a ``Matrix`` can transparently used on every device.
 
-storages
---------
+A specific representation of a matrix can be a DenseMatrix or a sparse matrix of a specific storage type. A DenseMatrix saves all entries of the m times n matrix, while a sparse matrix only stores the non-zero entries in a well defined format. LAMA actually preserves the following sparse matrix formats (for detailed descriptions on the formats refer to the subpages of :ref:`sparsekernel <scaisparsekernel:main-page_sparsekernel>`:
 
-LAMA preserves the following sparse matrix formats:
+ - COO (Coordinate)
+ - CSR (Compressed Sparse Row)
+ - DIA (Diagonal)
+ - ELL (ELLPACK-R)
+ - JDS (Jagged Diagonal Storage)
 
- - compressed sparse row (CSR)
- - ELLpack (ELL)
- - jagged diagonal storage (JDS)
- - coordinate (COO)
- - diagonal (DIA)
- 
-For a detailed description on the different storage types, see :doc:`SetStorage`.
+Constructors
+------------
+
+The class ``Matrix`` is an abstract class that can be used for generic algorithm formulation.
+For instantiating a matrix variable you need to call the constructor one of the following templated matrix classes, that are a specific representation of a matrix holding the matrix entries:
+
+ * COOSparseMatrix
+ * CSRSparseMatrix
+ * DIASparseMatrix
+ * DenseMatrix
+ * ELLSparseMatrix
+ * JDSSparseMatrix
+
+For creating a new Matrix you need these major things:
+ * the number of rows of the matrix
+ * the number of columns of the matrix
+ * the data of the matrix either in dense or csr representation
+
+For distributed matrices the number of rows/columns can be substituted by a ``Distribution`` (holding the number of rows/columns as row/column distribution strategy). For defining a Distribution, please refer to :ref:`this <scaidmemo:main-page_dmemo>` page.
+
+.. code-block:: c++
+
+  // for later use:
+  int numRows    = 6;
+  int numColumns = 4;
+  dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr( "MPI" ) );
+  dmemo::DistributionPtr rDist( dmemo::Distribution::getDistribution( "BLOCK", comm, numRows, 1.0 ) );
+  dmemo::DistributionPtr cDist( dmemo::Distribution::getDistribution( "BLOCK", comm, numColumns, 1.0 ) );
+  common::ContextPtr cudaContextPtr = common::Context::getContextPtr( common::context::CUDA );
+
+  // empty (not initialized) float matrices (with context, distribution, or both)
+  DenseMatrix<float> a();                      // without size
+  DenseMatrix<float> b( numRows, numColumns ); // local matrix with size 6x4
+  DenseMatrix<float> c( rDist, cDist );        // block distributed matrix with global size 6x4
+  DenseMatrix<float> square( rDist );          // block distributed matrix with global size 6x6
+
+  // initialize with csr representation
+  int nnz = 13
+  int ia[] = {0, 2, 4, 6, 9, 11, 11, 13};
+  int ja[] = {0, 3, 1, 0, 2, 3, 3, 0, 1, 0, 3, 1, ,3};
+  double values[] = {6.0, 4.0, 0.0, 7.0, 9.0, 4.0, 3.0, 2.0, 5.0, 2.0, 1.0, 1.0, 2.0};
+  DenseMatrix<double> csrFormat( numRows, numColumns, nnz, &ia, &ja, &values );
+
+
+  // copy constructor (also works with general Matrix 'a')
+  DenseMatrix<double> aCopy   ( a );
+  DenseMatrix<double> aRedist ( a, rDist, cDist ); // a with new Distributions
+
+
 
 You can create the specific matrix types by the same constructor giving the number of rows and columns:
 

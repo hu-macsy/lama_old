@@ -1,3 +1,5 @@
+.. _sparsekernel_ELL:
+
 ELLPACK-R Storage Format (ELL)
 ==============================
 

@@ -8,8 +8,8 @@ The class ``Vector`` is a generic mathematical vector. The values are internally
 Constructors
 ------------
 
-The general class Vector is an abstract class that can be used for generic algorithm formulation.
-For instantiating a vector variable you need to call the constructor of ``DenseVector``, a specific representation of a vector holding the full vector entries.
+The class ``Vector`` is an abstract class that can be used for generic algorithm formulation.
+For instantiating a vector variable you need to call the constructor of the templated class ``DenseVector``, a specific representation of a vector holding the full vector entries.
 
 For creating a new DenseVector you need two major things:
  * the size of the vector (number of elements)

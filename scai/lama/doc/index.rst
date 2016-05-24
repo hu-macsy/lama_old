@@ -71,9 +71,9 @@ Class                     Description
 .. Relationsships
 .. **************
 
-********
-Examples
-********
+*******
+Example
+*******
 
 .. *****************
 .. Runtime Variables
