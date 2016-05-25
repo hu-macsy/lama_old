@@ -4,7 +4,7 @@ Compilation of Instrumented Source Code
 A flag must be set to deal correctly with the REGION macros. Tracing can be either enabled or 
 disabled at compile time.
 
-::
+.. code-block:: bash
 
     add_definitions( -DSCAI_TRACE_ON )
     add_definitions( -DSCAI_TRACE_OFF )
@@ -19,7 +19,7 @@ The tracing library itself is built with CMake.
 
 For using the tracing library an CMake module ``Findscai_tracing.cmake`` is provided.
 
-::
+.. code-block:: bash
 
     # find installation of tracing library
 
@@ -41,7 +41,7 @@ The tracing library itself uses also the :ref:`SCAI logging library <scailogging
 for code development. But by setting corresponding levels of the used loggers it is possible
 to see which instrumented regions are entered and left.
 
-::
+.. code-block:: bash
 
    # Tracing loggers ( section in config file of logging )
    TraceConfig = WARN               # gives warning if no runtime settings are made

@@ -2,27 +2,24 @@
  * @file FileStream.hpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Expansion of the std::fstream class
@@ -40,7 +37,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/mepr/TemplateSpecifier.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
@@ -49,6 +46,7 @@
 
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 
 #include <fstream>
@@ -164,7 +162,7 @@ inline void FileStream::write( const hmemo::HArray<ValueType>& data,
     case ( common::TypeTraits<_type>::stype ):              \
         _write<_type,ValueType>( data, offset, delimiter ); \
         break;
-    SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, SCAI_LAMA_FILESTREAM_WRITE, SCAI_ARITHMETIC_ARRAY_HOST )
+        SCAI_COMMON_LOOP( SCAI_LAMA_FILESTREAM_WRITE, SCAI_ARITHMETIC_ARRAY_HOST )
 #undef SCAI_LAMA_FILESTREAM_WRITE
 
     case common::scalar::INTERNAL:
@@ -197,7 +195,7 @@ inline void FileStream::read( hmemo::HArray<ValueType>& data,
     case ( common::TypeTraits<_type>::stype ):                   \
         _read<_type,ValueType>( data, size, offset, delimiter ); \
         break;
-    SCAI_COMMON_TYPELOOP( SCAI_ARITHMETIC_ARRAY_HOST_CNT, SCAI_LAMA_FILESTREAM_READ, SCAI_ARITHMETIC_ARRAY_HOST )
+        SCAI_COMMON_LOOP( SCAI_LAMA_FILESTREAM_READ, SCAI_ARITHMETIC_ARRAY_HOST )
 #undef SCAI_LAMA_FILESTREAM_READ
 
     case common::scalar::INTERNAL:
@@ -261,8 +259,8 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
             hmemo::ReadAccess<DataType> dataRead( data, loc );
             hmemo::WriteOnlyAccess<FileType> bufferWrite( buffer, loc, data.size() );
 
-            set[loc]( bufferWrite, dataRead, data.size(), common::reduction::COPY );
-            setVal[loc]( bufferWrite, buffer.size(), offset, common::reduction::ADD );
+            set[loc]( bufferWrite, dataRead, data.size(), utilskernel::reduction::COPY );
+            setVal[loc]( bufferWrite, buffer.size(), offset, utilskernel::reduction::ADD );
         }
         hmemo::ReadAccess<FileType> bufferRead( buffer );
 
@@ -370,14 +368,14 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
         static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<DataType, FileType> > set;
         hmemo::ContextPtr loc = data.getValidContext();
         set.getSupportedContext( loc );
-        set[loc](dataWrite, bufferWrite, size, common::reduction::COPY);
+        set[loc](dataWrite, bufferWrite, size, utilskernel::reduction::COPY);
     }
 
     if( offset != 0 ){
         static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<DataType> > setVal;
         hmemo::ContextPtr loc = data.getValidContext();
         setVal.getSupportedContext( loc );
-        setVal[loc]( dataWrite, size, offset, common::reduction::ADD );
+        setVal[loc]( dataWrite, size, offset, utilskernel::reduction::ADD );
     }
 }
 

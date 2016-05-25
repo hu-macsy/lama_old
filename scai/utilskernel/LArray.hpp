@@ -2,27 +2,24 @@
  * @file LArray.hpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Definition of LArray as HArray with additional kernel functionality.
@@ -83,7 +80,7 @@ public:
 
         operator ValueType() const
         {
-            return HArrayUtils::getValImpl( mArray, mIndex );
+            return HArrayUtils::getVal<ValueType>( mArray, mIndex );
         }
 
         /** indexed value proxy can be assigned a value */
@@ -162,11 +159,11 @@ public:
 
         if ( context.get() )
         {
-            HArrayUtils::setScalar( *this, value, common::reduction::COPY, context );
+            HArrayUtils::setScalar( *this, value, reduction::COPY, context );
         }
         else
         {
-            HArrayUtils::setScalar( *this, value, common::reduction::COPY, hmemo::Context::getHostPtr() );
+            HArrayUtils::setScalar( *this, value, reduction::COPY, hmemo::Context::getHostPtr() );
         }
     }
 
@@ -221,49 +218,49 @@ public:
 
     LArray& operator*= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::assignOp( *this, other, common::reduction::MULT );
+        HArrayUtils::assignOp( *this, other, reduction::MULT );
         return *this;
     }
 
     LArray& operator*= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, common::reduction::MULT );
+        HArrayUtils::setScalar( *this, val, reduction::MULT );
         return *this;
     }
 
     LArray& operator/= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::assignOp( *this, other, common::reduction::DIVIDE );
+        HArrayUtils::assignOp( *this, other, reduction::DIVIDE );
         return *this;
     }
 
     LArray& operator/= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, common::reduction::DIVIDE );
+        HArrayUtils::setScalar( *this, val, reduction::DIVIDE );
         return *this;
     }
 
     LArray& operator+= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::assignOp( *this, other, common::reduction::ADD );
+        HArrayUtils::assignOp( *this, other, reduction::ADD );
         return *this;
     }
 
     LArray& operator+= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, common::reduction::ADD );
+        HArrayUtils::setScalar( *this, val, reduction::ADD );
         return *this;
     }
 
     LArray& operator-= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::assignOp( *this, other, common::reduction::SUB );
+        HArrayUtils::assignOp( *this, other, reduction::SUB );
         return *this;
     }
 
     LArray& operator-= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, common::reduction::SUB );
+        HArrayUtils::setScalar( *this, val, reduction::SUB );
         return *this;
     }
 
@@ -280,7 +277,7 @@ public:
 
         hmemo::ContextPtr context = this->getFirstTouchContextPtr();
         SCAI_ASSERT( context.get(), "No first touch context" )
-        HArrayUtils::setScalar( *this, val, common::reduction::COPY, this->getFirstTouchContextPtr() );
+        HArrayUtils::setScalar( *this, val, reduction::COPY, this->getFirstTouchContextPtr() );
         return *this;
     }
 
@@ -291,35 +288,35 @@ public:
 
     ValueType operator[] ( const IndexType i ) const
     {
-        return HArrayUtils::getValImpl( *this, i );
+        return HArrayUtils::getVal<ValueType>( *this, i );
     }
 
     /** Get the minimal value of an array */
 
     ValueType min() const
     {
-        return HArrayUtils::reduce( *this, common::reduction::MIN );
+        return HArrayUtils::reduce( *this, reduction::MIN );
     }
 
     /** Get the maximal value of an array */
 
     ValueType max() const
     {
-        return HArrayUtils::reduce( *this, common::reduction::MAX );
+        return HArrayUtils::reduce( *this, reduction::MAX );
     }
 
     /** Get the maximal value of an array */
 
     ValueType maxNorm() const
     {
-        return HArrayUtils::reduce( *this, common::reduction::ABS_MAX );
+        return HArrayUtils::reduce( *this, reduction::ABS_MAX );
     }
 
     /** Get the sum of all array elements */
 
     ValueType sum() const
     {
-        return HArrayUtils::reduce( *this, common::reduction::ADD );
+        return HArrayUtils::reduce( *this, reduction::ADD );
     }
 
     /** Compute the sum of magnitudes, for complex numbers it is the sum of real and imag part */

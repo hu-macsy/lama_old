@@ -8,7 +8,7 @@ Standard test class
 
 The structure of a classic TestClass.cpp in LAMA looks like this:
 
-::
+.. code-block:: c++
 
 	#include <boost/test/unit_test.hpp>
 
@@ -71,7 +71,7 @@ For each inheritance we have created a common used test class, which tests all f
 
 This code from a concrete testclass, like CSRStorageTest.cpp shows, how to invoke those inheritances:
 
-::
+.. code-block:: c++
 
 	BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, ValueType, test_types )
 	{
@@ -94,7 +94,7 @@ Calling the method matrixstorageTest.runTests() will invoke all methods from the
 
 The corresponding testclass (MatrixStorageTest.hpp) looks like this:
 
-::
+.. code-block:: c++
 	
 	static std::string storagetestclasses[] = { "CSRStorageTest", "COOStorageTest",
 	                                            //other concrete testclasses 
@@ -131,7 +131,7 @@ and storagetestmethods are neccessary to invoke single testmethods from the comm
 
 The file MatrixStorageTest.cpp looks like this:
 
-::
+.. code-block:: c++
 
 	//include headerfiles & declare namespaces
 	

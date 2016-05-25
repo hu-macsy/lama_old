@@ -1,3 +1,32 @@
+###
+ # @file CMake/Modules/Summaries/Modules/Build.cmake
+ #
+ # @license
+ # Copyright (c) 2009-2016
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # This file is part of the Library of Accelerated Math Applications (LAMA).
+ #
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Affero General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
+ #
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Affero General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ # @endlicense
+ #
+ # @brief Summary concerning general build options.
+ # @author Lauretta Schubert
+ # @date 04.05.2016
+###
+
 heading ( "Build options:" "" )
 
 # EXAMPLES
@@ -8,7 +37,6 @@ if    ( NOT ( ( ${PROJECT_NAME} MATCHES "scai_logging" ) OR ( ${PROJECT_NAME} MA
 
 	heading3 ( "Test" "BOOST_TEST_ENABLED" )
 	    found_message ( "Boost Unit Test" "Boost_UNIT_TEST_FRAMEWORK_FOUND" "OPTIONAL" "Version ${BOOST_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
-	    found_message ( "Boost Regex"     "Boost_REGEX_FOUND"               "OPTIONAL" "Version ${BOOST_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
 
 endif ( NOT ( ( ${PROJECT_NAME} MATCHES "scai_logging" ) OR ( ${PROJECT_NAME} MATCHES "scai_tracing" ) ) )
 

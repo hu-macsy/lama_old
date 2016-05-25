@@ -2,42 +2,38 @@
  * @file common/examples/Barrier.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Example with pthreads using Condition of the common library to implement barrier.
- *
  * @author Thomas Brandes
  * @date 19.06.2015
  */
 
 #include <scai/common/Thread.hpp>
+#include <scai/common/Walltime.hpp>
 #include <scai/common/macros/assert.hpp>
 
 #include <iostream>
 #include <cstdlib>
 #include <vector>
-#include <unistd.h>
 
 using scai::common::Thread;
 
@@ -46,27 +42,39 @@ Thread::Condition barrierCondition;
 
 Thread::Mutex printMutex;
 
-static const int N_THREADS   = 16;
+static const int N_THREADS = 15;
 
 // Define routine that is executed by one thread
 
 static int thread_cnt = 0;
 
+SCAI_THREAD_PRIVATE_PTR( int, threadArg )
+
 static void barrier()
 {
+    std::cout << "Thread " << *threadArg.get() << " before lock" << std::endl;
+
     Thread::ScopedLock lock( barrierMutex );
 
+    std::cout << "Thread " << *threadArg.get() << " after lock" << std::endl;
+
     thread_cnt ++;
+
+    std::cout << "Thread " << *threadArg.get() << " thread_cnt = " << thread_cnt << std::endl;
      
     if ( thread_cnt != N_THREADS )
     {
         // Some others not at barrier so wait
+    
+        std::cout << "Thread " << *threadArg.get() << " before wait" << std::endl;
         barrierCondition.wait( lock );
+        std::cout << "Thread " << *threadArg.get() << " after wait" << std::endl;
     }
     else
     {
         // Now all threads have reached
         thread_cnt = 0;
+        std::cout << "Thread " << *threadArg.get() << " notifies all" << std::endl;
         barrierCondition.notifyAll();
     }
 }
@@ -77,9 +85,19 @@ static int sharedArray[ N_THREADS ];
 
 static void threadRoutine( int& arg )
 {
-    sharedArray[arg] = arg;
+    std::cout << "Thread " << scai::common::Thread::getSelf() << " runs, arg = " << arg << std::endl;
+
+    threadArg.set( &arg );
+
+    // sleep a little bit so if threadArg is not thread private it will be overwritten
+
+    scai::common::Walltime::sleep( 100 );  
+
+    sharedArray[arg] = *threadArg.get();
 
     barrier();
+
+    std::cout << "Thread " << arg << " after barrier" << std::endl;
 
     int sum = 0;
 

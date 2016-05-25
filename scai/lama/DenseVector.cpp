@@ -2,33 +2,29 @@
  * @file DenseVector.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Implementations and instantiations for class DenseVector.
  * @author Jiri Kraus
  * @date 22.02.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -57,7 +53,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/SCAITypes.hpp>
@@ -100,6 +96,15 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution )
                 : Vector( distribution ), mLocalValues( distribution->getLocalSize() )
 {
     SCAI_LOG_INFO( logger, "Construct dense vector, size = " << distribution->getGlobalSize()
+    // << ", type = " << typename(ValueType)
+                   << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
+}
+
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( DistributionPtr distribution, ContextPtr context )
+                : Vector( distribution, context ), mLocalValues( distribution->getLocalSize() )
+{
+    SCAI_LOG_INFO( logger, "Construct dense vector on context = " << context << ", size = " << distribution->getGlobalSize()
     // << ", type = " << typename(ValueType)
                    << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
 }
@@ -642,7 +647,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 
     // assign the scalar value on the home of this dense vector.
 
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::reduction::COPY, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::reduction::COPY, mContext );
 }
 
 template<typename ValueType>
@@ -824,7 +829,7 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseVector, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseVector, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

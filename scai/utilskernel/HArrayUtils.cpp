@@ -2,33 +2,29 @@
  * @file HArrayUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Definition of class with utility routines.
  * @author Thomas Brandes
  * @date 10.10.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -52,6 +48,8 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/ScalarType.hpp>
 
+#include <scai/common/macros/loop.hpp>
+
 // std
 #include <iostream>
 
@@ -69,7 +67,7 @@ SCAI_LOG_DEF_LOGGER( HArrayUtils::logger, "HArrayUtils" )
 
 void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextPtr prefLoc )
 {
-    assignOp( target, source, common::reduction::COPY, prefLoc );
+    assignOp( target, source, reduction::COPY, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -77,14 +75,14 @@ void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextP
 void HArrayUtils::assignOp(
     _HArray& target,
     const _HArray& source,
-    const common::reduction::ReductionOp op,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     ContextPtr loc = prefLoc;
 
     if ( !loc )
     {
-        if ( op == common::reduction::COPY )
+        if ( op == reduction::COPY )
         {
             // if no context is given we assign where source has a valid copy available
 
@@ -98,7 +96,7 @@ void HArrayUtils::assignOp(
         }
     }
 
-    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setArray( target, source, op, loc );
+    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setArray( target, source, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -107,7 +105,7 @@ template<typename TargetValueType,typename SourceValueType>
 void HArrayUtils::setArray(
     HArray<TargetValueType>& target,
     const HArray<SourceValueType>& source,
-    const common::reduction::ReductionOp op,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     // verify that dynamic cast operations went okay before
@@ -127,7 +125,7 @@ void HArrayUtils::setArray(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    if ( op == common::reduction::COPY )
+    if ( op == reduction::COPY )
     {
         WriteOnlyAccess<TargetValueType> targetVals( target, loc, n );
         ReadAccess<SourceValueType> sourceVals( source, loc );
@@ -156,7 +154,7 @@ void HArrayUtils::assignGather(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the gather version with the correct value types for target and source
-    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gather( target, source, indexes, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gather( target, source, indexes, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -168,7 +166,7 @@ void HArrayUtils::assignScatter(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the scatter version with the correct value types for target and source
-    mepr::UtilsWrapper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatter( target, indexes, source, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatter( target, indexes, source, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -254,7 +252,7 @@ template<typename ValueType>
 void HArrayUtils::assignScalar(
     _HArray& target,
     const ValueType value,
-    const common::reduction::ReductionOp op,
+    const reduction::ReductionOp op,
     ContextPtr prefLoc )
 {
     mepr::UtilsWrapperT<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setScalar( target, value, op, prefLoc );
@@ -266,7 +264,7 @@ template<typename ValueType>
 void HArrayUtils::setScalar(
     HArray<ValueType>& target,
     const ValueType value,
-    const common::reduction::ReductionOp op,
+    const reduction::ReductionOp op,
     ContextPtr prefLoc )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
@@ -286,7 +284,7 @@ void HArrayUtils::setScalar(
 
     SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *loc << ", n = " << n )
 
-    if ( op == common::reduction::COPY )
+    if ( op == reduction::COPY )
     {
         // Note: very important is to specify the size n here as it might not have been allocated
 
@@ -336,7 +334,7 @@ void HArrayUtils::setValImpl(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal[loc]( wTarget.get() + index, 1, val, common::reduction::COPY );
+    setVal[loc]( wTarget.get() + index, 1, val, reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -392,7 +390,7 @@ void HArrayUtils::assignScaled(
 
     if ( beta == common::constants::ZERO )
     {
-        setScalar( result, beta, common::reduction::COPY, prefLoc );
+        setScalar( result, beta, reduction::COPY, prefLoc );
     }
     else if( &result == &y )
     {
@@ -403,7 +401,7 @@ void HArrayUtils::assignScaled(
 
         // result := beta * result, use setScalar, op == MULT
 
-        setScalar( result, beta, common::reduction::MULT, prefLoc );
+        setScalar( result, beta, reduction::MULT, prefLoc );
     }
     else
     {
@@ -435,7 +433,7 @@ void HArrayUtils::assignScaled(
 template<typename ValueType>
 void HArrayUtils::scale( HArray<ValueType>& array, const ValueType beta, ContextPtr prefLoc )
 {
-    setScalar( array, beta, common::reduction::MULT, prefLoc );
+    setScalar( array, beta, reduction::MULT, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -445,7 +443,7 @@ void HArrayUtils::conj( HArray<ValueType>& array, ContextPtr prefLoc )
 {
     IndexType n = array.size();
 
-    if ( ( n > 0 ) && common::scalar::isComplex( common::TypeTraits<ValueType>::stype ) )
+    if ( ( n > 0 ) && common::isComplex( common::TypeTraits<ValueType>::stype ) )
     {
         static LAMAKernel<UtilKernelTrait::conj<ValueType> > conj;
 
@@ -471,7 +469,7 @@ void HArrayUtils::conj( HArray<ValueType>& array, ContextPtr prefLoc )
 template<typename ValueType>
 ValueType HArrayUtils::reduce( 
     const HArray<ValueType>& array, 
-    const common::reduction::ReductionOp redOp,
+    const reduction::ReductionOp redOp,
     const ContextPtr prefLoc )
 {
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
@@ -986,52 +984,69 @@ void HArrayUtils::buildDenseArray(
 
     denseArray.clear();
     denseArray.resize( denseN ); 
-    HArrayUtils::setScalar( denseArray, ValueType( 0 ), common::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( denseArray, ValueType( 0 ), reduction::COPY, prefLoc );
 
     HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void HArrayUtils::SpecifierV<ValueType>::specify()
-{
-    using common::mepr::TemplateSpecifier;
+#define HARRAUTILS_SPECIFIER_LVL2( ValueType, OtherValueType )                                                          \
+    template void HArrayUtils::gather<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                            \
+                                                                const hmemo::HArray<OtherValueType>&,                   \
+                                                                const hmemo::HArray<IndexType>&,                        \
+                                                                const hmemo::ContextPtr );                              \
+    template void HArrayUtils::setArray<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                          \
+                                                                const hmemo::HArray<OtherValueType>&,                   \
+                                                                const reduction::ReductionOp,                   \
+                                                                hmemo::ContextPtr );                                    \
+    template void HArrayUtils::scatter<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                           \
+                                                                const hmemo::HArray<IndexType>&,                        \
+                                                                const hmemo::HArray<OtherValueType>&,                   \
+                                                                const hmemo::ContextPtr );
 
-    TemplateSpecifier::set( HArrayUtils::setVal<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::getVal<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::setScalar<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::assignScaled<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::scale<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::conj<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::reduce<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::absMaxDiffVal<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::axpy<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::arrayPlusArray<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::dotProduct<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::asum<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::nrm2<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::invert<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::isSorted<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::scan<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::sort<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::setRandom<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::buildSparseArray<ValueType> );
-    TemplateSpecifier::set( HArrayUtils::buildDenseArray<ValueType> );
-}
+#define HARRAYUTILS_SPECIFIER( ValueType )                                                                                        \
+    template void HArrayUtils::setVal<ValueType>( hmemo::_HArray&, const IndexType, const ValueType );                            \
+    template ValueType HArrayUtils::getVal<ValueType>( const hmemo::_HArray&, const IndexType );                                  \
+    template ValueType HArrayUtils::getValImpl<ValueType>( const hmemo::HArray<ValueType>&, const IndexType );                    \
+    template void HArrayUtils::setScalar<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                                  \
+                                                     const reduction::ReductionOp, hmemo::ContextPtr);                    \
+    template void HArrayUtils::assignScaled<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                               \
+                                                        const hmemo::HArray<ValueType>&, hmemo::ContextPtr);                      \
+    template void HArrayUtils::scale<ValueType>( hmemo::HArray<ValueType>&, const ValueType, hmemo::ContextPtr );                 \
+    template void HArrayUtils::conj<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr);                                    \
+    template ValueType HArrayUtils::reduce<ValueType>( const hmemo::HArray<ValueType>&,                                           \
+                                                       const reduction::ReductionOp, hmemo::ContextPtr );                 \
+    template ValueType HArrayUtils::absMaxDiffVal<ValueType>( const hmemo::HArray<ValueType>&,                                    \
+                                                              const hmemo::HArray<ValueType>&, hmemo::ContextPtr );               \
+    template void HArrayUtils::axpy<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                                       \
+                                                const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                             \
+    template void HArrayUtils::arrayPlusArray<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                             \
+                                                          const hmemo::HArray<ValueType>&, const ValueType,                       \
+                                                          const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                   \
+    template ValueType HArrayUtils::dotProduct<ValueType>( const hmemo::HArray<ValueType>&,                                       \
+                                                           const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                  \
+    template ValueType HArrayUtils::asum<ValueType>( const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                        \
+    template ValueType HArrayUtils::nrm2<ValueType>( const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                        \
+    template void HArrayUtils::invert<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                 \
+    template bool HArrayUtils::isSorted<ValueType>( const hmemo::HArray<ValueType>&, const bool, hmemo::ContextPtr );             \
+    template ValueType HArrayUtils::scan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                              \
+    template void HArrayUtils::sort<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&, hmemo::ContextPtr );        \
+    template void HArrayUtils::setRandom<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );            \
+    template void HArrayUtils::buildSparseArray<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,                 \
+                                                            const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                 \
+    template void HArrayUtils::buildDenseArray<ValueType>( hmemo::HArray<ValueType>&, const IndexType,                            \
+                                                           const hmemo::HArray<ValueType>&,                                       \
+                                                           const hmemo::HArray<IndexType>&, hmemo::ContextPtr );                  \
+                                                                                                                                  \
+    SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARITHMETIC_ARRAY_HOST )
+
+SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
+
+#undef HARRAYUTILS_SPECIFIER
+#undef HARRAUTILS_SPECIFIER_LVL2
 
 /* --------------------------------------------------------------------------- */
-
-HArrayUtils::HArrayUtils()
-{
-    // instantiation of all template methods
-
-    common::mepr::TemplateSpecifierV<SpecifierV, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call();
-}
-
-/* --------------------------------------------------------------------------- */
-
-HArrayUtils HArrayUtils::guard;
 
 } /* end namespace utilskernel */
 

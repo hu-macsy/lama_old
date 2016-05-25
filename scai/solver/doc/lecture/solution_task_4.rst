@@ -40,4 +40,3 @@ getValue(IndexType globalindex) to get a correct access with a global index.
    :widths: 330, 340, 330
 
    ":doc:`task_4`", ":doc:`../lecture`", ":doc:`task_5`"
-   

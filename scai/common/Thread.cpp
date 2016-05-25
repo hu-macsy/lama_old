@@ -2,40 +2,36 @@
  * @file Thread.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Implementation of methods for handling of thread names
+ * @brief Implementation of methods for threads using C++11 standard
  * @author Thomas Brandes
- * @date   10.06.2015
+ * @date 10.06.2015
  */
 
 // hpp
 #include <scai/common/Thread.hpp>
 
 // local library
-#include <scai/common/macros/assert.hpp>
-#include <scai/common/macros/throw.hpp>
+#include <scai/common/macros/system_call.hpp>
 
 // std
 #include <map>
@@ -57,7 +53,7 @@ namespace common
 
 Thread::Id Thread::getSelf()
 {
-    return pthread_self();
+    return std::this_thread::get_id();
 }
 
 // Map that defines mapping thread ids -> thread names (as strings)
@@ -78,74 +74,81 @@ static MapThreads& getMapThreads()
     return *mapThreads;
 }
 
-Thread::Mutex::Mutex( bool isRecursive )
+Thread::Mutex::Mutex( bool isRecursive ) : mIsRecursive( isRecursive )
 {
-    pthread_mutexattr_init( &p_mutexattr );
+    // Only one of the member objects is allocated 
 
-    if ( isRecursive )
+    if ( mIsRecursive )
     {
-        pthread_mutexattr_settype( &p_mutexattr, PTHREAD_MUTEX_RECURSIVE );
+        mRecursiveMutex.reset( new std::recursive_mutex() );
     }
-
-    int rc = pthread_mutex_init( &p_mutex, &p_mutexattr );
-
-    if ( rc != 0 )
+    else
     {
-        COMMON_THROWEXCEPTION( "mutex init failed, rc = " << rc )
+        mMutex.reset( new std::mutex() );
     }
 }
 
-Thread::Condition::Condition()
+Thread::Condition::Condition() : std::condition_variable_any()
 {
-    int rc = pthread_cond_init( &p_condition, NULL );
-
-    if ( rc != 0 )
-    {
-        COMMON_THROWEXCEPTION( "condition init failed, rc = " << rc )
-    }
 }
 
 Thread::Mutex::~Mutex()
 {
-    int rc = pthread_mutex_destroy( &p_mutex );
-
-    if ( rc != 0 )
-    {
-        COMMON_THROWEXCEPTION( "mutex destroy failed, rc = " << rc )
-    }
 }
 
 Thread::Condition::~Condition()
 {
-    pthread_cond_destroy( &p_condition );
 }
 
 void Thread::Mutex::lock()
 {
-    pthread_mutex_lock( &p_mutex );
+    if ( mIsRecursive )
+    {
+        mRecursiveMutex->lock();
+    }
+    else
+    {
+        mMutex->lock();
+    }
 }
 
 void Thread::Mutex::unlock()
 {
-    pthread_mutex_unlock( &p_mutex );
+    if ( mIsRecursive )
+    {
+        mRecursiveMutex->unlock();
+    }
+    else
+    {
+        mMutex->unlock();
+    }
 }
 
 void Thread::Condition::notifyOne()
 {
-    pthread_cond_signal ( &p_condition );
+    std::condition_variable_any::notify_one();
 }
 
 void Thread::Condition::notifyAll()
 {
-    pthread_cond_broadcast ( &p_condition );
+    std::condition_variable_any::notify_all();
 }
 
 void Thread::Condition::wait( ScopedLock& lock )
 {
-    pthread_cond_wait( &p_condition, &lock.mMutex.p_mutex );
+    if ( lock.mMutex.mIsRecursive )
+    {
+        std::condition_variable_any::wait( *lock.mMutex.mRecursiveMutex );
+    }
+    else 
+    {
+        std::condition_variable_any::wait( *lock.mMutex.mMutex );
+    }
 }
 
-Thread::ScopedLock::ScopedLock( Mutex& mutex ) : mMutex( mutex )
+Thread::ScopedLock::ScopedLock( Mutex& mutex ) :
+
+    mMutex( mutex )
 {
     mMutex.lock();
 }
@@ -232,27 +235,17 @@ const char* Thread::getCurrentThreadName()
 
 void Thread::start( pthread_routine start_routine, void* arg )
 {
-    int rc = pthread_create( &mTId, NULL, start_routine, arg );
-
-    if ( rc != 0 )
-    {
-        COMMON_THROWEXCEPTION( "pthread_create failed, err = " << rc << ", " << strerror( rc ) )
-    }
-
-    running = true;
+    mThread = new std::thread( start_routine, arg );
 }
 
 void Thread::join()
 {
-    if ( running )
+    if ( mThread != NULL )
     {
-        int rc = pthread_join( mTId, NULL );
-        SCAI_ASSERT_EQUAL( 0, rc, "pthread_join failed" )
-
-        // std::cout << "PThread " << std::hex << mTId << " terminated." << std::endl;
+        mThread->join();
+        delete mThread;
+        mThread = NULL;
     }
-
-    running = false;
 }
 
 Thread::~Thread()

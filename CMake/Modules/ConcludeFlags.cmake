@@ -1,3 +1,32 @@
+###
+ # @file CMake/Modules/ConcludeFlags.cmake
+ #
+ # @license
+ # Copyright (c) 2009-2016
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # This file is part of the Library of Accelerated Math Applications (LAMA).
+ #
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Affero General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
+ #
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Affero General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ # @endlicense
+ #
+ # @brief Conclude the compiler flags after all configurations are done.
+ # @author Lauretta Schubert
+ # @date 08.10.2015
+###
+
 # CMAKE configuration variable that guarantees adding rpath for installed
 # libraries; very useful so that installed library can be used without 
 # complex settings of LD_LIBRARY_PATH
@@ -5,16 +34,36 @@
 set ( CMAKE_SKIP_BUILD_RPATH FALSE )
 set ( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set ( CMAKE_BUILD_WITH_INSTALL_RPATH FALSE )
+if    ( APPLE )
+    set ( CMAKE_MACOSX_RPATH FALSE )
+endif ( APPLE )
 set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
 # for static/dynamic linking
-if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
-	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
-else  ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
-	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
-endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+
+if    ( UNIX )
+    if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+    	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
+    	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
+    else  ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+    	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
+    	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
+    endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+endif ( UNIX )
+
+# check if Complex is in SCAI_HOST_TYPES then set USE_COMPLEX true
+include ( Functions/checkValue )
+include ( Functions/parseBoolean )
+
+set ( USE_COMPLEX FALSE )
+foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND COMPLEX_VALUES ${ITEM} BOOLVALUE )
+    if    ( ${BOOLVALUE} GREATER -1 )
+        set ( USE_COMPLEX TRUE )
+    endif ( ${BOOLVALUE} GREATER -1 )
+endforeach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+parseBoolean( USE_COMPLEX )
+checkValue ( ${USE_COMPLEX} "${TRUE_FALSE_CHOICES}" )
 
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
@@ -22,19 +71,20 @@ endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 #set ( ADDITIONAL_CXX_FLAGS_LANG          "${SCAI_LANG_FLAGS}"          CACHE STRING "Addition language flags for using C++11 (if compiler capable)" )
 #set ( ADDITIONAL_CXX_FLAGS_OPENMP        "${OpenMP_CXX_FLAGS}"         CACHE STRING "OpenMP flag (only if enabled)" )
 
+set ( ADDITIONAL_CXX_FLAGS               "${SCAI_CXX_FLAGS}"           CACHE STRING "Additional CXX flags" )
 set ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE "${SCAI_CODE_COVERAGE_FLAGS}" CACHE STRING "CXX flags used for code coverage (only if CC enabled)" )
-set ( ADDITIONAL_CXX_FLAGS_DEBUG         "${SCAI_CXX_FLAGS_DEBUG}"     CACHE STRING "Addtional CXX compiler flags for Debug version" )
+set ( ADDITIONAL_CXX_FLAGS_DEBUG         "${SCAI_CXX_FLAGS_DEBUG}"     CACHE STRING "Additional CXX compiler flags for Debug version" )
 set ( ADDITIONAL_CXX_FLAGS_NO_OFFLOAD    "${MIC_NO_OFFLOAD_FLAG}"      CACHE STRING "MIC no offload flag (only if MIC disabled)" )
-set ( ADDITIONAL_CXX_FLAGS_RELEASE       "${SCAI_CXX_FLAGS_RELEASE}"   CACHE STRING "Addtional CXX compiler flags for Release version" )
+set ( ADDITIONAL_CXX_FLAGS_RELEASE       "${SCAI_CXX_FLAGS_RELEASE}"   CACHE STRING "Additional CXX compiler flags for Release version" )
 set ( ADDITIONAL_LINKER_FLAGS            "${SCAI_LINKER_FLAGS}"        CACHE STRING "Additional linker flags" )
 set ( ADDITIONAL_WARNING_FLAGS           "${SCAI_WARNING_FLAGS}"       CACHE STRING "Compilation flags concerning warnings" )
 
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE  ADDITIONAL_CXX_FLAGS_DEBUG  ADDITIONAL_CXX_FLAGS_RELEASE
                    ADDITIONAL_CXX_FLAGS_NO_OFFLOAD     #ADDITIONAL_CXX_FLAGS_LANG   ADDITIONAL_CXX_FLAGS_OPENMP
-                   ADDITIONAL_LINKER_FLAGS             ADDITIONAL_WARNING_FLAGS
+                   ADDITIONAL_LINKER_FLAGS             ADDITIONAL_WARNING_FLAGS    ADDITIONAL_CXX_FLAGS
                  )
 
-set ( CONCLUDE_CXX_FLAGS "" )
+set ( CONCLUDE_CXX_FLAGS "${ADDITIONAL_CXX_FLAGS}" )
 
 if    ( SCAI_COMMON_FOUND )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${SCAI_COMMON_FLAGS}")
@@ -53,13 +103,10 @@ else  ( SCAI_COMMON_FOUND )
 endif ( SCAI_COMMON_FOUND )
 
 if    ( DEFINED USE_MIC )
-    message( STATUS "DEFINED USE_MIC" )
     if    ( NOT USE_MIC )
-        message( STATUS "NOT USE_MIC" )
         set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OFFLOAD}" )
     endif ( NOT USE_MIC )
 else  ( DEFINED USE_MIC )
-    message( STATUS "NOT DEFINED USE_MIC" )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OFFLOAD}" )
 endif ( DEFINED USE_MIC )
 
@@ -71,6 +118,10 @@ endif ( USE_CODE_COVERAGE )
 string ( STRIP "${CONCLUDE_CXX_FLAGS}" CONCLUDE_CXX_FLAGS )
 
 set ( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} ${CONCLUDE_CXX_FLAGS}" )
+if    ( ${USE_COMPLEX} )
+    set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSCAI_COMPLEX_SUPPORTED" )
+endif ( ${USE_COMPLEX} )
+
 set ( CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
 set ( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} ${ADDITIONAL_CXX_FLAGS_DEBUG} " )
 set ( CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
@@ -83,8 +134,6 @@ string ( STRIP "${CMAKE_CXX_FLAGS_RELEASE}"   CMAKE_CXX_FLAGS_RELEASE )
 string ( STRIP "${CMAKE_EXE_LINKER_FLAGS}"    CMAKE_EXE_LINKER_FLAGS )
 string ( STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS )
 
-message ( STATUS "### final CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}###" )
-
 if ( CUDA_FOUND AND USE_CUDA )
     
     # TODO: determine cuda compute capability and use highest
@@ -93,6 +142,10 @@ if ( CUDA_FOUND AND USE_CUDA )
     if    ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
         list ( APPEND CUDA_NVCC_FLAGS -arch=sm_${CUDA_COMPUTE_CAPABILITY} )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
+
+    if    ( ${USE_COMPLEX} )
+        set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -DSCAI_COMPLEX_SUPPORTED" )
+    endif ( ${USE_COMPLEX} )
     
     set ( ADDITIONAL_NVCC_FLAGS         "${SCAI_NVCC_FLAGS}"         CACHE STRING "additional nvcc compiler flags" )
     set ( ADDITIONAL_NVCC_FLAGS_DEBUG   "${SCAI_NVCC_FLAGS_DEBUG}"   CACHE STRING "additional nvcc debug compiler flags" )
@@ -109,3 +162,5 @@ if ( CUDA_FOUND AND USE_CUDA )
     string ( STRIP "${CUDA_NVCC_FLAGS_RELEASE}" CUDA_NVCC_FLAGS_RELEASE )
     
 endif ( CUDA_FOUND AND USE_CUDA )
+
+set ( PROJECT_FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE )

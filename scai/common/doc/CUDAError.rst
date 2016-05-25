@@ -1,3 +1,5 @@
+.. _CUDAError:
+
 CUDAError
 =========
 
@@ -21,18 +23,18 @@ The following macro is very useful to verify if a CUDA context has been set
     SCAI_CHECK_CUDA_ACCESS
 
 CUDA Driver API
-===============
+---------------
 
 Many routines can be called either via the CUDA driver API or via the CUDA runtime API.
 Whereever possible, the use of the CUDA driver API is the preferred solution.
 
 CUDA Runtime API
-================
+----------------
 
 The runtime API is used mainly for launching CUDA kernels.
 
 cuBLAS API
-==========
+----------
 
 The NVIDIA CUDA Basic Linear Algebra Subroutines (cuBLAS) library is a GPU-accelerated version of the 
 complete standard BLAS library that delivers 6x to 17x faster performance than the latest MKL BLAS.
@@ -53,7 +55,7 @@ When using the cuBLAS library, a handle must be created that is returned by an i
 
 
 cuSPARSE API
-============
+------------
 
 The cuSPARSE library contains a set of basic linear algebra subroutines used for handling sparse matrices. 
 It is implemented on top of the NVIDIA CUDA runtime 

@@ -4,6 +4,10 @@
 SCAI Common
 ###########
 
+**********************
+Description/Motivation
+**********************
+
 The common library contains different functionality needed in nearly all SCAI projects.
 These are some utitily classes (e.g. for exceptions, factories, timing, ...), some
 classes to abstract from platform-specific features (e.g. threads, loading library modules, ...),
@@ -14,79 +18,200 @@ types, ...).
 
 All classes and type defintions are done in the namespace ``scai/common``.
 
-**********
-SCAI Types
-**********
+************************
+Common Library Reference
+************************
 
-====================    ==========================================
-Class                   Description
-====================    ==========================================
-ContextType             Enumeration types ContextType and AccessKind
-ScalarType              Enumeration type for supported value types (allows registration for different types in factories, interfaces, ...)
-TypeTrait               Struct with all specific stuff for any supported arithmetic value type in matrix/vector operations
-Math                    Wrapper for operations from math.h to use them in templated code
-SCAITypes               Supported arithmetic types for template instantiations
-Complex                 Complexnumbers which can be handled on host, CUDA and MIC
-Constants               Operations to compare value to a machine specific eps
-====================    ==========================================
+Utility Classes
+---------------
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 2
-   
-   Types
-   TypeTrait
-   Constants
-   SCAITypes
-   Complex
+The following classes provide some utitilites used in nearly all other
+SCAI projects.
 
-**************
-Common Classes
-**************
-
-====================    ==========================================
-Class                   Description
-====================    ==========================================
-Exception               Error handling, call stack
-Assertion               Assertion checking, which can be compiled out of code
-Factory                 Template class for Factory
-Factory1                Factory, but create with additional argument
-Thread                  Basic stuff to deal with multithreading (uses pThreads)
-Walltime                Simple and efficient walltime measuring
-Printable               Base class to support stream output
-NonCopyable             Disable default copy constructors
-shared_ptr              Either boost::shared_ptr or std::shared_ptr
-function, bind          Either boost::function or std::function
-LibModule               Load/Unload of Library Modules (dynamic libraries)
-ContextType             Enum types ContextType and AccessKind
-Settings                Access to environment variables
-OpenMP                  Dummy routines if OpenMP is disabled
-====================    ==========================================
+====================         ==========================================
+Class                        Description
+====================         ==========================================
+:ref:`Factory`               Template class for Factory
+:ref:`Thread`                Abstraction of a portable thread class
+:ref:`Walltime`              Simple and efficient walltime measuring
+:ref:`Printable`             Base class to support stream output
+:ref:`NonCopyable`           Disable default copy constructors
+:ref:`LibModule`             Load/Unload of Library Modules (dynamic libraries)
+====================         ==========================================
 
 .. toctree::
-   :titlesonly:
-   :maxdepth: 2
-   
+   :hidden:
+
+   Factory
+   Thread
+   Walltime
+   Printable
+   NonCopyable
+   LibModule
+
+Common Concepts
+---------------
+
+The following stuff stands for general concepts that are or might be used in all SCAI projects.
+
+====================         ==========================================
+Name                         Description
+====================         ==========================================
+:ref:`Exception`             Error handling, call stack
+:ref:`Assertion`             Assertion checking, which can be compiled out of code
+:ref:`SmartPointers`         Smart pointers free objects with destructor: unique_ptr or shared_ptr
+:ref:`Function`              Function objects that might also be created with bound arguments
+:ref:`Settings`              Access to environment variables
+:ref:`OpenMP`                Dummy routines if OpenMP is disabled
+:ref:`TypeList`              Meta programming schemes to deal with list of types
+====================         ==========================================
+
+.. toctree::
+   :hidden:
+
    Exception
    Assertion
-   Printable
-   Factory
-   Timing
-   LibModule
-   Thread
-   Settings
    SmartPointers
    Function
+   Settings
    OpenMP
+   TypeList
 
-***********************
-Common Classes for CUDA
-***********************
+Macros
+------
+
+The common project provides a lot of useful macros. Usually, each macro is
+defined within a corresponing header file in the subdirectory ``macros``.
 
 .. toctree::
    :titlesonly:
    :maxdepth: 2
+
+   Macros
+
+Enumeration Types
+-----------------
+
+Within all SCAI projects, enum types are used when the number of possible values is limited and when
+the values have a special meaning.
+
+The following enum types are defined in common as they are use within multiple projects.
+
+====================    ==========================================
+Class                   Description
+====================    ==========================================
+:ref:`ContextType`      Enumeration types ContextType and AccessKind
+:ref:`ScalarType`       Enumeration type for supported value types (allows registration for different types in factories, interfaces, ...)
+====================    ==========================================
+
+.. toctree::
+   :hidden:
+
+   ContextType
+   ScalarType
+
+Arithmetic Types
+----------------
+
+LAMA is a library for mathematical operations and here in common it is defined for which arithmetic types
+templated classes and operations will be instantiated, where the template arguments stand for an arithmetic type.
+An arithmetic type that is used for the instantation of these classes must provide a certain number of 
+operations, e.g. +, -, \*, /, and so on. Furthermore some mathematical operations and type properties must be 
+provided. Some additional structures are used to provide these functionalities in a consistent way. 
+
+====================    ==========================================
+Class                   Description
+====================    ==========================================
+:ref:`SCAITypes`        Supported arithmetic types for template instantiations
+:ref:`TypeTrait`        Struct with all specific stuff for any supported arithmetic value type in matrix/vector operations
+:ref:`Math`             Wrapper for mathematical operations (like those in cmath) to use them in templated code
+:ref:`Complex`          Complex numbers which cannot only be used on host, but also on CUDA and MIC devices.
+:ref:`Constants`        Operations to compare value to a machine specific eps
+====================    ==========================================
+
+.. toctree::
+   :hidden:
+
+   SCAITypes
+   TypeTrait
+   Math
+   Complex
+   Constants
+
+Common Classes for CUDA
+-----------------------
+
+Some general stuff used for CUDA is also part of the common project.
+
+====================         ==========================================
+Name                         Description
+====================         ==========================================
+:ref:`CUDACtx`               CUDA context
+:ref:`CUDAAccess`            Access to CUDA context
+:ref:`CUDAError`             Error handling for CUDA
+====================         ==========================================
+
+.. toctree::
+   :hidden:
 
    CUDAError
    CUDACtx
    CUDAAccess
+
+*********
+Relations
+*********
+
+All classes and concepts of the SCAI common project stand on their own.
+
+* SCAI assert macros use Exceptin class.
+
+*****
+Usage
+*****
+
+* Compile flag must be set ``SCAI_ASSERT_LEVEL_DEBUG``
+* When the native C++ compiler does not support the C+11 standard,
+  the Boost header files are needed and the include path
+  for the Boost header files must be specified for the compilation.
+
+Using the Settings class requires that the command line arguments are parsed.
+
+.. code-block:: c++
+
+    int main( int argc, const char* argv[] )
+    {
+        common::settings::parseArgs( argc, argv );
+        ...
+    }
+
+The following environment variables are used by the COMMON library:
+
+* ``SCAI_UNSUPPORTED`` (ignore, warn, or error) when using the macro ``SCAI_UNSUPPORTED``
+
+************
+Dependencies
+************
+
+The common project is on the lowest level of the SCAI project hierarchy.
+Therefore it does not depend on any other SCAI project.
+
+There are the following externale dependencies:
+
+* When the C++11 standard is not supported, Boost header libraries must be available
+* When the C++11 standard is not supported, a pthread library must be available
+  for the implementation of the Thread class.
+
+************
+Related Work
+************
+
+* Boost Libraries, some functionality has been taken over in the C++11 standard.
+* Macros and Meta Programming are techniques that are well described in
+  "C++ Template Metaprogramming", by David Abrahams and Aleksey Gurtovoy. Copyright (c) 2005 by Pearson Education, Inc. 
+* The TypeList concept is well documented in "Modern C++ Design: Generic Programming and Design Patterns Applied",
+  by Andrei Alexandrescu. Copyright (c) 2001 by Addison Wesley
+* Factory stuff as dynamic extension, similiar to module conecpt of Python
+* The Curiously recurring template pattern as an idiom of C++ is well described
+  `here <https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern>`_
+

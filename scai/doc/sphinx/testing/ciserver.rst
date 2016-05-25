@@ -22,7 +22,7 @@ General option:
 
 Source-Code-Management : SVN  with repository url
 
-::
+.. code-block:: bash
 
 	svn+ssh://**USERNAME**@svn.code.sf.net/p/libama/code/trunk
 
@@ -42,7 +42,7 @@ Advanced:
 After building a project, all tests should be executed to varify the correctness of the calculations.
 This can be done by writing a shell script in a post build task:
 
-::
+.. code-block:: bash
 
 	cd build/test
 	echo "Exception = ERROR" >> config

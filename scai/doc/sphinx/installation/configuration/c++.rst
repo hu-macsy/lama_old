@@ -10,22 +10,29 @@ LAMA exploits OpenMP parallelization for the use of multiple cores of one CPU an
 address space. Therefore a C++ compiler supporting OpenMP is strongly recommended.
 
 During the configuration with cmake a valid C++ compiler will be identified on your machine. You can force the use of a
-certain C and C++ compiler in the following way::
+certain C and C++ compiler in the following way
+
+.. code-block:: bash
 
   export CC=<path/to/C-compiler>
   export CXX<path/to/C++ compiler>
   cmake ..
 
-or::
+or
+
+.. code-block:: bash
 
   CC=/opt/intel/bin/icc CXX=/opt/intel/bin/icpc cmake ...
 
-You can use directy the name of the compiler executable if it is in your path::
+You can use directy the name of the compiler executable if it is in your path
+
+.. code-block:: bash
 
   CC=icc;CXX=icpc cmake ...
 
 Using g++ version 4.3.4 caused compilation errors as some boost Spirit grammars could not be identified
-(maybe there is a better workaround than using a newer compiler version)::
+(maybe there is a better workaround than using a newer compiler version)
+
+.. code-block:: bash
 
    comparisons like ‘X<=Y<=Z’ do not have their mathematical meaning
-

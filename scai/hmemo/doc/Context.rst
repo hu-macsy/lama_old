@@ -1,3 +1,5 @@
+.. _Context:
+
 Context
 =======
 
@@ -30,6 +32,8 @@ Be careful: a device is not freed by the C++ application as long as there is sti
  * getMemoryPtr is used as working memory for the device:
  * zeroCopy disabled: ctx->getMemoryPtr() == ctx->getLocalMemoryPtr()
  * zeroCopy enabled: ctx->getMemoryPtr() == ctx->getHostMemoryPtr()
+
+.. _hmemo-contextFactory:
 
 Context Factory
 ---------------

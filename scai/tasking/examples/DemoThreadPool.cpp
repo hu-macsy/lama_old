@@ -1,6 +1,27 @@
 /**
  * @file DemoThreadPool.cpp
  *
+ * @license
+ * Copyright (c) 2009-2016
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ * @endlicense
+ *
  * @brief Use of class ThreadPool
  * @author Thomas Brandes
  * @date 13.07.2015
@@ -12,8 +33,6 @@
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 
-#include <unistd.h>
-
 using namespace scai::common;
 using namespace scai::tasking;
 
@@ -21,7 +40,7 @@ using namespace scai::tasking;
 
 void work( const int in )
 {
-    sleep( in );
+    Walltime::sleep( in * 1000 );
 }
 
 int main( int argc, const char** argv )

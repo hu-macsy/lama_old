@@ -1,34 +1,30 @@
 ###
- # @file Functions.cmake
+ # @file Functions/checkValue.cmake
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2016
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
- # Permission is hereby granted, free of charge, to any person obtaining a copy
- # of this software and associated documentation files (the "Software"), to deal
- # in the Software without restriction, including without limitation the rights
- # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- # copies of the Software, and to permit persons to whom the Software is
- # furnished to do so, subject to the following conditions:
+ # This file is part of the Library of Accelerated Math Applications (LAMA).
  #
- # The above copyright notice and this permission notice shall be included in
- # all copies or substantial portions of the Software.
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Affero General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
  #
- # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- # SOFTWARE.
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Affero General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  # @endlicense
  #
  # @brief CMake functions and macros
  # @author Jan Ecker
  # @date 25.04.2013
- # @since 1.0.0
 ###
 
 #checks whether the given value is in the value list ( pass list as "${LIST}" (doublequotes !!!) )
@@ -43,3 +39,16 @@ function ( checkValue SINGLEVALUE VALUELIST )
         message ( FATAL_ERROR "Selected Value ${SINGLEVALUE} is no valid choice out of ${VALUELIST}" )
     endif ( NOT BOOLVALUE )
 endfunction ( checkValue SINGLEVALUE VALUELIST )
+
+function ( checkValues LIST OPTIONLIST )
+    # need to copy the variable: see CMake docu for this reason
+    #Note that the parameters to a macro and values such as ARGN are not variables in the usual CMake sense.
+    #They are string replacements much like the C preprocessor would do with a macro.
+    set ( MACRO_COPY_OPTION_LIST "${OPTIONLIST}" )
+    foreach    ( ITEM ${LIST} )
+    	list ( FIND MACRO_COPY_OPTION_LIST ${ITEM} INDEX )
+	    if    ( ${INDEX} EQUAL -1 )
+	        message ( FATAL_ERROR "Value ${ITEM} is no valid choice out of ${OPTIONLIST}" )
+	    endif ( ${INDEX} EQUAL -1 )
+    endforeach ( ITEM ${VALUELIST} )
+endfunction ( checkValues LIST OPTIONLIST )

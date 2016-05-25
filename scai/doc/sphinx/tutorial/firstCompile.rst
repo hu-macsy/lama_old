@@ -3,30 +3,42 @@ Compilation and Execution of LAMA Programs on Linux Systems
 
 .. TODO: needs update
 
-The environment variable LAMA_ROOT refers the directory of your LAMA installation::
+The environment variable LAMA_ROOT refers the directory of your LAMA installation
+
+.. code-block:: bash
 
     export LAMA_ROOT=<installation/directory>
 
-The following command compiles and links your example program simple.cpp::
+The following command compiles and links your example program simple.cpp
+
+.. code-block:: bash
 
     g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama 
 
 If you have an own Boost installation, you have to add also the corresponding
-include directory to the include paths::
+include directory to the include paths
+
+.. code-block:: bash
 
     g++ -o simple simple.cpp -I${LAMA_ROOT}/include -I${BOOST_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama 
 
-If this step was successful, you can run the executable::
+If this step was successful, you can run the executable
+
+.. code-block:: bash
 
     ./simple
 
 Due to the dynamic linking of libraries, the executable **simple** will not contain the LAMA codes itself.
 Instead, it contains a reference to the LAMA library and references will be resolved when the executable
-is started. Here, it is very likely that you get the following error message::
+is started. Here, it is very likely that you get the following error message
+
+.. code-block:: bash
 
     simple: error while loading shared libraries: libscai_lama.so: cannot open shared object file: No such file or directory
 
-Information about dynamically linked libraries is available by the following command::
+Information about dynamically linked libraries is available by the following command
+
+.. code-block:: bash
 
     ldd ./simple
 
@@ -38,34 +50,44 @@ Information about dynamically linked libraries is available by the following com
 So the executable contains a link to the lama library but it does not know where to find this library.
 There are two solutions to solve this problem.
 
-1) Setting the library path
+1. Setting the library path
 
    You can add the lib directory to your library path. At program start, unresolved library links
    will be searched in all directories of your library path. The correspoding setting should be added
-   to your bashrc file::
+   to your bashrc file
+
+.. code-block:: bash
 
        export LD_LIBRARY_PATH=${LAMA_ROOT}/lib:${LD_LIBRARY_PATH}
 
-2) Setting resolution path in the executable
+2. Setting resolution path in the executable
 
    You generate a link to the LAMA lib directory within the executable. This solution is the
-   preferred solution if you want to share the executable with other users::
+   preferred solution if you want to share the executable with other users
+
+.. code-block:: bash
 
       g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama -Wl,-rpath=${LAMA_ROOT}/lib
 
 Now it should be possible to run the executable. Beside the output it is very likely that you get
-the following warning message::
+the following warning message
+
+.. code-block:: bash
 
     <root> (GenLogger.cpp::275,func=configure) WARN: SCAI_LOG not set, use default configuration
 
 The environment variable SCAI_LOG should be set with a useful value to get rid of the warning.
-You can set the variable explicitly with the default value::
+You can set the variable explicitly with the default value
+
+.. code-block:: bash
 
     export SCAI_LOG=WARN
     
 For other useful environment variables see :doc:`here <environmentVariables>`.
 
-Now the output should be as follows::
+Now the output should be as follows
+
+.. code-block:: c++
 
     L1 norm of v = 8.8
 

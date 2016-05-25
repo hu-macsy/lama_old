@@ -1,13 +1,42 @@
+###
+ # @file CMake/Modules/Summaries/Modules/Compiler.cmake
+ #
+ # @license
+ # Copyright (c) 2009-2016
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # This file is part of the Library of Accelerated Math Applications (LAMA).
+ #
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Affero General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
+ #
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Affero General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ # @endlicense
+ #
+ # @brief Summary concerning the compiler support.
+ # @author Lauretta Schubert
+ # @date 11.04.2016
+###
+
 heading ( "Compiler:" )
 
-if    ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR )
+if    ( CMAKE_CXX_COMPILER AND ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR ) )
     set( REQUIRED_FOUND TRUE )
-else  ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR )
+else  ( CMAKE_CXX_COMPILER AND ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR ) )
     set( REQUIRED_FOUND FALSE )
-endif ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR )
+endif ( CMAKE_CXX_COMPILER AND ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR ) )
 
 heading2 ( "Configuration" "REQUIRED_FOUND" )
-    found_message ( "C++ Compiler" "CMAKE_CXX_COMPILER" "REQUIRED" "${CMAKE_CXX_COMPILER_ID} Version ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
+    found_message ( "C++ Compiler" "CMAKE_CXX_COMPILER" "REQUIRED" "${CMAKE_CXX_COMPILER_ID} Version ${CXX_COMPILER_VERSION}" )
     found_message ( "with C++11 support" "CXX_SUPPORTS_C11" "REQUIRED" "" )
 
 if    ( NOT CXX_SUPPORTS_C11 )

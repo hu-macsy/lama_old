@@ -2,27 +2,24 @@
  * @file ELLStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Instantitions for template class ELLStorage.
@@ -55,7 +52,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
 namespace scai
@@ -101,7 +98,7 @@ ELLStorage<ValueType>::ELLStorage(
 
     // ellSizes[] = 0 @ context
 
-    HArrayUtils::setScalar( mIA, 0, common::reduction::COPY, context );
+    HArrayUtils::setScalar( mIA, 0, utilskernel::reduction::COPY, context );
 
     SCAI_LOG_DEBUG( logger, "ELLStorage for matrix " << mNumRows << " x " << mNumColumns << ", no elements" )
 }
@@ -221,7 +218,7 @@ IndexType ELLStorage<ValueType>::getNumValues() const
 {
     SCAI_LOG_INFO( logger, "getNumValues" )
 
-    IndexType numValues = HArrayUtils::reduce( mIA, common::reduction::ADD, this->getContextPtr() );
+    IndexType numValues = HArrayUtils::reduce( mIA, utilskernel::reduction::ADD, this->getContextPtr() );
 
     return numValues;
 }
@@ -260,13 +257,13 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
     mIA.clear();
     mIA.resize( mNumRows);
-    HArrayUtils::setScalar( mIA, 1, common::reduction::COPY, loc );
+    HArrayUtils::setScalar( mIA, 1, utilskernel::reduction::COPY, loc );
 
     HArrayUtils::setOrder( mJA, mNumRows );
 
     mValues.clear();  
     mValues.resize( mNumRows );
-    HArrayUtils::setScalar( mValues, ValueType( 1 ), common::reduction::COPY, loc );
+    HArrayUtils::setScalar( mValues, ValueType( 1 ), utilskernel::reduction::COPY, loc );
 
     mDiagonalProperty = true;
 
@@ -360,7 +357,7 @@ void ELLStorage<ValueType>::buildCSR(
     ia.clear();
     ia.reserve( context, mNumRows + 1 );  // reserve one more entry
 
-    HArrayUtils::setArray( ia, mIA, common::reduction::COPY, context );
+    HArrayUtils::setArray( ia, mIA, utilskernel::reduction::COPY, context );
 
     if ( ja == NULL || values == NULL )
     {
@@ -457,7 +454,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     // determine the maximal number of non-zero in one row
 
-    mNumValuesPerRow = HArrayUtils::reduce( mIA, common::reduction::MAX, context );
+    mNumValuesPerRow = HArrayUtils::reduce( mIA, utilskernel::reduction::MAX, context );
 
     SCAI_LOG_DEBUG( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
 
@@ -557,12 +554,12 @@ void ELLStorage<ValueType>::setELLData(
 
     ContextPtr loc = getContextPtr();
 
-    HArrayUtils::setArray( mIA, ia, common::reduction::COPY, loc );
-    HArrayUtils::setArray( mJA, ja, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mIA, ia, utilskernel::reduction::COPY, loc );
+    HArrayUtils::setArray( mJA, ja, utilskernel::reduction::COPY, loc );
 
     // assign works in contrary to setArray with each typed array
 
-    HArrayUtils::assignOp( mValues, values, common::reduction::COPY, loc );  // also type conversion
+    HArrayUtils::assignOp( mValues, values, utilskernel::reduction::COPY, loc );  // also type conversion
 
     // fill up my arrays ja and values to make matrix-multiplication fast
 
@@ -619,7 +616,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    setVal[ loc ]( wValues.get(), numDiagonalElements, value, common::reduction::COPY );
+    setVal[ loc ]( wValues.get(), numDiagonalElements, value, utilskernel::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -644,7 +641,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 
     // ELL format with diagonal property: diagonal is just the first column in mValues
 
-    set[ loc ]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::reduction::COPY );
+    set[ loc ]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -697,7 +694,7 @@ void ELLStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::reduction::COPY );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -707,7 +704,7 @@ void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "scaleImpl # value = " << value )
 
-    HArrayUtils::setScalar( mValues, value, common::reduction::MULT, this->getContextPtr() );
+    HArrayUtils::setScalar( mValues, value, utilskernel::reduction::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -823,7 +820,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
         WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
 
-        setVal[ loc ]( ia.get(), mNumRows, 0, common::reduction::COPY );
+        setVal[ loc ]( ia.get(), mNumRows, 0, utilskernel::reduction::COPY );
     }
 
     mDiagonalProperty = checkDiagonalProperty();
@@ -964,7 +961,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
 
     // 2. Step: compute length of longest row
-    IndexType newNumValuesPerRow = reduce[ loc ]( IA.get(), mNumRows, common::reduction::MAX );
+    IndexType newNumValuesPerRow = reduce[ loc ]( IA.get(), mNumRows, utilskernel::reduction::MAX );
 
     // Do further steps, if new array could be smaller
     if( newNumValuesPerRow < mNumValuesPerRow )
@@ -1958,7 +1955,7 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
                                    a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = reduce[ loc ]( cIA.get(), mNumRows, common::reduction::MAX );
+        mNumValuesPerRow = reduce[ loc ]( cIA.get(), mNumRows, utilskernel::reduction::MAX );
 
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );
@@ -2020,7 +2017,7 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
                              a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = reduce[loc]( cIA.get(), mNumRows, common::reduction::MAX );
+        mNumValuesPerRow = reduce[loc]( cIA.get(), mNumRows, utilskernel::reduction::MAX );
 
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );
@@ -2094,7 +2091,26 @@ const char* ELLStorage<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_ARITHMETIC_HOST )
+
+#define ELL_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+     template void ELLStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+     template void ELLStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+     template void ELLStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+     template void ELLStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+     template void ELLStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+     template void ELLStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+
+#define ELL_STORAGE_INST_LVL1( ValueType )                                                                                  \
+    SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+
+SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+
+#undef ELL_STORAGE_INST_LVL2
+#undef ELL_STORAGE_INST_LVL1
 
 } /* end namespace lama */
 

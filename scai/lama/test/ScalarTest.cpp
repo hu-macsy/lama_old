@@ -2,40 +2,35 @@
  * @file ScalarTest.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Contains the implementation of the class ScalarTest.
- * @author: Jiri Kraus, Eric Stricker
+ * @author Jiri Kraus, Eric Stricker
  * @date 21.06.2012
- * @since 1.0.0
- **/
+ */
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/Scalar.hpp>
-#include <scai/common/Complex.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/lama/test/TestMacros.hpp>
 
@@ -48,8 +43,7 @@ using namespace scai::common;
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices
 // and vectors have not been instantiated for these types
 
-typedef boost::mpl::list<float, double, long double,
-        ComplexFloat, ComplexDouble, ComplexLongDouble> test_types;
+typedef boost::mpl::list< SCAI_ARITHMETIC_HOST> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -70,9 +64,13 @@ BOOST_AUTO_TEST_CASE( ScalarGetTypeTest )
     BOOST_CHECK_EQUAL( getScalarType<float>(), scalar::FLOAT );
     BOOST_CHECK_EQUAL( getScalarType<double>(), scalar::DOUBLE );
     BOOST_CHECK_EQUAL( getScalarType<LongDouble>(), scalar::LONG_DOUBLE );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
     BOOST_CHECK_EQUAL( getScalarType<ComplexFloat>(), scalar::COMPLEX );
     BOOST_CHECK_EQUAL( getScalarType<ComplexDouble>(), scalar::DOUBLE_COMPLEX );
     BOOST_CHECK_EQUAL( getScalarType<ComplexLongDouble>(), scalar::LONG_DOUBLE_COMPLEX );
+#endif
+
 }
 
 /* --------------------------------------------------------------------- */
@@ -163,12 +161,16 @@ BOOST_AUTO_TEST_CASE( MiscTests )
     BOOST_CHECK_EQUAL( abs( t ), 9.0 );
     BOOST_CHECK_EQUAL( max( s, t ), 9.0  );
     BOOST_CHECK_EQUAL( min( s, t ), 6.25 );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
     Scalar c1( ComplexFloat( 3.0, 4.0 ) );
     Scalar c2( ComplexFloat( 2.0, 2.0 ) );
     BOOST_CHECK_EQUAL( max( c1, c2 ), c1  );
     BOOST_CHECK_EQUAL( min( c1, c2 ), c2 );
     // Pythagoras: 3^2 + 4^2 = 5^2
     BOOST_CHECK_EQUAL( abs( c1 ), 5.0 );
+#endif
+
 }
 
 /* --------------------------------------------------------------------- */

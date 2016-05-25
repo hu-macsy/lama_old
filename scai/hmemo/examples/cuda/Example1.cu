@@ -1,3 +1,31 @@
+/**
+ * @file hmemo/examples/cuda/Example1.cu
+ *
+ * @license
+ * Copyright (c) 2009-2016
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ * @endlicense
+ *
+ * @brief ToDo: Missing description in ./hmemo/examples/cuda/Example1.cu
+ * @author Thomas Brandes
+ * @date 10.07.2015
+ */
 
 #include <scai/hmemo.hpp>
 
@@ -7,6 +35,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Walltime.hpp>
 
 #include <iostream>
 #include <unistd.h>
@@ -126,7 +155,7 @@ int main()
     {
         SCAI_LOG_INFO( logger, "read on host" )
         ReadAccess<double> read( data, hostContext );
-        sleep( 1 );
+        common::Walltime::sleep( 1000 );
         for ( IndexType i = 0; i < N; ++i )
         {
             SCAI_ASSERT_EQUAL( read[i], 2 * 1.0, "wrong value after add, i = " << i )

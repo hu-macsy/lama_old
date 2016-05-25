@@ -2,46 +2,53 @@
  * @file scai/lama/test/TestMacros.hpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Additional Macros used for testing of LAMA with Boost Test.
  * @author Jiri Kraus
  * @date 06.04.2011
- * @since 1.0.0
  */
 
 #pragma once
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/loop.hpp>
 #include <scai/logging.hpp>
 #include <scai/hmemo/Context.hpp>
 #include <scai/kregistry/test/TestMacros.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#include <boost/test/detail/unit_test_parameters.hpp>
+#if BOOST_VERSION > 105800
+	#include <boost/test/unit_test_parameters.hpp>
+#else
+	#include <boost/test/detail/unit_test_parameters.hpp>
+#endif
+
+#include <boost/test/test_tools.hpp>
+#include <boost/test/detail/global_typedef.hpp>
+#include <boost/test/detail/log_level.hpp>
+
+#include <boost/test/detail/suppress_warnings.hpp>
+
 
 #ifdef SCAI_CHECK_CLOSE
     #undef  SCAI_CHECK_CLOSE
@@ -71,8 +78,13 @@
         BOOST_CHECK_CLOSE( scai::common::Math::imag( xVal ), scai::common::Math::imag( yVal ), tolerance ) ;  \
     }
 
+/*
 #define SCAI_CHECK_SMALL( x, ValueType, eps )                   \
         BOOST_CHECK_SMALL( x, static_cast<ValueType>(eps) );    \
+*/
+
+#define SCAI_CHECK_SMALL( x, ValueType, eps )                   \
+        BOOST_CHECK( x < static_cast<ValueType>(eps) );    \
 
 #define SCAI_CHECK_SMALL_EPS( x, ValueType )                                        \
     SCAI_CHECK_SMALL( x, ValueType, scai::common::TypeTraits<ValueType>::small() )
@@ -90,12 +102,6 @@
  *
  * Static cast is used to convert eps to the right ValueType.
  */
-
-/*#define SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )                     \
-    {                                                                    \
-        ValueType xHelper = (x).getValue<ValueType >();                  \
-        BOOST_CHECK_SMALL( xHelper, static_cast<ValueType >( eps ) );    \
-    }*/
 
 #define SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )                     \
         SCAI_CHECK_SMALL( (x).getValue<ValueType>(), ValueType, eps )    \
@@ -116,9 +122,13 @@
  * log levels are defined in boost/test/detail/log_level.hpp
  */
 
-#define IF_LOG_LEVEL_IS_TEST_SUITE \
-    if ( boost::unit_test::runtime_config::log_level() == boost::unit_test::log_test_units )
-
+#if BOOST_VERSION > 105900
+    #define IF_LOG_LEVEL_IS_TEST_SUITE \
+    	if ( boost::unit_test::runtime_config::LOG_LEVEL == "test_suite" )
+#else
+    #define IF_LOG_LEVEL_IS_TEST_SUITE \
+	if ( boost::unit_test::runtime_config::log_level() == boost::unit_test::log_test_units )
+#endif 
 /*
  * @brief HelperMacro LAMA_AUTO_TEST_CASE_T( name, classname )
  *
@@ -308,13 +318,13 @@
  *  KernelRegistryException is caught with a correpsonding warn message on logger
  */
 
-#define LAMA_RUN_TEST(z, I, method )                                                                            \
+#define LAMA_RUN_TEST( method, ValueType )                                                                      \
     try                                                                                                         \
     {                                                                                                           \
         if ( context->getType() == scai::common::context::CUDA                                                  \
                                || context->getType() == scai::common::context::MIC )                            \
         {                                                                                                       \
-            switch( scai::common::getScalarType<SCAI_ARITHMETIC_HOST_TYPE_##I>() )                              \
+            switch( scai::common::getScalarType<ValueType>() )                                                  \
             {                                                                                                   \
                 case scai::common::scalar::LONG_DOUBLE:                                                         \
                 case scai::common::scalar::LONG_DOUBLE_COMPLEX:                                                 \
@@ -323,11 +333,11 @@
                      ;                                                                                          \
              }                                                                                                  \
         }                                                                                                       \
-        method<SCAI_ARITHMETIC_HOST_TYPE_##I>( context );                                                       \
+        method<ValueType>( context );                                                                           \
     }                                                                                                           \
     catch ( scai::kregistry::KernelRegistryException& )                                                         \
     {                                                                                                           \
-        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( SCAI_ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
+        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( ValueType ) << "> cannot run on "                \
                        << context->getType() << ", corresponding function not implemented yet."        )        \
         return;                                                                                                 \
     }
@@ -341,13 +351,13 @@
  * @param name          name of test method, which will invoke.
  * @param classname     name of the given test class.
 */
-#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                        \
-                                                                                                        \
-    BOOST_AUTO_TEST_CASE( name )                                                                        \
-    {                                                                                                   \
-            ContextPtr context = Context::getContextPtr();                                              \
-            const std::string lama_name = #name;                                                        \
-            const std::string lama_classname = #classname;                                              \
-            BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT, LAMA_RUN_TEST, namespacename::classname::name )  \
+#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                       \
+                                                                                                       \
+    BOOST_AUTO_TEST_CASE( name )                                                                       \
+    {                                                                                                  \
+            ContextPtr context = Context::getContextPtr();                                             \
+            const std::string lama_name = #name;                                                       \
+            const std::string lama_classname = #classname;                                             \
+            SCAI_COMMON_LOOP_LVL2( namespacename::classname::name, LAMA_RUN_TEST, SCAI_ARITHMETIC_HOST )  \
     }
 

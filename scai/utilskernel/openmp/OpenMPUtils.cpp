@@ -2,33 +2,29 @@
  * @file OpenMPUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Implementation of CSR utilities with OpenMP for the Inteface
  * @author Thomas Brandes
  * @date 02.07.2012
- * @since 1.0.0
  */
 
 // hpp
@@ -42,7 +38,6 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Constants.hpp>
-#include <scai/common/Complex.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/unique_ptr.hpp>
@@ -65,7 +60,7 @@ void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.conj" )
 
-    if ( n > 0 && common::scalar::isComplex( TypeTraits<ValueType>::stype ) )
+    if ( n > 0 && common::isComplex( TypeTraits<ValueType>::stype ) )
     {
         SCAI_LOG_INFO( logger, "conj, #n = " << n )
 
@@ -96,13 +91,13 @@ void OpenMPUtils::setScale(
     if ( value == common::constants::ZERO )
     {
         // Important : inValues might be undefined
-        setVal( outValues, n, value, common::reduction:: COPY );
+        setVal( outValues, n, value, reduction:: COPY );
         return;
     }
 
     if ( value == common::constants::ONE )
     {
-        set( outValues, inValues, n, common::reduction:: COPY );
+        set( outValues, inValues, n, reduction:: COPY );
         return;
     }
 
@@ -247,19 +242,19 @@ ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op )
+ValueType OpenMPUtils::reduce( const ValueType array[], const IndexType n, const reduction::ReductionOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array<" << TypeTraits<ValueType>::id() << ">[" << n << "], op = " << op )
 
     switch ( op )
     {
-        case common::reduction::ADD :
+        case reduction::ADD :
             return reduceSum( array, n );
-        case common::reduction::MAX :
+        case reduction::MAX :
             return reduceMaxVal( array, n );
-        case common::reduction::MIN :
+        case reduction::MIN :
             return reduceMinVal( array, n );
-        case common::reduction::ABS_MAX :
+        case reduction::ABS_MAX :
             return reduceAbsMaxVal( array, n );
         default:
             COMMON_THROWEXCEPTION( "Unsupported reduce op " << op )
@@ -271,17 +266,17 @@ ValueType OpenMPUtils::reduce( const ValueType array[], const IndexType n, const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
+void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op )
 {
     SCAI_REGION( "OpenMP.Utils.setVal" )
 
-    SCAI_LOG_DEBUG( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = "
+    SCAI_LOG_INFO( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = "
                             << val << ", op = " << op )
 
     ValueType value = static_cast<ValueType>( val );
     switch ( op )
     {
-        case common::reduction::COPY :
+        case reduction::COPY :
         {
             #pragma omp parallel
             {
@@ -293,7 +288,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             }
             break;
         }
-        case common::reduction::ADD :
+        case reduction::ADD :
         {
             if ( val == common::constants::ZERO ) 
             {
@@ -307,7 +302,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             }
             break;
         }
-        case common::reduction::SUB :
+        case reduction::SUB :
         {
             if ( val == common::constants::ZERO ) 
             {
@@ -321,7 +316,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             }
             break;
         }
-        case common::reduction::MULT :
+        case reduction::MULT :
         {
             // scale all values of the array 
 
@@ -331,7 +326,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             }
             else if ( val == common::constants::ZERO )
             {
-                setVal( array, n, ValueType( 0 ), common::reduction::COPY );
+                setVal( array, n, ValueType( 0 ), reduction::COPY );
             }
             else
             {
@@ -344,7 +339,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             }
             break;
         }
-        case common::reduction::DIVIDE :
+        case reduction::DIVIDE :
         {
             // scale all values of the array 
 
@@ -482,7 +477,7 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType1,typename ValueType2>
-void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op )
+void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op )
 {
     SCAI_REGION( "OpenMP.Utils.set" )
 
@@ -492,17 +487,20 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
 
     switch ( op ) 
     {
-        case common::reduction::COPY :
+        case reduction::COPY :
         {
-            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-            for ( IndexType i = 0; i < n; i++ )
+            if( in != reinterpret_cast<ValueType2*> ( out ) )
             {
-                out[i] = static_cast<ValueType1>( in[i] );
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = static_cast<ValueType1>( in[i] );
+                }
             }
             break;
         }
-        case common::reduction::ADD :
+        case reduction::ADD :
         {
             #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -512,7 +510,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
             }
             break;
         }
-        case common::reduction::SUB :
+        case reduction::SUB :
         {
             #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -522,7 +520,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
             }
             break;
         }
-        case common::reduction::DIVIDE :
+        case reduction::DIVIDE :
         {
             #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -532,7 +530,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
             }
             break;
         }
-        case common::reduction::MULT :
+        case reduction::MULT :
         {
             #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 

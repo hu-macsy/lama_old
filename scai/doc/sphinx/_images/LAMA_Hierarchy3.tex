@@ -1,0 +1,194 @@
+% bilder/CUDA-Speicherhierarchie.tex
+\documentclass{article}
+%\usepackage{lmodern}
+%\usepackage{typearea}
+
+%\usepackage{newtxtext,newtxmath} % selects Times Roman as basic font
+\usepackage{helvet}          % selects Helvetica as sans-serif font
+\renewcommand{\familydefault}{\sfdefault}
+\fontfamily{phv}\selectfont
+%\usepackage{courier}         % selects Courier as typewriter font
+
+
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+
+\usepackage{tikz}
+\usepackage[active,tightpage]{preview}
+\usepackage{varwidth}
+\usepackage{array}
+\usepackage{tabu}
+\usepackage{multirow}
+
+\newcommand\Umbruch[2][4em]{\begin{varwidth}{#1}\centering#2\end{varwidth}}
+	\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\usepackage{color}
+
+% =====================
+% = Color Definitions =
+% =====================
+\definecolor{c_linalg}{RGB}{188,188,188}
+\definecolor{c_dist}{RGB}{238,88,31}
+\definecolor{c_math}{RGB}{255,148,0}
+\definecolor{c_devkit}{RGB}{76,70,71}
+\definecolor{c_shadow}{RGB}{76,70,71}
+
+\newcommand{\LINALGColorValue}{70}
+\newcommand{\DISTColorValue}{90}
+\newcommand{\MATHColorValue}{80}
+\newcommand{\DEVKITColorValue}{80}
+\newcommand{\SHADOWColorValue}{80}
+
+\newcommand{\LINALGColorValueShadow}{90}
+\newcommand{\MATHColorValueShadow}{100}
+\newcommand{\DEVKITColorValueShadow}{100}
+
+\usetikzlibrary{fit}
+\usetikzlibrary{arrows}
+\usetikzlibrary{intersections}
+\usetikzlibrary{positioning, calc}
+\tikzset{>=triangle 45,}
+
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{10pt}
+
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
+
+\begin{document}
+
+\begin{tikzpicture}[
+	subEntry/.style={
+		text centered,
+		minimum width=7.5em,
+		},
+	smallSubEntry/.style={
+		text centered,
+		minimum width=7.5em,
+		minimum height=1.5em
+		},
+	bigEntry/.style={
+		rectangle,
+		rounded corners,
+		draw=black, 
+		text centered,
+		minimum width=15em,
+		},
+	bigSubEntry/.style={
+		rectangle,
+		rounded corners,
+		draw=black, 
+		text centered,
+		minimum width=6.5em,		
+		fill=white!100,
+		}
+]
+
+%\coordinate (desc) at(0em, 0em);
+
+\newcommand{\levelHeight}{10em}
+
+\coordinate (lvl0) at(0em, 0em); % LinAlg
+\coordinate (lvl1) at($(lvl0)-(0em,5.0em)$); % Distributed- / Math-Kernel-Extension
+\coordinate (lvl2) at($(lvl1)-(0em,5.0em)$); % DevKit
+
+% ==========
+% = Levels =
+% ==========
+% |- LinAlg
+\draw[subEntry] node(linalg) at(lvl0) {\textbf{\Umbruch[4em]{Linear-Algebra-Package}}};
+
+% |- DMemo, Math Kernel
+\node(level1) at(lvl1) 
+{
+\begin{tabular}{C{6.0em}C{6.0em}}
+\textbf{Distributed Extension} & \textbf{Math-Kernel Extension}\\
+\end{tabular}
+};
+
+% |- Heterogenous Computing Development Kit
+\draw[subEntry] node(devkit) at(lvl2) {\textbf{\Umbruch[26em]{Heterogeneous Computing Development Kit}}};
+
+
+% ============================
+% = Coordinates for Triangle =
+% ============================
+
+\coordinate (cornerLeftDown) at ($(devkit.south west)-(4.0em,2em)$);
+\coordinate (cornerRightDown) at ($(devkit.south east)+(4.0em,-2em)$);
+\coordinate (cornerUp) at ($(linalg.north)+(0em,5.0em)$);
+
+% ====================
+% = Horizontal lines =
+% ====================
+
+% dev kit --> ( distributed, math )
+\coordinate (hor1l) at ($(cornerLeftDown)!0.25!(cornerUp)$);
+\coordinate (hor1r) at ($(cornerRightDown)!0.25!(cornerUp)$);
+
+% ( distributed, math ) --> linalg
+\coordinate (hor2l) at ($(cornerLeftDown)!0.51!(cornerUp)$);
+\coordinate (hor2r) at ($(cornerRightDown)!0.51!(cornerUp)$);
+
+% ==================
+% = Vertical lines =
+% ==================
+
+% distributed / math
+\coordinate (ver1_1u) at ($(hor1l)!0.50!(hor1r)$);
+\coordinate (ver1_1o) at (ver1_1u|-hor2l);
+
+% ==================
+% = Shadow lines =
+% ==================
+
+% Versetzte Punkte
+\draw coordinate (s0r) at ($(cornerRightDown)+(1.5em,3em)$);
+\draw coordinate (s1r) at ($(hor1r)+(1.5em,3em)$);
+\draw coordinate (s2r) at ($(hor2r)+(1.5em,3em)$);
+
+% Pfade von Vorderseite zu versetzten Punkten
+\path[name path=int_s0] (s0r) -- (cornerUp);
+\path[name path=int_s1] (hor1r) -- (s1r);
+\path[name path=int_s2] (hor2r) -- (s2r);
+
+% Schnittpunkte 
+\coordinate (int_p1) at (intersection of s0r--cornerUp and hor1r--s1r);
+\coordinate (int_p2) at (intersection of s0r--cornerUp and hor2r--s2r);
+
+
+% ##########################
+% ####### Background #######
+% ##########################
+\begin{pgfonlayer}{background}
+
+% Flaeche LinAlg
+\draw[fill=c_linalg!\LINALGColorValue] (cornerUp) -- (hor2l) -- (hor2r) -- (cornerUp);
+
+% Flaeche Distributed
+\draw[fill=c_dist!\DISTColorValue] (hor2l) -- (ver1_1o) -- (ver1_1u) -- (hor1l) -- (hor2l);
+
+% Flaeche Math
+\draw[fill=c_math!\MATHColorValue] (ver1_1o) -- (ver1_1u) -- (hor1r) -- (hor2r) -- (ver1_1o);
+
+% Flaeche DevKit
+\draw[fill=c_devkit!\DEVKITColorValue] (hor1l) -- (hor1r) -- (cornerRightDown) -- (cornerLeftDown) -- (hor1l);
+
+% ##################
+% ####### 3D #######
+% ##################
+
+%\draw[fill=c_shadow!\SHADOWColorValue] (cornerRightDown) -- (d3r) -- (cornerUp) -- (cornerRightDown);
+
+\draw[green] (int_p1) -- (int_p2);
+\draw[fill=c_linalg!\LINALGColorValueShadow] (cornerUp) -- (int_p2) -- (hor2r) -- (cornerUp);
+\draw[fill=c_math!\MATHColorValueShadow] (hor1r) -- (int_p1) -- (int_p2) -- (hor2r) -- (hor1r);
+\draw[fill=c_devkit!\DEVKITColorValueShadow] (cornerRightDown) -- (hor1r) -- (int_p1) -- (s0r) -- (cornerRightDown);
+
+
+\end{pgfonlayer}
+\end{tikzpicture}
+
+\end{document}

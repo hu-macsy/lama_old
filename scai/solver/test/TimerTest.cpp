@@ -2,53 +2,39 @@
  * @file TimerTest.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Contains the implementation of the class TimerTest.
- * @author: Alexander Büchel, Matthias Makulla
+ * @author Alexander Büchel, Matthias Makulla
  * @date 03.02.2012
- * @since 1.0.0
- **/
+ */
 
 #include <boost/test/unit_test.hpp>
 
 #include <scai/solver/logger/Timer.hpp>
  
 #include <scai/common/macros/throw.hpp>
+#include <scai/common/Walltime.hpp>
 
 #include <scai/solver/test/TestMacros.hpp>
-
-//Adding support for Timers under Windows
-#ifdef _WIN32
-#include <windows.h>
-inline void usleep( int t )
-{
-    Sleep( t / 1000 );
-}
-#elif _WIN32
-#include <unistd.h>
-#endif
 
 using namespace scai::solver;
 using namespace scai::hmemo;
@@ -82,12 +68,12 @@ BOOST_AUTO_TEST_CASE( ResetTest )
     Timer timer;
     SCAI_CHECK_THROW( { timer.reset( "Timer" ) ; }, Exception );
     timer.start( "Timer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );  // 100 ms, 0.1 s
     double time1 = timer.getTime( "Timer" );
     BOOST_CHECK( 0.0 < timer.getTime( "Timer" ) );
     //Call reset, but do not stop the timer
     timer.reset( "Timer" );
-    usleep( 10000 );
+    scai::common::Walltime::sleep( 10 );  // 10 ms, 0.01 s
     double time2 = timer.getTime( "Timer" );
     timer.stop( "Timer" );
     BOOST_CHECK( time2 < time1 );
@@ -101,7 +87,7 @@ BOOST_AUTO_TEST_CASE( StartAndStopTimerTest )
 {
     Timer timer;
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
 }
@@ -113,17 +99,17 @@ BOOST_AUTO_TEST_CASE( ResumeTimerTest )
     Timer timer;
     timer.start( "TestTimer2" );
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), 2 );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.3, timer.getTime( "TestTimer" ), 2 );
     timer.stop( "TestTimer2" );
@@ -136,12 +122,12 @@ BOOST_AUTO_TEST_CASE( ResetTimerTest )
 {
     Timer timer;
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );  // 100 ms, 0.1 s
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
     timer.stopAndReset( "TestTimer" );
     timer.start( "TestTimer" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
     timer.stopAndReset( "TestTimer" );
@@ -154,9 +140,9 @@ BOOST_AUTO_TEST_CASE( GetTimeTest )
     Timer timer;
     timer.start( "TestTimer" );
     timer.start( "TestTimer2" );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
-    usleep( 100000 );
+    scai::common::Walltime::sleep( 100 );
     BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), 2 );
     BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer2" ), 2 );
 }

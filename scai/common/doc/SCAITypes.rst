@@ -1,3 +1,5 @@
+.. _SCAITypes:
+
 SCAI Types
 ==========
 

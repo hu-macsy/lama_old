@@ -2,33 +2,29 @@
  * @file JDSStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Instantitions for template class JDSStorage.
  * @author Thomas Brandes
  * @date 24.06.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -99,7 +95,7 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
 
     mIlg.clear();
     mIlg.resize( mNumRows );
-    HArrayUtils::setScalar( mIlg, 0, common::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( mIlg, 0, utilskernel::reduction::COPY, prefLoc );
 
     HArrayUtils::setOrder( mPerm, mNumRows, prefLoc );
 }
@@ -154,10 +150,10 @@ void JDSStorage<ValueType>::setJDSData(
 
     ContextPtr loc = getContextPtr();
 
-    HArrayUtils::setArray( mDlg, dlg, common::reduction::COPY, loc );
-    HArrayUtils::setArray( mIlg, ilg, common::reduction::COPY, loc );
-    HArrayUtils::setArray( mPerm, perm, common::reduction::COPY, loc );
-    HArrayUtils::setArray( mJa, ja, common::reduction::COPY, loc );
+    HArrayUtils::setArray( mDlg, dlg, utilskernel::reduction::COPY, loc );
+    HArrayUtils::setArray( mIlg, ilg, utilskernel::reduction::COPY, loc );
+    HArrayUtils::setArray( mPerm, perm, utilskernel::reduction::COPY, loc );
+    HArrayUtils::setArray( mJa, ja, utilskernel::reduction::COPY, loc );
 
     HArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
@@ -308,7 +304,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal[loc]( wValues.get(), numDiagonalValues, value, common::reduction::COPY );
+    setVal[loc]( wValues.get(), numDiagonalValues, value, utilskernel::reduction::COPY );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -548,8 +544,8 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rIlg.get(), mNumRows, common::reduction::ADD ), mNumValues )
-        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rDlg.get(), mNumDiagonals, common::reduction::ADD ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rIlg.get(), mNumRows, utilskernel::reduction::ADD ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rDlg.get(), mNumDiagonals, utilskernel::reduction::ADD ), mNumValues )
     }
 
     // check index values in Perm for out of range
@@ -592,7 +588,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         setInversePerm[loc]( wInversePerm.get(), rPerm.get(), mNumRows );
 
-        IndexType maxIndex = reduce[loc]( wInversePerm.get(), mNumRows, common::reduction::MAX );
+        IndexType maxIndex = reduce[loc]( wInversePerm.get(), mNumRows, utilskernel::reduction::MAX );
 
         SCAI_ASSERT_ERROR( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
     }
@@ -616,18 +612,18 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 
     mValues.clear();  // invalidate all values
     mValues.resize( mNumValues );
-    HArrayUtils::setScalar( mValues, ValueType( 1 ), common::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( mValues, ValueType( 1 ), utilskernel::reduction::COPY, prefLoc );
 
     HArrayUtils::setOrder( mPerm, mNumRows, prefLoc );
     HArrayUtils::setOrder( mJa,  mNumRows, prefLoc );
 
     mDlg.clear();
     mDlg.resize( mNumDiagonals );
-    HArrayUtils::setScalar( mDlg, mNumRows, common::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( mDlg, mNumRows, utilskernel::reduction::COPY, prefLoc );
 
     mIlg.clear();
     mIlg.resize( mNumRows );
-    HArrayUtils::setScalar( mIlg, 1, common::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( mIlg, 1, utilskernel::reduction::COPY, prefLoc );
 
     mDiagonalProperty = true;
 }
@@ -684,7 +680,7 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
 
     // reduce with ABS_MAX returns 0 ( instead of -max ) for mNumRows == 0 
 
-    mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, common::reduction::ABS_MAX );
+    mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, utilskernel::reduction::ABS_MAX );
 
     SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc << ", #jagged diagonals = " << mNumDiagonals )
 
@@ -905,7 +901,7 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
         WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
         WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
 
-        setVal[loc]( ilg.get(), mNumRows, 0, common::reduction::COPY );
+        setVal[loc]( ilg.get(), mNumRows, 0, utilskernel::reduction::COPY );
         setOrder[loc]( perm.get(), mNumRows );
     }
 
@@ -1034,7 +1030,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
     }
     else
     {
@@ -1667,7 +1663,26 @@ const char* JDSStorage<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST )
+
+#define JDS_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+     template void JDSStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+     template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+     template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+     template void JDSStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+     template void JDSStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+     template void JDSStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+
+#define JDS_STORAGE_INST_LVL1( ValueType )                                                                                  \
+    SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+
+SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+
+#undef JDS_STORAGE_INST_LVL2
+#undef JDS_STORAGE_INST_LVL1
 
 } /* end namespace lama */
 

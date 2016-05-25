@@ -29,7 +29,7 @@ the logging levels.
 
 The configuration file should contain lines that specfy the levels of the logger.
 
-.. code-block:: c++
+.. code-block:: bash
 
     <root> = DEBUG
     Vector = TRACE
@@ -50,7 +50,7 @@ in the home directory of the user. If this file is also not available, the defau
 For Debugging purposes it is also possible to flush the output of the logger, so all logging messages are
 displayed even if the program crashes. Flushing can be activated by the config file:
 
-.. code-block:: c++
+.. code-block:: bash
 
     flush = true
 
@@ -59,7 +59,7 @@ Formatstring
 
 The default output format of logging messages is as follows:
 
-.. code-block:: c++
+.. code-block:: bash
 
     #date, #time #name @ #thread ( #func -> #file::#line ) #level #msg
 
@@ -77,7 +77,7 @@ where the tokens starting with # have the following meanings:
 
 It is possible to change this default output format by a line in the config file, e.g.:
 
-.. code-block:: c++
+.. code-block:: bash
 
     format = "logger = #name, msg: #msg"
 

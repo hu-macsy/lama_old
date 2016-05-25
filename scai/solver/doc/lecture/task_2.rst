@@ -9,15 +9,18 @@ syntax for basic linear algebra task like multiplication and addition for
 scalars, vectors and matrices. Before you can start you need to include the
 following headers to have the needed operators available:
 
-::
+.. code-block:: c++
 
     #include <scai/lama/expression/MatrixVectorExpressions.hpp>
     #include <scai/lama/expression/VectorExpressions.hpp>
 
 As mentioned before the problem of this task is to write a CG-Solver by creating
 a self-provided implementation. A pseudocode implementation of a CG-Solver can
-be found `here http://en.wikipedia.org/wiki/Conjugate_gradient_method#The_resulting_algorithm`.
-As an input you can take all objects created in task 1.
+be found |here|. As an input you can take all objects created in task 1.
+
+.. |here| raw:: html
+
+	<a href="http://en.wikipedia.org/wiki/Conjugate_gradient_method#The_resulting_algorithm" target="_blank"> here </a>
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"

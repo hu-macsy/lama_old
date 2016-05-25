@@ -21,6 +21,7 @@ Distribution into its constructor. In this tutorial we want to work with the cla
 BlockDistribution. BlockDistribution is one possible solution in LAMA to handle
 distributed data types (there are many more: CyclicDistribution,
 GenBlockDistribution and NoDistribution).
+For explanation on this, refer to :ref:`scaidmemo:dmemo-distributions`.
 
 You have to redistribute the CSRSparseMatrix and the DenseVectors solution and
 rhs from task 1 and 2 by calling their redistribute()-method. After this the

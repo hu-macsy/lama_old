@@ -1,3 +1,32 @@
+###
+ # @file prepareExamplesMakeInc.cmake
+ #
+ # @license
+ # Copyright (c) 2009-2016
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # This file is part of the Library of Accelerated Math Applications (LAMA).
+ #
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Affero General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
+ #
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Affero General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ # @endlicense
+ #
+ # @brief Macro setting the configuration for make.inc in examples: right link libraries and -D flags
+ # @author Lauretta Schubert
+ # @date 02.03.2016
+###
+
 macro    ( prepareExamplesMakeInc )
 
 	## set SCAI_EXAMPLE_LINK_LIBRARIES with own project and all dependent libraries
@@ -12,6 +41,10 @@ macro    ( prepareExamplesMakeInc )
 	endif ( REVERT_LIST )
 
 	## set project specific SCAI_DEFINES
+	if    ( ${USE_COMPLEX} )
+    	set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_COMPLEX_SUPPORTED" )
+	endif ( ${USE_COMPLEX} )
+
 	if    ( SCAI_ASSERT_LEVEL )
 		set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL}" )
 	endif ( SCAI_ASSERT_LEVEL )

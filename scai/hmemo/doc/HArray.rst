@@ -1,3 +1,5 @@
+.. _HArray:
+
 Heterogeneous Array
 ===================
 

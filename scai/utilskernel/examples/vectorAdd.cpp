@@ -1,3 +1,31 @@
+/**
+ * @file utilskernel/examples/vectorAdd.cpp
+ *
+ * @license
+ * Copyright (c) 2009-2016
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ * @endlicense
+ *
+ * @brief ToDo: Missing description in ./utilskernel/examples/vectorAdd.cpp
+ * @author Lauretta Schubert
+ * @date 29.02.2016
+ */
 #include <scai/hmemo.hpp>
 #include <scai/utilskernel.hpp>
 
@@ -38,8 +66,8 @@ int main(int, char**)
     hmemo::WriteOnlyAccess<double> writeB( b, loc, size);
     hmemo::WriteOnlyAccess<double> writeC( c, loc, size);
 
-    setVal[loc]( writeB.get(), size, double( 2 ), common::reduction::COPY );
-    setVal[loc]( writeC.get(), size, double( 3 ), common::reduction::COPY );
+    setVal[loc]( writeB.get(), size, double( 2 ), utilskernel::reduction::COPY );
+    setVal[loc]( writeC.get(), size, double( 3 ), utilskernel::reduction::COPY );
 
     writeB.release();
     writeC.release();

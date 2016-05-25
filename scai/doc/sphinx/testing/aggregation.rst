@@ -84,7 +84,7 @@ Basic structure of a test case
 
 The structure of a !TestClass.cpp looks like this:
 
-::
+.. code-block:: c++
 
   /*(1)*/ #include <boost/test/unit_test.hpp>
 
@@ -157,7 +157,7 @@ __ http://www.boost.org/doc/libs/1_45_0/libs/test/doc/html/utf/testing-tools/ref
 
 The assertion LAMA_BOOST_CHECK_CLOSE is made for comparing two Scalars. The epsilon is given in percentage units. This assertion transforms the scalars into value of type float or double and calls BOOST_CHECK_CLOSE from Boost.Test.
 
-::
+.. code-block:: c++
 
 	LAMA_BOOST_CHECK_CLOSE( Scalar x, Scalar y, eps )
 
@@ -165,14 +165,14 @@ The assertion LAMA_BOOST_CHECK is made for comparing two Scalars. The epsilon is
 number. This brings an advantage by testing very small values. It takes the absolute value of the
 difference of x and y and calls BOOST_CHECK from Boost.Test.
 
-::
+.. code-block:: c++
 
 	LAMA_BOOST_CHECK( x, y, eps ) 
 
 The assertion LAMA_BOOST_CHECK_EPS is made for comparing two Scalar. This is the same function as
 LAMA_BOOST_CHECK, but in this case the epsilon is taken from TestHelper::eps<ValueType>().
 
-::
+.. code-block:: c++
 
 	LAMA_BOOST_CHECK_EPS( x, y )
 
@@ -201,20 +201,20 @@ In an existing CMakeLists.txt file there are two Makros to use:
 
 To activate a testing facility of CMake/CTest you have to use : 
 
-::
+.. code-block:: bash
 
 	ENABLE_TESTING()
 
 
 After this Makro you are able to add different test executables by using: 
 
-::
+.. code-block:: bash
 
 	ADD_TEST(<NAME> <COMMAND>)
 
 e.g.:
 
-::
+.. code-block:: bash
 
 	ADD_TEST( TestRunName ./testrun )
 

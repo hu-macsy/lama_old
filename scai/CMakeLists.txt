@@ -2,33 +2,29 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2015
+ # Copyright (c) 2009-2016
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
- # Permission is hereby granted, free of charge, to any person obtaining a copy
- # of this software and associated documentation files (the "Software"), to deal
- # in the Software without restriction, including without limitation the rights
- # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- # copies of the Software, and to permit persons to whom the Software is
- # furnished to do so, subject to the following conditions:
+ # This file is part of the Library of Accelerated Math Applications (LAMA).
  #
- # The above copyright notice and this permission notice shall be included in
- # all copies or substantial portions of the Software.
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Affero General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
  #
- # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- # SOFTWARE.
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Affero General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  # @endlicense
  #
  # @brief Main specification file for CMake
  # @author Lauretta Schubert
  # @date 30.07.2015
- # @since 2.0.0
 ###
 
 ### Set required CMake version
@@ -298,8 +294,10 @@ endif ( BUILD_DOC )
 include ( CustomCommands/DistClean )
 
 # copy in  scai_test.sh
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test.sh"
-                 "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/scai_test.sh
+       DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+       FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
 
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/scai_test_xml.sh"
-                 "${CMAKE_CURRENT_BINARY_DIR}/" COPYONLY )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/scai_test_xml.sh
+       DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+       FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )

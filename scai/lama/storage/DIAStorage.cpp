@@ -2,33 +2,29 @@
  * @file DIAStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Instantiation for template class DIAStorage.
  * @author Thomas Brandes
  * @date 04.06.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -227,7 +223,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[loc]( wValues.get(), numDiagonalElements, value, common::reduction::COPY );
+        setVal[loc]( wValues.get(), numDiagonalElements, value, utilskernel::reduction::COPY );
     }
 }
 
@@ -282,7 +278,7 @@ void DIAStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 
     // Diagonal is first column
 
-    set[ loc ]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::reduction::COPY );
+    set[ loc ]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -305,7 +301,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::reduction::COPY );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -434,7 +430,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc ]( wOffset.get(), 1, 0, common::reduction::COPY );
+        setVal[ loc ]( wOffset.get(), 1, 0, utilskernel::reduction::COPY );
     }
 
     {
@@ -447,7 +443,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc ]( values.get(), mNumRows, ValueType( 1 ), common::reduction::COPY );
+        setVal[ loc ]( values.get(), mNumRows, ValueType( 1 ), utilskernel::reduction::COPY );
     }
 
     mDiagonalProperty = true;
@@ -1008,7 +1004,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
     }
     else
     {
@@ -1106,7 +1102,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
     }
     else
     {
@@ -1269,7 +1265,26 @@ MatrixStorageCreateKeyType DIAStorage<ValueType>::createValue()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_ARITHMETIC_HOST )
+
+#define DIA_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+     template void DIAStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+     template void DIAStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+     template void DIAStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+     template void DIAStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+     template void DIAStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+     template void DIAStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+
+#define DIA_STORAGE_INST_LVL1( ValueType )                                                                                  \
+    SCAI_COMMON_LOOP_LVL2( ValueType, DIA_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+
+SCAI_COMMON_LOOP( DIA_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+
+#undef DIA_STORAGE_INST_LVL2
+#undef DIA_STORAGE_INST_LVL1
 
 } /* end namespace lama */
 

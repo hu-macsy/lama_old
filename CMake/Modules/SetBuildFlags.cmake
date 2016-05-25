@@ -1,34 +1,30 @@
 ###
- # @file Variables.cmake
+ # @file SetBuildFlags.cmake
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2016
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
- # Permission is hereby granted, free of charge, to any person obtaining a copy
- # of this software and associated documentation files (the "Software"), to deal
- # in the Software without restriction, including without limitation the rights
- # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- # copies of the Software, and to permit persons to whom the Software is
- # furnished to do so, subject to the following conditions:
+ # This file is part of the Library of Accelerated Math Applications (LAMA).
  #
- # The above copyright notice and this permission notice shall be included in
- # all copies or substantial portions of the Software.
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Affero General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
  #
- # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- # SOFTWARE.
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Affero General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  # @endlicense
  #
  # @brief Important CMake variable definitions
  # @author Jan Ecker
  # @date 16.04.2013
- # @since 1.0.0
 ###
 
 # Check if verbose mode for CMAKE is selected
@@ -52,6 +48,11 @@ set ( CMAKE_VERBOSE_MAKEFILE OFF )
 include ( Settings/switchChoices )
 include ( Functions/checkValue )
 include ( Functions/parseBoolean )
+
+## define SCAI_HOST_TYPES
+
+set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
+checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
 
 ## DOC
 
@@ -92,11 +93,13 @@ checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_CHOICES}" )
 set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE} CACHE STRING "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_CHOICES}." )
 
 if     ( SCAI_DOC_TYPE STREQUAL json )
-    set ( DOC_EXTENTSION "fjson" )
+    set ( DOC_EXTENSION "fjson" )
 elseif  ( SCAI_DOC_TYPE STREQUAL html )
-    set ( DOC_EXTENTSION "html" )
+    set ( DOC_EXTENSION "html" )
 elseif  ( SCAI_DOC_TYPE STREQUAL xml )
-    set ( DOC_EXTENTSION "xml" )
+    set ( DOC_EXTENSION "xml" )
+elseif  ( SCAI_DOC_TYPE STREQUAL latex )
+    set ( DOC_EXTENSION "tex" )
 endif  ( )
 
 ## EXAMPLES

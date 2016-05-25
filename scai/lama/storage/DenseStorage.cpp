@@ -2,33 +2,29 @@
  * @file DenseStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Instantiation for template class DenseStorage.
  * @author Thomas Brandes, Michael Drost
  * @date 04.06.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -49,7 +45,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
 using namespace scai::hmemo;
@@ -622,7 +618,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[loc]( wResult.get(), mNumRows, ValueType( 0 ), common::reduction::COPY );
+        setVal[loc]( wResult.get(), mNumRows, ValueType( 0 ), utilskernel::reduction::COPY );
     }
     else if ( &result != &y )
     {
@@ -745,7 +741,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[loc]( wResult.get(), mNumColumns, ValueType( 0 ), common::reduction::COPY );
+        setVal[loc]( wResult.get(), mNumColumns, ValueType( 0 ), utilskernel::reduction::COPY );
     }
     else if ( &result != &y )
     {
@@ -981,7 +977,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), loc, m * n );
         SCAI_CONTEXT_ACCESS( loc )
-        setVal[loc]( resAccess.get(), m * n, ValueType( 0 ), common::reduction::COPY );
+        setVal[loc]( resAccess.get(), m * n, ValueType( 0 ), utilskernel::reduction::COPY );
     }
     else if ( this != &c )
     {
@@ -1115,7 +1111,7 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = reduce[loc]( read1.get(), n, common::reduction::ABS_MAX );
+    ValueType maxval = reduce[loc]( read1.get(), n, utilskernel::reduction::ABS_MAX );
 
     return maxval;
 }
@@ -1499,8 +1495,27 @@ const char* DenseStorageView<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
-SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_ARITHMETIC_HOST )
+
+#define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+     template void DenseStorageView<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+     template void DenseStorageView<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+     template void DenseStorageView<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+     template void DenseStorageView<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+     template void DenseStorageView<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+     template void DenseStorageView<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+
+#define DENSE_STORAGE_INST_LVL1( ValueType )                                                                                  \
+    SCAI_COMMON_LOOP_LVL2( ValueType, DENSE_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+
+SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+
+#undef DENSE_STORAGE_INST_LVL2
+#undef DENSE_STORAGE_INST_LVL1
 
 } /* end namespace lama */
 

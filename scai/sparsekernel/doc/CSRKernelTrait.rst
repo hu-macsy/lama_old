@@ -1,8 +1,62 @@
+.. _sparsekernel_CSR:
+
+Compressed Sparse Row Format (CSR)
+==================================
+
+In the CSR format all non-zero-elements are shifted to the left. If the option for shifting the main diagonal to the
+front is set to true, the main diagonal elements will stand in the very beginning of each row. Zeroes that are off
+the main diagonal are ignored in any case. The CSR saves the number of the saved elements (non-zero-elements plus the
+number of zeroes on the main diagonal, if the option is set) (numValues), the number of rows of the matrix (numRows),
+the number of columns in the original non-compressed format (numColumns) and arrays for all the non-zero-values and
+zeroes in the main diagonal (values), the associated columns for these elements (ja) and the indices of the new
+beginnings of a row in *values* as well as the value of *numValues* at the very end (ia).
+
+Example
+-------
+
+Matrix:
+
+.. image:: _images/Storage.png
+    :align: center
+    :width: 200px
+    
+With diagonal element shifting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The CSR format with diagonal element shifting for the example matrix looks like this:
+
+.. image:: _images/CSRStorageW.png
+    :align: center
+    :width: 200px
+    
+.. image:: _images/CSRStorageWStructure.png
+    :align: center
+    :width: 500px
+    
+Without diagonal element shifting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+The CSR format without diagonal element shifting looks like this:
+
+.. image:: _images/CSRStorageWO.png
+    :align: center
+    :width: 200px
+    
+.. image:: _images/CSRStorageWOStructure.png
+    :align: center
+    :width: 500px    
+
+
 CSRKernelTrait
-==============
+--------------
+
+The CSRKernelTrait contains various function which operates on the introduced CSR-format. 
+These functions are grouped into conversion, caculation und properties. For the CSR-format
+we offer the most functionality compared to the other formats. The following tables show 
+which function has been implemented on which back-end.
 
 Conversion
-----------
+^^^^^^^^^^
 
 ====================== ============================================================= ==== ==== ===
 **Functionname**       **Description**                                               Host CUDA MIC
@@ -15,7 +69,7 @@ compress               fill compresses CSR data in new data structures          
 ====================== ============================================================= ==== ==== ===
 
 Calculation
------------
+^^^^^^^^^^^
 
 ====================== ============================================================= ==== ==== ===
 **Functionname**       **Description**                                               Host CUDA MIC
@@ -38,7 +92,7 @@ matrixMultiply         matrix-matrix multiplication  (all CSR)                  
 ====================== ============================================================= ==== ==== ===
 
 Properties
-----------
+^^^^^^^^^^
 
 ====================== ============================================================= ==== ==== ===
 **Functionname**       **Description**                                               Host CUDA MIC

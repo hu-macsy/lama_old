@@ -1,34 +1,30 @@
 /**
- * @file CUDAUtils.cpp
+ * @file utilskernel/cuda/CUDAUtils.cu
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Implementation of CSR utilities with CUDA
  * @author Thomas Brandes
  * @date 02.07.2012
- * @since 1.0.0
  */
 
 // hpp
@@ -274,7 +270,7 @@ ValueType CUDAUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common::reduction::ReductionOp op )
+ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, reduction::ReductionOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
 
@@ -282,16 +278,16 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common:
 
     switch ( op )
     {
-        case common::reduction::ADD :
+        case reduction::ADD :
             result = reduceSum( array, n );
             break;
-        case common::reduction::MAX :
+        case reduction::MAX :
             result = reduceMaxVal( array, n );
             break;
-        case common::reduction::MIN :
+        case reduction::MIN :
             result = reduceMinVal( array, n );
             break;
-        case common::reduction::ABS_MAX :
+        case reduction::ABS_MAX :
             result = reduceAbsMaxVal( array, n );
             break;
         default:
@@ -304,7 +300,7 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common:
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
+void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op )
 {
     using namespace thrust::placeholders;
 
@@ -319,16 +315,16 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
 
         switch ( op ) 
         {
-            case common::reduction::COPY:
+            case reduction::COPY:
                 thrust::fill( data, data + n, value );
                 break;
-            case common::reduction::ADD:
+            case reduction::ADD:
                 thrust::for_each( data, data + n,  _1 += value);
                 break;
-            case common::reduction::SUB:
+            case reduction::SUB:
                 thrust::for_each( data, data + n,  _1 -= value);
                 break;
-            case common::reduction::MULT:
+            case reduction::MULT:
                 {
                     if ( val == scai::common::constants::ZERO )
                     {
@@ -340,7 +336,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
                     }
                 }
                 break;
-            case common::reduction::DIVIDE:
+            case reduction::DIVIDE:
                 {
                     if ( val == scai::common::constants::ZERO )
                     {
@@ -620,7 +616,7 @@ void setKernelDivide( T1* out, const T2* in, IndexType n )
 }
 
 template<typename ValueType1, typename ValueType2>
-void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op )
+void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op )
 {
     SCAI_LOG_INFO( logger,
                    "set<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
@@ -640,19 +636,19 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n,
 
     switch ( op )
     {
-        case common::reduction::COPY :
+        case reduction::COPY :
             setKernelCopy <<< dimGrid, dimBlock>>>( out, in, n );
             break;
-        case common::reduction::ADD :
+        case reduction::ADD :
             setKernelAdd <<< dimGrid, dimBlock>>>( out, in, n );
             break;
-        case common::reduction::SUB :
+        case reduction::SUB :
             setKernelSub <<< dimGrid, dimBlock>>>( out, in, n );
             break;
-        case common::reduction::MULT :
+        case reduction::MULT :
             setKernelMult <<< dimGrid, dimBlock>>>( out, in, n );
             break;
-        case common::reduction::DIVIDE :
+        case reduction::DIVIDE :
             setKernelDivide <<< dimGrid, dimBlock>>>( out, in, n );
             break;
          default:
@@ -683,7 +679,7 @@ void CUDAUtils::setScale( ValueType1 out[],
     {
         // in array might be undefined
 
-        setVal( out, n, beta, common::reduction::COPY );
+        setVal( out, n, beta, reduction::COPY );
         return;
     }
 

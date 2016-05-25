@@ -2,31 +2,27 @@
  * @file Constants.hpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Definition of the Constants One, Zero, Eps for comparisons
- *
  * @author Eric Schricker
  * @date 07.10.2015
  */
@@ -46,9 +42,9 @@ namespace scai
 namespace common
 {
 
-/** Own namespace for the enum type ConstantType and its values. */
+/** Own struct for the enum type ConstantType and its values. */
 
-namespace constants
+struct constants
 {
 
 /** Enumeration type for constants for which type-specific values are provided */
@@ -59,19 +55,21 @@ typedef enum
     ZERO   //!< stands for value 0
 } ConstantType;
 
+}; /* struct constants */
+
 /** This method returns the type specific value for each constant */
 
 template<typename ValueType>
-inline ValueType getConstant( const ConstantType& c )
+inline ValueType getConstant( const constants::ConstantType& c )
 {
     ValueType val( 0 );
 
     switch( c )
     {
-        case ONE:
+        case constants::ONE:
             val = ValueType( 1 );
             break;
-        case ZERO:
+        case constants::ZERO:
             val = ValueType( 0 );
             break;
     }
@@ -81,13 +79,13 @@ inline ValueType getConstant( const ConstantType& c )
 /** Comparison against constant ZERO or ONE uses machine-specific EPS */
 
 template<typename ValueType>
-bool operator==( const ValueType& x, const ConstantType& c )
+bool operator==( const ValueType& x, const constants::ConstantType& c )
 {
     return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
 }
 
 template<typename ValueType>
-bool operator==( const ConstantType& c, const ValueType& x )
+bool operator==( const constants::ConstantType& c, const ValueType& x )
 {
     return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
 }
@@ -95,18 +93,16 @@ bool operator==( const ConstantType& c, const ValueType& x )
 /** Operator not equal also provided for convenience */
 
 template<typename ValueType>
-bool operator!=( const ValueType& x, const ConstantType& c )
+bool operator!=( const ValueType& x, const constants::ConstantType& c )
 {
     return ! ( x == c );
 }
 
 template<typename ValueType>
-bool operator!=( const ConstantType& c, const ValueType& x )
+bool operator!=( const constants::ConstantType& c, const ValueType& x )
 {
     return ! ( x == c );
 }
-
-} /* end namespace constants */
 
 } /* end namespace common */
 

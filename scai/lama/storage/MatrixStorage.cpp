@@ -2,33 +2,29 @@
  * @file MatrixStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Implementation of methods for common base class of all matrix storage formats.
  * @author Thomas Brandes
  * @date 27.04.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -61,9 +57,9 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
-#include <scai/common/preprocessor.hpp>
+#include <scai/common/macros/loop.hpp>
 
 namespace scai
 {
@@ -224,7 +220,7 @@ IndexType _MatrixStorage::getNumValues() const
     reduce.getSupportedContext( loc);
 
     ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, common::reduction::ADD );
+    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, utilskernel::reduction::ADD );
     return numValues;
 }
 
@@ -557,7 +553,7 @@ void MatrixStorage<ValueType>::joinRows(
     {
         WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
         ReadAccess<IndexType> sizes( outSizes );
-        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, common::reduction::COPY );
+        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, utilskernel::reduction::COPY );
         OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
     }
     WriteAccess<IndexType> tmpIA( IA );
@@ -1392,28 +1388,20 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_MATRIX_STORAGE2_INSTANTIATE(z, J, TYPE )              \
-    template COMMON_DLL_IMPORTEXPORT                               \
-    void MatrixStorage<TYPE>::setRawDenseData(                     \
-            const IndexType numRows,                               \
-            const IndexType numColumns,                            \
-            const SCAI_ARITHMETIC_HOST_TYPE_##J values[],               \
-            const TYPE );
+#define LAMA_MATRIXSTORAGE2_INST( ValueType, OtherValueType )                                                                   \
+    template COMMON_DLL_IMPORTEXPORT void MatrixStorage<ValueType>::setRawDenseData<OtherValueType>(                            \
+                const IndexType, const IndexType, const OtherValueType*, const ValueType );
 
-#define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                                      \
-                                                                                      \
-    BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT,                                        \
-                     LAMA_MATRIX_STORAGE2_INSTANTIATE,                                \
-                     SCAI_ARITHMETIC_HOST_TYPE_##I )                                       \
+#define LAMA_MATRIXSTORAGE_INST( ValueType )                                                                                    \
+    SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
+
+SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
+
+#undef LAMA_MATRIXSTORAGE2_INST
+#undef LAMA_MATRIXSTORAGE_INST
 
 
-BOOST_PP_REPEAT( SCAI_ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
-
-#undef LAMA_MATRIX_STORAGE_INSTANTIATE
-#undef LAMA_MATRIX_STORAGE2_INSTANTIATE
-
-
-SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST )
 
 } /* end namespace lama */
 

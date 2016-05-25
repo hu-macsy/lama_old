@@ -40,13 +40,17 @@ or
     cmake -D MKL_ROOT=<path/to/mkl/installation> -D MKL_Is64=TRUE ...
 
 If the MKL is not available, the LAMA configuration tries to find other 
-BLAS or LAPACK libraries. If it fails, you will see a typical message like this::
+BLAS or LAPACK libraries. If it fails, you will see a typical message like this
+
+.. code-block:: bash
 
     Could NOT find SCAI_BLAS (missing: SCAI_BLAS_LIBRARIES)
 
 Unfortunately, the CMake modules have some problems in finding the BLAS and LAPACK libraries. 
 Especially the module FindLAPACK.cmake has the problem that in some versions the CMAKE_FIND_LIBRARY_SUFFIXES 
-variable was misspelled as CMAKE_FIND_LIBRRAY_SUFFIXES. Here is a solution of how to specify the corresponding libraries directly::
+variable was misspelled as CMAKE_FIND_LIBRRAY_SUFFIXES. Here is a solution of how to specify the corresponding libraries directly
+
+.. code-block:: bash
 
   cmake -D BLAS_blas_LIBRARY=/usr/lib64/libblas.so.3  \
         -D LAPACK_lapack_LIBRARY=/usr/lib64/liblapack.so.3

@@ -2,34 +2,30 @@
  * @file UtilsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Contains tests for the class CUDAUtils and OpenMPUtils
- * @author: Jan Ecker
+ * @author Jan Ecker
  * @date 19.11.2012
- * @since 1.0.0
- **/
+ */
 
 // boost
 #include <boost/test/unit_test.hpp>
@@ -86,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        setVal[loc]( wValues.get(), nValues, mult, common::reduction::MULT );
+        setVal[loc]( wValues.get(), nValues, mult, reduction::MULT );
     }
     ReadAccess<ValueType> rValues( values );
 
@@ -118,7 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, common::reduction::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, reduction::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
     {
@@ -126,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), common::reduction::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), reduction::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }
@@ -151,9 +147,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), 3 * n, 0, common::reduction::COPY );
+            setVal[loc]( wValues.get(), 3 * n, 0, reduction::COPY );
             // overwrite in the middle to check that there is no out-of-range set
-            setVal[loc]( wValues.get() + n, n, 10, common::reduction::COPY );
+            setVal[loc]( wValues.get() + n, n, 10, reduction::COPY );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -170,7 +166,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), n, 7, common::reduction::COPY );
+            setVal[loc]( wValues.get(), n, 7, reduction::COPY );
         }
     }
 }

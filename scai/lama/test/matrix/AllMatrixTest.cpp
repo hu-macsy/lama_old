@@ -2,33 +2,29 @@
  * @file AllMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Test cases applied to each matrix class, i.e. test (virtual) methods of Matrix
  * @author Thomas Brandes
  * @date 31.08.2012
- * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>
@@ -91,7 +87,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     Matrices allMatrices;    // is created by factory
 
     size_t nFormats = Format::UNDEFINED;
-    size_t nTypes   = SCAI_ARITHMETIC_HOST_TYPE_CNT;
+    size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_ARITHMETIC_HOST );
 
     nFormats--;   // SPARSE_ASSEMBLY_STORAGE not used for a matrix
 
@@ -138,7 +134,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     // For copy we just take one arithmetic type to reduce number of test cases
 
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_ARITHMETIC_HOST_TYPE_0>::stype;
+    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
     Matrices allMatrices( stype, context );    // is created by factory
 
@@ -260,8 +256,8 @@ BOOST_AUTO_TEST_CASE( transposeTest )
     // For transpose we just take one arithmetic type to reduce number of test cases
     // we also take same type
 
-    common::scalar::ScalarType stype1 = common::TypeTraits<SCAI_ARITHMETIC_HOST_TYPE_0>::stype;
-    common::scalar::ScalarType stype2 = common::TypeTraits<SCAI_ARITHMETIC_HOST_TYPE_0>::stype;
+    common::scalar::ScalarType stype1 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::scalar::ScalarType stype2 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
     Matrices allMatrices1( stype1, context );    // is created by factory
     Matrices allMatrices2( stype2, context );    // is created by factory
@@ -306,7 +302,7 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
             if ( matrix.getValueType() == matrixT.getValueType() )
             {
-                BOOST_CHECK_EQUAL( 0, maxDiff.getValue<SCAI_ARITHMETIC_HOST_TYPE_0>() );
+                BOOST_CHECK_EQUAL( 0, maxDiff.getValue<SCAI_TEST_TYPE>() );
             }
             else
             {
@@ -326,7 +322,7 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
 
     // For transpose we just take one arithmetic type to reduce number of test cases
 
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_ARITHMETIC_HOST_TYPE_0>::stype;
+    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
     Matrices allMatrices( stype, context );    // is created by factory
 

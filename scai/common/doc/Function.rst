@@ -1,3 +1,5 @@
+.. _Function:
+
 Function/Bind
 =============
 
@@ -53,5 +55,3 @@ actual solution that is taken on a certain platform.
 
   function<int( double, int )> foo2 = &f;    // function wrapper class
   function<int( double )> foo2a = bind( f, _1, 5 );
-
-

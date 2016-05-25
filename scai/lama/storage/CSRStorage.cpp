@@ -2,33 +2,29 @@
  * @file CSRStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2015
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the Library of Accelerated Math Applications (LAMA).
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Implementation and instantiation for template class CSRStorage.
  * @author Thomas Brandes
  * @date 04.06.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -58,7 +54,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/macros/unsupported.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
@@ -285,7 +281,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
         SCAI_CONTEXT_ACCESS( loc )
 
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
-        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), common::reduction::COPY );
+        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), utilskernel::reduction::COPY );
     }
 
 
@@ -314,7 +310,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     if( ia.size() == numRows )
     {
-        IndexType sumIA = HArrayUtils::reduce( ia, common::reduction::ADD );
+        IndexType sumIA = HArrayUtils::reduce( ia, utilskernel::reduction::ADD );
 
         SCAI_ASSERT_EQUAL( numValues, sumIA, "sizes do not sum up to numValues" );
     }
@@ -418,7 +414,15 @@ void CSRStorage<ValueType>::setCSRDataSwap(
 
     mIa.swap( ia );
     mJa.swap( ja );
-    mValues.swap( values );
+
+    if( common::TypeTraits<ValueType>::stype == common::TypeTraits<OtherValueType>::stype)
+    {
+        mValues.swap( reinterpret_cast<HArray<ValueType>&>( values ) );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "ValueType mismatch" )
+    }
 
     mDiagonalProperty = checkDiagonalProperty();
 
@@ -597,7 +601,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
     // make a correct initialization for the offset array
 
-    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), common::reduction::COPY  );
+    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), utilskernel::reduction::COPY  );
 
     mDiagonalProperty = checkDiagonalProperty();
 }
@@ -933,7 +937,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
     WriteOnlyAccess<OtherType> wRow( row, loc, mNumColumns );
 
-    setVal[loc]    ( wRow.get(), mNumColumns, OtherType( 0 ), common::reduction::COPY );
+    setVal[loc]    ( wRow.get(), mNumColumns, OtherType( 0 ), utilskernel::reduction::COPY );
 
     const ReadAccess<IndexType> ja( mJa, loc );
     const ReadAccess<ValueType> values( mValues, loc );
@@ -1165,8 +1169,8 @@ void CSRStorage<ValueType>::buildCSR(
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
 
-        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, common::reduction::COPY );
-        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, common::reduction::COPY );
+        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, utilskernel::reduction::COPY );
+        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, utilskernel::reduction::COPY );
     }
 
     // copy values
@@ -1181,7 +1185,7 @@ void CSRStorage<ValueType>::buildCSR(
         ReadAccess<ValueType> inValues( mValues, loc );
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
 
-        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, common::reduction::COPY );
+        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, utilskernel::reduction::COPY );
     }
 }
 
@@ -2384,7 +2388,7 @@ ValueType CSRStorage<ValueType>::maxNorm() const
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, common::reduction::ABS_MAX );
+    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, utilskernel::reduction::ABS_MAX );
 
     return maxval;
 }
@@ -2528,7 +2532,30 @@ const char* CSRStorage<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST )
+
+#define CSR_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+     template void CSRStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+     template  void CSRStorage<ValueType>::setCSRDataSwap(const IndexType, const IndexType, const IndexType,                \
+                                                          hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>&,             \
+                                                          hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );        \
+     template void CSRStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+     template void CSRStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+     template void CSRStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+     template void CSRStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+     template void CSRStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+
+#define CSR_STORAGE_INST_LVL1( ValueType )                                                                                  \
+    SCAI_COMMON_LOOP_LVL2( ValueType, CSR_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+
+SCAI_COMMON_LOOP( CSR_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+
+#undef CSR_STORAGE_INST_LVL2
+#undef CSR_STORAGE_INST_LVL1
+
 
 } /* end namespace lama */
 

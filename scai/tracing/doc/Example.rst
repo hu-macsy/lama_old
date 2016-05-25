@@ -6,7 +6,7 @@ instrumented.
 
 .. literalinclude:: ../examples/TraceCalls.cpp
 
-::
+.. code-block:: bash
 
    export SCAI_TRACE=ct
    ./TraceCalls

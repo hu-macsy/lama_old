@@ -10,7 +10,7 @@ For the creation of a Visual Studio project under Windows see :doc:`here <window
 
 This CMake utility should be called in a seperate build directory. Although in-source builds are supported we recommend an out-of-source build. So after extracting your tar ball and changing into the new directory create a build directory and change to it.
 
-.. code-block:: bash 
+.. code-block:: bash
 
    tar -xzvf libama-x.x.x.tar.gz
    cd libama-x.x.x

@@ -12,7 +12,9 @@ The following executables will be available in the build directory:
 * ``lama_dist_test`` in directory ``test/distributed`` (will be generated only if MPI is available and enabled)
 
 In a first step, you should run the unit tests only as a single process (but with
-multiple OpenMP threads) and without using any GPU. Here are the commands::
+multiple OpenMP threads) and without using any GPU. Here are the commands
+
+.. code-block:: bash
 
   cd <build-directory>/test
   export SCAI_LOG=ERROR
@@ -27,7 +29,9 @@ multiple OpenMP threads) and without using any GPU. Here are the commands::
 * ``LAMA_TEST_CONTEXT=Host`` restricts the tests to run only on the CPU.
 
 By default, the tests will use all available processors for the OpenMP parallelized code.
-You can set explicitly the number of used processors as follows::
+You can set explicitly the number of used processors as follows
+
+.. code-block:: bash
 
   export OMP_NUM_THREADS=1
   ./lama_test
