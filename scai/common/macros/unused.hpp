@@ -29,15 +29,13 @@
 
 #pragma once
 
-/** Macro for unused parameters if some functionality is not available yet.
- *  @todo a release version of LAMA should not have any UNUSED stuff in it.
- */
+/** Macro for unused function arguments.  */
 
-#ifdef UNUSED
+#ifdef SCAI_UNUSED
 #elif defined(__GNUC__)
-# define UNUSED(x) UNUSED_ ## x __attribute__((unused))
+# define SCAI_UNUSED(x) SCAI_UNUSED_ ## x __attribute__((unused))
 #elif defined(__LCLINT__)
-# define UNUSED(x) /*@unused@*/ x
+# define SCAI_UNUSED(x) /*@unused@*/ x
 #else
-# define UNUSED(x) x
+# define SCAI_UNUSED(x) x
 #endif
