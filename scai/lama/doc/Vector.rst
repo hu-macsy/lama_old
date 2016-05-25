@@ -3,7 +3,7 @@
 Vector
 ======
 
-The class ``Vector`` is a generic mathematical vector. The values are internally stored in a ``HArray`` out of :ref:`hmemo <scaihmemo:main-page_hmemo>` so a ``Vector`` can transparently used on every device. 
+The class ``Vector`` is a generic mathematical vector. The values are internally stored in a ``HArray`` out of :ref:`scaihmemo:main-page_hmemo` so a ``Vector`` can transparently used on every device. 
 
 Constructors
 ------------
@@ -72,14 +72,13 @@ For creating another Vector of the same type as your origin, you can receive the
 Expressions
 -----------
 
-Having vectors and scalars (as ``Scalar`` or value) you can perform vector addition, substraction and scaling with a scalar
-in text-book syntax. We have implemented the expressions to a maximal length of the form:
+Having vectors and scalars (as ``Scalar`` or value) you can perform vector addition, substraction and scaling with a scalar in text-book syntax. We have implemented the expressions to a maximal length of the form:
 
 .. code-block:: c++
 
     v_z = s_alpha * v_x + s_beta * v_y;
 
-All specialization of this form (e.g. alpha = 1, beta = 0) are valid expressions:
+All specialization of this form (e.g. s_alpha = 1, s_beta = 0) are valid expressions:
 
 .. code-block:: c++
 
@@ -94,7 +93,7 @@ All specialization of this form (e.g. alpha = 1, beta = 0) are valid expressions
     z = y * 2.0;
     z = y / 2.0;
     
-Also the combination with the assign operator is possible (internally handled as v_z = s_alpha * v_x + s_beta * v_Z):
+Also the combination with the assign operator is possible (internally handled as v_z = s_alpha * v_x + s_beta * v_z):
 
 .. code-block:: c++
 
@@ -118,15 +117,16 @@ For initializing a Vector, you can assign one value to the whole vector by the a
 Utility Functions
 -----------------
 
-Additionally you have some utility functions that can be called on a vector: for getting the size of the vector, e.g. after reading it from file, for swapping with another vector or creating a copy.
+Additionally you have some utility functions that can be called on a vector: (for getting the size or distribution of the vector, e.g. after reading it from file, for swapping with another vector or creating a copy.
 
 .. code-block:: c++
 
     IndexType length = x.size(); // getting the global size of a vector
+    DistributionPtr d = x.getDistributionPtr(); 
 
     x.swap( y ); // swapping the size and values of the vectors
 
-    Vector* zCopy1 = z.copy(); // calls the copy constructor
+    Vector* zCopy = z.copy(); // calls the copy constructor
 
 For accessing single values of a vector you can use ``getValue`` or ``()`` with the global index ``i``. But you must have in mind, that it may be inefficient if the vector is distributed and/or not on the Host Context, because of communication between nodes or CPU and GPU:
 
@@ -145,7 +145,6 @@ Except from a constructor with a passed string, you can use ``readFromFile`` and
     x.readFromFile( "vector.mtx" );
     // writing a vector to file in matrix market format in double precision
     y.writeToFile( "result.mtx", File::MATRIX_MARKET, File::DOUBLE );
-
 
 Math Functions
 --------------
@@ -174,7 +173,7 @@ You can get the L1-, L2-, Maximum-norm of an ``Vector`` by:
 Output operator
 ---------------
 
-Also the output operator for a ``Vector`` is implemented, giving you informations about its size and ``Distribution``.
+Also the output operator for a ``Vector`` is implemented, giving you informations about its size, ``Distribution`` and ``Context``.
 
 .. code-block:: c++ 
   
