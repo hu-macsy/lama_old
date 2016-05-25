@@ -62,11 +62,7 @@ get a function from the KernelRegistry:
   // Call function
   setVal[loc]( b, size, double( 2 ), reduction::COPY );  
 
-*********************
-Environment-Variables
-*********************
-
-No additional environmental variables are defined in the project. 
+Another example of the LAMAKernel is shown :ref:`here <utilskernel_lamakernel_example>`.
 
 ************
 Dependencies
