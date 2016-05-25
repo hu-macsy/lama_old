@@ -1,8 +1,9 @@
-Kernel Trait
-============
+KernelTrait
+===========
 
-A kernel trait is a struct that has an entry for the name of the kernel routine and a type 
+A ``KernelTrait`` is a struct that has an entry for the name of the kernel routine and a type 
 definition for its signature.
+
 
 .. code-block:: c++
 
@@ -12,7 +13,9 @@ definition for its signature.
        static const char* getId() { return "function_name"; }
    };
 
+
 Template arguments can be used to define traits for different value types.
+
 
 .. code-block:: c++
 
@@ -20,18 +23,22 @@ Template arguments can be used to define traits for different value types.
    struct template_function_name
    {
        typedef res_type ( *FuncType ) ( T1*, const T2*, T3 );
-       static const char* getId() { return „template_function_name"; }
+       static const char* getId() { return "template_function_name"; }
    };
+   
 
-A kernel trait is a struct that is introduced for the following reasons:
+A ``KernelTrait`` is a struct that is introduced for the following reasons:
 
- * it avoids misspelling of function namesr; different strings used for registration and access
-   will not be detected at compile time, but different struct identifiers.
- * The same is true for the correct signature, i.e. functions are never registered and
-   used with different signatures.
- * They are used for Doxygen documentation of the function behavior
+- it avoids misspelling of function names
 
-Multiple kernel traits might be grouped for kernel routines used in a certain module. The 
+  - different strings used for registration and access will not be detected at compile time, but different struct identifiers.
+
+- The same is true for the correct signature, i.e. functions are never registered and used with different signatures.
+
+- They are used for Doxygen documentation of the function behavior
+
+
+Multiple ``KernelTrait`` might be grouped for kernel routines used in a certain module. The 
 name of the group should appear as prefix in the id of the kernel routines.
 
 .. code-block:: c++
