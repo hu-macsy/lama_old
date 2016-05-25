@@ -257,7 +257,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 void MPICommunicator::sum_complex_long_double( void* in, void* out, int* count,
-        MPI_Datatype* UNUSED( dtype ) )
+        MPI_Datatype* SCAI_UNUSED( dtype ) )
 {
     ComplexLongDouble* a = reinterpret_cast<ComplexLongDouble*>( in );
     ComplexLongDouble* b = reinterpret_cast<ComplexLongDouble*>( out );
@@ -269,7 +269,7 @@ void MPICommunicator::sum_complex_long_double( void* in, void* out, int* count,
 }
 
 template<typename ValueType>
-void MPICommunicator::max_operator( void* in, void *out, int *count, MPI_Datatype* UNUSED( dtype ) )
+void MPICommunicator::max_operator( void* in, void *out, int *count, MPI_Datatype* SCAI_UNUSED( dtype ) )
 {
     ValueType* a = reinterpret_cast<ValueType*>( in );
     ValueType* b = reinterpret_cast<ValueType*>( out );
@@ -280,7 +280,7 @@ void MPICommunicator::max_operator( void* in, void *out, int *count, MPI_Datatyp
 }
 
 template<typename ValueType>
-void MPICommunicator::min_operator( void* in, void *out, int *count, MPI_Datatype* UNUSED( dtype ) )
+void MPICommunicator::min_operator( void* in, void *out, int *count, MPI_Datatype* SCAI_UNUSED( dtype ) )
 {
     ValueType* a = reinterpret_cast<ValueType*>( in );
     ValueType* b = reinterpret_cast<ValueType*>( out );
