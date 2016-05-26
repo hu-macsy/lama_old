@@ -42,14 +42,18 @@ endforeach ( executable )
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 # configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
 prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" make.inc )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in" install_Makefile COPYONLY )
 
-## install examples
-install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
+## install examples sources, (install_)Makefile, make.inc, run_all.sh
 
-# install Makefile
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in"
-				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/Makefile" COPYONLY )
+install ( FILES       ${EXAMPLE_FILES}
+          DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( PROGRAMS    run_all.sh
+          DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
+          DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
+          DESTINATION ${PROJECT_EXAMPLE_DIR}
+          RENAME      Makefile  )
