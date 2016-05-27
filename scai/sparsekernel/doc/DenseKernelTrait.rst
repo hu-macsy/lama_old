@@ -1,3 +1,5 @@
+.. _sparsekernel_Dense:
+
 Dense Storage Format
 ====================
 

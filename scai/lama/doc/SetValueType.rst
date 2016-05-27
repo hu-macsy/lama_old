@@ -1,4 +1,4 @@
-.. _setValueType:
+.. _lama_SetValueType:
 
 Setting/Using a ValueType
 =========================

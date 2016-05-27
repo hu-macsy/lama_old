@@ -1,3 +1,5 @@
+.. _sparsekernel_COO:
+
 Coordinate Storage Format (COO)
 ===============================
 

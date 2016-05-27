@@ -1,3 +1,5 @@
+.. _sparsekernel_JDS:
+
 Jagged Diagonal Storage Format (JDS)
 ====================================
 

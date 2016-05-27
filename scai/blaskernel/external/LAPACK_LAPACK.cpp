@@ -47,6 +47,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Settings.hpp>
 
 namespace scai {
 
@@ -323,12 +324,30 @@ void LAPACK_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegist
 
 LAPACK_LAPACK::LAPACK_LAPACK()
 {
+    bool useLAPACK = false;
+
+    common::Settings::getEnvironment( useLAPACK, "SCAI_USE_LAPACK" );
+
+    if( !useLAPACK )
+    {
+        return;
+    }
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
                             kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 LAPACK_LAPACK::~LAPACK_LAPACK()
 {
+    bool useLAPACK = false;
+
+    common::Settings::getEnvironment( useLAPACK, "SCAI_USE_LAPACK" );
+
+    if( !useLAPACK )
+    {
+        return;
+    }
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
                             kregistry::KernelRegistry::KERNEL_ERASE );
 }

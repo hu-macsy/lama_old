@@ -1,3 +1,5 @@
+.. _sparsekernel_DIA:
+
 Diagonal Storage Format (DIA)
 =============================
 
