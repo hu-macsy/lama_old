@@ -80,7 +80,7 @@ setAndCheckCache ( MPI )
 set ( USE_MPI ${USE_MPI} CACHE BOOL "Enable / Disable use of MPI" )
 
 set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
-set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )
+set ( SCAI_MPI_LIBRARIES ${MPI_CXX_LIBRARIES} )
 
 include ( VersionCheck/MPI )
 
