@@ -40,7 +40,12 @@ scai_project (
         P_JacobiTest
    )
    
+### set include directories ###
+
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+
 ### add definitions ###
+
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../../res/testfiles" )
 
 add_executable ( solverDistTest ${CXX_SOURCES} )
