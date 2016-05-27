@@ -57,6 +57,7 @@ endif ( OPENMP_FOUND )
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 # configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
 prepareExamplesMakeInc()
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" make.inc )
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in" install_Makefile COPYONLY )

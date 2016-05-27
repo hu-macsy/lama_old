@@ -52,11 +52,18 @@ endforeach ( executable )
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )
 prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
 
-## install examples
-install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
+## install examples sources, (install_)Makefile, make.inc
 
-# install Makefile
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
-				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/cuda/Makefile" COPYONLY )
+set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/cuda" )
+
+install ( FILES       ${EXAMPLE_FILES}
+          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
+install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
+          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
+install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
+          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
+          RENAME      Makefile  )
+
