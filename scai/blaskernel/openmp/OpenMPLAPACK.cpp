@@ -311,10 +311,10 @@ int OpenMPLAPACK::tptrs(
     const CBLAS_TRANSPOSE trans,
     const CBLAS_DIAG diag,
     const int n,
-    const int UNUSED(nrhs),
+    const int SCAI_UNUSED(nrhs),
     const ValueType* AP,
     ValueType* B,
-    const int UNUSED(ldb) )
+    const int SCAI_UNUSED(ldb) )
 {
     SCAI_REGION( "OpenMP.LAPACK.tptrs<ValueType>" )
 

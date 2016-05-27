@@ -725,7 +725,7 @@ void OpenMPJDSUtils::jacobi(
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType jdsILG[],
-    const IndexType UNUSED( jdsNumDiagonals ),
+    const IndexType SCAI_UNUSED( jdsNumDiagonals ),
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
