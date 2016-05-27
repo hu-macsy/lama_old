@@ -38,3 +38,4 @@ Communicator Factory
 
    CommunicatorPtr mpiComm = Communicator::get( Communicator::MPI );
    CommunicatorPtr gpiComm = Communicator::get( Communicator::GPI );
+
