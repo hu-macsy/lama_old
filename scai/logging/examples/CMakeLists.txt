@@ -38,15 +38,6 @@ set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} LogLevels.exe" )
 target_link_libraries( LogLevels.exe ${PROJECT_NAME} )
 set_target_properties( LogLevels.exe PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_${SCAI_LOGGING_LEVEL} )
 
-# ThreadTest example, here we need the Boost Thread library
-
-# Boost thread required
-
-set ( Boost_DEBUG TRUE )
-set ( Boost_DETAILED_FAILURE_MSG TRUE )
-
-find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS thread system )
-
 # OpenMPTest example
 
 include ( Package/OpenMP )
