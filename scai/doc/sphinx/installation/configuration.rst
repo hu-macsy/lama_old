@@ -98,9 +98,12 @@ Especially for changing the C++ compiler please see the subpage, because there i
    configuration/blas
    CUDA <configuration/cuda>
    MIC <configuration/mic>
-   MPI <configuration/mpi>
-   GPI-2 <configuration/gpi>
-   (Par)Metis <configuration/metis>
+
+External:
+
+   * :ref:`MPI <scaidmemo:MPI>`
+   * :ref:`GPI-2 <scaidmemo:GPI>`
+   * :ref:`(Par)Metis <scaidmemo:Metis>`
 
 A summary of possible hint-variables for the packages are given in the following table. For advanced help refer to the separate section.
 
