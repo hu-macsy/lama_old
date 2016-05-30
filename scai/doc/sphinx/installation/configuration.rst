@@ -96,9 +96,12 @@ Especially for changing the C++ compiler please see the subpage, because there i
    configuration/c++
    configuration/blas
    MIC <configuration/mic>
-   MPI <configuration/mpi>
-   GPI-2 <configuration/gpi>
-   (Par)Metis <configuration/metis>
+
+External:
+
+   * :ref:`MPI <scaidmemo:MPI>`
+   * :ref:`GPI-2 <scaidmemo:GPI>`
+   * :ref:`(Par)Metis <scaidmemo:Metis>`
 
 The following packages are used:
 

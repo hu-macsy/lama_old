@@ -192,3 +192,6 @@ include ( Package/Doxygen )
 
 include ( CustomCommands/DistClean )
 
+## summary of what is found
+include ( Summaries/scai )
+

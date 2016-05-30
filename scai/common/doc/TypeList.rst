@@ -20,7 +20,8 @@ A NullType is used for termination.
 
    class NullType {};
 
-Here is an example:
+Example
+-------
 
 .. code-block:: c++
 
@@ -72,4 +73,25 @@ Call output for header T and recursive call for tail of list
        }
    };
 
+Operations
+----------
+
+Some operations has been defined to work with ``TypeLists``.
+To get the number of elements of a list:
+
+.. code-block:: c++
+
+  mepr::TypeListUtils<YOUR_TYPELIST>::size;
+  
+To check if a list contains a specific type:
+
+.. code-block:: c++
+
+  if( mepr::TypeListUtilsV<SEARCHED_TYPE, YOUR_TYPELIST>::contains )
+  
+To get the index of a type in a list:
+
+.. code-block:: c++
+
+  mepr::TypeListUtilsV<SEARCHED_TYPE, YOUR_TYPELIST>::index;  
 

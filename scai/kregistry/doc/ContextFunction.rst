@@ -16,10 +16,16 @@ Class ContextFunction
       ContextType validContext( const _ContextFunction& other, ContextType preferedCtx );
   };
 
-The class ''ContextFunction'' has the following properties:
+The class ``ContextFunction`` has the following properties:
 
- * an object of the class ''ContextFunction'' is just an array of typed function pointers
- * the array of typed function pointers is indexed by the context type (enum value)
- * base class _ContextFunction is used as an array of untyped function pointers (for internal purpose only)
- * validContext returns preferred context if function pointer has been set, 
-   otherwise the first context type for which it has been registered (usually Host).
+- an object of the class ``ContextFunction`` is just an array of typed function pointers
+
+- the array of typed function pointers is indexed by the context type (enum value)
+
+- base class ``_ContextFunction`` is used as an array of untyped function pointers (for internal purpose only)
+
+- validContext returns 
+
+  - preferred context if function pointer has been set 
+
+  - otherwise the first context type for which it has been registered (usually Host).

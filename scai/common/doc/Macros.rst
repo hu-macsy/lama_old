@@ -22,8 +22,8 @@ This is the output:
    4 types are supported: int, float, double, long double
 
 
-``UNUSED``
-----------
+``SCAI_UNUSED``
+---------------
 
 Most C++ compilers give warnings when an argument of a function is never
 used within the function. And this is indeed helpful as this is mostly
@@ -32,16 +32,15 @@ a bad coding style.
 Nevertheless, there might be situations, when it cannot be avoided. Within
 LAMA, the signature of a kernel function is the same for all devices on which
 the routine is implemented and there it might be the case that one argument
-is not needed on one device. Or when using external libraries, there might
-be arguments required that are not needed by a native implementation.
+is not needed for a certain implementation on some device. 
 
 .. code-block:: c++
 
    #include <scai/common/macros/unused.hpp>
 
-   void sub( int UNUSED( x ), float a )
+   void func( float& a, const int SCAI_UNUSED( n ), const int m )
    {
-       ...
+       a = static_cast<float>( m );
    }
 
 ``SCAI_SYSTEM_CALL``

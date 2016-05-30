@@ -1,11 +1,15 @@
+.. _MPI:
+
 Using MPI in LAMA
 ^^^^^^^^^^^^^^^^^
 
-Message Passing Interface (MPI) is a standardized and portable message-passing system designed by a group of researchers
+Message Passing Interface (MPI__) is a standardized and portable message-passing system designed by a group of researchers
 from academia and industry to function on a wide variety of parallel computers. 
 The standard defines the syntax and semantics of a core of library routines useful to a wide range of users writing
 portable message-passing programs in Fortran 77 or the C programming language.  
 LAMA uses this standard to exploit distributed-memory parallelization for operations on large matrices and vectors.
+
+__ <https://www.mpi-forum.org/docs/docs.html>
 
 If you want to exploit MPI in your LAMA applications, please make sure that a version of MPI (e.g. OpenMPI) is
 installed on your machine, and that mpirun is in your path. By this way, the FindMPI module of cmake will recognize

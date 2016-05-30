@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Example with pthreads and a critical region using the common library 
+ * @brief Example with thhreads and a critical region using the common library 
  * @author Thomas Brandes
  * @date 19.06.2015
  */
@@ -46,7 +46,7 @@ static int N_THREADS   = 4;
 
 // Define routine that is executed by one thread
 
-void* threadRoutine( void* )
+static void threadRoutine( int& )
 {
     Thread::Id self = Thread::getSelf();
 
@@ -58,35 +58,26 @@ void* threadRoutine( void* )
     cout << "Thread " << self << " enters critical region" << endl;
     Walltime::sleep( SLEEP_TIME * 1000 );
     cout << "Thread " << self << " leaves critical region" << endl;
-
-    return NULL;
 }
 
 int main( int, char** )
 {
     // macro to give the current thread a name that appears in further logs
 
-    std::vector<pthread_t> threads;
-
-    threads.resize( N_THREADS );
-
     double time = Walltime::get();
+
+    Thread threads[N_THREADS];
+
+    int arg = 0;  // not needed
 
     for ( int i = 0; i < N_THREADS; ++i )
     {
-        void* arg = NULL;
-
-        int rc = pthread_create( &threads[i], NULL, &threadRoutine, arg );
-
-        if ( rc != 0 )
-        {
-            COMMON_THROWEXCEPTION( "Could not create pthread " << i << " of " << N_THREADS << ", rc = " << rc )
-        }
+        threads[i].run( threadRoutine, arg );
     }
 
     for ( int i = 0; i < N_THREADS; ++i )
     {
-        pthread_join( threads[i], NULL );
+        threads[i].join();
     }
 
     time = Walltime::get() - time;

@@ -208,7 +208,10 @@ Related Work
 
 * `Boost Libraries <http://www.boost.org>`_, some functionality has been taken over in the C++11 standard.
 * Macros and Meta Programming are techniques that are well described in
-  "C++ Template Metaprogramming," by David Abrahams and Aleksey Gurtovoy. Copyright (c) 2005 by Pearson Education, Inc. 
+  "C++ Template Metaprogramming", by David Abrahams and Aleksey Gurtovoy. Copyright (c) 2005 by Pearson Education, Inc. 
+* The TypeList concept is well documented in "Modern C++ Design: Generic Programming and Design Patterns Applied",
+  by Andrei Alexandrescu. Copyright (c) 2001 by Addison Wesley
 * Factory stuff as dynamic extension, similiar to module conecpt of Python
 * The Curiously recurring template pattern as an idiom of C++ is well described
   `here <https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern>`_
+
