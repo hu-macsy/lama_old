@@ -174,7 +174,6 @@ set ( COMMON_CLASSES
 #  Header only file of the COMMON project
 
 set ( COMMON_HEADERS 
-        ${COMPLEX_HEADER}
         config
         Constants
         Factory
