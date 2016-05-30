@@ -41,10 +41,13 @@ foreach ( executable ${EXECUTABLES} )
 endforeach ( executable )
 
 # configure make.inc for examples
+
 include ( Functions/prepareExamplesMakeInc )
 prepareExamplesMakeInc()
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+
+file ( COPY gr_30_30.mtx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 ## install examples
 
