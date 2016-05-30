@@ -4,6 +4,10 @@
 SCAI DMemo
 ##########
 
+**********
+Description
+***********
+
 DMemo stands for **Distributed Memory** and is a library that provides distribution and communication
 routines for data structures using heterogeneous arrays.
 
@@ -40,13 +44,6 @@ Distribution             Mapping of an index range to a number of partitions
 :ref:`CommunicationPlan` Communication schedule for exchanging non-local values
 ======================== ================================================================================
 
-*************
-Relationships
-*************
-
-The communicator is part of a distribution as it specifies the target processors onto which
-the data is distributed.
-
 *******
 Example
 *******
@@ -56,6 +53,8 @@ Here is a short example:
 .. code-block:: c++
 
     #include <scai/dmemo/Distribution.hpp>
+
+    using namespace scai::dmemo;
 
     // use the default communicator
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -71,7 +70,15 @@ Environment Variables
 The default communicator is usually that communication library that has been
 used for the installation. If both are supported, it can be chosen:
 
-* ``SCAI_COMM`` (either MPI or GPI)
+* ``SCAI_COMMUNICATOR`` (either MPI or GPI)
+
+If a CUDA-Aware MPI installation is available, the following environment
+variable should be set:
+
+* ``SCAI_MPI_CUDA`` (bool value, e.g. 0, 1, default is 0)
+
+By this way, communication on heterogeneous arrays can communicate
+valid data on a GPU directly without explicit copy on the host.
 
 ************
 Dependencies
@@ -87,9 +94,16 @@ Internal dependencies:
 
 External dependencies: 
 
-* `MPI <https://www.mpi-forum.org/docs/docs.html>`_
-* `GPI <http://www.gpi-site.com/gpi2>`_
-* `Metis Graph Partitioning Software <http://glaros.dtc.umn.edu/gkhome/views/metis>`_ 
+* :ref:`MPI`
+* :ref:`GPI`
+* :ref:`Metis`
+
+.. toctree::
+   :hidden:
+
+   MPI
+   GPI
+   Metis
 
 ************
 Related Work

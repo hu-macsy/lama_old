@@ -1,0 +1,50 @@
+\documentclass{article}
+\usepackage{amsfonts}              % fuer zusätzliche math. Symbole
+\usepackage{amssymb}               % weitere math. Symbole
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{arrows,shapes,positioning,shadows,trees,matrix}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{10pt}
+
+\usetikzlibrary{chains}
+
+\begin{document}
+
+\begin{tikzpicture}
+
+\draw [->] (0,0) -- (15,0);
+
+\node [left] at (0,3.5) {Main};
+\node [left] at (0,1.5) {Thread};
+
+\draw [fill=red] (0,3) rectangle (2,4);
+\node [above right] at (0, 3.5) {Task};
+\node [above right] at (0, 3) {create};
+
+% \draw[fill=red] node(nodecreate) (0,0) {create};
+% \draw[fill=yellow] node(noderun) [right=0em of nodecreate] {run};
+
+\draw [fill=red] (2,3) rectangle (3,4);
+\node [above right] at (2, 3) {run};
+\draw [fill=yellow] (3,3) rectangle (12,4);
+\node [above right] at (3, 3) {other computation: f( ... )};
+\draw [fill=red] (12,3) rectangle (14,4);
+\node [above right] at (12, 3) {wait};
+\draw [fill=green] (3,1)  rectangle (14,2);
+\node [above right] at (3, 1) {asynchronous computation: g( ... )};
+
+% start 
+\draw [->] (3,3) -- (3,2);
+\draw [->] (14,2) -- (14,3);
+
+
+\end{tikzpicture}
+
+\end{document}
+

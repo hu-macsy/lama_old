@@ -15,7 +15,6 @@ Logging can be configured at runtime by setting the environment variable ``SCAI_
     export SCAI_LOG=ERROR
     export SCAI_LOG=OFF
 
-
 Config-Definition
 -----------------
 

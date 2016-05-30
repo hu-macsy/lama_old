@@ -35,5 +35,16 @@
 #include <boost/interprocess/smart_ptr/unique_ptr.hpp>
 
 #include <boost/scoped_array.hpp>
+
+namespace scai
+{
+
+namespace common
+{
+
 using boost::scoped_array;
-using boost::unique_ptr;
+using boost::interprocess::unique_ptr;
+
+}
+}
+

@@ -48,7 +48,7 @@ if [ "$#" -ne 1 ]; then
    exit 1
 fi
 
-PROJECTS="common logging tracing tasking hmemo kregistry blaskernel sparsekernel utilskernel dmemo lama solver"
+PROJECTS="common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel dmemo lama solver"
 
 if [ "$1" == "clean" ]; then
     for project in $PROJECTS
@@ -69,7 +69,7 @@ else
         # optional:  -DCMAKE_CXX_COMPILER=icpc
         # optional:  -DCXX_SUPPORTS_C11=0
         # optional:  -DBoost_NO_BOOST_CMAKE=TRUE 
-        checkErrorValue cmake .. -DCMAKE_INSTALL_PREFIX=$1 -DCMAKE_BUILD_TYPE=Release
+        checkErrorValue cmake .. -DCMAKE_INSTALL_PREFIX=$1 -DCMAKE_BUILD_TYPE=Release -DBUILD_TEST=0
         checkErrorValue make -j 8
         checkErrorValue make install
         

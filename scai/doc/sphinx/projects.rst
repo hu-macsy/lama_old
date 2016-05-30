@@ -18,7 +18,7 @@ You find special project specific details in the following:
 * :ref:`SCAI Logging - Logging Macros <scailogging:main-page_logging>`
 * :ref:`SCAI Tracing - Tracing Macros <scaitracing:main-page_tracing>`
 * :ref:`SCAI Tasking - Asynchronous Tasks <scaitasking:main-page_tasking>`
-* :ref:`SCAI Hmemo - Hybrid Memory Architecture <scaihmemo:main-page_hmemo>`
+* :ref:`SCAI Hmemo - Heterogeneous Memory Architecture <scaihmemo:main-page_hmemo>`
 * :ref:`SCAI Kregistry - Generic Kernel Registry <scaikregistry:main-page_kregistry>`
 * :ref:`SCAI BLASKernel - BLAS Kernel <scaiblaskernel:main-page_blaskernel>`
 * :ref:`SCAI UtilsKernel - Utils Kernel <scaiutilskernel:main-page_utilskernel>`

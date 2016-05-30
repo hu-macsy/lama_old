@@ -89,7 +89,6 @@ innermost loops.
 Please keep in mind that setting a certain level at compile time will remove all logging statements with a
 lower level and they can not be used at runtime any more.
 
-
 CMake-Support
 -------------
 
@@ -123,3 +122,5 @@ The default logging level is chosen by the built type.
     #  For benchmarks:       -DSCAI_LOG_LEVEL_OFF (or -DSCAI_LOG_LEVEL_FATAL, -DSCAI_LOG_LEVEL_ERROR)
 
 The logging level can be set via ccmake using the CMake variable ``SCAI_LOGGING_LEVEL``.
+
+

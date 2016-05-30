@@ -4,9 +4,9 @@
 SCAI Common
 ###########
 
-**********************
-Description/Motivation
-**********************
+***********
+Description
+***********
 
 The common library contains different functionality needed in nearly all SCAI projects.
 These are some utitily classes (e.g. for exceptions, factories, timing, ...), some
@@ -158,14 +158,6 @@ Name                         Description
    CUDACtx
    CUDAAccess
 
-*********
-Relations
-*********
-
-All classes and concepts of the SCAI common project stand on their own.
-
-* SCAI assert macros use Exceptin class.
-
 *****
 Usage
 *****
@@ -181,7 +173,7 @@ Using the Settings class requires that the command line arguments are parsed.
 
     int main( int argc, const char* argv[] )
     {
-        common::settings::parseArgs( argc, argv );
+        common::Settings::parseArgs( argc, argv );
         ...
     }
 
@@ -196,17 +188,25 @@ Dependencies
 The common project is on the lowest level of the SCAI project hierarchy.
 Therefore it does not depend on any other SCAI project.
 
-There are the following externale dependencies:
+These are the external dependencies:
 
-* When the C++11 standard is not supported, Boost header libraries must be available
-* When the C++11 standard is not supported, a pthread library must be available
+* When the C++11 standard is not supported, header libraries of :ref:`Boost` must be available
+* When the C++11 standard is not supported, a :ref:`PThread` library must be available
   for the implementation of the Thread class.
+* :ref:`CUDA` toolkit 
+
+.. toctree::
+   :hidden:
+
+   Boost
+   PThread
+   CUDA
 
 ************
 Related Work
 ************
 
-* Boost Libraries, some functionality has been taken over in the C++11 standard.
+* `Boost Libraries <http://www.boost.org>`_, some functionality has been taken over in the C++11 standard.
 * Macros and Meta Programming are techniques that are well described in
   "C++ Template Metaprogramming", by David Abrahams and Aleksey Gurtovoy. Copyright (c) 2005 by Pearson Education, Inc. 
 * The TypeList concept is well documented in "Modern C++ Design: Generic Programming and Design Patterns Applied",
