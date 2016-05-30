@@ -57,6 +57,8 @@ else  ( CXX_SUPPORTS_C11 )
     set ( SCAI_LANG_FLAGS "" )
 endif ( CXX_SUPPORTS_C11 )
 
+set ( CXX_SUPPORTS_C11 ${CXX_SUPPORTS_C11} CACHE STRING "Compiler supports CXX-11." )
+
 else  ( NOT WIN32 )
 	
 	if    ( MSVC ) # if Visual Studio
