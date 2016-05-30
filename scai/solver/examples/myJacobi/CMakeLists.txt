@@ -56,7 +56,7 @@ configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" ins
 
 set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/myJacobi" )
 
-install ( FILES       ${EXAMPLE_FILES}
+install ( FILES       ${EXAMPLE_FILES} ${HEADER}
           DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
 install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
           DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
