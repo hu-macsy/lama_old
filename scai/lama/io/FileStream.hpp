@@ -301,7 +301,7 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
             hmemo::WriteOnlyAccess<FileType> bufferWrite( buffer, loc, data.size() );
 
             set[loc]( bufferWrite, dataRead, data.size(), utilskernel::reduction::COPY );
-            setVal[loc]( bufferWrite, buffer.size(), offset, utilskernel::reduction::ADD );
+            setVal[loc]( bufferWrite, buffer.size(), static_cast<FileType>( offset ), utilskernel::reduction::ADD );
         }
         hmemo::ReadAccess<FileType> bufferRead( buffer );
 
@@ -416,7 +416,7 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
         static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<DataType> > setVal;
         hmemo::ContextPtr loc = data.getValidContext();
         setVal.getSupportedContext( loc );
-        setVal[loc]( dataWrite, size, offset, utilskernel::reduction::ADD );
+        setVal[loc]( dataWrite, size, static_cast<DataType>( offset ), utilskernel::reduction::ADD );
     }
 }
 
