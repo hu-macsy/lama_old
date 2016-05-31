@@ -47,7 +47,7 @@ The following software packages are not mandatory, but will give you a performan
 
   - Needed for the implementation of the dense blas functions. Supported libraries are: Intel MKL, BLAS. 
 
-- :doc:`CUDA (version 4.0 or later) <scaicommon:CUDA>`
+- :ref:`CUDA (version 4.0 or later) <scaicommon:CUDA>`
 
   - Needed to utilize CUDA capable GPUs from Nvidia.
   
@@ -55,11 +55,11 @@ The following software packages are not mandatory, but will give you a performan
 
   - Needed to utilize Intel Xeon Phi
 
-- :doc:`MPI <scaidmemo:MPI>`
+- :ref:`MPI <scaidmemo:MPI>`
 
   - Needed for distributed memory parallelism through the Message Passing Interface.
 
-- :doc:`GPI-2 <scaidmemo:GPI>`
+- :ref:`GPI-2 <scaidmemo:GPI>`
 
   - Needed for distributed memory parallelism through the Global Address Space Programming Interface.
 
