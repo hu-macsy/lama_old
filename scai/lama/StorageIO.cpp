@@ -840,23 +840,20 @@ void StorageIO<ValueType>::writeDenseToSAMGFile( const HArray<ValueType>& data,
     }
 
     // TODO: maybe provide this as function at a central place?
-    int typeSize = 0;
-    switch(dataType){
-        // special cases for handling IndexType, int and long, as these are not properly supported yet
-        // generate cases for all scalar types
-#define SCAI_LAMA_STORAGEIO_WRITEDNESETOSAMGFILE( _type )                     \
-        case ( common::TypeTraits<_type>::stype ):              \
-            typeSize = sizeof(_type); \
-            break;
-        SCAI_COMMON_LOOP( SCAI_LAMA_STORAGEIO_WRITEDNESETOSAMGFILE, SCAI_ARITHMETIC_ARRAY_HOST )
-#undef SCAI_LAMA_STORAGEIO_WRITEDNESETOSAMGFILE
 
-        case common::scalar::INTERNAL:
-            typeSize = sizeof(ValueType);
-            break;
-        default:
-            SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << dataType )
-            break;
+    int typeSize = common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::sizeOf( dataType );
+
+    if( typeSize == 0 )
+    {
+        switch( dataType )
+        {
+            case common::scalar::INTERNAL:
+                typeSize = sizeof(ValueType);
+                break;
+            default:
+                SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << dataType )
+                break;
+        }
     }
 
     FileStream outFile( filename + ".frv", std::ios::out );

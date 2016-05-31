@@ -31,6 +31,10 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+
+// local library
+
+// scai internal libraries
 #include <scai/common/Complex.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
@@ -89,7 +93,19 @@ public:
                        const int offset,
                        const common::scalar::ScalarType type,
                        const char delimiter = ' ' );
+
 private:
+
+    template<typename FileType, typename DataType>
+    inline void _write( const hmemo::HArray<DataType>& data,
+                        const int offset,
+                        const char delimiter = ' ' );
+
+    template<typename FileType, typename DataType>
+    inline void _read(  hmemo::HArray<DataType>& data,
+                        const IndexType size,
+                        const int offset,
+                        const char delimiter = ' ' );
     typedef enum
     {
         FORMATTED,
@@ -102,21 +118,57 @@ private:
     /** Logger for this class */
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    template<typename FileType, typename DataType>
-    inline void _write( const hmemo::HArray<DataType>& data,
-                        const int offset,
-                        const char delimiter = ' ' );
-
-    template<typename FileType, typename DataType>
-    inline void _read(  hmemo::HArray<DataType>& data,
-                        const IndexType size,
-                        const int offset,
-                        const char delimiter = ' ' );
 
     static Endian mMachineEndian;
     static Endian _determineMachineEndian();
 
+    template<typename ValueType, typename TList> struct Wrapper;
+
 }; // class FileStream
+
+template<typename ValueType>
+struct FileStream::Wrapper<ValueType, common::mepr::NullType>
+{
+    static bool __write( FileStream&, const hmemo::HArray<ValueType>&, const int, const common::scalar::ScalarType, const char )
+    {
+        return false;
+    }
+
+    static bool __read( FileStream&, hmemo::HArray<ValueType>&, const IndexType, const int, const common::scalar::ScalarType, const char )
+    {
+        return false;
+    }
+};
+
+template<typename ValueType, typename H, typename T>
+struct FileStream::Wrapper<ValueType, common::mepr::TypeList<H,T> >
+{
+    static bool __write( FileStream& fs, const hmemo::HArray<ValueType>& data, const int offset, const common::scalar::ScalarType type, const char delimiter)
+    {
+        if( type == common::TypeTraits<H>::stype )
+        {
+           fs._write<H, ValueType>( data, offset, delimiter );
+           return true;
+        }
+        else
+        {
+           return Wrapper<ValueType, T>::__write( fs, data, offset, type, delimiter );
+        }
+    }
+
+    static bool __read( FileStream& fs, hmemo::HArray<ValueType>& data, const IndexType size, const int offset, const common::scalar::ScalarType type, const char delimiter )
+    {
+        if( type == common::TypeTraits<H>::stype )
+        {
+           fs._read<H, ValueType>( data, size, offset, delimiter );
+           return true;
+        }
+        else
+        {
+           return Wrapper<ValueType, T>::__read( fs, data, size, offset, type, delimiter );
+        }
+    }
+};
 
 inline FileStream::FileStream( const std::string& filename, ios_base::openmode mode, Endian usedEndian /* = LITTLE */ )
 {
@@ -148,29 +200,23 @@ inline void FileStream::write( const hmemo::HArray<ValueType>& data,
                                const common::scalar::ScalarType type,
                                const char delimiter /* = ' ' */ )
 {
-    switch(type){
-    // special cases for handling IndexType, int and long, as these are not properly supported yet
-    case common::scalar::INT:
-        _write<int,ValueType>( data, offset, delimiter );
-        break;
-    case common::scalar::LONG:
-        _write<long,ValueType>( data, offset, delimiter );
-        break;
-
-    // generate cases for all scalar types
-#define SCAI_LAMA_FILESTREAM_WRITE( _type )                 \
-    case ( common::TypeTraits<_type>::stype ):              \
-        _write<_type,ValueType>( data, offset, delimiter ); \
-        break;
-        SCAI_COMMON_LOOP( SCAI_LAMA_FILESTREAM_WRITE, SCAI_ARITHMETIC_ARRAY_HOST )
-#undef SCAI_LAMA_FILESTREAM_WRITE
-
-    case common::scalar::INTERNAL:
-        _write<ValueType,ValueType>( data, offset, delimiter );
-        break;
-    default:
-        SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << type )
-        break;
+    if( !Wrapper<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::__write( *this, data, offset, type, delimiter ))
+    {
+        switch( type )
+        {
+            case common::scalar::INT:
+                _write<int,ValueType>( data, offset, delimiter );
+                break;
+            case common::scalar::LONG:
+                _write<long,ValueType>( data, offset, delimiter );
+                break;
+            case common::scalar::INTERNAL:
+                _write<ValueType,ValueType>( data, offset, delimiter );
+                break;
+            default:
+                SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << type )
+                break;
+        }
     }
 }
 
@@ -181,29 +227,24 @@ inline void FileStream::read( hmemo::HArray<ValueType>& data,
                               const common::scalar::ScalarType type,
                               const char delimiter /* = ' ' */ )
 {
-    switch(type){
-    // special cases for handling IndexType, int and long, as these are not properly supported yet
-    case common::scalar::INT:
-        _read<int,ValueType>( data, size, offset, delimiter );
-        break;
-    case common::scalar::LONG:
-        _read<long,ValueType>( data, size, offset, delimiter );
-        break;
 
-    // generate cases for all scalar types
-#define SCAI_LAMA_FILESTREAM_READ( _type )                       \
-    case ( common::TypeTraits<_type>::stype ):                   \
-        _read<_type,ValueType>( data, size, offset, delimiter ); \
-        break;
-        SCAI_COMMON_LOOP( SCAI_LAMA_FILESTREAM_READ, SCAI_ARITHMETIC_ARRAY_HOST )
-#undef SCAI_LAMA_FILESTREAM_READ
-
-    case common::scalar::INTERNAL:
-        _read<ValueType,ValueType>( data, size, offset, delimiter );
-        break;
-    default:
-        SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << type )
-        break;
+    if( !Wrapper<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::__read( *this, data, size, offset, type, delimiter ) )
+    {
+        switch( type )
+        {
+            case common::scalar::INT:
+                _read<int,ValueType>( data, size, offset, delimiter );
+                break;
+            case common::scalar::LONG:
+                _read<long,ValueType>( data, size, offset, delimiter );
+                break;
+            case common::scalar::INTERNAL:
+                _read<ValueType,ValueType>( data, size, offset, delimiter );
+                break;
+            default:
+                SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << type )
+                break;
+        }
     }
 }
 
@@ -393,7 +434,6 @@ inline FileStream::Endian FileStream::_determineMachineEndian()
         return BIG;
     }
 }
-
 
 } /* end namespace lama */
 
