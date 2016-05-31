@@ -30,8 +30,7 @@
 #pragma once
 
 /** Enable preprocessor flag to tell other code that ComplexZZZ is supported */
-
-//#define SCAI_COMPLEX_SUPPORTED done by cmake
+#define SCAI_COMPLEX_SUPPORTED
 
 // local library
 #include <scai/common/config.hpp>
@@ -1154,4 +1153,3 @@ void Math::random( Complex<long double>& x )
 typedef scai::common::Complex<float> ComplexFloat;
 typedef scai::common::Complex<double> ComplexDouble;
 typedef scai::common::Complex<long double> ComplexLongDouble;
-
