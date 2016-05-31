@@ -813,7 +813,7 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
             // results should be the same
 
-            BOOST_CHECK_EQUAL( result1.maxDiffNorm( result2 ), 0 );
+            BOOST_CHECK( result1.maxDiffNorm( result2 ) < common::TypeTraits<ValueType>::small() );
         }
     }
 }
