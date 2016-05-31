@@ -703,29 +703,38 @@ void StorageIO<ValueType>::readDenseFromFile( HArray<ValueType>& data,
 {
     File::FileType fileType;
     std::string suffix;
+    std::string used_filename;
 
     if( filename.size() >= 4 )
     {
         suffix = filename.substr( filename.size() - 4, 4 );
     }
 
+    if( suffix == ".frm" )
+    {
+        fileType = File::SAMG;
+        used_filename = filename.substr( 0, filename.size() - 4 ) + ".frv";
+    }
+
     if( suffix == ".frv" )
     {
         fileType = File::SAMG;
+        used_filename = filename;
     }
 
     if( suffix == ".mtx" )
     {
         fileType = File::MATRIX_MARKET;
+        used_filename = filename;
     }
 
     switch( fileType )
     {
         case File::SAMG:
-            readDenseFromSAMGFile( data, numColumns, filename );
+            readDenseFromSAMGFile( data, numColumns, used_filename );
             break;
         case File::MATRIX_MARKET:
-            readDenseFromMMFile( data, numColumns, filename );
+            readDenseFromMMFile( data, numColumns, used_filename );
             break;
 
         default:
@@ -762,6 +771,8 @@ void StorageIO<ValueType>::readDenseFromSAMGFile( HArray<ValueType>& data,
                                                   IndexType& numColumns,
                                                   const std::string& filename )
 {
+    SCAI_LOG_INFO( logger, "read DenseVector from file '" << filename << "'." )
+
     char fileType;
     int dataTypeSize;
     IndexType numRows;
