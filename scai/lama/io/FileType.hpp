@@ -52,22 +52,16 @@ namespace File
 enum FileType
 {
     /**
-     * @brief binary format without header informations in the data file
+     * @brief the SAMG format
      */
-    BINARY,
-    /**
-     * @brief ascii format
-     */
-    FORMATTED,
-    /**
-     * @brief xdr binary format which considers the endianess
-     */
-    XDR,
+    SAMG,
+
     /**
      * @brief the Matrix Market Format
      *        (see http://math.nist.gov/matrixMarket for details).
      */
-    MATRIX_MARKET, 
+    MATRIX_MARKET,
+
     /**
      * @brief unspecified, used internally 
      */
@@ -82,14 +76,8 @@ static inline std::ostream& operator<<( std::ostream& stream, const FileType& ob
 {
     switch ( object ) 
     {
-        case BINARY:
-            stream << "BINARY";
-            break;
-        case FORMATTED:
-            stream << "FORMATTED";
-            break;
-        case XDR:
-            stream << "XDR";
+        case SAMG:
+            stream << "SAMG";
             break;
         case MATRIX_MARKET:
             stream << "MATRIX_MARKET";
@@ -100,84 +88,7 @@ static inline std::ostream& operator<<( std::ostream& stream, const FileType& ob
      return stream;
 }
 
-// typedef ScalarType DataType;
-
-/**
- * @brief Defines the supported index data types of the external files
- */
-enum IndexDataType
-{
-    LONG, INT
-};
-
 }  // namespace File
-
-/** @brief Help routine to determine the size (in bytes) for the values in a file.
- *
- *  @tparam    ValueType specifies the internal data type take as decision for INTERNAL
- *  @param[in] dataType specifies the file type that is asked for
- *  @returns the size in bytes for the values in the file with the given type
- */
-
-template<typename ValueType>
-long getDataTypeSize( const common::scalar::ScalarType dataType )
-{
-    long s = common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_HOST_LIST>::sizeOf( dataType );
-
-    if( s != 0 )
-    {
-        return s;
-    }
-
-    switch( dataType )
-    { 
-        case common::scalar::INTERNAL:
-            return sizeof( ValueType );
-
-        case common::scalar::PATTERN:
-            return 0;
-
-        default:
-            return -1;
-    }
-}
-
-/** @brief Determine the file type by its size
- *
- *  Determination of file type by size is ambiguous, e.g. Complex and Double
- *  have same size. If ambiguous, ValueType is the preferred one.
- */
-
-template<typename ValueType>
-common::scalar::ScalarType getDataType( const long dataTypeSize )
-{
-    if( dataTypeSize == sizeof( ValueType ) )
-    {
-        return common::scalar::INTERNAL;
-    }
-    else if( dataTypeSize == 0 )
-    {
-        return common::scalar::PATTERN;
-    }
-
-    return common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_HOST_LIST>::getBySize( dataTypeSize );
-}
-
-static inline
-long getIndexDataTypeSize( const File::IndexDataType indexDataType )
-{
-    switch( indexDataType )
-    {
-        case File::LONG:
-            return sizeof( long );
-
-        case File::INT:
-            return sizeof( int );
-
-        default:
-            return 0;
-    }
-}
 
 } /* end namespace lama */
 

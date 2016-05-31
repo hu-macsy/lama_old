@@ -79,15 +79,19 @@ include ( Functions/setAndCheckCache )
 setAndCheckCache ( MPI )
 set ( USE_MPI ${USE_MPI} CACHE BOOL "Enable / Disable use of MPI" )
 
-set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
+if ( MPI_FOUND AND USE_MPI )
 
-# some older versions of cmake have not set MPI_CXX_LIBRARIES
+   set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
 
-if ( DEFINED MPI_CXX_LIBRARIES )
-   set ( SCAI_MPI_LIBRARIES ${MPI_CXX_LIBRARIES} )
-else ( DEFINED MPI_CXX_LIBRARIES )
-   set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )
-endif ( DEFINED MPI_CXX_LIBRARIES )
+   # some older versions of cmake have not set MPI_CXX_LIBRARIES
+
+   if ( DEFINED MPI_CXX_LIBRARIES )
+      set ( SCAI_MPI_LIBRARIES ${MPI_CXX_LIBRARIES} )
+   else ( DEFINED MPI_CXX_LIBRARIES )
+      set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )
+   endif ( DEFINED MPI_CXX_LIBRARIES )
+
+endif ( MPI_FOUND AND USE_MPI )
 
 include ( VersionCheck/MPI )
 

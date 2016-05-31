@@ -70,7 +70,6 @@ struct VectorTestConfig
     {
         m_inputVectorBaseName = scai::test::Configuration::getPath() + "/testVector";
         m_formattedInputVectorBaseName = m_inputVectorBaseName + "Formatted";
-        m_xdrDoubleInputVectorBaseName = m_inputVectorBaseName + "XDRDouble";
     }
 
     ~VectorTestConfig()
@@ -79,7 +78,6 @@ struct VectorTestConfig
 
     std::string m_inputVectorBaseName;
     std::string m_formattedInputVectorBaseName;
-    std::string m_xdrDoubleInputVectorBaseName;
 };
 
 BOOST_FIXTURE_TEST_SUITE( VectorTest, VectorTestConfig )
@@ -161,22 +159,18 @@ BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
     std::string prefix = scai::test::Configuration::getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
-    vector.writeToFile( prefix + "/" + testfilename, File::FORMATTED, scai::common::scalar::DOUBLE );
-    DenseVector<double> vector2( prefix + "/" + testfilename );
+    vector.writeToFile( prefix + "/" + testfilename, File::SAMG, scai::common::scalar::DOUBLE );
+    DenseVector<double> vector2( prefix + "/" + testfilename + ".frv" );
     verifySameVector<double>( vector2, result );
     cleanupfiles( testfilename );
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
-    vector.writeToFile( fileName, File::BINARY, scai::common::scalar::FLOAT );
+
+    vector.writeToFile( fileName, File::SAMG, scai::common::scalar::FLOAT, true );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
-    DenseVector<double> vector3( prefix + "/" + testfilename );
+    DenseVector<double> vector3( prefix + "/" + testfilename + ".frv" );
     verifySameVector<double>( vector3, result );
-    cleanupfiles( testfilename );
-    // write and read XDR
-    vector.writeToFile( prefix + "/" + testfilename, File::XDR, scai::common::scalar::DOUBLE );
-    DenseVector<double> vector5( prefix + "/" + testfilename );
-    verifySameVector<double>( vector5, result );
     cleanupfiles( testfilename );
 	// write and read mtx
     vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET, scai::common::scalar::DOUBLE );

@@ -43,8 +43,8 @@ if    ( CUDA_FOUND AND USE_CUDA )
     
     ### choosing the right compute capability
     ### we just start from version 1.3 ( 1.0 - 1.2 is not supported )
-    list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "37" "50" "52" )
-	set ( CACHE CUDA_COMPUTE_CAPABILITY PROPERTY STRINGS ${CC_CHOICES} )
+    list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "37" "50" "52" "60" )
+    set ( CACHE CUDA_COMPUTE_CAPABILITY PROPERTY STRINGS ${CC_CHOICES} )
     checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
     set ( CUDA_COMPUTE_CAPABILITY ${CUDA_COMPUTE_CAPABILITY} CACHE STRING "CUDA compute capability (supported up from 13)" )
     
@@ -53,7 +53,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
     else  ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )
         set ( CUDA_HAVE_GPU TRUE )
     endif ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )
-	mark_as_advanced ( CUDA_COMPUTE_CAPABILITY )
+    mark_as_advanced ( CUDA_COMPUTE_CAPABILITY )
 
     set ( CUDA_VERBOSE_BUILD OFF )
     set ( CUDA_BUILD_EMULATION OFF )
@@ -67,7 +67,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
         set ( CUDA_PROPAGATE_HOST_FLAGS OFF )
         
         set ( SCAI_NVCC_FLAGS -Xcompiler -fPIC )
-      	set ( SCAI_NVCC_FLAGS_DEBUG -g -G )
+        set ( SCAI_NVCC_FLAGS_DEBUG -g -G )
         set ( SCAI_NVCC_FLAGS_RELEASE -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
         # Note: -Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
 

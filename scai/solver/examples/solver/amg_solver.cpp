@@ -118,7 +118,7 @@ int main( int argc, char* argv[] )
     int myRank   = comm->getRank();
     int numProcs = comm->getSize();
 
-    const char* filename;
+    string filename;
 
     if ( argc < 2 )
     {
@@ -154,8 +154,8 @@ int main( int argc, char* argv[] )
 
     // read matrix + rhs from disk
 
-    matrix.readFromFile( filename );
-    rhs.readFromFile( filename );
+    matrix.readFromFile( filename + ".frm" );
+    rhs.readFromFile( filename + ".frv" );
 
     // only square matrices are accetpted
 
@@ -193,7 +193,7 @@ int main( int argc, char* argv[] )
 
             common::shared_ptr<vector<IndexType> > mapVector;
 
-            mapVector.reset( readPartitionVector( filename, numProcs, numRows ) );
+            mapVector.reset( readPartitionVector( filename.c_str(), numProcs, numRows ) );
 
             if ( mapVector )
             {

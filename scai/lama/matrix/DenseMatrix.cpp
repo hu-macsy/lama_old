@@ -261,15 +261,15 @@ void DenseMatrix<ValueType>::readFromFile( const std::string& fileName )
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::writeToFile1(
-
     const std::string& fileName,
     const File::FileType fileType /* = UNFORMATTED */,
-    const common::scalar::ScalarType dataType /* = INTERNAL */,
-    const File::IndexDataType indexDataTypeIA /* = LONG */,
-    const File::IndexDataType indexDataTypeJA /* = LONG */ ) const
+    const common::scalar::ScalarType valuesType /* = INTERNAL */,
+    const common::scalar::ScalarType iaType /* = INDEX_TYPE */,
+    const common::scalar::ScalarType jaType /* = INDEX_TYPE */,
+    const bool writeBinary /* = false */ ) const
 {
     SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << valuesType << " )" )
 
     if ( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
@@ -279,7 +279,7 @@ void DenseMatrix<ValueType>::writeToFile1(
 
         if ( comm.getRank() == 0 )
         {
-            getLocalStorage().writeToFile( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+            getLocalStorage().writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
         }
 
         // synchronization to avoid that other processors start with
@@ -296,7 +296,7 @@ void DenseMatrix<ValueType>::writeToFile1(
 
         // repM.redistribute( rowDist, colDist );
 
-        repM.writeToFile1( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+        repM.writeToFile1( fileName, fileType, valuesType, iaType, jaType, writeBinary );
     }
 }
 
