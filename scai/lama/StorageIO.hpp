@@ -108,8 +108,6 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
-
     static const int mIversion; //<! unique identification for version
 };
 
@@ -325,6 +323,9 @@ public:
                                     const std::string& filename,
                                     const common::scalar::ScalarType dataType,
                                     const bool writeBinary = false );
+
+protected:
+    using _StorageIO::mIversion;
 };
 
 /* -------------------------------------------------------------------------- */
