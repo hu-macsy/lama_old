@@ -26,4 +26,4 @@ much more problems during the installation.
 Configuration with CMake
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-* LAMA provides a CMAKE module file if a project uses PThreads as external library: ``Package/Thread.cmake`
+* LAMA provides a CMAKE module file if a project uses PThreads as external library: ``Package/Thread.cmake``

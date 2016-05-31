@@ -36,18 +36,30 @@ macro    ( check_whitelist VAR WHITELIST_NAME ARGS_LIST )
         if    ( ${result} )
         	#message ( STATUS "${CACHE_VAR} matches ${WHITELIST_ITEM}" )
         
+        	set ( KEEP_FLAG FALSE )
+
 	        get_property ( CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE )
-	        #message ( STATUS "CACHE_VAR ${CACHE_VAR}" )
 	        if     ( CACHE_VAR_TYPE STREQUAL "INTERNAL" )
-	            # skip Variable
-	        	# message ( STATUS "Skip Variable ${CACHE_VAR}" )
-	        #elseif ( CACHE_VAR_TYPE STREQUAL "UNINITIALIZED" )
-	        #    set ( CACHE_VAR_TYPE )
-	        #    list ( APPEND ${ARGS_LIST} "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
+	        	# nothing to do: KEEP_FLAG FALSE
+	        elseif ( CACHE_VAR_TYPE MATCHES "PATH" )
+	        	if    ( ${${CACHE_VAR}} MATCHES "NOTFOUND" )
+	        		#message ( STATUS "both not found ${CACHE_VAR} is ${CACHE_VAR_TYPE} with value ${${CACHE_VAR}}" )
+	        		# nothing to do: KEEP_FLAG FALSE
+	        	else  ()
+					#message ( STATUS "both add ${CACHE_VAR} is ${CACHE_VAR_TYPE} with value ${${CACHE_VAR}}" )
+					set ( KEEP_FLAG TRUE )
+				endif ()
 	        else   ( )
+	        	set ( KEEP_FLAG TRUE )
+	        endif  ( )
+
+	        if    ( KEEP_FLAG )
+	        	#message ( STATUS "ADD ${CACHE_VAR} is ${CACHE_VAR_TYPE} with value ### ${${CACHE_VAR}} ###" )
 	            set( CACHE_VAR_TYPE :${CACHE_VAR_TYPE} )
 	            list ( APPEND ${ARGS_LIST} "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-	        endif  ( )
+	        else  ( KEEP_FLAG )
+				#message ( STATUS "SKIP ${CACHE_VAR} is ${CACHE_VAR_TYPE} with value ### ${${CACHE_VAR}} ###" )
+	        endif ( KEEP_FLAG )
         
         endif ( ${result} )
         

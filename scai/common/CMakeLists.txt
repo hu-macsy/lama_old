@@ -73,10 +73,6 @@ addInternalAndExternalPackages()
 include ( ConcludeFlags )
 
 ### add definitions
-if    ( ${USE_COMPLEX} )
-    add_definitions ( -DSCAI_COMPLEX_SUPPORTED )
-endif ( ${USE_COMPLEX} )
-
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
@@ -146,11 +142,12 @@ if    ( ${USE_COMPLEX} )
     else  ( INDEX1 GREATER INDEX2 )
         list ( GET COMPLEX_VALUES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
     endif ( INDEX1 GREATER INDEX2 )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in_withComplex" "${CONFIGURE_DIR}/SCAITypes.hpp" )
 else  ( ${USE_COMPLEX} )
     list ( GET NONE_COMPLEX_VALUES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )    
 endif ( ${USE_COMPLEX} )
 
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )
 
 ## end for configuring SCAITypes.hpp
 
@@ -177,7 +174,6 @@ set ( COMMON_CLASSES
 #  Header only file of the COMMON project
 
 set ( COMMON_HEADERS 
-        ${COMPLEX_HEADER}
         config
         Constants
         Factory
