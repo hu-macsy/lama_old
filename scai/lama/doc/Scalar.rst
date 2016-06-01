@@ -3,7 +3,7 @@
 Scalar
 ======
 
-The class ``Scalar`` represents a scalar value, storing every value type. It can be a value in an expression, or the result of an expression.
+The class ``Scalar`` represents a scalar value, storing every value type. It can be a value in an expression, or the result of an expression. Compared to ``Vector`` and ``Matrix`` a ``Scalar`` can not be distributed amoung nodes nor is located on a specific location (it is always created on the host and will be passed to other locations).
 
 Constructors
 ------------

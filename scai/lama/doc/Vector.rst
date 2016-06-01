@@ -3,7 +3,7 @@
 Vector
 ======
 
-The class ``Vector`` is a generic mathematical vector. The values are internally stored in a ``HArray`` out of :ref:`scaihmemo:main-page_hmemo` so a ``Vector`` can transparently used on every device. 
+The class ``Vector`` is a generic mathematical vector. The values are internally stored in a ``HArray`` out of :ref:`scaihmemo:main-page_hmemo` so a ``Vector`` can transparently used on every device. Additionally a ``Vector`` can be distributed among nodes by having a specific ``Distribution`` from :ref:`scaidmemo:main-page_dmemo` - by default it has a NoDistribution, which means its values are replicated on each node.
 
 Constructors
 ------------

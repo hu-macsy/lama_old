@@ -33,6 +33,7 @@ scai_project(
 
         ScalarTypeHelper
         TypeList
+        TypeListUtils
 
     CLASSES
         TemplateSpecifier
