@@ -78,88 +78,88 @@ for CTX in ${CONTEXTS[*]}
 do
 	# Tasking tests
 	echo "### taskingTest on ${CTX}"
-	./tasking/test/taskingTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/taskingTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	./tasking/test/taskingTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/taskingTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	
 	# HMemo tests
 	echo "### hmemoTest on ${CTX}"
-	./hmemo/test/hmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	./hmemo/test/hmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	
 	# KRegistry tests
 	echo "### kregistryTest on ${CTX}"
-	./kregistry/test/kregistryTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	./kregistry/test/kregistryTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	
 	# BLASKernel tests
 	echo "### blaskernelTest on ${CTX}"
-	./blaskernel/test/blaskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	./blaskernel/test/blaskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	
 	# UtilsKernel tests
 	echo "### utilskernelTest on ${CTX}"
-	./utilskernel/test/utilskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/utilskernelTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	./utilskernel/test/utilskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/utilskernelTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	
 	# SparseKernel tests
 	echo "### sparsekernelTest on ${CTX}"
-	./sparsekernel/test/sparsekernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/sparsekernelTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	./sparsekernel/test/sparsekernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/sparsekernelTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	
 	# DMemo tests
 	echo "### dmemoTest on ${CTX}"
 	export SCAI_COMMUNICATOR=NO
-	./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	if [ "${MPI_FOUND}" != "" ]
 	then
 	    export SCAI_COMMUNICATOR=MPI
-	    mpirun -np 1 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo1Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-	    mpirun -np 2 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo2Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-	    mpirun -np 3 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo3Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-	    mpirun -np 4 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo4Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	    mpirun -np 1 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo1Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	    mpirun -np 2 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo2Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	    mpirun -np 3 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo3Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	    mpirun -np 4 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo4Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	fi
 	
 	# LAMA tests
 	echo "### lama_test on ${CTX}"
 	( # lamaTest
-		./lama/test/lamaTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+		./lama/test/lamaTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	)
 	( # Storage Test
-		./lama/test/storage/lamaStorageTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaStorageTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+		./lama/test/storage/lamaStorageTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaStorageTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	)
 # # LAMA Distributed test removed?
 #	(
 #	    export SCAI_COMMUNICATOR=NO
-#	    ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDistTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+#	    ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDistTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 #	    if [ "${MPI_FOUND}" != "" ]
 #	    then
 #	        export SCAI_COMMUNICATOR=MPI
-#	        mpirun -np 1 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist1Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-#	        mpirun -np 2 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist2Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-#	        mpirun -np 3 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist3Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-#	        mpirun -np 4 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist4Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
+#	        mpirun -np 1 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist1Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+#	        mpirun -np 2 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist2Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+#	        mpirun -np 3 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist3Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+#	        mpirun -np 4 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist4Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
 #	    fi
 #    )
  	( # Matrix Test   
 	    export SCAI_COMMUNICATOR=NO
-	    ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrixTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	    ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrixTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	    if [ "${MPI_FOUND}" != "" ]
 	    then
 	        export SCAI_COMMUNICATOR=MPI
-	        mpirun -np 1 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix1Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-	        mpirun -np 2 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix2Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-	        mpirun -np 3 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix3Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-	        mpirun -np 4 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix4Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	        mpirun -np 1 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix1Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	        mpirun -np 2 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix2Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	        mpirun -np 3 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix3Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	        mpirun -np 4 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix4Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	    fi
     )
 	
 	# Solver tests
 	echo "### solverTest on ${CTX}"
 	export SCAI_COMMUNICATOR=NO
-	./solver/test/solverTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	./solver/test/solverTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	export SCAI_COMMUNICATOR=NO
-	./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDistTest_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDistTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	if [ "${MPI_FOUND}" != "" ]
 	then
 	    export SCAI_COMMUNICATOR=MPI
-	    mpirun -np 1 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist1Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-	    mpirun -np 2 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist2Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-	    mpirun -np 3 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist3Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
-	    mpirun -np 4 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist4Test_${CTX}.xml -SCAI_CONTEXT=${CTX}
+	    mpirun -np 1 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist1Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	    mpirun -np 2 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist2Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	    mpirun -np 3 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist3Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	    mpirun -np 4 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist4Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	fi
 done
 

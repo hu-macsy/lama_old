@@ -40,6 +40,12 @@ const char* scalarType2str( const scalar::ScalarType stype )
 {
     switch ( stype )
     {
+        case scalar::INT:
+            return "int";
+
+        case scalar::LONG:
+            return "long";
+
         case scalar::FLOAT:
             return "float";
 
