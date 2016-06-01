@@ -97,17 +97,16 @@ Especially for changing the C++ compiler please see the subpage, because there i
    configuration/blas
    MIC <configuration/mic>
 
-External:
-
-   * :ref:`MPI <scaidmemo:MPI>`
-   * :ref:`GPI-2 <scaidmemo:GPI>`
-   * :ref:`(Par)Metis <scaidmemo:Metis>`
-
-The following packages are used:
+Projects can have external dependencies. These are libaries that are either required by a project
+or that provide optionally some functionality. These are the packages searched by cmake for the
+external dependencies:
 
 * :ref:`Boost <scaicommon:Boost>` for the Common project and all unit tests 
 * :ref:`CUDA <scaicommon:CUDA>` for all projects that provide separate CUDA functionality (common, tasking, blaskernel, 
   utilskernel, sparsekernel)
+* :ref:`MPI <scaidmemo:MPI>` for the Distributed Memory project
+* :ref:`GPI-2 <scaidmemo:GPI>` for the Distributed Memory project 
+* :ref:`(Par)Metis <scaidmemo:Metis>` for the Distributed Memory project
 
 A summary of possible hint-variables for the packages are given in the following table. For advanced help refer to the separate section.
 

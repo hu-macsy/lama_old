@@ -331,11 +331,22 @@ BOOST_AUTO_TEST_CASE( inverseTestRandom )
 
         setDenseRandom( storage );
 
+        BOOST_REQUIRE_EQUAL( storage.getNumRows(), storage.getNumColumns () );  // must be square
+
         common::unique_ptr<MatrixStorage<ValueType> > inverse( storage.newMatrixStorage() );
-        common::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
+
         inverse->invert( storage );
+
+        common::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
+        common::unique_ptr<MatrixStorage<ValueType> > identity( storage.newMatrixStorage() );
+
+        // result = storage * inverse, must be identity
+
         result->matrixTimesMatrix( ValueType( 1 ), storage, *inverse, ValueType( 0 ), *inverse );
-        // BOOST_CHECK( result->maxDiffNorm( storage ) < common::TypeTraits<ValueType>::small() );
+        identity->setIdentity( storage.getNumRows() );
+
+        SCAI_LOG_DEBUG( logger, "max diff norm = " << result->maxDiffNorm( *identity ) )
+        BOOST_CHECK( result->maxDiffNorm( *identity ) < common::TypeTraits<ValueType>::small() );
     }
 }
 
@@ -343,6 +354,8 @@ BOOST_AUTO_TEST_CASE( inverseTestRandom )
 
 BOOST_AUTO_TEST_CASE( inverseTestRandom1 )
 {
+    // same as inverseTestRandom, but here we invert in place
+
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
@@ -356,10 +369,17 @@ BOOST_AUTO_TEST_CASE( inverseTestRandom1 )
         setDenseRandom( storage );
 
         common::unique_ptr<MatrixStorage<ValueType> > inverse( storage.copy() );
-        common::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
+
         inverse->invert( *inverse );
+
+        common::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
+        common::unique_ptr<MatrixStorage<ValueType> > identity( storage.newMatrixStorage() );
+
         result->matrixTimesMatrix( ValueType( 1 ), storage, *inverse, ValueType( 0 ), *inverse );
-        // BOOST_CHECK( result->maxDiffNorm( storage ) < common::TypeTraits<ValueType>::small() );
+        identity->setIdentity( storage.getNumRows() );
+
+        SCAI_LOG_DEBUG( logger, "max diff norm = " << result->maxDiffNorm( *identity ) )
+        BOOST_CHECK( result->maxDiffNorm( *identity ) < common::TypeTraits<ValueType>::small() );
     }
 }
 
