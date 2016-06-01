@@ -3,7 +3,7 @@
 Matrix
 ======
 
-The class ``Matrix`` is a generic mathematical matrix. The index and data arrays are internally stored in a ``HArray`` out of :ref:`scaihmemo:main-page_hmemo` so a ``Matrix`` can transparently used on every device. Additionally a ``Matrix`` can be distributed among nodes by having a specific ``Distribution`` from :ref:`scaidmemo:main-page_dmemo` - by default it has a NoDistribution, which means its values are replicated on each node. Having another ``Distribution`` results in a row-wise distributed matrix, so a whole row is located on a assigned node. 
+The class ``Matrix`` is a generic mathematical matrix. The index and data arrays are internally stored in a ``HArray`` out of :ref:`scaihmemo:main-page_hmemo` so a ``Matrix`` can transparently used on every device. Additionally a ``Matrix`` can be distributed among nodes by having a specific ``Distribution`` from :ref:`scaidmemo:main-page_dmemo` - by default it has a NoDistribution, which means its values are replicated on each node. Having another ``Distribution`` results in a row-wise distributed matrix, so a whole row is located on a assigned node. A ``Matrix`` also has a second column-oriented ``Distribution``, for handling halo-exchange in distributed expressions. A detailed explanation on setting ``Distributions`` can be found :doc:`here <SetDistribution>`.
 
 A specific representation of a matrix can be a DenseMatrix or a sparse matrix of a specific storage type. A DenseMatrix saves all entries of the m times n matrix, while a sparse matrix only stores the non-zero entries in a well defined format. LAMA actually preserves the following sparse matrix formats (for detailed descriptions on the formats refer to the subpages of :ref:`scaisparsekernel:main-page_sparsekernel`:
 
