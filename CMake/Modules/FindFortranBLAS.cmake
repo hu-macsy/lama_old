@@ -30,6 +30,17 @@
 #find_package( BLAS )
 find_package( LAPACK ${LAMA_FIND_PACKAGE_FLAGS} )
 
+if    ( APPLE )
+	if      ( EXISTS ${BLAS_LIBRARIES}/Accelerate )
+	    set ( BLAS_blas_LIBRARY ${BLAS_LIBRARIES}/Accelerate )
+	elseif  ( BLAS_blas_LIBRARY AND LAPACK_lapack_LIBRARY )
+	    # everything ok, nothing to be done
+	else    ()
+	    set ( BLAS_FOUND FALSE )
+	    set ( LAPACK_FOUND FALSE )
+	endif   ()
+endif ( APPLE )
+
 ## hide flags (we do not use) from the default CMake screen 
 
 set ( BLAS_Accelerate_LIBRARY "${BLAS_Accelerate_LIBRARY}" CACHE INTERNAL "" )
