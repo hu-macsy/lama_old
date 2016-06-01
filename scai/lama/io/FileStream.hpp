@@ -83,14 +83,14 @@ public:
 
     template<typename ValueType>
     inline void write( const hmemo::HArray<ValueType>& data,
-                       const int offset,
+                       const ValueType offset,
                        const common::scalar::ScalarType type,
                        const char delimiter = ' ' );
 
     template<typename ValueType>
     inline void read(  hmemo::HArray<ValueType>& data,
                        const IndexType size,
-                       const int offset,
+                       const ValueType offset,
                        const common::scalar::ScalarType type,
                        const char delimiter = ' ' );
 
@@ -98,13 +98,13 @@ private:
 
     template<typename FileType, typename DataType>
     inline void _write( const hmemo::HArray<DataType>& data,
-                        const int offset,
+                        const FileType offset,
                         const char delimiter = ' ' );
 
     template<typename FileType, typename DataType>
     inline void _read(  hmemo::HArray<DataType>& data,
                         const IndexType size,
-                        const int offset,
+                        const DataType offset,
                         const char delimiter = ' ' );
     typedef enum
     {
@@ -129,12 +129,12 @@ private:
 template<typename ValueType>
 struct FileStream::Wrapper<ValueType, common::mepr::NullType>
 {
-    static bool __write( FileStream&, const hmemo::HArray<ValueType>&, const int, const common::scalar::ScalarType, const char )
+    static bool __write( FileStream&, const hmemo::HArray<ValueType>&, const ValueType, const common::scalar::ScalarType, const char )
     {
         return false;
     }
 
-    static bool __read( FileStream&, hmemo::HArray<ValueType>&, const IndexType, const int, const common::scalar::ScalarType, const char )
+    static bool __read( FileStream&, hmemo::HArray<ValueType>&, const IndexType, const ValueType, const common::scalar::ScalarType, const char )
     {
         return false;
     }
@@ -143,7 +143,7 @@ struct FileStream::Wrapper<ValueType, common::mepr::NullType>
 template<typename ValueType, typename H, typename T>
 struct FileStream::Wrapper<ValueType, common::mepr::TypeList<H,T> >
 {
-    static bool __write( FileStream& fs, const hmemo::HArray<ValueType>& data, const int offset, const common::scalar::ScalarType type, const char delimiter)
+    static bool __write( FileStream& fs, const hmemo::HArray<ValueType>& data, const ValueType offset, const common::scalar::ScalarType type, const char delimiter)
     {
         if( type == common::TypeTraits<H>::stype )
         {
@@ -156,7 +156,7 @@ struct FileStream::Wrapper<ValueType, common::mepr::TypeList<H,T> >
         }
     }
 
-    static bool __read( FileStream& fs, hmemo::HArray<ValueType>& data, const IndexType size, const int offset, const common::scalar::ScalarType type, const char delimiter )
+    static bool __read( FileStream& fs, hmemo::HArray<ValueType>& data, const IndexType size, const ValueType offset, const common::scalar::ScalarType type, const char delimiter )
     {
         if( type == common::TypeTraits<H>::stype )
         {
@@ -196,7 +196,7 @@ inline void FileStream::open( const std::string& filename, ios_base::openmode mo
 
 template<typename ValueType>
 inline void FileStream::write( const hmemo::HArray<ValueType>& data,
-                               const int offset,
+                               const ValueType offset,
                                const common::scalar::ScalarType type,
                                const char delimiter /* = ' ' */ )
 {
@@ -223,7 +223,7 @@ inline void FileStream::write( const hmemo::HArray<ValueType>& data,
 template<typename ValueType>
 inline void FileStream::read( hmemo::HArray<ValueType>& data,
                               const IndexType size,
-                              const int offset,
+                              const ValueType offset,
                               const common::scalar::ScalarType type,
                               const char delimiter /* = ' ' */ )
 {
@@ -250,7 +250,7 @@ inline void FileStream::read( hmemo::HArray<ValueType>& data,
 
 template<typename FileType, typename DataType>
 inline void FileStream::_write( const hmemo::HArray<DataType>& data,
-                                const int offset,
+                                const FileType offset,
                                 const char delimiter /* = ' ' */ )
 {
     SCAI_LOG_INFO( logger, "write array data <" << common::TypeTraits<DataType>::id() << "> to <"
@@ -301,7 +301,7 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
             hmemo::WriteOnlyAccess<FileType> bufferWrite( buffer, loc, data.size() );
 
             set[loc]( bufferWrite, dataRead, data.size(), utilskernel::reduction::COPY );
-            setVal[loc]( bufferWrite, buffer.size(), static_cast<FileType>( offset ), utilskernel::reduction::ADD );
+            setVal[loc]( bufferWrite, buffer.size(), offset, utilskernel::reduction::ADD );
         }
         hmemo::ReadAccess<FileType> bufferRead( buffer );
 
@@ -329,7 +329,7 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
 template<typename FileType, typename DataType>
 inline void FileStream::_read( hmemo::HArray<DataType>& data,
                                const IndexType size,
-                               const int offset,
+                               const DataType offset,
                                const char delimiter /* = ' ' */ )
 {
     SCAI_LOG_INFO( logger, "read array data <" << common::TypeTraits<FileType>::id() << "> to <"
@@ -416,7 +416,7 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
         static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<DataType> > setVal;
         hmemo::ContextPtr loc = data.getValidContext();
         setVal.getSupportedContext( loc );
-        setVal[loc]( dataWrite, size, static_cast<DataType>( offset ), utilskernel::reduction::ADD );
+        setVal[loc]( dataWrite, size, offset, utilskernel::reduction::ADD );
     }
 }
 

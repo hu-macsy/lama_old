@@ -139,7 +139,7 @@ void StorageIO<ValueType>::readCSRFromSAMGFile(
     //TODO: allow different type to be read?
     inFile.read( csrIA, numRows + 1, -1, common::TypeTraits<IndexType>::stype, '\n' );
     inFile.read( csrJA, numValues, -1, common::TypeTraits<IndexType>::stype, '\n' );
-    inFile.read( csrValues, numValues, 0, common::TypeTraits<ValueType>::stype, '\n' );
+    inFile.read( csrValues, numValues, ValueType( 0 ), common::TypeTraits<ValueType>::stype, '\n' );
 
     inFile.close();
 }
@@ -824,7 +824,7 @@ void StorageIO<ValueType>::readDenseFromSAMGFile( HArray<ValueType>& data,
     }
 
 
-    inFile.read( data, numRows, 0, dataType, '\n' );
+    inFile.read( data, numRows, ValueType( 0 ), dataType, '\n' );
 
     inFile.close();
 }
