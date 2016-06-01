@@ -35,11 +35,11 @@
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
+#include <scai/common/test/TestMacros.hpp>
+
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 using namespace scai::common;
-
-typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -63,8 +63,10 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.RedistributorTest" );
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE( redistributeTest )
 {
+    typedef SCAI_TEST_TYPE ValueType;
+
     IndexType size = 10;
     IndexType chunkSize = 1;
     shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
