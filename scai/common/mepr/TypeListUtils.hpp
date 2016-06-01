@@ -43,7 +43,7 @@ namespace mepr
 {
 
 /*
- * TemplateListUtils
+ * TypeListUtils
  */
 template<typename TList>
 struct TypeListUtils;
@@ -85,6 +85,30 @@ struct TypeListUtilsV<ValueType, TypeList<H,T> >
 {
     enum{ contains = TypeListUtilsV<ValueType, T>::contains };
     enum{ index = TypeListUtilsV<ValueType, T>::index };
+};
+
+/*
+ * TypeListUtilsVLL with ValueType and two identical lists, to get a valid ValueType
+ */
+
+template<typename VT, typename TList1, typename TList2> struct TypeListUtilsVLL;
+
+template<typename VT, typename H, typename T>
+struct TypeListUtilsVLL<VT, common::mepr::TypeList<H,T>, common::mepr::NullType>
+{
+    typedef H ValueType;
+};
+
+template<typename VT, typename TList1, typename H, typename T>
+struct TypeListUtilsVLL<VT, TList1, common::mepr::TypeList<H, T> >
+{
+    typedef typename TypeListUtilsVLL<VT, TList1, T>::ValueType ValueType;
+};
+
+template<typename VT, typename TList1, typename T>
+struct TypeListUtilsVLL<VT, TList1, common::mepr::TypeList<VT, T> >
+{
+    typedef VT ValueType;
 };
 
 } /* end namespace mepr */
