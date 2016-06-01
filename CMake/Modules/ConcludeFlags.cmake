@@ -51,9 +51,6 @@ if    ( UNIX AND NOT APPLE )
     endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 endif ( UNIX AND NOT APPLE )
 
-message ( STATUS "SCAI_START_LINK_LIBRARIES ${SCAI_START_LINK_LIBRARIES}" )
-message ( STATUS "SCAI_END_LINK_LIBRARIES ${SCAI_END_LINK_LIBRARIES}" )
-
 # check if Complex is in SCAI_HOST_TYPES then set USE_COMPLEX true
 include ( Functions/checkValue )
 include ( Functions/parseBoolean )
