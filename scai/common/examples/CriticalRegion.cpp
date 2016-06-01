@@ -41,8 +41,8 @@ using namespace scai::common;
 
 Thread::RecursiveMutex threadRecursiveMutex;    // recursive threadRecursiveMutex needed here
 
-static int SLEEP_TIME  = 2;
-static int N_THREADS   = 4;
+static const int SLEEP_TIME  = 2;
+static const int N_THREADS   = 4;
 
 // Define routine that is executed by one thread
 
