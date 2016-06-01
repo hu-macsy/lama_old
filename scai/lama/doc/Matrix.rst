@@ -3,7 +3,7 @@
 Matrix
 ======
 
-The class ``Matrix`` is a generic mathematical matrix. The index and data arrays are internally stored in a ``HArray`` out of :ref:`scaihmemo:main-page_hmemo` so a ``Matrix`` can transparently used on every device.
+The class ``Matrix`` is a generic mathematical matrix. The index and data arrays are internally stored in a ``HArray`` out of :ref:`scaihmemo:main-page_hmemo` so a ``Matrix`` can transparently used on every device. Additionally a ``Matrix`` can be distributed among nodes by having a specific ``Distribution`` from :ref:`scaidmemo:main-page_dmemo` - by default it has a NoDistribution, which means its values are replicated on each node. Having another ``Distribution`` results in a row-wise distributed matrix, so a whole row is located on a assigned node. 
 
 A specific representation of a matrix can be a DenseMatrix or a sparse matrix of a specific storage type. A DenseMatrix saves all entries of the m times n matrix, while a sparse matrix only stores the non-zero entries in a well defined format. LAMA actually preserves the following sparse matrix formats (for detailed descriptions on the formats refer to the subpages of :ref:`scaisparsekernel:main-page_sparsekernel`:
 
@@ -77,6 +77,9 @@ another using the copy constructor.
   DenseMatrix<double> aRedist ( a, rDist, cDist ); // a with new Distributions
   ELLSparseMatrix<double> aTrans  ( a, true );     // copy with transpose
 
+Initializing
+------------
+
 After the declaration of an empty matrix you can initialize it with value with the functions ``setIdentity``, ``setDiagonal``, ``setDenseData`` and ``setCSRData``.
 
 .. code-block:: c++
@@ -129,8 +132,8 @@ Now, also having matrices, you can perform matrix expressions as addition, subst
     // vector-matrix-expressions
     v_z = s_alpha * v_x * m_A + s_beta * v_y;
     // resulting in better performance in most cases: 
-    // Matrix m_Atrans ( m_A, true );
-    // v_z = s_alpha * m_Atrans * v_x + s_beta * v_y;
+    Matrix m_Atrans ( m_A, true );
+    v_z = s_alpha * m_Atrans * v_x + s_beta * v_y;
 
     // matrix-matrix-expressions
     m_D = s_alpha * m_A * m_B + s_beta * m_C;
@@ -175,26 +178,44 @@ Additionally you have some utility functions that can be called on a matrix: for
 
    Vector* aCopy = a.copy(); // calls the copy constructor
 
+You can have special access to rows or the diagonal of the matrix by ``getRow`` and ``getDiagonal``, that data will be copied to a DenseVector - but the data of the matrix won't be affected by adapting the vector. For the diagonal you can call ``setDiagonal``.
 
-getRow( Vector& row, const IndexType globalRowIndex )
-getDiagonal( Vector& diagonal )
+.. code-block:: c++
 
+   Vector* v = ...;
+   a.getRow( *v, rowIndex );
+   Vector* diag = ...;
+   a.getDiagonal( *diag );
+   Vector* newDiag = ...;
+   a.setDiagonal( * newDiag );
 
-getValue( IndexType i, IndexType j )
+For accessing single values of a matrix you can use ``getValue`` or ``()`` with the global index ``i, j``. But you must have in mind, that it may be inefficient if the matrix is distributed and/or not on the Host Context, because of communication between nodes or CPU and GPU:
 
+.. code-block:: c++
 
-getTypeName()
+   s = a.getValue( i, j );
+   s = a( i, j );
 
-To save a matrix to file use 'writeToFile':   
-   
+File I/O
+--------
+
+Except from a constructor with a passed string, you can use ``readFromFile`` and ``writeToFile``. The generally excepted format in LAMA for vector and matrices is defined :doc:`here<IO>`.
+
 .. code-block:: c++
  
-   ellMatrix.writeToFile( "output.mtx", File::MatrixMarket, File::FLOAT );
+   csrMatrix.readFromFile( "matrix.mtx" );
+   // writing a vector to file in matrix market format in single precision
+   csrMatrix.writeToFile( "output.mtx", File::MatrixMarket, File::FLOAT );
 
 Math Functions
 --------------
 
+You can scale a ``Matrix`` with a Scalar or a Vector (each row with another value):
 
+.. code-block:: c++
+
+   csrMatrix.scale( 2.0 );
+   csrMatrix.scale( *diag );
 
 You can get the L1-, L2-, Maximum-norm of an ``Matrix`` and a norm of the maximum difference to another ``Matrix``:
 
