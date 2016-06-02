@@ -72,7 +72,7 @@ if    ( NOT WIN32 )
 		# needed c++11 features - replacing boost
 		set ( CXX11_FEATURE_LIST    "bind" "function" "shared_ptr" "thread_local" "unique_ptr" "weak_ptr" )
 		set ( CXX11_FEATURE_NUMBER  ""     ""         ""           ""             ""           ""         )
-		set ( CXX11_LINK_LIBRARIES  ""     ""         ""           "pthread"      ""           ""         )
+		set ( CXX11_LINK_LIBRARIES  ""     ""         ""           "pthread"      ""           ""         ) #todo:: pthreads only for gnu !?
 
 		set ( COUNT 0 )
 		foreach    ( FEATURE ${CXX11_FEATURE_LIST} )
@@ -88,7 +88,7 @@ if    ( NOT WIN32 )
 		endforeach ( FEATURE ${CXX11_FEATURE_LIST} )
 
 		if    ( NOT CXX_SUPPORTS_C11 )
-			message ( STATUS "Compiler does not support all needed c++11 features. Turn CXX_SUPPORTS_C11 off. Unsupported features are: ${CXX11_UNSUPPORTED_FEATURE_LIST}" )
+			message ( STATUS "Compiler does not support all needed c++11 features. Turn CXX_SUPPORTS_C11 off.\n Unsupported features are: ${CXX11_UNSUPPORTED_FEATURE_LIST}" )
 		endif ( NOT CXX_SUPPORTS_C11 )
 
 		# restore CMAKE_CXX_FLAGS
