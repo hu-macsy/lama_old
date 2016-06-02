@@ -35,7 +35,7 @@ namespace scai
 namespace tracing
 {
 
-struct RegionEntry;
+class RegionEntry;
 
 /** Static class provding interface to Vampir */
 
