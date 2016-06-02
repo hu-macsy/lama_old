@@ -8,6 +8,10 @@
 #
 # for c++11 test example files see: CMake/Modules/Compiler/c++11/c++11-test-*.cpp
 
+
+# COMPILE_FLAG is ignored, does not work with try_compile/try_run
+# do the following instead:
+# save old DCMAKE_CXX_FLAGS, set them to new value and restore old afterwards
 MACRO ( checkFeature FEATURE_NAME FEATURE_NUMBER RESULT_VAR COMPILE_FLAG LINK_LIB )
 
 	IF ( NOT DEFINED ${RESULT_VAR} )
@@ -28,12 +32,12 @@ MACRO ( checkFeature FEATURE_NAME FEATURE_NUMBER RESULT_VAR COMPILE_FLAG LINK_LI
 
 		set ( OPTION_ON FALSE )
 
-		if    ( "${COMPILE_FLAG}" STREQUAL "" )
+		#if    ( "${COMPILE_FLAG}" STREQUAL "" )
 			set ( COMPILE_FLAG_OPTION "" )
-		else  ( "${COMPILE_FLAG}" STREQUAL "" )
-			set ( OPTION_ON TRUE )
-			set ( COMPILE_FLAG_OPTION "-DCMAKE_CXX_FLAGS=${COMPILE_FLAG}" )
-		endif ( "${COMPILE_FLAG}" STREQUAL "" )
+		#else  ( "${COMPILE_FLAG}" STREQUAL "" )
+		#	set ( OPTION_ON TRUE )
+		#	set ( COMPILE_FLAG_OPTION "-DCMAKE_CXX_FLAGS:STRING=${COMPILE_FLAG}" )
+		#endif ( "${COMPILE_FLAG}" STREQUAL "" )
 
 		if    ( "${LINK_LIB}" STREQUAL "" )
 			set ( EXTRA_OPTION "" )
@@ -41,6 +45,9 @@ MACRO ( checkFeature FEATURE_NAME FEATURE_NUMBER RESULT_VAR COMPILE_FLAG LINK_LI
 			set ( OPTION_ON TRUE )
 			set ( EXTRA_OPTION "-DLINK_LIBRARIES:STRING=${LINK_LIB}" )
 		endif ( "${LINK_LIB}" STREQUAL "" )
+
+		#MESSAGE ( STATUS "COMPILE_FLAG_OPTION ${COMPILE_FLAG_OPTION}" )
+		#MESSAGE ( STATUS "EXTRA_OPTION ${EXTRA_OPTION}" )
 
 		IF ( CROSS_COMPILING )
 
@@ -104,10 +111,10 @@ MACRO ( checkFeature FEATURE_NAME FEATURE_NUMBER RESULT_VAR COMPILE_FLAG LINK_LI
 
 		IF ( ${RESULT_VAR} )
 			#MESSAGE ( STATUS "Checking C++11 support for ${_LOG_NAME} -- works" )
-			LIST ( APPEND CXX11_SUPPORTED_FEATURE_LIST ${RESULT_VAR} )
+			LIST ( APPEND CXX11_SUPPORTED_FEATURE_LIST ${FEATURE_NAME} )
 		ELSE ( ${RESULT_VAR} )
 			#MESSAGE ( STATUS "Checking C++11 support for ${_LOG_NAME} -- not supported" )
-			LIST ( APPEND CXX11_UNSUPPORTED_FEATURE_LIST ${RESULT_VAR} )
+			LIST ( APPEND CXX11_UNSUPPORTED_FEATURE_LIST ${FEATURE_NAME} )
 		ENDIF ( ${RESULT_VAR} )
 
 		SET ( ${RESULT_VAR} ${${RESULT_VAR}} CACHE INTERNAL "C++11 support for ${_LOG_NAME}" )

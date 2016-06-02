@@ -80,6 +80,7 @@ if    ( NOT WIN32 )
 			list ( GET CXX11_LINK_LIBRARIES ${COUNT} LINK_LIB )
 			checkFeature ( ${FEATURE} "${FEATURE_NUMBER}" ${FEATURE}_BOOLVALUE "${CXX11_COMPILE_FLAG}" "${LINK_LIB}" )
 			message ( "${COUNT}: item ${FEATURE} number ${FEATURE_NUMBER}: ${${FEATURE}_BOOLVALUE}" )
+
 			if    ( NOT ${FEATURE}_BOOLVALUE )
 				set ( CXX_SUPPORTS_C11 FALSE )
 			endif ( NOT ${FEATURE}_BOOLVALUE )
@@ -87,8 +88,7 @@ if    ( NOT WIN32 )
 		endforeach ( FEATURE ${CXX11_FEATURE_LIST} )
 
 		if    ( NOT CXX_SUPPORTS_C11 )
-			message ( WARNING "Compiler does not support all needed c++11 features. Turn CXX_SUPPORTS_C11 off.
-			Unsupported features are: ${CXX11_UNSUPPORTED_FEATURE_LIST}" )
+			message ( WARNING "Compiler does not support all needed c++11 features. Turn CXX_SUPPORTS_C11 off. Unsupported features are: ${CXX11_UNSUPPORTED_FEATURE_LIST}" )
 		endif ( NOT CXX_SUPPORTS_C11 )
 
 		# restore CMAKE_CXX_FLAGS
