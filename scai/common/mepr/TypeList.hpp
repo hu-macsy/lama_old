@@ -73,6 +73,7 @@ struct TypeList
  * TYPELIST( N, ... ) for usage. N is the number of types
  */
 
+#define TYPELIST_0( ) scai::common::mepr::NullType
 #define TYPELIST_1( T1 ) scai::common::mepr::TypeList<T1,scai::common::mepr::NullType>
 #define TYPELIST_2( T1, T2 ) scai::common::mepr::TypeList<T1,TYPELIST_1( T2 ) >
 #define TYPELIST_3( T1, T2, T3 ) scai::common::mepr::TypeList<T1,TYPELIST_2( T2, T3 ) >

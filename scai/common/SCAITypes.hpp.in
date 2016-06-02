@@ -91,6 +91,25 @@ typedef IndexType PartitionId;
 MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 /*
+ * Lists of all supported arithmetic types 
+ */
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+#define SCAI_ARITHMETIC_TYPES float, double, LongDouble, ComplexFloat, ComplexDouble, ComplexLongDouble
+
+#else
+
+#define SCAI_ARITHMETIC_TYPES float, double, LongDouble
+
+#endif
+
+/**
+ *  List of all supported types (e.g. for communicator methods)
+ */
+#define SCAI_ALL_TYPES IndexType, SCAI_ARITHMETIC_TYPES
+
+/*
  * Lists of all used arithmetic types for which matrices, storages might be created
  */
 
@@ -107,10 +126,10 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
  * Array
  */
 
-#define SCAI_ARITHMETIC_ARRAY_HOST     IndexType, SCAI_ARITHMETIC_HOST
-#define SCAI_ARITHMETIC_ARRAY_EXT_HOST IndexType, SCAI_ARITHMETIC_EXT_HOST
-#define SCAI_ARITHMETIC_ARRAY_CUDA     IndexType, SCAI_ARITHMETIC_CUDA
-#define SCAI_ARITHMETIC_ARRAY_MIC      IndexType, SCAI_ARITHMETIC_MIC
+#define SCAI_ARITHMETIC_ARRAY_HOST     ${ARRAY_HOST_TYPES}
+#define SCAI_ARITHMETIC_ARRAY_EXT_HOST ${ARRAY_EXT_HOST_TYPES}
+#define SCAI_ARITHMETIC_ARRAY_CUDA     ${ARRAY_CUDA_TYPES}
+#define SCAI_ARITHMETIC_ARRAY_MIC      ${ARRAY_MIC_TYPES}
 
 /*
  * List creation
