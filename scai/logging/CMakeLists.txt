@@ -30,11 +30,16 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8.8 )
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_logging CXX )
-
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
+
+### set cmake quiet for untyped messages
+if    ( NOT SCAI_CMAKE_VERBOSE )
+    include ( Functions/setCMakeQuiet )
+endif ( NOT SCAI_CMAKE_VERBOSE )
+
+### Set PROJECT NAME / supported LANGUAGES
+project ( scai_logging CXX )
 
 ### includes ###
 
