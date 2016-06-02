@@ -44,7 +44,7 @@ typedef SolutionProxy ProxyType;
 
 struct SolutionProxyTestConfig
 {
-    SolutionProxyTestConfig() : mProxy( new DenseVector<double>( 3, -5.0 ) )
+    SolutionProxyTestConfig() : mProxy( new DenseVector<RealType>( 3, -5.0 ) )
     {
     }
 
