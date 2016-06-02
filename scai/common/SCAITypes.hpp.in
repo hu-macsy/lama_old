@@ -32,8 +32,13 @@
 
 // no support of Complex if this file is not included
 
+#if ${SCAI_USE_COMPLEX}
+#include <scai/common/Complex.hpp>
+#endif
+
 #include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/mepr/TypeList.hpp>
+#include <scai/common/mepr/TypeListUtils.hpp>
 
 // std
 #include <cstring>
@@ -124,3 +129,7 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 /** Representation type for Scalar must be the arithmetic type with highest precision */
 
 typedef ${SCAI_SCALAR_REP_TYPE} ScalarRepType;
+
+/** RealType: taken for example programs, usually double, but can also be float or LongDouble  */
+
+typedef scai::common::mepr::TypeListUtilsVLL<double, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::ValueType RealType;
