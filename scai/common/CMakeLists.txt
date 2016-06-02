@@ -97,22 +97,17 @@ list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
 set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )      #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} )       #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 
-list ( LENGTH SCAI_HOST_TYPES_LIST NUM_ALL_HOST_TYPES )
-list ( LENGTH EXT_HOST_TYPES_LIST NUM_EXT_HOST_TYPES )
-list ( LENGTH CUDA_TYPES_LIST NUM_CUDA_TYPES )
-list ( LENGTH MIC_TYPES_LIST NUM_MIC_TYPES )
-
-math ( EXPR NUM_ALL_HOST_ARRAY_TYPES "${NUM_ALL_HOST_TYPES}+1" )
-math ( EXPR NUM_EXT_HOST_ARRAY_TYPES "${NUM_EXT_HOST_TYPES}+1" )
-math ( EXPR NUM_CUDA_ARRAY_TYPES     "${NUM_CUDA_TYPES}+1" )
-math ( EXPR NUM_MIC_ARRAY_TYPES      "${NUM_MIC_TYPES}+1" )
-
 # make strings out of list
 include ( Functions/listToString )
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
 listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
 listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
 listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
+# add IndexType for the array types, be careful about empty string
+concatString ( "IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
+concatString ( "IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
+concatString ( "IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
+concatString ( "IndexType" ", " "${MIC_TYPES}"  ARRAY_MIC_TYPES )
 
 # set "biggest" common type as ScalarRepType
 # last found element in TYPE_LIST_VALUES
@@ -142,15 +137,17 @@ if    ( ${USE_COMPLEX} )
     else  ( INDEX1 GREATER INDEX2 )
         list ( GET COMPLEX_VALUES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
     endif ( INDEX1 GREATER INDEX2 )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in_withComplex" "${CONFIGURE_DIR}/SCAITypes.hpp" )
+    set ( SCAI_USE_COMPLEX 1 )
 else  ( ${USE_COMPLEX} )
     list ( GET NONE_COMPLEX_VALUES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )    
+    set ( SCAI_USE_COMPLEX 0 )
 endif ( ${USE_COMPLEX} )
 
+# SCAI_USE_COMPLEX is used here for conditional compilation
+# SCAI_yyy_TYPES_LIST will be replaced with supported types
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )    
 
 ## end for configuring SCAITypes.hpp
-
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 

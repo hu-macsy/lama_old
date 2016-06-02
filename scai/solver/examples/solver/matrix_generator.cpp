@@ -37,6 +37,7 @@
 #include <scai/lama/StorageIO.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/common/mepr/TypeListUtils.hpp>
 
 #include <iostream>
 
@@ -67,6 +68,10 @@ void printUsage( const char* prog_name )
     cout << "         stencilType = 5, 9 (for dim = 2) " << endl;
     cout << "         stencilType = 7, 19, 27 (for dim = 3) " << endl;
 }
+
+/** Define the value type used in this example, take default real type. */
+
+typedef RealType ValueType;  
 
 int main( int argc, char* argv[] )
 {
@@ -103,7 +108,7 @@ int main( int argc, char* argv[] )
     cout << "Generate poisson file " << filename << 
             ", dim = " << dimension << ", stencilType = " << stencilType << endl;
 
-    if ( !MatrixCreator<double>::supportedStencilType( dimension, stencilType ) )
+    if ( !MatrixCreator<ValueType>::supportedStencilType( dimension, stencilType ) )
     {
         if ( myRank == 0 )
         {
@@ -142,12 +147,12 @@ int main( int argc, char* argv[] )
 
     replaceStencil( filename, stencilName.str() );
 
-    CSRSparseMatrix<double> m;
+    CSRSparseMatrix<ValueType> m;
 
-    MatrixCreator<double>::buildPoisson( m, dimension, stencilType, dimX, dimY, dimZ );
+    MatrixCreator<ValueType>::buildPoisson( m, dimension, stencilType, dimX, dimY, dimZ );
 
-    DenseVector<double> lhs( m.getRowDistributionPtr(), 1.0 );
-    DenseVector<double> rhs( m * lhs );
+    DenseVector<ValueType> lhs( m.getRowDistributionPtr(), 1.0 );
+    DenseVector<ValueType> rhs( m * lhs );
 
     cout << "m = " << m << endl;
     cout << "m has diagonal property = " << m.hasDiagonalProperty() << endl;

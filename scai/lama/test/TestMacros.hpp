@@ -143,8 +143,7 @@
     {                                                                                                                  \
         const std::string lama_name = #name;                                                                           \
         const std::string lama_classname = #classname;                                                                 \
-        scai::lama::classname::name<float>( );                                                                         \
-        scai::lama::classname::name<double>( );                                                                        \
+        scai::lama::classname::name<SCAI_TEST_TYPE>( );                                                                \
     }
 
 /*
@@ -161,8 +160,7 @@
     {                                                                                                                  \
         const std::string lama_name = #name;                                                                           \
         const std::string lama_classname = #classname;                                                                 \
-        scai::lama::classname::name<float>( logger );                                                                  \
-        scai::lama::classname::name<double>( logger );                                                                 \
+        scai::lama::classname::name<SCAI_TEST_TYPE>( logger );                                                         \
     }
 
     /*

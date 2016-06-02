@@ -45,6 +45,8 @@
 using namespace scai::lama;
 using namespace scai::hmemo;
 
+typedef RealType ValueType;
+
 int main( int argc, char* argv[] )
 {
     if ( argc < 2 )
@@ -60,31 +62,31 @@ int main( int argc, char* argv[] )
        sscanf( argv[2], "%d", &maxIter );
     }
 
-    CSRSparseMatrix<double> A( argv[1] );
+    CSRSparseMatrix<ValueType> A( argv[1] );
     std::cout << "Read matrix A : " << A << std::endl;
     IndexType size = A.getNumRows();
 
-    DenseVector<double> b( size, 0 );
+    DenseVector<ValueType> b( size, 0 );
 
     {
-        WriteAccess<double> writeB( b.getLocalValues() );
+        WriteAccess<ValueType> writeB( b.getLocalValues() );
 
         for ( IndexType i = 0; i < size; ++i )
         {
             // writeB[i] = 1;
-            writeB[i] = double( i + 1 );
+            writeB[i] = ValueType( i + 1 );
         }
     }
 
     std::cout << "Vector b : " << b << std::endl;
-    DenseVector<double> x( size , 0.0 );
+    DenseVector<ValueType> x( size , 0.0 );
     std::cout << "Vector x : " << x << std::endl;
 
     // d = r = b - A * x
     // help = A * x;
 
-    DenseVector<double> r = b - A * x;
-    DenseVector<double> d = r;
+    DenseVector<ValueType> r = b - A * x;
+    DenseVector<ValueType> d = r;
     Scalar rOld = r.dotProduct( r );
     Scalar eps = 0.00001;
 
@@ -92,7 +94,7 @@ int main( int argc, char* argv[] )
 
     for ( int k = 0 ; k < maxIter and norm(r) > eps; k++ )
     {
-        DenseVector<double> z = A * d;
+        DenseVector<ValueType> z = A * d;
         Scalar alpha = rOld / d.dotProduct( z );
         x = x + alpha * d;
         r = r - alpha * z;
@@ -102,7 +104,7 @@ int main( int argc, char* argv[] )
         rOld = rNew;
 
         Scalar rnorm = norm( r );
-        std::cout << "Iter k = " << k << " : norm( r ) = " << rnorm.getValue<double>() << std::endl;
+        std::cout << "Iter k = " << k << " : norm( r ) = " << rnorm.getValue<ValueType>() << std::endl;
     }
 
     return 0;

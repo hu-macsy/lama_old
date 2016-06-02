@@ -38,9 +38,11 @@ using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace scai::solver;
 
+typedef RealType ValueType;
+
 int main( int argc, char** argv )
 {
-    CSRSparseMatrix<double> matrix;
+    CSRSparseMatrix<ValueType> matrix;
 
     if ( argc < 2 )
     {
@@ -100,7 +102,7 @@ int main( int argc, char** argv )
 
         HArray<IndexType> ia;
         HArray<IndexType> ja;
-        HArray<double> values;
+        HArray<ValueType> values;
 
         const _MatrixStorage& local = mat.getLocalStorage();
 
@@ -130,7 +132,7 @@ int main( int argc, char** argv )
 
         ReadAccess<IndexType> csrIA( ia );
         ReadAccess<IndexType> csrJA( ja );
-        ReadAccess<double> csrValues( values );
+        ReadAccess<ValueType> csrValues( values );
 
         pic.drawCSR( local.getNumRows(), local.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
 
@@ -160,7 +162,7 @@ int main( int argc, char** argv )
 
         HArray<IndexType> ia;
         HArray<IndexType> ja;
-        HArray<double> values;
+        HArray<ValueType> values;
 
         const _MatrixStorage& local = mat.getLocalStorage();
 
@@ -186,7 +188,7 @@ int main( int argc, char** argv )
 
         ReadAccess<IndexType> csrIA( ia );
         ReadAccess<IndexType> csrJA( ja );
-        ReadAccess<double> csrValues( values );
+        ReadAccess<ValueType> csrValues( values );
 
         pic.drawCSR( local.getNumRows(), local.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
 

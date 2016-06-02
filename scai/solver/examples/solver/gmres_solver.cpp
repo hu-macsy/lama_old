@@ -50,6 +50,8 @@ using namespace dmemo;
 using namespace lama;
 using namespace solver;
 
+typedef RealType ValueType;
+
 int main( int argc, char* argv[] )
 {
     LamaConfig lamaconf;
@@ -87,7 +89,7 @@ int main( int argc, char* argv[] )
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
 
-    CSRSparseMatrix<double> inMatrix;
+    CSRSparseMatrix<ValueType> inMatrix;
 
     // Each processor should print its configuration
 
@@ -167,13 +169,13 @@ int main( int argc, char* argv[] )
     }
 
     {
-        LamaTiming timer( comm, "Type conversion from CSR<double> to target format" );
+        LamaTiming timer( comm, "Type conversion from CSR to target format" );
         matrix = inMatrix;
     }
 
     inMatrix.clear();
 
-    double matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
+    ValueType matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
 
     if ( myRank == 0 )
     {

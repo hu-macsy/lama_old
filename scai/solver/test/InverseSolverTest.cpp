@@ -60,8 +60,6 @@ using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 
-typedef boost::mpl::list<float, double> test_types;
-
 // ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE( InverseSolverTest )
@@ -85,7 +83,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 }
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_arithmetic_test_types )
 {
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get4x4SystemA<ValueType>();
     const IndexType n = 4;
@@ -108,7 +106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, test_types )
 
             if ( i == j )
             {
-                BOOST_CHECK_CLOSE( 1.0, scalar.getValue<ValueType>(), 1 );
+                SCAI_CHECK_CLOSE( 1.0, scalar.getValue<ValueType>(), 1 );
             }
             else
             {

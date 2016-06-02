@@ -43,8 +43,6 @@ using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
-typedef boost::mpl::list<double, float> test_types;
-
 /* --------------------------------------------------------------------- */
 
 struct IterationCountTestConfig
@@ -111,7 +109,7 @@ void testIsSatisfiedmethod( IndexType expectedIterationCount )
 }
 ;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, scai_arithmetic_test_types )
 {
     testIsSatisfiedmethod<ValueType>( 10 );
 }

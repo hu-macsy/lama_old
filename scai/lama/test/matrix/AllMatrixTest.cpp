@@ -43,6 +43,8 @@
 
 #include <scai/logging.hpp>
 
+#include <scai/common/test/TestMacros.hpp>
+
 using namespace scai;
 using namespace lama;
 using namespace dmemo;
@@ -50,17 +52,19 @@ using utilskernel::LArray;
 
 void initMatrix( Matrix& matrix, const char* rowDistKind, const char* colDistKind )
 {
+    typedef SCAI_TEST_TYPE ValueType;
+
     const IndexType numRows = 4;
     const IndexType numColumns = 5;
 
-    static const double values[] =  { 6, 0, 7, 0, 0,
+    static const ValueType values[] =  { 6, 0, 7, 0, 0,
                                       0, 1, 0, 0, 0,
                                       0, 0, 9, 4, 0,
                                       2, 5, 0, 3, 8 };
 
-    hmemo::HArrayRef<double> data( numRows * numColumns, values );
+    hmemo::HArrayRef<ValueType> data( numRows * numColumns, values );
 
-    DenseStorage<double> denseStorage( data, numRows, numColumns );
+    DenseStorage<ValueType> denseStorage( data, numRows, numColumns );
 
     matrix.assign( denseStorage );
 

@@ -37,14 +37,13 @@
 
 using namespace scai::lama;
 
+/** Take default real type for this example. */
+
+typedef RealType ValueType;
+
 int main()
 
 {
-    //
-    // Define the ValueType used for the vector
-    //
-    typedef double ValueType;
-
     //
     // Create a DenseVector of size 8 with value 1.1 in each row
     //

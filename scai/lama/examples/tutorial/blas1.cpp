@@ -65,7 +65,7 @@ int main()
   // Define the ValueType used for the vector
   // Change this type definition to double if your gpu supports that
   //
-  typedef float       ScalarType;
+  typedef RealType ScalarType;
 
   /////////////////////////////////////////////////
   ///////////// Scalar operations /////////////////
@@ -74,7 +74,7 @@ int main()
   //
   // Define a few scalars:
   //
-  lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between float and double by typedef
+  lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between t and double by typedef
   lama::Scalar s2( static_cast<ScalarType>( 2.71763 ) );
   lama::Scalar s3( static_cast<ScalarType>( 42.0 ) );
 

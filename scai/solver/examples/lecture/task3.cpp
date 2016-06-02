@@ -49,6 +49,8 @@ using namespace dmemo;
 using namespace lama;
 using namespace solver;
 
+typedef RealType ValueType;
+
 int main( int argc, char* argv[] )
 {
     if ( argc < 2 )
@@ -58,16 +60,16 @@ int main( int argc, char* argv[] )
     }
 
     //Read a sparse matrix from the passed input file
-    CSRSparseMatrix<double> m( argv[1] );
+    CSRSparseMatrix<ValueType> m( argv[1] );
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
     //Create rhs vector
-    DenseVector<double> rhs( size , 0.0 );
+    DenseVector<ValueType> rhs( size , 0.0 );
     std::cout << "Vector rhs : " << rhs << std::endl;
 
     //Create solution vector
-    DenseVector<double> solution( size , 1.0 );
+    DenseVector<ValueType> solution( size , 1.0 );
     std::cout << "Vector solution : " << solution << std::endl;
 
     //Compute the rhs that fits our solution to be able to calculate the error later
@@ -93,7 +95,7 @@ int main( int argc, char* argv[] )
     cgSolver.solve( solution, rhs );
 
     //calculate the error and its L2-Norm
-    DenseVector<double> error( size, 1.0 );
+    DenseVector<ValueType> error( size, 1.0 );
 
     error = error - solution;
 

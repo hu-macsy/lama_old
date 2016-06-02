@@ -55,12 +55,11 @@
 
 #include <scai/solver/test/TestMacros.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
-
-typedef boost::mpl::list<float, double> test_types;
+using namespace scai;
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -116,7 +115,10 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
-    ValueType sval = s.getValue<ValueType>();
+
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType sval = s.getValue<AbsType>();
 
     if ( ! ( sval < 1E-6 ) )
     {
@@ -128,7 +130,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
 
@@ -185,18 +187,20 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s );
 
-    if ( s.getValue<ValueType>() >= 1E-6 )
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    if ( s.getValue<AbsType>() >= 1E-6 )
     {
         SCAI_LOG_ERROR( logger, "cgSolver for " << coefficients
                         << ": max norm ( solution - exactSolution ) = " << s );
     }
 
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
+    BOOST_CHECK( s.getValue<AbsType>() < 1E-6 );
 }
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
     testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );

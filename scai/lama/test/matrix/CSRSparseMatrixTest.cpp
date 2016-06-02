@@ -46,11 +46,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRSparseMatrixTest" );
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, ValueType, SCAI_ARITHMETIC_TYPES )
+BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, ValueType, scai_arithmetic_test_types )
 {
     CSRSparseMatrix<ValueType> matrix;
 

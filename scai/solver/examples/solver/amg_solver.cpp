@@ -56,15 +56,17 @@ using namespace std;
 
 using common::Walltime;
 
+typedef RealType ValueType;
+
 void dummy( const LamaConfig& lamaconf )
 {
-    CSRSparseMatrix<double> m;
+    CSRSparseMatrix<ValueType> m;
     m.setIdentity( 100 );
-    DenseVector<double> v1( 100, 1.0  );
+    DenseVector<ValueType> v1( 100, 1.0  );
     m.setContextPtr( lamaconf.getContextPtr() );
     m.setCommunicationKind( lamaconf.getCommunicationKind() );
     v1.setContextPtr( lamaconf.getContextPtr() );
-    DenseVector<double> v2( m *  v1 );
+    DenseVector<ValueType> v2( m *  v1 );
 }
 
 /** Read in a partitioning file for the input data if available. */

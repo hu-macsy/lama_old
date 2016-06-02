@@ -60,8 +60,6 @@ using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 
-typedef boost::mpl::list<float, double> test_types;
-
 /* ------------------------------------------------------------------------- */
 
 static CommunicatorPtr comm;
@@ -132,8 +130,13 @@ void testSolveMethod( ContextPtr loc )
     //bad omega
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, scai_arithmetic_test_types )
 {
+    if ( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
+    {
+        return;    // do not test for complex types
+    }
+
     ContextPtr context = Context::getContextPtr();
 
     testSolveMethod< CSRSparseMatrix<ValueType> >( context );

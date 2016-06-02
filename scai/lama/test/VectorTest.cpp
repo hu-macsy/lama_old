@@ -56,11 +56,11 @@
 
 #include <scai/hmemo.hpp>
 
-using namespace scai::common;
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
-using scai::common::Exception;
+using namespace scai;
+using namespace common;
+using namespace lama;
+using namespace hmemo;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -151,31 +151,40 @@ void cleanupfiles( std::string filename )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmetic_test_types )
 {
+    // IO for complex values can cause size conflicts, sizeof( double ) == sizeof( ComplexFloat )
+
+    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+
+    if ( isComplex( stype ) || ( stype == scalar::LONG_DOUBLE ) )
+    {
+        return;
+    }
+
     IndexType n = 4;
-    DenseVector<double> result( n, 5.0 );
-    DenseVector<double> vector( n, 5.0 );
+    DenseVector<ValueType> result( n, 5.0 );
+    DenseVector<ValueType> vector( n, 5.0 );
     std::string prefix = scai::test::Configuration::getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
-    vector.writeToFile( prefix + "/" + testfilename, File::SAMG, scai::common::scalar::DOUBLE );
-    DenseVector<double> vector2( prefix + "/" + testfilename + ".frv" );
-    verifySameVector<double>( vector2, result );
+    vector.writeToFile( prefix + "/" + testfilename, File::SAMG, TypeTraits<ValueType>::stype );
+    DenseVector<ValueType> vector2( prefix + "/" + testfilename + ".frv" );
+    verifySameVector<ValueType>( vector2, result );
     cleanupfiles( testfilename );
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
 
-    vector.writeToFile( fileName, File::SAMG, scai::common::scalar::FLOAT, true );
+    vector.writeToFile( fileName, File::SAMG, TypeTraits<ValueType>::stype, true );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
-    DenseVector<double> vector3( prefix + "/" + testfilename + ".frv" );
-    verifySameVector<double>( vector3, result );
+    DenseVector<ValueType> vector3( prefix + "/" + testfilename + ".frv" );
+    verifySameVector<ValueType>( vector3, result );
     cleanupfiles( testfilename );
 	// write and read mtx
-    vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET, scai::common::scalar::DOUBLE );
-    DenseVector<double> vector6( prefix + "/" + testfilename + ".mtx" );
-    verifySameVector<double>( vector6, result );
+    vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET );
+    DenseVector<ValueType> vector6( prefix + "/" + testfilename + ".mtx" );
+    verifySameVector<ValueType>( vector6, result );
     //cleanupfiles( testfilename + ".mtx" );
     std::remove( ( prefix + "/" + testfilename + ".mtx" ).c_str() );
 }
@@ -552,8 +561,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, scai_arithmetic
     DenseVector<ValueType> vectorWrong( n + 1, 6 );
     SCAI_LOG_INFO( logger, "vector(4) += vector(5) should fail" );
     SCAI_CHECK_THROW(
-        {   vectorA += vectorWrong;}, 
-        Exception );
+        {   vectorA += vectorWrong;}, Exception );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -577,10 +585,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, scai_arithmeti
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( MinMaxTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( MinMaxTest, ValueType, scai_arithmetic_test_types )
 {
-    DenseVector<double> resVector( 4, 0.0 );
-    WriteAccess<double> hwares( resVector.getLocalValues() );
+    // complex data type has other min, max definition 
+
+    if ( isComplex( TypeTraits<ValueType>::stype ) )
+    {
+        return;
+    }
+
+    DenseVector<ValueType> resVector( 4, 0.0 );
+    WriteAccess<ValueType> hwares( resVector.getLocalValues() );
     hwares[0] = 9.0;
     hwares[1] = -2.0;
     hwares[2] = 3.0;
@@ -588,17 +603,21 @@ BOOST_AUTO_TEST_CASE( MinMaxTest )
     hwares.release();
     Scalar s = resVector.min();
     Scalar t = resVector.max();
-    BOOST_CHECK_EQUAL( s.getValue<double>(), -2.0 );
-    BOOST_CHECK_EQUAL( t.getValue<double>(), 9.0 );
+    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), -2.0 );
+    BOOST_CHECK_EQUAL( t.getValue<ValueType>(), 9.0 );
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( SwapTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, ValueType, scai_arithmetic_test_types )
 {
-    DenseVector<double> v1( 4, 0.0 );
-    DenseVector<double> v2( 4, 1.0 );
-    DenseVector<float> v3( 4, 1.0 );
+    typedef SCAI_TEST_TYPE OtherType;
+
+    DenseVector<ValueType> v1( 4, 0.0 );
+    DenseVector<ValueType> v2( 4, 1.0 );
+
+    DenseVector<OtherType> v3( 4, 1.0 );
+
     v1.swap( v2 );
 
     for ( IndexType i = 0; i < v1.size(); i++ )
@@ -607,48 +626,59 @@ BOOST_AUTO_TEST_CASE( SwapTest )
         BOOST_CHECK_EQUAL( v2.getValue( i ), 0.0 );
     }
 
-    //Should throw exception, because of different vector types
-    SCAI_CHECK_THROW( { v1.swap( v3 ); }, Exception );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( AssignTest )
-{
-    DenseVector<float> v1( 4, 0.0 );
-    DenseVector<double> v2( 3, 0.0 );
-    DenseVector<double> v3( 4, 0.0 );
-    DenseVector<float> v4( 4, 1.0 );
-    DenseVector<float> v5( 5, 1.0 );
-    // Should throw exception, because of different vector sizes
-    SCAI_CHECK_THROW( { v1 += v5; }, Exception );
-    v3.assign( v4 );
-    v1 = v2 = v3;
-    BOOST_REQUIRE_EQUAL( v2.size(), v3.size() );
-
-    for ( IndexType i = 0; i < v1.size(); i++ )
+    if ( TypeTraits<ValueType>::stype != TypeTraits<OtherType>::stype )
     {
-        BOOST_CHECK_EQUAL( v1.getValue( i ), 1.0f );
-        BOOST_CHECK_EQUAL( v2.getValue( i ), 1.0 );
-        BOOST_CHECK_EQUAL( v3.getValue( i ), 1.0 );
+        // Should throw exception, because of different vector types
+
+        SCAI_CHECK_THROW( { v1.swap( v3 ); }, Exception );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( VectorGetValueTypeTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignTest, ValueType, scai_arithmetic_test_types )
 {
-    DenseVector<float> v1( 4, 0.0 );
-    DenseVector<double> v2( 4, 0.0 );
-    BOOST_CHECK_EQUAL( v1.getValueType(), scai::common::scalar::FLOAT );
-    BOOST_CHECK_EQUAL( v2.getValueType(), scai::common::scalar::DOUBLE );
+    typedef SCAI_TEST_TYPE OtherType;
+
+    DenseVector<ValueType> v1( 4, 0.0 );
+    DenseVector<OtherType> v2( 3, 0.0 );
+    DenseVector<ValueType> v3( 4, 0.0 );
+    DenseVector<OtherType> v4( 4, 1.0 );
+    DenseVector<OtherType> v5( 5, 1.0 );
+
+    // Should throw exception, because of different vector sizes
+
+    SCAI_CHECK_THROW( { v1 += v5; }, Exception );
+
+    v3.assign( v4 );
+
+    v1 = v2 = v3;
+
+    BOOST_REQUIRE_EQUAL( v2.size(), v3.size() );
+
+    for ( IndexType i = 0; i < v1.size(); i++ )
+    {
+        BOOST_CHECK_EQUAL( v1.getValue( i ), ValueType( 1 ) );
+        BOOST_CHECK_EQUAL( v2.getValue( i ), OtherType( 1 ) );
+        BOOST_CHECK_EQUAL( v3.getValue( i ), ValueType( 1 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( VectorGetValueTypeTest, ValueType, scai_arithmetic_test_types )
+{
+    DenseVector<ValueType> v( 4, 0.0 );
+    BOOST_CHECK_EQUAL( v.getValueType(), TypeTraits<ValueType>::stype );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( WriteAtTest )
 {
-    DenseVector<double> v( 4, 0.0 );
+    typedef SCAI_TEST_TYPE ValueType;
+
+    DenseVector<ValueType> v( 4, 0.0 );
     SCAI_COMMON_WRITEAT_TEST( v );
 }
 
@@ -893,9 +923,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, ValueType, scai_arithmetic_test_types 
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    DenseVector<double> vector( 4, 2.0 );
+    typedef SCAI_TEST_TYPE ValueType;
+
+    DenseVector<ValueType> vector( 4, 2.0 );
     SCAI_COMMON_WRITEAT_TEST( vector );
 }
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
