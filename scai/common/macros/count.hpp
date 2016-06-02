@@ -37,7 +37,8 @@
  *  \endcode
  */
 
-#define SCAI_COMMON_COUNT_NARG( ... ) COUNT_ARGS_( , ##__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+#define SCAI_COMMON_COUNT_NARG( ... ) COUNT_NARG_( __VA_ARGS__ )
+#define COUNT_NARG_( ... ) COUNT_ARGS_( , ##__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 #define COUNT_ARGS_( z, a, b, c, d, e, f, g, h, i, cnt, ...) cnt
 
 /** Macro gives the first argument of a variadic argument list. Uses help macro to force evaluation of macro before
