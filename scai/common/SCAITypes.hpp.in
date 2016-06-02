@@ -32,12 +32,13 @@
 
 // no support of Complex if this file is not included
 
-#ifdef SCAI_COMPLEX_SUPPORTED
-    #include <scai/common/Complex.hpp>
+#if ${SCAI_USE_COMPLEX}
+#include <scai/common/Complex.hpp>
 #endif
 
 #include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/mepr/TypeList.hpp>
+#include <scai/common/mepr/TypeListUtils.hpp>
 
 // std
 #include <cstring>
@@ -90,6 +91,25 @@ typedef IndexType PartitionId;
 MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 /*
+ * Lists of all supported arithmetic types 
+ */
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+#define SCAI_ARITHMETIC_TYPES float, double, LongDouble, ComplexFloat, ComplexDouble, ComplexLongDouble
+
+#else
+
+#define SCAI_ARITHMETIC_TYPES float, double, LongDouble
+
+#endif
+
+/**
+ *  List of all supported types (e.g. for communicator methods)
+ */
+#define SCAI_ALL_TYPES IndexType, SCAI_ARITHMETIC_TYPES
+
+/*
  * Lists of all used arithmetic types for which matrices, storages might be created
  */
 
@@ -106,10 +126,10 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
  * Array
  */
 
-#define SCAI_ARITHMETIC_ARRAY_HOST     IndexType, SCAI_ARITHMETIC_HOST
-#define SCAI_ARITHMETIC_ARRAY_EXT_HOST IndexType, SCAI_ARITHMETIC_EXT_HOST
-#define SCAI_ARITHMETIC_ARRAY_CUDA     IndexType, SCAI_ARITHMETIC_CUDA
-#define SCAI_ARITHMETIC_ARRAY_MIC      IndexType, SCAI_ARITHMETIC_MIC
+#define SCAI_ARITHMETIC_ARRAY_HOST     ${ARRAY_HOST_TYPES}
+#define SCAI_ARITHMETIC_ARRAY_EXT_HOST ${ARRAY_EXT_HOST_TYPES}
+#define SCAI_ARITHMETIC_ARRAY_CUDA     ${ARRAY_CUDA_TYPES}
+#define SCAI_ARITHMETIC_ARRAY_MIC      ${ARRAY_MIC_TYPES}
 
 /*
  * List creation
@@ -125,6 +145,10 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 #define SCAI_ARITHMETIC_ARRAY_CUDA_LIST     SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_CUDA )
 #define SCAI_ARITHMETIC_ARRAY_MIC_LIST      SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_MIC )
 
-/** Representation type for Scalar must be the one with highest precision */
+/** Representation type for Scalar must be the arithmetic type with highest precision */
 
 typedef ${SCAI_SCALAR_REP_TYPE} ScalarRepType;
+
+/** RealType: taken for example programs, usually double, but can also be float or LongDouble  */
+
+typedef scai::common::mepr::TypeListUtilsVLL<double, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::ValueType RealType;

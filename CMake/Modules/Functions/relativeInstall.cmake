@@ -43,11 +43,11 @@ function ( relative_install )
 
    foreach   ( SOURCE_FILE ${relative_install_FILES} )
 
-       if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
-           get_filename_component( FILE_DIR ${SOURCE_FILE} DIRECTORY )
-       else  ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+       if    ( CMAKE_VERSION VERSION_LESS 2.8.12 )
            get_filename_component( FILE_DIR ${SOURCE_FILE} PATH )
-       endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+       else  ( CMAKE_VERSION VERSION_LESS 2.8.12 )
+           get_filename_component( FILE_DIR ${SOURCE_FILE} DIRECTORY )
+       endif ( CMAKE_VERSION VERSION_LESS 2.8.12 )
 
        # message( STATUS "install ${SOURCE_FILE} in ${relative_install_DESTINATION}/${FILE_DIR}" )
 

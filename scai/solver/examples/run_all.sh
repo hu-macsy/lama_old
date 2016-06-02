@@ -95,12 +95,12 @@ cd $MYDIR/solver
 RUN 1 solver/matrix_generator.exe example 3 27 100 100 100
 RUN 1 solver/matrix_convert.exe -mm example.frv example.mtx
 RUN 1 solver/vector_generator.exe example2.mtx 1000 1
-RUN 1 solver/cg_solver.exe example
-RUN 1 solver/gmres_solver.exe example
+RUN 1 solver/cg_solver.exe example.frm
+RUN 1 solver/gmres_solver.exe example.frm
 RUN 1 solver/amg_solver.exe example 3
-RUN 1 solver/solver.exe example
-RUN 0 solver/solver.exe example Jacobi 10
-RUN 0 solver/solver.exe example GMRES 3
+RUN 1 solver/solver.exe example.frm
+RUN 0 solver/solver.exe example.frm Jacobi 10
+RUN 0 solver/solver.exe example.frm GMRES 3
 RUN 1 solver/lama_info.exe 
 
 # check if there are unkown examples

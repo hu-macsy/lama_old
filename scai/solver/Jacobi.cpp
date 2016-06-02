@@ -39,7 +39,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 
 namespace scai
 {
@@ -194,7 +194,7 @@ void Jacobi::iterate()
         }                                                                                           \
     }
 
-    SCAI_COMMON_TYPELOOP( SCAI_SOLVER_TYPE_CAST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( SCAI_SOLVER_TYPE_CAST, SCAI_ARITHMETIC_HOST )
 
 #undef SCAI_SOLVER_TYPE_CAST
 
@@ -234,9 +234,12 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
     const Vector& oldSolution = getRuntime().mProxyOldSolution.getConstReference();
 
     //1. Check if all Vectors are DenseVectors
-    if( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
-            && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
-            && typeid( *getRuntime().mRhs ) == typeid( oldSolution ) )
+    if(  DenseVector<ValueType>::createValue() == oldSolution.getCreateValue()
+            && (*getRuntime().mSolution).getCreateValue() == oldSolution.getCreateValue() 
+            && (*getRuntime().mRhs).getCreateValue() == oldSolution.getCreateValue() )
+//    if( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
+//            && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
+//            && typeid( *getRuntime().mRhs ) == typeid( oldSolution ) )
     {
         SCAI_LOG_INFO( logger, "All types have the same value type." )
         const DenseVector<ValueType>& denseOldSolution = dynamic_cast<const DenseVector<ValueType>&>( oldSolution );

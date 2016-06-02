@@ -73,7 +73,9 @@ LamaTiming::~LamaTiming()
 {
     double myTime = scai::common::Walltime::get() - mStart;
 
-    double maxTime = mComm.max( myTime );
+    // can be that max is not available if double is not supported
+
+    double maxTime = static_cast<double>( mComm.max( RealType( myTime ) ) );
 
     if ( mComm.getRank() == 0 )
     {

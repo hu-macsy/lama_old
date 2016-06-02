@@ -1,3 +1,5 @@
+.. _sparsekernel_CSR:
+
 Compressed Sparse Row Format (CSR)
 ==================================
 

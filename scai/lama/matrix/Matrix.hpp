@@ -111,10 +111,11 @@ public:
 
     void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::BINARY,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const File::IndexDataType indexDataTypeIA = File::INT,
-        const File::IndexDataType indexDataTypeJA = File::INT ) const;
+        const File::FileType fileType = File::SAMG,
+        const common::scalar::ScalarType valuesType = common::scalar::INTERNAL,
+        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
+        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
+        const bool writeBinary = false ) const;
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.

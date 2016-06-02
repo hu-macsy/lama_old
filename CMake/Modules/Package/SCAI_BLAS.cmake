@@ -106,10 +106,14 @@ if ( NOT INTERNALBLAS_FOUND )
 
         if     ( LAPACK_lapack_LIBRARY AND BLAS_blas_LIBRARY )
             set ( SCAI_SCAI_BLAS_LIBRARIES ${BLAS_blas_LIBRARY} ${LAPACK_lapack_LIBRARY} )
-        elseif ( LAPACK_LIBRARIES )
+        elseif ( LAPACK_LIBRARIES AND NOT APPLE )
             set ( SCAI_SCAI_BLAS_LIBRARIES ${LAPACK_LIBRARIES} )
+	elseif ( BLAS_blas_LIBRARY )
+	    set ( SCAI_SCAI_BLAS_LIBRARIES ${BLAS_blas_LIBRARY} )
         endif  ( )
     endif ( BLAS_FOUND )
+
+#message ( STATUS "SCAI_SCAI_BLAS_LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES}" )
 
 else ( NOT INTERNALBLAS_FOUND )
 

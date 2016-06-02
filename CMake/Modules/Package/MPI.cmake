@@ -72,15 +72,26 @@ if    ( NOT ${MPIEXEC} )
     find_program( MPIEXEC NAMES ${_MPI_EXEC_NAMES} HINTS ${MPI_ROOT}/bin )
 endif ( NOT ${MPIEXEC} )
 
-mark_as_advanced ( MPI_EXTRA_LIBRARY MPI_LIBRARY MPIEXEC_POSTFLAGS MPIEXEC_PREFLAGS )
+mark_as_advanced ( MPI_EXTRA_LIBRARY MPI_LIBRARY MPI_CXX_LIBRARIES MPIEXEC_POSTFLAGS MPIEXEC_PREFLAGS )
 
 ### ALLOW to switch off MPI explicitly ###
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( MPI )
 set ( USE_MPI ${USE_MPI} CACHE BOOL "Enable / Disable use of MPI" )
 
-set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
-set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )
+if ( MPI_FOUND AND USE_MPI )
+
+   set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
+
+   # some older versions of cmake have not set MPI_CXX_LIBRARIES
+
+   if ( DEFINED MPI_CXX_LIBRARIES )
+      set ( SCAI_MPI_LIBRARIES ${MPI_CXX_LIBRARIES} )
+   else ( DEFINED MPI_CXX_LIBRARIES )
+      set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )
+   endif ( DEFINED MPI_CXX_LIBRARIES )
+
+endif ( MPI_FOUND AND USE_MPI )
 
 include ( VersionCheck/MPI )
 

@@ -36,26 +36,28 @@
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 
+typedef SCAI_TEST_TYPE ValueType;
+
 LAMA_COMMON_TEST_CASE( NormTest, positiveHomogeneityTest )
-	scai::lama::DenseVector<double> x( 4, 1.0 );
+	scai::lama::DenseVector<ValueType> x( 4, 1.0 );
     scai::lama::Scalar s = 3.0;
 
-    scai::lama::DenseVector<double> tmp( s* x );
+    scai::lama::DenseVector<ValueType> tmp( s* x );
 
 	//Inequality test
 	BOOST_CHECK_EQUAL( mNorm.apply ( tmp ), s* mNorm.apply( x ) );
 LAMA_COMMON_TEST_CASE_END()
 
 LAMA_COMMON_TEST_CASE( NormTest, triangleInequalityTest )
-    scai::lama::DenseVector<double> x( 2, 2.0 );
-    scai::lama::DenseVector<double> y( 2, 2.0 );
-    scai::lama::DenseVector<double> z( x + y );
+    scai::lama::DenseVector<ValueType> x( 2, 2.0 );
+    scai::lama::DenseVector<ValueType> y( 2, 2.0 );
+    scai::lama::DenseVector<ValueType> z( x + y );
 
 	BOOST_CHECK( mNorm.apply( z ) == mNorm.apply( x ) + mNorm.apply( y ) );
 LAMA_COMMON_TEST_CASE_END()
 
 LAMA_COMMON_TEST_CASE( NormTest, ZeroVectorTest )
-    scai::lama::DenseVector<double> x( 4, 0.0 );
+    scai::lama::DenseVector<ValueType> x( 4, 0.0 );
 	BOOST_CHECK_EQUAL( mNorm.apply( x ), 0.0 );
 LAMA_COMMON_TEST_CASE_END()
 

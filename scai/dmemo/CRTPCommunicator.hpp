@@ -39,7 +39,7 @@
 // internal scai libraris
 #include <scai/tasking/NoSyncToken.hpp>
 
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 
 // std
 #include <vector>
@@ -216,7 +216,7 @@ public:
 
     // define communicator methods for all supported data types
 
-    SCAI_COMMON_TYPELOOP( SCAI_DMEMO_CRTP_COMMUNICATOR_METHODS, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP( SCAI_DMEMO_CRTP_COMMUNICATOR_METHODS, SCAI_ALL_TYPES )
 
 #undef SCAI_DMEMO_CRTP_COMMUNICATOR_METHODS
 

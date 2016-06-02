@@ -28,7 +28,7 @@
 ###
 
 ### Set required CMake version
-cmake_minimum_required ( VERSION 2.8 )
+cmake_minimum_required ( VERSION 2.8.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
 project ( scai_utilskernel CXX )

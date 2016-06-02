@@ -30,6 +30,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/mepr/TypeListUtils.hpp>
 
 using namespace scai;
@@ -43,7 +44,7 @@ BOOST_AUTO_TEST_SUITE( TypeListTest )
 
 BOOST_AUTO_TEST_CASE( containsTest )
 {
-#define TEST_LIST TYPELIST( 3, int, float, double )
+#define TEST_LIST SCAI_TYPELIST( int, float, double )
 
     bool r = mepr::TypeListUtilsV<int, TEST_LIST>::contains;
 
@@ -59,7 +60,7 @@ BOOST_AUTO_TEST_CASE( containsTest )
 
 BOOST_AUTO_TEST_CASE( sizeTest )
 {
-#define TEST_LIST TYPELIST( 3, int, float, double )
+#define TEST_LIST SCAI_TYPELIST( int, float, double )
 
     IndexType size = mepr::TypeListUtils<TEST_LIST>::size;
 
@@ -72,7 +73,7 @@ BOOST_AUTO_TEST_CASE( sizeTest )
 
 BOOST_AUTO_TEST_CASE( indexTest )
 {
-#define TEST_LIST TYPELIST( 3, int, float, double )
+#define TEST_LIST SCAI_TYPELIST( int, float, double )
 
     IndexType index = mepr::TypeListUtilsV<float, TEST_LIST>::index;
 

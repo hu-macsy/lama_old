@@ -47,9 +47,14 @@ BOOST_AUTO_TEST_SUITE( DerivedSparseMatrixTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.DerivedSparseMatrixTest" )
 
-typedef boost::mpl::list<CSRSparseMatrix<float>, CSRSparseMatrix<double>, COOSparseMatrix<float>, COOSparseMatrix<double>,
-        DIASparseMatrix<float>, DIASparseMatrix<double>, ELLSparseMatrix<float>, ELLSparseMatrix<double>,
-        JDSSparseMatrix<float>, JDSSparseMatrix<double> > test_types;
+typedef SCAI_TEST_TYPE ValueType;
+
+typedef boost::mpl::list<CSRSparseMatrix<ValueType>, 
+                         COOSparseMatrix<ValueType>, 
+                         DIASparseMatrix<ValueType>, 
+                         DIASparseMatrix<ValueType>, 
+                         ELLSparseMatrix<ValueType>, 
+                         JDSSparseMatrix<ValueType> > test_types;
 
 /* ------------------------------------------------------------------------- */
 

@@ -44,11 +44,15 @@ endif  ( )
 
 mark_as_advanced( SCAI_THREAD_LIBRARIES )
 
-if    ( LINUX )
+if    ( APPLE )
+	execute_process ( COMMAND /usr/bin/otool -L /usr/lib/libSystem.dylib OUTPUT_VARIABLE _pthread_output )
+	string ( REGEX MATCH "current version ([0-9]+[.]*[0-9]*)" __pthread_output ${_pthread_output} )
+	string ( REGEX MATCH "([0-9]+[.]*[0-9]*)" SCAI_THREAD_VERSION ${__pthread_output} )
+elseif ( UNIX )
 	## get pthread version
 	execute_process ( COMMAND /usr/bin/getconf GNU_LIBPTHREAD_VERSION OUTPUT_VARIABLE _pthread_output )
 	string ( REGEX MATCH "([0-9]+\\.[0-9]*)" SCAI_THREAD_VERSION ${_pthread_output} )
-endif ( LINUX )
+endif (  )
 
 ###  Here we use PThread library for threads
 ###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake

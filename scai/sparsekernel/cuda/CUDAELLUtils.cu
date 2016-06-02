@@ -330,7 +330,7 @@ void CUDAELLUtils::getRow(
     const IndexType i,
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType UNUSED( numValuesPerRow ),
+    const IndexType SCAI_UNUSED( numValuesPerRow ),
     const IndexType* ia,
     const IndexType* ja,
     const ValueType* values )
@@ -389,7 +389,7 @@ ValueType CUDAELLUtils::getValue(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
-    const IndexType UNUSED( numValuesPerRow ),
+    const IndexType SCAI_UNUSED( numValuesPerRow ),
     const IndexType* ia,
     const IndexType* ja,
     const ValueType* values )
@@ -432,7 +432,7 @@ ValueType CUDAELLUtils::getValue(
 template<typename ValueType, typename OtherValueType>
 void CUDAELLUtils::scaleValue(
     const IndexType numRows,
-    const IndexType UNUSED( numValuesPerRow ),
+    const IndexType SCAI_UNUSED( numValuesPerRow ),
     const IndexType ia[],
     ValueType ellValues[],
     const OtherValueType values[] )
@@ -497,7 +497,7 @@ void CUDAELLUtils::getCSRValues(
     CSRValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
-    const IndexType UNUSED( numValuesPerRow ),
+    const IndexType SCAI_UNUSED( numValuesPerRow ),
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ELLValueType ellValues[] )
@@ -1972,7 +1972,7 @@ template<typename ValueType>
 void CUDAELLUtils::jacobi(
     ValueType solution[],
     const IndexType numRows,
-    const IndexType UNUSED( ellNumValuesPerRow ),
+    const IndexType SCAI_UNUSED( ellNumValuesPerRow ),
     const IndexType* ellSizes,
     const IndexType ellJA[],
     const ValueType ellValues[],
@@ -2102,7 +2102,7 @@ void CUDAELLUtils::jacobiHalo(
     ValueType solution[],
     const IndexType numRows,
     const ValueType diagonal[],
-    const IndexType UNUSED( ellNumValuesPerRow ),
+    const IndexType SCAI_UNUSED( ellNumValuesPerRow ),
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[],

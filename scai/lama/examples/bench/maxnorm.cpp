@@ -56,7 +56,7 @@ static void bench( IndexType size )
 
     DenseVector<ValueType> x( dist );
 
-    x = 7.0;
+    x = ValueType( 7 );
 
     double tmpTime = Walltime::get();
     x.maxNorm();
@@ -88,16 +88,16 @@ int main()
     {
 
         std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision(3) << sizes[i];
-        bench<float>( sizes[i] );
-        bench<double>( sizes[i] );
-        bench<long double>( sizes[i] );
-#ifdef SCAI_COMPLEX_SUPPORTED
-        bench<ComplexFloat>( sizes[i] );
-        bench<ComplexDouble>( sizes[i] );
-        bench<ComplexLongDouble>( sizes[i] );
-#endif
+
+#define DO_BENCH( ValueType ) bench<ValueType>( sizes[i] );
+
+        // do the benchmark for each supported A type
+
+        SCAI_COMMON_LOOP( DO_BENCH, SCAI_ARITHMETIC_HOST )
+
+#undef DO_BENCH
+
         std::cout << std::endl;
     }
 
 }
-

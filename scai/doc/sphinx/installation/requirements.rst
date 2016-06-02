@@ -15,21 +15,26 @@ Required Software
 
 All you need for the LAMA installation are the following software packages:
 
-- :doc:`CMake <configuration/cmake>` Version 2.8 or later
+- :doc:`CMake <configuration/cmake>` Version 2.8.8 or later
 
   - Needed for creating platform independent makefiles or projects.
 
 - :doc:`C++ Compiler <configuration/c++>`
 
-  - Supported Compilers are: GNU, Intel, PGI.
+  - Supported Compilers are: GNU, Intel, Clang.
 
   - optionally: with OpenMP 2.0 capable
 
-  - recommendent but not mandatory: capable of C++11 (e.g. since gcc 4.7 or icc 11.1)
+  - recommended but not mandatory: capable of C++11 (e.g. since gcc 4.7 or icc 11.1)
 
-- :doc:`Boost <configuration/boost>` (version 1.34 or later)
+- :ref:`Boost <scaicommon:Boost>` (version 1.34 or later)
 
-  - For LAMA we need the headers only packages *thread* for the internal thread management. *unit_test_framework* and *regex* are used for the tests (optional).
+  - required if C++11 is not supported by the compiler
+  - required if unit tests for the projects should be generated
+
+- :ref:`PThread <scaicommon:PThread>` (version 1.34 or later)
+
+  - required if C++11 features are not supported by the C++ compiler
 
 .. _recommended:
 
@@ -42,7 +47,7 @@ The following software packages are not mandatory, but will give you a performan
 
   - Needed for the implementation of the dense blas functions. Supported libraries are: Intel MKL, BLAS. 
 
-- :doc:`CUDA (version 4.0 or later) <configuration/cuda>`
+- :ref:`CUDA (version 4.0 or later) <scaicommon:CUDA>`
 
   - Needed to utilize CUDA capable GPUs from Nvidia.
   
@@ -50,11 +55,11 @@ The following software packages are not mandatory, but will give you a performan
 
   - Needed to utilize Intel Xeon Phi
 
-- :doc:`MPI <configuration/mpi>`
+- :ref:`MPI <scaidmemo:MPI>`
 
   - Needed for distributed memory parallelism through the Message Passing Interface.
 
-- :doc:`GPI-2 <configuration/gpi>`
+- :ref:`GPI-2 <scaidmemo:GPI>`
 
   - Needed for distributed memory parallelism through the Global Address Space Programming Interface.
 

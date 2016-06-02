@@ -66,13 +66,18 @@ endif ( SCAI_COMMON_INCLUDE_DIR)
 set ( SCAI_COMMON_FLAGS "" )
 if    ( SCAI_COMMON_FOUND )
 
-    # add Boost to SCAI_COMMON_INCLUDE_DIR
-    include ( Package/Boost )
-    list ( APPEND SCAI_COMMON_INCLUDE_DIR ${SCAI_BOOST_INCLUDE_DIR} )
-
     include ( Compiler/CheckC++11 )
     set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${SCAI_LANG_FLAGS}" )
 
+    if ( NOT CXX_SUPPORTS_C11 )
+
+        # add Boost to SCAI_COMMON_INCLUDE_DIR
+
+        include ( Package/Boost )
+        list ( APPEND SCAI_COMMON_INCLUDE_DIR ${SCAI_BOOST_INCLUDE_DIR} )
+
+    endif ( NOT CXX_SUPPORTS_C11 )
+    
     include ( Package/OpenMP )
     if    ( OPENMP_FOUND AND USE_OPENMP )
         set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${OpenMP_CXX_FLAGS}" )

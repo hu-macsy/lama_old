@@ -42,13 +42,23 @@ if ( USE_MIC )
     add_subdirectory ( mic )
 endif ( USE_MIC )
 
+# copy run_all.sh
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )
 prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" make.inc )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in" install_Makefile COPYONLY )
 
-## install examples
-install ( FILES ${EXAMPLE_FILES} README Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
+## install examples sources, (install_)Makefile, make.inc, run_all.sh
+
+install ( FILES       ${EXAMPLE_FILES}
+          DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( PROGRAMS    run_all.sh
+          DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
+          DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
+          DESTINATION ${PROJECT_EXAMPLE_DIR}
+          RENAME      Makefile  )

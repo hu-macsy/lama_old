@@ -1,9 +1,23 @@
+.. _GPI:
+
 GPI-2
 ^^^^^
 
 GPI-2__ is an API for asynchronous communication. It provides a flexible, scalable and fault tolerant interface for parallel applications.
 
 __ http://www.gpi-site.com/gpi2/
+
+Use of GPI in LAMA
+^^^^^^^^^^^^^^^^^^
+
+Within LAMA, GPI-2 is used for the implementation of a derived communicator class, and therefore
+one possibility to run LAMA applications on distributed memory architectures.
+
+As GPI is interoperabel with MPI, both communication libraries, i.e. both communicator
+classes, MPICommunicator and GPICommunicator, can be used in one application. 
+
+CMake Configuration for GPI
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 GPI-2 depends on ibverbs (Verbs library from OFED). Therefore LAMA looks for a GPI-2 and ibverbs installation to enable a build with GPI.
 

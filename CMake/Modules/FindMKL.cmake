@@ -144,7 +144,7 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
         # search for mkl_thread lib
             
         # search for gnu compiler libs
-        if ( CMAKE_COMPILER_IS_GNUCC )
+        if ( CMAKE_C_COMPILER_ID MATCHES GNU )
             if ( OPENMP_FOUND AND USE_OPENMP )
                 find_library ( MKL_LIBRARY_GNU mkl_gnu_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
             else ( OPENMP_FOUND AND USE_OPENMP )
@@ -154,10 +154,10 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
                 message ( STATUS "WARNING MKL library mkl_gnu_thread not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
             endif( NOT EXISTS ${MKL_LIBRARY_GNU} )
             list ( APPEND MKL_LIBRARIES ${MKL_LIBRARY_GNU} )
-         endif( CMAKE_COMPILER_IS_GNUCC )
+         endif( CMAKE_C_COMPILER_ID MATCHES GNU )
         
-         # search for intel compiler libs
-         if ( CMAKE_C_COMPILER_ID MATCHES Intel )
+         # search for intel compiler libs ( for icc and clang (llvm) )
+         if ( CMAKE_C_COMPILER_ID MATCHES Intel OR CMAKE_C_COMPILER_ID MATCHES Clang )
             if ( OPENMP_FOUND AND USE_OPENMP )
                 find_library ( MKL_LIBRARY_INTEL mkl_intel_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
             else ( OPENMP_FOUND AND USE_OPENMP )
@@ -167,7 +167,7 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
                 message ( STATUS "WARNING MKL library mkl_intel_thread not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
             endif()
             list ( APPEND MKL_LIBRARIES ${MKL_LIBRARY_INTEL} )
-         endif( CMAKE_C_COMPILER_ID MATCHES Intel )
+         endif( CMAKE_C_COMPILER_ID MATCHES Intel OR CMAKE_C_COMPILER_ID MATCHES Clang )
         
          if ( ${CMAKE_GENERATOR} MATCHES "Visual Studio" )
             find_library ( MKL_LIBRARY_INTEL mkl_intel_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )

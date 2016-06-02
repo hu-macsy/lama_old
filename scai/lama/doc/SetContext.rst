@@ -1,7 +1,19 @@
-Contexts
-========
+.. _lama_SetContext:
 
-A *Context* is a concept used by LAMA to define where to execute a calculation and therefor where to store the data.
+from Vector:
+
+.. code-block:: c++
+
+    x.prefetch( cudaContextPtr );
+    x.setContextPtr( cudaContextPtr );
+    x.prefetch();
+    x.wait();
+    common::ContextPtr contextPtr =  x.getContextPtr();
+
+Setting a Context
+=================
+
+A *Context* is a concept used by LAMA to define where to execute a calculation and therefore where to store the data.
 The default context is always the **Host** (CPU). Beneath the host context there exists two other contexts in LAMA:
 **CUDA** and **OpenCL** (in progress - coming with the next release), which are located on the GPU (for CUDA) and other
 OpenCL supported accelerators (for OpenCL). Further backends for other accelerators are planned for further releases.

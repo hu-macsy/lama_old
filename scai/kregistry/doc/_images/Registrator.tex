@@ -1,0 +1,151 @@
+% bilder/CUDA-Speicherhierarchie.tex
+\documentclass{article}
+%\usepackage{lmodern}
+%\usepackage{typearea}
+
+%\usepackage{newtxtext,newtxmath} % selects Times Roman as basic font
+\usepackage{helvet}          % selects Helvetica as sans-serif font
+\renewcommand{\familydefault}{\sfdefault}
+\fontfamily{phv}\selectfont
+%\usepackage{courier}         % selects Courier as typewriter font
+
+
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+
+\usepackage{tikz}
+\usepackage[active,tightpage]{preview}
+\usepackage{varwidth}
+\usepackage{array}
+\usepackage{tabu}
+\usepackage{multirow}
+
+\newcommand\Umbruch[2][4em]{\begin{varwidth}{#1}\centering#2\end{varwidth}}
+	\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\usepackage{color}
+
+% =====================
+% = Color Definitions =
+% =====================
+\definecolor{c_linalg}{RGB}{188,188,188}
+\definecolor{c_dist}{RGB}{238,88,31}
+\definecolor{c_math}{RGB}{255,148,0}
+\definecolor{c_devkit}{RGB}{76,70,71}
+\definecolor{c_shadow}{RGB}{76,70,71}
+
+\newcommand{\LINALGColorValue}{70}
+\newcommand{\DISTColorValue}{90}
+\newcommand{\MATHColorValue}{80}
+\newcommand{\DEVKITColorValue}{80}
+\newcommand{\SHADOWColorValue}{80}
+
+\newcommand{\LINALGColorValueShadow}{90}
+\newcommand{\MATHColorValueShadow}{100}
+\newcommand{\DEVKITColorValueShadow}{100}
+
+\usetikzlibrary{fit}
+\usetikzlibrary{arrows}
+\usetikzlibrary{intersections}
+\usetikzlibrary{positioning, calc}
+\tikzset{>=triangle 45,}
+
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{10pt}
+
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
+
+\begin{document}
+
+\begin{tikzpicture}[
+	textEntry/.style={
+		text centered,
+		minimum width=4em,
+		rounded corners,
+		},
+	subEntry/.style={
+		text centered,
+		minimum width=4em,
+		rounded corners,
+		},
+	smallSubEntry/.style={
+		text centered,
+		minimum width=7.5em,
+		minimum height=1.5em
+		},
+	bigEntry/.style={
+		rectangle,
+		rounded corners,
+		draw=black, 
+		text centered,
+		minimum width=10em,
+		minimum height=5em,
+		},
+	bigSubEntry/.style={
+		rectangle,
+		rounded corners,
+		draw=black, 
+		text centered,
+		minimum width=6.5em,		
+		fill=white!100,
+		}
+]
+
+%\coordinate (desc) at(0em, 0em);
+
+% Nodes
+
+\node[bigEntry] (Registrator) at(0,0) [draw] {mepr::RegistratorV};
+
+\node[bigEntry] (RegistratorVO) [draw, right=5em of Registrator] {mepr::RegistratorVO};
+
+\coordinate (RegPosY) at ($(Registrator)!0.5!(RegistratorVO)$);
+
+\node[bigEntry] (KernelRegistry) [draw, above=7.5em of RegPosY] {KernelRegistry};
+
+\node[bigEntry] (KernelClass) [draw, below=7.5em of RegPosY] {KernelClass};
+
+\node[subEntry, fill=white] (RegistratorV) at($(KernelClass)-(-3em,2.5em)$)[draw,align=center] {\footnotesize RegistratorV\\
+\footnotesize RegistratorVO};
+
+\node[bigEntry] (KernelTrait) [draw, left=5em of KernelClass] {KernelTrait};
+
+\node[bigEntry] (TypeList) [draw, right=5em of KernelClass] {TypeList};
+
+% Connections
+
+\draw[dashed,->] (KernelTrait) -- (KernelClass) node [pos=0.5,above]{\footnotesize \texttt{implements}};
+
+\draw[dashed,<-] (KernelClass) -- (TypeList) node[pos=0.5,above]{\footnotesize \texttt{uses}};
+
+\draw[ultra thick,<-] (Registrator) -- (KernelClass) node(ArrowO)[pos=0.5]{~};
+
+\draw[ultra thick,<-] (RegistratorVO) -- (KernelClass) node(ArrowVO)[pos=0.5]{~};
+
+\coordinate (PosArrowMid) at ($(ArrowO)!0.5!(ArrowVO)$);
+
+\node[textEntry] at($(PosArrowMid)+(0,0)$) [align=center]{\footnotesize \texttt{call with combined} \\
+											  		    \footnotesize \texttt{components}};
+
+\draw[dashed,<-] (KernelRegistry) -- (Registrator) node(ArrowK1) [pos=0.5]{~};
+\draw[dashed,<-] (KernelRegistry) -- (RegistratorVO) node(ArrowK2) [pos=0.5]{~};
+
+\coordinate (PosArrowMid) at ($(ArrowK1)!0.5!(ArrowK2)$);
+
+\node[textEntry] at($(PosArrowMid)+(0,0)$) [align=center]{\footnotesize \texttt{register/}\\
+														  \footnotesize \texttt{unregister}};
+
+% ##########################
+% ####### Background #######
+% ##########################
+\begin{pgfonlayer}{background}
+
+
+
+
+\end{pgfonlayer}
+\end{tikzpicture}
+
+\end{document}

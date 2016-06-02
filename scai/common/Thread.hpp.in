@@ -35,8 +35,12 @@
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/macros/throw.hpp>
 
-// external
-#include <pthread.h>
+// C++11 features
+
+#include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace scai
 {
@@ -52,7 +56,7 @@ class COMMON_DLL_IMPORTEXPORT Thread : common::NonCopyable
 {
 public:
 
-    typedef pthread_t Id;
+    typedef std::thread::id Id;
 
     static Id getSelf();
 
@@ -70,7 +74,7 @@ public:
 
     /** Own mutex class for synchronization of threads */
 
-    class Mutex
+    class Mutex 
     {
 
         friend class ScopedLock;  // allow access to the mutex
@@ -84,7 +88,7 @@ public:
          *  A recursive mutex might be locked by the same thread several times.
          */
 
-        Mutex( const bool isRecursive = false );
+        Mutex( bool isRecursive = false );
 
         /** Destructor frees and releases the mutex. */
 
@@ -98,9 +102,11 @@ public:
 
         void unlock();
 
-        pthread_mutex_t p_mutex;
+        std::unique_ptr<std::mutex> mMutex;
+        std::unique_ptr<std::recursive_mutex> mRecursiveMutex;
+        
+        bool mIsRecursive;  // false: mMutex != NULL, true: mRecursiveMutex != NULL
 
-        pthread_mutexattr_t p_mutexattr;
     };
 
     /** Add derived class which is a recursive mutex by default constructor. */
@@ -120,7 +126,7 @@ public:
 
     /** Locking of a mutex within a scope, unlock by destructor. */
 
-    class ScopedLock
+    class ScopedLock 
     {
 
         friend class Condition;  // allow access to the mutex
@@ -136,7 +142,7 @@ public:
 
     /** Own condition class for synchronization of threads */
 
-    class Condition
+    class Condition : std::condition_variable_any
     {
     public:
 
@@ -158,9 +164,6 @@ public:
 
         void wait( ScopedLock& lock );
 
-    private:
-
-        pthread_cond_t p_condition;
     };
 
     typedef void* ( *pthread_routine ) ( void* );
@@ -193,7 +196,7 @@ public:
 
     Id getId()
     {
-        return mHandle;
+        return mId;
     }
 
     /** Destructor of thread, waits for its termination. */
@@ -202,43 +205,49 @@ public:
 
 private:
 
-    pthread_t mHandle; //!< Handle for the corresponding pthread
+    std::thread *mThread;  // contructed by start
+
+    Id mId;
+
     bool  running;
 };
 
-/** Thread-private pointer variable of a certain type */
+/** Encapsulation class of a pointer to restrict its use for thread private pointers */
 
 template<typename T>
-class ThreadPrivatePtr : common::NonCopyable
+class Pointer : common::NonCopyable
 {
 public:
-    ThreadPrivatePtr()
+    Pointer()
     {
-        int ierr = pthread_key_create( &mKey, NULL );
-
-        if ( ierr != 0 )
-        {
-            COMMON_THROWEXCEPTION( "create key failed." )
-        }
     }
 
-    ~ThreadPrivatePtr()
+    ~Pointer()
     {
     }
 
     T* get()
     {
-        return static_cast<T*>( pthread_getspecific( mKey ) );
+        return mObj;
     }
 
     void set( T* obj )
     {
-        pthread_setspecific( mKey, obj );
+        mObj = obj;
     }
 
-    pthread_key_t mKey;   // key specific for this private data
+    T* mObj;
 };
 
 } /* end namespace common */
 
 } /* end namespace scai */
+
+/** This macro defines a thread private pointer variable 
+ *
+ *  C++11 standard has keyword thread_local for it.
+ */
+
+#define SCAI_THREAD_PRIVATE_PTR( type, var )  \
+thread_local scai::common::Pointer<type> var;
+

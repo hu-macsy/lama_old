@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Implementation of methods for handling of thread names
+ * @brief Implementation of methods for threads using C++11 standard
  * @author Thomas Brandes
  * @date 10.06.2015
  */
@@ -53,7 +53,7 @@ namespace common
 
 Thread::Id Thread::getSelf()
 {
-    return pthread_self();
+    return std::this_thread::get_id();
 }
 
 // Map that defines mapping thread ids -> thread names (as strings)
@@ -74,61 +74,81 @@ static MapThreads& getMapThreads()
     return *mapThreads;
 }
 
-Thread::Mutex::Mutex( bool isRecursive )
+Thread::Mutex::Mutex( bool isRecursive ) : mIsRecursive( isRecursive )
 {
-    pthread_mutexattr_init( &p_mutexattr );
+    // Only one of the member objects is allocated 
 
-    if ( isRecursive )
+    if ( mIsRecursive )
     {
-        SCAI_SYSTEM_CALL( pthread_mutexattr_settype( &p_mutexattr, PTHREAD_MUTEX_RECURSIVE ), "settype failed" )
+        mRecursiveMutex.reset( new std::recursive_mutex() );
     }
-
-    SCAI_SYSTEM_CALL( pthread_mutex_init( &p_mutex, &p_mutexattr ), "Mutex()" )
+    else
+    {
+        mMutex.reset( new std::mutex() );
+    }
 }
 
-Thread::Condition::Condition()
+Thread::Condition::Condition() : std::condition_variable_any()
 {
-    SCAI_SYSTEM_CALL( pthread_cond_init( &p_condition, NULL ), "Condition()" );
 }
 
 Thread::Mutex::~Mutex()
 {
-    SCAI_SYSTEM_CALL_NOTHROW( pthread_mutex_destroy( &p_mutex ), "~Mutex" )
 }
 
 Thread::Condition::~Condition()
 {
-    // no throw in destructor
-
-    SCAI_SYSTEM_CALL_NOTHROW( pthread_cond_destroy( &p_condition ), "~Condition" );
 }
 
 void Thread::Mutex::lock()
 {
-    SCAI_SYSTEM_CALL( pthread_mutex_lock( &p_mutex ), "lock" );
+    if ( mIsRecursive )
+    {
+        mRecursiveMutex->lock();
+    }
+    else
+    {
+        mMutex->lock();
+    }
 }
 
 void Thread::Mutex::unlock()
 {
-    SCAI_SYSTEM_CALL_NOTHROW( pthread_mutex_unlock( &p_mutex ), "unlock" );
+    if ( mIsRecursive )
+    {
+        mRecursiveMutex->unlock();
+    }
+    else
+    {
+        mMutex->unlock();
+    }
 }
 
 void Thread::Condition::notifyOne()
 {
-    SCAI_SYSTEM_CALL( pthread_cond_signal ( &p_condition ), "notifyOne" );
+    std::condition_variable_any::notify_one();
 }
 
 void Thread::Condition::notifyAll()
 {
-    SCAI_SYSTEM_CALL( pthread_cond_broadcast ( &p_condition ), "notifyAll" );
+    std::condition_variable_any::notify_all();
 }
 
 void Thread::Condition::wait( ScopedLock& lock )
 {
-    SCAI_SYSTEM_CALL( pthread_cond_wait( &p_condition, &lock.mMutex.p_mutex ), "wait" );
+    if ( lock.mMutex.mIsRecursive )
+    {
+        std::condition_variable_any::wait( *lock.mMutex.mRecursiveMutex );
+    }
+    else 
+    {
+        std::condition_variable_any::wait( *lock.mMutex.mMutex );
+    }
 }
 
-Thread::ScopedLock::ScopedLock( Mutex& mutex ) : mMutex( mutex )
+Thread::ScopedLock::ScopedLock( Mutex& mutex ) :
+
+    mMutex( mutex )
 {
     mMutex.lock();
 }
@@ -215,19 +235,17 @@ const char* Thread::getCurrentThreadName()
 
 void Thread::start( pthread_routine start_routine, void* arg )
 {
-    SCAI_SYSTEM_CALL( pthread_create( &mHandle, NULL, start_routine, arg ), "start" );
-
-    running = true;
+    mThread = new std::thread( start_routine, arg );
 }
 
 void Thread::join()
 {
-    if ( running )
+    if ( mThread != NULL )
     {
-        SCAI_SYSTEM_CALL_NOTHROW( pthread_join( mHandle, NULL ), "join" )
+        mThread->join();
+        delete mThread;
+        mThread = NULL;
     }
-
-    running = false;
 }
 
 Thread::~Thread()

@@ -50,7 +50,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 
 // std
 #include <memory>
@@ -482,7 +482,7 @@ public:
      */
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
 
-    /** @brief Expanded macro by SCAI_COMMON_TYPELOOP that defines all virtual routines for one type.
+    /** @brief Expanded macro by SCAI_COMMON_LOOP that defines all virtual routines for one type.
      *
      *  @param _type is the used ValueType
      *
@@ -573,9 +573,9 @@ public:
             const int direction ) const = 0;
      
 
-    // define communicator methods for all supported data types
+    // define communicator methods for all supported types
 
-    SCAI_COMMON_TYPELOOP( SCAI_DMEMO_COMMUNICATOR_METHODS, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_METHODS, SCAI_ALL_TYPES )
 
 #undef SCAI_DMEMO_COMMUNICATOR_METHODS
 

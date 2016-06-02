@@ -41,10 +41,9 @@ using namespace scai::lama;
 int main()
 
 {
-    //
-    // Define the ValueType used for the vector
-    //
-    typedef double ValueType;
+    /** Take default real type for this example. */
+    
+    typedef RealType ValueType;
 
     Scalar singleValue( 2.0 );
 
@@ -63,7 +62,7 @@ int main()
     //
     // print vector to file vector.frm/.vec (SAMG format)
     //
-    sequenceOfValues.writeToFile( "vector", File::FORMATTED );
+    sequenceOfValues.writeToFile( "vector", File::SAMG );
 
     std::cout << "DenseVector is written to 'vector.frm/.vec'" << std::endl;
 

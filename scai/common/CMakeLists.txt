@@ -28,7 +28,7 @@
 ###
 
 ### Set required CMake version
-cmake_minimum_required ( VERSION 2.8 )
+cmake_minimum_required ( VERSION 2.8.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
 project ( scai_common CXX )
@@ -73,10 +73,6 @@ addInternalAndExternalPackages()
 include ( ConcludeFlags )
 
 ### add definitions
-if    ( ${USE_COMPLEX} )
-    add_definitions ( -DSCAI_COMPLEX_SUPPORTED )
-endif ( ${USE_COMPLEX} )
-
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
@@ -101,22 +97,17 @@ list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
 set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )      #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} )       #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 
-list ( LENGTH SCAI_HOST_TYPES_LIST NUM_ALL_HOST_TYPES )
-list ( LENGTH EXT_HOST_TYPES_LIST NUM_EXT_HOST_TYPES )
-list ( LENGTH CUDA_TYPES_LIST NUM_CUDA_TYPES )
-list ( LENGTH MIC_TYPES_LIST NUM_MIC_TYPES )
-
-math ( EXPR NUM_ALL_HOST_ARRAY_TYPES "${NUM_ALL_HOST_TYPES}+1" )
-math ( EXPR NUM_EXT_HOST_ARRAY_TYPES "${NUM_EXT_HOST_TYPES}+1" )
-math ( EXPR NUM_CUDA_ARRAY_TYPES     "${NUM_CUDA_TYPES}+1" )
-math ( EXPR NUM_MIC_ARRAY_TYPES      "${NUM_MIC_TYPES}+1" )
-
 # make strings out of list
 include ( Functions/listToString )
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
 listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
 listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
 listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
+# add IndexType for the array types, be careful about empty string
+concatString ( "IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
+concatString ( "IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
+concatString ( "IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
+concatString ( "IndexType" ", " "${MIC_TYPES}"  ARRAY_MIC_TYPES )
 
 # set "biggest" common type as ScalarRepType
 # last found element in TYPE_LIST_VALUES
@@ -146,38 +137,40 @@ if    ( ${USE_COMPLEX} )
     else  ( INDEX1 GREATER INDEX2 )
         list ( GET COMPLEX_VALUES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
     endif ( INDEX1 GREATER INDEX2 )
+    set ( SCAI_USE_COMPLEX 1 )
 else  ( ${USE_COMPLEX} )
     list ( GET NONE_COMPLEX_VALUES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
+    set ( SCAI_USE_COMPLEX 0 )
 endif ( ${USE_COMPLEX} )
 
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )
+# SCAI_USE_COMPLEX is used here for conditional compilation
+# SCAI_yyy_TYPES_LIST will be replaced with supported types
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )    
 
 ## end for configuring SCAITypes.hpp
 
-
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
-if    ( ${USE_COMPLEX} )
-    set ( COMPLEX_HEADER Complex )
-endif ( ${USE_COMPLEX} )
+set ( COMMON_SOURCES 
+        SCAITypes            # SCAITypes.hpp is handled via configuration
+)
 
-scai_project (
+### COMMON classes with .hpp and .cpp file
 
-    CLASSES                  # .cpp, .hpp
+set ( COMMON_CLASSES
 
         Printable
         ScalarType
-        #SCAITypes manually added at add_library as Source (problem with generation of .hpp)
         ContextType
         Settings
-        Thread
         Walltime
         LibModule
         TypeTraits
+)
 
-    HEADERS                  # .hpp only
+#  Header only file of the COMMON project
 
-        ${COMPLEX_HEADER}
+set ( COMMON_HEADERS 
         config
         Constants
         Factory
@@ -186,6 +179,10 @@ scai_project (
         OpenMP
         NonCopyable
 )
+
+if    ( ${USE_COMPLEX} )
+    list ( APPEND COMMON_HEADERS Complex )
+endif ( ${USE_COMPLEX} )
 
 ## configure c++11/boost dependent sources
 
@@ -211,10 +208,29 @@ else  ( NOT CXX_SUPPORTS_C11 )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CONFIGURE_DIR}/unique_ptr.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CONFIGURE_DIR}/weak_ptr.hpp" )
 endif ( NOT CXX_SUPPORTS_C11 )
+
+## configure c++11/pthread dependent headers, add specific sources
+
+if    ( CXX_SUPPORTS_C11 )
+    list ( APPEND COMMON_SOURCES Thread )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in" "${CONFIGURE_DIR}/Thread.hpp" )
+else  ( CXX_SUPPORTS_C11 )
+    list ( APPEND COMMON_SOURCES Thread_pthread )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in_pthread" "${CONFIGURE_DIR}/Thread.hpp" )
+endif (  CXX_SUPPORTS_C11 )
+
 install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
                 ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
                 ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
+                ${CONFIGURE_DIR}/Thread.hpp 
           DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+
+scai_project( 
+
+    SOURCES ${COMMON_SOURCES}
+    CLASSES ${COMMON_CLASSES}
+    HEADERS ${COMMON_HEADERS}
+)
 
 ## add subdirectories
 
@@ -235,7 +251,7 @@ if ( FOUND_BOOST_TEST AND BUILD_TEST )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} SCAITypes.cpp )
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries

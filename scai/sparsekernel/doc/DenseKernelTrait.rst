@@ -1,8 +1,20 @@
+.. _sparsekernel_Dense:
+
+Dense Storage Format
+====================
+
+The dense storage format consists of two integers: one for the number of rows (numRows) 
+and one for the number of columns (numColumns). Additionally it is equipped with one 
+array which contains the values. The size of the array can be calculated with *numRows*
+* *numColumns*. Typically the functionality for dense matrices is computed by BLAS-functions.
+These are provided by the library BLASKernel. In addition functions for the conversion
+to CSR are needed. These are provided by this library. 
+
 DenseKernelTrait
-================
+----------------
 
 Conversion
-----------
+^^^^^^^^^^
 
 ========================= ============================================================= ==== ==== ===
 **Functionname**          **Description**                                               Host CUDA MIC
@@ -20,7 +32,7 @@ setDiagonalValue          sets diagonal to a single value                       
 ========================= ============================================================= ==== ==== ===
 
 Calculation
------------
+^^^^^^^^^^^
 
 ========================= ============================================================= ==== ==== ===
 **Functionname**          **Description**                                               Host CUDA MIC

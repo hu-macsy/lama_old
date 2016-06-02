@@ -62,8 +62,14 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MatrixTest" )
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<CSRSparseMatrix<float>, ELLSparseMatrix<float>, COOSparseMatrix<double>, JDSSparseMatrix<float>,
-        DIASparseMatrix<double>, DenseMatrix<double> > MatrixTypes;
+typedef SCAI_TEST_TYPE ValueType;
+
+typedef boost::mpl::list<CSRSparseMatrix<ValueType>, 
+                         ELLSparseMatrix<ValueType>, 
+                         COOSparseMatrix<ValueType>, 
+                         JDSSparseMatrix<ValueType>,
+                         DIASparseMatrix<ValueType>, 
+                         DenseMatrix<ValueType> > MatrixTypes;
 
 /* --------------------------------------------------------------------- */
 
@@ -137,26 +143,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     */
 
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
-    std::string formattedFileName = prefix + "/test_matrix_formatted.tmp.frm";
-    formattedMatrix.writeToFile( formattedFileName, File::FORMATTED, scai::common::scalar::FLOAT, File::INT, File::INT );
-    MatrixType readFormattedMatrix( formattedFileName );
+    std::string formattedFileName = prefix + "/test_matrix_formatted.tmp";
+
+    formattedMatrix.writeToFile( formattedFileName, File::SAMG, scai::common::scalar::FLOAT, scai::common::scalar::INT, scai::common::scalar::INT );
+    MatrixType readFormattedMatrix( formattedFileName + ".frm" );
     testSameMatrix( formattedMatrix, readFormattedMatrix );
-    SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading XDR matrix" );
-    std::string xdrFileName = prefix + "/test_matrix_xdr.tmp.frm";
-    formattedMatrix.writeToFile( xdrFileName, File::XDR, scai::common::scalar::DOUBLE, File::LONG, File::LONG );
-    MatrixType readXDRMatrix( xdrFileName );
-    testSameMatrix( readXDRMatrix, formattedMatrix );
+
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading binary matrix" );
     std::string binaryFileName = prefix + "/test_matrix_bin.tmp.frm";
 // Be careful: binary read must fit to the format that has been used for the write
-    formattedMatrix.writeToFile( binaryFileName, File::BINARY, scai::common::scalar::INTERNAL, File::INT, File::INT );
+    formattedMatrix.writeToFile( binaryFileName, File::SAMG, scai::common::scalar::INTERNAL, scai::common::scalar::INT, scai::common::scalar::INT, true );
     MatrixType readBinaryMatrix( binaryFileName );
     testSameMatrix( formattedMatrix, readBinaryMatrix );
+
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading Matrix Market matrix" );
-    std::string matrixMarketFileName = prefix + "/test_matrix_mm.tmp.mtx";
+    std::string matrixMarketFileName = prefix + "/test_matrix_mm.tmp";
     formattedMatrix.writeToFile( matrixMarketFileName, File::MATRIX_MARKET, scai::common::scalar::DOUBLE );
-    MatrixType readMarketMatrix( matrixMarketFileName );
+    MatrixType readMarketMatrix( matrixMarketFileName + ".mtx" );
+    SCAI_LOG_INFO( logger, "mtx matrix: " << readMarketMatrix )
     testSameMatrix( formattedMatrix, readMarketMatrix );
+
+    // remove temporarily created matrix files
+    std::remove( (formattedFileName + ".frm").c_str() );
+    std::remove( (formattedFileName + ".amg").c_str() );
+    std::remove( binaryFileName.c_str() );
+    std::remove( (prefix + "/test_matrix_bin.tmp.amg").c_str() );
+    std::remove( (matrixMarketFileName + ".mtx" ).c_str() );
 }
 
 /* --------------------------------------------------------------------- */

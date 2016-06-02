@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-#################
-LAMA User's Guide
-#################
+#############
+Documentation
+#############
 
 .. The \Library of \Accelerated \Math \Applications (\L\A\M\A) is framework for 
 
@@ -17,12 +17,16 @@ Contents
    :titlesonly:
    :maxdepth: 1
    
-   introduction
    faq
    installation
    projects
    tutorial
-   testing
-   benchmarks
+
+.. toctree::
+   :hidden:
+
+   introduction
    developer
-   relatedWork
+   benchmarks
+   testing
+

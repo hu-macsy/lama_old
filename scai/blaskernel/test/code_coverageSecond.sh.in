@@ -33,6 +33,8 @@
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 
+error_count=0
+
 # Running blaskernel serial
 echo "Running serial tests"
 ./blaskernelTest --SCAI_CONTEXT=Host >/dev/null

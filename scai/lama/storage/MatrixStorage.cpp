@@ -59,7 +59,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
-#include <scai/common/macros/typeloop.hpp>
+#include <scai/common/macros/loop.hpp>
 
 namespace scai
 {
@@ -1255,11 +1255,12 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileName,
     const File::FileType fileType,
-    const common::scalar::ScalarType dataType,
-    const File::IndexDataType indexDataTypeIA,
-    const File::IndexDataType indexDataTypeJA ) const
+    const common::scalar::ScalarType valuesType,
+    const common::scalar::ScalarType iaType,
+    const common::scalar::ScalarType jaType,
+    const bool writeBinary /* = false */ ) const
 {
-    writeToFile( 1, 0, fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+    writeToFile( 1, 0, fileName, fileType, valuesType, iaType, jaType, writeBinary );
 }
 
 template<typename ValueType>
@@ -1269,8 +1270,9 @@ void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileName,
     const File::FileType fileType,
     const common::scalar::ScalarType dataType,
-    const File::IndexDataType indexDataTypeIA,
-    const File::IndexDataType indexDataTypeJA ) const
+    const common::scalar::ScalarType iaType,
+    const common::scalar::ScalarType jaType,
+    const bool writeBinary /* = false */ ) const
 {
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
@@ -1278,7 +1280,7 @@ void MatrixStorage<ValueType>::writeToFile(
 // TODO Do not build CSR if this matrix is CSR storage
     buildCSRData( csrIA, csrJA, csrValues );
     StorageIO<ValueType>::writeCSRToFile( size, rank, csrIA, mNumColumns, csrJA, csrValues, fileName, fileType,
-                                          dataType, indexDataTypeIA, indexDataTypeJA );
+                                          dataType, iaType, jaType, writeBinary );
 }
 
 /*****************************************************************************/
@@ -1391,9 +1393,9 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
                 const IndexType, const IndexType, const OtherValueType*, const ValueType );
 
 #define LAMA_MATRIXSTORAGE_INST( ValueType )                                                                                    \
-    SCAI_COMMON_TYPELOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_TYPELOOP( LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
 
 #undef LAMA_MATRIXSTORAGE2_INST
 #undef LAMA_MATRIXSTORAGE_INST

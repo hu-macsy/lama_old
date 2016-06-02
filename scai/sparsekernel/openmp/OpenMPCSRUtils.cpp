@@ -673,8 +673,8 @@ void OpenMPCSRUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
-    const IndexType UNUSED( numColumns ),
-    const IndexType UNUSED( nnz ),
+    const IndexType SCAI_UNUSED( numColumns ),
+    const IndexType SCAI_UNUSED( nnz ),
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[] )

@@ -36,8 +36,9 @@
 
 #include <scai/lama/test/NormTest.hpp>
 
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
 
 extern bool base_test_case;
 extern std::string testcase;
@@ -48,17 +49,15 @@ BOOST_AUTO_TEST_SUITE( L2NormTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.L2NormTest" )
 
-typedef boost::mpl::list<float, double> test_types;
-
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_arithmetic_test_types )
 {
     IndexType n = 4;
     ValueType val = 5.0;
     DenseVector<ValueType> vec( n, val );
     L2Norm l2norm;
-    ValueType expected = std::sqrt( n * val * val );
+    ValueType expected = common::Math::sqrt( n * val * val );
     BOOST_CHECK_EQUAL( expected, l2norm( vec ) );
     WriteAccess<ValueType> hwa( vec.getLocalValues() );
     hwa[0] = 1.0;
@@ -68,7 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, test_types )
     hwa.release();
     expected = static_cast<ValueType>( 5.47722 );
     Scalar s = l2norm( vec );
-    BOOST_CHECK_CLOSE( expected, s.getValue<ValueType>(), 1 );
+    SCAI_CHECK_CLOSE( expected, s.getValue<ValueType>(), 1 );
 }
 
 /* --------------------------------------------------------------------- */

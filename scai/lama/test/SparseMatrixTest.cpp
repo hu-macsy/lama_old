@@ -233,16 +233,13 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, testConversions )
 
 SCAI_LOG_INFO( logger, "testConversions" );
 
-testConversionsImpl<CSRSparseMatrix<float> >();
-testConversionsImpl<CSRSparseMatrix<double> >();
-testConversionsImpl<ELLSparseMatrix<float> >();
-testConversionsImpl<ELLSparseMatrix<double> >();
-testConversionsImpl<JDSSparseMatrix<float> >();
-testConversionsImpl<JDSSparseMatrix<double> >();
-testConversionsImpl<DIASparseMatrix<float> >();
-testConversionsImpl<DIASparseMatrix<double> >();
-testConversionsImpl<COOSparseMatrix<float> >();
-testConversionsImpl<COOSparseMatrix<double> >();
+typedef SCAI_TEST_TYPE ValueType;
+
+testConversionsImpl<CSRSparseMatrix<ValueType> >();
+testConversionsImpl<ELLSparseMatrix<ValueType> >();
+testConversionsImpl<JDSSparseMatrix<ValueType> >();
+testConversionsImpl<DIASparseMatrix<ValueType> >();
+testConversionsImpl<COOSparseMatrix<ValueType> >();
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
@@ -559,8 +556,10 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, scaleTest )
 
-MatrixType matrixA( TestSparseMatrices::n4m4MatrixA1<double>() );
-double valuesResult[] =
+typedef SCAI_TEST_TYPE ValueType;
+
+MatrixType matrixA( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
+ValueType valuesResult[] =
 {
     1.2f, 0.0f, 0.0f, 0.8f,
     1.4f, 0.8f, 0.0f, 0.0f,

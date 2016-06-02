@@ -33,7 +33,9 @@
 
 include make.inc
 
-INCLUDE_FLAGS = -I${INCLUDE_DIR}
+# Include path contains also installation of existing projects
+
+INCLUDE_FLAGS = -I${INCLUDE_DIR} -I${SCAI_ROOT}/include
 
 LD_FLAGS = -L.. -Wl,-rpath=.. -lscai_logging
 

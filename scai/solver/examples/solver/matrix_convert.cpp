@@ -50,6 +50,7 @@ struct CommandLineOptions
     string outFileName;
 
     File::FileType outFileType;
+    bool writeBinary;
     common::scalar::ScalarType inDataType;
     common::scalar::ScalarType outDataType;
 
@@ -57,6 +58,7 @@ struct CommandLineOptions
     {
         inFileName = "";
         outFileName = "";
+        writeBinary = false;
         outFileType = File::DEFAULT;
         inDataType  = common::scalar::UNKNOWN;        // needs to be determined
         outDataType = common::scalar::INTERNAL;       // same as input data type
@@ -66,7 +68,7 @@ struct CommandLineOptions
     {
         if ( option == "-a" )
         {
-            outFileType = File::FORMATTED;
+            outFileType = File::SAMG;
         }
         else if ( option == "-mm" )
         {
@@ -74,7 +76,8 @@ struct CommandLineOptions
         }
         else if ( option == "-b" )
         {
-            outFileType = File::BINARY;
+            outFileType = File::SAMG;
+            writeBinary = true;
         } 
         else if ( option == "-S" )
         {
@@ -157,7 +160,7 @@ struct CommandLineOptions
 
         if ( _StorageIO::hasSuffix( inFileName, ".mtx" ) )
         {
-             outFileType = File::BINARY;
+             outFileType = File::SAMG;
         }
         else
         {
@@ -171,7 +174,8 @@ void convertMatrix(
     const common::scalar::ScalarType inDataType,
     const std::string& outFileName, 
     const File::FileType outFileType, 
-    const common::scalar::ScalarType outDataType )
+    const common::scalar::ScalarType outDataType,
+    const bool writeBinary )
 {
     MatrixCreateKeyType matrixType( Format::CSR, inDataType );
     common::shared_ptr<Matrix> m ( Matrix::create( matrixType ) );
@@ -181,7 +185,7 @@ void convertMatrix(
     cout << "read matrix from " << inFileName << " : " << *m << endl;
     cout << "write matrix to " << outFileName << ", format = " << outFileType << ", type = " << outDataType << endl;
 
-    m->writeToFile( outFileName, outFileType, outDataType );
+    m->writeToFile( outFileName, outFileType, outDataType, common::scalar::INDEX_TYPE, common::scalar::INDEX_TYPE, writeBinary );
 }
 
 void convertVector( 
@@ -189,7 +193,8 @@ void convertVector(
     const common::scalar::ScalarType inDataType,
     const std::string& outFileName, 
     const File::FileType outFileType, 
-    const common::scalar::ScalarType outDataType )
+    const common::scalar::ScalarType outDataType,
+    const bool writeBinary )
 {
     // Note: inFileType is given implicitly by the input file
     // use vector of inDataType so no information is lost
@@ -202,7 +207,7 @@ void convertVector(
     cout << "read vector from " << inFileName << " : " << *v << endl;
     cout << "write vector to " << outFileName << ", format = " << outFileType << ", type = " << outDataType << endl;
 
-    v->writeToFile( outFileName, outFileType, outDataType );
+    v->writeToFile( outFileName, outFileType, outDataType, writeBinary );
 }
 
 void printUsage( const char* progName )
@@ -217,8 +222,8 @@ void printUsage( const char* progName )
     cout << "    -d output format is double precision" << endl;
     cout << "    -c output format is complex" << endl;
     cout << "    -z output format is double complex" << endl;
-    cout << "    -b converts to binary file" << endl;
-    cout << "    -a converts to formatted file" << endl;
+    cout << "    -b converts to binary SAMG file" << endl;
+    cout << "    -a converts to ascii SAMG file" << endl;
     cout << "    -mm converts to matrix market" << endl;
 }
 
@@ -252,7 +257,10 @@ int main( int argc, char* argv[] )
     {
         bool isSym, isPat;
         IndexType m, n, nz;
-        _StorageIO::readMMHeader( m, n, nz, isSym, isPat, options.inFileName );
+
+        lama::FileStream inFile( options.inFileName, std::ios::in );
+
+        _StorageIO::readMMHeader( m, n, nz, isSym, isPat, inFile );
         cout << "MM header of " << options.inFileName << ": m = " << m << ", n = " << n << ", nz = " << nz << endl;
         isVector = n == 1;
     }
@@ -275,10 +283,10 @@ int main( int argc, char* argv[] )
 
     if ( isVector )
     {
-        convertVector( options.inFileName, options.inDataType, options.outFileName, options.outFileType, options.outDataType );
+        convertVector( options.inFileName, options.inDataType, options.outFileName, options.outFileType, options.outDataType, options.writeBinary );
     }
     else
     {
-        convertMatrix( options.inFileName, options.inDataType, options.outFileName, options.outFileType, options.outDataType );
+        convertMatrix( options.inFileName, options.inDataType, options.outFileName, options.outFileType, options.outDataType, options.writeBinary );
     }
 }

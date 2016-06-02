@@ -47,26 +47,31 @@ using namespace hmemo;
 using namespace dmemo;
 using namespace lama;
 
+/** Take default real type for this example. */
+
+typedef RealType ValueType;
+
 //
 // EXAMPLE multiplication of a dense vector with a sparse matrix in CSR format.
 //
 
-static inline float mv( const IndexType i, const IndexType j )
+static inline ValueType mv( const IndexType i, const IndexType j )
 {
-    return float( 3 * i - j );
+    return ValueType( 3 * i - j );
 }
 
 int main()
 {
+
     IndexType perm [] = { 5, 2, 1, 0, 3, 4 };
 
     const IndexType irow = 3;
 
     const int N = sizeof( perm ) / sizeof( IndexType );
  
-    CSRSparseMatrix<float> a;
+    CSRSparseMatrix<ValueType> a;
 
-    common::scoped_array<float> values( new float[ N * N ] );
+    common::scoped_array<ValueType> values( new ValueType[ N * N ] );
 
     for ( IndexType i = 0; i < N; ++i )  
     {
@@ -101,13 +106,13 @@ int main()
 
     std::cout << "Communicator = " << *comm << std::endl;
 
-    DenseVector<double> row( dist );     // any type, any distribution
+    DenseVector<ValueType> row( dist );     // any type, any distribution
 
     a.getRow( row, irow );
 
     std::cout << "a( " << irow << ", : ) = " << row << std::endl;
 
-    ReadAccess<double> rowRead( row.getLocalValues() );
+    ReadAccess<ValueType> rowRead( row.getLocalValues() );
 
     int errors = 0;
 
@@ -117,7 +122,7 @@ int main()
     {
         std::cout << " " << rowRead[j];
 
-        if ( rowRead[j] != double( mv( irow, j ) ) )
+        if ( rowRead[j] != mv( irow, j ) )
         {
             std::cout << " Error";
             errors++;

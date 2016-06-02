@@ -45,8 +45,6 @@ using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
-typedef boost::mpl::list<double, float> test_types;
-
 /* --------------------------------------------------------------------- */
 
 struct ResidualStagnationTestConfig
@@ -131,7 +129,7 @@ BOOST_AUTO_TEST_CASE ( GetAndSetLookBackTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, ValueType, scai_arithmetic_test_types )
 {
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );

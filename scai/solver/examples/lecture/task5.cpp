@@ -51,6 +51,8 @@ using namespace scai::solver;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 
+typedef RealType ValueType;
+
 int main( int argc, char* argv[] )
 {
     if ( argc < 2 )
@@ -59,25 +61,25 @@ int main( int argc, char* argv[] )
         exit( -1 );
     }
 
-    CSRSparseMatrix<double> m( argv[1] );
+    CSRSparseMatrix<ValueType> m( argv[1] );
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
     ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA, 0 ); 
     m.setContextPtr( cudaContext );
 
-    DenseVector<double> rhs( size , 0.0 );
-    WriteAccess<double> hwarhs( rhs.getLocalValues() );
+    DenseVector<ValueType> rhs( size , 0 );
+    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
 
     for ( IndexType i = 0; i < size; ++i )
     {
-        hwarhs[i] = double( i + 1 );
+        hwarhs[i] = ValueType( i + 1 );
     }
 
     std::cout << "Vector rhs : " << rhs << std::endl;
     hwarhs.release();
     rhs.setContextPtr( cudaContext );
-    DenseVector<double> solution( size, 0.0 );
+    DenseVector<ValueType> solution( size, 0 );
     solution.setContextPtr( cudaContext );
     std::cout << "Vector solution : " << solution << std::endl;
     CG cgSolver( "CGTestSolver" );

@@ -27,12 +27,23 @@
  # @date 17.08.2015
 ###
 
-## attention OpenMP should be before SCAI_BLAS !!!
-## need to get rid of boost for boost_repeat in common
+# Input Variables: NONE
+#
+# Output Variables:
+#
+#    SCAI_<PROJECT>_EXTERNAL_DEPS  for all projects
+#    LAMA_ALL_EXTERNAL_DEPS 
+#
+#  Note: For each external dependency a file Package/<ext_module>.cmake must be availabe
+#
+#  Note: no distinction between optional and required packages here
+#        (this is done in the LAMA specific Package/xxx.cmake files)
+
+#  ATTENTION: OpenMP should appear before SCAI_BLAS in the dependency list !!!
 
 #                                     dl Java Thread Boost OpenMP CUDA MIC  SCAI_BLAS MPI GPI GraphPartitioning
 #                                    -----------------------------------------------------------------------------
-set ( SCAI_COMMON_EXTERNAL_DEPS       dl      Thread       OpenMP CUDA MIC                                      ) # 1
+set ( SCAI_COMMON_EXTERNAL_DEPS       dl      Thread Boost OpenMP CUDA MIC                                      ) # 1
 set ( SCAI_LOGGING_EXTERNAL_DEPS                                                                                ) # 2
 set ( SCAI_TRACING_EXTERNAL_DEPS         Java                                                                   ) # 3
 set ( SCAI_TASKING_EXTERNAL_DEPS                                  CUDA MIC                                      ) # 4
@@ -42,13 +53,13 @@ set ( SCAI_BLASKERNEL_EXTERNAL_DEPS                        OpenMP CUDA MIC SCAI_
 set ( SCAI_UTILSKERNEL_EXTERNAL_DEPS                       OpenMP CUDA MIC                                      ) # 8
 set ( SCAI_SPARSEKERNEL_EXTERNAL_DEPS                      OpenMP CUDA MIC SCAI_BLAS                            ) # 9
 set ( SCAI_DMEMO_EXTERNAL_DEPS                       Boost OpenMP                     MPI GPI GraphPartitioning ) # 10
-set ( SCAI_LAMA_EXTERNAL_DEPS                        Boost                                                      ) # 11
-set ( SCAI_SOLVER_EXTERNAL_DEPS                      Boost                                                      ) # 12
+set ( SCAI_LAMA_EXTERNAL_DEPS                                                                                   ) # 11
+set ( SCAI_SOLVER_EXTERNAL_DEPS                                                                                 ) # 12
 
 set ( LAMA_ALL_EXTERNAL_DEPS ${SCAI_COMMON_EXTERNAL_DEPS} ${SCAI_LOGGING_EXTERNAL_DEPS} ${SCAI_TRACING_EXTERNAL_DEPS}
-						 	 ${SCAI_TASKING_EXTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS}
-						 	 ${SCAI_BLASKERNEL_EXTERNAL_DEPS} ${SCAI_UTILSKERNEL_EXTERNAL_DEPS}
-						 	 ${SCAI_SPARSEKERNEL_EXTERNAL_DEPS} ${SCAI_DMEMO_EXTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS}
-						 	 ${SCAI_SOLVER_EXTERNAL_DEPS} )
+                             ${SCAI_TASKING_EXTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS}
+                             ${SCAI_BLASKERNEL_EXTERNAL_DEPS} ${SCAI_UTILSKERNEL_EXTERNAL_DEPS}
+                             ${SCAI_SPARSEKERNEL_EXTERNAL_DEPS} ${SCAI_DMEMO_EXTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS}
+                             ${SCAI_SOLVER_EXTERNAL_DEPS} )
 
 list ( REMOVE_DUPLICATES LAMA_ALL_EXTERNAL_DEPS )

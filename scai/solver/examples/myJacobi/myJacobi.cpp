@@ -46,14 +46,14 @@ using namespace scai::hmemo;
 
 int main( int , char** )
 {
-   typedef double ValueType;
+    typedef RealType ValueType;
 
     int dim = 3;
     int stencil = 7;
     int size = 100;
 
     CSRSparseMatrix<ValueType> matrix;
-    MatrixCreator<double>::buildPoisson( matrix, dim, stencil, size, size, size );
+    MatrixCreator<ValueType>::buildPoisson( matrix, dim, stencil, size, size, size );
 
     int vectorSize = static_cast<int>( std::pow(size,dim) );
 

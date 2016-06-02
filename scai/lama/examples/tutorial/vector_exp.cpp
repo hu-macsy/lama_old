@@ -44,7 +44,7 @@ int main()
     //
     // Define the ValueType used for the vector
     //
-    typedef double ValueType;
+    typedef RealType ValueType;
 
     //
     // Vector expressions

@@ -38,7 +38,6 @@
 // local library
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>
-#include <scai/lama/io/XDRFileStream.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
@@ -75,10 +74,15 @@ class COMMON_DLL_IMPORTEXPORT DenseVector:
 {
 public:
 
-    /** Default constructor, creates replicated 0 vector */
+    /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
 
     DenseVector();
 
+    /**
+     * @brief creates a not initialized distributed DenseVector of the passed global size.
+     *
+     * @param[in] context  the context to use for the new vector.
+     */
     explicit DenseVector( hmemo::ContextPtr context );
 
     /**
@@ -87,6 +91,14 @@ public:
      * @param[in] distribution  the distribution to use for the new vector.
      */
     explicit DenseVector( dmemo::DistributionPtr distribution );
+
+    /**
+     * @brief creates a not initialized distributed DenseVector of the passed global size.
+     *
+     * @param[in] distribution  the distribution to use for the new vector.
+     * @param[in] context  the context to use for the new vector.
+     */
+    explicit DenseVector ( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
 
     /**
      * @brief creates a replicated DenseVector of the passed size initialized to the passed value.
@@ -384,8 +396,9 @@ public:
      */
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::BINARY,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL ) const;
+        const File::FileType fileType = File::SAMG,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
+        const bool writeBinary = false ) const;
 
 protected:
 
@@ -393,48 +406,7 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
-
-    void writeVectorToFormattedFile(const std::string& fileName) const;
-
-    void writeVectorToBinaryFile(
-                    const std::string& fileName,
-                    const common::scalar::ScalarType outputType ) const;
-
-    void writeVectorToXDRFile(
-                    const std::string& fileName,
-                    const common::scalar::ScalarType outputType ) const;
-
-    void writeVectorDataToBinaryFile(
-                    std::fstream& outFile,
-                    const common::scalar::ScalarType outputType ) const;
-
-    void readVectorHeader( const std::string& filename, File::FileType& fileType, long& dataTypeSize );
-
-    void writeVectorHeader(
-                    const std::string& fileName,
-                    const File::FileType& fileType,
-                    const long dataTypeSize ) const;
-
-    void writeVectorToMMFile(
-                    const std::string& filename,
-                    const common::scalar::ScalarType& dataType ) const;
-
-    void readVectorFromFormattedFile( const std::string& fileName );
-
-    void readVectorFromBinaryFile(
-                    const std::string& fileName,
-                    const common::scalar::ScalarType dataType );
-
-    void readVectorFromXDRFile(
-                    const std::string& fileName,
-                    const long dataTypeSizeHeader );
-
-    void readVectorFromMMFile( const std::string& fileName );
-
-    void readVectorDataFromBinaryFile(
-                    std::fstream &inFile,
-                    const common::scalar::ScalarType dataType );
+private:
 
     utilskernel::LArray<ValueType> mLocalValues; //!< my local values of vector
 

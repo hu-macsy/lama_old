@@ -50,7 +50,7 @@ int main()
     //
     // Define the ValueType used for the vector
     //
-	typedef float ValueType;
+	typedef RealType ValueType;
 
 	//
 	// initialize matrix and vector values
@@ -116,7 +116,7 @@ int main()
     //
     // print vector to file result.frm/.vec (SAMG format)
     //
-    result.writeToFile( "result" , File::FORMATTED );
+    result.writeToFile( "result" , File::SAMG );
 
     std::cout << "DenseVector is written to 'result.frm/.vec'" << std::endl;
 

@@ -35,9 +35,11 @@
 using namespace scai::lama;
 using namespace scai::hmemo;
 
+typedef RealType ValueType;
+
 int main( int argc, char** argv )
 {
-    CSRStorage<double> matrix;
+    CSRStorage<ValueType> matrix;
 
     if ( argc < 2 )
     {
@@ -73,11 +75,11 @@ int main( int argc, char** argv )
 
     const HArray<IndexType>& ia = matrix.getIA();
     const HArray<IndexType>& ja = matrix.getJA();
-    const HArray<double>& values = matrix.getValues();
+    const HArray<ValueType>& values = matrix.getValues();
 
     ReadAccess<IndexType> csrIA( ia );
     ReadAccess<IndexType> csrJA( ja );
-    ReadAccess<double> csrValues( values );
+    ReadAccess<ValueType> csrValues( values );
 
     std::cout << "Write png of size " << nRows << " x " << nColumns << ", zoom = " << nZoom << std::endl;
 

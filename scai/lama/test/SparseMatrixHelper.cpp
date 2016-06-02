@@ -91,15 +91,9 @@ bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, cons
     return true;
 }
 
-template
-#ifdef WIN32
-__declspec( dllexport )
-#endif
-bool compareMatrices( const scai::lama::CSRSparseMatrix<double>& matrix, const scai::lama::CSRSparseMatrix<double>& other );
+#define COMPARE_INSTANTIATE( type )   \
+template  \
+COMMON_DLL_IMPORTEXPORT \
+bool compareMatrices( const scai::lama::CSRSparseMatrix<type>& matrix, const scai::lama::CSRSparseMatrix<type>& other );
 
-template
-#ifdef WIN32
-__declspec( dllexport )
-#endif
-bool compareMatrices( const scai::lama::CSRSparseMatrix<float>& matrix, const scai::lama::CSRSparseMatrix<float>& other );
-
+SCAI_COMMON_LOOP( COMPARE_INSTANTIATE, SCAI_ARITHMETIC_HOST )

@@ -36,13 +36,10 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/function.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai;
 using namespace common;
-
-/* -------------------------------------------------------------------------------- */
-
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
 
 /* -------------------------------------------------------------------------------- */
 
@@ -58,7 +55,7 @@ struct MyPair {
 
 /* -------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( bindFunctionTest, ValueType, SCAI_ARITHMETIC_TYPES )
+BOOST_AUTO_TEST_CASE_TEMPLATE( bindFunctionTest, ValueType, scai_arithmetic_test_types )
 {
 	function<ValueType()> fn_five = bind ( my_divide<ValueType>, static_cast<ValueType>(10),static_cast<ValueType>(2) );
 	ValueType res1 = fn_five();

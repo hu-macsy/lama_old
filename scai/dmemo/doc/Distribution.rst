@@ -103,9 +103,8 @@ no distribution of the data and all processes have a local copy.
 
 .. code-block:: c++
 
-   Distribution no( new NoDistribution ( numRows ) );
+   DistributionPtr no( new NoDistribution ( numRows ) );
 
-Redistribute
 ------------
 
 Expression Rules:

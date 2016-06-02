@@ -41,7 +41,7 @@ set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
 # for static/dynamic linking
 
-if    ( LINUX )
+if    ( UNIX AND NOT APPLE )
     if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
     	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
     	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
@@ -49,7 +49,7 @@ if    ( LINUX )
     	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
     	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
     endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-endif ( LINUX )
+endif ( UNIX AND NOT APPLE )
 
 # check if Complex is in SCAI_HOST_TYPES then set USE_COMPLEX true
 include ( Functions/checkValue )
@@ -118,10 +118,6 @@ endif ( USE_CODE_COVERAGE )
 string ( STRIP "${CONCLUDE_CXX_FLAGS}" CONCLUDE_CXX_FLAGS )
 
 set ( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} ${CONCLUDE_CXX_FLAGS}" )
-if    ( ${USE_COMPLEX} )
-    set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSCAI_COMPLEX_SUPPORTED" )
-endif ( ${USE_COMPLEX} )
-
 set ( CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
 set ( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} ${ADDITIONAL_CXX_FLAGS_DEBUG} " )
 set ( CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
@@ -142,11 +138,7 @@ if ( CUDA_FOUND AND USE_CUDA )
     if    ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
         list ( APPEND CUDA_NVCC_FLAGS -arch=sm_${CUDA_COMPUTE_CAPABILITY} )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-
-    if    ( ${USE_COMPLEX} )
-        set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -DSCAI_COMPLEX_SUPPORTED" )
-    endif ( ${USE_COMPLEX} )
-    
+   
     set ( ADDITIONAL_NVCC_FLAGS         "${SCAI_NVCC_FLAGS}"         CACHE STRING "additional nvcc compiler flags" )
     set ( ADDITIONAL_NVCC_FLAGS_DEBUG   "${SCAI_NVCC_FLAGS_DEBUG}"   CACHE STRING "additional nvcc debug compiler flags" )
     set ( ADDITIONAL_NVCC_FLAGS_RELEASE "${SCAI_NVCC_FLAGS_RELEASE}" CACHE STRING "additional nvcc release compiler flags" )
@@ -162,3 +154,5 @@ if ( CUDA_FOUND AND USE_CUDA )
     string ( STRIP "${CUDA_NVCC_FLAGS_RELEASE}" CUDA_NVCC_FLAGS_RELEASE )
     
 endif ( CUDA_FOUND AND USE_CUDA )
+
+set ( PROJECT_FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE )

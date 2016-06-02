@@ -41,6 +41,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Settings.hpp>
 
 // external
 #include <mkl_lapacke.h>
@@ -222,12 +223,34 @@ void LAPACKe_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
     KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( LAPACKe_LAPACK::tptrs, ctx, flag );
 }
 
-LAPACKe_LAPACK::LAPACKe_LAPACK() {
+LAPACKe_LAPACK::LAPACKe_LAPACK()
+{
+
+    bool useLAPACK = false;
+
+    common::Settings::getEnvironment( useLAPACK, "SCAI_USE_LAPACK" );
+
+    if( !useLAPACK )
+    {
+        return;
+    }
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
                             kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
-LAPACKe_LAPACK::~LAPACKe_LAPACK() {
+LAPACKe_LAPACK::~LAPACKe_LAPACK()
+{
+
+    bool useLAPACK = false;
+
+    common::Settings::getEnvironment( useLAPACK, "SCAI_USE_LAPACK" );
+
+    if( !useLAPACK )
+    {
+        return;
+    }
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
                             kregistry::KernelRegistry::KERNEL_ERASE );
 }

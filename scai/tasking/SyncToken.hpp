@@ -203,7 +203,7 @@ private:
 
     /** Each thread can set globally (thread-private) a SyncToken */
 
-    static common::ThreadPrivatePtr<SyncToken> currentSyncToken;
+    static SCAI_THREAD_PRIVATE_PTR( SyncToken, currentSyncToken )
 
     /** Vector of shared pointers  that will be released after completion. */
 
