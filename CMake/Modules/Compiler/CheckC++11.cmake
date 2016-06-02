@@ -88,7 +88,7 @@ if    ( NOT WIN32 )
 		endforeach ( FEATURE ${CXX11_FEATURE_LIST} )
 
 		if    ( NOT CXX_SUPPORTS_C11 )
-			message ( WARNING "Compiler does not support all needed c++11 features. Turn CXX_SUPPORTS_C11 off. Unsupported features are: ${CXX11_UNSUPPORTED_FEATURE_LIST}" )
+			message ( STATUS "Compiler does not support all needed c++11 features. Turn CXX_SUPPORTS_C11 off. Unsupported features are: ${CXX11_UNSUPPORTED_FEATURE_LIST}" )
 		endif ( NOT CXX_SUPPORTS_C11 )
 
 		# restore CMAKE_CXX_FLAGS
