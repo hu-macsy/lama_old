@@ -356,7 +356,6 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
          *
          * see: http://scicomp.stackexchange.com/questions/5380/intel-mkl-difference-between-mkl-intel-lp64-and-mkl-gf-lp64
          */
-
     }
     else
     {
