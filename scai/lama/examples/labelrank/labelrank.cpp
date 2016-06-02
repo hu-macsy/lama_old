@@ -45,7 +45,7 @@ using scai::common::Walltime;
 
 /** ValueType is the type used for matrix and vector elements. */
 
-typedef float ValueType;
+typedef RealType ValueType;
 
 /** Specify the matrix type for the label matrices. 
  *

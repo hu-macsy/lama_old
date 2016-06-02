@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
         for ( IndexType i = 0; i < blockLocalSize; i++ )
         {
             ValueType expected = static_cast<ValueType>( 100 * comm->getRank() + i );
-            BOOST_CHECK_CLOSE( data[i], expected, 1 );
+            SCAI_CHECK_CLOSE( data[i], expected, 1 );
         }
     }
 }

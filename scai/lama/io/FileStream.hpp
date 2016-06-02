@@ -35,7 +35,6 @@
 // local library
 
 // scai internal libraries
-#include <scai/common/Complex.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/unique_ptr.hpp>

@@ -50,7 +50,7 @@ int main()
     //
     // Define the ValueType used for the vector
     //
-	typedef float ValueType;
+	typedef RealType ValueType;
 
 	//
 	// initialize matrix and vector values

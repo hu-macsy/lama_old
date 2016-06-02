@@ -634,7 +634,7 @@ void scaleTest( )
 template<typename ValueType>
 void typeNameTest( )
 {
-    CSRSparseMatrix<ValueType> n4m4SMatrixAf = TestSparseMatrices::n4m4MatrixA1<float>();
+    CSRSparseMatrix<ValueType> n4m4SMatrixAf = TestSparseMatrices::n4m4MatrixA1<ValueType>();
     DenseMatrix<ValueType> matrixA( n4m4SMatrixAf );
     std::string s = matrixA.typeName();
     BOOST_CHECK( s.length() > 0 );

@@ -38,6 +38,7 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/common/Walltime.hpp>
+#include <scai/common/macros/loop.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -137,15 +138,13 @@ int main()
 
     for ( int i = 0; i < nsizes; ++i )
     {
-        IndexType size = sizes[i];
-
         for ( int j = 0; j < nrates; ++j )
         {
-            double rate = fillrates[j];
- 
-            bench<float>( size, rate );
-            bench<double>( size, rate );
+#define     DO_BENCH( ValueType ) bench<ValueType>( sizes[i], fillrates[j] );
 
+            // do the benchmark for each supported CUDA type
+
+            SCAI_COMMON_LOOP( DO_BENCH, SCAI_ARITHMETIC_CUDA )
         }
     }
 }

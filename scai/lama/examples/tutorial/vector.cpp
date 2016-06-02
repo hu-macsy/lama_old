@@ -41,10 +41,9 @@ using namespace scai::lama;
 int main()
 
 {
-    //
-    // Define the ValueType used for the vector
-    //
-    typedef double ValueType;
+    /** Take default real type for this example. */
+    
+    typedef RealType ValueType;
 
     Scalar singleValue( 2.0 );
 
