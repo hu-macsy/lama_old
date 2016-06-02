@@ -48,7 +48,7 @@ set ( SCAI_LINKER_FLAGS "" )
 
 # GNU C++ compiler
 
-if ( CMAKE_COMPILER_IS_GNUCXX )
+if ( CMAKE_CXX_COMPILER_ID MATCHES GNU )
 
     set ( SCAI_WARNING_FLAGS       "-Wextra -Wall -Werror" )
     set ( SCAI_CXX_FLAGS           "" )
@@ -58,7 +58,7 @@ if ( CMAKE_COMPILER_IS_GNUCXX )
 
     ###  Code coverage with gcov/lcov
 
-endif ( CMAKE_COMPILER_IS_GNUCXX )
+endif ( CMAKE_CXX_COMPILER_ID MATCHES GNU )
 
 
 # INTEL compiler
@@ -94,6 +94,18 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
+# Clang Compiler (llvm or AppleClang)
+
+if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
+
+    set ( SCAI_WARNING_FLAGS       "-Wall -Werror" ) # "-Weverything" # wow this creates so much warnings
+    set ( SCAI_CXX_FLAGS           "" )
+    set ( SCAI_CXX_FLAGS_DEBUG     "" )
+    set ( SCAI_CXX_FLAGS_RELEASE   "-ffast-math" )
+    #set ( SCAI_CODE_COVERAGE_FLAGS "-fsanitize-coverage=???" )
+
+endif ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
+
 
 # PGI C++ compiler
 
@@ -112,6 +124,6 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
     # Disable warning 1097 to avoid warnings from openmpi headers with gcc specific attributes
 
-    set ( SCAI_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
+    set ( SCAI_WARNING_FLAGS "--display_error_number --diag_suppress1097 " ) #-Werror 
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES PGI )

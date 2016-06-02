@@ -23,14 +23,6 @@ routines for data structures using heterogeneous arrays.
 Contents
 ********
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
-   
-   Distribution
-   Communicator
-   CommunicationPlan
-
 Here is a list of provided classes of the DMemo library
 
 ======================== ================================================================================
@@ -38,11 +30,19 @@ Class                    Description
 ======================== ================================================================================
 :ref:`Communicator`      Base class for communication between different partitions
 NoCommunicator           Default communicator 
-MPICommunicator          MPI Communicator
+:ref:`MPICommunicator`   MPI Communicator
 GPICommunicator          GASPI Communicator
-Distribution             Mapping of an index range to a number of partitions
+:ref:`Distribution`      Mapping of an index range to a number of partitions
 :ref:`CommunicationPlan` Communication schedule for exchanging non-local values
 ======================== ================================================================================
+
+.. toctree::
+   :hidden:
+
+   Distribution
+   Communicator
+   CommunicationPlan
+   MPICommunicator
 
 *******
 Example

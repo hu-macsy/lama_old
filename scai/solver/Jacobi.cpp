@@ -234,9 +234,12 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
     const Vector& oldSolution = getRuntime().mProxyOldSolution.getConstReference();
 
     //1. Check if all Vectors are DenseVectors
-    if( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
-            && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
-            && typeid( *getRuntime().mRhs ) == typeid( oldSolution ) )
+    if(  DenseVector<ValueType>::createValue() == oldSolution.getCreateValue()
+            && (*getRuntime().mSolution).getCreateValue() == oldSolution.getCreateValue() 
+            && (*getRuntime().mRhs).getCreateValue() == oldSolution.getCreateValue() )
+//    if( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
+//            && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
+//            && typeid( *getRuntime().mRhs ) == typeid( oldSolution ) )
     {
         SCAI_LOG_INFO( logger, "All types have the same value type." )
         const DenseVector<ValueType>& denseOldSolution = dynamic_cast<const DenseVector<ValueType>&>( oldSolution );

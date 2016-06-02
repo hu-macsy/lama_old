@@ -41,7 +41,7 @@ set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
 # for static/dynamic linking
 
-if    ( UNIX )
+if    ( UNIX AND NOT APPLE )
     if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
     	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
     	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
@@ -49,7 +49,7 @@ if    ( UNIX )
     	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
     	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
     endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-endif ( UNIX )
+endif ( UNIX AND NOT APPLE )
 
 # check if Complex is in SCAI_HOST_TYPES then set USE_COMPLEX true
 include ( Functions/checkValue )
