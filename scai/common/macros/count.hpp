@@ -71,3 +71,16 @@
 
 #define _SCAI_COMMON_FIRST_ARG( x, ... ) x
 
+/** Macro gives the tail of a variadic argument list, first removed
+ *
+ *  \code
+ *     SCAI_COMMON_TAIL( A, B, C, D, E ) -> A
+ *  \endcode
+ */
+
+#define SCAI_COMMON_TAIL( x, ... ) _SCAI_COMMON_TAIL( x, __VA_ARGS__ )
+
+/** Help macro needed as x must be replaced first */
+
+#define _SCAI_COMMON_TAIL( x, ... ) __VA_ARGS__
+
