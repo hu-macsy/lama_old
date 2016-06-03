@@ -32,7 +32,14 @@
 
 // CUDA
 #include <cuda.h>
+#if (defined(__clang__) && __clang_major__ == 3 && __clang_minor__ <= 3)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
 #include <cuda_runtime.h>
+# pragma GCC diagnostic pop
+#else
+#include <cuda_runtime.h>
+#endif
 #include <cusparse.h>
 
 namespace scai
