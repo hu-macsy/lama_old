@@ -56,6 +56,7 @@
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/instantiate.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 // std
@@ -158,30 +159,42 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 {
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
-
     // Take the current default communicator
+
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
     IndexType myRank = comm->getRank();
+
     IndexType host = 0; // reading processor
 
-    if( myRank == host )
+    if ( myRank == host )
     {
+        // Only host reads the values
 
         IndexType numColumns;
         StorageIO<ValueType>::readDenseFromFile( mLocalValues, numColumns, filename );
 
         SCAI_ASSERT_EQ_ERROR( numColumns, 1, "vector must have exact one column in MatrixMarket file" )
     }
+    else
+    {
+        // other processors have to clear their local values
+
+        mLocalValues.clear();
+    }
 
     IndexType numElements = mLocalValues.size();
+
     comm->bcast( &numElements, 1, host );
 
-    DistributionPtr distribution( new NoDistribution( numElements ) );
-    setDistributionPtr( distribution );
+    DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
 
-//    DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
-//    allocate( dist );
+    SCAI_ASSERT_EQ_DEBUG( dist->getLocalSize(), mLocalValues.size(), "wrong distribution" );
+    SCAI_ASSERT_EQ_DEBUG( dist->getGlobalSize(), numElements, "wrong distribution" );
+
+    // this is safe, we have allocated it correctly
+
+    setDistributionPtr( dist );
 }
 
 /* ------------------------------------------------------------------------- */
