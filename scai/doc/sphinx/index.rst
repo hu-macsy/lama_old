@@ -1,13 +1,13 @@
-.. LAMA documentation master file, created by
-   sphinx-quickstart on Wed Aug 22 10:27:01 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 #############
 Documentation
 #############
 
 .. The \Library of \Accelerated \Math \Applications (\L\A\M\A) is framework for 
+
+.. figure:: _images/LAMA_Hierarchy3.png
+    :width: 500px
+    :align: center
+    :alt: LAMA Hierarchy
 
 ********
 Contents
@@ -17,10 +17,10 @@ Contents
    :titlesonly:
    :maxdepth: 1
    
-   faq
    installation
    projects
    tutorial
+   faq
 
 .. toctree::
    :hidden:

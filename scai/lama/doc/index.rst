@@ -36,6 +36,12 @@ Class                     Description
    Vector
    Matrix
 
+The mathematical notation is implemented by expression overloading. Some general informations about their implementation can be found :doc:`here <Expressions>` - but are not neccesary for using it.
+
+.. toctree::
+	:hidden:
+
+	Expressions
 
 Usage
 -----
@@ -64,7 +70,6 @@ Class                     Description
 .. toctree::
 	:hidden:
 
-	Expressions
 	IO
 
 .. **************

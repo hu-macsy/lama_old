@@ -1,11 +1,9 @@
-Expressions
-===========
+LAMA's Text Book Syntax
+=======================
 
-Text Book Syntax in LAMA
-------------------------
+**Remark: This section gives some background information about LAMA's text book syntax, that is achieved by expression overloading. The section explains the idea behind it, but is not needed for the usage of it.**
 
-LAMA supports the use of text book syntax for expressions on matrices and vectors. Therefore, it is possible to use binary
-operators like ``+``, ``-``, and ``*`` in your program when using LAMA matrices and vectors.
+LAMA supports the use of text book syntax for expressions on matrices and vectors. Therefore, it is possible to use binary operators like ``+``, ``-``, and ``*`` in your program when using LAMA matrices and vectors.
 
 .. code-block:: c++
 
@@ -23,19 +21,14 @@ operators like ``+``, ``-``, and ``*`` in your program when using LAMA matrices 
        m = 0.5 * m1 * m2 + m3;     // matrix-matrix expression
    }
 
-The idea of matrix and vector expressions in LAMA is that these expressions are built in a first step as 'symbolic'
-expressions and the symbolic expressions will not be evaluated before an assignment operator is called.
-The assignment operator will select the corresponding factors of the 'symbolic' expression and call corresponding
-methods to evaluate the full assignment.
+The idea of matrix and vector expressions in LAMA is that these expressions are built in a first step as 'symbolic' expressions and the symbolic expressions will not be evaluated before an assignment operator is called. The assignment operator will select the corresponding factors of the 'symbolic' expression and call corresponding methods to evaluate the full assignment.
 
 .. code-block:: c++
 
    m = 0.5 * m1 * m2 + m3;  // ->  m1.matrixTimesMatrix( m, 0.5, m2, 1.0, m3)
    m = 0.5 * m1 + m2;       // ->  m.matrixPlusMatrix( 0.5, m1, 1.0, m2 )
 
-By this strategy, LAMA avoids the use of intermediate vectors or matrices as results of binary operations; wherever it
-is possible the whole expression is evaluated in one single call. Another advantage of these symbolic expressions are
-that they can be normalized and optimized before they are finally resolved to corresponding operations.
+By this strategy, LAMA avoids the use of intermediate vectors or matrices as results of binary operations; wherever it is possible the whole expression is evaluated in one single call. Another advantage of these symbolic expressions are that they can be normalized and optimized before they are finally resolved to corresponding operations.
 
 .. code-block:: c++
 
@@ -46,14 +39,12 @@ Unsupported expressions will already fail at compilation time.
 .. code-block:: c++
 
    v = 0.5 * m1 * v2;  // OKAY, legal matrix-vector expression
-   v = 0.5 * v2 * m1;  // ERROR, illegal matrix-vector expression
-   v = v1 + v2 + v3;   // ERROR, unsupported as too complex
+   v = v1 + v2 + v3;   // ERROR, unsupported expression (too long)
 
 Size, Type, and Distribution Conformance
 ----------------------------------------
 
-When using matrix and vector expressions, the operands must be conform, i.e. corresponding sizes of rows and columns 
-must fit with other ones. LAMA will check these conditions, but this can only be done at runtime.
+When using matrix and vector expressions, the operands must be conform, i.e. corresponding sizes of rows and columns must fit with other ones. LAMA will check these conditions, but this can only be done at runtime.
 
 .. code-block:: c++
 
@@ -61,10 +52,7 @@ must fit with other ones. LAMA will check these conditions, but this can only be
     CSRSparseMatrix<double> C = A * B;   // okay
     CSRSparseMatrix<double> D = B * A;   // runtime error
 
-Multiprecision support has been considered as an important design goal of LAMA but is not yet implemented entirely.
-Therefore, the operands should have all the same value type. In some situations LAMA supports implicit type conversions,
-especially in simple assignments. But using different precisions in expressions is not always supported and will give
-runtime errors.
+Multiprecision support has been considered as an important design goal of LAMA but is not yet implemented entirely. Therefore, the operands should have all the same value type. In some situations LAMA supports implicit type conversions, especially in simple assignments. But using different precisions in expressions is not always supported and will give runtime errors.
 
 .. code-block:: c++
 
@@ -96,15 +84,12 @@ The results of matrix and vector expressions will inherit distribution as the op
 
    // now it is valid: v.getDistribution() == v1.getDistribution()
 
-Unfortunately, it is not always easy to identify which expression has failed in the conformance checks. At least the
-debug version of LAMA will print a call stack that might be very helpul to identify the source code line where the wrong
-expression appears.
+Unfortunately, it is not always easy to identify which expression has failed in the conformance checks. At least the debug version of LAMA will print a call stack that might be very helpul to identify the source code line where the wrong expression appears.
 
 Vector-Expressions
 ------------------
 
-A vector expression is a sum of scaled vectors. One summand can be used for incrementation or decrementation of a
-vector, up to two summands are supported in an assignment.
+A vector expression is a sum of scaled vectors. One summand can be used for incrementation or decrementation of a vector, up to two summands are supported in an assignment.
 
 .. code-block:: c++
 
@@ -117,9 +102,7 @@ vector, up to two summands are supported in an assignment.
    v += alpha * v1;
    v -= alpha * v1;
  
-The scalars used as scaling factors for the vectors will be represented as Scalar objects. Implicit type conversions
-from double, int, or float values to Scalar are supported, so values of these types can be used in vector expressions
-at any time.
+The scalars used as scaling factors for the vectors will be represented as Scalar objects. Implicit type conversions from double, int, or float values to Scalar are supported, so values of these types can be used in vector expressions at any time.
 
 When building symbolic vector expressions (Expression_SV), the following normalizations are done:
 
@@ -142,8 +125,7 @@ A matrix-vector expression is a scaled matrix-vector product.
     v += alpha * m * v1;
     v -= alpha * m * v1;
 
-The size of vector ``v1`` must be equal to the number of columns in the matrix. The size of the result vector will be
-equal to the number of rows of the matrix.
+The size of vector ``v1`` must be equal to the number of columns in the matrix. The size of the result vector will be equal to the number of rows of the matrix.
 
 When building symbolic matrix-vector expressions (``Expression_SMV``) , the following normalizations are done:
 
@@ -152,8 +134,7 @@ When building symbolic matrix-vector expressions (``Expression_SMV``) , the foll
    * ``alpha * m * v * beta``  becomes ``(alpha * beta) * m  * v``
    * ``m * v / alpha``  becomes ``( 1.0 / alpha ) * m  * v``
 
-A matrix-vector expression (``Expression_SMV``) can be added with a vector expression (``Expression_SV``)
-and gives an expression (``Expression_SMV_SV``) also supported in an assignment.
+A matrix-vector expression (``Expression_SMV``) can be added with a vector expression (``Expression_SV``) and gives an expression (``Expression_SMV_SV``) also supported in an assignment.
 
 .. code-block:: c++
 
@@ -166,8 +147,7 @@ and gives an expression (``Expression_SMV_SV``) also supported in an assignment.
 Matrix-Expressions
 ------------------
 
-A matrix expression is a sum of scaled matrices. One summand can be used for incrementation or decrementation of
-a matrix, up to two summands are supported in an assignment.
+A matrix expression is a sum of scaled matrices. One summand can be used for incrementation or decrementation of a matrix, up to two summands are supported in an assignment.
 
 .. code-block:: c++
 
@@ -208,11 +188,7 @@ When building symbolic matrix-matrix expressions, the following normalizations a
    * ``m1 * m2 * alpha`` becomes ``alpha * m1 * m2``
    * ``m1 * alpha * m2`` alpha becomes ``alpha * m1 * m2``
 
-For the matrix-matrix product, the number of columns of the first matrix must be equal to the number of rows of the
-second matrix. In case of distributed matrices, the column distribution of the first matrix should be equal to the row
-distribution of the second matrix. It might be possible that LAMA can handle different distributions, but will at least
-redistribute one of the matrices that might cause a certain overhead. For the result matrix, its row distribution will
-be that of the first matrix, and its column distribution that of the second matrix.
+For the matrix-matrix product, the number of columns of the first matrix must be equal to the number of rows of the second matrix. In case of distributed matrices, the column distribution of the first matrix should be equal to the row distribution of the second matrix. It might be possible that LAMA can handle different distributions, but will at least redistribute one of the matrices that might cause a certain overhead. For the result matrix, its row distribution will be that of the first matrix, and its column distribution that of the second matrix.
 
 In an assignment, a matrix-matrix expression can be added with a matrix expression.
 
@@ -262,9 +238,7 @@ The following expressions are supported for an assignment to a matrix:
 Other Expressions
 =================
 
-The operator ``*`` can be used to form the dotproduct of two vectors and will give
-as a result a Scalar. The result as a Scalar might be used in other expressions
-as well.
+The operator ``*`` can be used to form the dotproduct of two vectors and will give as a result a Scalar. The result as a Scalar might be used in other expressions as well.
 
 .. code-block:: c++
 
@@ -309,8 +283,7 @@ This solution is especially recommended when using different norms.
     sub( L2Norm() );
     sub( MaxNorm() );
 
-In future versions of LAMA, these norm classes are expected to deal with more general expressions that might avoid the
-use of temporary vectors in case of differences.
+In future versions of LAMA, these norm classes are expected to deal with more general expressions that might avoid the use of temporary vectors in case of differences.
 
 .. code-block:: c++
 
@@ -339,10 +312,6 @@ All expressions that are supported in an assignment, can also be used in a const
 Performance Issues
 ------------------
 
-Due to the use of symbolic expressions implememented by expression templates there is no performance loss for the
-supported matrix and vector expressions. The little overhead is rather small and might be neglected for larger vectors
-and matrices.
+Due to the use of symbolic expressions implememented by expression templates there is no performance loss for the supported matrix and vector expressions. The little overhead is rather small and might be neglected for larger vectors and matrices.
 
-Regarding matrix and vector operations it is recommended that the operands have the same distribution. Even if LAMA
-takes sometimes care of implicit redistributions, the corresponding overhead might slow down the performance.
-
+Regarding matrix and vector operations it is recommended that the operands have the same distribution. Even if LAMA takes sometimes care of implicit redistributions, the corresponding overhead might slow down the performance.
