@@ -30,14 +30,10 @@
 
 #pragma once
 
-/*
-#define LAMA_REVISION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}
-
-extern "C" inline int lama_getRevision()
+extern "C" inline const char* lama_get_version()
 {
-    return LAMA_REVISION;
+    return "${SCAI_LAMA_VERSION}";
 }
-*/
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
