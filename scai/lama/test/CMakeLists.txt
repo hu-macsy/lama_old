@@ -62,6 +62,7 @@ scai_project (
         ScalarTest
         StorageIOTest
         VectorTest
+        VersionTest
     )
 
 ### checks ####
@@ -81,14 +82,6 @@ endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
 add_subdirectory ( storage )
 add_subdirectory ( matrix )
 
-if ( MPI_FOUND AND USE_MPI )
-    add_subdirectory ( distributed )
-endif ( MPI_FOUND AND USE_MPI )
-
-if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
- 
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
