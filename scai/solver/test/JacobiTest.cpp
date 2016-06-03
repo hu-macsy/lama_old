@@ -62,8 +62,6 @@ using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 
-typedef boost::mpl::list<float, double> test_types;
-
 // ---------------------------------------------------------------------------------------------------------------
 
 struct JacobiTestConfig
@@ -221,7 +219,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     BOOST_CHECK( l2norm.getValue<ValueType>() < 1e-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
     testSolveMethod<CSRSparseMatrix<ValueType> >( "<JacobiCSR> ", context );

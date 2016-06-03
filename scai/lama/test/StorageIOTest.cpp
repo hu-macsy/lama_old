@@ -35,7 +35,7 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/Complex.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::common;
 using namespace scai::lama;
@@ -44,12 +44,8 @@ using namespace scai::hmemo;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( StorageIOTest )
-;
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.StorageIOTest" );
-
-typedef boost::mpl::list<float, double> test_types;
-typedef boost::mpl::list<float, double, Complex<float>, Complex<double> > test_types_complex;
 
 /* ------------------------------------------------------------------------- */
 
@@ -73,8 +69,13 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, scai_arithmetic_test_types )
 {
+    if ( isComplex( TypeTraits<ValueType>::stype ) )
+    {
+        return;
+    }
+
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
@@ -88,8 +89,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, test_types )
     {
         for ( IndexType j = 0; j < csrMatrix.getNumColumns(); ++j )
         {
-            BOOST_CHECK_CLOSE( csrMatrix.getValue( i, j ),
-                               readMatrix.getValue( i, j ), 0.01f );
+            SCAI_CHECK_CLOSE( csrMatrix.getValue( i, j ),
+                              readMatrix.getValue( i, j ), 0.01f );
         }
     }
 
@@ -99,8 +100,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, test_types_complex )
+BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, scai_arithmetic_test_types )
 {
+    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+
+    if ( isComplex( stype ) || ( stype == scalar::LONG_DOUBLE ) )
+    {
+        return;
+    }
+
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
@@ -123,8 +131,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, test_types_comp
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, scai_arithmetic_test_types )
 {
+    if ( isComplex( TypeTraits<ValueType>::stype ) )
+    {
+        return;
+    }
+
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );

@@ -31,10 +31,10 @@
 find_package( LAPACK ${LAMA_FIND_PACKAGE_FLAGS} )
 
 if    ( APPLE )
-	if      ( EXISTS ${BLAS_LIBRARIES}/Accelerate )
-	    set ( BLAS_blas_LIBRARY ${BLAS_LIBRARIES}/Accelerate )
-	elseif  ( BLAS_blas_LIBRARY AND LAPACK_lapack_LIBRARY )
+	if      ( BLAS_blas_LIBRARY AND LAPACK_lapack_LIBRARY )
 	    # everything ok, nothing to be done
+	elseif      ( EXISTS ${BLAS_LIBRARIES}/Accelerate )
+	    set ( BLAS_blas_LIBRARY ${BLAS_LIBRARIES}/Accelerate )
 	else    ()
 	    set ( BLAS_FOUND FALSE )
 	    set ( LAPACK_FOUND FALSE )

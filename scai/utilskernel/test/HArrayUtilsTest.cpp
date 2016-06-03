@@ -49,10 +49,6 @@ using namespace scai::utilskernel;
 using namespace scai::hmemo;
 using namespace scai::common;
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> test_types;
-
-// typedef boost::mpl::list<float, double> test_types;
-
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( HArrayUtilsTest )
@@ -85,6 +81,8 @@ BOOST_AUTO_TEST_CASE( FactoryTest )
 
 BOOST_AUTO_TEST_CASE( UntypedTest )
 {
+    typedef SCAI_TEST_TYPE ValueType;
+
     ContextPtr ctx  = Context::getContextPtr();
 
     HArrays allArrays1;    // vector with HArray of each type
@@ -127,8 +125,8 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
   
             for ( IndexType k = 0; k < n; ++k )
             {
-                double val1 = HArrayUtils::getVal<double>( array2, k );
-                double val2 = HArrayUtils::getVal<double>( *tmp, k );
+                ValueType val1 = HArrayUtils::getVal<ValueType>( array2, k );
+                ValueType val2 = HArrayUtils::getVal<ValueType>( *tmp, k );
                 BOOST_CHECK_EQUAL( val1, val2 );
             }
         }
@@ -137,7 +135,7 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_arithmetic_test_types )
 {
     const IndexType N = 10;
 
@@ -168,7 +166,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_arithmetic_test_types )
 {
     const IndexType N = 10;
     const IndexType k = 3;    // one value in range 0 .. N-1
@@ -204,7 +202,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_arithmetic_test_types )
 {
     ValueType sourceVals[] = { 3, 1, 4, 2 };
     IndexType indexVals[]  = { 0, 2, 1, 2, 1, 3 };
@@ -238,7 +236,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_arithmetic_test_types )
 {
     ValueType sourceVals[] = { 3, 1, 4, 2 };
     IndexType indexVals[]  = { 0, 2, 1, 3 };
@@ -395,7 +393,7 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
@@ -423,7 +421,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
@@ -504,7 +502,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
@@ -582,7 +580,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 

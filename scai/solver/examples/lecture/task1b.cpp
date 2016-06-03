@@ -38,11 +38,13 @@
 using namespace scai::lama;
 using namespace scai::hmemo;
 
+typedef RealType ValueType;
+
 int main()
 {
     IndexType size = 4;
 
-    SparseAssemblyStorage<double> sas( size, size, 10 );
+    SparseAssemblyStorage<ValueType> sas( size, size, 10 );
 
     for ( IndexType i = 0; i < size; i++ )
     {
@@ -59,10 +61,10 @@ int main()
         sas.set( i, i + 1, 1 );
     }
 
-    CSRSparseMatrix<double> m ( sas );
+    CSRSparseMatrix<ValueType> m ( sas );
 
-    DenseVector<double> rhs( size , 0.0 );
-    WriteAccess<double> hwarhs( rhs.getLocalValues() );	
+    DenseVector<ValueType> rhs( size , 0.0 );
+    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );	
     for ( IndexType i = 0; i < size; i++ )
     {
     	hwarhs[i] = i + 1.0;
@@ -70,7 +72,7 @@ int main()
 
     hwarhs.release();
 
-    DenseVector<double> solution( size , 0.0 );
+    DenseVector<ValueType> solution( size , 0.0 );
 
     return 0;
 }

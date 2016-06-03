@@ -119,8 +119,21 @@ int main()
 
         for ( int j = 0; j < nrates; ++j )
         {
-            typedef float ValueType;
-            typedef double ValueType1;
+            // a bit tricky here as we need two different value types
+
+            typedef SCAI_COMMON_FIRST_ARG( SCAI_ARITHMETIC_HOST ) ValueType;
+
+#if SCAI_COMMON_COUNT_NARG( SCAI_ARITHTMETIC_HOST ) == 1
+
+            // only one supported type, so take the same value type
+
+            typedef ValueType ValueType1;
+#else
+
+            // take the second supported value type
+
+            typedef SCAI_COMMON_FIRST_ARG( SCAI_COMMON_TAIL( SCAI_ARITHMETIC_HOST ) ) ValueType1;
+#endif
 
             double rate = fillrates[j];
  

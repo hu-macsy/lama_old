@@ -38,6 +38,8 @@
 using namespace scai::lama;
 using namespace scai::hmemo;
 
+typedef RealType ValueType;
+
 int main( int argc, char* argv[] )
 {
     if ( argc < 2 )
@@ -47,12 +49,12 @@ int main( int argc, char* argv[] )
     }
 
     //Read a sparse matrix from the passed input file
-    CSRSparseMatrix<double> m( argv[1] );
+    CSRSparseMatrix<ValueType> m( argv[1] );
 
     IndexType size = m.getNumRows();
 
-    DenseVector<double> rhs( size , 0.0 );
-    WriteAccess<double> hwarhs( rhs.getLocalValues() );	
+    DenseVector<ValueType> rhs( size , 0.0 );
+    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );	
     for ( IndexType i = 0; i < size; ++i )
     { 
         hwarhs[i] = i + 1.0;
@@ -60,7 +62,7 @@ int main( int argc, char* argv[] )
 
     hwarhs.release();
 
-    DenseVector<double> solution( size , 0.0 );
+    DenseVector<ValueType> solution( size , 0.0 );
 
     return 0;
 }

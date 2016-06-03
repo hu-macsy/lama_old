@@ -17,23 +17,16 @@ The data type int is the preferred one as it is the same type used in external l
 like MKL or cuSPARSE. Using ''unsigned int'' is possible but might result in a lot of
 warnings at compile time.
 
-For every backend a list of value types which are used to instantiate template is provided. 
-E.g. the list of value types for the Host-Backend. 
-
-.. literalinclude:: ../SCAITypes.hpp 
-   :language: c++
-   :lines: 93-109
-
-The reason for this syntax is the use of BOOST_PP_MACRO for instantiation of 
-classes and methods.
+For every backend a list of supported arithmetic types is provided. 
+E.g. the list of value types that are used in the current release:
 
 .. code-block:: c++
 
-   // instantiate CSRStorage<ValueType> for supported arithmetic types
+   #define SCAI_ARITHMETIC_HOST     float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble
+   #define SCAI_ARITHMETIC_CUDA     float, double, ComplexFloat, ComplexDouble
+   #define SCAI_ARITHMETIC_MIC      float, double, ComplexFloat, ComplexDouble
 
-   #define LAMA_CSR_STORAGE_INSTANTIATE(z, I, _)                                    \  
-       template class COMMON_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_HOST_TYPE_##I> ; 
+For each type in this list, the templatized kernel routines will be instantiated to support
+operations for vectors or matrices of the corresponding type.
 
-   BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_STORAGE_INSTANTIATE, _ )
-
-   #undef LAMA_CSR_STORAGE_INSTANTIATE                              
+The list of supported types can be configured during the CMake configuration of LAMA.

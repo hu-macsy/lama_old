@@ -72,7 +72,7 @@ public:
      *  sleep routine for milliseconds
      */
 
-    static void sleep( unsigned milliseconds );
+    static void sleep( unsigned int milliseconds );
 
 private:
 

@@ -39,6 +39,9 @@
 
 #include <scai/logging.hpp>
 
+#include <scai/common/test/TestMacros.hpp>
+#include <scai/common/macros/count.hpp>
+
 using namespace scai;
 using namespace lama;
 using utilskernel::LArray;
@@ -76,16 +79,18 @@ void checkEqual( const _MatrixStorage& storage1, const _MatrixStorage& storage2 
 
 void initStorage( _MatrixStorage& storage )
 {
+    typedef SCAI_TEST_TYPE ValueType;
+
     const IndexType numRows = 4;
     const IndexType numColumns = 5;
 
-    static const double values[] =  { 6, 0, 7, 0, 0,
-                                      0, 1, 0, 0, 0,
-                                      0, 0, 9, 4, 0,
-                                      2, 5, 0, 3, 8 };
+    static const ValueType values[] =  { 6, 0, 7, 0, 0,
+                                         0, 1, 0, 0, 0,
+                                         0, 0, 9, 4, 0,
+                                         2, 5, 0, 3, 8 };
 
-    hmemo::HArrayRef<double> data( numRows * numColumns, values );
-    DenseStorage<double> dense( data, numRows, numColumns );
+    hmemo::HArrayRef<ValueType> data( numRows * numColumns, values );
+    DenseStorage<ValueType> dense( data, numRows, numColumns );
 
     storage.assign( dense );
 }
@@ -105,6 +110,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     size_t nFormats = Format::UNDEFINED;
     size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_ARITHMETIC_HOST );
 
+    SCAI_LOG_INFO( logger, "#formats = " << nFormats << ", #types = " << nTypes )
     SCAI_LOG_INFO( logger, "Test all storages of factory to be empty, #storages = " << allMatrixStorages.size() )
 
     BOOST_CHECK_EQUAL( nTypes * nFormats, allMatrixStorages.size() );
@@ -144,6 +150,8 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 BOOST_AUTO_TEST_CASE( setIdentityTest )
 {
+    typedef SCAI_TEST_TYPE ValueType;
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
     const IndexType N = 15;        // size of the matrix storage
@@ -164,22 +172,22 @@ BOOST_AUTO_TEST_CASE( setIdentityTest )
         BOOST_REQUIRE_EQUAL( N, storage.getNumColumns() );
         BOOST_REQUIRE_EQUAL( N, storage.getNumValues() );
         
-        LArray<double> row;
+        LArray<ValueType> row;
 
         for ( IndexType i = 0; i < N; ++i )
         {
             storage.getRow( row, i );
-            hmemo::ReadAccess<double> rRow( row );
+            hmemo::ReadAccess<ValueType> rRow( row );
         
             for ( IndexType j = 0; j < N; ++j )
             {
                 if ( i == j )
                 {
-                    BOOST_CHECK_EQUAL( 1.0, rRow[j] );
+                    BOOST_CHECK_EQUAL( ValueType( 1 ), rRow[j] );
                 }
                 else
                 {
-                    BOOST_CHECK_EQUAL( 0.0, rRow[j] );
+                    BOOST_CHECK_EQUAL( ValueType( 0 ), rRow[j] );
                 }
             }
         }
@@ -255,7 +263,9 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 
 BOOST_AUTO_TEST_CASE( assignDenseTest )
 {
-    DenseStorage<double> denseStorage;
+    typedef SCAI_TEST_TYPE ValueType;
+
+    DenseStorage<ValueType> denseStorage;
 
     initStorage( denseStorage );
 

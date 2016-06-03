@@ -62,8 +62,14 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MatrixTest" )
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<CSRSparseMatrix<float>, ELLSparseMatrix<float>, COOSparseMatrix<double>, JDSSparseMatrix<float>,
-        DIASparseMatrix<double>, DenseMatrix<double> > MatrixTypes;
+typedef SCAI_TEST_TYPE ValueType;
+
+typedef boost::mpl::list<CSRSparseMatrix<ValueType>, 
+                         ELLSparseMatrix<ValueType>, 
+                         COOSparseMatrix<ValueType>, 
+                         JDSSparseMatrix<ValueType>,
+                         DIASparseMatrix<ValueType>, 
+                         DenseMatrix<ValueType> > MatrixTypes;
 
 /* --------------------------------------------------------------------- */
 

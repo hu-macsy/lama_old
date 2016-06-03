@@ -46,15 +46,12 @@ extern std::string testcase;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( MaxNormTest )
-;
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.MaxNormTest" );
 
-typedef boost::mpl::list<float, double> test_types;
-
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, scai_arithmetic_test_types )
 {
     IndexType n = 4;
     ValueType val = 5.0;

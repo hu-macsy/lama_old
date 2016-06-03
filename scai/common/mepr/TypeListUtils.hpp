@@ -31,8 +31,6 @@
 
 #include <scai/common/mepr/TypeList.hpp>
 
-#include <scai/common/TypeTraits.hpp>
-
 namespace scai
 {
 
@@ -94,19 +92,19 @@ struct TypeListUtilsV<ValueType, TypeList<H,T> >
 template<typename VT, typename TList1, typename TList2> struct TypeListUtilsVLL;
 
 template<typename VT, typename H, typename T>
-struct TypeListUtilsVLL<VT, common::mepr::TypeList<H,T>, common::mepr::NullType>
+struct TypeListUtilsVLL<VT, TypeList<H,T>, NullType>
 {
     typedef H ValueType;
 };
 
 template<typename VT, typename TList1, typename H, typename T>
-struct TypeListUtilsVLL<VT, TList1, common::mepr::TypeList<H, T> >
+struct TypeListUtilsVLL<VT, TList1, TypeList<H, T> >
 {
     typedef typename TypeListUtilsVLL<VT, TList1, T>::ValueType ValueType;
 };
 
 template<typename VT, typename TList1, typename T>
-struct TypeListUtilsVLL<VT, TList1, common::mepr::TypeList<VT, T> >
+struct TypeListUtilsVLL<VT, TList1, TypeList<VT, T> >
 {
     typedef VT ValueType;
 };

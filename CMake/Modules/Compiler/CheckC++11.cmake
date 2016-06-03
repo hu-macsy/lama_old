@@ -45,19 +45,56 @@
 
 if    ( NOT WIN32 )
 
-include ( CheckCXXCompilerFlag )
+	set ( CXX11_COMPILE_FLAG "-std=c++11" )
 
-if ( NOT DEFINED CXX_SUPPORTS_C11 )
-    CHECK_CXX_COMPILER_FLAG( -std=c++11 CXX_SUPPORTS_C11 )
-endif ( NOT DEFINED CXX_SUPPORTS_C11 )
+	include ( CheckCXXCompilerFlag )
 
-if    ( CXX_SUPPORTS_C11 )
-    set ( SCAI_LANG_FLAGS "-std=c++11" )
-else  ( CXX_SUPPORTS_C11 )
-    set ( SCAI_LANG_FLAGS "" )
-endif ( CXX_SUPPORTS_C11 )
+	if ( NOT DEFINED CXX_SUPPORTS_C11 )
+	    CHECK_CXX_COMPILER_FLAG( ${CXX11_COMPILE_FLAG} CXX_SUPPORTS_C11 )
+	endif ( NOT DEFINED CXX_SUPPORTS_C11 )
 
-set ( CXX_SUPPORTS_C11 ${CXX_SUPPORTS_C11} CACHE STRING "Compiler supports CXX-11." )
+	if    ( CXX_SUPPORTS_C11 )
+		# check for needed C++11 features
+		# only use C++11 if all needed features are found
+		include ( Functions/checkFeature )
+
+		# set c++11 flag as CMAKE_CXX_FLAGS and restore old value afterwards
+		# setting flag int try_compile/try_run does not work
+		set ( CHECK_CXX11_OLD_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )
+		set ( CMAKE_CXX_FLAGS "${CXX11_COMPILE_FLAG}" )
+
+		# other c++(11) features - not used (yet)
+		# add to list below if used in LAMA ( take care of ordering of the three lists (!) )
+		#set ( CXX11_FEATURE_LIST    "auto" "nullptr" "lambda" "static_assert" "rvalue_references" "decltype" "variadic_templates" "constexpr" "sizeof_member" "__func__" )
+		#set ( CXX11_FEATURE_NUMBER  "2546" "2431"    "2927"   "1720"          "2118"              "2343"     "2555"               "2235"      "2253"          "2340"     )
+		#set ( CXX11_LINK_LIBRARIES  ""     ""        ""       ""              ""                  ""         ""                   ""          ""              ""         )
+
+		# needed c++11 features - replacing boost
+		set ( CXX11_FEATURE_LIST    "bind" "function" "shared_ptr" "thread_local" "unique_ptr" "weak_ptr" )
+		set ( CXX11_FEATURE_NUMBER  ""     ""         ""           ""             ""           ""         )
+		set ( CXX11_LINK_LIBRARIES  ""     ""         ""           "pthread"      ""           ""         ) #todo:: pthreads only for gnu !?
+
+		set ( COUNT 0 )
+		foreach    ( FEATURE ${CXX11_FEATURE_LIST} )
+			list ( GET CXX11_FEATURE_NUMBER ${COUNT} FEATURE_NUMBER )
+			list ( GET CXX11_LINK_LIBRARIES ${COUNT} LINK_LIB )
+			checkFeature ( ${FEATURE} "${FEATURE_NUMBER}" ${FEATURE}_BOOLVALUE "${CXX11_COMPILE_FLAG}" "${LINK_LIB}" )
+			message ( "${COUNT}: item ${FEATURE} number ${FEATURE_NUMBER}: ${${FEATURE}_BOOLVALUE}" )
+
+			if    ( NOT ${FEATURE}_BOOLVALUE )
+				set ( CXX_SUPPORTS_C11 FALSE )
+			endif ( NOT ${FEATURE}_BOOLVALUE )
+			math ( EXPR COUNT "${COUNT}+1" )
+		endforeach ( FEATURE ${CXX11_FEATURE_LIST} )
+
+		if    ( NOT CXX_SUPPORTS_C11 )
+			message ( STATUS "Compiler does not support all needed c++11 features. Turn CXX_SUPPORTS_C11 off.\n Unsupported features are: ${CXX11_UNSUPPORTED_FEATURE_LIST}" )
+		endif ( NOT CXX_SUPPORTS_C11 )
+
+		# restore CMAKE_CXX_FLAGS
+		set ( CMAKE_CXX_FLAGS ${CHECK_CXX11_OLD_CMAKE_CXX_FLAGS} )
+
+	endif ( CXX_SUPPORTS_C11 )
 
 else  ( NOT WIN32 )
 	
@@ -65,16 +102,22 @@ else  ( NOT WIN32 )
 		#message ( STATUS "MSVC_VERSION ${MSVC_VERSION} " )
 		if    ( ${MSVC_VERSION} GREATER 1600 ) # 1600 = VS 10.0
 			set ( CXX_SUPPORTS_C11 TRUE )
-			set ( SCAI_LANG_FLAGS "" ) # implicitly compiled with c++11
 		else  ( ${MSVC_VERSION} GREATER 1600 )
 			set ( CXX_SUPPORTS_C11 FALSE )
-			set ( SCAI_LANG_FLAGS "" )
 		endif ( ${MSVC_VERSION} GREATER 1600 )
 	else  ( MSVC )
 		message ( FATAL_ERROR "NO Visual Studio compiler, can not determine if C++11 support given." )
 	endif ( MSVC )
 	
 endif ( NOT WIN32 )
+
+set ( CXX_SUPPORTS_C11 ${CXX_SUPPORTS_C11} CACHE STRING "Compiler supports CXX-11." )
+
+if    ( CXX_SUPPORTS_C11 AND NOT WIN32 ) # WIN32: implicitly compiled with c++11 by MSVC
+    set ( SCAI_LANG_FLAGS "${CXX11_COMPILE_FLAG}" )
+else  ( CXX_SUPPORTS_C11 AND NOT WIN32 )
+    set ( SCAI_LANG_FLAGS "" )
+endif ( CXX_SUPPORTS_C11 AND NOT WIN32 )
 
 set ( ADDITIONAL_CXX_FLAGS_LANG "${SCAI_LANG_FLAGS}" CACHE STRING "Language flag for using C++11 (if compiler capable)" )
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_LANG )

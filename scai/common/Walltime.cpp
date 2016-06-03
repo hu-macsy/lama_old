@@ -105,7 +105,7 @@ double Walltime::get()
 
 }
 
-void Walltime::sleep( unsigned milliseconds )
+void Walltime::sleep( unsigned int milliseconds )
 {
 #if defined( WIN32 )
     Sleep( milliseconds );

@@ -48,11 +48,9 @@ BOOST_AUTO_TEST_SUITE( L1NormTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.L1NormTest" )
 
-typedef boost::mpl::list<float, double> test_types;
-
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_arithmetic_test_types )
 {
     IndexType n = 4;
     ValueType val = 5.0;

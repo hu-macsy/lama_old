@@ -41,6 +41,7 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai;
 using namespace hmemo;
@@ -58,12 +59,6 @@ BOOST_AUTO_TEST_SUITE( CommunicatorTest )
 /* --------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
-
-/* --------------------------------------------------------------------- */
-
-// ToDo: take SCAI_ARITHMETIC_HOST_TYPE for the tests
-
-typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -322,7 +317,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -403,7 +398,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -451,7 +446,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -533,7 +528,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -576,7 +571,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -620,7 +615,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -678,7 +673,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -724,7 +719,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -790,7 +785,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 

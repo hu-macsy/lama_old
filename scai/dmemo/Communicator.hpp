@@ -573,9 +573,9 @@ public:
             const int direction ) const = 0;
      
 
-    // define communicator methods for all supported data types
+    // define communicator methods for all supported types
 
-    SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_METHODS, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_METHODS, SCAI_ALL_TYPES )
 
 #undef SCAI_DMEMO_COMMUNICATOR_METHODS
 

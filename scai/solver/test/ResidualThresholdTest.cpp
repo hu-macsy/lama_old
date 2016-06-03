@@ -54,8 +54,6 @@ using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
-typedef boost::mpl::list<double, float> test_types;
-
 /* --------------------------------------------------------------------- */
 
 struct ResidualThresholdTestConfig
@@ -177,10 +175,11 @@ void testIsSatisfied( ResidualThreshold::ResidualThresholdCheckMode checkMode )
     DenseVector<ValueType> error( n, 1.0 );
     error = rhs - temp;
     Scalar l2 = ( *l2Norm )( error );
-    BOOST_CHECK( l2.getValue<ValueType>() <= 1e-5 );
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    BOOST_CHECK( l2.getValue<AbsType>() <= 1e-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_arithmetic_test_types )
 {
     testIsSatisfied<ValueType>( ResidualThreshold::Absolute );
     testIsSatisfied<ValueType>( ResidualThreshold::Relative );

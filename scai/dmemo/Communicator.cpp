@@ -860,6 +860,14 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
             const IndexType maxTargetSize,                          \
             const _type sourceVals[],                               \
             const IndexType sourceSize ) const;                     \
+
+// instantiate methods for all communicator data types
+
+SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
+
+#undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
+
+#define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::shiftArray(                                  \
@@ -885,8 +893,7 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
             const HArray<_type>& localValues,                       \
             const Halo& halo ) const;
      
-
-// instantiate methods for all supported data types
+// instantiate communicator methods with Harray only for supported array types
 
 SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ARITHMETIC_ARRAY_HOST )
 

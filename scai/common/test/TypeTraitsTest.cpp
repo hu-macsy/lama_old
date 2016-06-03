@@ -32,17 +32,14 @@
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Printable.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai;
 using namespace common;
 
 /* -----------------------------------------------------------------------------*/
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> SCAI_ARITHMETIC_TYPES;
-
-/* -------------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( TypeTraitsTest, ValueType, SCAI_ARITHMETIC_TYPES )
+BOOST_AUTO_TEST_CASE_TEMPLATE( TypeTraitsTest, ValueType, scai_arithmetic_test_types )
 {
     scalar::ScalarType stype = TypeTraits<ValueType>::stype;
  

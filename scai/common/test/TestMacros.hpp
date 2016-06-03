@@ -69,15 +69,14 @@ typedef boost::mpl::list<SCAI_ARITHMETIC_ARRAY_HOST> scai_array_test_types;
 /* -------------------------------------------------------------------------------- */
 
 /*
- * @brief HelperMacro SCAI_CHECK_CLOSE( ValueType, x, y, tolerance )
+ * @brief HelperMacro SCAI_CHECK_CLOSE( x, y, tolerance )
  *
- * Extended macro BOOST_CHECK_CLOSE( x, y, tolerance) from Boost.Test.
+ * Extends macro BOOST_CHECK_CLOSE( x, y, tolerance) from Boost.Test.
  * as it does not work for complex types
  *
- * @param ValueType     value type to be used for check
  * @param x             Scalar
  * @param y             Scalar
- * @param percent_eps   Epsilon[%]
+ * @param tolerance     Epsilon[%]
  *
  */
 
