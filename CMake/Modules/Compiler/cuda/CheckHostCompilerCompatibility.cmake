@@ -35,6 +35,11 @@ if    ( CUDA_FOUND )
 					  ERROR_VARIABLE  CUDA_CHECK_COMPILE_ERROR_VAR )
 
 	if    ( CUDA_CHECK_COMPILE_RESULT_VAR )
+		if    ( CMAKE_CXX_COMPILER_ID MATCHES GNU )
+			string ( REGEX MATCH "gcc ([0-9]+\\.[0-9]) and up" VERSION_NUMBER ${CUDA_CHECK_COMPILE_ERROR_VAR} )
+			message ( STATUS "Current CUDA Installation does not work with ${VERSION_NUMBER} - you have GCC ${CXX_COMPILER_VERSION}. Disable CUDA support." )
+		endif ( CMAKE_CXX_COMPILER_ID MATCHES GNU )
+
 		if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 			string ( REGEX MATCH "([0-9]+\\.[0-9])" VERSION_NUMBER ${CUDA_CHECK_COMPILE_ERROR_VAR} )
 			message ( STATUS "Current CUDA Installation only works with ICC ${VERSION_NUMBER} - you have ICC ${CXX_COMPILER_VERSION}. Disable CUDA support." )
