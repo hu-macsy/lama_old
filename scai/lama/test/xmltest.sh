@@ -37,6 +37,30 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
+set +e
+
+# check if installed LAMA version supports CUDA context
+
+LAMA_SUPPORTS_CUDA=0
+./lamaTest --SCAI_CONTEXT=CUDA --run_test=VersionTest > /dev/null >& /dev/null
+if [ "$?" -eq 0 ]
+then
+   LAMA_SUPPORTS_CUDA=1
+fi
+
+# check if installed LAMA version supports MPI communicator
+
+LAMA_SUPPORTS_MPI=0
+./lamaTest --SCAI_COMMUNICATOR=MPI --run_test=VersionTest > /dev/null >& /dev/null
+if [ "$?" -eq 0 ]
+then
+   LAMA_SUPPORTS_MPI=1
+fi
+
+set -e 
+
+echo "LAMA support checks: LAMA_SUPPORTS_MPI=${LAMA_SUPPORTS_MPI}, LAMA_SUPPORTS_CUDA=${LAMA_SUPPORTS_CUDA}"
+
 # Running lama tests (only Host)
 echo "Running lama tests on Host context"
 ./lamaTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaHostTest.xml
@@ -47,11 +71,11 @@ echo "Running lama storage tests on Host context"
 echo "Running lama matrix tests on Host context"
 ./matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrixHostTest.xml
 
-if [ -d distributed ];
+if [ "${LAMA_SUPPORTS_MPI}" -eq 1 ];
 then
     # Running parallel tests serial and with two processes
-    echo "Running distributed lama tests serial"
-    mpirun -np 3 --output-filename ${dirname}/dist_tests.xml distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
+    echo "Running matrix tests with 3 processes"
+    mpirun -np 3 --output-filename ${dirname}/lamaMatrixMPITest.xml ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=MPI --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
 
 	#for i in 2 3 4;
 	#do
@@ -61,7 +85,8 @@ then
 fi
 
 #Running CUDA tests
-if [ -d cuda ];
+
+if [ "${LAMA_SUPPORTS_CUDA}" -eq 1 ];
 then
 
     echo "Running lama tests on CUDA context"
@@ -72,8 +97,5 @@ then
 
     echo "Running lama matrix tests on CUDA context"
     ./matrix/lamaMatrixTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrixHostTest.xml
-
-    echo "Running dedicated cuda tests"
-    ./cuda/lamaCUDATest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/cuda_tests.xml
 fi
 
