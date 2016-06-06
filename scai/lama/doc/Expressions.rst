@@ -1,15 +1,9 @@
 LAMA's Text Book Syntax
 =======================
 
-**Remark: This section gives some background information about LAMA's text book syntax, that is achieved by expression overloading. The section explains the idea behind it, but is not needed for the usage of it.**
-
-LAMA supports the use of text book syntax for expressions on matrices and vectors. Therefore, it is possible to use binary operators like ``+``, ``-``, and ``*`` in your program when using LAMA matrices and vectors.
+LAMA supports the use of text book syntax for expressions on matrices and vectors. Therefore, it is possible to use binary operators like ``+``, ``-``, and ``*`` in your program when using LAMA matrices and vectors. The expression works on the general classes ``Scalar``, ``Vector`` and ``Matrix`` so you can write general subroutines working on each specific kind of vectors and matrices with every stored data type.
 
 .. code-block:: c++
-
-   #include <scai/lama.hpp>
-   #include <scai/lama/Vector.hpp>
-   #include <scai/lama/matrix/all.hpp>
 
    void sub( Matrix& m, const Matrix& m1, const Matrix& m2, const Matrix& m3,
              Vector& v, const Vector& v1, const Vector& v2)
@@ -20,26 +14,6 @@ LAMA supports the use of text book syntax for expressions on matrices and vector
        m = 0.5 * m1 + m2;          // matrix expression
        m = 0.5 * m1 * m2 + m3;     // matrix-matrix expression
    }
-
-The idea of matrix and vector expressions in LAMA is that these expressions are built in a first step as 'symbolic' expressions and the symbolic expressions will not be evaluated before an assignment operator is called. The assignment operator will select the corresponding factors of the 'symbolic' expression and call corresponding methods to evaluate the full assignment.
-
-.. code-block:: c++
-
-   m = 0.5 * m1 * m2 + m3;  // ->  m1.matrixTimesMatrix( m, 0.5, m2, 1.0, m3)
-   m = 0.5 * m1 + m2;       // ->  m.matrixPlusMatrix( 0.5, m1, 1.0, m2 )
-
-By this strategy, LAMA avoids the use of intermediate vectors or matrices as results of binary operations; wherever it is possible the whole expression is evaluated in one single call. Another advantage of these symbolic expressions are that they can be normalized and optimized before they are finally resolved to corresponding operations.
-
-.. code-block:: c++
-
-   v = alpha * v1 * beta + gamma * v2; // v.vectorPlusVector( alpha * beta, v1, gamma, v2)
-
-Unsupported expressions will already fail at compilation time.
-
-.. code-block:: c++
-
-   v = 0.5 * m1 * v2;  // OKAY, legal matrix-vector expression
-   v = v1 + v2 + v3;   // ERROR, unsupported expression (too long)
 
 Size, Type, and Distribution Conformance
 ----------------------------------------
@@ -315,3 +289,26 @@ Performance Issues
 Due to the use of symbolic expressions implememented by expression templates there is no performance loss for the supported matrix and vector expressions. The little overhead is rather small and might be neglected for larger vectors and matrices.
 
 Regarding matrix and vector operations it is recommended that the operands have the same distribution. Even if LAMA takes sometimes care of implicit redistributions, the corresponding overhead might slow down the performance.
+
+
+**Remark: This section gives some background information about LAMA's text book syntax, that is achieved by expression overloading. The section explains the idea behind it, but is not needed for the usage of it.**
+
+The idea of matrix and vector expressions in LAMA is that these expressions are built in a first step as 'symbolic' expressions and the symbolic expressions will not be evaluated before an assignment operator is called. The assignment operator will select the corresponding factors of the 'symbolic' expression and call corresponding methods to evaluate the full assignment.
+
+.. code-block:: c++
+
+   m = 0.5 * m1 * m2 + m3;  // ->  m1.matrixTimesMatrix( m, 0.5, m2, 1.0, m3)
+   m = 0.5 * m1 + m2;       // ->  m.matrixPlusMatrix( 0.5, m1, 1.0, m2 )
+
+By this strategy, LAMA avoids the use of intermediate vectors or matrices as results of binary operations; wherever it is possible the whole expression is evaluated in one single call. Another advantage of these symbolic expressions are that they can be normalized and optimized before they are finally resolved to corresponding operations.
+
+.. code-block:: c++
+
+   v = alpha * v1 * beta + gamma * v2; // v.vectorPlusVector( alpha * beta, v1, gamma, v2)
+
+Unsupported expressions will already fail at compilation time.
+
+.. code-block:: c++
+
+   v = 0.5 * m1 * v2;  // OKAY, legal matrix-vector expression
+   v = v1 + v2 + v3;   // ERROR, unsupported expression (too long)

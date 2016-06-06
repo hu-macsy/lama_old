@@ -8,7 +8,7 @@ LAMA
 Description
 ***********
 
-LAMA stands for Library of Accelerated Math Applications. It realizes an easy-to-use text-book-syntax for writing algorithms using mathematical notation. It is intended for the fast development of heterogeneous software in the field of linear algebra. By using the three basic data structures ``Scalar``, ``Vector`` and ``Matrix`` for the formulation of an algorithm shifts the decision of the executing target architecture, distribution strategy, (sparse) storage format and data type to a later time. Implementing algorithms once and choosen the right configuration when implementing different use cases saves the user time and reduce the maintenance of similar codes. Code is only written once and can be executed on any system, reaching from embedded devices to supercomputers fitting the problem.
+LAMA stands for Linear Algebra Math Applications. It realizes an easy-to-use text-book-syntax for writing algorithms using mathematical notation. It is intended for the fast development of heterogeneous software in the field of linear algebra. By using the three basic data structures ``Scalar``, ``Vector`` and ``Matrix`` for the formulation of an algorithm shifts the decision of the executing target architecture, distribution strategy, (sparse) storage format and data type to a later time. Implementing algorithms once and choosen the right configuration when implementing different use cases saves the user time and reduce the maintenance of similar codes. Code is only written once and can be executed on any system, reaching from embedded devices to supercomputers fitting the problem.
 
 This flexibilty is enabled by the underlying layers. Due to the library hmemo the memory of LAMA's data structures is managed hidden from the user on any supported target architecture - for choosing one set a execution ``Context``. The library dmemo offers distribution strategies for multi-node installations and prepares communication routines addressed by LAMA, so no explicit formulation for data exchanged is needed - for handling multiple nodes set a ``Distribution`` with a ``Communicator``. Besides the Math Kernel libraries facilitate kernel functions for dense and sparse matrix-vector operations on every back-end - for using a specific data type and storage format use one.
 
@@ -29,19 +29,15 @@ Class                     Description
 :doc:`Matrix`             A (distributed) matrix of values (on different target architectures)
 ======================    ==========================================
 
+More informations about the mathematical notation can be found :doc:`here <Expressions>`.
+
 .. toctree::
    :hidden:
    
    Scalar
    Vector
    Matrix
-
-The mathematical notation is implemented by expression overloading. Some general informations about their implementation can be found :doc:`here <Expressions>` - but are not neccesary for using it.
-
-.. toctree::
-	:hidden:
-
-	Expressions
+   Expressions
 
 Usage
 -----
@@ -64,13 +60,6 @@ Class                     Description
    SetStorage
    SetContext
    SetDistribution
-
-.. remove
-
-.. toctree::
-	:hidden:
-
-	IO
 
 .. **************
 .. Relationsships

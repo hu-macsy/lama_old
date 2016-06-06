@@ -38,7 +38,7 @@ For creating a new Matrix you need these major things:
 For distributed matrices the number of rows/columns can be substituted by a ``Distribution`` (holding the number of rows/columns as row/column distribution strategy). For defining a Distribution, please refer to :ref:`this <scaidmemo:main-page_dmemo>` page.
 
 The data structures for the csr representation can be passed by raw data pointers.
-Alternatively you can read the matrix data (size and data) from file, by specifing the filename. For a detailed description of the supported file formats, please refer to :doc:`IO`. All data read in is stored in CSRStorage and converted to the target format afterwards.
+Alternatively you can read the matrix data (size and data) from file, by specifing the filename. For a detailed description of the supported file formats, please refer to :ref:`lama_IO`. All data read in is stored in CSRStorage and converted to the target format afterwards.
 
 Optionally you can specify a (initial) ``Context`` for the Vector, to define on which context the (initial) data is valid. For detailed explanation of the Context class, please refer to :ref:`this <scaihmemo:main-page_hmemo>` page.
 

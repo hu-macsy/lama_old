@@ -18,7 +18,7 @@ For creating a new DenseVector you need two major things:
 For distributed vectors the size can be substituted by a ``Distribution`` (holding the size and distribution strategy). For defining a Distribution, please refer to :ref:`this <scaidmemo:main-page_dmemo>` page.
 
 The values can be passed by raw data pointer. Passing one value, will initilize the whole vector with this one value. 
-Alternatively you can read the whole vector (size and data) from file, by specifing the filename. For a detailed description of the supported file formats, please refer to :doc:`IO`.
+Alternatively you can read the whole vector (size and data) from file, by specifing the filename. For a detailed description of the supported file formats, please refer to :ref:`lama_IO`.
 
 Optionally you can specify a (initial) ``Context`` for the Vector, to define on which context the (initial) data is valid. For detailed explanation of the Context class, please refer to :ref:`this <scaihmemo:main-page_hmemo>` page. 
 
