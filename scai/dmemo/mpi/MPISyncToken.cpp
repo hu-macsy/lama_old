@@ -80,7 +80,7 @@ void MPISyncToken::wait()
 
     SCAI_LOG_INFO( logger, *this << ": wait" )
 
-    LAMA_MPICALL( logger, MPI_Waitall( mUsedRequests, mRequests.get(), mStatuses.get() ), "MPI_Waitall" );
+    SCAI_MPICALL( logger, MPI_Waitall( mUsedRequests, mRequests.get(), mStatuses.get() ), "MPI_Waitall" );
 
     SCAI_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" )
 
@@ -92,7 +92,7 @@ bool MPISyncToken::probe() const
     // not well defined yet
 
     int flag = 0;
-    LAMA_MPICALL( logger, MPI_Testall( mUsedRequests, mRequests.get(), &flag, mStatuses.get() ), "MPI_Testall" );
+    SCAI_MPICALL( logger, MPI_Testall( mUsedRequests, mRequests.get(), &flag, mStatuses.get() ), "MPI_Testall" );
     return flag != 0;
 }
 

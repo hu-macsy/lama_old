@@ -36,10 +36,11 @@
 
 // std
 #include <sstream>
+#include <iostream>
 
 #ifdef SCAI_CHECK_ASSERTS
 
-#define LAMA_MPICALL( logger, exp, msg)                                             \
+#define SCAI_MPICALL( logger, exp, msg)                                             \
     {                                                                               \
         SCAI_LOG_TRACE( logger, "MPI call " << msg );                               \
         int status = exp;                                                           \
@@ -51,13 +52,13 @@
             errorStr << " of file " << __FILE__ << ": ";                            \
             errorStr << msg<< "\n";                                                 \
             common::Exception::addCallStack( errorStr );                            \
-            fprintf( stderr, "%s\n", errorStr.str().c_str() );                      \
+            std::cerr << errorStr.str();                                            \
             throw MPIException( errorStr.str(), status );                           \
         }                                                                           \
     }
 
 #else
 
-#define LAMA_MPICALL( logger, exp, msg) exp;
+#define SCAI_MPICALL( logger, exp, msg) exp;
 
 #endif // SCAI_CHECK_ASSERTS

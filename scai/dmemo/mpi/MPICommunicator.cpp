@@ -112,7 +112,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 {
     int initialized = 0;
 
-    LAMA_MPICALL( logger, MPI_Initialized( &initialized ), "MPI_Initialized" )
+    SCAI_MPICALL( logger, MPI_Initialized( &initialized ), "MPI_Initialized" )
 
     if ( initialized )
     {
@@ -150,7 +150,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
         int providedThreadSafety = MPI_THREAD_SINGLE;
 
-        LAMA_MPICALL( logger, MPI_Init_thread( &argc, &argv, requiredThreadSafety, &providedThreadSafety ), "MPI_Init" );
+        SCAI_MPICALL( logger, MPI_Init_thread( &argc, &argv, requiredThreadSafety, &providedThreadSafety ), "MPI_Init" );
 
         switch ( providedThreadSafety )
         {
@@ -239,8 +239,8 @@ void MPICommunicator::initialize( int& argc, char** & argv )
     MPI_Comm_dup( mCommWorld, &mComm );
     MPI_Comm_dup( mCommWorld, &mCommTask );
     SCAI_LOG_INFO( logger, "MPI_Init" )
-    LAMA_MPICALL( logger, MPI_Comm_size( mComm, &mSize ), "MPI_Comm_size" )
-    LAMA_MPICALL( logger, MPI_Comm_rank( mComm, &mRank ), "MPI_Comm_rank" )
+    SCAI_MPICALL( logger, MPI_Comm_size( mComm, &mSize ), "MPI_Comm_size" )
+    SCAI_MPICALL( logger, MPI_Comm_rank( mComm, &mRank ), "MPI_Comm_rank" )
 
     setNodeData(); // determine mNodeRank, mNodeSize
 
@@ -308,7 +308,7 @@ void MPICommunicator::setNodeData()
     char nodeName[MPI_MAX_PROCESSOR_NAME]; // name of node for this processor
     memset( nodeName, '\0', MPI_MAX_PROCESSOR_NAME );
 
-    LAMA_MPICALL( logger, MPI_Get_processor_name( nodeName, &nodeNameLength ), "MPI_Get_processor_name" )
+    SCAI_MPICALL( logger, MPI_Get_processor_name( nodeName, &nodeNameLength ), "MPI_Get_processor_name" )
 
     SCAI_LOG_INFO( logger, "Processor " << mRank << " runs on node " << nodeName )
 
@@ -321,7 +321,7 @@ void MPICommunicator::setNodeData()
 
     memset( allNodeNames, '\0', MPI_MAX_PROCESSOR_NAME * mSize );
 
-    LAMA_MPICALL( logger,
+    SCAI_MPICALL( logger,
                   MPI_Allgather( &nodeName[0], MPI_MAX_PROCESSOR_NAME, MPI_CHAR, &allNodeNames[0],
                                  MPI_MAX_PROCESSOR_NAME, MPI_CHAR, mComm ),
                   "MPI_Allgather( <node_names> )" )
@@ -361,14 +361,14 @@ MPICommunicator::~MPICommunicator()
 {
     SCAI_LOG_INFO( logger, *this << ": ~MPICommunicator" )
     int finalized = 0;
-    LAMA_MPICALL( logger, MPI_Finalized( &finalized ), "MPI_Finalized" )
+    SCAI_MPICALL( logger, MPI_Finalized( &finalized ), "MPI_Finalized" )
 
     if ( !finalized )
     {
         if ( !mExternInitialization )
         {
             SCAI_LOG_INFO( logger, "call MPI_Finalize" )
-            LAMA_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" )
+            SCAI_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" )
         }
         else
         {
@@ -433,7 +433,7 @@ MPI_Request MPICommunicator::startrecv( ValueType* buffer, int count, int source
 {
     MPI_Request request;
     MPI_Datatype commType = getMPIType<ValueType>();
-    LAMA_MPICALL( logger, MPI_Irecv( buffer, count, commType, source, defaultTag, selectMPIComm(), &request ),
+    SCAI_MPICALL( logger, MPI_Irecv( buffer, count, commType, source, defaultTag, selectMPIComm(), &request ),
                   "MPI_Irecv" )
     return request;
 }
@@ -443,7 +443,7 @@ MPI_Request MPICommunicator::startsend( const ValueType* buffer, int count, int 
 {
     MPI_Request request;
     MPI_Datatype commType = getMPIType<ValueType>();
-    LAMA_MPICALL( logger,
+    SCAI_MPICALL( logger,
                   MPI_Isend( const_cast<ValueType*>( buffer ), count, commType, target, defaultTag, selectMPIComm(),
                              &request ),
                   "MPI_Isend" )
@@ -455,7 +455,7 @@ int MPICommunicator::getCount( MPI_Status& mpiStatus ) const
 {
     int size = 0;
     MPI_Datatype commType = getMPIType<ValueType>();
-    LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &size ), "MPI_Get_count" )
+    SCAI_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &size ), "MPI_Get_count" )
     return size;
 }
 
@@ -463,7 +463,7 @@ template<typename ValueType>
 void MPICommunicator::send( const ValueType buffer[], int count, int target ) const
 {
     MPI_Datatype commType = getMPIType<ValueType>();
-    LAMA_MPICALL( logger,
+    SCAI_MPICALL( logger,
                   MPI_Send( const_cast<ValueType*>( buffer ), count, commType, target, defaultTag, selectMPIComm() ),
                   "MPI_Send" )
 }
@@ -481,7 +481,7 @@ void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
 
     MPI_Datatype commType = getMPIType<IndexType>();
 
-    LAMA_MPICALL( logger,
+    SCAI_MPICALL( logger,
                   MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes,
                                 1, commType, selectMPIComm() ),
                   "MPI_Alltoall" )
@@ -563,7 +563,7 @@ void MPICommunicator::exchangeByPlanImpl(
 
     // wait for completion of receives
     scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
-    LAMA_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
+    SCAI_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
     // ToDo: check for correct sizes, was done in earlier version, but is now redundant
 }
 
@@ -673,7 +673,7 @@ void MPICommunicator::bcastImpl( ValueType val[], const IndexType n, const Parti
     SCAI_REGION( "Communicator.MPI.bcast" )
 
     MPI_Datatype commType = getMPIType<ValueType>();
-    LAMA_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<ValueType>" )
+    SCAI_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<ValueType>" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -701,7 +701,7 @@ void MPICommunicator::all2allvImpl( ValueType* recvBuffer[], IndexType recvCount
 
     // wait for completion of receives
     scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
-    LAMA_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
+    SCAI_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
 
 }
 
@@ -729,7 +729,7 @@ IndexType MPICommunicator::shiftImpl(
     MPI_Datatype commType = getMPIType<ValueType>();
     MPI_Status mpiStatus;
 
-    LAMA_MPICALL( logger,
+    SCAI_MPICALL( logger,
                   MPI_Sendrecv( const_cast<ValueType*>( sendVals ), sendSize, commType, dest, 4711, recvVals, recvSize,
                                 commType, source, 4711, selectMPIComm(), &mpiStatus ),
                   "MPI_Sendrecv" )
@@ -738,7 +738,7 @@ IndexType MPICommunicator::shiftImpl(
 
     int count = 0;
 
-    LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &count ), "MPI_Get_count(ValueType)" )
+    SCAI_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &count ), "MPI_Get_count(ValueType)" )
 
     SCAI_LOG_DEBUG( logger, "received from " << source << " #values = " << count << ", max was " << recvSize )
 
@@ -785,7 +785,7 @@ ValueType MPICommunicator::sumImpl( const ValueType value ) const
     ValueType sum;
     MPI_Datatype commType = getMPIType<ValueType>();
     MPI_Op opType = getMPISum<ValueType>();
-    LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &sum, 1, commType, opType,
+    SCAI_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &sum, 1, commType, opType,
                                          selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
     SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
     return sum;
@@ -805,7 +805,7 @@ ValueType MPICommunicator::minImpl( const ValueType value ) const
 
     ValueType globalMin; // no initialization needed, done in MPI call
 
-    LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMin, 1, commType,
+    SCAI_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMin, 1, commType,
                                          opType, selectMPIComm() ), "MPI_Allreduce( MPI_MIN )" )
     return globalMin;
 }
@@ -822,7 +822,7 @@ ValueType MPICommunicator::maxImpl( const ValueType value ) const
 
     SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
 
-    LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMax, 1, commType, opType,
+    SCAI_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMax, 1, commType, opType,
                                          selectMPIComm() ), "MPI_Allreduce( MPI_MAX )" )
 
     SCAI_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
@@ -832,7 +832,7 @@ ValueType MPICommunicator::maxImpl( const ValueType value ) const
 
 void MPICommunicator::synchronize() const
 {
-    LAMA_MPICALL( logger, MPI_Barrier( selectMPIComm() ), "MPI_Barrier()" )
+    SCAI_MPICALL( logger, MPI_Barrier( selectMPIComm() ), "MPI_Barrier()" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -852,7 +852,7 @@ void MPICommunicator::scatterImpl(
     SCAI_LOG_DEBUG( logger, *this << ": scatter of " << n << " elements, root = " << root )
     MPI_Datatype commType = getMPIType<ValueType>();
     // MPI interface is not aware of const, so const_cast is required
-    LAMA_MPICALL( logger,
+    SCAI_MPICALL( logger,
                   MPI_Scatter( const_cast<ValueType*>( allvals ), n, commType, myvals, n, commType, root,
                                selectMPIComm() ),
                   "MPI_Scatter" )
@@ -892,7 +892,7 @@ void MPICommunicator::scatterVImpl(
 
         SCAI_LOG_DEBUG( logger,
                         *this << ": scatter of " << displacement << " elements, I receive " << n << " elements" )
-        LAMA_MPICALL( logger,
+        SCAI_MPICALL( logger,
                       MPI_Scatterv( sendbuf, counts.get(), displs.get(), commType, myvals, n, commType, root,
                                     selectMPIComm() ),
                       "MPI_Scatterv" )
@@ -910,7 +910,7 @@ void MPICommunicator::scatterVImpl(
         }
 
         SCAI_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
-        LAMA_MPICALL( logger,
+        SCAI_MPICALL( logger,
                       MPI_Scatterv( NULL, counts.get(), NULL, commType, myvals, n, commType, root, selectMPIComm() ),
                       "MPI_Scatterv" )
     }
@@ -934,7 +934,7 @@ void MPICommunicator::gatherImpl(
     MPI_Datatype commType = getMPIType<ValueType>();
     // MPI interface is not aware of const, so const_cast is required
     void* sendbuf = const_cast<ValueType*>( myvals );
-    LAMA_MPICALL( logger, MPI_Gather( sendbuf, n, commType, allvals, n, commType, root, selectMPIComm() ),
+    SCAI_MPICALL( logger, MPI_Gather( sendbuf, n, commType, allvals, n, commType, root, selectMPIComm() ),
                   "MPI_Gather<ValueType>" )
 }
 
@@ -972,7 +972,7 @@ void MPICommunicator::gatherVImpl(
 
         SCAI_LOG_DEBUG( logger,
                         *this << ": scatter of " << displacement << " elements, I receive " << n << " elements" )
-        LAMA_MPICALL( logger,
+        SCAI_MPICALL( logger,
                       MPI_Gatherv( sendbuf, n, commType, allvals, counts.get(), displs.get(), commType, root,
                                    selectMPIComm() ),
                       "MPI_Gatherv<ValueType>" )
@@ -990,7 +990,7 @@ void MPICommunicator::gatherVImpl(
         }
 
         SCAI_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
-        LAMA_MPICALL( logger,
+        SCAI_MPICALL( logger,
                       MPI_Gatherv( sendbuf, n, commType, NULL, counts.get(), NULL, commType, root, selectMPIComm() ),
                       "MPI_Gatherv<ValueType>" )
     }
@@ -1047,7 +1047,7 @@ void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId 
 
     MPI_Status mpiStatus;
     MPI_Datatype commType = getMPIType<ValueType>();
-    LAMA_MPICALL( logger,
+    SCAI_MPICALL( logger,
                   MPI_Sendrecv( tmp.get(), n, commType, partner, defaultTag, val, n, commType, partner, defaultTag,
                                 selectMPIComm(), &mpiStatus ),
                   "MPI_Sendrecv" )
