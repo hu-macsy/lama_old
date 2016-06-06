@@ -49,119 +49,119 @@ namespace scai
 
 namespace dmemo
 {
-    // Help routine to get the Size of the Shared Memory segment
+// Help routine to get the Size of the Shared Memory segment
 
-    static size_t getSegmentSize()
+static size_t getSegmentSize()
+{
+    size_t size = 1024 * 1024;   // MB
+
+    std::cout << "getSegmentSize -> " << size << " * nMB " << std::endl;
+
+    int nMB = 256;   // default 256 MB
+
+    const char* sizeString = getenv( "SCAI_GPI_SEGMENT_SIZE" );
+
+    if ( sizeString  )
     {
-        size_t size = 1024 * 1024;   // MB
-
-        std::cout << "getSegmentSize -> " << size << " * nMB " << std::endl;
-
-        int nMB = 256;   // default 256 MB
-
-        const char* sizeString = getenv( "SCAI_GPI_SEGMENT_SIZE" );
-
-        if ( sizeString  )
-        {
-            std::cout << "Environment variable SCAI_GPI_SEGMENT_SIZE = " << sizeString << std::endl;
-            int n = sscanf( sizeString, "%d", &nMB );
-            std::cout << "Read nMB = " << nMB << ", n = " << n << std::endl;
-        } 
-        else
-        {
-            std::cout << "Environment variable SCAI_GPI_SEGMENT_SIZE not found" << std::endl;
-        }
-        
-        std::cout << "getSegmentSize -> " << size << " * " << nMB << std::endl;
-
-        size *= nMB;
-        
-        std::cout << "getSegmentSize -> " << size << std::endl;
-
-        return size;
+        std::cout << "Environment variable SCAI_GPI_SEGMENT_SIZE = " << sizeString << std::endl;
+        int n = sscanf( sizeString, "%d", &nMB );
+        std::cout << "Read nMB = " << nMB << ", n = " << n << std::endl;
+    }
+    else
+    {
+        std::cout << "Environment variable SCAI_GPI_SEGMENT_SIZE not found" << std::endl;
     }
 
-    SCAI_LOG_DEF_LOGGER( GPIMemManager::logger, "GPIMemManager" )
+    std::cout << "getSegmentSize -> " << size << " * " << nMB << std::endl;
 
-    static gaspi_segment_id_t theSegId = 0;
+    size *= nMB;
+
+    std::cout << "getSegmentSize -> " << size << std::endl;
+
+    return size;
+}
+
+SCAI_LOG_DEF_LOGGER( GPIMemManager::logger, "GPIMemManager" )
+
+static gaspi_segment_id_t theSegId = 0;
 
 #if BOOST_VERSION >= 105300
-    typedef ipcdetail::basic_managed_memory_impl
+typedef ipcdetail::basic_managed_memory_impl
 #else
-    typedef detail::basic_managed_memory_impl
+typedef detail::basic_managed_memory_impl
 #endif
-       <char, rbtree_best_fit<mutex_family>, iset_index> base_t;
+<char, rbtree_best_fit<mutex_family>, iset_index> base_t;
 
-   class ManagedSegmentMemory : public base_t
-   {
-   public:
+class ManagedSegmentMemory : public base_t
+{
+public:
 
-       ManagedSegmentMemory( gaspi_segment_id_t id, std::size_t size )
-       {
-           mId = id;
+    ManagedSegmentMemory( gaspi_segment_id_t id, std::size_t size )
+    {
+        mId = id;
 
-           // allocate GASPI segment
+        // allocate GASPI segment
 
-           SCAI_GASPI_CALL( gaspi_segment_create ( mId, size, GASPI_GROUP_ALL, GASPI_BLOCK, GASPI_ALLOC_DEFAULT ) )
+        SCAI_GASPI_CALL( gaspi_segment_create ( mId, size, GASPI_GROUP_ALL, GASPI_BLOCK, GASPI_ALLOC_DEFAULT ) )
 
-           gaspi_pointer_t ptr = NULL;
+        gaspi_pointer_t ptr = NULL;
 
-           SCAI_GASPI_CALL( gaspi_segment_ptr ( mId, &ptr ) )
+        SCAI_GASPI_CALL( gaspi_segment_ptr ( mId, &ptr ) )
 
-           SCAI_GASPI_CALL( gaspi_barrier( GASPI_GROUP_ALL, GASPI_BLOCK ) )
+        SCAI_GASPI_CALL( gaspi_barrier( GASPI_GROUP_ALL, GASPI_BLOCK ) )
 
-           base_t::create_impl( ptr, size );
+        base_t::create_impl( ptr, size );
 
-           mPtr = static_cast<char*>( ptr );
+        mPtr = static_cast<char*>( ptr );
 
-           mSize = size;
-       }
+        mSize = size;
+    }
 
-       ~ManagedSegmentMemory()
-       {
-       }
+    ~ManagedSegmentMemory()
+    {
+    }
 
-       char* get() const
-       {
-           return mPtr;
-       }
+    char* get() const
+    {
+        return mPtr;
+    }
 
-       IndexType getOffset( void* ptr )
-       {
-           char* dataPtr = static_cast<char*>( ptr );
+    IndexType getOffset( void* ptr )
+    {
+        char* dataPtr = static_cast<char*>( ptr );
 
-           IndexType offset = dataPtr - mPtr;
+        IndexType offset = dataPtr - mPtr;
 
-           return offset;
-       }
+        return offset;
+    }
 
-       bool getOffset( gaspi_offset_t& offset, const gaspi_pointer_t ptr )
-       {
-           char* dataPtr = static_cast<char*>( ptr );
+    bool getOffset( gaspi_offset_t& offset, const gaspi_pointer_t ptr )
+    {
+        char* dataPtr = static_cast<char*>( ptr );
 
-           if ( dataPtr < mPtr ) 
-           {
-               offset = 0;
-               return false;
-           }
+        if ( dataPtr < mPtr )
+        {
+            offset = 0;
+            return false;
+        }
 
-           if ( dataPtr >= mPtr + mSize ) 
-           {
-               offset = 0;
-               return false;
-           }
+        if ( dataPtr >= mPtr + mSize )
+        {
+            offset = 0;
+            return false;
+        }
 
-           offset = dataPtr - mPtr;
+        offset = dataPtr - mPtr;
 
-           return true;
-       }
+        return true;
+    }
 
-    private:
+private:
 
-        gaspi_segment_id_t mId;
-        char* mPtr;
-        size_t mSize;
-    };
+    gaspi_segment_id_t mId;
+    char* mPtr;
+    size_t mSize;
+};
 
 static ManagedSegmentMemory* theSegmentManager = NULL;
 

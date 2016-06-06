@@ -78,7 +78,7 @@ const char* scalarType2str( const scalar::ScalarType stype )
     }
 }
 
-scalar::ScalarType str2ScalarType( const char* str ) 
+scalar::ScalarType str2ScalarType( const char* str )
 {
     for ( int type = scalar::INDEX_TYPE; type < scalar::UNKNOWN; ++type )
     {

@@ -74,7 +74,7 @@ IndexType OpenMPDenseUtils::nonZeroValues(
             }
         }
     }
- 
+
     return count;
 }
 
@@ -409,7 +409,7 @@ void OpenMPDenseUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelReg
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<DenseKernelTrait::nonZeroValues<ValueType> >( nonZeroValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
@@ -426,7 +426,7 @@ void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kre
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );

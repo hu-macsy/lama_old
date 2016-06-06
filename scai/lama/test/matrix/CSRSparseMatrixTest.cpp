@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, ValueType, scai_arithmeti
 {
     CSRSparseMatrix<ValueType> matrix;
 
-    // check zero sizes 
+    // check zero sizes
 
     BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
     BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );

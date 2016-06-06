@@ -50,23 +50,23 @@ int main()
     //
     // Define the ValueType used for the vector
     //
-	typedef RealType ValueType;
+    typedef RealType ValueType;
 
-	//
-	// initialize matrix and vector values
-	//
+    //
+    // initialize matrix and vector values
+    //
 
-	//    Our matrix:
-	//     6, 0,     0, 4,
-	//     7, 0,     0, 0,
-	//     0, 0, -9.3f, 4,
-	//     2, 5,     0, 3,
-	//     2, 0,     0, 1,
-	//     0, 0,     0, 0,
-	//     0, 1,     0, 2
+    //    Our matrix:
+    //     6, 0,     0, 4,
+    //     7, 0,     0, 0,
+    //     0, 0, -9.3f, 4,
+    //     2, 5,     0, 3,
+    //     2, 0,     0, 1,
+    //     0, 0,     0, 0,
+    //     0, 1,     0, 2
 
     IndexType numRows    = 7;
-	IndexType numColumns = 4;
+    IndexType numColumns = 4;
     IndexType numValues  = 12;
 
     // VERY IMPORTANT for CSR format: ia is an offset array adding values of each row starting with 0.
@@ -89,7 +89,7 @@ int main()
 
     // Create a CSRStorage.
     CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( numRows, numColumns, numValues,
-                                                                   matrixIA, matrixJA, mValues );
+            matrixIA, matrixJA, mValues );
 
     //  Alternative code for the last line
 //    CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>();

@@ -46,4 +46,4 @@ int main()
     SCAI_LOG_WARN( logger_c2,    "message class2" )
     SCAI_LOG_INFO( logger_c2m1,  "message class2 method1" )
     SCAI_LOG_TRACE( logger_c2m2, "message class2 method2" )
-} 
+}

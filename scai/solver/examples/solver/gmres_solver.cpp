@@ -71,6 +71,7 @@ int main( int argc, char* argv[] )
         {
             cout << "Usage: " << argv[0] << " <filename> [Host|CUDA] [CSR|ELL|JDS]" << endl;
         }
+
         exit( 1 );
     }
 
@@ -84,7 +85,7 @@ int main( int argc, char* argv[] )
     }
 
     MatrixPtr matrixPtr( lamaconf.getMatrix() );
-    VectorPtr rhsPtr( matrixPtr->newDenseVector() ); 
+    VectorPtr rhsPtr( matrixPtr->newDenseVector() );
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
@@ -101,7 +102,7 @@ int main( int argc, char* argv[] )
         // read matrix + rhs from disk
 
         inMatrix.readFromFile( filename );
- 
+
         std::cout << "Matrix from file " << filename << " : " << inMatrix << std::endl;
 
         try
@@ -202,7 +203,7 @@ int main( int argc, char* argv[] )
 
     loggerName << "<GMRES>, " << lamaconf.getCommunicator() << ": ";
 
-    LoggerPtr logger( new CommonLogger ( loggerName.str(), 
+    LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                          lamaconf.getLogLevel(),
                                          LoggerWriteBehaviour::toConsoleOnly ) );
 
@@ -217,7 +218,7 @@ int main( int argc, char* argv[] )
     if ( lamaconf.hasMaxIter() )
     {
         CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
- 
+
         // stop if iteration count reached OR residual threshold is reached
 
         rt.reset( new Criterion ( it, rt, Criterion::OR ) );

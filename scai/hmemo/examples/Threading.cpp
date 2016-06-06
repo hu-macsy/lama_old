@@ -80,7 +80,7 @@ void writeJob( HArray<double>& X )
     ContextPtr contextPtr = Context::getHostPtr();
 
     WriteAccess<double> write( X, contextPtr );
- 
+
     double* data = write.get();
 
     SCAI_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << data[0] )

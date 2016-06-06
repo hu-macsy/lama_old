@@ -40,7 +40,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/lama/DenseVector.hpp>
 
-// std 
+// std
 #include <limits>
 
 namespace scai
@@ -56,35 +56,36 @@ using lama::Vector;
 using lama::Scalar;
 
 CGNE::CGNE( const std::string& id )
-    : IterativeSolver(id){}
+    : IterativeSolver(id) {}
 
 
 CGNE::CGNE( const std::string& id, LoggerPtr logger )
-    : IterativeSolver(id ,logger){}
+    : IterativeSolver(id ,logger) {}
 
 CGNE::CGNE( const CGNE& other )
-    : IterativeSolver( other ){}
+    : IterativeSolver( other ) {}
 
 CGNE::CGNERuntime::CGNERuntime()
-    : IterativeSolverRuntime(){}
+    : IterativeSolverRuntime() {}
 
-CGNE::~CGNE(){}
+CGNE::~CGNE() {}
 
-CGNE::CGNERuntime::~CGNERuntime(){}
+CGNE::CGNERuntime::~CGNERuntime() {}
 
 
-void CGNE::initialize( const Matrix& coefficients ){
+void CGNE::initialize( const Matrix& coefficients )
+{
     SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     IterativeSolver::initialize(coefficients);
     CGNERuntime& runtime = getRuntime();
 
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
-    
+
     runtime.mTransposedMat.reset( coefficients.newMatrix() );
     runtime.mTransposedMat->assignTranspose( coefficients );
     runtime.mTransposedMat->conj();
-    
+
     // get runtime vector with same type / row distribution / context as coefficients
 
     runtime.mVecP.reset( coefficients.newDenseVector() );
@@ -107,9 +108,11 @@ void CGNE::solveInit( Vector& solution, const Vector& rhs )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "distribution mismatch" )
 
     // Initialize
-    this->getResidual();   
+    this->getResidual();
+
     // PRECONDITIONING
-    if(mPreconditioner != NULL){
+    if(mPreconditioner != NULL)
+    {
         *runtime.mVecZ = Scalar(0.0);
         mPreconditioner->solve(*runtime.mVecZ,*runtime.mResidual);
     }
@@ -119,9 +122,10 @@ void CGNE::solveInit( Vector& solution, const Vector& rhs )
     runtime.mSolveInit = true;
 }
 
-void CGNE::iterate(){
+void CGNE::iterate()
+{
     CGNERuntime& runtime = getRuntime();
-   
+
     const Matrix& A = *runtime.mCoefficients;
     const Matrix& transposedA = *runtime.mTransposedMat;
 
@@ -135,9 +139,10 @@ void CGNE::iterate(){
 
     Scalar scalarProductP = vecP.dotProduct(vecP);
     Scalar scalarProductZR = vecZ.dotProduct(residual);
-    if(scalarProductP < eps)    alpha=0.0;     //norm is small 
+
+    if(scalarProductP < eps)    alpha=0.0;     //norm is small
     else    alpha = scalarProductZR/scalarProductP;
-    
+
     solution= solution + alpha*vecP;
     residual = residual - alpha*A*vecP;
 
@@ -153,15 +158,18 @@ void CGNE::iterate(){
     mCGNERuntime.mSolution.setDirty(false);
 }
 
-SolverPtr CGNE::copy(){
+SolverPtr CGNE::copy()
+{
     return SolverPtr( new CGNE( *this ) );
 }
 
-CGNE::CGNERuntime& CGNE::getRuntime(){
+CGNE::CGNERuntime& CGNE::getRuntime()
+{
     return mCGNERuntime;
 }
 
-const CGNE::CGNERuntime& CGNE::getConstRuntime() const{
+const CGNE::CGNERuntime& CGNE::getConstRuntime() const
+{
     return mCGNERuntime;
 }
 

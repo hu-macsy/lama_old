@@ -563,7 +563,7 @@ Distribution* Distribution::getDistribution(
     SCAI_COMMON_LOOP_LVL2( ValueType, DMEMO_DISTRIBUTE2_INST, SCAI_ARITHMETIC_ARRAY_HOST )
 
 SCAI_COMMON_LOOP( DMEMO_DISTRIBUTE_INST, SCAI_ARITHMETIC_ARRAY_HOST )
-     
+
 // template instantiation for the supported data types
 
 #undef DMEMO_DISTRIBUTE2_INST

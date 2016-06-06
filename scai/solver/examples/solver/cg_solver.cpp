@@ -76,6 +76,7 @@ int main( int argc, char* argv[] )
         {
             cout << "Usage: " << argv[0] << " <filename> [Host|CUDA] [CSR|ELL|JDS]" << endl;
         }
+
         exit( 1 );
     }
 
@@ -196,7 +197,7 @@ int main( int argc, char* argv[] )
 
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
 
-    LoggerPtr logger( new CommonLogger ( loggerName.str(), 
+    LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                          lamaconf.getLogLevel(),
                                          LoggerWriteBehaviour::toConsoleOnly
                                        ) );
@@ -211,7 +212,7 @@ int main( int argc, char* argv[] )
     if ( lamaconf.hasMaxIter() )
     {
         CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
- 
+
         // stop if iteration count reached OR residual threshold is reached
 
         rt.reset( new Criterion ( it, rt, Criterion::OR ) );

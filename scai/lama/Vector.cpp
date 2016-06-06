@@ -62,9 +62,17 @@ const char* _Vector::kind2Str( const VectorFormat vectorKind )
 {
     switch ( vectorKind )
     {
-        case DENSE: return "Dense"; break;
-        case SPARSE: return "Sparse"; break;
-        case UNDEFINED: return "Undefined"; break;
+        case DENSE:
+            return "Dense";
+            break;
+
+        case SPARSE:
+            return "Sparse";
+            break;
+
+        case UNDEFINED:
+            return "Undefined";
+            break;
     }
 
     return "Undefined";
@@ -117,9 +125,9 @@ Vector* Vector::getDenseVector( const common::scalar::ScalarType valueType, Dist
 /*    Constructor / Destructor                                                            */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector::Vector( const IndexType size, hmemo::ContextPtr context ) : 
+Vector::Vector( const IndexType size, hmemo::ContextPtr context ) :
 
-    Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ), 
+    Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ),
     mContext( context )
 {
     if( !mContext )
@@ -131,7 +139,7 @@ Vector::Vector( const IndexType size, hmemo::ContextPtr context ) :
 }
 
 Vector::Vector( DistributionPtr distribution, hmemo::ContextPtr context )
-                : Distributed( distribution ), mContext( context )
+    : Distributed( distribution ), mContext( context )
 {
     if( !mContext )
     {
@@ -143,7 +151,7 @@ Vector::Vector( DistributionPtr distribution, hmemo::ContextPtr context )
 }
 
 Vector::Vector( const Vector& other )
-                : Distributed( other ), mContext( other.getContextPtr() )
+    : Distributed( other ), mContext( other.getContextPtr() )
 {
     SCAI_ASSERT_ERROR( mContext, "NULL context not allowed" )
     SCAI_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )

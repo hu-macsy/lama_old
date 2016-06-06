@@ -50,13 +50,19 @@ static double minus1( const double x )
 struct UnaryAddTrait
 {
     typedef double ( *FuncType ) ( double );
-    static const char* getId() { return "add"; }
+    static const char* getId()
+    {
+        return "add";
+    }
 };
 
 struct UnaryMinusTrait
 {
     typedef double ( *FuncType ) ( double );
-    static const char* getId() { return "minus"; }
+    static const char* getId()
+    {
+        return "minus";
+    }
 };
 
 BOOST_AUTO_TEST_CASE( ContextTest )

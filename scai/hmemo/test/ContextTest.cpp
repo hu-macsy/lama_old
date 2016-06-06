@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE( getContextText )
 
     BOOST_CHECK( Context::hasContext( ctx->getType() ) );
 
-    // context of this type should be available directly 
+    // context of this type should be available directly
 
     ContextPtr ctx1 = Context::getContextPtr( ctx->getType() );
 
@@ -104,13 +104,13 @@ BOOST_AUTO_TEST_CASE( useContextTest )
 
     // take ownership on userContext
     {
-        WriteAccess<double> write( X, userContext );  
+        WriteAccess<double> write( X, userContext );
     }
 
     // take ownership on testContext
 
     {
-        WriteAccess<double> write( X, testContext );  
+        WriteAccess<double> write( X, testContext );
     }
 
     // read @ userContext: valid data is transfered from testContext to here
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE( useContextTest )
     Y.clear();
     Y.purge();
 
-    HArray<float> v ( 4, 1.0f );  
+    HArray<float> v ( 4, 1.0f );
 
     {
         ReadAccess<float> read( v, userContext );
@@ -141,12 +141,12 @@ BOOST_AUTO_TEST_CASE( useContextTest )
     {
         SCAI_LOG_DEBUG( logger, "exception must be thrown for read/write on different devices" )
 
-        BOOST_CHECK_THROW( 
-            {
-                ReadAccess<float> read( v, userContext );
-                WriteAccess<float> write( v, testContext );
-            }, 
-            common::Exception );
+        BOOST_CHECK_THROW(
+        {
+            ReadAccess<float> read( v, userContext );
+            WriteAccess<float> write( v, testContext );
+        },
+        common::Exception );
     }
 }
 

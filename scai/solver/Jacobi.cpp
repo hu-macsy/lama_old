@@ -135,6 +135,7 @@ void Jacobi::initialize( const Matrix& coefficients )
         COMMON_THROWEXCEPTION    (
             getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
     }
+
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
 }
 
@@ -235,7 +236,7 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
 
     //1. Check if all Vectors are DenseVectors
     if(  DenseVector<ValueType>::createValue() == oldSolution.getCreateValue()
-            && (*getRuntime().mSolution).getCreateValue() == oldSolution.getCreateValue() 
+            && (*getRuntime().mSolution).getCreateValue() == oldSolution.getCreateValue()
             && (*getRuntime().mRhs).getCreateValue() == oldSolution.getCreateValue() )
 //    if( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
 //            && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
@@ -351,12 +352,12 @@ void Jacobi::writeAt( std::ostream& stream ) const
 
 std::string Jacobi::createValue()
 {
-	return "Jacobi";
+    return "Jacobi";
 }
 
 Solver* Jacobi::create( const std::string name )
 {
-	return new Jacobi( name );
+    return new Jacobi( name );
 }
 
 } /* end namespace solver */

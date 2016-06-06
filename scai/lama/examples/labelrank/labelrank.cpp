@@ -47,14 +47,14 @@ using scai::common::Walltime;
 
 typedef RealType ValueType;
 
-/** Specify the matrix type for the label matrices. 
+/** Specify the matrix type for the label matrices.
  *
  *  DenseMatrix is more efficient than CSRSparseMatrix
  */
 
 typedef CSRSparseMatrix<ValueType> LabelMatrix;
 
-/** Specify the matrix type for the affinity matrix. 
+/** Specify the matrix type for the affinity matrix.
  *
  *  CSRSparseMatrix is more efficient than DenseMatrix.
  */
@@ -63,7 +63,8 @@ typedef CSRSparseMatrix<ValueType> AffinityMatrix;
 
 /** Parameters of this inference algorithm */
 
-struct Properties {
+struct Properties
+{
     size_t logLevel;  //!<  control amount of output
     double threshold; //!< termination criterion
 } props;
@@ -99,7 +100,7 @@ static void getEvidence( std::vector<IndexType>& evidenceVector, const DenseStor
             }
         }
 
-        if ( evidence ) 
+        if ( evidence )
         {
             evidenceVector.push_back( i );
         }
@@ -211,7 +212,8 @@ static void update( CSRStorage<ValueType>& affinityMatrix, const std::vector<Ind
     }
 }
 
-int main( int argc, char* argv[] ) {
+int main( int argc, char* argv[] )
+{
 
     // config
 
@@ -224,8 +226,8 @@ int main( int argc, char* argv[] ) {
 
     const char* wFilename;
     const char* yFilename;
-    
-    if ( argc >= 3 ) 
+
+    if ( argc >= 3 )
     {
         wFilename = argv[1];
         yFilename = argv[2];
@@ -234,8 +236,8 @@ int main( int argc, char* argv[] ) {
         {
             config.setArg( argv[i] );
         }
-    } 
-    else 
+    }
+    else
     {
         cout << "Usage: " << argv[0] << " <affinity.mtx> <labels.mtx>" << endl;
         exit( 1 );
@@ -262,18 +264,18 @@ int main( int argc, char* argv[] ) {
 
     DenseVector<ValueType> oneVector( numCols, 1.0 );
     DenseVector<ValueType> y( affinityMatrix * oneVector );  // rowSums
-    y.invert();   // y(i) = 1.0 / y(i) 
+    y.invert();   // y(i) = 1.0 / y(i)
     affinityMatrix.scale( y );  // scales each row
 
     cout << "invert/scale calculations took " << Walltime::get() - start << " secs." << endl;
 
-    // update affinityMatrix so that labelsMatrix remains unchanged 
+    // update affinityMatrix so that labelsMatrix remains unchanged
     // where initial entries are set
 
     std::vector<IndexType> evidences;
 
     getEvidence( evidences, labelsMatrix.getLocalStorage() );
-  
+
     cout << "#evidences = " << evidences.size() << endl;
 
     update( affinityMatrix.getLocalStorage(), evidences );
@@ -282,7 +284,7 @@ int main( int argc, char* argv[] ) {
 
     LabelMatrix labelsMatrixNew;
 
-    if ( props.logLevel < 30 ) 
+    if ( props.logLevel < 30 )
     {
         cout << "| " << "iter " << " | " << "max_diff" << " | " << "nnz      " << " | " << "nnz      " << " | " << "secs.   " << " | " << endl;
         cout << "-------------------------------------------------------" << endl;
@@ -300,18 +302,18 @@ int main( int argc, char* argv[] ) {
 
     double totalStart = Walltime::get();
 
-    while ( true ) 
+    while ( true )
     {
         iteration += 1;
         double start = Walltime::get();
 
         // (D−1 * W) * Y(t)
         // w already stores (D-1 * W)
- 
+
         labelsMatrixNew = affinityMatrix * labelsMatrix;
 
         int nnzOld = labelsMatrix.getNumValues();
-    
+
         ValueType maxDiff = labelsMatrix.maxDiffNorm( labelsMatrixNew ).getValue<ValueType>();
 
         // use more efficient swap instead of: labelsMatrix = labelsMatrixNew;
@@ -319,41 +321,43 @@ int main( int argc, char* argv[] ) {
 
         labelsMatrix.swap( labelsMatrixNew );
 
-        if ( props.logLevel < 30 ) 
+        if ( props.logLevel < 30 )
         {
-             cout << "| ";
-             cout << std::setw(5) << iteration << " | ";
-             cout << std::setiosflags(std::ios::fixed) << std::setprecision(6) << std::setw(8) << maxDiff << " | ";
-             cout << std::setw(9) << nnzOld << " | ";
-             int nnz = labelsMatrix.getNumValues();
-             cout << std::setw(9) << nnz << " | ";
-             cout << std::setiosflags(std::ios::fixed) << std::setprecision(6) << std::setw(8) << (Walltime::get() - start) << " | ";
-             cout << endl;
+            cout << "| ";
+            cout << std::setw(5) << iteration << " | ";
+            cout << std::setiosflags(std::ios::fixed) << std::setprecision(6) << std::setw(8) << maxDiff << " | ";
+            cout << std::setw(9) << nnzOld << " | ";
+            int nnz = labelsMatrix.getNumValues();
+            cout << std::setw(9) << nnz << " | ";
+            cout << std::setiosflags(std::ios::fixed) << std::setprecision(6) << std::setw(8) << (Walltime::get() - start) << " | ";
+            cout << endl;
         }
 
-        if ( maxDiff < props.threshold ) 
+        if ( maxDiff < props.threshold )
         {
-            if ( props.logLevel < 30 ) 
+            if ( props.logLevel < 30 )
             {
                 cout << "-------------------------------------------------------" << endl;
             }
+
             cout << "Converged after " << iteration << " iterations with max diff " << maxDiff << endl;
             break;
         }
 
-        if ( iteration == config.mMaxIters ) 
+        if ( iteration == config.mMaxIters )
         {
-            if ( props.logLevel < 30) 
+            if ( props.logLevel < 30)
             {
-                 cout << "-------------------------------------------------------" << endl;
+                cout << "-------------------------------------------------------" << endl;
             }
+
             cout << "Stopped without convergence" << endl;
             break;
         }
     }
 
     cout << "saving new labels to hdd..." << endl;
-     
+
     labelsMatrix.writeToFile( "labels-new.mtx", File::MATRIX_MARKET );
 
     cout << "total run time was " << Walltime::get() - totalStart << " secs." << endl;

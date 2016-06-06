@@ -55,6 +55,7 @@ void outArray( const HArray<ValueType>& array, const char* name )
     {
         std::cout << " " << read.get()[i];
     }
+
     std::cout << " }" << std::endl;
 }
 
@@ -98,8 +99,8 @@ int main()
 
         SCAI_CUBLAS_CALL( cublasSdot( dev.getcuBLASHandle(), n,
                                       rA.get(), 1, rB.get(), 1, &dot),
-                                      "cublasSDot<float>" );
-  
+                          "cublasSDot<float>" );
+
     }
 
     std::cout << "dot result: " << dot << std::endl;

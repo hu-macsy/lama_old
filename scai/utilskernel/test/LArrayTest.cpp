@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 
     SCAI_LOG_INFO( logger, "reductionTest on " << *testContext )
 
-    // ToDo: example with complex numbers 
+    // ToDo: example with complex numbers
 
     const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
     const IndexType N = sizeof( myVals ) / sizeof( ValueType );
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
 
     SCAI_LOG_INFO( logger, "normTest on " << *testContext )
 
-    // ToDo: example with complex numbers 
+    // ToDo: example with complex numbers
 
     const IndexType N = 13;
 
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
     conjArray.conj();   // build in place
 
 
-    if ( isComplex( TypeTraits<ValueType>::stype )  ) 
+    if ( isComplex( TypeTraits<ValueType>::stype )  )
     {
         BOOST_CHECK( Math::real( array.maxDiffNorm( conjArray ) ) > 0 );
         conjArray.conj();

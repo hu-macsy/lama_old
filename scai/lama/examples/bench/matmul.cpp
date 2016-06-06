@@ -57,7 +57,7 @@ static void bench( IndexType size, double fillRate )
 
     MatrixCreator<ValueType>::fillRandom( a, fillRate );
     MatrixCreator<ValueType>::fillRandom( b, fillRate );
- 
+
     a.setContextPtr( host );
     b.setContextPtr( host );
     c.setContextPtr( host );
@@ -104,7 +104,7 @@ static void bench( IndexType size, double fillRate )
         cout << "c = " << c << endl;
 
         cout << "time <" << scai::common::getScalarType<ValueType>() << "> on " << *gpu
-                 << ", size = " << size << ", rate = " << fillRate << endl;
+             << ", size = " << size << ", rate = " << fillRate << endl;
     }
 
     const int precision = 1;
@@ -128,7 +128,7 @@ int main()
         cout << "This examples compares the Host and CUDA implementation. You build without CUDA, so it's skipped." << endl;
         return 0;
     }
-    
+
     IndexType sizes[] = { 100, 350, 1000, 2500 };
     double fillrates[] = { 0.005, 0.01, 0.02, 0.05 };
 

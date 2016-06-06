@@ -60,7 +60,7 @@ ContextDataManager::ContextDataManager() :
     mLock[Context::Write] = 0;
     multiContext = false;
     multiThreaded = false;
-  
+
     SCAI_LOG_DEBUG( logger, "ContextDataManager()" )
 }
 
@@ -103,6 +103,7 @@ bool ContextDataManager::hasAccessConflict( Context::AccessKind kind ) const
     {
         conflict = locked();
     }
+
     return conflict;
 }
 
@@ -115,7 +116,7 @@ void ContextDataManager::lockAccess( Context::AccessKind kind, ContextPtr contex
     common::Thread::Id id = common::Thread::getSelf();
 
     SCAI_LOG_DEBUG( logger, "lockAccess, kind = " << kind << ", #reads = "
-                     << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] )
+                    << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] )
 
     if ( !locked() )
     {
@@ -128,7 +129,7 @@ void ContextDataManager::lockAccess( Context::AccessKind kind, ContextPtr contex
 
         SCAI_LOG_DEBUG( logger, "first access, set context = " << *context << ", set thread = " << id )
 
-    } 
+    }
     else if ( locked( Context::Write ) > 0 )
     {
         COMMON_THROWEXCEPTION( "Access conflict, no further access after a write access, data might have been reallocated" )
@@ -154,13 +155,13 @@ void ContextDataManager::lockAccess( Context::AccessKind kind, ContextPtr contex
         // access at different context
 
         COMMON_THROWEXCEPTION( "Access conflict, kind = " << kind << ", #reads = "
-                 << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] 
-                 << ", more than one context" )
+                               << mLock[Context::Read] << ", #writes = " << mLock[Context::Write]
+                               << ", more than one context" )
     }
     else if ( multiThreaded || id != accessThread )
     {
         // same context but different thread
- 
+
         while ( locked() )
         {
             SCAI_LOG_DEBUG( logger, id << ": wait for free access, blocked by " << accessThread << ", multiple = " << multiThreaded )
@@ -173,7 +174,7 @@ void ContextDataManager::lockAccess( Context::AccessKind kind, ContextPtr contex
         multiContext   = false;
         multiThreaded  = false;
     }
-    else 
+    else
     {
         SCAI_LOG_DEBUG( logger, "same thread, same context, multiThreaded = " << multiThreaded << ", multiContext = " << multiContext )
         // same thread, same context, that is okay for now
@@ -182,7 +183,7 @@ void ContextDataManager::lockAccess( Context::AccessKind kind, ContextPtr contex
     mLock[kind]++;
 
     SCAI_LOG_DEBUG( logger, "lockAccess done, kind = " << kind << ", #reads = "
-                     << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] )
+                    << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -196,8 +197,8 @@ void ContextDataManager::unlockAccess( Context::AccessKind kind )
     mLock[kind]--;
 
     SCAI_LOG_DEBUG( logger, kind << "Access released, #reads = "
-                 << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] )
- 
+                    << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] )
+
     if ( ( mLock[Context::Write] == 0 ) && ( mLock[Context::Read] == 0 ) )
     {
         multiContext = false;
@@ -212,7 +213,7 @@ void ContextDataManager::unlockAccess( Context::AccessKind kind )
 void ContextDataManager::releaseAccess( ContextDataIndex index, Context::AccessKind kind )
 {
     // we should check that this is really the context data for which access was reserved
- 
+
     SCAI_ASSERT_LT( index, mContextData.size(), "Illegal context data index = " << index )
 
     unlockAccess( kind );
@@ -303,7 +304,7 @@ ContextDataIndex ContextDataManager::findContextData( ContextPtr context ) const
     {
         const ContextData& entry = mContextData[i];
 
-        // can this entry be used 
+        // can this entry be used
 
         if ( context->canUseMemory( entry.getMemory() ) )
         {
@@ -546,7 +547,7 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, Context:
         if ( validSize )
         {
             ContextDataIndex validIndex = findValidData();
- 
+
             if ( validIndex < mContextData.size() )
             {
                 const ContextData& validEntry = mContextData[ validIndex ];
@@ -746,7 +747,7 @@ void ContextDataManager::prefetch( ContextPtr context, size_t size )
 
     wait();   // wait on previous transfers
 
-    data.reserve( size, 0, false ); 
+    data.reserve( size, 0, false );
 
     ContextDataIndex validIndex = findValidData();
 
@@ -854,7 +855,7 @@ void ContextDataManager::init( const void* data, const size_t size )
     ContextData hostEntry( Context::getHostPtr()->getMemoryPtr() );
 
     hostEntry.setRef( const_cast<void*>( data ), size );
- 
+
     // copy the host data to the destination
 
     mContextData[index].copyFrom( hostEntry, size );

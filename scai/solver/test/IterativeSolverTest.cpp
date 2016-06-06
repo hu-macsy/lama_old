@@ -92,11 +92,14 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
     Solver::getCreateValues( values );
 
     const int numSolvers = (int)values.size();
-    for(int i=0; i < numSolvers; i++){
+
+    for(int i=0; i < numSolvers; i++)
+    {
         Solver* solver = Solver::create( values[i], "" );
         IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver );
 
-        if( iterativeSolver == NULL ){
+        if( iterativeSolver == NULL )
+        {
             SCAI_LOG_INFO( logger, "Skipping solver " << values[i] << ": no iterative Solver");
             continue;
         }
@@ -112,7 +115,8 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest ) {
+BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest )
+{
     typedef SCAI_TEST_TYPE ValueType;
     ContextPtr context = Context::getContextPtr();
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -152,10 +156,14 @@ BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest ) {
     Solver::getCreateValues( values );
 
     const int numSolvers = (int)values.size();
-    for(int i=0; i < numSolvers; i++){
+
+    for(int i=0; i < numSolvers; i++)
+    {
         Solver* solver = Solver::create( values[i], "" );
         IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver );
-        if( iterativeSolver == NULL ){
+
+        if( iterativeSolver == NULL )
+        {
             SCAI_LOG_INFO( logger, "Skipping solver " << values[i] << ": no iterative Solver");
             continue;
         }
@@ -176,13 +184,14 @@ BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest ) {
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( SolveTest ) {
+BOOST_AUTO_TEST_CASE( SolveTest )
+{
     typedef SCAI_TEST_TYPE ValueType;
     ContextPtr context = Context::getContextPtr();
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     const IndexType N1 = 10;
-    const IndexType N2 = 10;  
+    const IndexType N2 = 10;
 
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
@@ -216,10 +225,14 @@ BOOST_AUTO_TEST_CASE( SolveTest ) {
     Solver::getCreateValues( values );
 
     const int numSolvers = (int)values.size();
-    for(int i=0; i < numSolvers; i++){
+
+    for(int i=0; i < numSolvers; i++)
+    {
         Solver* solver = Solver::create( values[i], "" );
         IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver );
-        if( iterativeSolver == NULL ){
+
+        if( iterativeSolver == NULL )
+        {
             SCAI_LOG_INFO( logger, "Skipping solver " << values[i] << ": no iterative Solver");
             continue;
         }

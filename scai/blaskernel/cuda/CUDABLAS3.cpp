@@ -76,10 +76,10 @@ void CUDABLAS3::gemm(
     ValueType* const C,
     const IndexType ldc )
 {
-	typedef CUBLASTrait::BLASTrans BLASTrans;
+    typedef CUBLASTrait::BLASTrans BLASTrans;
 
-	BLASTrans transA_char = CUBLAS_OP_N;
-	BLASTrans transB_char = CUBLAS_OP_N;
+    BLASTrans transA_char = CUBLAS_OP_N;
+    BLASTrans transB_char = CUBLAS_OP_N;
 
     //Swap matrix if RowMajor Order
 
@@ -139,7 +139,7 @@ void CUDABLAS3::gemm(
     SCAI_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
 
     CUBLASWrapper<ValueType>::gemm( handle, transA_char, transB_char,  m_call ,  n_call ,  k , alpha, A_call,  lda_call , B_call,  ldb_call , beta, C,
-    		ldc );
+                                    ldc );
 
     // No error check here possible as kernel is started asynchronously in any case
 
@@ -419,13 +419,13 @@ void CUDABLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
 CUDABLAS3::CUDABLAS3()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_ADD );
+        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDABLAS3::~CUDABLAS3()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 CUDABLAS3 CUDABLAS3::guard;    // guard variable for registration

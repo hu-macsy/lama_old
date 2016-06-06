@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
         HArray<ValueType> Am( 6, matrix, testContext );
         HArray<ValueType> Ax( 3, x, testContext );
         HArray<ValueType> Ay( 3, y, testContext );
- 
+
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );

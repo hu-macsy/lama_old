@@ -239,9 +239,9 @@ void SparseAssemblyStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 SparseAssemblyStorage<ValueType>* SparseAssemblyStorage<ValueType>::newMatrixStorage() const
 {
-   common::unique_ptr<SparseAssemblyStorage<ValueType> > storage( new SparseAssemblyStorage<ValueType>() ); 
-   storage->setContextPtr( this->getContextPtr() );
-   return storage.release();
+    common::unique_ptr<SparseAssemblyStorage<ValueType> > storage( new SparseAssemblyStorage<ValueType>() );
+    storage->setContextPtr( this->getContextPtr() );
+    return storage.release();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -268,12 +268,13 @@ template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
 {
     ValueType val = static_cast<ValueType>(0.0);
-	ValueType tmp;
+    ValueType tmp;
+
     for( IndexType i = 0; i < mNumRows; ++i )
     {
         for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-			tmp = common::Math::abs( mRows[i].values[jj] );
+            tmp = common::Math::abs( mRows[i].values[jj] );
             val += tmp * tmp;
         }
     }
@@ -665,13 +666,13 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
     SCAI_ASSERT_EQUAL( values.size(), numValues, "size misamtch" );
     SCAI_ASSERT_EQUAL( ia.size(), numRows + 1, "size misamtch" );
 
-    SCAI_ASSERT( HArrayUtils::isSorted( ia, true, prefLoc ), 
+    SCAI_ASSERT( HArrayUtils::isSorted( ia, true, prefLoc ),
                  "illegal offset array, not ascending entries" );
 
-    SCAI_ASSERT_EQUAL( HArrayUtils::getValImpl( ia, numRows ), numValues, 
-                 "illegal offset array, not ascending entries" );
+    SCAI_ASSERT_EQUAL( HArrayUtils::getValImpl( ia, numRows ), numValues,
+                       "illegal offset array, not ascending entries" );
 
-    SCAI_ASSERT( HArrayUtils::validIndexes( ja, numColumns ), 
+    SCAI_ASSERT( HArrayUtils::validIndexes( ja, numColumns ),
                  "illegal column indexes, #colums = " << numColumns );
 
     // no more error checks here on the sizes, but on the content
@@ -884,7 +885,7 @@ void SparseAssemblyStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& 
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "SparseAssemblyStorage<" << common::getScalarType<ValueType>() << ">(" 
+    stream << "SparseAssemblyStorage<" << common::getScalarType<ValueType>() << ">("
            << " size = " << mNumRows << " x " << mNumColumns
            << ", #values = " << mNumValues << ", diag = " << mDiagonalProperty << " )";
 }

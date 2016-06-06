@@ -53,7 +53,7 @@ static void barrier()
     Thread::ScopedLock lock( barrierMutex );
 
     thread_cnt ++;
-     
+
     if ( thread_cnt != NB_THREADS )
     {
         // Some others not at barrier so wait
@@ -119,7 +119,7 @@ static void criticalRoutine( int& n )
     nstream << "Thread_" << n;
 
     Thread::defineCurrentThreadName( nstream.str().c_str() );
-    
+
     Thread::ScopedLock lock( critMutex );
     Thread::ScopedLock lock1( critMutex );   // second lock by same thread is okay for recursive mutex
 
@@ -163,22 +163,22 @@ static void runRoutine( int& )
 }
 
 BOOST_AUTO_TEST_CASE( concurrentTest )
-{   
+{
     // macro to give the current thread a name that appears in further logs
-    
+
     Thread threads[C_THREADS];
     int threadArgs[C_THREADS];
-    
+
     double time = Walltime::get();
-    
+
     for ( int i = 0; i < C_THREADS; ++i )
-    {   
+    {
         threadArgs[i] = i;
         threads[i].run( runRoutine, threadArgs[i] );
     }
-    
+
     for ( int i = 0; i < C_THREADS; ++i )
-    {   
+    {
         threads[i].join();
     }
 

@@ -53,7 +53,7 @@ using namespace solver;
 typedef RealType ValueType;
 
 /**
- *  Main program 
+ *  Main program
  *
  *  - first arg is filename for input matrix
  *  - all other arguments are passed to the configuration lamaconf
@@ -78,6 +78,7 @@ int main( int argc, char* argv[] )
         {
             cout << "Usage: " << argv[0] << " <filename> [Host|CUDA] [CSR|ELL|JDS|DIA|COO] [CG|BiCG|...]" << endl;
         }
+
         exit( 1 );
     }
 
@@ -110,7 +111,7 @@ int main( int argc, char* argv[] )
         // read matrix + rhs from disk
 
         inMatrix.readFromFile( filename );
- 
+
         std::cout << "Matrix from file " << filename << " : " << inMatrix << std::endl;
 
         try
@@ -215,7 +216,7 @@ int main( int argc, char* argv[] )
 
     loggerName << solverName.str() << ", " << lamaconf.getCommunicator() << ": ";
 
-    LoggerPtr logger( new CommonLogger ( loggerName.str(), 
+    LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                          lamaconf.getLogLevel(),
                                          LoggerWriteBehaviour::toConsoleOnly ) );
 
@@ -235,7 +236,7 @@ int main( int argc, char* argv[] )
     if ( lamaconf.hasMaxIter() )
     {
         CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
- 
+
         // stop if iteration count reached OR residual threshold is reached
 
         rt.reset( new Criterion ( it, rt, Criterion::OR ) );

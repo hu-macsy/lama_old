@@ -78,51 +78,52 @@ struct CommandLineOptions
         {
             outFileType = File::SAMG;
             writeBinary = true;
-        } 
+        }
         else if ( option == "-S" )
         {
             inDataType = common::scalar::FLOAT;
-        } 
+        }
         else if ( option == "-C" )
         {
             inDataType = common::scalar::COMPLEX;
-        } 
+        }
         else if ( option == "-D" )
         {
             inDataType = common::scalar::DOUBLE;
-        } 
+        }
         else if ( option == "-Z" )
         {
             inDataType = common::scalar::DOUBLE_COMPLEX;
-        } 
+        }
         else if ( option == "-s" )
         {
             outDataType = common::scalar::FLOAT;
-        } 
+        }
         else if ( option == "-c" )
         {
             outDataType = common::scalar::COMPLEX;
-        } 
+        }
         else if ( option == "-d" )
         {
             outDataType = common::scalar::DOUBLE;
-        } 
+        }
         else if ( option == "-z" )
         {
             outDataType = common::scalar::DOUBLE_COMPLEX;
-        } 
+        }
         else if ( inFileName == "" )
         {
             inFileName = option;
         }
         else if ( outFileName == "" )
-        {    
+        {
             outFileName = option;
         }
         else
         {
             return false;  // not recognized
         }
+
         return true;
     }
 
@@ -142,13 +143,13 @@ struct CommandLineOptions
 
         if ( i == string::npos )
         {
-           outFileName = inFileName;
+            outFileName = inFileName;
         }
         else
         {
             outFileName = inFileName.substr( 0, i );
         }
- 
+
         cout << "outFileName set to " << outFileName << endl;
     }
 
@@ -160,20 +161,20 @@ struct CommandLineOptions
 
         if ( _StorageIO::hasSuffix( inFileName, ".mtx" ) )
         {
-             outFileType = File::SAMG;
+            outFileType = File::SAMG;
         }
         else
         {
-             outFileType = File::MATRIX_MARKET;
+            outFileType = File::MATRIX_MARKET;
         }
     }
 };
 
-void convertMatrix( 
-    const std::string& inFileName, 
+void convertMatrix(
+    const std::string& inFileName,
     const common::scalar::ScalarType inDataType,
-    const std::string& outFileName, 
-    const File::FileType outFileType, 
+    const std::string& outFileName,
+    const File::FileType outFileType,
     const common::scalar::ScalarType outDataType,
     const bool writeBinary )
 {
@@ -188,11 +189,11 @@ void convertMatrix(
     m->writeToFile( outFileName, outFileType, outDataType, common::scalar::INDEX_TYPE, common::scalar::INDEX_TYPE, writeBinary );
 }
 
-void convertVector( 
-    const std::string& inFileName, 
+void convertVector(
+    const std::string& inFileName,
     const common::scalar::ScalarType inDataType,
-    const std::string& outFileName, 
-    const File::FileType outFileType, 
+    const std::string& outFileName,
+    const File::FileType outFileType,
     const common::scalar::ScalarType outDataType,
     const bool writeBinary )
 {
@@ -242,6 +243,7 @@ int main( int argc, char* argv[] )
     for ( int i = 1; i < argc; ++i )
     {
         bool done = options.parseOption( argv[i] );
+
         if ( !done )
         {
             printUsage( argv[0] );

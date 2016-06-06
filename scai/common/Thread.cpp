@@ -76,7 +76,7 @@ static MapThreads& getMapThreads()
 
 Thread::Mutex::Mutex( bool isRecursive ) : mIsRecursive( isRecursive )
 {
-    // Only one of the member objects is allocated 
+    // Only one of the member objects is allocated
 
     if ( mIsRecursive )
     {
@@ -140,7 +140,7 @@ void Thread::Condition::wait( ScopedLock& lock )
     {
         std::condition_variable_any::wait( *lock.mMutex.mRecursiveMutex );
     }
-    else 
+    else
     {
         std::condition_variable_any::wait( *lock.mMutex.mMutex );
     }
@@ -208,7 +208,7 @@ const char* Thread::getThreadName( Thread::Id id )
 
     if ( it == mapThreads.end() )
     {
-        // No name defined yet, give it one, use internal numbering 
+        // No name defined yet, give it one, use internal numbering
         // Tracing requires unique name
 
         ostringstream thread_name;
@@ -216,7 +216,7 @@ const char* Thread::getThreadName( Thread::Id id )
         thread_name << "thread_" << mapThreads.size();
 
         // Attention: This would not possible if mapThreads is not statically initialized
-        
+
         mapThreads.insert( std::pair<Thread::Id, string>( id, thread_name.str() ) );
 
         it = mapThreads.find( id );

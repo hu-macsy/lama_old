@@ -75,9 +75,9 @@ void OpenMPBLAS3::gemm(
     }
 
     SCAI_LOG_INFO( logger,
-                   "gemm<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n 
-                     << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc 
-                     << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemm<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n
+                   << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc
+                   << ", alpha = " << alpha << ", beta = " << beta )
 
     if( order == CblasColMajor )
     {
@@ -130,7 +130,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
         else if( TransA == CblasConjTrans )
@@ -152,7 +152,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
         else if( TransA == CblasNoTrans )
@@ -203,13 +203,13 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
                 return;
             }
         }
         else
         {
-        	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+            COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             return;
         }
     }
@@ -263,7 +263,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
         else if( TransA == CblasNoTrans )
@@ -276,6 +276,7 @@ void OpenMPBLAS3::gemm(
                 ValueType temp;
 
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
+
                 for( int h = 0; h < n; h++ )
                 {
                     for( int i = 0; i < m; i++ )
@@ -317,7 +318,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
         else if( TransA == CblasConjTrans )
@@ -338,13 +339,13 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
     }
     else
     {
-    	COMMON_THROWEXCEPTION( "illegal order setting " << order )
+        COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 
     return;
@@ -373,12 +374,14 @@ void OpenMPBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 OpenMPBLAS3::OpenMPBLAS3()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_ADD );}
+        kregistry::KernelRegistry::KERNEL_ADD );
+}
 
 OpenMPBLAS3::~OpenMPBLAS3()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_ERASE );}
+        kregistry::KernelRegistry::KERNEL_ERASE );
+}
 
 /* --------------------------------------------------------------------------- */
 /*    Static variable to force registration during static initialization      */

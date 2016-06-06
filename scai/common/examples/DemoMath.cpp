@@ -28,7 +28,7 @@
  */
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-    #include <scai/common/Complex.hpp>
+#include <scai/common/Complex.hpp>
 #endif
 
 #include <scai/common/Math.hpp>

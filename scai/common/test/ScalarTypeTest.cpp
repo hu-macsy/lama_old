@@ -52,11 +52,11 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
 
         if ( isComplex( stype ) )
         {
-           BOOST_CHECK( pos != std::string::npos );
+            BOOST_CHECK( pos != std::string::npos );
         }
         else
         {
-           BOOST_CHECK( pos == std::string::npos );
+            BOOST_CHECK( pos == std::string::npos );
         }
     }
 }

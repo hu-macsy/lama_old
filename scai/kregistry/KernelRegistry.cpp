@@ -54,7 +54,7 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, cont
 {
     SCAI_LOG_INFO( logger, "register ctx = " << ctx << " with " << key )
 
-	KernelRegistry& kreg = getInstance();
+    KernelRegistry& kreg = getInstance();
 
     KernelMap::iterator it = kreg.theKernelMap.find( key );
 
@@ -84,7 +84,7 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, cont
             {
                 SCAI_LOG_INFO( logger, "kernel function replaced, " << key << ", context = " << ctx )
             }
-            else 
+            else
             {
                 SCAI_LOG_INFO( logger, "kernel function not replaced, " << key << ", context = " << ctx )
             }
@@ -109,14 +109,14 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
 
     SCAI_LOG_INFO( logger, "unregister ctx = " << ctx << " with " << key )
 
-	KernelRegistry& kreg = getInstance();
+    KernelRegistry& kreg = getInstance();
 
     KernelMap::iterator it = kreg.theKernelMap.find( key );
 
     if ( it == kreg.theKernelMap.end() )
     {
 //        SCAI_LOG_ERROR( logger, "unregister: no entry for key = " << key )
-    	SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " not found")
+        SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " not found")
     }
     else
     {
@@ -136,14 +136,14 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
         }
         else
         {
-        	SCAI_LOG_INFO( logger, "unregister: setting ctx to NULL" )
+            SCAI_LOG_INFO( logger, "unregister: setting ctx to NULL" )
             it->second.set( ctx, NULL );
         }
 
         if( it->second.isEmpty() )
         {
-        	SCAI_LOG_INFO( logger, "erasing complete entry" )
-        	kreg.theKernelMap.erase( it );
+            SCAI_LOG_INFO( logger, "erasing complete entry" )
+            kreg.theKernelMap.erase( it );
         }
     }
 }
@@ -152,7 +152,7 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
 
 void KernelRegistry::printAll()
 {
-	KernelRegistry& kreg = getInstance();
+    KernelRegistry& kreg = getInstance();
 
     KernelMap::const_iterator it;
 

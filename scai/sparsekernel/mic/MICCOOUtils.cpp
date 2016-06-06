@@ -136,8 +136,8 @@ void MICCOOUtils::getCSRValuesP(
     const COOValueType cooValues[] )
 {
     SCAI_LOG_ERROR( logger,
-                    "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" 
-                     << ", #rows = " << numRows << ", #values = " << numValues )
+                    "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
+                    << ", #rows = " << numRows << ", #values = " << numValues )
 
     void* csrJAPtr = csrJA;
     void* csrValuesPtr = csrValues;
@@ -183,7 +183,7 @@ void MICCOOUtils::getCSRValuesP(
                 IndexType offset;
 
                 #pragma omp critical
-                {   
+                {
                     offset = rowOffset[i];
                     rowOffset[i]++;
                 }
@@ -211,7 +211,7 @@ void MICCOOUtils::getCSRValuesS(
     const COOValueType cooValues[] )
 {
     SCAI_LOG_ERROR( logger,
-                    "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" 
+                    "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
                     << ", #rows = " << numRows << ", #values = " << numValues )
 
     void* csrJAPtr = csrJA;
@@ -381,8 +381,8 @@ void MICCOOUtils::normalGEMV(
     // SCAI_REGION( "MIC.COO.normalGEMV" )
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << TypeTraits<ValueType>::id() << ">, result[" << numRows << "] = " 
-                    << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ">, result[" << numRows << "] = "
+                   << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -425,7 +425,7 @@ void MICCOOUtils::normalGEMV(
 
                 const ValueType val = *alphaPtr * cooValues[k] * x[cooJA[k]];
 
-                #pragma omp critical 
+                #pragma omp critical
                 result[i] += val;
 
             }
@@ -533,7 +533,7 @@ void MICCOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
@@ -546,7 +546,7 @@ void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
-            << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
 

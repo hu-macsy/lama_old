@@ -92,8 +92,8 @@ float mySum( const CUDACtx& ctx, const float d_array[], const int n )
 
     float sum;
 
-    SCAI_CUBLAS_CALL( cublasSasum( ctx.getcuBLASHandle(), n, d_array, 1, &sum ), 
-                                   "cublasSasum for float" );
+    SCAI_CUBLAS_CALL( cublasSasum( ctx.getcuBLASHandle(), n, d_array, 1, &sum ),
+                      "cublasSasum for float" );
     return sum;
 }
 
@@ -117,14 +117,14 @@ int main( int argc, const char** argv )
 
     float* d_data = myAllocate( ctx, NSIZE );
 
-    // Let other thread do the initialization 
+    // Let other thread do the initialization
 
     {
         TaskSyncToken( bind( &myInit, cref( ctx ), d_data, VAL, NSIZE ) );
     }
 
     float s = mySum( ctx, d_data, NSIZE );
-    
+
     // Let other thread do the free
 
     {

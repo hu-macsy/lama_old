@@ -271,10 +271,10 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 
         SCAI_CONTEXT_ACCESS( loc );
 
-        bool diagonalProperty = 
+        bool diagonalProperty =
 
             checkDiagonalProperty[loc->getType()]( numDiagonals, numRows, numColumns,
-                                                   rPerm.get(), rJa.get(), rDlg.get() );
+                    rPerm.get(), rJa.get(), rDlg.get() );
 
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty;
         diagonalProperty = checkDiagonalProperty[loc->getType()]( numDiagonals, numRows, numColumns,
-                                                       rPerm.get(), rJa.get(), rDlg.get() );
+                           rPerm.get(), rJa.get(), rDlg.get() );
         BOOST_CHECK_EQUAL( true, diagonalProperty );
     }
     // check with empty matrix
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
         ReadAccess<IndexType> rPerm( perm, loc );
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = checkDiagonalProperty[loc->getType()]( numDiagonals, numRows, numColumns,
-                                                            rPerm.get(), rJa.get(), rDlg.get() );
+                                rPerm.get(), rJa.get(), rDlg.get() );
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
 }
@@ -553,7 +553,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test
         ReadAccess<OtherValueType> rCSRValues( CSRValues, loc );
         SCAI_CONTEXT_ACCESS( loc );
         setCSRValues[loc->getType()]( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), nJDSDlg, rJDSDlg.get(),
-                           rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
+                                      rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
     }
 
     ReadAccess<IndexType> rJDSJa( JDSJa );
@@ -639,7 +639,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test
         WriteOnlyAccess<OtherValueType> wCSRValues( CSRValues, loc, nJDS );
         SCAI_CONTEXT_ACCESS( loc );
         getCSRValues[loc->getType()]( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, rJDSPerm.get(), rJDSIlg.get(),
-                           rJDSDlg.get(), rJDSJa.get(), rJDSValues.get() );
+                                      rJDSDlg.get(), rJDSJa.get(), rJDSValues.get() );
     }
     ReadAccess<IndexType> rCSRJa( CSRJa );
     ReadAccess<OtherValueType> rCSRValues( CSRValues );

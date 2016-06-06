@@ -37,14 +37,14 @@ namespace common
 {
 
 NotSupportedValueTypeException::NotSupportedValueTypeException() :
-		mMessage( "NotSupportedValueTypeException" )
+    mMessage( "NotSupportedValueTypeException" )
 {
 }
 
 NotSupportedValueTypeException::NotSupportedValueTypeException( const std::string& message ) :
-		mMessage( message )
+    mMessage( message )
 {
-	mMessage += "@NotSupportedValueTypeException";
+    mMessage += "@NotSupportedValueTypeException";
 }
 
 NotSupportedValueTypeException::~NotSupportedValueTypeException() throw ()

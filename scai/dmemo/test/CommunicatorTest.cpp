@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE( basicTest )
     BOOST_CHECK( comm->getRank() < comm->getSize() );
 
     std::stringstream out;
- 
+
     out << *comm;
 
     BOOST_CHECK( out.str().length() > 0 );

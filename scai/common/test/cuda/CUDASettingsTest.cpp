@@ -87,12 +87,12 @@ BOOST_AUTO_TEST_CASE( blockSizeTest )
     scai::common::CUDACtx myCuda( nr );
     scai::common::CUDAAccess tmpAccess( myCuda );
 
-    // This is the default block size for parallelism 
+    // This is the default block size for parallelism
 
     int bsize = CUDASettings::getBlockSize();
 
     // For large sized problems we get the full block size
- 
+
     int bsize100 = CUDASettings::getBlockSize( 100 * bsize );
     BOOST_CHECK_EQUAL( bsize, bsize100 );
 

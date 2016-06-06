@@ -87,7 +87,8 @@ void initStorage( _MatrixStorage& storage )
     static const ValueType values[] =  { 6, 0, 7, 0, 0,
                                          0, 1, 0, 0, 0,
                                          0, 0, 9, 4, 0,
-                                         2, 5, 0, 3, 8 };
+                                         2, 5, 0, 3, 8
+                                       };
 
     hmemo::HArrayRef<ValueType> data( numRows * numColumns, values );
     DenseStorage<ValueType> dense( data, numRows, numColumns );
@@ -137,12 +138,12 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
         _MatrixStorage& storage = *allMatrixStorages[s];
-    
+
         std::ostringstream os;
 
         os << storage;    // calls virtutal method writeAt for each storage class
 
-        BOOST_CHECK( os.str().length() > 0 ); 
+        BOOST_CHECK( os.str().length() > 0 );
     }
 }
 
@@ -171,14 +172,14 @@ BOOST_AUTO_TEST_CASE( setIdentityTest )
         BOOST_REQUIRE_EQUAL( N, storage.getNumRows() );
         BOOST_REQUIRE_EQUAL( N, storage.getNumColumns() );
         BOOST_REQUIRE_EQUAL( N, storage.getNumValues() );
-        
+
         LArray<ValueType> row;
 
         for ( IndexType i = 0; i < N; ++i )
         {
             storage.getRow( row, i );
             hmemo::ReadAccess<ValueType> rRow( row );
-        
+
             for ( IndexType j = 0; j < N; ++j )
             {
                 if ( i == j )
@@ -228,7 +229,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
         {
             storage.getRow( row, i );
             hmemo::ReadAccess<ScalarRepType> rRow( row );
-        
+
             for ( IndexType j = 0; j < numColumns; ++j )
             {
                 BOOST_CHECK_EQUAL( zero, rRow[j] );
@@ -245,17 +246,17 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 
         if ( storage.getFormat() == Format::DENSE )
         {
-             // only dense matrix keeps its diagonal property
-             BOOST_CHECK( storage.hasDiagonalProperty() );
-         }
-         else
-         {
-             BOOST_CHECK( !storage.hasDiagonalProperty() );
-         }
+            // only dense matrix keeps its diagonal property
+            BOOST_CHECK( storage.hasDiagonalProperty() );
+        }
+        else
+        {
+            BOOST_CHECK( !storage.hasDiagonalProperty() );
+        }
 
-         storage.purge();
+        storage.purge();
 
-         BOOST_CHECK( storage.hasDiagonalProperty() );
+        BOOST_CHECK( storage.hasDiagonalProperty() );
     }
 }
 

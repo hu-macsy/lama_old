@@ -90,7 +90,7 @@ double Walltime::get()
     SYSTEMTIME lpSystemTime;
     GetLocalTime( &lpSystemTime );
     return ( lpSystemTime.wHour * 60.0 + lpSystemTime.wMinute ) * 60.0 +
-    lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
+           lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
 
 #else
 

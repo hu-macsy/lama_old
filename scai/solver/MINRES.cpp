@@ -60,29 +60,30 @@ using lama::Vector;
 using lama::Scalar;
 
 MINRES::MINRES( const std::string& id )
-    : IterativeSolver(id){}
+    : IterativeSolver(id) {}
 
 
 MINRES::MINRES( const std::string& id, LoggerPtr logger )
-    : IterativeSolver(id ,logger){}
+    : IterativeSolver(id ,logger) {}
 
 MINRES::MINRES( const MINRES& other )
-    : IterativeSolver( other ){}
+    : IterativeSolver( other ) {}
 
 
 
 MINRES::MINRESRuntime::MINRESRuntime()
-    : IterativeSolverRuntime(){}
+    : IterativeSolverRuntime() {}
 
-MINRES::~MINRES(){}
+MINRES::~MINRES() {}
 
-MINRES::MINRESRuntime::~MINRESRuntime(){}
+MINRES::MINRESRuntime::~MINRESRuntime() {}
 
-void MINRES::initialize( const Matrix& coefficients ){
+void MINRES::initialize( const Matrix& coefficients )
+{
     SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     IterativeSolver::initialize( coefficients );
- 	MINRESRuntime& runtime = getRuntime();
+    MINRESRuntime& runtime = getRuntime();
 
     runtime.mBetaNew = 0.0;
     runtime.mC = 1.0;
@@ -100,7 +101,8 @@ void MINRES::initialize( const Matrix& coefficients ){
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
 }
 
-void MINRES::solveInit( Vector& solution, const Vector& rhs ){
+void MINRES::solveInit( Vector& solution, const Vector& rhs )
+{
     MINRESRuntime& runtime = getRuntime();
 
     runtime.mRhs = &rhs;
@@ -113,8 +115,8 @@ void MINRES::solveInit( Vector& solution, const Vector& rhs ){
 
     // Initialize
 
-    this->getResidual();   
-    *runtime.mVecVNew = *runtime.mResidual; 
+    this->getResidual();
+    *runtime.mVecVNew = *runtime.mResidual;
 
     *runtime.mVecV *= Scalar(0.0);
     *runtime.mVecP *= Scalar(0.0);
@@ -124,11 +126,12 @@ void MINRES::solveInit( Vector& solution, const Vector& rhs ){
     runtime.mZeta = norm.apply(*runtime.mResidual);
     *runtime.mVecVNew /= runtime.mZeta;
 
-  
+
     runtime.mSolveInit = true;
 }
 
-void MINRES::Lanczos(){
+void MINRES::Lanczos()
+{
     MINRESRuntime& runtime = getRuntime();
     const Matrix& A = *runtime.mCoefficients;
     Vector& vecV = *runtime.mVecV;
@@ -137,10 +140,10 @@ void MINRES::Lanczos(){
     Scalar& alpha = runtime.mAlpha;
     Scalar& betaNew = runtime.mBetaNew;
     Scalar& beta = runtime.mBeta;
-    
+
     Scalar& eps = runtime.mEps;
-    lama::L2Norm norm; 
-    
+    lama::L2Norm norm;
+
     beta=betaNew;
 
     vecVOld.swap(vecV);
@@ -149,16 +152,20 @@ void MINRES::Lanczos(){
     alpha = vecV.dotProduct(vecVNew);
     vecVNew = vecVNew - alpha*vecV;
     betaNew = norm.apply(vecVNew);
-    if(abs(betaNew) < eps || 1.0/abs(betaNew) < eps){
+
+    if(abs(betaNew) < eps || 1.0/abs(betaNew) < eps)
+    {
         vecVNew = Scalar(0.0);
     }
-    else{
+    else
+    {
         vecVNew = vecVNew/betaNew;
-    }   
+    }
 
-}	
+}
 
-void MINRES::applyGivensRotation(){
+void MINRES::applyGivensRotation()
+{
     MINRESRuntime& runtime = getRuntime();
     Scalar& c = runtime.mC;
     Scalar& cOld = runtime.mCOld;
@@ -186,18 +193,20 @@ void MINRES::applyGivensRotation(){
     //New Givens-rotation
     tau = abs(rho3)+betaNew;
 
-    if(abs(tau) < eps || 1.0/abs(tau) < eps){
+    if(abs(tau) < eps || 1.0/abs(tau) < eps)
+    {
         nu = 1.0;
         rho3 = 1.0;
         cNew = 0.0;
         sNew = 0.0;
     }
-    else{
+    else
+    {
         nu = tau * sqrt((rho3/tau)*(rho3/tau) + (betaNew/tau)*(betaNew/tau));
         cNew = rho3 / nu;
         sNew = betaNew / nu;
-        rho3 = nu; 
-        
+        rho3 = nu;
+
     }
 
 
@@ -206,7 +215,7 @@ void MINRES::applyGivensRotation(){
     Vector& vecPOld = *runtime.mVecPOld;
     Vector& vecPNew = *runtime.mVecPNew;
     const Vector& vecV = *runtime.mVecV;
-    //Update P     
+    //Update P
     vecPOld.swap(vecP);
     vecP.swap(vecPNew);
     vecPNew = vecV-rho1*vecPOld;
@@ -215,9 +224,10 @@ void MINRES::applyGivensRotation(){
 
 }
 
-void MINRES::iterate(){
+void MINRES::iterate()
+{
     MINRESRuntime& runtime = getRuntime();
-    
+
     const Vector& vecPNew = *runtime.mVecPNew;
     Vector& solution = *runtime.mSolution;
     Scalar& cNew = runtime.mCNew;
@@ -225,8 +235,8 @@ void MINRES::iterate(){
     Scalar& zeta = runtime.mZeta;
 
     Lanczos();
-    applyGivensRotation();    
-    
+    applyGivensRotation();
+
     //New approximation
     solution = solution + cNew*zeta*vecPNew;
     zeta = -sNew*zeta;
@@ -234,15 +244,18 @@ void MINRES::iterate(){
     //MINRES Implementation End
 }
 
-SolverPtr MINRES::copy(){
+SolverPtr MINRES::copy()
+{
     return SolverPtr( new MINRES( *this ) );
 }
 
-MINRES::MINRESRuntime& MINRES::getRuntime(){
+MINRES::MINRESRuntime& MINRES::getRuntime()
+{
     return mMINRESRuntime;
 }
 
-const MINRES::MINRESRuntime& MINRES::getConstRuntime() const{
+const MINRES::MINRESRuntime& MINRES::getConstRuntime() const
+{
     return mMINRESRuntime;
 }
 
@@ -253,12 +266,12 @@ void MINRES::writeAt( std::ostream& stream ) const
 
 std::string MINRES::createValue()
 {
-	return "MINRES";
+    return "MINRES";
 }
 
 Solver* MINRES::create( const std::string name )
 {
-	return new MINRES( name );
+    return new MINRES( name );
 }
 
 } /* end namespace solver */

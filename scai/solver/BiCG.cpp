@@ -118,6 +118,7 @@ void BiCG::iterate()
     Scalar lastPScalar( runtime.mPScalar );
     Scalar& pScalar = runtime.mPScalar;
     Scalar alpha;
+
     if( this->getIterationCount() == 0 )
     {
         this->getResidual();
@@ -150,7 +151,7 @@ void BiCG::iterate()
         z = Scalar(0.0);
         mPreconditioner->solve( z, residual );
         z2 = Scalar(0.0);
-// THIS IS WRONG!! 
+// THIS IS WRONG!!
 // Instead of solving P * z2 = residual2 we need to solve P^H * z2 = residual2
 // where P is the preconditioner
         mPreconditioner->solve( z2, residual2 );
@@ -200,7 +201,7 @@ void BiCG::iterate()
 
     if ( abs(pqProd) < eps )
     {
-         alpha = Scalar( 0.0 );
+        alpha = Scalar( 0.0 );
     }
     else
     {
@@ -219,7 +220,7 @@ void BiCG::iterate()
         SCAI_REGION( "Solver.BiCG.update_res" )
         residual = residual - alpha * q;
         SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
-         residual2 = residual2 - conj( alpha ) * q2;
+        residual2 = residual2 - conj( alpha ) * q2;
         //residual2 = residual2 - alpha * q2;
         SCAI_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual.l2Norm() )
     }
@@ -240,7 +241,7 @@ const Vector& BiCG::getResidual2() const
     //mLogger->logMessage(LogLevel::completeInformation,"Request for residual received.\n");
     SCAI_LOG_DEBUG( logger, "calculating residual of = " << runtime.mSolution.getConstReference() )
 
-        //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");
+    //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");
     mLogger->startTimer( "ResidualTimer" );
     *runtime.mResidual2 = *runtime.mRhs;
     *runtime.mResidual2 -= ( *runtime.mTransposeA ) * runtime.mSolution.getConstReference() ;
@@ -252,10 +253,13 @@ const Vector& BiCG::getResidual2() const
     return ( *runtime.mResidual2 );
 }
 
-void BiCG::print(lama::Vector& vec, size_t n){
+void BiCG::print(lama::Vector& vec, size_t n)
+{
     std::cout<<"\n";
-    for(size_t i=0;i<n;++i)
+
+    for(size_t i=0; i<n; ++i)
         std::cout<<vec(i)<<" ";
+
     std::cout<<"\n";
 }
 
@@ -276,12 +280,12 @@ const BiCG::BiCGRuntime& BiCG::getConstRuntime() const
 
 std::string BiCG::createValue()
 {
-	return "BiCG";
+    return "BiCG";
 }
 
 Solver* BiCG::create( const std::string name )
 {
-	return new BiCG( name );
+    return new BiCG( name );
 }
 
 void BiCG::writeAt( std::ostream& stream ) const

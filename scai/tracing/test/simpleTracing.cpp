@@ -51,23 +51,28 @@ int main()
     SCAI_REGION( "main" )
 
     #pragma omp parallel for
+
     for ( int i = 0; i < 10000; ++i )
     {
 #ifndef UNNAMED_THREADS
         SCAI_LOG_THREAD( omp_get_thread_num() );
 #endif
         SCAI_REGION_START( "main.loopA" )
+
         for ( int j = 0; j < 30; ++ j )
         {
             subA( X );
         }
+
         SCAI_REGION_END( "main.loopA" )
 
         SCAI_REGION_START( "main.loopB" )
+
         for ( int j = 0; j < 20; ++ j )
         {
             subB( X );
         }
+
         SCAI_REGION_END( "main.loopB" )
     }
 }

@@ -21,7 +21,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
- 
+
  * @brief Test enum for different context types.
  * @author Thomas Brandes
  * @date 30.03.2016
@@ -42,6 +42,7 @@ BOOST_AUTO_TEST_CASE( ContextTypeTest )
         std::ostringstream s;
         s << context::ContextType( type );
         BOOST_CHECK( s.str().length() > 0 );
+
         if ( type == context::Host )
         {
             BOOST_CHECK_EQUAL( s.str(), "Host" );
@@ -56,6 +57,7 @@ BOOST_AUTO_TEST_CASE( AccessKindTest )
         std::ostringstream s;
         s << context::AccessKind( type );
         BOOST_CHECK( s.str().length() > 0 );
+
         if ( type == context::Read )
         {
             // output should contain at least an R for read and no W at all

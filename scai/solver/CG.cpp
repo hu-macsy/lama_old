@@ -90,9 +90,9 @@ void CG::initialize( const Matrix& coefficients )
     IterativeSolver::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
 
-    runtime.mPScalar = 0.0;  
+    runtime.mPScalar = 0.0;
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
-    
+
     runtime.mP.reset( coefficients.newDenseVector() );
     runtime.mQ.reset( coefficients.newDenseVector() );
     runtime.mZ.reset( coefficients.newDenseVector() );
@@ -216,12 +216,12 @@ const CG::CGRuntime& CG::getConstRuntime() const
 
 std::string CG::createValue()
 {
-	return "CG";
+    return "CG";
 }
 
 Solver* CG::create( const std::string name )
 {
-	return new CG( name );
+    return new CG( name );
 }
 
 void CG::writeAt( std::ostream& stream ) const

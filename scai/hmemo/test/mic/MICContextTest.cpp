@@ -55,7 +55,7 @@ static void scal( int n, ValueType alpha, ValueType* array )
     {
         ValueType* array = static_cast<ValueType*>( arrayPtr );
 
-        #pragma omp parallel for 
+        #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; ++i )
         {

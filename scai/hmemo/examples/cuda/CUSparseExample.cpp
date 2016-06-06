@@ -56,6 +56,7 @@ void outArray( const HArray<ValueType>& array, const char* name )
     {
         std::cout << " " << read.get()[i];
     }
+
     std::cout << " }" << std::endl;
 }
 
@@ -100,11 +101,11 @@ int main()
 
         SCAI_CUSPARSE_CALL(
             cusparseXcoo2csr( dev.getcuSparseHandle(),
-                              readcooIA.get(), numValues, numRows, 
-                              writecsrIA.get(), 
+                              readcooIA.get(), numValues, numRows,
+                              writecsrIA.get(),
                               CUSPARSE_INDEX_BASE_ZERO ),
             "coo2csr" )
-  
+
     }
 
     std::cout << "Conversion COO2CSR done." << std::endl;
@@ -125,11 +126,11 @@ int main()
         ReadAccess<int> readcsrIA( csrIA, cuda );
         ReadAccess<int> readcsrJA( csrJA, cuda );
         ReadAccess<float> readcsrValues( csrValues, cuda );
-  
+
         WriteOnlyAccess<int> writecscJA( cscJA, cuda, numColumns + 1 );
         WriteOnlyAccess<int> writecscIA( cscIA, cuda, numValues );
         WriteOnlyAccess<float> writecscValues( cscValues, cuda, numValues );
-     
+
         const common::CUDACtx& dev = common::CUDAAccess::getCurrentCUDACtx();
 
         SCAI_CUSPARSE_CALL(
@@ -139,7 +140,7 @@ int main()
                               writecscValues.get(), writecscIA.get(), writecscJA.get(),
                               CUSPARSE_ACTION_NUMERIC, CUSPARSE_INDEX_BASE_ZERO ),
             "convertCSR2SCC<float>" )
-  
+
     }
 
     std::cout << "Conversion CSR2CSC done." << std::endl;

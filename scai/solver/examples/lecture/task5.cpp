@@ -65,7 +65,7 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
-    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA, 0 ); 
+    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA, 0 );
     m.setContextPtr( cudaContext );
 
     DenseVector<ValueType> rhs( size , 0 );

@@ -58,7 +58,7 @@ static void bench( IndexType size, double fillRate )
 
     MatrixCreator<ValueType>::fillRandom( a, fillRate );
     MatrixCreator<ValueType>::fillRandom( b, fillRate );
- 
+
     a.setContextPtr( host );
     b.setContextPtr( host );
     c.setContextPtr( host );
@@ -105,12 +105,12 @@ static void bench( IndexType size, double fillRate )
         cout << "c = " << c << endl;
 
         cout << "time <" << scai::common::getScalarType<ValueType>() << "> on " << *gpu
-                 << ", size = " << size << ", rate = " << fillRate << endl;
+             << ", size = " << size << ", rate = " << fillRate << endl;
     }
 
     const int precision = 1;
 
-    cout << "Size = " << size << ", rate = " << ( fillRate * 100 ) 
+    cout << "Size = " << size << ", rate = " << ( fillRate * 100 )
          << "%, type = " << scai::common::getScalarType<ValueType>() << endl;
     cout << "===================================" << endl;
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );

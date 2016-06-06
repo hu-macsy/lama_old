@@ -190,13 +190,13 @@ void MICBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
 MICBLAS2::RegisterGuard::RegisterGuard()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
-                                kregistry::KernelRegistry::KERNEL_ADD );
+        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 MICBLAS2::RegisterGuard::~RegisterGuard()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
-                                kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 MICBLAS2::RegisterGuard MICBLAS2::guard;    // guard variable for registration

@@ -147,7 +147,7 @@ bool GPIMemory::canCopyTo( const Memory& other ) const
 {
     // copy from - copy to has symmetric behavior
 
-    return canCopyFrom( other );  
+    return canCopyFrom( other );
 }
 
 void GPIMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const

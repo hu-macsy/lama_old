@@ -36,7 +36,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
- 
+
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 // tracing
@@ -432,19 +432,19 @@ SolverPtr GMRES::copy()
 }
 
 void GMRES::writeAt( std::ostream& stream ) const
-{ 
-    stream << "GMRES ( id = " << mId << ", krylov dim = " << mKrylovDim 
-                       << ", #iter = " << getConstRuntime().mIterations << " )";
+{
+    stream << "GMRES ( id = " << mId << ", krylov dim = " << mKrylovDim
+           << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
 std::string GMRES::createValue()
 {
-	return "GMRES";
+    return "GMRES";
 }
 
 Solver* GMRES::create( const std::string name )
 {
-	return new GMRES( name );
+    return new GMRES( name );
 }
 
 } /* end namespace solver */

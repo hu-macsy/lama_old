@@ -57,9 +57,9 @@ int main( int argc, char* argv[] )
 
     int maxIter = 10;   // maximal number of iterations
 
-    if ( argc > 2 ) 
+    if ( argc > 2 )
     {
-       sscanf( argv[2], "%d", &maxIter );
+        sscanf( argv[2], "%d", &maxIter );
     }
 
     CSRSparseMatrix<ValueType> A( argv[1] );

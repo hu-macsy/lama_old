@@ -101,8 +101,8 @@ void DenseMatrix<ValueType>::computeOwners()
 
             for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
             {
-		  s += " ";
-		  s += requiredIndexes[i];
+                s += " ";
+                s += requiredIndexes[i];
             }
 
             s += " }";
@@ -119,7 +119,7 @@ void DenseMatrix<ValueType>::computeOwners()
         for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
         {
             s += " ";
-	    s += mOwners[i];
+            s += mOwners[i];
         }
 
         s += " }";
@@ -605,7 +605,7 @@ void DenseMatrix<ValueType>::invertReplicated()
 template<typename ValueType>
 void DenseMatrix<ValueType>::invertCyclic()
 {
-	// ToDO: invertCyclic uses function invert from Scalapack, interface should not know Communicator
+    // ToDO: invertCyclic uses function invert from Scalapack, interface should not know Communicator
 
 //    SCAI_REGION( "Mat.Dense.invertCyclic" )
 //
@@ -788,32 +788,36 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
 {
     const Communicator& comm = Mat.getRowDistribution().getCommunicator();
 
-    IndexType size = comm.getSize();  
+    IndexType size = comm.getSize();
     DistributionPtr distRow = Mat.getRowDistributionPtr();
     DistributionPtr distCol = Mat.getColDistributionPtr();
 
-    if(size == 1){          // localTranspose == globalTranpose, if processor nr == 1
+    if(size == 1)           // localTranspose == globalTranpose, if processor nr == 1
+    {
         if(this != &Mat)
-            assign(Mat); 
+            assign(Mat);
+
         mData[0]->transposeImpl();
         redistribute(distCol,distRow);
     }
-    else{
+    else
+    {
         //new storage, distribution already changed
         DenseMatrix<ValueType> targetMat(distCol,distRow);
-        
+
         //local transpose of Mat
-        for(IndexType i=0; i<size;++i)
-            Mat.mData[i]->transposeImpl();    
- 
+        for(IndexType i=0; i<size; ++i)
+            Mat.mData[i]->transposeImpl();
+
         //preparation for mpi all2allv
-        IndexType* receiveSizes = new IndexType[size];  
+        IndexType* receiveSizes = new IndexType[size];
         ValueType **recvBuffer = new ValueType*[size];
-    
-        for(IndexType i=0;i<size;++i){
+
+        for(IndexType i=0; i<size; ++i)
+        {
             IndexType localSize = targetMat.mData[i]->getData().size();
             recvBuffer[i] = new ValueType[localSize];
-            WriteAccess<ValueType> wData(targetMat.mData[i]->getData() );  
+            WriteAccess<ValueType> wData(targetMat.mData[i]->getData() );
             //local data
             recvBuffer[i] = wData.get();
             //local data sizes
@@ -823,22 +827,25 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
         IndexType* sendSizes = new IndexType[size];
         ValueType** sendBuffer = new ValueType*[size];
 
-        for(IndexType i=0;i<size;++i){
+        for(IndexType i=0; i<size; ++i)
+        {
             IndexType localSize =  Mat.mData[i]->getData().size();
-            sendBuffer[i] = new ValueType[ localSize];    
+            sendBuffer[i] = new ValueType[ localSize];
             WriteAccess<ValueType> wDatas( Mat.mData[i]->getData() );
             //local datal
             sendBuffer[i] = wDatas.get();
             //local data sizes
             sendSizes[i] = localSize;
         }
+
         //MPI call
         comm.all2allv(recvBuffer,receiveSizes,sendBuffer,sendSizes);
 
-        //transpose back of Mat (A^t)^t = A 
-        if(this != &Mat){ // no need if we override Mat anyways
-            for(IndexType i=0; i<size;++i)
-                Mat.mData[i]->transposeImpl();    
+        //transpose back of Mat (A^t)^t = A
+        if(this != &Mat)  // no need if we override Mat anyways
+        {
+            for(IndexType i=0; i<size; ++i)
+                Mat.mData[i]->transposeImpl();
         }
 
         *this = targetMat;
@@ -875,11 +882,11 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
     }
     else if( other.getMatrixKind() == Matrix::SPARSE )
     {
-    	SCAI_LOG_INFO( logger, "copy sparse matrix")
+        SCAI_LOG_INFO( logger, "copy sparse matrix")
 
         mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::assignSparseImpl( *this, other );
 
-    	return;
+        return;
     }
 
 
@@ -1032,7 +1039,7 @@ void DenseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
 template<typename ValueType>
 void DenseMatrix<ValueType>::joinColumnData(
     HArray<ValueType>& result,
-    const IndexType firstRow, 
+    const IndexType firstRow,
     const IndexType nRows ) const
 {
     SCAI_LOG_DEBUG( logger, "join column data, firstRow = " << firstRow << ", nRows = " << nRows << ", result = " << result )
@@ -1094,7 +1101,7 @@ void DenseMatrix<ValueType>::joinColumnData(
             SCAI_LOG_DEBUG( logger, "offset " << chunkData.size() )
 
             resultWrite[ writePos++ ] = chunkData[offset];
-        
+
             SCAI_LOG_DEBUG( logger, "col " << j << " in chunk " << chunkId << ", offset = " << offset << ", val = " << chunkData[offset] )
         }
     }
@@ -1105,8 +1112,8 @@ void DenseMatrix<ValueType>::joinColumnData(
 
     for ( PartitionId p = 0; p < numColPartitions; ++p )
     {
-        SCAI_LOG_DEBUG( logger, "Offset chunk " << p << " of " << numColPartitions << " = " << chunkOffset[p] 
-                                << ", mData is " << *mData[p] )
+        SCAI_LOG_DEBUG( logger, "Offset chunk " << p << " of " << numColPartitions << " = " << chunkOffset[p]
+                        << ", mData is " << *mData[p] )
         SCAI_ASSERT_EQUAL_ERROR( chunkOffset[p], mData[p]->getNumColumns() * ( firstRow + nRows ) )
     }
 
@@ -1770,7 +1777,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
                 static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
                 ContextPtr loc = this->getContextPtr();
- 
+
                 copy.getSupportedContext( loc );
 
                 SCAI_CONTEXT_ACCESS( loc )

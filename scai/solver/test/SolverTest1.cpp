@@ -57,7 +57,9 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     Solver::getCreateValues( values );
 
     const int numSolvers = (int)values.size();
-    for(int i=0; i < numSolvers; i++){
+
+    for(int i=0; i < numSolvers; i++)
+    {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
         Solver* solver = Solver::create( values[i], "" );
 
@@ -74,7 +76,9 @@ BOOST_AUTO_TEST_CASE( copyTest )
     Solver::getCreateValues( values );
 
     const int numSolvers = (int)values.size();
-    for(int i=0; i < numSolvers; i++){
+
+    for(int i=0; i < numSolvers; i++)
+    {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
         Solver* solver = Solver::create( values[i], "" );
 
@@ -109,7 +113,9 @@ BOOST_AUTO_TEST_CASE( solveWithoutInitialization )
     Solver::getCreateValues( values );
 
     const int numSolvers = (int)values.size();
-    for(int i=0; i < numSolvers; i++){
+
+    for(int i=0; i < numSolvers; i++)
+    {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
         Solver* solver = Solver::create( values[i], "" );
 

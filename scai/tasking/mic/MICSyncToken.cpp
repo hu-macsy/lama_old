@@ -62,7 +62,7 @@ void MICSyncToken::wait()
     {
         // SCAI_REGION( "MIC.offloadSynchronize" )
 
-        #pragma offload target( mic:mDevice ) wait(mSignal)
+#pragma offload target( mic:mDevice ) wait(mSignal)
         {
         }
     }

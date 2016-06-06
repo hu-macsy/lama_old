@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
     cudaV.reset();  // give free the write access, but ownership also in token
 
-    token->wait();  
+    token->wait();
 
     ReadAccess<float> hostV( vector, hostContext );
 

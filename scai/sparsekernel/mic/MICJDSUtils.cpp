@@ -161,9 +161,9 @@ ValueType MICJDSUtils::getValue(
         const IndexType* ja = static_cast<const IndexType*>( jaPtr );
         const ValueType* values = static_cast<const ValueType*>( valuesPtr );
 
-	ValueType& valRef = *valPtr;
+        ValueType& valRef = *valPtr;
 
-	valRef = 0;
+        valRef = 0;
 
         #pragma omp parallel for
 
@@ -532,8 +532,8 @@ void MICJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" 
-                    << ", #rows = " << numRows )
+                   "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
+                   << ", #rows = " << numRows )
 
     // SCAI_REGION( "MIC.JDS->CSR_values" )
 
@@ -601,7 +601,7 @@ void MICJDSUtils::setCSRValues(
 {
     SCAI_LOG_INFO( logger,
                    "set CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
-                    << ", #rows = " << numRows )
+                   << ", #rows = " << numRows )
 
     // SCAI_REGION( "MIC.JDS<-CSR_values" )
 
@@ -728,7 +728,7 @@ void MICJDSUtils::normalGEMV(
         const IndexType* jdsJA = static_cast<const IndexType*>( jdsJAPtr );
         const ValueType* jdsValues = static_cast<const ValueType*>( jdsValuesPtr );
 
-	const ValueType& alphaRef = *alphaPtr;
+        const ValueType& alphaRef = *alphaPtr;
 
         // dlg[0] stands exactly for number of non-empty rows
 
@@ -810,7 +810,7 @@ void MICJDSUtils::jacobi(
         const IndexType* jdsILG = static_cast<const IndexType*>( jdsILGPtr );
         const ValueType* jdsValues = static_cast<const ValueType*>( jdsValuesPtr );
 
-	const ValueType& omegaRef = *omegaPtr;
+        const ValueType& omegaRef = *omegaPtr;
         const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omegaRef;
 
         #pragma omp parallel for
@@ -964,7 +964,7 @@ void MICJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
@@ -980,7 +980,7 @@ void MICJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );

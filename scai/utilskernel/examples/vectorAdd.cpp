@@ -38,7 +38,7 @@ void add( hmemo::HArray<double> res, const hmemo::HArray<double> a, const hmemo:
     IndexType n = a.size();
     hmemo::ContextPtr hostCtx = hmemo::Context::getContextPtr( common::context::Host );
 
-    hmemo::ReadAccess<double> read1( a, hostCtx ); 
+    hmemo::ReadAccess<double> read1( a, hostCtx );
     hmemo::ReadAccess<double> read2( b, hostCtx );
     hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
 

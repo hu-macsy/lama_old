@@ -485,7 +485,7 @@ void OpenMPJDSUtils::setCSRValues(
 template<typename ValueType>
 void OpenMPJDSUtils::normalGEMV_a(
     ValueType result[],
-    const std::pair<ValueType, const ValueType*> ax, 
+    const std::pair<ValueType, const ValueType*> ax,
     const std::pair<ValueType, const ValueType*> by,
     const std::pair<IndexType, const IndexType*> rows,
     const IndexType perm[],
@@ -493,7 +493,7 @@ void OpenMPJDSUtils::normalGEMV_a(
     const IndexType jdsJA[],
     const ValueType jdsValues[] )
 {
-    normalGEMV( result, ax.first, ax.second, by.first, by.second, 
+    normalGEMV( result, ax.first, ax.second, by.first, by.second,
                 rows.first, perm, rows.second, dlg.first, dlg.second,
                 jdsJA, jdsValues );
 }
@@ -516,10 +516,10 @@ void OpenMPJDSUtils::normalGEMV(
     const ValueType jdsValues[] )
 {
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
- 
+
     if ( syncToken )
     {
-        syncToken->run( common::bind( normalGEMV_a<ValueType>, 
+        syncToken->run( common::bind( normalGEMV_a<ValueType>,
                                       result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       std::pair<ValueType, const ValueType*>( beta, y ),
@@ -531,8 +531,8 @@ void OpenMPJDSUtils::normalGEMV(
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
-                    << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     utilskernel::OpenMPUtils::setScale( result, beta, y, numRows );  // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
 
@@ -579,7 +579,7 @@ void OpenMPJDSUtils::normalGEMV(
 template<typename ValueType>
 void OpenMPJDSUtils::normalGEVM_a(
     ValueType result[],
-    const std::pair<ValueType, const ValueType*> ax, 
+    const std::pair<ValueType, const ValueType*> ax,
     const std::pair<ValueType, const ValueType*> by,
     const std::pair<IndexType, const IndexType*> rows,
     const IndexType perm[],
@@ -587,7 +587,7 @@ void OpenMPJDSUtils::normalGEVM_a(
     const IndexType jdsJA[],
     const ValueType jdsValues[] )
 {
-    normalGEVM( result, ax.first, ax.second, by.first, by.second, 
+    normalGEVM( result, ax.first, ax.second, by.first, by.second,
                 rows.first, perm, rows.second, dlg.first, dlg.second,
                 jdsJA, jdsValues );
 }
@@ -610,10 +610,10 @@ void OpenMPJDSUtils::normalGEVM(
     const ValueType jdsValues[] )
 {
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
- 
+
     if ( syncToken )
     {
-        syncToken->run( common::bind( normalGEVM_a<ValueType>, 
+        syncToken->run( common::bind( normalGEVM_a<ValueType>,
                                       result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       std::pair<ValueType, const ValueType*>( beta, y ),
@@ -877,7 +877,7 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
@@ -894,12 +894,16 @@ void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );              \
-    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );      \
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );  \
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );  \
+    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
+    \
+    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
+    \
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
+    \
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
+    \
 }
 
 /* --------------------------------------------------------------------------- */

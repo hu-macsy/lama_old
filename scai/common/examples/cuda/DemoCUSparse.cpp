@@ -98,7 +98,7 @@ void myFree( T h_data[], const T* d_data , int N )
 
     size_t size = sizeof( T ) * N;
 
-    // transfer data from device to host 
+    // transfer data from device to host
 
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoH( h_data, d_pointer, size  ), "tranfer device->host" )
 
@@ -114,7 +114,7 @@ void myCOO2CSR( int* d_csr_ia, const int* d_coo_ia, int numValues, int numRows )
     std::cout << "cusparseXcoo2csr, #values = " << numValues << ", #rows = " << numRows << std::endl;
 
     SCAI_CUSPARSE_CALL( cusparseXcoo2csr( device.getcuSparseHandle(),
-                                          d_coo_ia, numValues, numRows, d_csr_ia, 
+                                          d_coo_ia, numValues, numRows, d_csr_ia,
                                           CUSPARSE_INDEX_BASE_ZERO ),
                         "coo2csr" )
 }
@@ -185,12 +185,13 @@ int main( int argc, const char** argv )
 
             std::cout << " " << ja[k] << ":" << values[k];
         }
+
         std::cout << std::endl;
     }
 
     // not verified here: max( ia ) < numRows, max( ja ) < numColumns
 
-    CUDAAccess access( device );  
+    CUDAAccess access( device );
 
     int* d_coo_ia = myAllocate( ia, numValues );
     int* d_coo_ja = myAllocate( ja, numValues );
@@ -206,8 +207,8 @@ int main( int argc, const char** argv )
     int* d_csc_ja = myAllocate<int>( numColumns + 1 );
     float* d_csc_values = myAllocate<float>( numValues );
 
-    myCSR2CSC( d_csc_ia, d_csc_ja, d_csc_values, 
-               d_csr_ia, d_coo_ja, d_coo_values, 
+    myCSR2CSC( d_csc_ia, d_csc_ja, d_csc_values,
+               d_csr_ia, d_coo_ja, d_coo_values,
                numRows, numColumns, numValues );
 
     // free memory on device and get host data
@@ -247,6 +248,7 @@ int main( int argc, const char** argv )
         {
             std::cout << " " << csc_ia[k] << ":" << csc_values[k];
         }
+
         std::cout << std::endl;
     }
 
@@ -254,10 +256,12 @@ int main( int argc, const char** argv )
     {
         SCAI_ASSERT_EQUAL( expected_ja[i], csc_ja[i], "ja mismatch for i = " << i )
     }
+
     for ( int i = 0; i < numValues; ++i )
     {
         SCAI_ASSERT_EQUAL( expected_ia[i], csc_ia[i], "ia mismatch at index " << i )
     }
+
     for ( int i = 0; i < numValues; ++i )
     {
         SCAI_ASSERT_EQUAL( expected_values[i], csc_values[i], "values mismatch at index " << i )

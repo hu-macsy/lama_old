@@ -34,7 +34,7 @@
 
 void sub( int val )
 {
-    if ( val < 0 ) 
+    if ( val < 0 )
     {
         COMMON_THROWEXCEPTION( "sub: val must not be negative, val = " << val )
     }
@@ -49,7 +49,7 @@ void sub( int val )
 int main()
 {
     int vals[] = { -1, 5, 14, 6, 4 };
- 
+
     int nargs = sizeof( vals ) / sizeof( int );
 
     for ( int i = 0; i < nargs; ++ i )
@@ -62,7 +62,7 @@ int main()
         catch ( const std::exception& exception )
         {
             // Importation: exception is a reference, so we get the routine of common::Exception
-    
+
             std::cout << "Got exception: " << exception.what() << std::endl;
         }
     }

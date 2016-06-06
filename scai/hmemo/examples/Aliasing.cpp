@@ -57,7 +57,7 @@ void add ( Array& res, const Array& a, const Array& b )
     hmemo::ReadAccess<double>read1( a, hostCtx );
     hmemo::ReadAccess<double>read2( b, hostCtx );
     hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
- 
+
     double* resPtr = write.get();
     const double* aPtr = read1.get();
     const double* bPtr = read2.get();
@@ -104,6 +104,7 @@ void printIt( const Array& a )
     {
         cout << " " << aPtr[i];
     }
+
     cout << endl;
 }
 
@@ -113,7 +114,7 @@ int main()
 
     Array a, b, c;
 
-    // initialize b and c 
+    // initialize b and c
 
     ContextPtr host = Context::getHostPtr();
 
@@ -130,7 +131,7 @@ int main()
 
     add( a, b, c ); // this is okay
     add( a, a, b ); // this crashed in earlier versions
-    
+
     // now make sure that we have only a valid copy on GPU
 
     add1( a );

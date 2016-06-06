@@ -28,7 +28,7 @@
  * @date 19.07.2015
  */
 
-#include <scai/hmemo/Access.hpp> 
+#include <scai/hmemo/Access.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/hmemo/_HArray.hpp>
 #include <scai/hmemo/ContextData.hpp>
@@ -38,7 +38,7 @@
 #include <scai/hmemo/HostMemory.hpp>
 #include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/HArrayRef.hpp>
-#include <scai/hmemo/Memory.hpp> 
+#include <scai/hmemo/Memory.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/WriteOnlyAccess.hpp>

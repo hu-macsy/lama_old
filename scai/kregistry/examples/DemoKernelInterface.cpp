@@ -41,7 +41,10 @@ struct UtilsInterface
     struct isSorted
     {
         typedef bool ( *FuncType ) ( const ValueType array[], const int n, bool ascending );
-        static inline const char* getId() { return "Utils.IsSorted"; }
+        static inline const char* getId()
+        {
+            return "Utils.IsSorted";
+        }
     };
 };
 
@@ -50,6 +53,7 @@ static bool isSorted( const double a[], int N, bool ascending )
     std::cout << "isSorted<double>, N = " << N << ", ascending = " << ascending << std::endl;
 
     bool is = true;
+
     for ( int i = 0; i < N-1; ++i )
     {
         if ( ascending )
@@ -60,12 +64,13 @@ static bool isSorted( const double a[], int N, bool ascending )
         {
             is = a[i] >= a[i+1];
         }
+
         if ( !is )
         {
             break;
         }
     }
- 
+
     return is;
 }
 
@@ -123,11 +128,11 @@ static void example1()
     SigIsSorted isSorted;
 
     // double ( *isSorted ) ( const double*, int, bool );
-    
+
     KernelRegistry::get( isSorted, "Utils.isSorted", context::Host );
 
     double a[] = { 3.0, 4.0, 5.0 };
-  
+
     bool okay = isSorted( a, 3, true );
 
     std::cout << "example1: isSorted = " << okay << std::endl;
@@ -142,14 +147,14 @@ static void example2()
     /* Alternative use ( not recommended for LAMA ):
 
         typedef bool ( *SigIsSorted ) ( const double*, int, bool );
-    
+
         static KernelContextFunction< SigIsSorted > isSorted( "Utils.isSorted" );
     */
 
     KernelTraitContextFunction< UtilsInterface::isSorted<double> > isSorted;
 
     double a[] = { 3.0, 4.0, 2.0 };
-  
+
     bool okay = isSorted[ context::Host ]( a, 3, true );
 
     std::cout << "example2: isSorted = " << okay << std::endl;
@@ -167,7 +172,7 @@ static void example3()
     typedef void ( *SigScale ) ( ValueType*, ValueType, int );
 
     ValueType a[] = { 3, 4, 2 };
-    
+
     static KernelContextFunction< SigScale > scale ( "Utils.scale" ) ;
 
     scale[ context::Host ]( a, 10, 3 );

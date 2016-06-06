@@ -46,7 +46,7 @@ int main( int argc, const char** argv )
     int nr = 0;   // take this as default
 
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
-   
+
     CUDACtx context( nr );
 
     // Note: no context access required for queries of the device

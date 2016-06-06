@@ -67,9 +67,9 @@ void HostContext::writeAt( std::ostream& stream ) const
 
     int nThreads = 1;
 
-#pragma omp parallel
+    #pragma omp parallel
     {
-#pragma omp master
+        #pragma omp master
         {
             nThreads = omp_get_num_threads();
         }

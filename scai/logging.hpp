@@ -23,7 +23,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Macro definitions for logging 
+ * @brief Macro definitions for logging
  * @author Thomas Brandes
  * @date 10.06.2015
  */

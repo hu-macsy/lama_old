@@ -130,9 +130,9 @@ void OpenMPDIAUtils::getCSRValues(
     const DIAValueType eps )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id() 
-                    << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals 
-                    << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id()
+                   << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals
+                   << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
 
     // we cannot check for correct sizes, but at least for valid pointers
 
@@ -248,8 +248,8 @@ void OpenMPDIAUtils::getCSRSizes(
     const DIAValueType eps )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " << numRows << " x " << numColumns 
-                    << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " << numRows << " x " << numColumns
+                   << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -335,7 +335,7 @@ void OpenMPDIAUtils::normalGEMV(
     {
         // bind has limited number of arguments, so take help routine for call
 
-        SCAI_LOG_INFO( logger, 
+        SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
 
         syncToken->run( common::bind( normalGEMV_a<ValueType>,
@@ -347,8 +347,8 @@ void OpenMPDIAUtils::normalGEMV(
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
-                    << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
@@ -440,7 +440,7 @@ void OpenMPDIAUtils::normalGEVM(
     {
         // bind has limited number of arguments, so take help routine for call
 
-        SCAI_LOG_INFO( logger, 
+        SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
 
         syncToken->run( common::bind( normalGEVM_a<ValueType>,
@@ -570,7 +570,7 @@ void OpenMPDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<DIAKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
@@ -587,7 +587,7 @@ void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }

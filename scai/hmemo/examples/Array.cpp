@@ -33,7 +33,7 @@
 
 #include <scai/logging.hpp>
 
-#include <iostream> 
+#include <iostream>
 
 using namespace std;
 using namespace scai;
@@ -49,9 +49,9 @@ void sumArray( const HArray<T>& array )
     ContextPtr contextPtr = Context::getHostPtr();
 
     ReadAccess<T> readAccess( array, contextPtr );
-   
+
     const T* data = readAccess.get();
- 
+
     T sum = 0;
 
     for ( IndexType i = 0; i < array.size(); ++i )
@@ -83,34 +83,36 @@ void writeArray( HArray<T>& array )
     }
 }
 
-struct SSS {
-int X; double Y;
-
-SSS( int val )
+struct SSS
 {
-    X = val;
-    Y = 0;
-}
+    int X;
+    double Y;
 
-SSS( int valX, double valY )
-{
-    X = valX;
-    Y = valY;
-}
+    SSS( int val )
+    {
+        X = val;
+        Y = 0;
+    }
 
-SSS& operator +=( const SSS& other )
-{
-    X += other.X;
-    Y += other.Y;
-    return *this;
-}
+    SSS( int valX, double valY )
+    {
+        X = valX;
+        Y = valY;
+    }
+
+    SSS& operator +=( const SSS& other )
+    {
+        X += other.X;
+        Y += other.Y;
+        return *this;
+    }
 
 };
 
 std::ostream& operator<<( std::ostream& stream, const SSS& object )
 {
-   stream << "( " << object.X << ", " << object.Y << " )";
-   return stream;
+    stream << "( " << object.X << ", " << object.Y << " )";
+    return stream;
 }
 
 int main()

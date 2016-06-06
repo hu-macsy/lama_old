@@ -34,7 +34,7 @@ namespace scai
 
 namespace kregistry
 {
-    
+
 KernelRegistryException::KernelRegistryException()
 {
     mMessage = "KernelRegistryException";

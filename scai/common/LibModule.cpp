@@ -38,11 +38,11 @@
 #undef DEBUG_HERE
 
 #if defined(__APPLE__)
-    #define SUFFIX "dylib"
+#define SUFFIX "dylib"
 #elif defined(_WIN32)
-    #define SUFFIX "dll"
+#define SUFFIX "dll"
 #else // LINUX
-    #define SUFFIX "so"
+#define SUFFIX "so"
 #endif
 
 namespace scai
@@ -52,98 +52,101 @@ namespace common
 {
 
 #if defined(WIN32)
-	// TODO: needs to be tested
+// TODO: needs to be tested
 static bool isDirectory(const char* dir)
 {
-	DWORD ftyp = GetFileAttributesA(dir);
-	if (ftyp == INVALID_FILE_ATTRIBUTES)
-	{
-		return false;
-	}
+    DWORD ftyp = GetFileAttributesA(dir);
 
-	if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
-	{
-		return true;
-	}
+    if (ftyp == INVALID_FILE_ATTRIBUTES)
+    {
+        return false;
+    }
 
-	return false;
+    if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 /* -------------------------------------------------------------------------- */
 
 static void getFilesFromDirectory(const char* dir, const char* suffix, std::vector<std::string>& files)
 {
-	WIN32_FIND_DATA ffd;
-	HANDLE dp = INVALID_HANDLE_VALUE;
-	dp = FindFirstFile(dir, &ffd);
+    WIN32_FIND_DATA ffd;
+    HANDLE dp = INVALID_HANDLE_VALUE;
+    dp = FindFirstFile(dir, &ffd);
 
-	if (dp == INVALID_HANDLE_VALUE)
-	{
-		COMMON_THROWEXCEPTION("Error (" /* << errno */ << " ) opening directory " << dir)
-	}
+    if (dp == INVALID_HANDLE_VALUE)
+    {
+        COMMON_THROWEXCEPTION("Error (" /* << errno */ << " ) opening directory " << dir)
+    }
 
-	const std::string directory(dir);
+    const std::string directory(dir);
 
-	std::string slash;
+    std::string slash;
 
-	if (*directory.rbegin() != '/')
-	{
-		slash = "/";
-	}
-	else
-	{
-		slash = "";
-	}
+    if (*directory.rbegin() != '/')
+    {
+        slash = "/";
+    }
+    else
+    {
+        slash = "";
+    }
 
-	do
-	{
-		std::string filename;
-		
-		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-		{
-			// todo: should we do something here?
-		}
-		else
-		{
-			filename = ffd.cFileName;
-		}
+    do
+    {
+        std::string filename;
+
+        if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+            // todo: should we do something here?
+        }
+        else
+        {
+            filename = ffd.cFileName;
+        }
 
 #ifdef DEBUG_HERE
-		std::cout << "File in dir " << dir << ": " << filename << std::endl;
+        std::cout << "File in dir " << dir << ": " << filename << std::endl;
 #endif
 
-		if (filename.substr(filename.find_last_of(".") + 1) == suffix)
-		{
-			files.push_back(directory + slash + filename);
-		}
-	} while ( FindNextFile(dp, &ffd) != 0);
+        if (filename.substr(filename.find_last_of(".") + 1) == suffix)
+        {
+            files.push_back(directory + slash + filename);
+        }
+    }
+    while ( FindNextFile(dp, &ffd) != 0);
 
-	FindClose(dp);
+    FindClose(dp);
 }
 
 /* -------------------------------------------------------------------------- */
 
 LibModule::LibHandle LibModule::loadLib(const char* filename)
 {
-	HINSTANCE handle = LoadLibrary(filename);
+    HINSTANCE handle = LoadLibrary(filename);
 
-	if (handle == NULL)
-	{
-		COMMON_THROWEXCEPTION("Cannot load library " << filename ) //<< ", " << dlerror())
-	}
-	return handle;
+    if (handle == NULL)
+    {
+        COMMON_THROWEXCEPTION("Cannot load library " << filename ) //<< ", " << dlerror())
+    }
+
+    return handle;
 }
 
 /* -------------------------------------------------------------------------- */
 
 void LibModule::freeLib(LibHandle handle)
 {
-	int rc = FreeLibrary(handle);
+    int rc = FreeLibrary(handle);
 
-	if (rc)
-	{
-		COMMON_THROWEXCEPTION("Unload library failed " ) // << dlerror())
-	}
+    if (rc)
+    {
+        COMMON_THROWEXCEPTION("Unload library failed " ) // << dlerror())
+    }
 }
 
 #else
@@ -173,7 +176,7 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
 
     if ( dp == NULL )
     {
-        COMMON_THROWEXCEPTION( "Error (" /* << errno */ << " ) opening directory " << dir ) 
+        COMMON_THROWEXCEPTION( "Error (" /* << errno */ << " ) opening directory " << dir )
     }
 
     const std::string directory( dir );
@@ -189,13 +192,13 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
         slash = "";
     }
 
-    for (;;) 
+    for (;;)
     {
-        struct dirent *dirp = readdir( dp ); 
-  
+        struct dirent *dirp = readdir( dp );
+
         if ( dirp == NULL )
         {
-           break;
+            break;
         }
 
         std::string filename = dirp->d_name;
@@ -223,6 +226,7 @@ LibModule::LibHandle LibModule::loadLib( const char* filename )
     {
         COMMON_THROWEXCEPTION( "Cannot load library " << filename << ", " << dlerror() )
     }
+
     return handle;
 }
 
@@ -231,7 +235,7 @@ LibModule::LibHandle LibModule::loadLib( const char* filename )
 void LibModule::freeLib( LibHandle handle )
 {
     int rc = dlclose( handle );
-  
+
     if ( rc )
     {
         COMMON_THROWEXCEPTION( "Unload library failed, " << dlerror() )
@@ -256,8 +260,8 @@ void LibModule::loadLibsInDir( const char* dir )
 #endif
 
         // continue if name does not match the pattern
- 
-        try 
+
+        try
         {
             loadLib( moduleNames[i].c_str() );
         }
@@ -298,7 +302,7 @@ void LibModule::loadLibsByPath( const char *path )
     std::vector<std::string> tokens;
 
     std::string input = path;
- 
+
     tokenize( tokens, input, ":" );
 
     for ( size_t i = 0; i < tokens.size(); ++i )

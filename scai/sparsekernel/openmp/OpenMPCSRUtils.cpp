@@ -218,7 +218,7 @@ void OpenMPCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[]
     }
 
     else
-  
+
     {
         #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -410,13 +410,13 @@ void OpenMPCSRUtils::countNonZeros(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps, 
+    const ValueType eps,
     const bool diagonalFlag )
 {
     SCAI_REGION( "OpenMP.CSRUtils.countNonZeros" )
 
     SCAI_LOG_INFO( logger, "countNonZeros of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
-                           << "), eps = " << eps << ", diagonal = " << diagonalFlag )
+                   << "), eps = " << eps << ", diagonal = " << diagonalFlag )
 
     #pragma omp parallel for
 
@@ -429,9 +429,9 @@ void OpenMPCSRUtils::countNonZeros(
             bool isDiagonal = diagonalFlag && ( ja[jj] == i );
             bool nonZero    = common::Math::abs( values[jj] ) > eps;
 
-            SCAI_LOG_TRACE( logger, "i = " << i << ", j = " << ja[jj] << ", val = " << values[jj] 
-                                    << ", isDiagonal = " << isDiagonal << ", nonZero = " << nonZero )
-                    
+            SCAI_LOG_TRACE( logger, "i = " << i << ", j = " << ja[jj] << ", val = " << values[jj]
+                            << ", isDiagonal = " << isDiagonal << ", nonZero = " << nonZero )
+
             if ( nonZero || isDiagonal )
             {
                 ++cnt;
@@ -461,7 +461,7 @@ void OpenMPCSRUtils::compress(
     SCAI_REGION( "OpenMP.CSRUtils.compress" )
 
     SCAI_LOG_INFO( logger, "compress of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
-                            << "), eps = " << eps << ", diagonal = " << diagonalFlag )
+                   << "), eps = " << eps << ", diagonal = " << diagonalFlag )
 
     #pragma omp parallel for
 
@@ -613,8 +613,8 @@ void OpenMPCSRUtils::normalGEMV_s(
     const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
-                    << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     // ToDo: for efficiency the following cases should be considered
     // result = y, beta = 1.0 : result += alpha * A * x
@@ -683,7 +683,7 @@ void OpenMPCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        syncToken->run( common::bind( normalGEMV_s<ValueType>, result, alpha, x, beta, y, 
+        syncToken->run( common::bind( normalGEMV_s<ValueType>, result, alpha, x, beta, y,
                                       numRows, csrIA, csrJA, csrValues ) );
     }
     else
@@ -697,8 +697,8 @@ void OpenMPCSRUtils::normalGEMV(
 template<typename ValueType>
 void OpenMPCSRUtils::normalGEVM_s(
     ValueType result[],
-    std::pair<ValueType, const ValueType*> ax, 
-    std::pair<ValueType, const ValueType*> by, 
+    std::pair<ValueType, const ValueType*> ax,
+    std::pair<ValueType, const ValueType*> by,
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType csrIA[],
@@ -731,17 +731,17 @@ void OpenMPCSRUtils::normalGEVM(
 
         SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
 
-        syncToken->run( common::bind( normalGEVM_s<ValueType>, result, 
-                                      std::pair<ValueType, const ValueType*>( alpha, x ), 
-                                      std::pair<ValueType, const ValueType*>( beta, y ), 
+        syncToken->run( common::bind( normalGEVM_s<ValueType>, result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
                                       numRows, numColumns, csrIA, csrJA, csrValues ) );
 
         return;
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " 
-                    << alpha << " * x * A + " << beta << " * y " )
+                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = "
+                   << alpha << " * x * A + " << beta << " * y " )
 
     // ToDo: for efficiency the cases of alpha and beta = 1.0 / 0.0 should be considered
 
@@ -877,8 +877,8 @@ void OpenMPCSRUtils::sparseGEVM(
     const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "sparseGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
-                    << ">, result[" << numColumns << "] += " << alpha << " * x * A" )
+                   "sparseGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numColumns << "] += " << alpha << " * x * A" )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -2116,7 +2116,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
@@ -2143,7 +2143,7 @@ void OpenMPCSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
@@ -2166,8 +2166,8 @@ OpenMPCSRUtils::~OpenMPCSRUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
     Registrator::initAndReg( flag );
-        kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-        kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

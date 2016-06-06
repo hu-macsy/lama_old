@@ -34,13 +34,13 @@
 #include <scai/common/SCAITypes.hpp>
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-    #include <scai/common/Complex.hpp>
+#include <scai/common/Complex.hpp>
 
-    #define TEST_TYPELOOP_LIST float, double, ComplexFloat
-    #define TEST_STRING "floatdoubleComplexFloat"
+#define TEST_TYPELOOP_LIST float, double, ComplexFloat
+#define TEST_STRING "floatdoubleComplexFloat"
 #else
-    #define TEST_TYPELOOP_LIST float, double
-    #define TEST_STRING "floatdouble"
+#define TEST_TYPELOOP_LIST float, double
+#define TEST_STRING "floatdouble"
 #endif
 
 #include <iostream>
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( countTest )
 
 namespace testing
 {
-    SCAI_COMMON_LOOP( TEST_TYPELOOP_DEF, TEST_TYPELOOP_LIST )
+SCAI_COMMON_LOOP( TEST_TYPELOOP_DEF, TEST_TYPELOOP_LIST )
 } /* end namespace testing */
 
 BOOST_AUTO_TEST_CASE( defTest )

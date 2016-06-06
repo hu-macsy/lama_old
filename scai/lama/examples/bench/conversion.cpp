@@ -106,7 +106,7 @@ int main()
         cout << "This examples compares the Host and CUDA implementation. You build without CUDA, so it's skipped." << endl;
         return 0;
     }
-    
+
     IndexType sizes[] = { 10000, 30000 };
     double fillrates[] = { 0.001, 0.002, 0.003 };
 
@@ -136,7 +136,7 @@ int main()
 #endif
 
             double rate = fillrates[j];
- 
+
             CSRSparseMatrix<ValueType> a( size, size );
             CSRSparseMatrix<ValueType> a1( size, size );
 

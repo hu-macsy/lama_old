@@ -34,7 +34,7 @@
 
 using namespace scai::common;
 
-/** Base class that provides by deriving from Factory a factory with a create routine. 
+/** Base class that provides by deriving from Factory a factory with a create routine.
  *  As it is also derived from Printable, it becomes polymorphic and can be used
  *  with the dynamic cast operator.
  */
@@ -83,17 +83,17 @@ public:
     {
         return typeid( T ).name();
     }
-    
+
     /** Method that creates objects of type TDerived that will be used for registration. */
-    
+
     static Base* create()
-    {   
+    {
         return new TDerived<T>();
     }
 };
 
 // Register guard instantiation, does also template instantiation
-    
+
 template Base::Register<TDerived<int> >::RegisterGuard Base::Register<TDerived<int> >::registerGuard;
 template Base::Register<TDerived<float> >::RegisterGuard Base::Register<TDerived<float> >::registerGuard;
 

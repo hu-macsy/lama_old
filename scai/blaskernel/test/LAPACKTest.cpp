@@ -208,14 +208,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  1  1   0     1    2
             //  1  1   1     1    3
             int error = tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                               n, 1, rA.get(), wB1.get(), n );
+                                               n, 1, rA.get(), wB1.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
             //  A            X    B
             //  1  1   1     1    3
             //  0  1   1     1    2
             //  0  0   1     1    1
             error = tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                           n, 1, rA.get(), wB2.get(), n );
+                                           n, 1, rA.get(), wB2.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
         }
         {
@@ -269,14 +269,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  4  5  6  0   5    49
             //  7  8  9  10  7    146
             int error1 = tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                                     n, 1, rA1.get(), wB1.get(), n );
+                                                n, 1, rA1.get(), wB1.get(), n );
             //  A            X    B
             //  1  2  3  4   1    50
             //  0  5  6  7   3    94
             //  0  0  8  9   5    103
             //  0  0  0  10  7    70
             int error2 = tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                                     n, 1, rA2.get(), wB2.get(), n );
+                                                n, 1, rA2.get(), wB2.get(), n );
             BOOST_CHECK_EQUAL( 0, error1 );
             BOOST_CHECK_EQUAL( 0, error2 );
         }
@@ -386,14 +386,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  2.3  4.5    0      3    18.1
             //  6.7  8.11   10.13  5    88.38
             int error = tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                               n, 1, rA.get(), wB1.get(), n );
+                                               n, 1, rA.get(), wB1.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
             //  A                  X    B
             //  1.2  2.3   4.5     2    31.8
             //  0    6.7   8.11    3    60.65
             //  0    0     10.13   5    50.65
             error = tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                           n, 1, rA.get(), wB2.get(), n );
+                                           n, 1, rA.get(), wB2.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
         }
         {

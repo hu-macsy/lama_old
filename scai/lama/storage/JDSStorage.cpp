@@ -80,8 +80,8 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSStorage<ValueType
 template<typename ValueType>
 JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numColumns )
 
-    : CRTPMatrixStorage<JDSStorage<ValueType>, ValueType>( numRows, numColumns ), 
-      mNumDiagonals( 0 ), 
+    : CRTPMatrixStorage<JDSStorage<ValueType>, ValueType>( numRows, numColumns ),
+      mNumDiagonals( 0 ),
       mNumValues( 0 )
 {
     SCAI_LOG_DEBUG( logger, "JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
@@ -215,7 +215,7 @@ void JDSStorage<ValueType>::assignJDS( const JDSStorage<ValueType>& other )
 
     _MatrixStorage::_assign( other ); // assign member variables of base class
 
-    mDiagonalProperty = other.mDiagonalProperty;   
+    mDiagonalProperty = other.mDiagonalProperty;
 
     mNumDiagonals = other.mNumDiagonals;
     mNumValues = other.mNumValues;
@@ -472,7 +472,7 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
         SCAI_CONTEXT_ACCESS( loc )
 
         diagonalProperty = checkDiagonalProperty[loc]( mNumDiagonals, mNumRows, mNumColumns, rPerm.get(), rJa.get(),
-                                                       rDlg.get() );
+                           rDlg.get() );
     }
 
     return diagonalProperty;
@@ -678,7 +678,7 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    // reduce with ABS_MAX returns 0 ( instead of -max ) for mNumRows == 0 
+    // reduce with ABS_MAX returns 0 ( instead of -max ) for mNumRows == 0
 
     mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, utilskernel::reduction::ABS_MAX );
 
@@ -700,8 +700,8 @@ void JDSStorage<ValueType>::buildCSR(
     SCAI_REGION( "Storage.JDS->CSR" )
 
     SCAI_LOG_INFO( logger,
-                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">" 
-                    << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *context )
+                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">"
+                   << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *context )
 
     static LAMAKernel<UtilKernelTrait::setScatter<IndexType, IndexType> > setScatter;
     static LAMAKernel<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
@@ -836,7 +836,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
         SCAI_CONTEXT_ACCESS( loc )
 
         setCSRValues[loc]( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), numDiagonals, rDlg.get(),
-                      rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
+                           rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
     }
 
     this->resetDiagonalProperty();
@@ -1024,7 +1024,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
     ContextPtr loc = this->getContextPtr();
 
-    // Step 1: result = beta * y 
+    // Step 1: result = beta * y
 
     if ( beta == common::constants::ZERO )
     {
@@ -1034,7 +1034,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
     }
     else
     {
-        // Note: assignScaled will deal with 
+        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
         HArrayUtils::assignScaled( result, beta, y, loc );
     }
@@ -1060,7 +1060,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
     // this call will finish the computation, syncToken == NULL
 
-    normalGEVM[loc]( wResult.get(), alpha, rX.get(), ValueType( 1 ), wResult.get(), 
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), ValueType( 1 ), wResult.get(),
                      mNumColumns, jdsPerm.get(), jdsILG.get(),
                      mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
 }
@@ -1182,7 +1182,7 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, NULL, mNumColumns, jdsPerm.get(), jdsILG.get(),
                          mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-    
+
         syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
@@ -1196,7 +1196,7 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
                          mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
-    
+
         syncToken->pushRoutine( wResult.releaseDelayed() );
         syncToken->pushRoutine( rY.releaseDelayed() );
     }
@@ -1428,11 +1428,11 @@ ValueType JDSStorage<ValueType>::l1Norm() const
     ContextPtr loc = this->getContextPtr();
     asum.getSupportedContext( loc );
 
-	ReadAccess<ValueType> data( mValues, loc );
+    ReadAccess<ValueType> data( mValues, loc );
 
-	SCAI_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
-	return asum[loc]( n, data.get(), 1 );
+    return asum[loc]( n, data.get(), 1 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1454,11 +1454,11 @@ ValueType JDSStorage<ValueType>::l2Norm() const
     ContextPtr loc = this->getContextPtr();
     dot.getSupportedContext( loc );
 
-	ReadAccess<ValueType> data( mValues, loc );
+    ReadAccess<ValueType> data( mValues, loc );
 
-	SCAI_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
-	return common::Math::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
+    return common::Math::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1623,9 +1623,9 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
 template<typename ValueType>
 JDSStorage<ValueType>* JDSStorage<ValueType>::newMatrixStorage() const
 {
-   common::unique_ptr<JDSStorage<ValueType> > storage( new JDSStorage<ValueType>() ); 
-   storage->setContextPtr( this->getContextPtr() );
-   return storage.release();
+    common::unique_ptr<JDSStorage<ValueType> > storage( new JDSStorage<ValueType>() );
+    storage->setContextPtr( this->getContextPtr() );
+    return storage.release();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1666,24 +1666,24 @@ const char* JDSStorage<ValueType>::typeName()
 SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST )
 
 #define JDS_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
-     template void JDSStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
-     template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
-     template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
-     template void JDSStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-     template void JDSStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
-     template void JDSStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+    template void JDSStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+    template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+    template void JDSStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+    template void JDSStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+    template void JDSStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define JDS_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef JDS_STORAGE_INST_LVL2
 #undef JDS_STORAGE_INST_LVL1
 
-} /* end namespace lama */
+    } /* end namespace lama */
 
-} /* end namespace scai */
+    } /* end namespace scai */

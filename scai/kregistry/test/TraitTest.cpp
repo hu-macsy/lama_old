@@ -44,7 +44,10 @@ static int dummyRoutine()
 struct TraitDummyRoutine
 {
     typedef int ( *FuncType ) ();    // signature of the function
-    static const char* getId() { return "MyDummy"; }
+    static const char* getId()
+    {
+        return "MyDummy";
+    }
 };
 
 BOOST_AUTO_TEST_CASE( TraitTest )
@@ -62,9 +65,9 @@ BOOST_AUTO_TEST_CASE( TraitTest )
 
     // throw exception if called for MIC, not registered
 
-    BOOST_CHECK_THROW( 
-    { 
-        x = f[ context::MIC ](); 
+    BOOST_CHECK_THROW(
+    {
+        x = f[ context::MIC ]();
 
     }, KernelRegistryException );
 

@@ -73,7 +73,7 @@ void myInit( float* d_data, float val, int N )
 {
     SCAI_CHECK_CUDA_ACCESS
 
-    // asynchronous execution 
+    // asynchronous execution
 
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
@@ -92,7 +92,7 @@ void myInit( float* d_data, float val, int N )
 
 void mySum( float* sum, const float d_array[], const int n )
 {
-    // asynchronous execution 
+    // asynchronous execution
 
     const CUDACtx& ctx = CUDAAccess::getCurrentCUDACtx();
 
@@ -108,8 +108,8 @@ void mySum( float* sum, const float d_array[], const int n )
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "set stream" );
 
-    SCAI_CUBLAS_CALL( cublasSasum( ctx.getcuBLASHandle(), n, d_array, 1, sum ), 
-                                   "cublasSasum for float" );
+    SCAI_CUBLAS_CALL( cublasSasum( ctx.getcuBLASHandle(), n, d_array, 1, sum ),
+                      "cublasSasum for float" );
 }
 
 /* --------------------------------------------------------------------- */
@@ -137,7 +137,7 @@ int main( int argc, const char** argv )
 
     std::cout << "Allocated data on device, d_data = " << d_data << std::endl;
 
-    { 
+    {
         CUDAStreamSyncToken token( ctx, CUDAStreamSyncToken::ComputeStream );
         {
             // make sync token available for running compute kernels asynchronously
@@ -151,7 +151,7 @@ int main( int argc, const char** argv )
     std::cout << "Initialized data on device done" << std::endl;
 
     float s = 0.0;
- 
+
     {
         CUDAStreamSyncToken token( ctx, CUDAStreamSyncToken::ComputeStream );
 

@@ -177,8 +177,8 @@ void SyncToken::unsetCurrent()
     if ( current == NULL )
     {
         SCAI_LOG_WARN( logger, "unset current sync token, not available" )
-    } 
-    else 
+    }
+    else
     {
         SCAI_LOG_INFO( logger, "no more current sync token " << *current )
         currentSyncToken.set( NULL );
@@ -190,7 +190,7 @@ SyncToken* SyncToken::getCurrentSyncToken()
     return currentSyncToken.get();
 }
 
-// we can rely on the fact that thread-private variable is initialized with NULL 
+// we can rely on the fact that thread-private variable is initialized with NULL
 
 SCAI_THREAD_PRIVATE_PTR( SyncToken, SyncToken::currentSyncToken )
 

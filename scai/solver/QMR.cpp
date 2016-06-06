@@ -29,7 +29,7 @@
 
 // hpp
 #include <scai/solver/QMR.hpp>
- 
+
 // local library
 #include <scai/solver/mepr/SolverEps.hpp>
 
@@ -138,7 +138,8 @@ void QMR::solveInit( Vector& solution, const Vector& rhs )
     runtime.mSolveInit = true;
 }
 
-void QMR::iterate(){
+void QMR::iterate()
+{
     QMRRuntime& runtime    = getRuntime();
 
     const Matrix& A = *runtime.mCoefficients;
@@ -152,7 +153,7 @@ void QMR::iterate(){
     Vector& vecS = *runtime.mVecS;
     Vector& vecD = *runtime.mVecD;
 
-    Vector& vecY = *runtime.mVecY;      /*preconditioning*/ 
+    Vector& vecY = *runtime.mVecY;      /*preconditioning*/
     Vector& vecZ = *runtime.mVecZ;
 
     Vector& vecVT = *runtime.mVecVT;
@@ -174,22 +175,26 @@ void QMR::iterate(){
     const Scalar& eps = runtime.mEps;
     lama::L2Norm norm;
 
-    if(this->getIterationCount() == 0){
-    /*PRECONDITIONING*/
+    if(this->getIterationCount() == 0)
+    {
+        /*PRECONDITIONING*/
         if(mPreconditioner != NULL)
         {
             vecY = Scalar(0.0);
-            mPreconditioner->solve( vecY, vecVT );      
-        } 
+            mPreconditioner->solve( vecY, vecVT );
+        }
         else    vecY = vecVT;
+
         vecZ = vecWT;
         rho = norm(vecY);
         psi = norm(vecZ);
         gamma = 1.0;
         eta = -1.0;
     }
+
     if( abs(rho) < eps || abs(1.0/rho)<eps || abs(psi) < eps || abs(1.0/psi)<eps)
         return;
+
     vecV = vecVT/rho;
     vecY = vecY/rho;
     vecW = vecWT/psi;
@@ -198,45 +203,59 @@ void QMR::iterate(){
 
     if(abs(delta) < eps)
         return;
+
     /*PRECONDITIONING*/
     vecYT = vecY;
-    if(mPreconditioner != NULL){
+
+    if(mPreconditioner != NULL)
+    {
         vecZT = Scalar(0.0);
-        mPreconditioner->solve( vecZT, vecZ );      
-    } 
+        mPreconditioner->solve( vecZT, vecZ );
+    }
     else vecZT = vecZ;
 
-    if(this->getIterationCount() == 0){
+    if(this->getIterationCount() == 0)
+    {
         vecP = vecYT;
         vecQ = vecZT;
     }
-    else{
-         Scalar pde = psi*delta/epsilon;
+    else
+    {
+        Scalar pde = psi*delta/epsilon;
+
         if(abs(pde) < eps || abs(1.0/pde)<eps)
             return;
+
         Scalar rde = rho* conj(delta/epsilon);
+
         if(abs(rde) < eps || abs(1.0/rde)<eps)
             return;
+
         vecP = vecYT - pde*vecP;
         vecQ = vecZT - rde*vecQ;
     }
+
     vecPT = A*vecP;
     epsilon = vecQ.dotProduct(vecPT);
+
     if( abs(epsilon) < eps || abs(1.0/eps)<eps )
         return;
+
     Scalar beta = epsilon/delta;
+
     if(abs(beta)<eps || abs(1.0/beta)<eps)
         return;
+
     vecVT = vecPT - beta *vecV;
 
     /*PRECONDITIONING*/
     if(mPreconditioner != NULL)
     {
         vecY = Scalar(0.0);
-        mPreconditioner->solve( vecY, vecVT );      
+        mPreconditioner->solve( vecY, vecVT );
     }
-    else    vecY = vecVT; 
- 
+    else    vecY = vecVT;
+
     rho1= rho;
     rho = norm(vecY);
 
@@ -245,22 +264,29 @@ void QMR::iterate(){
 
     vecZ = vecWT;
     psi = norm(vecZ);
+
     if(this->getIterationCount() > 0)
         theta1 = theta;
 
     theta = rho / (gamma * abs(beta));
     gamma1 = gamma;
     gamma = 1.0 / sqrt(1.0+theta*theta);
+
     if(abs(gamma) < eps)
         return;
+
     eta = -eta * rho1* gamma*gamma / (beta * gamma1 * gamma1);
+
     if(abs(1.0/eta) < eps)
         return;
-    if(this->getIterationCount() == 0){
+
+    if(this->getIterationCount() == 0)
+    {
         vecD = eta * vecP;
         vecS = eta * vecPT;
     }
-    else{
+    else
+    {
         vecD = eta * vecP + (theta1*gamma)*(theta1*gamma)*vecD;
         vecS = eta * vecPT + (theta1*gamma)*(theta1*gamma)*vecS;
     }

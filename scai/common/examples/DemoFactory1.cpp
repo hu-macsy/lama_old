@@ -34,9 +34,9 @@
 
 using namespace scai::common;
 
-enum Kind 
+enum Kind
 {
-    D1, 
+    D1,
     D2,
     D3
 };
@@ -53,7 +53,7 @@ public:
 class Derived1 : public Base //  Factory<int, *Base>::Manager<Derived1, 1>
 {
 public:
-  
+
     int mVal;
 
     Derived1( int val ) : mVal( val ) {}
@@ -84,13 +84,13 @@ bool Derived1::init()
 class Derived2 : public Base, private Factory1<Kind, int, Base*>::Register<Derived2>
 {
 public:
- 
+
     int mVal;
 
     Derived2( int val ) : mVal( val ) {}
 
-    static inline Kind createValue() 
-    { 
+    static inline Kind createValue()
+    {
         return D2;
     }
 

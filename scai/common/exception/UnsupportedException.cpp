@@ -38,7 +38,7 @@ namespace scai
 
 namespace common
 {
-    
+
 UnsupportedException::UnsupportedType UnsupportedException::unsupportedSetting = UnsupportedException::UNSUPPORTED_UNDEFINED;
 
 UnsupportedException::UnsupportedException()
@@ -66,7 +66,7 @@ UnsupportedException::UnsupportedType UnsupportedException::getUnsupportedSettin
         std::string val = "WARN";
 
         //bool isSet = Settings::getEnvironment( val, "SCAI_UNSUPPORTED" );
-        
+
         Settings::getEnvironment( val, "SCAI_UNSUPPORTED" );
 
         // transform to uppercase

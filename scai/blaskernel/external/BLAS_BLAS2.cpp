@@ -101,46 +101,50 @@ void BLAS_BLAS2::gemv(
 
     if( order == CblasColMajor )
     {
-    	BLASTrait::BLASTrans ta = '-';
+        BLASTrait::BLASTrans ta = '-';
 
-    	switch( transA )
-    	{
-    		case CblasNoTrans:
-				ta = 'N';
-				break;
-    		case CblasTrans:
-				ta = 'T';
-				break;
-    		case CblasConjTrans:
-				ta = 'C';
-				break;
-    	}
+        switch( transA )
+        {
+            case CblasNoTrans:
+                ta = 'N';
+                break;
 
-    	BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
+            case CblasTrans:
+                ta = 'T';
+                break;
+
+            case CblasConjTrans:
+                ta = 'C';
+                break;
+        }
+
+        BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
     }
     else if( order == CblasRowMajor )
     {
         BLASTrait::BLASTrans ta = '-';
 
-		switch( transA )
-		{
-			case CblasNoTrans:
-				ta = 'T';
-				break;
-			case CblasTrans:
-				ta = 'N';
-				break;
-			case CblasConjTrans:
-				ta = 'N';
-				break;
-		}
+        switch( transA )
+        {
+            case CblasNoTrans:
+                ta = 'T';
+                break;
 
-		if( common::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
-		{
-			COMMON_THROWEXCEPTION( "conj matrix vector multiply on complex numbers currently not supported" )
-		}
+            case CblasTrans:
+                ta = 'N';
+                break;
 
-		BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
+            case CblasConjTrans:
+                ta = 'N';
+                break;
+        }
+
+        if( common::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
+        {
+            COMMON_THROWEXCEPTION( "conj matrix vector multiply on complex numbers currently not supported" )
+        }
+
+        BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
     }
 
     return;
@@ -187,13 +191,13 @@ void BLAS_BLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 BLAS_BLAS2::BLAS_BLAS2()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
-                            kregistry::KernelRegistry::KERNEL_REPLACE );
+        kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS2::~BLAS_BLAS2()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
-                            kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

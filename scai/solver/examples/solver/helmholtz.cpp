@@ -58,7 +58,7 @@
 
 // specify the type of matrix used for solving
 
-typedef ComplexDouble SolverType;    
+typedef ComplexDouble SolverType;
 
 static const double eps = 1e-4;
 

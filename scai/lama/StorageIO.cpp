@@ -133,6 +133,7 @@ void StorageIO<ValueType>::readCSRFromSAMGFile(
     {
         COMMON_THROWEXCEPTION( "Invalid filename, can't load *.amg file" )
     }
+
     std::string filenameData = filename.substr( 0, filename.size() - 4 ) + ".amg";
     inFile.open( filenameData, flags );
 
@@ -162,6 +163,7 @@ void StorageIO<ValueType>::writeCSRToSAMGFile(
     SCAI_REGION( "StorageIO.writeCSRToBinaryFile " )
 
     char fileType;
+
     if( writeBinary )
     {
         fileType = 'b';
@@ -180,12 +182,13 @@ void StorageIO<ValueType>::writeCSRToSAMGFile(
     outFile.close();
 
     SCAI_LOG_INFO( logger, "writeCSRToBinaryFile ( " << filename << ".amg" << ")" << ", #rows = " << csrIA.size()-1
-                           << ", #values = " << csrJA.size() )
+                   << ", #values = " << csrJA.size() )
 
     std::ios::openmode flags = std::ios::out | std::ios::trunc;
+
     if( writeBinary )
     {
-       flags |= std::ios::binary;
+        flags |= std::ios::binary;
     }
 
     outFile.open( filename + ".amg", flags );
@@ -262,7 +265,7 @@ struct MatrixValue
     ValueType v;
 
     MatrixValue( IndexType row, IndexType col, ValueType val )
-                    : i( row ), j( col ), v( val )
+        : i( row ), j( col ), v( val )
     {
     }
 };
@@ -314,11 +317,12 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     std::string line;
 
     numValues = numValuesFile;
+
     // TODO: there could be comment or blank lines in the file (allowed by specification?), we should over-read them!
     for( int l = 0; l < numValuesFile && !inFile.eof(); ++l )
     {
-    	std::getline(inFile, line);
-    	std::istringstream reader(line);
+        std::getline(inFile, line);
+        std::istringstream reader(line);
 
         reader >> val.i;
         reader >> val.j;
@@ -360,6 +364,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     // check if there is more data in the file tht should not be there
     std::getline(inFile, line);
+
     if( !inFile.eof() )
     {
         COMMON_THROWEXCEPTION( "'" << fileName << "': invalid file, contains to many elements." )
@@ -432,12 +437,12 @@ bool _StorageIO::hasSuffix( const std::string& fileName, const std::string& suff
 /* -------------------------------------------------------------------------- */
 
 void _StorageIO::writeMMHeader(
-		const bool& vector,
-		const IndexType& numRows,
-		const IndexType& numColumns,
-		const IndexType& numValues,
-		FileStream& outFile,
-		const common::scalar::ScalarType& dataType )
+    const bool& vector,
+    const IndexType& numRows,
+    const IndexType& numColumns,
+    const IndexType& numValues,
+    FileStream& outFile,
+    const common::scalar::ScalarType& dataType )
 {
     outFile << "%%matrixmarket ";
 
@@ -456,17 +461,21 @@ void _StorageIO::writeMMHeader(
         case common::scalar::FLOAT:
             outFile << "real ";
             break;
+
         case common::scalar::COMPLEX:
         case common::scalar::DOUBLE_COMPLEX:
         case common::scalar::LONG_DOUBLE_COMPLEX:
             outFile << "complex ";
             break;
+
         case common::scalar::INDEX_TYPE:
             outFile << "integer ";
             break;
+
         case common::scalar::PATTERN:
             outFile << "pattern ";
             break;
+
         default:
             COMMON_THROWEXCEPTION( "_StorageIO::writeMMHeader: " "unknown datatype." << dataType )
 
@@ -489,18 +498,19 @@ void _StorageIO::writeMMHeader(
 /* -------------------------------------------------------------------------- */
 
 void _StorageIO::readMMHeader(
-		IndexType& numRows,
-		IndexType& numColumns,
-		IndexType& numValues,
-		bool& isPattern,
-		bool& isSymmetric,
-		FileStream& inFile )
+    IndexType& numRows,
+    IndexType& numColumns,
+    IndexType& numValues,
+    bool& isPattern,
+    bool& isSymmetric,
+    FileStream& inFile )
 {
     std::string buffer;
 
     // read %%MatrixMarket
     std::getline(inFile, buffer, ' ' );
     std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+
     if( buffer != "%%matrixmarket" )
     {
         COMMON_THROWEXCEPTION( "Given file is no valid matrix market file, expected file to begin with %%MatrixMarket" )
@@ -509,12 +519,15 @@ void _StorageIO::readMMHeader(
     // read object type
     std::getline(inFile, buffer, ' ' );
     std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+
     // check if object type is valid in general
     if( buffer != "matrix" && buffer != "vector" )
     {
         COMMON_THROWEXCEPTION( "Object type in the given matrix market file is invalid, should be matrix or vector" )
     }
+
     bool isVector = false;
+
     if( buffer == "vector" )
     {
         isVector = true;
@@ -524,11 +537,13 @@ void _StorageIO::readMMHeader(
     // read file type
     std::getline(inFile, buffer, ' ' );
     std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+
     // checkif file type is valid in general
     if( buffer != "coordinate" && buffer != "array" )
     {
         COMMON_THROWEXCEPTION( "Format type in the given matrix market file is invalid, should be coordinate or array" )
     }
+
 //    if( buffer == "array" )
 //    {
 //        // TODO: array => dense data, do we need to check this later?
@@ -538,10 +553,12 @@ void _StorageIO::readMMHeader(
     // read data type
     std::getline(inFile, buffer, ' ' );
     std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+
     if( buffer != "real" && buffer != "integer" && buffer != "complex" && buffer != "pattern" )
     {
         COMMON_THROWEXCEPTION( "Data type in the given matrix market file is invalid, should be real, integer, complex or pattern" )
     }
+
     // TODO: allow to return other value types as well => check if the valid type is used
     if( buffer == "pattern" )
     {
@@ -555,10 +572,12 @@ void _StorageIO::readMMHeader(
     // read symmetry
     std::getline(inFile, buffer, '\n' );
     std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+
     if( buffer != "general" && buffer != "symmetric" && buffer != "skew-symmetric" && buffer != "hermitian" )
     {
         COMMON_THROWEXCEPTION( "Data type in the given matrix market file is invalid, should be general, symmetric, skew-symmetric or hermitian" )
     }
+
     if( buffer == "general" )
     {
         isSymmetric = false;
@@ -579,11 +598,13 @@ void _StorageIO::readMMHeader(
     do
     {
         std::getline(inFile, buffer, '\n' );
-    } while( buffer.at( 0 ) == '%' );
+    }
+    while( buffer.at( 0 ) == '%' );
 
     std::stringstream bufferSS( buffer );
     bufferSS >> numRows;
     bufferSS >> numColumns;
+
     // TODO: vector correct here? should it be dense vs sparse?
     if( !isVector )
     {
@@ -639,9 +660,11 @@ void StorageIO<ValueType>::writeCSRToFile(
         case File::SAMG:
             writeCSRToSAMGFile( size, rank, csrIA, csrJA, csrValues, fileBaseName, iaType, jaType, valuesType, writeBinary );
             break;
+
         case File::MATRIX_MARKET:
             writeCSRToMMFile( csrIA, numColumns, csrJA, csrValues, fileBaseName, valuesType );
             return;
+
         default:
             COMMON_THROWEXCEPTION( "Unknown file type definition." )
     }
@@ -677,7 +700,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 
     if( suffix == ".mtx" )
     {
-    	fileType = File::MATRIX_MARKET;
+        fileType = File::MATRIX_MARKET;
     }
 
 
@@ -698,8 +721,8 @@ void StorageIO<ValueType>::readCSRFromFile(
 
 template<typename ValueType>
 void StorageIO<ValueType>::readDenseFromFile( HArray<ValueType>& data,
-                                              IndexType& numColumns,
-                                              const std::string& filename )
+        IndexType& numColumns,
+        const std::string& filename )
 {
     File::FileType fileType;
     std::string suffix;
@@ -733,6 +756,7 @@ void StorageIO<ValueType>::readDenseFromFile( HArray<ValueType>& data,
         case File::SAMG:
             readDenseFromSAMGFile( data, numColumns, used_filename );
             break;
+
         case File::MATRIX_MARKET:
             readDenseFromMMFile( data, numColumns, used_filename );
             break;
@@ -745,11 +769,11 @@ void StorageIO<ValueType>::readDenseFromFile( HArray<ValueType>& data,
 
 template<typename ValueType>
 void StorageIO<ValueType>::writeDenseToFile( const HArray<ValueType>& data,
-                                             const IndexType& numColumns,
-                                             const std::string& filename,
-                                             const File::FileType fileType,
-                                             const common::scalar::ScalarType dataType,
-                                             const bool writeBinary /* = false */ )
+        const IndexType& numColumns,
+        const std::string& filename,
+        const File::FileType fileType,
+        const common::scalar::ScalarType dataType,
+        const bool writeBinary /* = false */ )
 {
     switch( fileType )
     {
@@ -768,8 +792,8 @@ void StorageIO<ValueType>::writeDenseToFile( const HArray<ValueType>& data,
 
 template<typename ValueType>
 void StorageIO<ValueType>::readDenseFromSAMGFile( HArray<ValueType>& data,
-                                                  IndexType& numColumns,
-                                                  const std::string& filename )
+        IndexType& numColumns,
+        const std::string& filename )
 {
     SCAI_LOG_INFO( logger, "read DenseVector from file '" << filename << "'." )
 
@@ -805,21 +829,25 @@ void StorageIO<ValueType>::readDenseFromSAMGFile( HArray<ValueType>& data,
     {
         COMMON_THROWEXCEPTION( "Invalid filename, can't load *.vec file" )
     }
+
     std::string filenameData = filename.substr( 0, filename.size() - 4 ) + ".vec";
     inFile.open( filenameData, flags );
 
     common::scalar::ScalarType dataType;
-    switch(dataTypeSize){
+
+    switch(dataTypeSize)
+    {
         // special cases for handling IndexType, int and long, as these are not properly supported yet
         case 4:
             dataType = common::scalar::FLOAT;
             break;
+
         case 8:
             dataType = common::scalar::DOUBLE;
             break;
 
         default:
-			dataType = common::scalar::UNKNOWN;
+            dataType = common::scalar::UNKNOWN;
             SCAI_LOG_ERROR( logger, "Encountered invalid type size " << dataTypeSize )
     }
 
@@ -831,10 +859,10 @@ void StorageIO<ValueType>::readDenseFromSAMGFile( HArray<ValueType>& data,
 
 template<typename ValueType>
 void StorageIO<ValueType>::writeDenseToSAMGFile( const HArray<ValueType>& data,
-                                                 const IndexType& numColumns,
-                                                 const std::string& filename,
-                                                 const common::scalar::ScalarType dataType,
-                                                 const bool writeBinary /* = false */ )
+        const IndexType& numColumns,
+        const std::string& filename,
+        const common::scalar::ScalarType dataType,
+        const bool writeBinary /* = false */ )
 {
     SCAI_ASSERT_ERROR( numColumns == 1, "SAMG format can only store dense vectors" )
 
@@ -861,6 +889,7 @@ void StorageIO<ValueType>::writeDenseToSAMGFile( const HArray<ValueType>& data,
             case common::scalar::INTERNAL:
                 typeSize = sizeof(ValueType);
                 break;
+
             default:
                 SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << dataType )
                 break;
@@ -876,6 +905,7 @@ void StorageIO<ValueType>::writeDenseToSAMGFile( const HArray<ValueType>& data,
 
     // write data into *.vec file
     std::ios::openmode flags = std::ios::out | std::ios::trunc;
+
     if( writeBinary )
     {
         flags |= std::ios::binary;
@@ -890,8 +920,8 @@ void StorageIO<ValueType>::writeDenseToSAMGFile( const HArray<ValueType>& data,
 
 template<typename ValueType>
 void StorageIO<ValueType>::readDenseFromMMFile( HArray<ValueType>& data,
-                                                IndexType& numColumns,
-                                                const std::string& filename )
+        IndexType& numColumns,
+        const std::string& filename )
 {
     bool isSymmetric, isPattern;
     IndexType numRows, numValues, i;
@@ -933,6 +963,7 @@ void StorageIO<ValueType>::readDenseFromMMFile( HArray<ValueType>& data,
 
     // check if there is more data in the file tht should not be there
     std::getline(inFile, line);
+
     if( !inFile.eof() )
     {
         COMMON_THROWEXCEPTION( "'" << filename << "': invalid file, contains to many elements." )
@@ -944,10 +975,10 @@ void StorageIO<ValueType>::readDenseFromMMFile( HArray<ValueType>& data,
 
 template<typename ValueType>
 void StorageIO<ValueType>::writeDenseToMMFile( const HArray<ValueType>& data,
-                                               const IndexType& numColumns,
-                                               const std::string& filename,
-                                               const common::scalar::ScalarType dataType,
-                                               const bool writeBinary /* = false */ )
+        const IndexType& numColumns,
+        const std::string& filename,
+        const common::scalar::ScalarType dataType,
+        const bool writeBinary /* = false */ )
 {
     SCAI_ASSERT_ERROR( writeBinary == false, "Matrix market format can not be written binary" );
 

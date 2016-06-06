@@ -466,8 +466,8 @@ void CSRStorage<ValueType>::buildRowIndexes()
 
     if( usage >= mCompressThreshold )
     {
-        SCAI_LOG_INFO( logger, "CSRStorage: do not build row indexes, usage = " << usage 
-                                << ", threshold = " << mCompressThreshold )
+        SCAI_LOG_INFO( logger, "CSRStorage: do not build row indexes, usage = " << usage
+                       << ", threshold = " << mCompressThreshold )
         return;
     }
 
@@ -614,25 +614,25 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
     static LAMAKernel<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
 
     LArray<IndexType> newIa;
- 
+
     {
         ContextPtr loc = this->getContextPtr();
         countNonZeros.getSupportedContext( loc );
 
         SCAI_CONTEXT_ACCESS( loc )
- 
+
         ReadAccess<IndexType> ia( mIa, loc );
         ReadAccess<IndexType> ja( mJa, loc );
         ReadAccess<ValueType> values( mValues, loc );
         WriteOnlyAccess<IndexType> new_ia( newIa, loc, mNumRows + 1 );
-    
+
         countNonZeros[loc]( new_ia.get(), ia.get(), ja.get(), values.get(), mNumRows, eps, mDiagonalProperty );
     }
 
     // now compute the new offsets from the sizes, gives also new numValues
 
     IndexType newNumValues = HArrayUtils::scan( newIa, this->getContextPtr() );
-  
+
     SCAI_LOG_INFO( logger, "compress: " << newNumValues << " non-diagonal zero elements" )
 
     // ready if there are no new non-zero values
@@ -642,7 +642,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
         return;
     }
 
-    // All information is available how to fill the compressed data 
+    // All information is available how to fill the compressed data
 
     LArray<ValueType> newValues;
     LArray<IndexType> newJa;
@@ -867,7 +867,7 @@ void CSRStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
 
     if ( numDiagonalElements > mNumRows )
     {
-        numDiagonalElements = mNumRows; 
+        numDiagonalElements = mNumRows;
     }
 
     {
@@ -876,9 +876,9 @@ void CSRStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
         ContextPtr loc = this->getContextPtr();
         setScatter.getSupportedContext( loc );
 
-        SCAI_LOG_INFO( logger, "set diagonal<" << TypeTraits<ValueType>::id() << ", " 
-                        << TypeTraits<OtherValueType>::id() << "> ( " << numDiagonalElements << " ) @ " << *loc )
-        
+        SCAI_LOG_INFO( logger, "set diagonal<" << TypeTraits<ValueType>::id() << ", "
+                       << TypeTraits<OtherValueType>::id() << "> ( " << numDiagonalElements << " ) @ " << *loc )
+
         SCAI_CONTEXT_ACCESS( loc )
 
         ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
@@ -908,7 +908,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
     IndexType n1;     // offset for row i in ja, values
     IndexType nrow;   // number of nonzero entries in row i
- 
+
     {
         static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
 
@@ -1120,9 +1120,9 @@ void CSRStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 template<typename ValueType>
 CSRStorage<ValueType>* CSRStorage<ValueType>::newMatrixStorage() const
 {
-   common::unique_ptr<CSRStorage<ValueType> > storage( new CSRStorage<ValueType>() ); 
-   storage->setContextPtr( this->getContextPtr() );
-   return storage.release();
+    common::unique_ptr<CSRStorage<ValueType> > storage( new CSRStorage<ValueType>() );
+    storage->setContextPtr( this->getContextPtr() );
+    return storage.release();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1375,7 +1375,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    gemm[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, n, mNumColumns, 
+    gemm[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, n, mNumColumns,
                csrIA.get(), csrJA.get(), csrValues.get() );
 }
 
@@ -1467,14 +1467,14 @@ SyncToken* CSRStorage<ValueType>::sparseGEVM(
 
     WriteAccess<ValueType> wResult( result, loc );
 
-    // result += alpha * x * thisMatrix, can take advantage of row indexes 
+    // result += alpha * x * thisMatrix, can take advantage of row indexes
 
     IndexType numNonZeroRows = mRowIndexes.size();
 
     ReadAccess<IndexType> rows( mRowIndexes, loc );
 
-    sparseGEVM[loc]( wResult.get(), alpha, rX.get(), 
-                     mNumColumns, numNonZeroRows, rows.get(), 
+    sparseGEVM[loc]( wResult.get(), alpha, rX.get(),
+                     mNumColumns, numNonZeroRows, rows.get(),
                      csrIA.get(), csrJA.get(), csrValues.get() );
 
     if ( async )
@@ -1555,8 +1555,8 @@ SyncToken* CSRStorage<ValueType>::normalGEVM(
     const HArray<ValueType>& y,
     bool async ) const
 {
-    SCAI_LOG_INFO( logger, "normalGEVM ( async = " << async << " ) , result = " << alpha << " * x * storage" 
-                            << " + " << beta << " * y" )
+    SCAI_LOG_INFO( logger, "normalGEVM ( async = " << async << " ) , result = " << alpha << " * x * storage"
+                   << " + " << beta << " * y" )
 
     static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
@@ -1585,7 +1585,7 @@ SyncToken* CSRStorage<ValueType>::normalGEVM(
 
     WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
-    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), 
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(),
                      mNumRows, mNumColumns,
                      csrIA.get(), csrJA.get(), csrValues.get() );
 
@@ -1636,7 +1636,7 @@ SyncToken* CSRStorage<ValueType>::normalGEMV(
 
     ValueType beta = 0;
 
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, NULL, mNumRows, mNumColumns, mNumValues, 
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, NULL, mNumRows, mNumColumns, mNumValues,
                      csrIA.get(), csrJA.get(), csrValues.get() );
 
     if ( async )
@@ -1687,7 +1687,7 @@ SyncToken* CSRStorage<ValueType>::normalGEVM(
 
     ValueType beta = 0;
 
-    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, NULL, 
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, NULL,
                      mNumRows, mNumColumns,
                      csrIA.get(), csrJA.get(), csrValues.get() );
 
@@ -1718,7 +1718,7 @@ SyncToken* CSRStorage<ValueType>::gemv(
 
     SCAI_LOG_INFO( logger,
                    "GEMV ( async = " << async << " ), result = " << alpha << " * A * x + " << beta << " * y "
-                   << ", result = " << result << ", x = " << x << ", y = " << y 
+                   << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
 
     if ( alpha == common::constants::ZERO || ( mNumValues == 0 ) )
@@ -1758,7 +1758,7 @@ SyncToken* CSRStorage<ValueType>::gemv(
 
         return sparseGEMV( result, alpha, x, async );
     }
-    else 
+    else
     {
         return normalGEMV( result, alpha, x, beta, y, async );
     }
@@ -1779,7 +1779,7 @@ SyncToken* CSRStorage<ValueType>::gevm(
 
     SCAI_LOG_INFO( logger,
                    "GEVM ( async = " << async << " ), result = " << alpha << " * x * A  + " << beta << " * y "
-                   << ", result = " << result << ", x = " << x << ", y = " << y 
+                   << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
 
     if ( alpha == common::constants::ZERO || ( mNumValues == 0 ) )
@@ -1821,7 +1821,7 @@ SyncToken* CSRStorage<ValueType>::gevm(
 
         return sparseGEVM( result, alpha, x, async );
     }
-    else 
+    else
     {
         return normalGEVM( result, alpha, x, beta, y, async );
     }
@@ -1908,7 +1908,7 @@ void CSRStorage<ValueType>::jacobiIterate(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    jacobi[loc]( wSolution.get(), csrIA.get(), csrJA.get(), csrValues.get(), 
+    jacobi[loc]( wSolution.get(), csrIA.get(), csrJA.get(), csrValues.get(),
                  rOldSolution.get(), rRhs.get(), omega, mNumRows );
 }
 
@@ -2325,7 +2325,7 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
         SCAI_CONTEXT_ACCESS( loc )
 
         mNumValues = matrixMultiplySizes[loc] ( cIA.get(), mNumRows, mNumColumns, k, mDiagonalProperty, aIA.get(), aJA.get(),
-                                          bIA.get(), bJA.get() );
+                                                bIA.get(), bJA.get() );
 
         WriteOnlyAccess<IndexType> cJa( mJa, loc, mNumValues );
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValues );
@@ -2535,28 +2535,28 @@ const char* CSRStorage<ValueType>::typeName()
 SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST )
 
 #define CSR_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
-     template void CSRStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
-     template  void CSRStorage<ValueType>::setCSRDataSwap(const IndexType, const IndexType, const IndexType,                \
-                                                          hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>&,             \
-                                                          hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );        \
-     template void CSRStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
-     template void CSRStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
-     template void CSRStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-     template void CSRStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
-     template void CSRStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+    template void CSRStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+    template  void CSRStorage<ValueType>::setCSRDataSwap(const IndexType, const IndexType, const IndexType,                \
+            hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>&,             \
+            hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );        \
+    template void CSRStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void CSRStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+    template void CSRStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+    template void CSRStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+    template void CSRStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define CSR_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, CSR_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_LOOP( CSR_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( CSR_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef CSR_STORAGE_INST_LVL2
 #undef CSR_STORAGE_INST_LVL1
 
 
-} /* end namespace lama */
+    } /* end namespace lama */
 
-} /* end namespace scai */
+    } /* end namespace scai */

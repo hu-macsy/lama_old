@@ -198,7 +198,7 @@ void Criterion::writeAt( std::ostream& stream ) const
             stream << *getRightChild();
         }
 
-        stream << ")";  
+        stream << ")";
     }
     else //leaf
     {

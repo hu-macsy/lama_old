@@ -35,33 +35,33 @@ using scai::common::Walltime;
 
 int main()
 {
-   const int NITER = 4;
+    const int NITER = 4;
 
-   for ( int i = 0; i < NITER; ++i )
-   {
-       long counter = 0;     // count changes of output value of Walltime.:get
+    for ( int i = 0; i < NITER; ++i )
+    {
+        long counter = 0;     // count changes of output value of Walltime.:get
 
-       double t = Walltime::get();
+        double t = Walltime::get();
 
-       bool stop = false;   // set it to true after one second
+        bool stop = false;   // set it to true after one second
 
-       double tc = t;
+        double tc = t;
 
-       while ( !stop )
-       {
-          double t1 = Walltime::get();
-    
-          if ( t1 > tc )
-          {
-             // value has changed
-    
-             counter++;
-             tc = t1;
-          }
-    
-          stop = ( t1 - t ) >= 1.0;
-       }
-    
-       std::cout << "Resolution: at least " << counter << " ticks per seconds" << std::endl;
+        while ( !stop )
+        {
+            double t1 = Walltime::get();
+
+            if ( t1 > tc )
+            {
+                // value has changed
+
+                counter++;
+                tc = t1;
+            }
+
+            stop = ( t1 - t ) >= 1.0;
+        }
+
+        std::cout << "Resolution: at least " << counter << " ticks per seconds" << std::endl;
     }
 }

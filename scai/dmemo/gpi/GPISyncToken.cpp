@@ -45,7 +45,7 @@ namespace dmemo
 
 GPISyncToken::GPISyncToken( const gaspi_segment_id_t segId,
                             const PartitionId numNotifications )
-   : mSegId( segId )
+    : mSegId( segId )
 
 {
     SCAI_LOG_INFO( logger, "GPISyncToken for constructed" )
@@ -68,7 +68,7 @@ void GPISyncToken::pushNotification( const PartitionId notification )
 
 void GPISyncToken::writeAt( std::ostream& stream ) const
 {
-    if ( isSynchronized() ) 
+    if ( isSynchronized() )
     {
         stream << "GPISyncToken( synchronized )";
     }

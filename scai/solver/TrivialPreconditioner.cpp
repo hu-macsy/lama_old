@@ -93,12 +93,12 @@ const TrivialPreconditioner::TrivialPreconditionerRuntime& TrivialPreconditioner
 
 std::string TrivialPreconditioner::createValue()
 {
-	return "TrivialPreconditioner";
+    return "TrivialPreconditioner";
 }
 
 Solver* TrivialPreconditioner::create( const std::string name )
 {
-	return new TrivialPreconditioner( name );
+    return new TrivialPreconditioner( name );
 }
 
 void TrivialPreconditioner::writeAt( std::ostream& stream ) const

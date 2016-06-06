@@ -234,7 +234,7 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diag
 template<typename ValueType>
 void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 {
-   
+
     // not used here: HArrayUtils::scale( mData, value, this->getContextPtr() )
     // reasoning:     workload distribution would not fit to distribution of rows
 
@@ -281,7 +281,8 @@ void DenseStorageView<ValueType>::scaleImpl( const HArray<OtherType>& values )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::transposeImpl(){
+void DenseStorageView<ValueType>::transposeImpl()
+{
     // Compute transpostion A^t of A via A^t = A^t * I, where * is implemented by LAPACK
     ContextPtr context = Context::getHostPtr();
     WriteAccess<ValueType> wData( mData, context );
@@ -290,32 +291,38 @@ void DenseStorageView<ValueType>::transposeImpl(){
     // quadratic implementation is a special case of the rectangular one but this specific one might be faster
     if(mNumColumns == mNumRows)
     {
-        for(IndexType i=0;i<mNumColumns;++i)
+        for(IndexType i=0; i<mNumColumns; ++i)
         {
-            for(IndexType j=i+1; j<mNumColumns;++j)
+            for(IndexType j=i+1; j<mNumColumns; ++j)
                 std::swap(wData[i+mNumColumns*j], wData[j+mNumColumns*i]);
-        }  
+        }
     }
     else //tranpose rectangular matrix
     {
-        for(IndexType start=0; start< mNumColumns*mNumRows;++start)
+        for(IndexType start=0; start< mNumColumns*mNumRows; ++start)
         {
             IndexType next = start;
             IndexType i = 0;
-            do{
+
+            do
+            {
                 ++i;
                 next= (next % mNumRows) * mNumColumns + next / mNumRows;
-            } while(next > start);
+            }
+            while(next > start);
 
             if(next >= start && i != 1)
             {
                 const ValueType tmp= wData[start];
                 next = start;
-                do{
+
+                do
+                {
                     i = (next % mNumRows) * mNumColumns + next / mNumRows;
                     wData[next] = (i == start ) ? tmp :  wData[i];
                     next = i;
-                } while(next > start);
+                }
+                while(next > start);
             }
         }
     }
@@ -1456,9 +1463,9 @@ MatrixStorageCreateKeyType DenseStorage<ValueType>::createValue()
 template<typename ValueType>
 DenseStorage<ValueType>* DenseStorage<ValueType>::newMatrixStorage() const
 {
-   common::unique_ptr<DenseStorage<ValueType> > storage( new DenseStorage<ValueType>() ); 
-   storage->setContextPtr( this->getContextPtr() );
-   return storage.release();
+    common::unique_ptr<DenseStorage<ValueType> > storage( new DenseStorage<ValueType>() );
+    storage->setContextPtr( this->getContextPtr() );
+    return storage.release();
 }
 
 template<typename ValueType>
@@ -1499,24 +1506,24 @@ SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_ARITHMETIC_HOST )
 SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_ARITHMETIC_HOST )
 
 #define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
-     template void DenseStorageView<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
-     template void DenseStorageView<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
-     template void DenseStorageView<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
-     template void DenseStorageView<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-     template void DenseStorageView<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
-     template void DenseStorageView<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+    template void DenseStorageView<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+    template void DenseStorageView<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void DenseStorageView<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+    template void DenseStorageView<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+    template void DenseStorageView<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+    template void DenseStorageView<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define DENSE_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, DENSE_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef DENSE_STORAGE_INST_LVL2
 #undef DENSE_STORAGE_INST_LVL1
 
-} /* end namespace lama */
+    } /* end namespace lama */
 
-} /* end namespace scai */
+    } /* end namespace scai */

@@ -44,7 +44,7 @@ using namespace scai::hmemo;
 
 SCAI_LOG_DEF_LOGGER( logger, "MemBandwidth" )
 
-template <typename ValueType> 
+template <typename ValueType>
 void bench( HArray<ValueType>& array )
 {
     ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
@@ -56,6 +56,7 @@ void bench( HArray<ValueType>& array )
     {
         WriteOnlyAccess<ValueType> write( array, N );
         ValueType* data = write.get();
+
         for ( IndexType i = 0; i < N; ++i )
         {
             data[i] = 1.0;

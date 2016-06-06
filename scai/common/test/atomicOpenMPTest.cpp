@@ -42,18 +42,19 @@ using namespace common;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, scai_arithmetic_test_types )
 {
-	int size = 100;
+    int size = 100;
 
-	ValueType globalResult = 0;
+    ValueType globalResult = 0;
 
-	#pragma omp parallel for
-	for( int i = 0; i < size; ++i )
-	{
-		ValueType localResult = i + static_cast<ValueType> (1);
-		atomicAdd( globalResult, localResult );
-	}
+    #pragma omp parallel for
 
-	int res = ( size * (size+1) ) / 2;
+    for( int i = 0; i < size; ++i )
+    {
+        ValueType localResult = i + static_cast<ValueType> (1);
+        atomicAdd( globalResult, localResult );
+    }
 
-	BOOST_CHECK_EQUAL( globalResult, res );
+    int res = ( size * (size+1) ) / 2;
+
+    BOOST_CHECK_EQUAL( globalResult, res );
 }

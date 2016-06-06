@@ -122,7 +122,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
     if ( runtime.mSetup.get() == NULL )
     {
-        loadSetupLibs();   
+        loadSetupLibs();
     }
 
     // Info about available AMGSetup
@@ -141,7 +141,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     if ( runtime.mSetup.get() == NULL )
     {
         // no setup defined yet, so we take on from the factory
-      
+
         if ( AMGSetup::canCreate( "SAMGPSetup" ) )
         {
             runtime.mSetup.reset( AMGSetup::create( "SAMGPSetup" ) );
@@ -540,7 +540,7 @@ void SimpleAMG::logSetupDetails()
         // Vector
         if( i == 0 )
         {
-            sizeVector += 2 * getRuntime().mSetup->getGalerkin( 0 ).getValueTypeSize() 
+            sizeVector += 2 * getRuntime().mSetup->getGalerkin( 0 ).getValueTypeSize()
                           * getRuntime().mSetup->getGalerkin( 0 ).getNumRows();
         }
         else
@@ -683,12 +683,12 @@ void SimpleAMG::writeAt( std::ostream& stream ) const
 
 std::string SimpleAMG::createValue()
 {
-	return "SimpleAMG";
+    return "SimpleAMG";
 }
 
 Solver* SimpleAMG::create( const std::string name )
 {
-	return new SimpleAMG( name );
+    return new SimpleAMG( name );
 }
 
 } /* end namespace solver */

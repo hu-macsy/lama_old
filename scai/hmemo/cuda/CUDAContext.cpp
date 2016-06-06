@@ -63,9 +63,9 @@ SCAI_LOG_DEF_LOGGER( CUDAContext::logger, "Context.CUDAContext" )
 
 /* constructor  *********************************************************/
 
-CUDAContext::CUDAContext( int deviceNr ) : 
+CUDAContext::CUDAContext( int deviceNr ) :
 
-    Context( common::context::CUDA ), 
+    Context( common::context::CUDA ),
     CUDACtx( deviceNr )
 
 {
@@ -73,7 +73,7 @@ CUDAContext::CUDAContext( int deviceNr ) :
 
     // Note: logging is safe as CUDA context is always created after static initializations
 
-    { 
+    {
         char deviceName[256];
 
         SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, getCUdevice() ), "cuDeviceGetName" );
@@ -179,7 +179,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
         canUse = otherCUDAMem->getDeviceNr() == getDeviceNr();
     }
 
-    // Zero-Copy: we can use CUDA Host memory 
+    // Zero-Copy: we can use CUDA Host memory
 
     if ( other.getType() == memtype::CUDAHostMemory )
     {
@@ -191,7 +191,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
     }
 
     SCAI_LOG_DEBUG( logger, *this << ": " << ( canUse ? "can use " : "can't use " )
-                            << other )
+                    << other )
 
     return canUse;
 }
@@ -200,8 +200,8 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
 
 CUDAStreamSyncToken* CUDAContext::getComputeSyncToken() const
 {
-    // ToDo: A possible problem might be that this CUDAContext is deleted before 
-    // synchronization has taken place. Solution: add a dummy routine where 
+    // ToDo: A possible problem might be that this CUDAContext is deleted before
+    // synchronization has taken place. Solution: add a dummy routine where
     // one argument is bind to this context.
 
     return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::ComputeStream );
@@ -226,7 +226,7 @@ CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 #define SCAI_DEFAULT_DEVICE_NUMBER -1
 #define SCAI_MAX_CUDA_DEVICES 4
 
-static int getDefaultDeviceNr() 
+static int getDefaultDeviceNr()
 {
     return 0;
 }

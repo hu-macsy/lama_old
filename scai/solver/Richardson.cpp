@@ -170,12 +170,12 @@ void Richardson::writeAt( std::ostream& stream ) const
 
 std::string Richardson::createValue()
 {
-	return "Richardson";
+    return "Richardson";
 }
 
 Solver* Richardson::create( const std::string name )
 {
-	return new Richardson( name );
+    return new Richardson( name );
 }
 
 } /* end namespace solver */

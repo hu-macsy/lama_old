@@ -104,7 +104,7 @@ void Memory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, si
 
     SCAI_THROWEXCEPTION( MemoryException,
                          "copy from " << srcMemory << " to this " << *this << " is UNSUPPORTED, "
-                           << "dst = " << dst << ", src = " << src << ", size = " << size )
+                         << "dst = " << dst << ", src = " << src << ", size = " << size )
 }
 
 void Memory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const

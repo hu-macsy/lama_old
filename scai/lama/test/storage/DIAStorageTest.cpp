@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
-    // use template storage test 
+    // use template storage test
 
     storageSwapTest<DIAStorage<ValueType> >();
 }

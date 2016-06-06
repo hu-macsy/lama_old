@@ -522,7 +522,7 @@ void OpenMPLAPACK::laswp(
     }
     else
     {
-    	COMMON_THROWEXCEPTION( "illegal order setting " << order )
+        COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 }
 
@@ -553,13 +553,13 @@ void OpenMPLAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistr
 OpenMPLAPACK::OpenMPLAPACK()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
-                    kregistry::KernelRegistry::KERNEL_ADD );
+        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPLAPACK::~OpenMPLAPACK()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
-                    kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

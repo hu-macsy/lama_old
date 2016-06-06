@@ -58,9 +58,10 @@ void initMatrix( Matrix& matrix, const char* rowDistKind, const char* colDistKin
     const IndexType numColumns = 5;
 
     static const ValueType values[] =  { 6, 0, 7, 0, 0,
-                                      0, 1, 0, 0, 0,
-                                      0, 0, 9, 4, 0,
-                                      2, 5, 0, 3, 8 };
+                                         0, 1, 0, 0, 0,
+                                         0, 0, 9, 4, 0,
+                                         2, 5, 0, 3, 8
+                                       };
 
     hmemo::HArrayRef<ValueType> data( numRows * numColumns, values );
 
@@ -70,7 +71,7 @@ void initMatrix( Matrix& matrix, const char* rowDistKind, const char* colDistKin
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    // get the distributions from the factory 
+    // get the distributions from the factory
 
     DistributionPtr rowDist( Distribution::getDistribution( rowDistKind, comm, numRows ) );
     DistributionPtr colDist( Distribution::getDistribution( colDistKind, comm, numColumns ) );
@@ -121,12 +122,12 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
         Matrix& matrix = *allMatrices[s];
-    
+
         std::ostringstream os;
 
         os << matrix;    // calls virtutal method writeAt for each matrix class
 
-        BOOST_CHECK( os.str().length() > 0 ); 
+        BOOST_CHECK( os.str().length() > 0 );
     }
 }
 

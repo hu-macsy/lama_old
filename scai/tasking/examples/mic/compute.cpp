@@ -53,10 +53,12 @@ void compute( size_t NSIZE )
         for ( int j = 0; j < NSIZE; ++j )
         {
             double tmp = 0;
+
             for ( int k = 0; k < NSIZE; ++k )
             {
                 tmp += a[ i * NSIZE + k ] * b[ k * NSIZE + j ];
             }
+
             c[ i * NSIZE + j ] = tmp;
         }
     }

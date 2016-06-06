@@ -42,7 +42,7 @@ using namespace common;
 BOOST_AUTO_TEST_CASE_TEMPLATE( TypeTraitsTest, ValueType, scai_arithmetic_test_types )
 {
     scalar::ScalarType stype = TypeTraits<ValueType>::stype;
- 
+
     std::ostringstream out1;
     std::ostringstream out2;
 

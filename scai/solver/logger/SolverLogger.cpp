@@ -62,7 +62,7 @@ SolverLogger::SolverLogger(
     mTimer.reset( new Timer() );
 
     SCAI_LOG_INFO( logger, "SolverLogger created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = "
-                           << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
+                   << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
 
 SolverLogger::SolverLogger(
@@ -75,7 +75,7 @@ SolverLogger::SolverLogger(
           ignoreRank )
 {
     SCAI_LOG_INFO( logger, "SolverLogger with timer created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = "
-                           << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
+                   << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
 
 SolverLogger::SolverLogger(
@@ -91,8 +91,8 @@ SolverLogger::SolverLogger(
     FileLogger::getFileLogger().setLogFile( logFileName );
 
     SCAI_LOG_INFO( logger, "SolverLogger for file " << logFileName << " created, id = " << mId
-                           << ", level = " << mLogLevel << ", writeBehaviour = " 
-                           << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
+                   << ", level = " << mLogLevel << ", writeBehaviour = "
+                   << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
 
 SolverLogger::~SolverLogger()
@@ -135,7 +135,7 @@ void SolverLogger::logString( const std::string& message )
         break;
 
         default:
- 
+
             SCAI_LOG_ERROR( logger, "illegal write behaviour: " << mWriteBehaviour )
     }
 }
@@ -150,8 +150,8 @@ void SolverLogger::logString( LogLevel::LogLevel level, const std::string& messa
 
 void SolverLogger::logMessage( LogLevel::LogLevel level, const std::string& message )
 {
-    SCAI_LOG_DEBUG( logger, "logMessage, level = " << level 
-                             << " ( mLevel = " << mLogLevel << " ), msg = " << message )
+    SCAI_LOG_DEBUG( logger, "logMessage, level = " << level
+                    << " ( mLevel = " << mLogLevel << " ), msg = " << message )
     logString( level, message );
 }
 
