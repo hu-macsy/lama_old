@@ -55,7 +55,7 @@ another using the copy constructor.
   dmemo::DistributionPtr cDist( dmemo::Distribution::getDistribution( "BLOCK", comm, numColumns, 1.0 ) );
   common::ContextPtr cudaContextPtr = common::Context::getContextPtr( common::context::CUDA );
 
-  // empty (not initialized) float matrices (with context, distribution, or both)
+  // empty (not initialized) float matrices (with size or distribution)
   COOSparseMatrix<float> a();                      // without size
   CSRSparseMatrix<float> b( numRows, numColumns ); // local matrix with size 6x4
   DenseMarix<float> c( rDist, cDist );             // block distributed matrix with global size 6x4

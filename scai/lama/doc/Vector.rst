@@ -38,10 +38,10 @@ In the following you see all possible constructor calls:
   DenseVector<float> emptyCUDA( cudaContextPtr );
   DenseVector<float> emptyDistCUDA( dist, cudaContextPtr );
 
-  // creating a simple double Vector of size 4 with all elements having the value 1.0f
+  // creating a simple double Vector of size 4 with all elements having the value 1.0
   // optional third parameter: cudaContextPtr (hmemo::ContextPtr)
-  DenseVector<double> x ( size, 1.0f );
-  DenseVector<double> x2( dist, 1.0f );
+  DenseVector<double> x ( size, 1.0 );
+  DenseVector<double> x2( dist, 1.0 );
 
   // creating a local (not distributed) vector from raw double pointer
   const double inputData[] = { 1.0, 2.0, 3.0, 4.0 };

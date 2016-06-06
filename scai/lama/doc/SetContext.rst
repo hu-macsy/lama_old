@@ -1,72 +1,68 @@
 .. _lama_SetContext:
 
-from Vector:
-
-.. code-block:: c++
-
-    x.prefetch( cudaContextPtr );
-    x.setContextPtr( cudaContextPtr );
-    x.prefetch();
-    x.wait();
-    common::ContextPtr contextPtr =  x.getContextPtr();
-
 Setting a Context
 =================
 
-A *Context* is a concept used by LAMA to define where to execute a calculation and therefore where to store the data.
-The default context is always the **Host** (CPU). Beneath the host context there exists two other contexts in LAMA:
-**CUDA** and **OpenCL** (in progress - coming with the next release), which are located on the GPU (for CUDA) and other
-OpenCL supported accelerators (for OpenCL). Further backends for other accelerators are planned for further releases.
+For writing algorithms you can use the generic data structures ``Scalar``, ``Vector`` and ``Matrix`` without the decision on which context the calculation should be executed, but when implementing dedicated applications you need to choose one. Otherwise the default execution context is the host and all calculation will take place on the CPU (depending on your build and environment variables: with OpenMP support).
 
-Contexts are registered by a factory (see C++ factory pattern) and you only can get an instance of a context by the
-factory. If the requested context is not available, because it is not supported on the recent LAMA installation e.g. no
-CUDA is found, you receive the default context. So your program using the CUDA context can be compiled and executed on 
-another machine without CUDA running on the host without changing code.
- 
-.. code-block:: c++
+A ``Context`` is a concept used to define where to execute a calculation and therefore where to store the data. The location of the calculation of an expression and the ``Context`` of the result is defined by the ``Context`` of the operands and the rule to copy less data to another ``Context``. Therefore in a expression with only vectors the first vector and in all other expressions the first matrix defines the execution ``Context``. All other data will be tranfered to the needed ``Context``.
 
-   ContextPtr hostCtx = ContextFactor::getContext( Context::Host );
-   ContextPtr cudaCtx = ContextFactor::getContext( Context::CUDA, 0 ); // 0 defines the CUDA device used
- 
-You need a *ContextPtr* to pass it to a matrix and/or vector to set the compute location for calculations with the
-matrix/vector. 
+The default ``Context`` is always the **Host** (CPU). Beneath the host context - till now - there exists two other contexts: **CUDA** (for Nvidia GPU's) and **MIC** (for Intel Xeon Phi's). Further backends for other accelerators are planned for further releases, so you can keep up with new hardware innovations by just changing the context in your application.
+
+You only can get an instance of a context by the factory by calling ``getContextPtr`` with a context name (and optional a device number):
 
 .. code-block:: c++
 
-   CSRSparseMatrix<double> csrMatrix( ... );
-   csrMatrix.setContext( cudaCtx );
-   
-   DenseVector<double> vec( ... );
-   vec.setContext( cudaCtx );
-   
-   DenseVector<double> res = 2.0 * vec * csrMatrix;
-   
-In this example the *csrMatrix* and *vec* are located at the CUDA context. Therefor the sparse matrix times vector
-multiplication is executed on the GPU. The new created result vector *res* is also given the CUDA context, because the
-calculation has taken place there.
+   hmemo::ContextPtr hostCtx = hmemo::Context::getContextPtr( common::context::Host );
+   hmemo::ContextPtr cudaCtx = hmemo::Context::getContextPtr( common::Context::CUDA, 0 ); // 0 defines the CUDA device used
+   hmemo::ContextPtr micCtx  = hmemo::Context::getContextPtr( common::Context::MIC,  1 ); // 1 defines the MIC device used
 
-Data movements between different contexts (devices) is done on demand if not declared in another way. So the initial data
-of the *csrMatrix* and *vec* are copied to the GPU with the invocation of the multiplication and not with the *setContext*
-command. If you want to time the calculation only the data movements have to be attached before by *prefetch* otherwise
-the movements is timed, too.
+If the requested context is not available, because it is not supported on the recent installation e.g. no CUDA is found, you receive the default context (Host). So your program using the CUDA context can be compiled and executed on another machine without CUDA running on the host without changing code. You find detailed information about ``Context``:ref:`here <scaihmemo:Context>`.
+
+Scalar
+------
+
+A ``Scalar`` can not have context, but is always stored on the host and passed to the needed location.
+
+Vector
+------
+
+For a ``Vector`` you can set a ``Context`` in multiple ways:
+
+
+1. Set the context at creation time with the constructor (so also the initialization is done on the specific context):
 
 .. code-block:: c++
 
-   CSRSparseMatrix<double> csrMatrix( ... );
-   csrMatrix.prefetch( cudaCtx );
-   
-   DenseVector<double> vec( ... );
-   vec.prefetch( cudaCtx );
+  DenseVector<double> x( 4, 1.0, cudaCtx );
 
-   // startTime   
-   DenseVector<double> res = 2.0 * vec * csrMatrix;
-   // endTime
-   
-As mentioned before the result vector now has also a CUDA context. If you want to perform other calculation with *res*
-on the host you can set it to *hostCtx* or prefetch on the host explicitly.
+2. Set the context on a an already created vector on demand: the data associated with x will be copied to the defined context just before it is used the next time
 
-NOTE: the location of the calculation and the context of the result is defined by the the context of the operands and
-the rule to copy less data to another context. E.g.: in the given example csrMatrix has a CUDA context but vec has a host
-context, the calculation and res is on the GPU; if csrMatrix has a host context and vec a CUDA context, the calculation
-and res is on the host.
+.. code-block:: c++
+
+  x.setContextPtr( micCtx ;
+  
+3. Set the context on a an already created vector with direct "copying": the data associated with x will be copied instantly to the defined context asynchronously (the call also returns instantly, so you can do other work while waiting for the data transfer to be done)
+
+.. code-block:: c++
+
+    x.prefetch( hostCtx );
+    // do other usefull work
+    x.wait();
+
+Matrix
+------
+
+For a ``Matrix`` you can set a ``Context`` just on already created matrices, like 2. and 3. for a ``Vector``.
+
+.. code-block:: c++
+
+  CSRSparseMatrix<double> m( ... );
+
+  // on demand "copying"
+  m.setContextPtr( micCtx ;
  
+  // direct "copying"
+  m.prefetch( hostCtx );
+  // do other usefull work
+  m.wait();
