@@ -22,4 +22,8 @@ LAMA itself uses the following MPI variables, which can be passed by -D VARIABLE
  -  ``MPI_CXX_LIBRARIES`` for the libraries to be linked, e.g. 
     ``/usr/local/openmpi-1.4.3/lib/libmpi_cxx.so;/usr/local/openmpi-1.4.3/lib/libmpi.so;...``
 
+In contrary to many other software packages that use MPI, the build does not use any MPI compiler driver like 
+``mpicxx``. This has the advantage that there will be never conflicts between the C++ compiler used by the MPI driver
+and the C++ compiler specified for the CMake configuration. 
+
 MPI is optional and LAMA can be built without it. But you will not be able to take advantage of distributed vectors and matrices.

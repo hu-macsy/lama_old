@@ -148,6 +148,9 @@ It will show you the advanced LAMA configuration definitions first, after toggel
 Additional Information
 ^^^^^^^^^^^^^^^^^^^^^^
 
-More information about useful CMake variables can be found in the `CMake Wiki`_.
+More information about useful CMake variables can be found in the |CMake_Wiki|.
 
-.. _CMake Wiki: http://www.cmake.org/Wiki/CMake_Useful_Variables
+.. |CMake_Wiki| raw:: html
+
+  <a href="http://www.cmake.org/Wiki/CMake_Useful_Variables" target="_blank">CMake Wiki</a>
+

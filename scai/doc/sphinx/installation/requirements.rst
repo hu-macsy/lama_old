@@ -70,29 +70,22 @@ Optional Software
 
 For optional features you may also install the following:
 
-- Metis/ParMetis
+- :ref:`Metis/ParMetis <scaidmemo:Metis>` 
  
   - Needed to generate optimized Distributions based on SparseMatrix structure.
 
 - Sphinx
 
-  - Needed to build the user documentation (this).
+   `Sphinx`_ is used for this  user documentation. Sphinx offers a wide support of different targets. 
+
+.. _Sphinx: http://sphinx-doc.org/
 
 - Doxygen
 
-  - Needed to build the API documentation.
- 
-.. - ScaLAPack
+    For our system documentation we make use of `Doxygen`_. So if API documentation is supposed to be generated Doxygen has
+    to be present on the system.
 
-..   - Needed for Distributed Memory Parallel LU-Decomposition.
-
-.. - VampirTrace
-
-..   - Needed for performance analysis with `Vampir`_.
-  
-.. .. _Vampir: http://http://vampir.eu/
-
-.. _supported:
+.. _Doxygen: http://www.doxygen.org
 
 Configurations
 ^^^^^^^^^^^^^^
