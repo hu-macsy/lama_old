@@ -797,7 +797,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 template<typename ValueType>
 void DenseVector<ValueType>::writeToFile(
     const std::string& fileBaseName,
-    const File::FileType fileType /* = File::SAMG */,
+    const File::FileType fileType /* = File::SAMG_FORMAT */,
     const common::scalar::ScalarType dataType /* = DOUBLE */,
     const bool writeBinary /* = false */ ) const
 {
