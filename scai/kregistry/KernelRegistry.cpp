@@ -138,8 +138,8 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
 
         if( it->second.isEmpty() )
         {
-            SCAI_LOG_INFO( logger, "erasing complete entry" )
             kreg.theKernelMap.erase( it );
+            SCAI_LOG_INFO( logger, "erased complete entry, #entries = " << kreg.theKernelMap.size() )
         }
     }
 }
