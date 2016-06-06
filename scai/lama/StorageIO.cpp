@@ -657,7 +657,7 @@ void StorageIO<ValueType>::writeCSRToFile(
 
     switch( fileType )
     {
-        case File::SAMG:
+        case File::SAMG_FORMAT:
             writeCSRToSAMGFile( size, rank, csrIA, csrJA, csrValues, fileBaseName, iaType, jaType, valuesType, writeBinary );
             break;
 
@@ -695,7 +695,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 
     if( suffix == ".frm" )
     {
-        fileType = File::SAMG;
+        fileType = File::SAMG_FORMAT;
     }
 
     if( suffix == ".mtx" )
@@ -706,7 +706,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 
     switch( fileType )
     {
-        case File::SAMG:
+        case File::SAMG_FORMAT:
             readCSRFromSAMGFile( csrIA, csrJA, csrValues, numColumns, fileName );
             break;
 
@@ -735,13 +735,13 @@ void StorageIO<ValueType>::readDenseFromFile( HArray<ValueType>& data,
 
     if( suffix == ".frm" )
     {
-        fileType = File::SAMG;
+        fileType = File::SAMG_FORMAT;
         used_filename = filename.substr( 0, filename.size() - 4 ) + ".frv";
     }
 
     if( suffix == ".frv" )
     {
-        fileType = File::SAMG;
+        fileType = File::SAMG_FORMAT;
         used_filename = filename;
     }
 
@@ -753,7 +753,7 @@ void StorageIO<ValueType>::readDenseFromFile( HArray<ValueType>& data,
 
     switch( fileType )
     {
-        case File::SAMG:
+        case File::SAMG_FORMAT:
             readDenseFromSAMGFile( data, numColumns, used_filename );
             break;
 
@@ -777,7 +777,7 @@ void StorageIO<ValueType>::writeDenseToFile( const HArray<ValueType>& data,
 {
     switch( fileType )
     {
-        case File::SAMG:
+        case File::SAMG_FORMAT:
             writeDenseToSAMGFile( data, numColumns, filename, dataType, writeBinary );
             break;
 

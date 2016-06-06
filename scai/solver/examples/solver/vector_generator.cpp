@@ -114,7 +114,7 @@ struct CommandLineOptions
     {
         if ( option == "-a" )
         {
-            outFileType = File::SAMG;
+            outFileType = File::SAMG_FORMAT;
         }
         else if ( option == "-mm" )
         {
@@ -122,7 +122,7 @@ struct CommandLineOptions
         }
         else if ( option == "-b" )
         {
-            outFileType = File::SAMG;
+            outFileType = File::SAMG_FORMAT;
             writeBinary = true;
         }
         else if ( option == "-s" )
@@ -200,8 +200,8 @@ struct CommandLineOptions
         }
         else
         {
-            outFileType = File::SAMG;
-            writeBinary = true;
+             outFileType = File::SAMG_FORMAT;
+             writeBinary = true;
         }
 
         cout << "No output file type specified, take " << outFileType << endl;

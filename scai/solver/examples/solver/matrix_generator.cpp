@@ -186,8 +186,8 @@ int main( int argc, char* argv[] )
     }
     else
     {
-        m.writeToFile( filename, File::SAMG, common::scalar::INTERNAL, common::scalar::INDEX_TYPE, common::scalar::INDEX_TYPE, true );
-        rhs.writeToFile( filename, File::SAMG, common::scalar::INTERNAL, true );
+        m.writeToFile( filename, File::SAMG_FORMAT, common::scalar::INTERNAL, common::scalar::INDEX_TYPE, common::scalar::INDEX_TYPE, true );
+        rhs.writeToFile( filename, File::SAMG_FORMAT, common::scalar::INTERNAL, true );
 
         cout << "Written matrix to header file " << filename << ".frm and binary file " << filename << ".amg" << endl;
         cout << "Written rhs vector to header file " << filename << ".frv and binary file " << filename << ".vec" << endl;

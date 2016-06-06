@@ -174,7 +174,7 @@ int main( int argc, char* argv[] )
 
     if ( myRank == 0 )
     {
-        cout << "Matrix Size = " << matrixSize << " MB" << endl;
+        cout << "Matrix = " << matrix << ", size = " << matrixSize << " MB" << endl;
     }
 
     {
@@ -244,4 +244,3 @@ int main( int argc, char* argv[] )
         solution.writeToFile( "CG_solution" );
     }
 }
-

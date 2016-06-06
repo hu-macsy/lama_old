@@ -145,14 +145,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
     std::string formattedFileName = prefix + "/test_matrix_formatted.tmp";
 
-    formattedMatrix.writeToFile( formattedFileName, File::SAMG, scai::common::scalar::FLOAT, scai::common::scalar::INT, scai::common::scalar::INT );
+    formattedMatrix.writeToFile( formattedFileName, File::SAMG_FORMAT, scai::common::scalar::FLOAT, scai::common::scalar::INT, scai::common::scalar::INT );
     MatrixType readFormattedMatrix( formattedFileName + ".frm" );
     testSameMatrix( formattedMatrix, readFormattedMatrix );
 
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading binary matrix" );
     std::string binaryFileName = prefix + "/test_matrix_bin.tmp.frm";
 // Be careful: binary read must fit to the format that has been used for the write
-    formattedMatrix.writeToFile( binaryFileName, File::SAMG, scai::common::scalar::INTERNAL, scai::common::scalar::INT, scai::common::scalar::INT, true );
+    formattedMatrix.writeToFile( binaryFileName, File::SAMG_FORMAT, scai::common::scalar::INTERNAL, scai::common::scalar::INT, scai::common::scalar::INT, true );
     MatrixType readBinaryMatrix( binaryFileName );
     testSameMatrix( formattedMatrix, readBinaryMatrix );
 

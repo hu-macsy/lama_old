@@ -487,7 +487,7 @@ public:
 
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG,
+        const File::FileType fileType = File::SAMG_FORMAT,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
         const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
@@ -799,7 +799,7 @@ public:
 
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG,
+        const File::FileType fileType = File::SAMG_FORMAT,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
         const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
@@ -809,7 +809,7 @@ public:
         const PartitionId size,
         const PartitionId rank,
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG,
+        const File::FileType fileType = File::SAMG_FORMAT,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
         const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,

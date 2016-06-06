@@ -54,7 +54,7 @@ enum FileType
     /**
      * @brief the SAMG format
      */
-    SAMG,
+    SAMG_FORMAT,
 
     /**
      * @brief the Matrix Market Format
@@ -76,7 +76,7 @@ static inline std::ostream& operator<<( std::ostream& stream, const FileType& ob
 {
     switch ( object ) 
     {
-        case SAMG:
+        case SAMG_FORMAT:
             stream << "SAMG";
             break;
         case MATRIX_MARKET:
