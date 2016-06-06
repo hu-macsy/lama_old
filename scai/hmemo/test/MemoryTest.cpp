@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE( CopyTest )
     {
         BOOST_CHECK_EQUAL( hdata[i], VAL );
     }
-   
+
     hmem->free( hdata, N );
     cmem->free( cdata, N );
 }

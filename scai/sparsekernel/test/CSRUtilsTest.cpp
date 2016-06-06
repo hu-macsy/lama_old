@@ -103,11 +103,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_arithmetic_tes
     ReadAccess<ValueType> rCSRValues2( csrValues2, loc );
     SCAI_CONTEXT_ACCESS( loc );
     ValueType maxVal = absMaxDiffVal[loc->getType()]( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
-                                           rCSRJA2.get(), rCSRValues2.get() );
+                       rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
     // rows are sorted, so we can also apply sortFlag = true
     maxVal = absMaxDiffVal[loc->getType()]( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
-                                rCSRJA2.get(), rCSRValues2.get() );
+                                            rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
 }
 
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_arithmetic_t
         WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc );
         convertCSR2CSC[loc->getType()]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                             numColumns, numValues );
+                                        numColumns, numValues );
     }
     {
         ReadAccess<IndexType> rCSCIA( cscIA );
@@ -245,9 +245,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_arithmeti
         WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc );
         convertCSR2CSC[loc->getType()]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                             numColumns, numValues );
+                                        numColumns, numValues );
     }
-  
+
     //  For comparison later we sort cscJA and cscValue
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;

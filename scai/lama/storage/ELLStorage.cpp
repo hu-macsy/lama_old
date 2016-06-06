@@ -261,7 +261,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
     HArrayUtils::setOrder( mJA, mNumRows );
 
-    mValues.clear();  
+    mValues.clear();
     mValues.resize( mNumRows );
     HArrayUtils::setScalar( mValues, ValueType( 1 ), utilskernel::reduction::COPY, loc );
 
@@ -346,9 +346,9 @@ void ELLStorage<ValueType>::buildCSR(
     SCAI_REGION( "Storage.ELL->CSR" )
 
     SCAI_LOG_INFO( logger,
-                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">" 
-                    << " from ELL<" << common::getScalarType<ValueType>() << ">" 
-                    << " on " << *context << " ( preferred )" )
+                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">"
+                   << " from ELL<" << common::getScalarType<ValueType>() << ">"
+                   << " on " << *context << " ( preferred )" )
 
     // step 1 : compute IA offsets
 
@@ -383,7 +383,7 @@ void ELLStorage<ValueType>::buildCSR(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValuesPerRow, 
+    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValuesPerRow,
                        ellSizes.get(), ellJA.get(), ellValues.get() );
 }
 
@@ -403,8 +403,8 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     SCAI_REGION( "Storage.ELL<-CSR" )
 
     SCAI_LOG_INFO( logger,
-                    "set CSR data on " << *context << ": numRows = " << numRows << ", numColumns = " << numColumns 
-                    << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
+                   "set CSR data on " << *context << ": numRows = " << numRows << ", numColumns = " << numColumns
+                   << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
 
     if( numRows == 0 )
     {
@@ -441,7 +441,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     {
         HArrayUtils::assign( mIA, ia, context );
 
-        // as the offset array is also needed 
+        // as the offset array is also needed
         tmpOffsets.reset( ia.copy() );
         IndexType total = HArrayUtils::scan( *tmpOffsets, context );
         SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
@@ -500,8 +500,8 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setCSRValues[loc]( ellJA.get(), ellValues.get(), ellIA.get(), 
-                           mNumRows, mNumValuesPerRow, 
+        setCSRValues[loc]( ellJA.get(), ellValues.get(), ellIA.get(),
+                           mNumRows, mNumValuesPerRow,
                            csrIA.get(), csrJA.get(), csrValues.get() );
 
         SCAI_LOG_DEBUG( logger, " size = " <<ellJA.size() )
@@ -833,7 +833,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "ELLStorage<" << common::getScalarType<ValueType>() 
+    stream << "ELLStorage<" << common::getScalarType<ValueType>()
            << ">( size = " << mNumRows << " x " << mNumColumns
            << ", nnr = " << mNumValuesPerRow << ", threshold = " << mCompressThreshold << " )";
 }
@@ -1283,7 +1283,7 @@ SyncToken* ELLStorage<ValueType>::normalGEVM(
 
     WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
-    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), 
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(),
                      mNumRows, mNumColumns, mNumValuesPerRow,
                      ellIA.get(), ellJA.get(), ellValues.get() );
 
@@ -1488,9 +1488,9 @@ SyncToken* ELLStorage<ValueType>::sparseGEVM(
 
     ReadAccess<IndexType> rRowIndexes( mRowIndexes, loc );
 
-    sparseGEVM[loc]( wResult.get(), alpha, rX.get(), 
-                     mNumRows, mNumColumns, mNumValuesPerRow, 
-                     numNonZeroRows, rRowIndexes.get(), 
+    sparseGEVM[loc]( wResult.get(), alpha, rX.get(),
+                     mNumRows, mNumColumns, mNumValuesPerRow,
+                     numNonZeroRows, rRowIndexes.get(),
                      ellIA.get(), ellJA.get(), ellValues.get() );
 
     if ( async )
@@ -1759,7 +1759,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 template<typename ValueType>
 ValueType ELLStorage<ValueType>::l1Norm() const
 {
-	SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
     if( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
@@ -1771,11 +1771,11 @@ ValueType ELLStorage<ValueType>::l1Norm() const
     ContextPtr loc = this->getContextPtr();
     asum.getSupportedContext( loc );
 
-	ReadAccess<ValueType> data( mValues, loc );
+    ReadAccess<ValueType> data( mValues, loc );
 
-	SCAI_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
 
-	return asum[loc]( mValues.size(), data.get(), 1 );
+    return asum[loc]( mValues.size(), data.get(), 1 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1783,7 +1783,7 @@ ValueType ELLStorage<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType ELLStorage<ValueType>::l2Norm() const
 {
-	SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
     if( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
@@ -1795,11 +1795,11 @@ ValueType ELLStorage<ValueType>::l2Norm() const
     ContextPtr loc = this->getContextPtr();
     dot.getSupportedContext( loc );
 
-	ReadAccess<ValueType> data( mValues, loc );
+    ReadAccess<ValueType> data( mValues, loc );
 
-	SCAI_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
 
-	return common::Math::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
+    return common::Math::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2051,9 +2051,9 @@ ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
 template<typename ValueType>
 ELLStorage<ValueType>* ELLStorage<ValueType>::newMatrixStorage() const
 {
-   common::unique_ptr<ELLStorage<ValueType> > storage( new ELLStorage<ValueType>() ); 
-   storage->setContextPtr( this->getContextPtr() );
-   return storage.release();
+    common::unique_ptr<ELLStorage<ValueType> > storage( new ELLStorage<ValueType>() );
+    storage->setContextPtr( this->getContextPtr() );
+    return storage.release();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -2094,24 +2094,24 @@ const char* ELLStorage<ValueType>::typeName()
 SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_ARITHMETIC_HOST )
 
 #define ELL_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
-     template void ELLStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
-     template void ELLStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
-     template void ELLStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
-     template void ELLStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-     template void ELLStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
-     template void ELLStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+    template void ELLStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+    template void ELLStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void ELLStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+    template void ELLStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+    template void ELLStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+    template void ELLStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define ELL_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef ELL_STORAGE_INST_LVL2
 #undef ELL_STORAGE_INST_LVL1
 
-} /* end namespace lama */
+    } /* end namespace lama */
 
-} /* end namespace scai */
+    } /* end namespace scai */

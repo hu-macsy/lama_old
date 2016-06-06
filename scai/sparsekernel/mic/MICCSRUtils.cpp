@@ -1341,7 +1341,7 @@ void MICCSRUtils::matrixAdd(
 #pragma offload target( mic : device ) in ( numRows, numColumns, diagonalProperty, \
                                                cJAPtr, cValuesPtr, cIAPtr, \
                                                aIAPtr, aJAPtr, aValuesPtr, bIAPtr, \
-											   bJAPtr, bValuesPtr, alphaPtr[0:1], betaPtr[0:1] )
+                                               bJAPtr, bValuesPtr, alphaPtr[0:1], betaPtr[0:1] )
     {
         ValueType* cValues = static_cast<ValueType*>( cValuesPtr );
         IndexType* cJA = static_cast<IndexType*>( cJAPtr );
@@ -1500,8 +1500,8 @@ void MICCSRUtils::matrixMultiply(
 #pragma offload target( mic : device ) in ( m, n, diagonalProperty, \
                                                 cJAPtr, cValuesPtr, cIAPtr, \
                                                 aIAPtr, aJAPtr, aValuesPtr, \
-						bIAPtr, bJAPtr, bValuesPtr, \
-						alphaPtr[0:1] )
+                        bIAPtr, bJAPtr, bValuesPtr, \
+                        alphaPtr[0:1] )
     {
         ValueType* cValues = static_cast<ValueType*>( cValuesPtr );
         IndexType* cJA = static_cast<IndexType*>( cJAPtr );
@@ -1947,7 +1947,7 @@ void MICCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register CSSUtils OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
@@ -1975,7 +1975,7 @@ void MICCSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register CSSUtils OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }

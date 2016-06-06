@@ -40,7 +40,7 @@
 #include <iostream>
 
 
-static void inc( int* val ) 
+static void inc( int* val )
 {
     *val += 1;
 }

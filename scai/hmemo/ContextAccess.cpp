@@ -39,7 +39,7 @@ namespace hmemo
 SCAI_LOG_DEF_LOGGER( ContextAccess::logger, "ContextAccess" )
 
 ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
-                : mContext( *context ), mReleased( false ), mFile( file ), mLine( line )
+    : mContext( *context ), mReleased( false ), mFile( file ), mLine( line )
 {
     SCAI_LOG_INFO( logger, *this << " enabled" )
 

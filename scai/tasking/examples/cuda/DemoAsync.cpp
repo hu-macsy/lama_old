@@ -87,8 +87,8 @@ float mySum( const float d_array[], const int n )
 
     float sum;
 
-    SCAI_CUBLAS_CALL( cublasSasum( ctx.getcuBLASHandle(), n, d_array, 1, &sum ), 
-                                   "cublasSasum for float" );
+    SCAI_CUBLAS_CALL( cublasSasum( ctx.getcuBLASHandle(), n, d_array, 1, &sum ),
+                      "cublasSasum for float" );
     return sum;
 }
 

@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmeti
     vector3.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector3, result );
     cleanupfiles( testfilename );
-	// write and read mtx
+    // write and read mtx
     vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET );
     DenseVector<ValueType> vector6( prefix + "/" + testfilename + ".mtx" );
     vector6.redistribute( result.getDistributionPtr() );
@@ -463,7 +463,7 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr context = Context::getContextPtr(); 
+    ContextPtr context = Context::getContextPtr();
 
     AssignmentOpMatrixExpressionTestmethod< CSRSparseMatrix<ValueType> >( context );
     AssignmentOpMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >( context );
@@ -477,7 +477,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, scai
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr context = Context::getContextPtr(); 
+    ContextPtr context = Context::getContextPtr();
 
     IndexType n = 4;
     DenseVector<ValueType> vectorA( n, 3.0 );
@@ -536,7 +536,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, scai_a
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr context = Context::getContextPtr(); 
+    ContextPtr context = Context::getContextPtr();
 
     IndexType n = 4;
     DenseVector<ValueType> vectorA( n, 3.0 );
@@ -565,14 +565,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, scai_arithmetic
     DenseVector<ValueType> vectorWrong( n + 1, 6 );
     SCAI_LOG_INFO( logger, "vector(4) += vector(5) should fail" );
     SCAI_CHECK_THROW(
-        {   vectorA += vectorWrong;}, Exception );
+    {   vectorA += vectorWrong;}, Exception );
 }
 
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, scai_arithmetic_test_types )
 {
-    ContextPtr context = Context::getContextPtr(); 
+    ContextPtr context = Context::getContextPtr();
 
     IndexType n = 4;
     DenseVector<ValueType> v1( n, 4.0 );
@@ -591,7 +591,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, scai_arithmeti
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( MinMaxTest, ValueType, scai_arithmetic_test_types )
 {
-    // complex data type has other min, max definition 
+    // complex data type has other min, max definition
 
     if ( isComplex( TypeTraits<ValueType>::stype ) )
     {

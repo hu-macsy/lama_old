@@ -88,7 +88,7 @@ void MICUtils::setScale(
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in( outPtr, inPtr, valPtr[0:1], n )
+#pragma offload target( mic : device ) in( outPtr, inPtr, valPtr[0:1], n )
     {
         ValueType* outValues = static_cast<ValueType*>( outPtr );
         const OtherValueType* inValues = static_cast<const OtherValueType*>( inPtr );
@@ -116,7 +116,7 @@ ValueType MICUtils::reduceSum( const ValueType array[], const IndexType n )
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in( arrayPtr, n ), out( valPtr[0:1] )
+#pragma offload target( mic : device ) in( arrayPtr, n ), out( valPtr[0:1] )
     {
         *valPtr = ValueType( 0 );
 
@@ -124,17 +124,18 @@ ValueType MICUtils::reduceSum( const ValueType array[], const IndexType n )
 
         #pragma omp parallel
         {
-	    ValueType threadVal = 0;
-	    #pragma omp for
-	    for ( IndexType i = 0; i < n; ++i )
-	    {
-		threadVal += array[i];
-	    }
+            ValueType threadVal = 0;
+            #pragma omp for
 
-	    #pragma omp critical
-	    {
-	        *valPtr += threadVal;
-	    }
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                threadVal += array[i];
+            }
+
+            #pragma omp critical
+            {
+                *valPtr += threadVal;
+            }
         }
     }
     return val;
@@ -151,12 +152,16 @@ ValueType MICUtils::reduce( const ValueType array[], const IndexType n, const co
     {
         case common::reduction::ADD :
             return reduceSum( array, n );
+
         case common::reduction::MAX :
             return reduceMaxVal( array, n );
+
         case common::reduction::MIN :
             return reduceMinVal( array, n );
+
         case common::reduction::ABS_MAX :
             return reduceAbsMaxVal( array, n );
+
         default:
             COMMON_THROWEXCEPTION( "Unsupported reduce op " << op )
     }
@@ -180,7 +185,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
     {
         case common::reduction::COPY :
 
-            #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
+#pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
             {
                 ValueType* array = static_cast<ValueType*>( arrayPtr );
                 ValueType value = static_cast<ValueType>( *valPtr );
@@ -203,7 +208,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             }
             else
             {
-                #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
+#pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
                 {
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
                     ValueType value = static_cast<ValueType>( *valPtr );
@@ -228,7 +233,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             }
             else
             {
-                #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
+#pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
                 {
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
                     ValueType value = static_cast<ValueType>( *valPtr );
@@ -259,7 +264,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             }
             else
             {
-                #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1], op )
+#pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1], op )
                 {
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
                     ValueType value = static_cast<ValueType>( *valPtr );
@@ -290,7 +295,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             }
             else
             {
-                #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1], op )
+#pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1], op )
                 {
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
                     ValueType value = static_cast<ValueType>( *valPtr );
@@ -326,7 +331,7 @@ void MICUtils::setOrder( ValueType array[], const IndexType n )
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device), in ( arrayPtr, n )
+#pragma offload target( mic : device), in ( arrayPtr, n )
     {
         ValueType* array = static_cast<ValueType*>( arrayPtr );
 
@@ -488,7 +493,7 @@ ValueType MICUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n 
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in( n, ptr ), inout( valPtr[0:1] )
+#pragma offload target( mic : device ) in( n, ptr ), inout( valPtr[0:1] )
     {
         const ValueType* array = reinterpret_cast<const ValueType*>( ptr );
 
@@ -537,7 +542,7 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in( n, ptr1, ptr2 ), inout( valPtr[0:1] )
+#pragma offload target( mic : device ) in( n, ptr1, ptr2 ), inout( valPtr[0:1] )
     {
         const ValueType* arrayPtr1 = reinterpret_cast<const ValueType*>( ptr1 );
         const ValueType* arrayPtr2 = reinterpret_cast<const ValueType*>( ptr2 );
@@ -546,6 +551,7 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
             ValueType threadVal( 0 );
 
             #pragma omp for
+
             for ( IndexType i = 0; i < n; ++i )
             {
                 ValueType elem = common::Math::abs( arrayPtr1[i] - arrayPtr2[i] );
@@ -583,7 +589,7 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in( arrayPtr, n, ascending ), out( sorted )
+#pragma offload target( mic : device ) in( arrayPtr, n, ascending ), out( sorted )
     {
         const ValueType* array = static_cast<const ValueType*>( arrayPtr );
 
@@ -650,6 +656,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
                 break;
             }
+
             case common::reduction::ADD :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -661,6 +668,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
                 break;
             }
+
             case common::reduction::SUB :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -672,6 +680,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
                 break;
             }
+
             case common::reduction::MULT :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -683,6 +692,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
                 break;
             }
+
             case common::reduction::DIVIDE :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -839,7 +849,7 @@ void MICUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     // we keep the registrations for IndexType as we do not need conversions
 
@@ -860,7 +870,7 @@ void MICUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     // we keep the registrations for IndexType as we do not need conversions
 

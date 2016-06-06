@@ -101,23 +101,23 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
         HArray<float> array1( N );
         HArray<float> array2( N, 5.0f );
-       
+
         BOOST_CHECK_EQUAL( array1.size(), N );
         BOOST_CHECK_EQUAL( array2.size(), N );
-    
+
         BOOST_CHECK_EQUAL( array1.capacity( contextPtr ), N );
         BOOST_CHECK_EQUAL( array2.capacity( contextPtr ), N );
-    
+
         BOOST_CHECK_EQUAL( array1.isValid( contextPtr ), false );
         BOOST_CHECK_EQUAL( array2.isValid( contextPtr ), true );
-    
+
         // read access on uninitialized non-empty array
         // gives a warning as there is no valid data
-    
+
         {
             ReadAccess<float>read( array1, contextPtr );
         }
-    
+
         {
             ReadAccess<float> read( array2, contextPtr );
             readTest<float>( read.get(), N, N * 5 );
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE( initTest )
 
     {
         ReadAccess<double>read( array, hostContext );
-  
+
         for ( IndexType i = 0; i < N; ++i )
         {
             BOOST_CHECK_EQUAL( values[i], read[i] );
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE( capacityTest )
     BOOST_CHECK_EQUAL( hArray.size(), 0 );
     BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), 2 * N );
 
-    hArray.clear();  
+    hArray.clear();
     BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), 2 * N );
 
     hArray.purge();
@@ -255,8 +255,8 @@ BOOST_AUTO_TEST_CASE( swapTest )
 
     SCAI_LOG_INFO( logger, "swapTest with valid copies on " << *contextPtr );
 
-    HArray<double> arr1( n1, 1 ); 
-    HArray<double> arr2( n2, 2 ); 
+    HArray<double> arr1( n1, 1 );
+    HArray<double> arr2( n2, 2 );
 
     // now make them valid on test device
 
@@ -274,6 +274,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
 
     {
         ReadAccess<double> read( arr1, hostPtr );
+
         for ( IndexType i = 0; i < arr1.size(); ++i )
         {
             BOOST_CHECK_EQUAL( 2, read[i] );
@@ -282,6 +283,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
 
     {
         ReadAccess<double> read( arr2, hostPtr );
+
         for ( IndexType i = 0; i < arr2.size(); ++i )
         {
             BOOST_CHECK_EQUAL( 1, read[i] );

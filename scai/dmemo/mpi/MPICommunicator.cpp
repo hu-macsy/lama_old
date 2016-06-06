@@ -232,6 +232,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
         MPI_Op_create( &min_operator<ComplexLongDouble>, true, &mMinComplexLongDouble );
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex long double")
     }
+
 #endif
 
     mCommWorld = MPI_COMM_WORLD;
@@ -273,6 +274,7 @@ void MPICommunicator::max_operator( void* in, void *out, int *count, MPI_Datatyp
 {
     ValueType* a = reinterpret_cast<ValueType*>( in );
     ValueType* b = reinterpret_cast<ValueType*>( out );
+
     for( IndexType i = 0; i < *count; ++i )
     {
         b[i] = common::Math::max( a[i], b[i] );
@@ -284,6 +286,7 @@ void MPICommunicator::min_operator( void* in, void *out, int *count, MPI_Datatyp
 {
     ValueType* a = reinterpret_cast<ValueType*>( in );
     ValueType* b = reinterpret_cast<ValueType*>( out );
+
     for( IndexType i = 0; i < *count; ++i )
     {
         b[i] = common::Math::min( a[i], b[i] );

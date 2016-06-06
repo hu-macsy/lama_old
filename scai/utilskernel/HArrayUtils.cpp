@@ -218,7 +218,7 @@ void HArrayUtils::scatter(
 {
     SCAI_REGION( "HArray.scatter" )
 
-    SCAI_ASSERT( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ), 
+    SCAI_ASSERT( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
                  "illegal scatter index, target has size " << target.size() )
 
     static LAMAKernel<UtilKernelTrait::setScatter<TargetValueType, SourceValueType> > setScatter;
@@ -328,7 +328,7 @@ void HArrayUtils::setValImpl(
     setVal.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger, "setVal<" << common::TypeTraits<ValueType>::id() << ">[" << index
-                           << "] = " << val << " @ " << *loc )
+                   << "] = " << val << " @ " << *loc )
 
     WriteAccess<ValueType> wTarget( target, loc );
 
@@ -407,7 +407,7 @@ void HArrayUtils::assignScaled(
     {
         // Note: we do not use BLAS1:axpy here to guarantee same LAMA OpenMP schedule
         //       and to support type conversions in place for multiprecision support
-        
+
         static LAMAKernel<UtilKernelTrait::setScale<ValueType, ValueType> > setScale;
 
         ContextPtr loc = prefLoc;
@@ -467,8 +467,8 @@ void HArrayUtils::conj( HArray<ValueType>& array, ContextPtr prefLoc )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType HArrayUtils::reduce( 
-    const HArray<ValueType>& array, 
+ValueType HArrayUtils::reduce(
+    const HArray<ValueType>& array,
     const reduction::ReductionOp redOp,
     const ContextPtr prefLoc )
 {
@@ -624,9 +624,9 @@ void HArrayUtils::axpy(
 {
     if ( alpha == scai::common::constants::ZERO )
     {
-       return;
+        return;
     }
-     
+
     SCAI_ASSERT_EQUAL( result.size(), x.size(), "size mismatch" )
 
     IndexType n = x.size();
@@ -726,9 +726,9 @@ void HArrayUtils::invert( HArray<ValueType>& array, ContextPtr prefLoc )
 
 /* --------------------------------------------------------------------------- */
 
-bool HArrayUtils::validIndexes( 
-    const hmemo::HArray<IndexType>& array, 
-    const IndexType size, 
+bool HArrayUtils::validIndexes(
+    const hmemo::HArray<IndexType>& array,
+    const IndexType size,
     const hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
@@ -758,9 +758,9 @@ bool HArrayUtils::validIndexes(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool HArrayUtils::isSorted( 
-    const hmemo::HArray<ValueType>& array, 
-    const bool ascending, 
+bool HArrayUtils::isSorted(
+    const hmemo::HArray<ValueType>& array,
+    const bool ascending,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
@@ -811,15 +811,15 @@ void HArrayUtils::setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo:
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array, 
-                             const IndexType n, 
+void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array,
+                             const IndexType n,
                              const float fillRate,
                              const hmemo::ContextPtr prefLoc )
 {
     ContextPtr loc = Context::getHostPtr();   // currently only available on host
 
     WriteOnlyAccess<ValueType> wArray( array, loc, n );
- 
+
     if ( fillRate >= 1.0f )
     {
         for ( IndexType i = 0; i < n; ++i )
@@ -834,7 +834,7 @@ void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array,
             float x = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
 
             if ( x < fillRate )
-            { 
+            {
                 common::Math::random( wArray[i] );
             }
             else
@@ -853,8 +853,8 @@ void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array,
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType HArrayUtils::scan( 
-    hmemo::HArray<ValueType>& array, 
+ValueType HArrayUtils::scan(
+    hmemo::HArray<ValueType>& array,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
@@ -977,13 +977,13 @@ void HArrayUtils::buildDenseArray(
 
     SCAI_ASSERT_LE( sparseN, denseN, "sparse array cannot have more entries than dense array." )
 
-    SCAI_ASSERT( HArrayUtils::validIndexes( sparseIndexes, denseN, prefLoc ), 
+    SCAI_ASSERT( HArrayUtils::validIndexes( sparseIndexes, denseN, prefLoc ),
                  "Illegal index for sparse indexes, dense array size = " << denseN );
 
     // use of existent HArray utilities, even if we have two write accesses for denseArray
 
     denseArray.clear();
-    denseArray.resize( denseN ); 
+    denseArray.resize( denseN );
     HArrayUtils::setScalar( denseArray, ValueType( 0 ), reduction::COPY, prefLoc );
 
     HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, prefLoc );
@@ -993,39 +993,39 @@ void HArrayUtils::buildDenseArray(
 
 #define HARRAUTILS_SPECIFIER_LVL2( ValueType, OtherValueType )                                                          \
     template void HArrayUtils::gather<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                            \
-                                                                const hmemo::HArray<OtherValueType>&,                   \
-                                                                const hmemo::HArray<IndexType>&,                        \
-                                                                const hmemo::ContextPtr );                              \
+            const hmemo::HArray<OtherValueType>&,                   \
+            const hmemo::HArray<IndexType>&,                        \
+            const hmemo::ContextPtr );                              \
     template void HArrayUtils::setArray<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                          \
-                                                                const hmemo::HArray<OtherValueType>&,                   \
-                                                                const reduction::ReductionOp,                   \
-                                                                hmemo::ContextPtr );                                    \
+            const hmemo::HArray<OtherValueType>&,                   \
+            const reduction::ReductionOp,                   \
+            hmemo::ContextPtr );                                    \
     template void HArrayUtils::scatter<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                           \
-                                                                const hmemo::HArray<IndexType>&,                        \
-                                                                const hmemo::HArray<OtherValueType>&,                   \
-                                                                const hmemo::ContextPtr );
+            const hmemo::HArray<IndexType>&,                        \
+            const hmemo::HArray<OtherValueType>&,                   \
+            const hmemo::ContextPtr );
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                                                                                        \
     template void HArrayUtils::setVal<ValueType>( hmemo::_HArray&, const IndexType, const ValueType );                            \
     template ValueType HArrayUtils::getVal<ValueType>( const hmemo::_HArray&, const IndexType );                                  \
     template ValueType HArrayUtils::getValImpl<ValueType>( const hmemo::HArray<ValueType>&, const IndexType );                    \
     template void HArrayUtils::setScalar<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                                  \
-                                                     const reduction::ReductionOp, hmemo::ContextPtr);                    \
+            const reduction::ReductionOp, hmemo::ContextPtr);                    \
     template void HArrayUtils::assignScaled<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                               \
-                                                        const hmemo::HArray<ValueType>&, hmemo::ContextPtr);                      \
+            const hmemo::HArray<ValueType>&, hmemo::ContextPtr);                      \
     template void HArrayUtils::scale<ValueType>( hmemo::HArray<ValueType>&, const ValueType, hmemo::ContextPtr );                 \
     template void HArrayUtils::conj<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr);                                    \
     template ValueType HArrayUtils::reduce<ValueType>( const hmemo::HArray<ValueType>&,                                           \
-                                                       const reduction::ReductionOp, hmemo::ContextPtr );                 \
+            const reduction::ReductionOp, hmemo::ContextPtr );                 \
     template ValueType HArrayUtils::absMaxDiffVal<ValueType>( const hmemo::HArray<ValueType>&,                                    \
-                                                              const hmemo::HArray<ValueType>&, hmemo::ContextPtr );               \
+            const hmemo::HArray<ValueType>&, hmemo::ContextPtr );               \
     template void HArrayUtils::axpy<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                                       \
-                                                const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                             \
+            const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                             \
     template void HArrayUtils::arrayPlusArray<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                             \
-                                                          const hmemo::HArray<ValueType>&, const ValueType,                       \
-                                                          const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                   \
+            const hmemo::HArray<ValueType>&, const ValueType,                       \
+            const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                   \
     template ValueType HArrayUtils::dotProduct<ValueType>( const hmemo::HArray<ValueType>&,                                       \
-                                                           const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                  \
+            const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                  \
     template ValueType HArrayUtils::asum<ValueType>( const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                        \
     template ValueType HArrayUtils::nrm2<ValueType>( const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                        \
     template void HArrayUtils::invert<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                 \
@@ -1034,11 +1034,11 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::sort<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&, hmemo::ContextPtr );        \
     template void HArrayUtils::setRandom<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );            \
     template void HArrayUtils::buildSparseArray<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,                 \
-                                                            const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                 \
+            const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                 \
     template void HArrayUtils::buildDenseArray<ValueType>( hmemo::HArray<ValueType>&, const IndexType,                            \
-                                                           const hmemo::HArray<ValueType>&,                                       \
-                                                           const hmemo::HArray<IndexType>&, hmemo::ContextPtr );                  \
-                                                                                                                                  \
+            const hmemo::HArray<ValueType>&,                                       \
+            const hmemo::HArray<IndexType>&, hmemo::ContextPtr );                  \
+    \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARITHMETIC_ARRAY_HOST )
 
 SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )

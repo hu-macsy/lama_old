@@ -53,7 +53,7 @@ namespace dmemo
 {
 
 std::ostream& operator<<( std::ostream& stream, const _Communicator::CommunicatorKind& type )
-{   
+{
     switch ( type )
     {
         case _Communicator::NO :
@@ -64,14 +64,14 @@ std::ostream& operator<<( std::ostream& stream, const _Communicator::Communicato
             stream << "MPI";
             break;
 
-        case _Communicator::GPI : 
+        case _Communicator::GPI :
             stream << "GPI";
             break;
 
         default:
             stream << "CommunicatorKind_" << (int) type;
     }
-    
+
     return stream;
 }
 
@@ -439,8 +439,8 @@ void Communicator::shiftArray(
     ContextPtr commContext = getCommunicationContext( sendArray );
 
     SCAI_LOG_INFO( logger,
-                   "shiftArray at this context " << *commContext << ", sendArray = " << sendArray 
-                    << ", recvArray = " << recvArray )
+                   "shiftArray at this context " << *commContext << ", sendArray = " << sendArray
+                   << ", recvArray = " << recvArray )
 
     ReadAccess<ValueType> sendData( sendArray, commContext );
 
@@ -459,7 +459,7 @@ void Communicator::shiftArray(
     IndexType numRecvElems = shiftData( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
 
     SCAI_LOG_DEBUG( logger,
-                   "shift, direction = " << direction << ", sent " << numSendElems 
+                    "shift, direction = " << direction << ", sent " << numSendElems
                     << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
 
     recvData.resize( numRecvElems ); // take over the size
@@ -853,7 +853,7 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 // Instantiation of template methods for the supported types
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
-                                                                    \
+    \
     template COMMON_DLL_IMPORTEXPORT                                \
     IndexType Communicator::shift0(                                 \
             _type targetVals[],                                     \
@@ -863,42 +863,42 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
 // instantiate methods for all communicator data types
 
-SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
+    SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
 
 #undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
-                                                                    \
+    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::shiftArray(                                  \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-                                                                    \
+    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-                                                                    \
+    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::updateHalo(                                  \
             HArray<_type>& haloValues,                              \
             const HArray<_type>& localValues,                       \
             const Halo& halo ) const;                               \
-                                                                    \
+    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::updateHaloAsync(                       \
             HArray<_type>& haloValues,                              \
             const HArray<_type>& localValues,                       \
             const Halo& halo ) const;
-     
+
 // instantiate communicator methods with Harray only for supported array types
 
-SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ARITHMETIC_ARRAY_HOST )
 
 #undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
-} /* end namespace dmemo */
+    } /* end namespace dmemo */
 
-} /* end namespace scai */
+    } /* end namespace scai */

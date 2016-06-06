@@ -125,7 +125,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
     {
         // MASTER must have all values of the matrix to build the graph
 
-        SCAI_ASSERT_EQ_ERROR( totalRows, matrix.getDistribution().getLocalSize(), 
+        SCAI_ASSERT_EQ_ERROR( totalRows, matrix.getDistribution().getLocalSize(),
                               *comm << ": must have all values of the distributed object" );
     }
 

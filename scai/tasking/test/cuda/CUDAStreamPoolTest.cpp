@@ -66,9 +66,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     pool.releaseStream( stream1 );
 
     BOOST_CHECK_THROW(
-        {
-            pool.releaseStream( stream1 );
-        }, common::Exception );
+    {
+        pool.releaseStream( stream1 );
+    }, common::Exception );
 
     pool.releaseStream( stream2 );
 }

@@ -107,7 +107,7 @@ void OpenMPBLAS1::scal(
         {
             x[i * incX] = x[i * incX] * alpha;
         }
-   }
+    }
 }
 
 /** nrm2 */
@@ -437,8 +437,8 @@ void OpenMPBLAS1::axpy(
     SCAI_REGION( "OpenMP.BLAS1.axpy" )
 
     SCAI_LOG_DEBUG( logger,
-                    "axpy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha 
-                     << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "axpy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha
+                    << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -478,8 +478,8 @@ ValueType OpenMPBLAS1::dot(
     SCAI_REGION( "OpenMP.BLAS1.dot" )
 
     SCAI_LOG_DEBUG( logger,
-                    "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n 
-                     << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n
+                    << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -569,7 +569,7 @@ void OpenMPBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     const common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( OpenMPBLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( OpenMPBLAS1::nrm2, ctx, flag );
@@ -589,13 +589,13 @@ void OpenMPBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 OpenMPBLAS1::OpenMPBLAS1()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
-                    kregistry::KernelRegistry::KERNEL_ADD );
+        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS1::~OpenMPBLAS1()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -28,7 +28,7 @@
  */
 
 #ifndef BOOST_TEST_DYN_LINK
-    #define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_DYN_LINK
 #endif
 
 // indicate that default main of Boost is not used here
@@ -49,7 +49,7 @@
 bool init_function()
 {
     return true;
-} 
+}
 
 int main( int argc, char* argv[] )
 {

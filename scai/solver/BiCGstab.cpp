@@ -43,7 +43,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 
-// std 
+// std
 #include <limits>
 
 namespace scai
@@ -181,10 +181,11 @@ void BiCGstab::iterate()
     vecP = res + beta * vecP;
 
     // PRECONDITIONING
-    if(mPreconditioner != NULL){
+    if(mPreconditioner != NULL)
+    {
         vecPT = Scalar(0.0);
-        mPreconditioner->solve( vecPT, vecP );      
-    } 
+        mPreconditioner->solve( vecPT, vecP );
+    }
     else    vecPT = vecP;
 
     vecV = A * vecPT;
@@ -201,20 +202,23 @@ void BiCGstab::iterate()
     }
 
     vecS = res - alpha * vecV;
+
     // PRECONDITIONING
-    if(mPreconditioner != NULL){
+    if(mPreconditioner != NULL)
+    {
         vecST = Scalar(0.0);
-        mPreconditioner->solve( vecST, vecS );      
+        mPreconditioner->solve( vecST, vecS );
 
         vecT = A * vecST;
         vecTT = Scalar(0.0);
-        mPreconditioner->solve(vecTT,vecT);    
-    } 
-    else{
+        mPreconditioner->solve(vecTT,vecT);
+    }
+    else
+    {
         vecST = vecS;
         vecT = A * vecST;
         vecTT = vecT;
-    }   
+    }
 
     innerProd = vecTT.dotProduct( vecTT );
 

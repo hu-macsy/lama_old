@@ -64,10 +64,11 @@ int main()
     CSRSparseMatrix<ValueType> m ( sas );
 
     DenseVector<ValueType> rhs( size , 0.0 );
-    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );	
+    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
+
     for ( IndexType i = 0; i < size; i++ )
     {
-    	hwarhs[i] = i + 1.0;
+        hwarhs[i] = i + 1.0;
     }
 
     hwarhs.release();

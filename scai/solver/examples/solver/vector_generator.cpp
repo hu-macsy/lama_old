@@ -54,8 +54,10 @@ static bool isNumber( const char* arg )
         {
             continue;
         }
+
         return false;
     }
+
     return true;
 }
 
@@ -69,12 +71,15 @@ static bool isValue( const char* arg )
         {
             continue;
         }
+
         if ( arg[i] == '.' || arg[i] == ',' || arg[i] == '-' || arg[i] == ' ' )
         {
             continue;
         }
+
         return false;
     }
+
     return true;
 }
 
@@ -119,27 +124,27 @@ struct CommandLineOptions
         {
             outFileType = File::SAMG_FORMAT;
             writeBinary = true;
-        } 
+        }
         else if ( option == "-s" )
         {
             outDataType = common::scalar::FLOAT;
-        } 
+        }
         else if ( option == "-c" )
         {
             outDataType = common::scalar::COMPLEX;
-        } 
+        }
         else if ( option == "-d" )
         {
             outDataType = common::scalar::DOUBLE;
-        } 
+        }
         else if ( option == "-z" )
         {
             outDataType = common::scalar::DOUBLE_COMPLEX;
-        } 
+        }
         else if ( option == "-random" )
         {
             random = true;
-        } 
+        }
         else if ( isNumber( option.c_str() ) && size == 0 )
         {
             std::istringstream is( option );
@@ -161,7 +166,7 @@ struct CommandLineOptions
             value = x;
         }
         else if ( outFileName == "" )
-        {    
+        {
             outFileName = option;
         }
         else if ( matFileName == "" && _StorageIO::fileExists( option ) )
@@ -172,6 +177,7 @@ struct CommandLineOptions
         {
             return false;  // not recognized
         }
+
         return true;
     }
 
@@ -190,7 +196,7 @@ struct CommandLineOptions
 
         if ( _StorageIO::hasSuffix( outFileName, ".mtx" ) )
         {
-             outFileType = File::MATRIX_MARKET;
+            outFileType = File::MATRIX_MARKET;
         }
         else
         {
@@ -215,7 +221,7 @@ struct CommandLineOptions
         {
             outDataType = common::scalar::DOUBLE_COMPLEX;
         }
-       
+
         cout << "No output data type specified, take " << outDataType << " due to value = " << value << endl;
     }
 };
@@ -274,7 +280,7 @@ int main( int argc, char* argv[] )
     common::shared_ptr<Vector> v ( Vector::create( vectorType ) );
 
     if ( options.matFileName != "" )
-    { 
+    {
         MatrixCreateKeyType matrixType( Format::CSR, options.outDataType );
         matrix.reset( Matrix::create( MatrixCreateKeyType ( matrixType ) ) );
         matrix->readFromFile( options.matFileName );
@@ -328,7 +334,7 @@ int main( int argc, char* argv[] )
     cout << "Vector generated: " << *v << endl;
 
     if ( matrix.get() )
-    { 
+    {
         VectorCreateKeyType vectorType( Vector::DENSE, options.outDataType );
         common::shared_ptr<Vector> rhs ( Vector::create( vectorType ) );
         *rhs = *matrix * *v;

@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE( SolveTest )
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     const IndexType N1 = 10;
-    const IndexType N2 = 10;  
+    const IndexType N2 = 10;
 
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 

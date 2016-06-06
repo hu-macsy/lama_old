@@ -37,7 +37,7 @@
 
 #include <scai/common/shared_ptr.hpp>
 
-#include <iostream> 
+#include <iostream>
 
 using namespace std;
 using namespace scai::hmemo;
@@ -64,7 +64,7 @@ int main()
 
     ReadAccess<float> read( lamaArray, contextPtr );
     ReadAccess<float> read1( *lamaArray1, contextPtr );
-   
+
     const float* data = read.get();
     const float* data1 = read1.get();
 
@@ -72,7 +72,7 @@ int main()
     {
         SCAI_ASSERT_EQUAL( data[i], data1[i], "" )
     }
-  
+
     std::cout << "Create finished" << std::endl;
 
     scai::common::shared_ptr<_HArray> lamaArray2( _HArray::create( scai::common::scalar::FLOAT ) );

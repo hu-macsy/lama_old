@@ -94,7 +94,7 @@ void simple()
 
 struct Data : private scai::common::NonCopyable, public SyncTokenMember
 {
-    Data( int N ) 
+    Data( int N )
     {
         SCAI_LOG_INFO( logger, "construct Data( N = " << N << " )" )
 
@@ -127,16 +127,16 @@ struct Data : private scai::common::NonCopyable, public SyncTokenMember
 shared_ptr<SyncToken> run( int N )
 {
     shared_ptr<Data> data( new Data( N ) );
- 
+
     // call task synchronously
 
     task( data->mA, data->mB, data->mC, N );
 
     // call task asynchronously
- 
+
     shared_ptr<SyncToken> t ( new TaskSyncToken( scai::common::bind( task, data->mA, data->mB, data->mC , N ) ) );
 
-    // give ownership of data to the sync token 
+    // give ownership of data to the sync token
 
     t->pushToken( data );
 

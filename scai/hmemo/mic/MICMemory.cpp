@@ -97,7 +97,7 @@ void* MICMemory::allocate( const size_t size ) const
 
     // allocate data on the MIC device and return the pointer
 
-    #pragma offload target( mic : deviceNr ), in( size ), out( pointer )
+#pragma offload target( mic : deviceNr ), in( size ), out( pointer )
     {
         pointer = ::malloc( size );
     }
@@ -115,7 +115,7 @@ void MICMemory::free( void* pointer, const size_t size ) const
 
     int deviceNr = mMICContext->getDeviceNr();
 
-    #pragma offload target( mic : deviceNr ), in( pointer )
+#pragma offload target( mic : deviceNr ), in( pointer )
     {
         ::free( pointer );
     }
@@ -136,15 +136,16 @@ void MICMemory::memcpy( void* dst, const void* src, const size_t size ) const
     {
         // SCAI_REGION( "MIC.memcpy8" )
 
-        #pragma offload target( mic : deviceNr ) in( src_ptr, dst_ptr, size )
+#pragma offload target( mic : deviceNr ) in( src_ptr, dst_ptr, size )
         {
             double* dst = ( double* ) dst_ptr;
             const double* src = ( const double* ) src_ptr;
 
             #pragma omp parallel for
+
             for ( int i = 0; i < ( size >> 3 ); ++ i )
             {
-               dst[i] = src[i];
+                dst[i] = src[i];
             }
         }
     }
@@ -152,15 +153,16 @@ void MICMemory::memcpy( void* dst, const void* src, const size_t size ) const
     {
         // SCAI_REGION( "MIC.memcpy4" )
 
-        #pragma offload target( mic : deviceNr ) in( src_ptr, dst_ptr, size )
+#pragma offload target( mic : deviceNr ) in( src_ptr, dst_ptr, size )
         {
             float* dst = ( float* ) dst_ptr;
             const float* src = ( const float* ) src_ptr;
 
             #pragma omp parallel for
+
             for ( int i = 0; i < ( size >> 2 ); ++ i )
             {
-               dst[i] = src[i];
+                dst[i] = src[i];
             }
         }
     }
@@ -168,7 +170,7 @@ void MICMemory::memcpy( void* dst, const void* src, const size_t size ) const
     {
         // SCAI_REGION( "MIC.memcpy1" )
 
-        #pragma offload target( mic : deviceNr ) in( src_ptr, dst_ptr, size )
+#pragma offload target( mic : deviceNr ) in( src_ptr, dst_ptr, size )
         {
             void* dst = ( void* ) dst_ptr;
             const void* src = ( const void* ) src_ptr;
@@ -186,7 +188,7 @@ void MICMemory::memset( void* dst, const int val, const size_t size ) const
 
     int deviceNr = mMICContext->getDeviceNr();
 
-    #pragma offload target( mic : deviceNr ) in( dst_ptr, size, val )
+#pragma offload target( mic : deviceNr ) in( dst_ptr, size, val )
     {
         void* dst = ( void* ) dst_ptr;
 
@@ -276,7 +278,7 @@ void MICMemory::memcpyToHost( void* dst, const void* src, const size_t size ) co
 
     int deviceNr = mMICContext->getDeviceNr();
 
-    #pragma offload target( mic : deviceNr ) out( dst8 : length( size ) ), in( size ), in( src )
+#pragma offload target( mic : deviceNr ) out( dst8 : length( size ) ), in( size ), in( src )
     {
         const uint8_t* src8 = ( const uint8_t* ) src;
         ::memcpy( dst8, src8, size );
@@ -295,7 +297,7 @@ void MICMemory::memcpyFromHost( void* dst, const void* src, const size_t size ) 
 
     int deviceNr = mMICContext->getDeviceNr();
 
-    #pragma offload target( mic : deviceNr ) in( src8 : length( size ) ), in( size ), in( dst )
+#pragma offload target( mic : deviceNr ) in( src8 : length( size ) ), in( size ), in( dst )
     {
         uint8_t* dst8 = ( uint8_t* ) dst;
         ::memcpy( dst8, src8, size );

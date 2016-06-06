@@ -49,12 +49,12 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.DerivedSparseMatrixTest" )
 
 typedef SCAI_TEST_TYPE ValueType;
 
-typedef boost::mpl::list<CSRSparseMatrix<ValueType>, 
-                         COOSparseMatrix<ValueType>, 
-                         DIASparseMatrix<ValueType>, 
-                         DIASparseMatrix<ValueType>, 
-                         ELLSparseMatrix<ValueType>, 
-                         JDSSparseMatrix<ValueType> > test_types;
+typedef boost::mpl::list<CSRSparseMatrix<ValueType>,
+        COOSparseMatrix<ValueType>,
+        DIASparseMatrix<ValueType>,
+        DIASparseMatrix<ValueType>,
+        ELLSparseMatrix<ValueType>,
+        JDSSparseMatrix<ValueType> > test_types;
 
 /* ------------------------------------------------------------------------- */
 

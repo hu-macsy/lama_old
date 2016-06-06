@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
 
     SCAI_LOG_INFO( logger, "isSortedTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
- 
+
     {
         ValueType values1[] =
         { 1, 2, 2, 2, 5, 8 };

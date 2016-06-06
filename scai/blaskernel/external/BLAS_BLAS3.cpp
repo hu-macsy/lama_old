@@ -77,7 +77,7 @@ void BLAS_BLAS3::gemm(
     SCAI_REGION( "BLAS.BLAS3.gemm" )
 
     SCAI_LOG_INFO( logger,
-                   "gemm<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n << ", k = " << k 
+                   "gemm<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n << ", k = " << k
                    << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
@@ -89,39 +89,43 @@ void BLAS_BLAS3::gemm(
 
     BLASTrait::BLASTrans ta = '-', tb = '-';
 
-	switch( transA )
-	{
-		case CblasNoTrans:
-			ta = 'N';
-			break;
-		case CblasTrans:
-			ta = 'T';
-			break;
-		case CblasConjTrans:
-			ta = 'C';
-			break;
-	}
+    switch( transA )
+    {
+        case CblasNoTrans:
+            ta = 'N';
+            break;
 
-	switch( transB )
-	{
-		case CblasNoTrans:
-			tb = 'N';
-			break;
-		case CblasTrans:
-			tb = 'T';
-			break;
-		case CblasConjTrans:
-			tb = 'C';
-			break;
-	}
+        case CblasTrans:
+            ta = 'T';
+            break;
+
+        case CblasConjTrans:
+            ta = 'C';
+            break;
+    }
+
+    switch( transB )
+    {
+        case CblasNoTrans:
+            tb = 'N';
+            break;
+
+        case CblasTrans:
+            tb = 'T';
+            break;
+
+        case CblasConjTrans:
+            tb = 'C';
+            break;
+    }
 
     if( order == CblasColMajor )
     {
-    	BLASWrapper<ValueType>::gemm( ta, tb, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, A, static_cast<BLASTrait::BLASIndexType>( lda ), B, static_cast<BLASTrait::BLASIndexType>( ldb ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ));
+        BLASWrapper<ValueType>::gemm( ta, tb, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, A, static_cast<BLASTrait::BLASIndexType>( lda ), B, static_cast<BLASTrait::BLASIndexType>( ldb ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ));
     }
     else if( order == CblasRowMajor )
     {
-    	BLASWrapper<ValueType>::gemm( tb, ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, B, static_cast<BLASTrait::BLASIndexType>( ldb ), A, static_cast<BLASTrait::BLASIndexType>( lda ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ));
+        BLASWrapper<ValueType>::gemm( tb, ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, B, static_cast<BLASTrait::BLASIndexType>( ldb ), A, static_cast<BLASTrait::BLASIndexType>( lda ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ));
     }
 }
 
@@ -166,13 +170,13 @@ void BLAS_BLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 BLAS_BLAS3::BLAS_BLAS3()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
-                            kregistry::KernelRegistry::KERNEL_REPLACE );
+        kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS3::~BLAS_BLAS3()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
-                            kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

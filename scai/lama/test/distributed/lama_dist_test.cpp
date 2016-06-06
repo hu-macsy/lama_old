@@ -28,7 +28,7 @@
  */
 
 #ifndef BOOST_TEST_DYN_LINK
-    #define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_DYN_LINK
 #endif
 
 #define BOOST_TEST_MODULE lama_dist_test
@@ -43,7 +43,7 @@
 
 #include <scai/hmemo/test/ContextFix.hpp>
 #include <scai/common/Settings.hpp>
- 
+
 #include <iostream>
 
 #include <scai/lama/test/TestMacros.hpp>
@@ -68,7 +68,7 @@ bool init_function()
         std::cerr << "Could not get context for test: " << ex.what() << std::endl;
         return false;
     }
-} 
+}
 
 int main( int argc, char* argv[] )
 {
@@ -77,6 +77,6 @@ int main( int argc, char* argv[] )
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
     int rc = boost::unit_test::unit_test_main( &init_function, argc, argv );
- 
+
     return rc;
 }

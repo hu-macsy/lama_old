@@ -147,8 +147,8 @@ const Vector& Solver::getResidual() const
 {
     const SolverRuntime& runtime = getConstRuntime();
 
-    SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", is dirty = " << runtime.mSolution.isDirty() 
-                            << ", runtime.mResidual.get() = " << runtime.mResidual.get() )
+    SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", is dirty = " << runtime.mSolution.isDirty()
+                    << ", runtime.mResidual.get() = " << runtime.mResidual.get() )
 
     SCAI_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
     SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )

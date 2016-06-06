@@ -48,7 +48,7 @@
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
- 
+
 #include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/tracing.hpp>
@@ -572,7 +572,7 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
     const MatrixStorage<ValueType>&  matrixHaloData = matrix.getHaloStorage();
 
     if (     ( matrixHaloData.getNumRows() > 0 )
-          || ( matrixHaloData.getNumColumns()  > 0 ) )
+             || ( matrixHaloData.getNumColumns()  > 0 ) )
     {
         mHaloData->assign( matrixHaloData );
     }
@@ -580,7 +580,7 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
     {
         // we set the halo size to 0 x 0 instead of n x 0 to avoid allocation of ia data
 
-        mHaloData->clear();   
+        mHaloData->clear();
     }
 
     mHalo = matrix.getHalo();
@@ -1136,7 +1136,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
     if( beta != scai::common::constants::ZERO )
     {
-        SCAI_ASSERT_EQ_ERROR( C.getRowDistribution(), A.getRowDistribution(), "distribution/size mismatch" ) 
+        SCAI_ASSERT_EQ_ERROR( C.getRowDistribution(), A.getRowDistribution(), "distribution/size mismatch" )
         SCAI_ASSERT_EQ_ERROR( C.getColDistribution(), B.getColDistribution(), "distribution/size mismatch" )
     }
 
@@ -1973,9 +1973,10 @@ void SparseMatrix<ValueType>::matrixTimesScalar( const Matrix& other, Scalar alp
     assign( other );
 
     mLocalData->scale( alpha.getValue<ValueType>() );
+
     if( mHaloData->getNumRows() * mHaloData->getNumColumns() > 0)
     {
-		mHaloData->scale( alpha.getValue<ValueType>() );
+        mHaloData->scale( alpha.getValue<ValueType>() );
     }
 }
 
@@ -2006,18 +2007,18 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 {
     SCAI_REGION( "Mat.Sp.l2Norm" )
 
-	ValueType tmp = mLocalData->l2Norm();
+    ValueType tmp = mLocalData->l2Norm();
     ValueType myValue = tmp * tmp;
     tmp = mHaloData->l2Norm();
-	myValue += tmp * tmp;
+    myValue += tmp * tmp;
 
     const Communicator& comm = getRowDistribution().getCommunicator();
 
     ValueType allValue = comm.sum( myValue );
 
-	// allValue = ::sqrt( allValue );
+    // allValue = ::sqrt( allValue );
 
-	allValue = common::Math::sqrt( allValue );
+    allValue = common::Math::sqrt( allValue );
 
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
 
@@ -2026,19 +2027,19 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
 template<typename ValueType>
 Scalar SparseMatrix<ValueType>::maxNorm() const
- {
+{
     SCAI_REGION( "Mat.Sp.maxNorm" )
- 
+
     ValueType myMax = mLocalData->maxNorm();
     ValueType myMaxHalo = mHaloData->maxNorm();
- 
+
     if( myMaxHalo > myMax )
     {
         myMax = myMaxHalo;
     }
- 
+
     const Communicator& comm = getRowDistribution().getCommunicator();
- 
+
     ValueType allMax = comm.max( myMax );
 
     SCAI_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )

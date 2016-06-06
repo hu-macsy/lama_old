@@ -93,9 +93,9 @@ void TraceData::leave( const int regionId, RegionEntry& region )
     const int currentRegionId = mCallStack.currentRegionId();
 
     SCAI_ASSERT_EQUAL( currentRegionId, regionId,
-                         "mismatch call stack, current region = "
-                         << mRegionTable.getRegion( currentRegionId ).getRegionName()
-                         << ", stop for " << region.getRegionName() )
+                       "mismatch call stack, current region = "
+                       << mRegionTable.getRegion( currentRegionId ).getRegionName()
+                       << ", stop for " << region.getRegionName() )
 
     double spentTime = leaveCounterValues.getWalltime( mCallStack.currentCounters() );
 

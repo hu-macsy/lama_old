@@ -55,32 +55,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, ValueType, test_types )
     ContextPtr context = Context::getContextPtr();
     CommunicatorPtr comm = Communicator::getCommunicator();
 
-        for ( IndexType size = 0; size < 4; ++size )
+    for ( IndexType size = 0; size < 4; ++size )
+    {
+        DistributionPtr dist( new BlockDistribution( size, comm ) );
+        const ValueType VAL = 1.0;
+        DenseVector<ValueType> repVector( size, VAL );
+        DenseVector<ValueType> distVector;
+        distVector.setContextPtr( context );
+        distVector = repVector;
+        distVector.redistribute( dist );
+        Scalar l1norm = distVector.l1Norm();
+        ValueType expectedL1Norm = static_cast<ValueType>( size );
+        BOOST_CHECK_CLOSE( l1norm.getValue<ValueType>(), expectedL1Norm, 1 );
+        Scalar l2norm = distVector.l2Norm();
+        ValueType expectedL2Norm = static_cast<ValueType>( size );
+        expectedL2Norm = std::sqrt( expectedL2Norm );
+        BOOST_CHECK_CLOSE( l2norm.getValue<ValueType>(), expectedL2Norm, 1 );
+        Scalar maxNorm = distVector.maxNorm();
+        ValueType expectedMaxNorm = static_cast<ValueType>( VAL );
+
+        if ( size == 0 )
         {
-            DistributionPtr dist( new BlockDistribution( size, comm ) );
-            const ValueType VAL = 1.0;
-            DenseVector<ValueType> repVector( size, VAL );
-            DenseVector<ValueType> distVector;
-            distVector.setContextPtr( context );
-            distVector = repVector;
-            distVector.redistribute( dist );
-            Scalar l1norm = distVector.l1Norm();
-            ValueType expectedL1Norm = static_cast<ValueType>( size );
-            BOOST_CHECK_CLOSE( l1norm.getValue<ValueType>(), expectedL1Norm, 1 );
-            Scalar l2norm = distVector.l2Norm();
-            ValueType expectedL2Norm = static_cast<ValueType>( size );
-            expectedL2Norm = std::sqrt( expectedL2Norm );
-            BOOST_CHECK_CLOSE( l2norm.getValue<ValueType>(), expectedL2Norm, 1 );
-            Scalar maxNorm = distVector.maxNorm();
-            ValueType expectedMaxNorm = static_cast<ValueType>( VAL );
-
-            if ( size == 0 )
-            {
-                expectedMaxNorm = static_cast<ValueType>( 0 );
-            }
-
-            BOOST_CHECK_CLOSE( maxNorm.getValue<ValueType>(), expectedMaxNorm, 1 );
+            expectedMaxNorm = static_cast<ValueType>( 0 );
         }
+
+        BOOST_CHECK_CLOSE( maxNorm.getValue<ValueType>(), expectedMaxNorm, 1 );
+    }
 }
 
 /* --------------------------------------------------------------------- */

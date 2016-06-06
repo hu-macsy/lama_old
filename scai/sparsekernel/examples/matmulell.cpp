@@ -59,6 +59,7 @@ static void print( const IndexType n, const ValueType* x)
     {
         std::cout << x[i] << " ";
     }
+
     std::cout << std::endl;
 }
 

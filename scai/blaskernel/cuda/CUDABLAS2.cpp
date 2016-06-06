@@ -77,12 +77,12 @@ void CUDABLAS2::gemv(
     ValueType* const y,
     const IndexType incy )
 {
-	typedef CUBLASTrait::BLASTrans BLASTrans;
+    typedef CUBLASTrait::BLASTrans BLASTrans;
 
-	IndexType order_m = m;
-	IndexType order_n = n;
+    IndexType order_m = m;
+    IndexType order_n = n;
 //    char trans_char = ' ';
-	BLASTrans trans_char;
+    BLASTrans trans_char;
 
     //switch stuff because columnmajor to rowmajor
     if( order == CblasRowMajor )
@@ -165,13 +165,13 @@ void CUDABLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
 CUDABLAS2::CUDABLAS2()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
-                    kregistry::KernelRegistry::KERNEL_ADD );
+        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDABLAS2::~CUDABLAS2()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
-                    kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 CUDABLAS2 CUDABLAS2::guard;    // guard variable for registration

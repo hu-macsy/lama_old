@@ -36,9 +36,11 @@
 // others
 #include <ostream>
 
-namespace scai {
+namespace scai
+{
 
-namespace lama {
+namespace lama
+{
 
 IOUtils::file_size_t IOUtils::getFileSize( const char* filename )
 {

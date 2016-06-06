@@ -53,7 +53,7 @@ void start_mic_compute( MICSyncToken& token )
 
     int n = NSIZE;
 
-    #pragma offload target( mic : device ), in( n ), signal(signal_value)
+#pragma offload target( mic : device ), in( n ), signal(signal_value)
     {
         compute( n );
     }
@@ -71,7 +71,7 @@ int main()
     // measure coprocessor
 
     t = Walltime::get();
-    #pragma offload target(mic : device)
+#pragma offload target(mic : device)
     {
         compute( n );
     }
@@ -82,7 +82,7 @@ int main()
     // measure coprocessor again, no init device
 
     t = Walltime::get();
-    #pragma offload target(mic : device)
+#pragma offload target(mic : device)
     {
         compute( n );
     }

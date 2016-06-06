@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, blas_test_types )
         const IndexType incX = 2;
         const IndexType incY = 3;
         HArray<ValueType> Ax( testContext );
-        Ax.init( x, 6 );  
+        Ax.init( x, 6 );
         HArray<ValueType> Ay( testContext );
         Ay.init( y, 9 );
         {

@@ -28,7 +28,7 @@
  */
 
 #ifndef BOOST_TEST_DYN_LINK
-    #define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_DYN_LINK
 #endif
 
 #define BOOST_TEST_MODULE hmemoTest
@@ -50,8 +50,8 @@
 
 // one time registration of MockContext required via guard variable
 
-template scai::hmemo::Context::Register<MockContext>::RegisterGuard 
-    scai::hmemo::Context::Register<MockContext>::registerGuard;
+template scai::hmemo::Context::Register<MockContext>::RegisterGuard
+scai::hmemo::Context::Register<MockContext>::registerGuard;
 
 /** The init function returns true if it can get the specified context. */
 
@@ -67,7 +67,7 @@ bool init_function()
         std::cerr << "Could not get context for test: " << ex.what() << std::endl;
         return false;
     }
-} 
+}
 
 int main( int argc, char* argv[] )
 {

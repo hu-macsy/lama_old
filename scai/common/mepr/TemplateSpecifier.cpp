@@ -28,11 +28,14 @@
  */
 #include <scai/common/mepr/TemplateSpecifier.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace common {
+namespace common
+{
 
-namespace mepr {
+namespace mepr
+{
 
 void (*TemplateSpecifier::theLastOne)();
 

@@ -27,7 +27,7 @@
  * @date 02.03.2016
  */
 #ifndef BOOST_TEST_DYN_LINK
-    #define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_DYN_LINK
 #endif
 
 #define BOOST_TEST_MODULE solverTest
@@ -64,7 +64,7 @@ bool init_function()
         std::cerr << "Could not get context/comm for test: " << ex.what() << std::endl;
         return false;
     }
-} 
+}
 
 int main( int argc, char* argv[] )
 {
@@ -73,6 +73,6 @@ int main( int argc, char* argv[] )
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
     int rc = boost::unit_test::unit_test_main( &init_function, argc, argv );
- 
+
     return rc;
 }

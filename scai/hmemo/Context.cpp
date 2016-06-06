@@ -52,7 +52,7 @@ namespace hmemo
 SCAI_LOG_DEF_LOGGER( Context::logger, "Context" )
 
 Context::Context( ContextType type )
-                : mContextType( type ), mUseZeroCopy( false ), mEnabled( false ), mFile( NULL ), mLine( 0 )
+    : mContextType( type ), mUseZeroCopy( false ), mEnabled( false ), mFile( NULL ), mLine( 0 )
 {
     SCAI_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
 }

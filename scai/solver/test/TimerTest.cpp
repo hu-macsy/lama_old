@@ -30,7 +30,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/solver/logger/Timer.hpp>
- 
+
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/Walltime.hpp>
 

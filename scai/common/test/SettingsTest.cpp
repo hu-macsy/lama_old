@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE( SettingsTest )
     BOOST_CHECK_EQUAL( 1, nargs );
 
     int device = -1;
-    
+
     Settings::setRank( 3 );  // choice for multiple arguments separated by ,
 
     bool set = Settings::getEnvironment( device, "SCAI_DEVICE" );
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE( SettingsTest )
     BOOST_CHECK_EQUAL( 0, device );
 
     Settings::putEnvironment( "SCAI_DEVICE", "dummy" );
-    
+
     set = Settings::getEnvironment( device, "SCAI_DEVICE" );
 
     BOOST_CHECK( !set );
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE( SettingsConvertTest )
     Settings::putEnvironment( var, "Yes" );
     set = Settings::getEnvironment( flag, var );
     BOOST_CHECK( set && flag );
- 
+
     Settings::putEnvironment( var, "No" );
     set = Settings::getEnvironment( flag, var );
     BOOST_CHECK( set && !flag );

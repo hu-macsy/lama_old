@@ -47,11 +47,11 @@ typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> ValueTypes;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( shared_ptrTest, ValueType, ValueTypes )
 {
-	shared_ptr<ValueType> emptyPointer;
+    shared_ptr<ValueType> emptyPointer;
 
-	BOOST_CHECK_EQUAL ( emptyPointer.use_count(), 0 );
+    BOOST_CHECK_EQUAL ( emptyPointer.use_count(), 0 );
 
-  	shared_ptr<ValueType> pointer ( new ValueType(10) );
+    shared_ptr<ValueType> pointer ( new ValueType(10) );
 
     BOOST_CHECK_EQUAL( pointer.use_count(), 1 );
 
@@ -64,32 +64,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shared_ptrTest, ValueType, ValueTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( unique_ptrTest, ValueType, ValueTypes )
 {
-	unique_ptr<ValueType> emptyPointer;
+    unique_ptr<ValueType> emptyPointer;
 
-	bool test = ( emptyPointer.get() == NULL );
+    bool test = ( emptyPointer.get() == NULL );
 
-	BOOST_CHECK ( test );
+    BOOST_CHECK ( test );
 
-	unique_ptr<ValueType> pointer ( new ValueType(10) );
+    unique_ptr<ValueType> pointer ( new ValueType(10) );
 
-	test = ( pointer.get() != NULL );
+    test = ( pointer.get() != NULL );
 
-	BOOST_CHECK ( test );
+    BOOST_CHECK ( test );
 }
 
 /* -------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( weak_ptrTest, ValueType, ValueTypes )
 {
-	weak_ptr<ValueType> emptyPointer;
+    weak_ptr<ValueType> emptyPointer;
 
-	BOOST_CHECK_EQUAL ( emptyPointer.use_count(), 0 );
+    BOOST_CHECK_EQUAL ( emptyPointer.use_count(), 0 );
 
-	weak_ptr<ValueType> sec_emptyPointer( emptyPointer );
+    weak_ptr<ValueType> sec_emptyPointer( emptyPointer );
 
-	BOOST_CHECK_EQUAL ( sec_emptyPointer.use_count(), 0 );	
+    BOOST_CHECK_EQUAL ( sec_emptyPointer.use_count(), 0 );
 
-  	shared_ptr<ValueType> shared_pointer ( new ValueType(10) );
+    shared_ptr<ValueType> shared_pointer ( new ValueType(10) );
     weak_ptr<ValueType> pointer ( shared_pointer );
 
     BOOST_CHECK_EQUAL( pointer.use_count(), 1 );

@@ -33,7 +33,7 @@
 // local library
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
- 
+
 #include <scai/sparsekernel/external/MKLCSRTrait.hpp>
 #include <scai/sparsekernel/external/MKLCSRWrapper.hpp>
 
@@ -96,7 +96,7 @@ void MKLCSRUtils::normalGEMV(
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if (common::TypeTraits<IndexType>::stype
-                    != common::TypeTraits<BLASIndexType>::stype)
+            != common::TypeTraits<BLASIndexType>::stype)
     {
         COMMON_THROWEXCEPTION("indextype mismatch");
     }
@@ -128,7 +128,7 @@ void MKLCSRUtils::normalGEMV(
 
     // const_cast needed, MKL interface does not support it
     MKLCSRWrapper<ValueType>::csrmv( transa, numRows, numColumns, alpha, matdescra, csrValues,
-                csrJA, csrIA, csrIA + 1, x, beta, result );
+                                     csrJA, csrIA, csrIA + 1, x, beta, result );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -177,7 +177,7 @@ void MKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     using kregistry::KernelRegistry;
 
     SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }

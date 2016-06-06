@@ -157,7 +157,7 @@ GeneralDistribution::GeneralDistribution(
 
 GeneralDistribution::GeneralDistribution( const Distribution& other )
     : Distribution( other.getGlobalSize(), other.getCommunicatorPtr() ), mLocal2Global(
-        other.getLocalSize() )
+          other.getLocalSize() )
 {
     for ( IndexType i = 0; i < getGlobalSize(); ++i )
     {

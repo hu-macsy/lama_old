@@ -69,9 +69,9 @@ void OpenMPBLAS2::gemv(
     const IndexType incY )
 {
     SCAI_LOG_INFO( logger,
-                   "gemv<" << common::TypeTraits<ValueType>::id()<< ">: M = " << M << ", N = " << N 
-                      << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY 
-                      << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<" << common::TypeTraits<ValueType>::id()<< ">: M = " << M << ", N = " << N
+                   << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY
+                   << ", alpha = " << alpha << ", beta = " << beta )
 
     if( M == 0 )
     {
@@ -175,7 +175,7 @@ void OpenMPBLAS2::gemv(
         }
         else
         {
-        	COMMON_THROWEXCEPTION( "Illegal TransA setting " << TransA )
+            COMMON_THROWEXCEPTION( "Illegal TransA setting " << TransA )
         }
 
     }
@@ -264,13 +264,13 @@ void OpenMPBLAS2::gemv(
         }
         else
         {
-        	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+            COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
         }
 
     }
     else
     {
-    	COMMON_THROWEXCEPTION( "illegal order setting " << order )
+        COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 
     return;
@@ -299,13 +299,13 @@ void OpenMPBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 OpenMPBLAS2::OpenMPBLAS2()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_ADD );
+        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS2::~OpenMPBLAS2()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

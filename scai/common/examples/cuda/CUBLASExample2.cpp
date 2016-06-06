@@ -76,7 +76,7 @@ float myDot( float* d_a, float* d_b, int n )
     const CUDACtx& device = CUDAAccess::getCurrentCUDACtx();
 
     SCAI_CUBLAS_CALL( cublasSdot( device.getcuBLASHandle(), n, d_a, 1, d_b, 1, &dot ),
-                                  "cublasSDot for float" );
+                      "cublasSDot for float" );
     return dot;
 }
 
@@ -102,7 +102,7 @@ int main( int argc, const char** argv )
 
     SCAI_ASSERT_EQUAL( n, n1, "mismatch of arrays for dot product" )
 
-    CUDAAccess access( device );  
+    CUDAAccess access( device );
 
     float* d_a = myAllocate( a, n );
     float* d_b = myAllocate( b, n1 );
@@ -110,21 +110,27 @@ int main( int argc, const char** argv )
     float dot = myDot( d_a, d_b, n );
 
     std::cout << "dot product a = [ " ;
+
     for ( int i = 0; i < n ; ++i )
     {
         std::cout << a[i] << " ";
     }
+
     std::cout << "] x b = [ " ;
+
     for ( int i = 0; i < n ; ++i )
     {
         std::cout << b[i] << " ";
     }
+
     std::cout << "]  = " << dot;
     float r = 0;
+
     for ( int i = 0; i < n ; ++i )
     {
         r += a[i] * b[i];
     }
+
     std::cout << ", should be " << r << std::endl;
 
     // free memory

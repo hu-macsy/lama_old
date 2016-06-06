@@ -39,7 +39,7 @@ int main()
     Complex<float> a( 1.0f, 1.0f );
     Complex<double> b( 2.0, -1.0 );
     std::cout << "a = " << a << ", b = " << b << std::endl;
- 
+
     double b_re = b.real();
     double b_im = b.imag();
 
@@ -57,6 +57,7 @@ int main()
     {
         std::cout << a << " == " << b << std::endl;
     }
+
 //    else if ( a >= b )
 //    {
 //        std::cout << a << " >= " << b << std::endl;

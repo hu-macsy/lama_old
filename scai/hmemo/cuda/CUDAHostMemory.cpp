@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Implementation of methods for page-locked memory management to enable 
+ * @brief Implementation of methods for page-locked memory management to enable
  *        fast DMA transfers to CUDA devices.
  * @author Thomas Brandes
  * @date 16.07.2015
@@ -59,7 +59,7 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
 
-CUDAHostMemory::CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContext ) : 
+CUDAHostMemory::CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContext ) :
 
     Memory( memtype::CUDAHostMemory ),
     mCUDAContext( cudaContext )
@@ -139,7 +139,7 @@ SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t
 
     SCAI_CUDA_RT_CALL(
         cudaMemcpyAsync( dst, src, size, cudaMemcpyHostToHost, syncToken->getCUDAStream() ),
-        "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", " 
+        "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", "
         << cudaMemcpyHostToHost << ", " << syncToken->getCUDAStream() << ") failed " )
 
     CUevent event;

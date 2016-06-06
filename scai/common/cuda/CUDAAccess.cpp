@@ -42,7 +42,7 @@ namespace common
 {
 
 // The current CUDA device can be accessed globally, but should be thread-private
-// we can rely on the fact that thread-private variable is initialized with NULL 
+// we can rely on the fact that thread-private variable is initialized with NULL
 
 // static common::ThreadPrivatePtr<const CUDACtx> currentCUDACtx;
 
@@ -56,7 +56,7 @@ const CUDACtx* CUDAAccess::enable( const CUDACtx& ctx )
 
     currentCUDACtx.set( &ctx );  // make it available globally in thread-private variable
 
-    return last; 
+    return last;
 }
 
 void CUDAAccess::disable( const CUDACtx* last )
@@ -67,7 +67,7 @@ void CUDAAccess::disable( const CUDACtx* last )
 
     currentCUDACtx.set( last );
 
-    // last != NULL -> current context is last->getCUcontext() 
+    // last != NULL -> current context is last->getCUcontext()
     // last == NULL -> current context is 0
 }
 
@@ -77,7 +77,7 @@ CUDAAccess::CUDAAccess( const CUDACtx& ctx ) : mCUcontext( ctx.getCUcontext() )
 }
 
 CUDAAccess::~CUDAAccess()
-{ 
+{
     disable( mSaveDevice );
 }
 

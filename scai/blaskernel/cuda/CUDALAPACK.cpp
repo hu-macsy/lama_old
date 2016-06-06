@@ -67,7 +67,7 @@ void CUDALAPACK::laswp(
 
     if( order == CblasRowMajor )
     {
-    	IndexType feedback = 0;
+        IndexType feedback = 0;
 
         for( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
         {
@@ -123,13 +123,13 @@ void CUDALAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 CUDALAPACK::CUDALAPACK()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_ADD );
+        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDALAPACK::~CUDALAPACK()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 CUDALAPACK CUDALAPACK::guard;    // guard variable for registration

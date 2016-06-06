@@ -54,9 +54,10 @@ int main( int argc, char* argv[] )
     IndexType size = m.getNumRows();
 
     DenseVector<ValueType> rhs( size , 0.0 );
-    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );	
+    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
+
     for ( IndexType i = 0; i < size; ++i )
-    { 
+    {
         hwarhs[i] = i + 1.0;
     }
 

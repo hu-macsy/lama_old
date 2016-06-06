@@ -74,7 +74,7 @@ int main ( int argc, char* argv[] )
     //Reset solution to zero so that there is something to solve
     solution = 0.0;
 
-    //Create a CG solver 
+    //Create a CG solver
     CG cgSolver ( "CGTestSolver" );
     //Create a stopping criterion for the iterative solver cgSolver
     NormPtr norm = NormPtr ( new L2Norm ( ) );
@@ -86,7 +86,7 @@ int main ( int argc, char* argv[] )
     //Solve m * solution = rhs
     cgSolver.solve ( solution, rhs );
 
-    //calculate the error and its L2-Norm 
+    //calculate the error and its L2-Norm
     DenseVector<ValueType> error ( size, 1.0 );
 
     error = error - solution;

@@ -49,6 +49,7 @@ ValueType asum_with_math( const size_t N, const ValueType* x )
         ValueType thread_asum = 0;
 
         #pragma omp for
+
         for( size_t i = 0; i < N; ++i)
         {
             thread_asum += Math::abs( Math::real( x[i] ) + Math::imag( x[i] ) );
@@ -68,6 +69,7 @@ double asum_explicit( const size_t N, const double* x )
     double asum = 0;
 
     #pragma omp parallel for reduction(+:asum)
+
     for( size_t i = 0; i < N; ++i)
     {
         asum += std::abs( x[i] );
@@ -136,6 +138,7 @@ int main(int argc, char **argv)
         asum_with_math( N, d );
         mathTime[i] = scai::common::Walltime::get() - tmpTime;
     }
+
     std::cout << "Math avg: " << avg_time( repitions, mathTime ) << std::endl;
 
     /*
@@ -147,6 +150,7 @@ int main(int argc, char **argv)
         asum_explicit( N, d );
         explicitTime[i] = scai::common::Walltime::get() - tmpTime;
     }
+
     std::cout << "Explicit avg: " << avg_time( repitions, explicitTime ) << std::endl;
 
     /*
@@ -160,7 +164,8 @@ int main(int argc, char **argv)
 template<typename ValueType>
 void set( const size_t N, ValueType* x, const ValueType val )
 {
-#pragma omp parallel for
+    #pragma omp parallel for
+
     for( size_t i = 0; i < N; ++i )
     {
         x[i] = val;
@@ -172,6 +177,7 @@ double avg_time( const size_t N, const double* time_data )
     double min, max, avg;
     min = max = time_data[1];
     avg = 0;
+
     for( size_t i = 1; i < N-1; ++i )
     {
         min = Math::min( min, time_data[i] );
@@ -219,10 +225,10 @@ void parseArguments( int argc, char **argv, size_t& repitions, size_t& N )
             {
                 // Display help
                 std::cout << argv[0] << " [options]" << std::endl << std::endl <<
-                                "Valid options:" << std::endl << std::endl <<
-                                "\t-h --help\t\t show this help" << std::endl <<
-                                "\t-r --repitions\t\t specify number of repitions" << std::endl <<
-                                "\t-n --nr-elements\t specify number of elements" << std::endl;
+                          "Valid options:" << std::endl << std::endl <<
+                          "\t-h --help\t\t show this help" << std::endl <<
+                          "\t-r --repitions\t\t specify number of repitions" << std::endl <<
+                          "\t-n --nr-elements\t specify number of elements" << std::endl;
                 exit( 0 );
             }
             else

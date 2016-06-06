@@ -28,7 +28,7 @@
  */
 
 #ifndef BOOST_TEST_DYN_LINK
-    #define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_DYN_LINK
 #endif
 
 #define BOOST_TEST_MODULE lamaTest
@@ -42,7 +42,7 @@
 
 #include <scai/hmemo/test/ContextFix.hpp>
 #include <scai/common/Settings.hpp>
- 
+
 #include <iostream>
 
 #include <scai/lama/test/TestMacros.hpp>
@@ -80,6 +80,6 @@ int main( int argc, char* argv[] )
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
     int rc = boost::unit_test::unit_test_main( &init_function, argc, argv );
- 
+
     return rc;
 }

@@ -77,7 +77,7 @@ void SegmentData<T>::reserve( const IndexType size )
     mSize = size;
 
     SCAI_LOG_DEBUG( logger, "SegmentData ( size = " << size << " ), uses id = " << static_cast<int>( mId )
-                              << ", offset = " << mOffsetBytes << ", mPtr = " << mPtr )
+                    << ", offset = " << mOffsetBytes << ", mPtr = " << mPtr )
 
     mReleaseFlag = true;
 }
@@ -89,8 +89,8 @@ SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size, 
 
     bool found = GPIMemManager::findSegment( mId, mOffsetBytes, data );
 
-    SCAI_LOG_DEBUG( logger, "SegmentData( size = " << size << ", data = " << data 
-                               << ", found = " << found )
+    SCAI_LOG_DEBUG( logger, "SegmentData( size = " << size << ", data = " << data
+                    << ", found = " << found )
 
     if ( found )
     {
@@ -98,7 +98,7 @@ SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size, 
 
         // @ToDo: verify that segment is sufficient
 
-        mPtr  = data; 
+        mPtr  = data;
         mData = data;
         mSize = size;
 
@@ -162,13 +162,13 @@ void SegmentData<T>::release()
 template<typename T>
 void SegmentData<T>::writeAt( std::ostream& stream ) const
 {
-    stream << "Segment( id = " << static_cast<int>( mId ) 
+    stream << "Segment( id = " << static_cast<int>( mId )
            << ", offs = " << mOffsetBytes << ", ptr = " << mPtr << " )";
 }
 
 /* --------------------------------------------------------------------------- */
 
-// Note: char is not one of the SCAI supported array types 
+// Note: char is not one of the SCAI supported array types
 
 template class COMMON_DLL_IMPORTEXPORT SegmentData<char> ;
 

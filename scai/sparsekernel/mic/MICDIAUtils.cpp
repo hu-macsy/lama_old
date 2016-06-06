@@ -132,9 +132,9 @@ void MICDIAUtils::getCSRValues(
     const DIAValueType eps )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id() 
-                    << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals 
-                    << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id()
+                   << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals
+                   << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
 
     // we cannot check for correct sizes, but at least for valid pointers
 
@@ -250,9 +250,9 @@ void MICDIAUtils::getCSRSizes(
     const DIAValueType eps )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " 
-                    << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals 
-                    << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix "
+                   << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals
+                   << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
     #pragma omp parallel for
 
@@ -346,7 +346,7 @@ void MICDIAUtils::normalGEMV(
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         ValueType* result = static_cast<ValueType*>( resultPtr );
 
-	const ValueType& alphaRef = *alphaPtr;
+        const ValueType& alphaRef = *alphaPtr;
 
         #pragma omp parallel for
 
@@ -430,7 +430,7 @@ void MICDIAUtils::jacobi(
             const ValueType* rhs = static_cast<const ValueType*>( rhsPtr );
             ValueType* solution = static_cast<ValueType*>( solutionPtr );
 
-	    const ValueType& omegaRef = *omegaPtr;
+            const ValueType& omegaRef = *omegaPtr;
             const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omegaRef;
 
             #pragma omp parallel for
@@ -480,7 +480,7 @@ void MICDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );

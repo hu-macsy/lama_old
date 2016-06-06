@@ -61,7 +61,7 @@ int main( int , char** )
     DenseVector<ValueType> rhs = matrix * exactSolution;
 
     DenseVector<ValueType> solution( vectorSize, 0.0 );
-    
+
     LoggerPtr slogger( new CommonLogger( "MyJacobiLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly) );
     MyJacobi jacobiSolver( "MyJacobi", slogger );
     jacobiSolver.initialize( matrix );

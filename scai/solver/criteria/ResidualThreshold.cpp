@@ -100,6 +100,7 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
                             "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult/mFirstNormResult << " should become smaller than precision " << mPrecision );
             return ( normResult / mFirstNormResult ) < mPrecision;
         }
+
         case ResidualThreshold::Divergence:
         {
             if( mFirstNormResult == -1.0 )

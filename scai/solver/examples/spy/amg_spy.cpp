@@ -81,8 +81,8 @@ int main( int argc, char** argv )
     std::string loggerName = "<AMG>";
 
     LoggerPtr amgLogger( new CommonLogger ( loggerName, LogLevel::completeInformation,
-                   LoggerWriteBehaviour::toConsoleOnly,
-                   scai::common::shared_ptr<Timer>( new Timer() ) ) );
+                                            LoggerWriteBehaviour::toConsoleOnly,
+                                            scai::common::shared_ptr<Timer>( new Timer() ) ) );
 
     scai::common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
 
@@ -112,7 +112,7 @@ int main( int argc, char** argv )
         int n = nColumns;
         int s = nZoom;
 
-        if ( m > local.getNumRows() ) 
+        if ( m > local.getNumRows() )
         {
             m = local.getNumRows();
         }
@@ -136,7 +136,7 @@ int main( int argc, char** argv )
 
         pic.drawCSR( local.getNumRows(), local.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
 
-        std::ostringstream out_filename; 
+        std::ostringstream out_filename;
 
         if ( filename.find_last_of( "/" ) == std::string::npos )
         {
@@ -154,7 +154,7 @@ int main( int argc, char** argv )
 
         std::cout << "png files has been written as " << out_filename.str() << std::endl;
     }
- 
+
     for ( int level = 0; level < (int)amgSolver->getNumLevels() - 1; ++level )
     {
         const Matrix& mat = amgSolver->getInterpolation( level );
@@ -172,7 +172,7 @@ int main( int argc, char** argv )
         int n = nRows * local.getNumColumns() / local.getNumRows();
         int s = nZoom;
 
-        if ( m > local.getNumRows() ) 
+        if ( m > local.getNumRows() )
         {
             m = local.getNumRows();
             n = local.getNumColumns();
@@ -192,7 +192,7 @@ int main( int argc, char** argv )
 
         pic.drawCSR( local.getNumRows(), local.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
 
-        std::ostringstream out_filename; 
+        std::ostringstream out_filename;
 
         if ( filename.find_last_of( "/" ) == std::string::npos )
         {

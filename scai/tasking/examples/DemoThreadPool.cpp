@@ -57,7 +57,7 @@ int main( int argc, const char** argv )
 
     double t0 = Walltime::get();
 
-    // schedule 3 tasks, task3 must wait for completion of task1 or task2 
+    // schedule 3 tasks, task3 must wait for completion of task1 or task2
 
     shared_ptr<ThreadPoolTask> task1 = pool.schedule( bind( &work, 1 ) );
     shared_ptr<ThreadPoolTask> task2 = pool.schedule( bind( &work, 2 ) );

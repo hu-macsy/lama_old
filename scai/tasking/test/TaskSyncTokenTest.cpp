@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE( fullTest )
     {
         tokenArray[i] = new TaskSyncToken( bind( &work, ref( out[i] ), i ) );
     }
- 
+
     for ( int i = 0; i < N; ++i )
     {
         delete tokenArray[i];

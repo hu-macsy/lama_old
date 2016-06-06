@@ -118,8 +118,8 @@ bool OpenMPCOOUtils::hasDiagonalProperty(
 /* --------------------------------------------------------------------------- */
 
 template<typename COOValueType,typename CSRValueType>
-void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], 
-                                   CSRValueType csrValues[], 
+void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
+                                   CSRValueType csrValues[],
                                    IndexType csrIA[], // used as tmp, remains unchanged
                                    const IndexType numRows,
                                    const IndexType numValues,
@@ -129,7 +129,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
 {
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<COOValueType>::id() << ", "
-                    << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
+                   << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     // traverse the non-zero values and put data at the right places
     // each thread reads all COO indexes but takes care for a certain range of CSR rows
@@ -151,19 +151,19 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
         for ( IndexType k = 0; k < numValues; k++ )
         {
             IndexType i = cooIA[k];
-    
-            if ( i < lb || i > ub ) 
+
+            if ( i < lb || i > ub )
             {
                 continue;
             }
 
             IndexType& offset = csrIA[i];
-    
+
             csrJA[offset] = cooJA[k];
             csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
-    
+
             SCAI_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
-    
+
             offset++;
         }
     }
@@ -226,7 +226,7 @@ void OpenMPCOOUtils::offsets2ia(
 /* --------------------------------------------------------------------------- */
 
 template<typename COOValueType,typename OtherValueType>
-void OpenMPCOOUtils::scaleRows( 
+void OpenMPCOOUtils::scaleRows(
     COOValueType cooValues[],
     const OtherValueType rowValues[],
     const IndexType cooIA[],
@@ -333,8 +333,8 @@ void OpenMPCOOUtils::normalGEMV(
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">," 
-                    << " result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">,"
+                   << " result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
@@ -392,8 +392,8 @@ void OpenMPCOOUtils::normalGEVM(
     const ValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
-                   << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " 
+                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + "
                    << beta << " * y " )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
@@ -520,7 +520,7 @@ void OpenMPCOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( OpenMPCOOUtils::normalGEMV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( OpenMPCOOUtils::normalGEVM, ctx, flag );
@@ -535,7 +535,7 @@ void OpenMPCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
     common::context::ContextType ctx = common::context::Host;
 
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
     KernelRegistry::set<COOKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );

@@ -55,7 +55,7 @@
 #include <scai/common/macros/loop.hpp>
 
 // sqrt for all value types
-#include <cmath> 
+#include <cmath>
 
 using namespace scai::hmemo;
 
@@ -471,7 +471,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::conj()
 {
-    HArrayUtils::conj( mValues, this->getContextPtr() ); 
+    HArrayUtils::conj( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -522,7 +522,7 @@ void COOStorage<ValueType>::swap( COOStorage<ValueType>& other )
 template<typename ValueType>
 ValueType COOStorage<ValueType>::l1Norm() const
 {
-	SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
     // asum over the full array mValues
 
@@ -534,11 +534,11 @@ ValueType COOStorage<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType COOStorage<ValueType>::l2Norm() const
 {
-	SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
     ValueType res = HArrayUtils::dotProduct( mValues, mValues, this->getContextPtr() );
 
-	return common::Math::sqrt( res );
+    return common::Math::sqrt( res );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -603,7 +603,7 @@ SyncToken* COOStorage<ValueType>::incGEMV(
 
     ValueType beta = 1;
 
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), 
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(),
                      mNumRows, mNumValues,
                      cooIA.get(), cooJA.get(), cooValues.get() );
 
@@ -648,7 +648,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     // Due to COO format GEMV does not benefit of coupling all in one operation, so split it
 
-    // Step 1: result = beta * y 
+    // Step 1: result = beta * y
 
     if ( beta == common::constants::ZERO )
     {
@@ -658,7 +658,7 @@ void COOStorage<ValueType>::matrixTimesVector(
     }
     else
     {
-        // Note: assignScaled will deal with 
+        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
         HArrayUtils::assignScaled( result, beta, y, loc );
     }
@@ -710,8 +710,8 @@ SyncToken* COOStorage<ValueType>::incGEVM(
 
     ValueType beta = 1;
 
-    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), 
-                     mNumColumns, mNumValues, 
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(),
+                     mNumColumns, mNumValues,
                      cooIA.get(), cooJA.get(), cooValues.get() );
 
     if ( async )
@@ -745,7 +745,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
     // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
 
-    // Step 1: result = beta * y 
+    // Step 1: result = beta * y
 
     if ( beta == common::constants::ZERO )
     {
@@ -755,7 +755,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     }
     else
     {
-        // Note: assignScaled will deal with 
+        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
         HArrayUtils::assignScaled( result, beta, y, loc );
     }
@@ -796,7 +796,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
     // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
 
-    // Step 1: result = beta * y 
+    // Step 1: result = beta * y
 
     if ( beta == common::constants::ZERO )
     {
@@ -806,7 +806,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     }
     else
     {
-        // Note: assignScaled will deal with 
+        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
         HArrayUtils::assignScaled( result, beta, y, loc );
     }
@@ -988,7 +988,7 @@ void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const Ind
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-                hmemo::ContextPtr hostContext = hmemo::Context::getHostPtr();
+    hmemo::ContextPtr hostContext = hmemo::Context::getHostPtr();
 
     hmemo::WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
@@ -1041,7 +1041,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
 
-    // Step 1: result = beta * y 
+    // Step 1: result = beta * y
 
     if ( beta == common::constants::ZERO )
     {
@@ -1051,7 +1051,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     }
     else
     {
-        // Note: assignScaled will deal with 
+        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
         HArrayUtils::assignScaled( result, beta, y, loc );
     }
@@ -1108,7 +1108,7 @@ void COOStorage<ValueType>::jacobiIterate(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    jacobi[loc]( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(), 
+    jacobi[loc]( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(),
                  rOldSolution.get(), rRhs.get(), omega, mNumRows );
 }
 
@@ -1172,9 +1172,9 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
 template<typename ValueType>
 COOStorage<ValueType>* COOStorage<ValueType>::newMatrixStorage() const
 {
-   common::unique_ptr<COOStorage<ValueType> > storage( new COOStorage<ValueType>() ); 
-   storage->setContextPtr( this->getContextPtr() );
-   return storage.release();
+    common::unique_ptr<COOStorage<ValueType> > storage( new COOStorage<ValueType>() );
+    storage->setContextPtr( this->getContextPtr() );
+    return storage.release();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1215,15 +1215,15 @@ const char* COOStorage<ValueType>::typeName()
 SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST )
 
 #define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
-     template void COOStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-                                                    hmemo::HArray<OtherValueType>* values,const hmemo::ContextPtr ) const;  \
-     template void COOStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
-     template void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
-     template void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
-     template void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-     template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );
+    template void COOStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+            hmemo::HArray<OtherValueType>* values,const hmemo::ContextPtr ) const;  \
+    template void COOStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+    template void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+    template void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+    template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );
 
 #define COO_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )

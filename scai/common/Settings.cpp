@@ -205,7 +205,7 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
         int pos = sRank % static_cast<int>( values.size() );
 
         val = values[pos];
-    } 
+    }
 
     return true;
 }
@@ -273,10 +273,12 @@ void Settings::putEnvironment( const char* envVarName, const char* val, bool rep
     // Note: use of putenv is unsafe for auto-strings
 
 #ifdef WIN32
+
     if ( replace || ( getenv( envVarName ) == NULL ) )
     {
         _putenv_s( envVarName, val );
     }
+
 #else
     setenv ( envVarName, val, c_replace );
 #endif
@@ -297,7 +299,7 @@ void Settings::putEnvironment( const char* envVarName, int val, bool replace )
 
 int Settings::sRank = 0;    // default value
 
-void Settings::setRank( int rank ) 
+void Settings::setRank( int rank )
 {
     sRank = rank;
 }

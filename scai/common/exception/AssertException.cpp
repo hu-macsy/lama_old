@@ -36,14 +36,14 @@ namespace common
 {
 
 AssertException::AssertException() :
-		mMessage( "AssertException" )
+    mMessage( "AssertException" )
 {
 }
 
 AssertException::AssertException( const std::string& message ) :
-		mMessage( message )
+    mMessage( message )
 {
-	mMessage += "@AssertException";
+    mMessage += "@AssertException";
 }
 
 AssertException::~AssertException() throw ()

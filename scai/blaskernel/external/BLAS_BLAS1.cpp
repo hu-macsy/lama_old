@@ -86,8 +86,8 @@ void BLAS_BLAS1::scal(
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-	BLASWrapper<ValueType>::scal( static_cast<BLASTrait::BLASIndexType>( n ), alpha, x,
-			static_cast<BLASTrait::BLASIndexType>( incX ));
+    BLASWrapper<ValueType>::scal( static_cast<BLASTrait::BLASIndexType>( n ), alpha, x,
+                                  static_cast<BLASTrait::BLASIndexType>( incX ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -304,8 +304,8 @@ ValueType BLAS_BLAS1::dot(
     }
 
     ValueType res = BLASWrapper<ValueType>::dot( static_cast<BLASTrait::BLASIndexType>( n ), x,
-                                      static_cast<BLASTrait::BLASIndexType>( incX ), y,
-                                      static_cast<BLASTrait::BLASIndexType>( incY ));
+                    static_cast<BLASTrait::BLASIndexType>( incX ), y,
+                    static_cast<BLASTrait::BLASIndexType>( incY ));
     return res;
 }
 
@@ -370,13 +370,13 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 BLAS_BLAS1::BLAS_BLAS1()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
-                        kregistry::KernelRegistry::KERNEL_REPLACE );
+        kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS1::~BLAS_BLAS1()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
-                            kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

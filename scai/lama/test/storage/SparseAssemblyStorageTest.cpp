@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, ValueType, scai_arithmetic_test_types
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
-    // use template storage test 
+    // use template storage test
 
     storageSwapTest<SparseAssemblyStorage<ValueType> >();
 }

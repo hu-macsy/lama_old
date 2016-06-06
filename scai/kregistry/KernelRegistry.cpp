@@ -83,7 +83,7 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, cont
             {
                 SCAI_LOG_INFO( logger, "kernel function replaced, " << key << ", context = " << ctx )
             }
-            else 
+            else
             {
                 SCAI_LOG_INFO( logger, "kernel function not replaced, " << key << ", context = " << ctx )
             }
@@ -112,6 +112,10 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
 
     if ( it == kreg.theKernelMap.end() )
     {
+<<<<<<< HEAD
+=======
+//        SCAI_LOG_ERROR( logger, "unregister: no entry for key = " << key )
+>>>>>>> 125b4b305edb5a71403cab82710d6c0083ad1476
         SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " not found")
     }
     else

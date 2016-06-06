@@ -137,9 +137,9 @@ BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
     KernelTraitContextFunction<ELLKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
 
     ContextPtr loc = Context::getContextPtr( hasDiagonalProperty.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    
+
     // positive test
     {
         const IndexType ellJaValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
@@ -186,9 +186,9 @@ BOOST_AUTO_TEST_CASE( checkTest )
     KernelTraitContextFunction<ELLKernelTrait::check> check;
 
     ContextPtr loc = Context::getContextPtr( check.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    
+
     // check with correct values
     {
         const IndexType valuesIa[] = { 4, 3, 5, 2 };
@@ -283,9 +283,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
     KernelTraitContextFunction<ELLKernelTrait::getRow<ValueType, OtherValueType> > getRow;
 
     ContextPtr loc = Context::getContextPtr( getRow.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    
+
     // check with valid dense values
     {
         ValueType valuesValues[] = { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
@@ -367,9 +367,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_typ
     KernelTraitContextFunction<ELLKernelTrait::getValue<ValueType> > getValue;
 
     ContextPtr loc = Context::getContextPtr( getValue.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    
+
     ValueType valuesValues[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_t
     KernelTraitContextFunction<ELLKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
 
     ContextPtr loc = Context::getContextPtr( scaleValue.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     ValueType mValues[] =
@@ -462,7 +462,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test
     KernelTraitContextFunction<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
 
     ContextPtr loc = Context::getContextPtr( getCSRValues.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     ValueType valuesELLValues[] =
@@ -503,7 +503,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test
         WriteOnlyAccess<IndexType> wCSRJa( csrJa, loc, nCSRValues );
         SCAI_CONTEXT_ACCESS( loc );
         getCSRValues[loc->getType()] ( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, numValuesPerRow, rELLIa.get(),
-                            rELLJa.get(), rELLValues.get() );
+                                       rELLJa.get(), rELLValues.get() );
     }
     ReadAccess<IndexType> rCSRJa( csrJa );
     ReadAccess<OtherValueType> rCSRValues( csrValues );
@@ -527,7 +527,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test
     KernelTraitContextFunction<ELLKernelTrait::setCSRValues<OtherValueType, ValueType> > setCSRValues;
 
     ContextPtr loc = Context::getContextPtr( setCSRValues.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     ValueType valuesCSRValues[] =
@@ -569,7 +569,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test
         WriteOnlyAccess<IndexType> wELLJa( ellJa, loc, nELLValues );
         SCAI_CONTEXT_ACCESS( loc );
         setCSRValues[loc->getType()]( wELLJa.get(), wELLValues.get(), rELLIa.get(), numRows, numValuesPerRow, rCSRIa.get(),
-                           rCSRJa.get(), rCSRValues.get() );
+                                      rCSRJa.get(), rCSRValues.get() );
     }
     ReadAccess<IndexType> rELLJa( ellJa );
     ReadAccess<OtherValueType> rELLValues( ellValues );
@@ -591,7 +591,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
     KernelTraitContextFunction<ELLKernelTrait::compressIA<ValueType> > compressIA;
 
     ContextPtr loc = Context::getContextPtr( compressIA.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     // Check without epsilon
@@ -722,7 +722,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
     KernelTraitContextFunction<ELLKernelTrait::compressValues<ValueType> > compressValues;
 
     ContextPtr loc = Context::getContextPtr( compressValues.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     // Check without epsilon
@@ -731,8 +731,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
                              2  5  0  0  8     1  3  4  5  6
                              3  6  0  7  9     2  3  4  5  6
 
-           Output Matrix:    1  4  0  0        0  3  0  0 
-                             2  5  8  0        1  3  6  0  
+           Output Matrix:    1  4  0  0        0  3  0  0
+                             2  5  8  0        1  3  6  0
                              3  6  7  9        2  3  5  6
         */
 
@@ -772,15 +772,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
             WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
             compressValues[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
-                                 newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
+                                            newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
         ReadAccess<ValueType> rNewELLValues( newEllValues );
         ReadAccess<IndexType> rNewELLJa( newEllJa );
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
-            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i] 
-                                    << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
+            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i]
+                            << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
             BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
         }
@@ -821,7 +821,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
             WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
             compressValues[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
-                                 newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
+                                            newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
 
         ReadAccess<ValueType> rNewELLValues( newEllValues );
@@ -829,8 +829,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
-            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i] 
-                                    << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
+            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i]
+                            << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
             BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
         }
@@ -871,15 +871,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
             WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
             compressValues[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
-                                 newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
+                                            newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
         ReadAccess<ValueType> rNewELLValues( newEllValues );
         ReadAccess<IndexType> rNewELLJa( newEllJa );
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
-            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i] 
-                                    << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
+            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i]
+                            << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
             BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
         }
@@ -893,7 +893,7 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
     KernelTraitContextFunction<ELLKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
 
     ContextPtr loc = Context::getContextPtr( matrixMultiplySizes.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     // Check with symmetric matrix
@@ -931,7 +931,7 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
             WriteOnlyAccess<IndexType> wCIa( CIa, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
             matrixMultiplySizes[loc->getType()]( wCIa.get(), numValues, numValues, numValues, false, rAIa.get(), rAJa.get(),
-                                      aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
+                                                 aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
 
         BOOST_CHECK_EQUAL( numValues, CIa.size() );
@@ -985,7 +985,7 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
             SCAI_CONTEXT_ACCESS( loc );
             IndexType numColumns = 5; // does not really matter
             matrixMultiplySizes[loc->getType()]( wCIa.get(), aNumRows, numColumns, bNumRows, false, rAIa.get(), rAJa.get(),
-                                      aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
+                                                 aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
 
         BOOST_CHECK_EQUAL( cNumRows, CIa.size() );
@@ -1006,7 +1006,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
     KernelTraitContextFunction<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
 
     ContextPtr loc = Context::getContextPtr( matrixMultiply.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     // Check with symmetric matrix
@@ -1069,8 +1069,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
             IndexType numColumns = 5; // not really needed here but internally used
             bool diagonalProperty = false; // do not care about it here
             matrixMultiply[loc->getType()]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
-                                 diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
-                                 rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
+                                            diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
+                                            rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
@@ -1144,8 +1144,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
             bool diagonalProperty = false; // do not care about it
             IndexType numColumns = 15; // does not matter here but internally used for optimizations
             matrixMultiply[loc->getType()]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
-                                 diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
-                                 rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
+                                            diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
+                                            rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
 
         ReadAccess<ValueType> rCValues( CValues );
@@ -1221,8 +1221,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
             bool diagonalProperty = false; // do not care about it
             IndexType numColumns = 15; // does not matter here but internally used for optimizations
             matrixMultiply[loc->getType()]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
-                                 diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
-                                 rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
+                                            diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
+                                            rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
@@ -1242,7 +1242,7 @@ BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
     KernelTraitContextFunction<ELLKernelTrait::matrixAddSizes > matrixAddSizes;
 
     ContextPtr loc = Context::getContextPtr( matrixAddSizes.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     IndexType valuesAIa[] =
@@ -1287,7 +1287,7 @@ BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
         bool diagonalProperty = false;
         IndexType numColumns = aNumRows; // square matrices here
         matrixAddSizes[loc->getType()]( wCIa.get(), aNumRows, numColumns, diagonalProperty, rAIa.get(), rAJa.get(), aNumValuesPerRow,
-                             rBIa.get(), rBJa.get(), bNumValuesPerRow );
+                                        rBIa.get(), rBJa.get(), bNumValuesPerRow );
     }
     ReadAccess<IndexType> rCIa( CIa );
 
@@ -1304,7 +1304,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
     KernelTraitContextFunction<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
 
     ContextPtr loc = Context::getContextPtr( matrixAdd.validContext( testContext->getType() ) );
-    
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     // Check with neutral beta
@@ -1349,7 +1349,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
         HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
 
-        // output arrays, CValues, CJa 
+        // output arrays, CValues, CJa
 
         HArray<ValueType> CValues( testContext );
         HArray<IndexType> CJa( testContext );
@@ -1370,8 +1370,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
             SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // does not matter here
             matrixAdd[loc->getType()]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
-                            alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
-                            rBValues.get(), bNumValuesPerRow );
+                                       alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
+                                       rBValues.get(), bNumValuesPerRow );
         }
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
@@ -1448,8 +1448,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
             SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // does not matter here
             matrixAdd[loc->getType()]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
-                            alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
-                            rBValues.get(), bNumValuesPerRow );
+                                       alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
+                                       rBValues.get(), bNumValuesPerRow );
         }
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );

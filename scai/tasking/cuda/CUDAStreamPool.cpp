@@ -100,7 +100,7 @@ CUDAStreamPool::CUDAStreamPool( const common::CUDACtx& cuda ) : mCUDA( cuda )
 {
     SCAI_LOG_INFO( logger, "CUDAStreamPool( device = " << mCUDA.getDeviceNr() << " )" )
 
-    common::CUDAAccess tmpAccess( mCUDA ); 
+    common::CUDAAccess tmpAccess( mCUDA );
 
     int flags = 0; // must be 0 by specification of CUDA driver API
 
@@ -117,7 +117,7 @@ CUDAStreamPool::~CUDAStreamPool()
 {
     SCAI_LOG_INFO( logger, "~CUDAStreamPool( device = " << mCUDA.getDeviceNr() << " )" )
 
-    common::CUDAAccess tmpAccess( mCUDA ); 
+    common::CUDAAccess tmpAccess( mCUDA );
 
     // No exceptions in destructor !!
 
@@ -153,17 +153,17 @@ CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDACtx& cuda )
     PoolMap& poolMap = getPoolMap();
 
     PoolMap::iterator it = poolMap.find( cuda.getCUcontext() );
-   
+
     if ( it == poolMap.end() )
     {
         CUDAStreamPool* pool = new CUDAStreamPool( cuda );
 
-        // map takes ownership of pool 
+        // map takes ownership of pool
 
         poolMap.insert( std::pair<CUcontext, CUDAStreamPool*>( cuda.getCUcontext(), pool) );
-  
+
         // ATTENTION / pitfall
-        // Pool must be freed before cuda is destroyed 
+        // Pool must be freed before cuda is destroyed
         // solution: Add shutdown routine to the CUDA device
 
         common::CUDACtx& cuda1 = const_cast< common::CUDACtx& >( cuda );

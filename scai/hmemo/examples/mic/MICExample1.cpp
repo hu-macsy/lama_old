@@ -84,7 +84,7 @@ void add( ValueType* array, const IndexType n )
     {
         ValueType* array = static_cast<ValueType*>( arrayPtr );
 
-        #pragma omp parallel for 
+        #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -134,7 +134,7 @@ int main()
     const IndexType N = 5;
 
     HArray<double> data( micContext );
-    
+
     std::cout << "data = " << data << std::endl;
 
     {
@@ -175,6 +175,7 @@ int main()
         SCAI_LOG_INFO( logger, "read on host" )
         ReadAccess<double> read( data );
         sleep( 1 );
+
         for ( IndexType i = 0; i < N; ++i )
         {
             SCAI_ASSERT_EQUAL( read[i], 2 * 1.0, "wrong value after add, i = " << i )

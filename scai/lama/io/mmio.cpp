@@ -326,7 +326,8 @@ int mm_read_mtx_array_size( FILE* f, int* M, int* N )
         {
             return MM_PREMATURE_EOF;
         }
-    } while ( line[0] == '%' );
+    }
+    while ( line[0] == '%' );
 
     /* line[] is either blank or has M,N, nz */
     if ( sscanf( line, "%d %d", M, N ) == 2 )
@@ -334,6 +335,7 @@ int mm_read_mtx_array_size( FILE* f, int* M, int* N )
         return 0;
     }
     else
+
         /* we have a blank line */
         do
         {
@@ -343,7 +345,8 @@ int mm_read_mtx_array_size( FILE* f, int* M, int* N )
             {
                 return MM_PREMATURE_EOF;
             }
-        } while ( num_items_read != 2 );
+        }
+        while ( num_items_read != 2 );
 
     return 0;
 }

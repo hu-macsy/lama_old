@@ -138,7 +138,7 @@ int main()
     static int N = 100000;
 
     double time0 = common::Walltime::get();
-    
+
     doSelf( N );
 
     time0 = common::Walltime::get() - time0;
@@ -146,13 +146,13 @@ int main()
     double time1 = common::Walltime::get();
 
     doThreading( N );
- 
+
     time1 = common::Walltime::get() - time1;
 
     double time2 = common::Walltime::get();
 
     doTasking( N );
- 
+
     time2 = common::Walltime::get() - time2;
 
     cout << "Execution of " << N << " work routines." << endl;

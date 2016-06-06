@@ -164,9 +164,9 @@ private:
 // Register guard instantiation, does also template instantiation
 
 template Base::Register<Derived<int> >::RegisterGuard
-        Base::Register<Derived<int> >::registerGuard;
+Base::Register<Derived<int> >::registerGuard;
 template Base::Register<Derived<float> >::RegisterGuard
-        Base::Register<Derived<float> >::registerGuard;
+Base::Register<Derived<float> >::registerGuard;
 
 using namespace std;
 
@@ -194,7 +194,7 @@ int main()
 
     cout << "obj3 is " << *obj3 << endl;
 
-    try 
+    try
     {
         Base* obj = Base::create( "na" );
         cout << "obj is " << *obj << endl;

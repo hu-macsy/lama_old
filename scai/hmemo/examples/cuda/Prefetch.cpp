@@ -145,14 +145,14 @@ int main( int argc, char** )
     // worktime: time to run a certain workload on CPU
 
     t = common::Walltime::get();
- 
+
     workload( dummy, NWORK );
 
     double worktime = common::Walltime::get() - t;
 
     cout << "Workload time on Host " << worktime << endl;
 
-    setval( A, 0.5, N );  
+    setval( A, 0.5, N );
 
     // prefetchTo: overlap transfer Host->GPU with workload
 
@@ -160,7 +160,7 @@ int main( int argc, char** )
 
     A.prefetch( cudaContext );
 
-    workload( dummy, NWORK );  
+    workload( dummy, NWORK );
 
     {
         WriteAccess<double> rA( A, cudaContext );
@@ -169,7 +169,7 @@ int main( int argc, char** )
     double prefetchTo = common::Walltime::get() - t;
 
     cout << "Time for transfer to GPU and workload on Host " << prefetchTo << endl;
- 
+
     // prefetchFrom: overlap transfer GPU->Host with workload
 
     t = common::Walltime::get();

@@ -75,20 +75,20 @@ BOOST_AUTO_TEST_CASE( destructorTest )
     common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
 
     BOOST_CHECK_THROW(
+    {
+        common::CUDACtx myCuda( deviceNr );
+
         {
-            common::CUDACtx myCuda( deviceNr );
+            new CUDAStreamSyncToken( myCuda, CUDAStreamSyncToken::TransferStream );
 
-            {
-                new CUDAStreamSyncToken( myCuda, CUDAStreamSyncToken::TransferStream );
-        
-                // Note: token not freed, no synchronization, no release
-            }
+            // Note: token not freed, no synchronization, no release
+        }
 
-            // destructor of device will free the stream pool and detect the unreleased token
+        // destructor of device will free the stream pool and detect the unreleased token
 
-        }, common::Exception );
+    }, common::Exception );
 
-     // Note: there might be an additional ERROR logging message at the end of the test run
+    // Note: there might be an additional ERROR logging message at the end of the test run
 }
 
 /* --------------------------------------------------------------------- */

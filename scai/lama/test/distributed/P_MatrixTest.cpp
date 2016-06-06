@@ -419,9 +419,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
         SCAI_LOG_TRACE( logger, *comm << ": local row " << i << " is global row " << globalIndexes[i] );
     }
 
-    MatrixType distMatrix( numLocalRows, numLocalValues, numHaloValues, 
-                           iaLocal.get(), jaLocal.get(), valuesLocal.get(), 
-                           iaHalo.get(), jaHalo.get(), valuesHalo.get(), 
+    MatrixType distMatrix( numLocalRows, numLocalValues, numHaloValues,
+                           iaLocal.get(), jaLocal.get(), valuesLocal.get(),
+                           iaHalo.get(), jaHalo.get(), valuesHalo.get(),
                            globalIndexes, comm );
 
     testSameMatrix( matrix, distMatrix );

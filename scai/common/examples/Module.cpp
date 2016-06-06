@@ -49,10 +49,10 @@ public:
     /** This static functions provides the value for which this class registers in the factory. */
 
     static inline std::string createValue()
-    {   
+    {
         return "Function1";
     }
-    
+
     /** Method that creates objects of type Function1 that will be used for registration. */
 
     static DynRoutine* create()

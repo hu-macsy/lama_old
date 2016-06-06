@@ -135,8 +135,8 @@ void DIAStorage<ValueType>::print( std::ostream& stream ) const
 {
     using std::endl;
 
-    stream << "DIAStorage " << mNumRows << " x " << mNumColumns 
-           << ", #diags = " << mNumDiagonals 
+    stream << "DIAStorage " << mNumRows << " x " << mNumColumns
+           << ", #diags = " << mNumDiagonals
            << ", #values = " << mValues.size() << endl;
 
     ReadAccess<IndexType> offset( mOffset );
@@ -502,8 +502,8 @@ void DIAStorage<ValueType>::buildCSR(
     sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
 
     SCAI_LOG_INFO( logger,
-                   "buildTypedCSRData<" << common::getScalarType<CSRValueType>() << ">" 
-                    << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
+                   "buildTypedCSRData<" << common::getScalarType<CSRValueType>() << ">"
+                   << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
 
     ReadAccess<IndexType> diaOffsets( mOffset );
     ReadAccess<ValueType> diaValues( mValues );
@@ -628,13 +628,13 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
                 // check for j >= 0 and j < mNumColumns not needed here
 
-                addrValue = ValueType( 0 );  
+                addrValue = ValueType( 0 );
 
                 IndexType j = i + offset[d];
 
                 if ( j < 0 || j >= mNumColumns )
                 {
-                    continue; 
+                    continue;
                 }
 
                 for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
@@ -838,8 +838,8 @@ ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j 
         {
             const ReadAccess<ValueType> values( mValues );
             SCAI_LOG_DEBUG( logger,
-                            "get value (" << i << ", " << j << ") is diag = " << d << ", offset = " << offset[d] 
-                             << ", index = " << diaindex( i, d, mNumRows, mNumDiagonals ) )
+                            "get value (" << i << ", " << j << ") is diag = " << d << ", offset = " << offset[d]
+                            << ", index = " << diaindex( i, d, mNumRows, mNumDiagonals ) )
 
             myValue = values[diaindex( i, d, mNumRows, mNumDiagonals )];
             break;
@@ -928,8 +928,8 @@ void DIAStorage<ValueType>::matrixTimesVector(
     SCAI_REGION( "Storage.DIA.timesVector" )
 
     SCAI_LOG_INFO( logger,
-                   "Computing z = " << alpha << " * A * x + " << beta << " * y" 
-                    << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+                   "Computing z = " << alpha << " * A * x + " << beta << " * y"
+                   << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     if ( alpha == common::constants::ZERO )
     {
@@ -998,7 +998,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
     // Due to DIA format GEVM does not benefit of coupling all in one operation, so split it
 
-    // Step 1: result = beta * y 
+    // Step 1: result = beta * y
 
     if ( beta == common::constants::ZERO )
     {
@@ -1008,7 +1008,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     }
     else
     {
-        // Note: assignScaled will deal with 
+        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
         HArrayUtils::assignScaled( result, beta, y, loc );
     }
@@ -1043,15 +1043,15 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
     // logging + checks not needed when started as a task
 
     SCAI_LOG_INFO( logger,
-                   "Start z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this 
-                    << ", x = " << x << ", y = " << y << ", z = " << result << " on " << *loc )
+                   "Start z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this
+                   << ", x = " << x << ", y = " << y << ", z = " << result << " on " << *loc )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
-    SCAI_ASYNCHRONOUS( *syncToken ) 
+    SCAI_ASYNCHRONOUS( *syncToken )
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1089,12 +1089,12 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
-                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x 
-                    << ", beta = " << beta << ", y = " << y )
+                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x
+                   << ", beta = " << beta << ", y = " << y )
 
     SCAI_REGION( "Storage.DIA.vectorTimesMatrixAsync" )
 
-    // Step 1: result = beta * y 
+    // Step 1: result = beta * y
 
     ContextPtr loc = this->getContextPtr();
 
@@ -1106,14 +1106,14 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     }
     else
     {
-        // Note: assignScaled will deal with 
+        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
         HArrayUtils::assignScaled( result, beta, y, loc );
     }
 
     bool async = true;
 
-    // Step 2: result = beta * y 
+    // Step 2: result = beta * y
 
     return incGEVM( result, alpha, x, async );
 }
@@ -1155,7 +1155,7 @@ SyncToken* DIAStorage<ValueType>::incGEVM(
 
     ValueType beta = 1;
 
-    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), 
+    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(),
                      mNumRows, mNumColumns, mNumDiagonals,
                      diaOffsets.get(), diaValues.get() );
 
@@ -1225,9 +1225,9 @@ DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
 template<typename ValueType>
 DIAStorage<ValueType>* DIAStorage<ValueType>::newMatrixStorage() const
 {
-   common::unique_ptr<DIAStorage<ValueType> > storage( new DIAStorage<ValueType>() ); 
-   storage->setContextPtr( this->getContextPtr() );
-   return storage.release();
+    common::unique_ptr<DIAStorage<ValueType> > storage( new DIAStorage<ValueType>() );
+    storage->setContextPtr( this->getContextPtr() );
+    return storage.release();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1268,24 +1268,24 @@ MatrixStorageCreateKeyType DIAStorage<ValueType>::createValue()
 SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_ARITHMETIC_HOST )
 
 #define DIA_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
-     template void DIAStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-                                                          const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-                                                          const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
-     template void DIAStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
-     template void DIAStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
-     template void DIAStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-     template void DIAStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
-     template void DIAStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-                                                    hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+    template void DIAStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+    template void DIAStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void DIAStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
+    template void DIAStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
+    template void DIAStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+    template void DIAStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define DIA_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, DIA_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
 
-SCAI_COMMON_LOOP( DIA_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( DIA_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
 
 #undef DIA_STORAGE_INST_LVL2
 #undef DIA_STORAGE_INST_LVL1
 
-} /* end namespace lama */
+    } /* end namespace lama */
 
-} /* end namespace scai */
+    } /* end namespace scai */

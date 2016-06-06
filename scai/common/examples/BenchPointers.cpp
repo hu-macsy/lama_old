@@ -98,7 +98,7 @@ int main()
 
     for ( int i = 0; i < NITER; ++i )
     {
-         usualPointer( dummy );
+        usualPointer( dummy );
     }
 
     double t1 = Walltime::get() - t;
@@ -107,7 +107,7 @@ int main()
 
     for ( int i = 0; i < NITER; ++i )
     {
-         sharedPointer( dummy);
+        sharedPointer( dummy);
     }
 
     double t2 = Walltime::get() - t;
@@ -116,7 +116,7 @@ int main()
 
     for ( int i = 0; i < NITER; ++i )
     {
-         uniquePointer( dummy);
+        uniquePointer( dummy);
     }
 
     double t3 = Walltime::get() - t;
@@ -134,7 +134,7 @@ int main()
 
     for ( int i = 0; i < NITER; ++i )
     {
-         sub1( data1 );
+        sub1( data1 );
     }
 
     double t4 = Walltime::get() - t;
@@ -143,7 +143,7 @@ int main()
 
     for ( int i = 0; i < NITER; ++i )
     {
-         sub2( data2 );
+        sub2( data2 );
     }
 
     double t5 = Walltime::get() - t;

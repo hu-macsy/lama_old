@@ -68,7 +68,7 @@ ContextData::ContextData() :
     size( 0 ),
     mMemory(),
     pointer( 0 ),
-    valid( false ), 
+    valid( false ),
     allocated( false )
 {
 }
@@ -79,7 +79,7 @@ ContextData::~ContextData()
 {
     SCAI_LOG_DEBUG( logger, "~ContextData @ " << *mMemory << ", size = " << size )
 
-    free(); 
+    free();
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -204,8 +204,8 @@ void ContextData::reserve( const size_t newSize, const size_t validSize, bool in
 
 void ContextData::writeAt( std::ostream& stream ) const
 {
-    stream << "ContextData ( size = " << size 
-           << ", valid = " << valid << ", capacity = " << size 
+    stream << "ContextData ( size = " << size
+           << ", valid = " << valid << ", capacity = " << size
            << " ) @ " << *mMemory;
 }
 

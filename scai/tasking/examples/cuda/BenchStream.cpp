@@ -56,7 +56,7 @@ int main( int argc, const char** argv )
 
     Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
 
-    CUDACtx device( deviceNr );  
+    CUDACtx device( deviceNr );
 
     CUDAAccess access( device );
 

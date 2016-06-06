@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( FactoryTest )
     {
         _HArray& array = *allArrays[i];
 
-        BOOST_CHECK_EQUAL( 0, array.size() ); 
+        BOOST_CHECK_EQUAL( 0, array.size() );
     }
 }
 
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
             HArrayUtils::assignScatter( *tmp, perm, array1, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same
-  
+
             for ( IndexType k = 0; k < n; ++k )
             {
                 ValueType val1 = HArrayUtils::getVal<ValueType>( array2, k );
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_arithmetic_test_ty
 
         for ( IndexType i = 0; i < N; ++i )
         {
-             BOOST_CHECK_EQUAL( expectedValue, read[i] );
+            BOOST_CHECK_EQUAL( expectedValue, read[i] );
         }
     }
 }
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_arithmetic_test_type
 
     BOOST_CHECK_THROW (
     {
-        LArray<ValueType> target; 
+        LArray<ValueType> target;
         HArrayUtils::scatter( target, indexes, source );
 
     }, Exception );
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     HArrayUtils::setRandom( array, n, fillRate, loc );
 
     BOOST_CHECK_EQUAL( array.size(), n );
-    
+
     ValueType sum = array.sum();
 
     if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
 
     LArray<ValueType> origArray( n, vals, loc );
     LArray<ValueType> array1;
-  
+
     HArrayUtils::gather( array1, origArray, perm );
 
     BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), 0 );
@@ -383,7 +383,7 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
     HArrayUtils::setOrder( array, n, loc );
 
     BOOST_CHECK_EQUAL( array.size(), n );
-  
+
     for ( IndexType i = 0; i < n; ++i )
     {
         IndexType elem = array[i];
@@ -456,7 +456,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_arithmetic_te
 
             if ( beta == ValueType( 0 ) || alpha == ValueType( 0 ) )
             {
-                // as one factor is zero, sizes must not match 
+                // as one factor is zero, sizes must not match
 
                 HArrayUtils::arrayPlusArray( target, alpha , x1, beta, xf, loc );
 
@@ -475,7 +475,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_arithmetic_te
 
                 BOOST_CHECK_THROW (
                 {
-                     HArrayUtils::arrayPlusArray( target, alpha , x1, beta, xf, loc );
+                    HArrayUtils::arrayPlusArray( target, alpha , x1, beta, xf, loc );
                 }, Exception );
             }
 

@@ -56,7 +56,7 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 
-HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContextPtr ) : 
+HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContextPtr ) :
 
     Memory( memtype::HostMemory ),
     mHostContextPtr( hostContextPtr )
@@ -77,8 +77,8 @@ HostMemory::~HostMemory()
     if( mNumberOfAllocatedBytes != 0 )
     {
         SCAI_LOG_ERROR( logger,
-                        *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes 
-                         << ", should be 0, so mismatch of free/allocate sizes" )
+                        *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes
+                        << ", should be 0, so mismatch of free/allocate sizes" )
     }
 
     SCAI_LOG_INFO( logger, "~HostMemory" )
@@ -160,7 +160,7 @@ MemoryPtr HostMemory::getIt()
 
     if ( !instancePtr.get() )
     {
-        SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" ) 
+        SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" )
 
         ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
         common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );

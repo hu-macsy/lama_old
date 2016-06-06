@@ -197,12 +197,12 @@ void InverseSolver::writeAt( std::ostream& stream ) const
 
 std::string InverseSolver::createValue()
 {
-	return "InverseSolver";
+    return "InverseSolver";
 }
 
 Solver* InverseSolver::create( const std::string name )
 {
-	return new InverseSolver( name );
+    return new InverseSolver( name );
 }
 
 } /* end namespace solver */

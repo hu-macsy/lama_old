@@ -177,10 +177,10 @@ BOOST_AUTO_TEST_CASE( aliasTest )
 
         WriteOnlyAccess<double> write( hArray, hostContext, 2 * N );
         BOOST_CHECK_THROW(
-        { 
-           // read access no more possible as write only did not take care about valid data
+        {
+            // read access no more possible as write only did not take care about valid data
 
-           ReadAccess<double> read( hArray, hostContext );
+            ReadAccess<double> read( hArray, hostContext );
         }, common::Exception );
     }
     {
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE( aliasTest )
         ReadAccess<double> read( hArray, hostContext );
         WriteAccess<double> write( hArray, hostContext );
         BOOST_CHECK_THROW(
-        { 
+        {
             write.resize( 3 * N );
         }, common::Exception );
     }
@@ -229,42 +229,42 @@ BOOST_AUTO_TEST_CASE( delayedReleaseTest )
 
     // write access on test Context
     {
-        WriteAccess<double> write( X, testContext );  
+        WriteAccess<double> write( X, testContext );
     }
     // read access on Host, okay as write is released
     {
-        ReadAccess<double> read( X, hostContext );  
+        ReadAccess<double> read( X, hostContext );
     }
 
     common::function<void()> delay;
 
     // write access on test context, but delay the release
     {
-        WriteAccess<double> write( X, testContext );  
+        WriteAccess<double> write( X, testContext );
         delay = write.releaseDelayed();
 
         // write access can no more be used
 
         BOOST_CHECK_THROW(
-            {
-                double* ptr = write.get();  
-                write.getMemory().memset( ptr, 0, 1 );
-            },
-            common::Exception );
+        {
+            double* ptr = write.get();
+            write.getMemory().memset( ptr, 0, 1 );
+        },
+        common::Exception );
     }
 
     // read access on Host, not possible as release on write is not done
     // this is the reason why we use on host a mock context
 
     BOOST_CHECK_THROW(
-        {
-            ReadAccess<double> read( X, hostContext );  
-        },
-        common::Exception  );
+    {
+        ReadAccess<double> read( X, hostContext );
+    },
+    common::Exception  );
 
     delay();  // now it is okay
 
-    {   
+    {
         ReadAccess<double> read( X, hostContext );
     }
 
@@ -277,10 +277,10 @@ BOOST_AUTO_TEST_CASE( delayedReleaseTest )
     // write access on Host, not possible as release on read is not done
 
     BOOST_CHECK_THROW(
-        {
-            WriteAccess<double> write( X, hostContext );
-        },
-        common::Exception );
+    {
+        WriteAccess<double> write( X, hostContext );
+    },
+    common::Exception );
 
     delay();  // now it is okay
 

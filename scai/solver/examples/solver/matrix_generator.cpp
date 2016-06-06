@@ -71,7 +71,7 @@ void printUsage( const char* prog_name )
 
 /** Define the value type used in this example, take default real type. */
 
-typedef RealType ValueType;  
+typedef RealType ValueType;
 
 int main( int argc, char* argv[] )
 {
@@ -80,7 +80,7 @@ int main( int argc, char* argv[] )
     int myRank = comm->getRank();
 
     std::string filename;
-    
+
     IndexType dimension = 1;
     IndexType stencilType = 3;
     IndexType dimX = 1;
@@ -93,7 +93,9 @@ int main( int argc, char* argv[] )
         sscanf( argv[2], "%d", &dimension );
         sscanf( argv[3], "%d", &stencilType );
         sscanf( argv[4], "%d", &dimX );
+
         if ( argc >= 6 ) sscanf( argv[5], "%d", &dimY );
+
         if ( argc >= 7 ) sscanf( argv[6], "%d", &dimZ );
     }
     else
@@ -102,11 +104,12 @@ int main( int argc, char* argv[] )
         {
             printUsage( argv[0] );
         }
+
         return -1;
     }
 
-    cout << "Generate poisson file " << filename << 
-            ", dim = " << dimension << ", stencilType = " << stencilType << endl;
+    cout << "Generate poisson file " << filename <<
+         ", dim = " << dimension << ", stencilType = " << stencilType << endl;
 
     if ( !MatrixCreator<ValueType>::supportedStencilType( dimension, stencilType ) )
     {
@@ -114,6 +117,7 @@ int main( int argc, char* argv[] )
         {
             cout << "Unsupported stencilType " << stencilType << " for dim = " << dimension << endl;
         }
+
         return -1;
     }
 
@@ -121,22 +125,25 @@ int main( int argc, char* argv[] )
     {
         if ( myRank == 0 )
         {
-            cout << "Missing values for dim = " << dimension 
+            cout << "Missing values for dim = " << dimension
                  << ", argc = " << argc << ", expected " << ( dimension + 3 ) << endl;
         }
+
         return -1;
     }
 
-    // Generate name for the stencil 
+    // Generate name for the stencil
 
     ostringstream stencilName;
 
     stencilName << dimension << "D" << stencilType << "P_" << dimX;
-    if ( dimension > 1 ) 
+
+    if ( dimension > 1 )
     {
         stencilName << "_" << dimY;
     }
-    if ( dimension > 2 ) 
+
+    if ( dimension > 2 )
     {
         stencilName << "_" << dimZ;
     }
@@ -167,7 +174,7 @@ int main( int argc, char* argv[] )
     {
         std::string vectorFilename = filename;
 
-        // replace . with _v. 
+        // replace . with _v.
 
         vectorFilename.replace( vectorFilename.length() - 4, 1, "_v." );
 

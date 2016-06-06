@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, ValueType, scai_arithmetic_test_type
         0.0, 0.0, 9.0, 4.0,
         2.0, 5.0, 0.0, 3.0
     };
- 
+
     ValueType eps = static_cast<ValueType>( 1E-5 );
 
     DenseStorage<ValueType> denseStorage;
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "swapTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << ">" )
 
-    // use template storage test 
+    // use template storage test
 
     storageSwapTest<DenseStorage<ValueType> >();
 }

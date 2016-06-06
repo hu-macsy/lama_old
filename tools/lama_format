@@ -15,7 +15,8 @@ OPTIONS="--style=ansi \
 --indent-preprocessor \
 --indent-switches \
 --break-blocks \
---convert-tabs"
+--convert-tabs \
+--recursive"
 
 case $VERSION in 
     (2.01) 

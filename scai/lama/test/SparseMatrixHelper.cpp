@@ -92,8 +92,8 @@ bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, cons
 }
 
 #define COMPARE_INSTANTIATE( type )   \
-template  \
-COMMON_DLL_IMPORTEXPORT \
-bool compareMatrices( const scai::lama::CSRSparseMatrix<type>& matrix, const scai::lama::CSRSparseMatrix<type>& other );
+    template  \
+    COMMON_DLL_IMPORTEXPORT \
+    bool compareMatrices( const scai::lama::CSRSparseMatrix<type>& matrix, const scai::lama::CSRSparseMatrix<type>& other );
 
 SCAI_COMMON_LOOP( COMPARE_INSTANTIATE, SCAI_ARITHMETIC_HOST )

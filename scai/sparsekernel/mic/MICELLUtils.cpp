@@ -405,7 +405,7 @@ ValueType MICELLUtils::getValue(
         const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
-	ValueType& valueRef = *valuePtr;
+        ValueType& valueRef = *valuePtr;
 
         valueRef = 0;  // new initialiation, has not been copied in
 
@@ -938,7 +938,7 @@ void MICELLUtils::jacobi(
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
-	const ValueType& omegaRef = *omegaPtr;
+        const ValueType& omegaRef = *omegaPtr;
 
         const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omegaRef;
 
@@ -1021,7 +1021,7 @@ void MICELLUtils::jacobiHalo(
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
-	const ValueType& omegaRef = *omegaPtr;
+        const ValueType& omegaRef = *omegaPtr;
 
         #pragma omp parallel for
 
@@ -1107,8 +1107,8 @@ void MICELLUtils::normalGEMV(
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
-	const ValueType& alphaRef = *alphaPtr;
-	const ValueType& betaRef = *betaPtr;
+        const ValueType& alphaRef = *alphaPtr;
+        const ValueType& betaRef = *betaPtr;
 
         #pragma omp parallel for
 
@@ -1192,7 +1192,7 @@ void MICELLUtils::sparseGEMV(
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
-	const ValueType& alphaRef = *alphaPtr;
+        const ValueType& alphaRef = *alphaPtr;
 
         #pragma omp parallel
         {
@@ -1265,7 +1265,7 @@ void MICELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );

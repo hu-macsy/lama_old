@@ -23,7 +23,7 @@
  * @endlicense
  *
  * @brief vector.cpp
- * @author 
+ * @author
  * @date 17.05.2013
  */
 
@@ -42,7 +42,7 @@ int main()
 
 {
     /** Take default real type for this example. */
-    
+
     typedef RealType ValueType;
 
     Scalar singleValue( 2.0 );

@@ -125,7 +125,7 @@ void MICMKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
     using kregistry::KernelRegistry;
 
     SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for MIC at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
@@ -138,38 +138,38 @@ MICMKLCSRUtils::MICMKLCSRUtils()
 {
     bool useMKL = true;
 
-   // using MKL for CSR might be disabled explicitly by environment variable
+    // using MKL for CSR might be disabled explicitly by environment variable
 
-   common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
-   int level = 0;
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
+    int level = 0;
 
-   if( !useMKL || ( level <= 0 ) )
-   {
-       return;
-   }
+    if( !useMKL || ( level <= 0 ) )
+    {
+        return;
+    }
 
-   const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
-   kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICMKLCSRUtils::~MICMKLCSRUtils()
 {
     bool useMKL = true;
 
-   // using MKL for CSR might be disabled explicitly by environment variable
+    // using MKL for CSR might be disabled explicitly by environment variable
 
-   common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
-   int level = 0;
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
+    int level = 0;
 
-   if( !useMKL || ( level <= 0 ) )
-   {
-       return;
-   }
+    if( !useMKL || ( level <= 0 ) )
+    {
+        return;
+    }
 
-   const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
-   kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICMKLCSRUtils MICMKLCSRUtils::guard;    // guard variable for registration

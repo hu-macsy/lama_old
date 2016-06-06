@@ -105,13 +105,13 @@ common::context::ContextType _ContextFunction::validContext( const _ContextFunct
     return static_cast<ContextType>( common::context::MaxContext );
 }
 
-_ContextFunction::ContextType _ContextFunction::validContext( 
-    const _ContextFunction& other1, 
+_ContextFunction::ContextType _ContextFunction::validContext(
+    const _ContextFunction& other1,
     const _ContextFunction& other2,
     ContextType preferedCtx ) const
 {
-    if ( mContextFuncArray[preferedCtx] != NULL && other1.mContextFuncArray[preferedCtx] != NULL 
-                                                && other2.mContextFuncArray[preferedCtx] != NULL )
+    if ( mContextFuncArray[preferedCtx] != NULL && other1.mContextFuncArray[preferedCtx] != NULL
+            && other2.mContextFuncArray[preferedCtx] != NULL )
     {
         // std::cout << "both valid at context = " << preferedCtx << std::endl;
 

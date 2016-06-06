@@ -215,10 +215,10 @@ void MyJacobi::writeAt( std::ostream& stream ) const
 
 std::string MyJacobi::createValue()
 {
-	return "MyJacobi";
+    return "MyJacobi";
 }
 
 scai::solver::Solver* MyJacobi::create( const std::string name )
 {
-	return new MyJacobi( name );
+    return new MyJacobi( name );
 }

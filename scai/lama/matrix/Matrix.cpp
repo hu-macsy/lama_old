@@ -62,12 +62,12 @@ Matrix* Matrix::getMatrix( const Format::MatrixStorageFormat format, const commo
 
 /* ----------------------------------------------------------------------- */
 
-Matrix::Matrix( const Matrix& other ) : 
+Matrix::Matrix( const Matrix& other ) :
 
-    Distributed( other ), 
-    mColDistribution( other.mColDistribution ), 
-    mNumRows( other.mNumRows ), 
-    mNumColumns( other.mNumColumns ), 
+    Distributed( other ),
+    mColDistribution( other.mColDistribution ),
+    mNumRows( other.mNumRows ),
+    mNumColumns( other.mNumColumns ),
     mCommunicationKind( other.mCommunicationKind )
 {
     SCAI_LOG_INFO( logger, "Creating copy of " << other << " with same distributions." )
@@ -164,8 +164,8 @@ Matrix::Matrix( DistributionPtr distribution )
 
 Matrix::Matrix()
     : Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), mColDistribution(
-        DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ),
-        mNumColumns( 0 )
+          DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ),
+      mNumColumns( 0 )
 {
     setDefaultKind();
 }
@@ -652,7 +652,7 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
             }
         }
     }
- 
+
     return diff;
 }
 
@@ -661,8 +661,8 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
 Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
 {
     // simple default implementation that works for each matrix
-   
-    common::unique_ptr<Matrix> rep( copy() );  
+
+    common::unique_ptr<Matrix> rep( copy() );
 
     // unique_ptr guarantees that data is freed if redistribute fails for any reason
 

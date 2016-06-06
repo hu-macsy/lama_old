@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
         BOOST_CHECK_EQUAL( dist->getKind(), values[i] );
 
         SCAI_LOG_INFO( logger, *comm << ": localSizeTest, dist = " << *dist )
-    
+
         // Do not use comm for reductions as NoDistribution has NoCommunicator
 
         IndexType sumLocalSizes = dist->getCommunicator().sum( dist->getLocalSize() );
@@ -169,10 +169,10 @@ BOOST_AUTO_TEST_CASE( printDistributionVector )
         DistributionPtr dist( Distribution::getDistribution( values[i], comm, globalSize ) );
 
         // ToDo: does not test the content of these files
-    
+
         std::string fileName = "distribution.";
         fileName += dist->getKind();
-    
+
         SCAI_LOG_INFO( logger, *comm << ": printDistributionVector, dist = " << *dist << ", filename = " << fileName )
 
         dist->printDistributionVector( fileName );

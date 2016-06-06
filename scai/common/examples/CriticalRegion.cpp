@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Example with thhreads and a critical region using the common library 
+ * @brief Example with thhreads and a critical region using the common library
  * @author Thomas Brandes
  * @date 19.06.2015
  */
@@ -86,6 +86,6 @@ int main( int, char** )
 
     // If critical region is implemented correctly, time must be > ( #threds * sleep_time )
 
-    SCAI_ASSERT_LT( N_THREADS * SLEEP_TIME, time, 
-                      "ERROR: " << N_THREADS << " threads seem to enter critial region at same time" )
+    SCAI_ASSERT_LT( N_THREADS * SLEEP_TIME, time,
+                    "ERROR: " << N_THREADS << " threads seem to enter critial region at same time" )
 }

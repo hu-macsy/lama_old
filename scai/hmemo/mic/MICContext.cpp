@@ -94,7 +94,7 @@ MICContext::MICContext( int deviceNr )
 
     int numCores;
 
-    #pragma offload target( mic: mDeviceNr ) out( numCores )
+#pragma offload target( mic: mDeviceNr ) out( numCores )
     {
         #pragma omp parallel
         {
@@ -157,7 +157,7 @@ bool MICContext::canUseMemory( const Memory& other ) const
     }
 
     SCAI_LOG_DEBUG( logger, *this << ": " << ( canUse ? "can use " : "can't use " )
-                            << other )
+                    << other )
 
     return canUse;
 }

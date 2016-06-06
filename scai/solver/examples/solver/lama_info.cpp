@@ -72,11 +72,12 @@ void contextInfo()
         // ContextFactory has additional argument for device id
 
         ContextPtr context = Context::create( values[i], -1 );
-      
+
         cout << "  Context: " << *context << endl;
         cout << "    Context->Memory: " << *context->getMemoryPtr() << endl;
         cout << "    Context->Host Memory: " << *context->getHostMemoryPtr() << endl;
     }
+
     cout << endl;
 }
 
@@ -124,6 +125,7 @@ void matrixInfo()
 
         cout << "    Matrix: " << *matrix << endl;
     }
+
     cout << endl;
 }
 
@@ -170,9 +172,10 @@ void solverInfo()
         cout << "   Registered values[" << i << "] = " << values[i] << endl;
 
         scai::common::shared_ptr<Solver> solver( Solver::create( values[i], "TestSolver" ) );
- 
+
         cout << "      Solver: " << *solver << endl;
     }
+
     cout << endl;
 }
 
@@ -198,6 +201,7 @@ void setupInfo()
 
         cout << "    Setup: " << *setup << endl;
     }
+
     cout << endl;
 }
 
@@ -224,6 +228,7 @@ void distributionInfo()
 
         cout << "    Distribution: " << *dist << endl;
     }
+
     cout << endl;
 }
 

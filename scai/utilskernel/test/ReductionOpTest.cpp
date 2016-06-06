@@ -42,6 +42,7 @@ BOOST_AUTO_TEST_CASE( ReductionOpTest )
         std::ostringstream s;
         s << reduction::ReductionOp( type );
         BOOST_CHECK( s.str().length() > 0 );
+
         if ( type == reduction::COPY )
         {
             BOOST_CHECK_EQUAL( s.str(), "COPY" );

@@ -34,7 +34,7 @@ namespace scai
 
 namespace hmemo
 {
-    
+
 MemoryException::MemoryException()
 {
     mMessage = "MemoryException";

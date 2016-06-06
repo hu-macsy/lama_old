@@ -67,7 +67,7 @@ SCAI_LOG_DEF_LOGGER( CUDAMemory::logger, "Memory.CUDAMemory" )
 
 CUDAMemory::CUDAMemory( common::shared_ptr<const CUDAContext> cudaContext )
 
-    : Memory( memtype::CUDAMemory ), 
+    : Memory( memtype::CUDAMemory ),
       mCUDAContext( cudaContext )
 
 {
@@ -97,8 +97,8 @@ CUDAMemory::~CUDAMemory()
 
     if ( mNumberOfAllocatedBytes != 0 )
     {
-        SCAI_LOG_ERROR( logger, *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes 
-                                << ", mismatch of free/allocate sizes" )
+        SCAI_LOG_ERROR( logger, *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes
+                        << ", mismatch of free/allocate sizes" )
     }
 }
 
@@ -190,7 +190,7 @@ void CUDAMemory::memcpyToCUDA( const CUDAMemory& dstMemory, void* dst, const voi
     // unified adressing makes this possible
 
     SCAI_LOG_INFO( logger, "copy " << size << " bytes to " << dst << " @ " << dstMemory
-                                   << " from " << src << " @ " << *this )
+                   << " from " << src << " @ " << *this )
 
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
@@ -212,8 +212,8 @@ void CUDAMemory::memcpyFromCUDA( void* dst, const CUDAMemory& srcMemory, const v
 
     // unified adressing makes this possible
 
-    SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " @ " << srcMemory  
-                                   << " to " << dst << " @ " << *this )
+    SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " @ " << srcMemory
+                   << " to " << dst << " @ " << *this )
 
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
@@ -388,7 +388,7 @@ bool CUDAMemory::canCopyFrom( const Memory& other ) const
     else if ( otherType == memtype::CUDAHostMemory )
     {
         // CUDACtx -> CUDA Host is supported
-        // Note: slower but okay if CUDA Host memory does not belong to this device 
+        // Note: slower but okay if CUDA Host memory does not belong to this device
 
         supported = true;
     }
@@ -422,7 +422,7 @@ bool CUDAMemory::canCopyCUDA( const CUDAMemory& other ) const
 
         SCAI_CONTEXT_ACCESS( mCUDAContext )
 
-	    int accessCapability = 0;
+        int accessCapability = 0;
 
         SCAI_CUDA_DRV_CALL(
             cuDeviceCanAccessPeer( &accessCapability, getDeviceNr(), other.getDeviceNr() ),

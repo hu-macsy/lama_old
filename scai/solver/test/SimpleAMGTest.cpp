@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
     /* cant not be tested: not getter
     SimpleAMGSolver.setHostOnlyLevel( IndexType hostOnlyLevel );
     SimpleAMGSolver.setHostOnlyVars( IndexType hostOnlyVars );
-    SimpleAMGSolver.setReplicatedLevel( IndexType replicatedLevel ); 
+    SimpleAMGSolver.setReplicatedLevel( IndexType replicatedLevel );
     SimpleAMGSolver.setMaxLevels( unsigned int levels );
     SimpleAMGSolver.setMinVarsCoarseLevel( unsigned int vars );*/
 

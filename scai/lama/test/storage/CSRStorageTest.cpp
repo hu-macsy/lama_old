@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "swapTest for CSRStorage<" << common::TypeTraits<ValueType>::id() << ">" )
 
-    // use template storage test 
+    // use template storage test
 
     storageSwapTest<CSRStorage<ValueType> >();
 }
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
     BOOST_REQUIRE_EQUAL( numValues, sortedJA.size() );
     BOOST_REQUIRE_EQUAL( numValues, sortedVals.size() );
- 
+
     for ( IndexType i = 0; i < numValues; ++i )
     {
         BOOST_CHECK_EQUAL( sorted_ja[i], sortedJA[i] );

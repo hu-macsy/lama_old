@@ -85,7 +85,7 @@ SCAI_LOG_DEF_LOGGER( _MatrixStorage::logger, "MatrixStorage" )
 _MatrixStorage::_MatrixStorage()
 
     : mNumRows( 0 ), mNumColumns( 0 ), mRowIndexes(), mCompressThreshold( 0.0f ), mDiagonalProperty(
-        false ), mContext( Context::getHostPtr() )
+          false ), mContext( Context::getHostPtr() )
 {
     SCAI_LOG_DEBUG( logger, "constructed MatrixStorage()" )
 }
@@ -146,7 +146,7 @@ void _MatrixStorage::swap( _MatrixStorage& other )
 
 void _MatrixStorage::_assignTranspose( const _MatrixStorage& other )
 {
-    // make it safe also for other == &this 
+    // make it safe also for other == &this
 
     IndexType tmpNumRows = other.mNumRows;
     mNumRows = other.mNumColumns;
@@ -230,14 +230,37 @@ const char* format2Str( const Format::MatrixStorageFormat storageFormat )
 {
     switch ( storageFormat )
     {
-        case Format::CSR: return "CSR"; break;
-        case Format::ELL: return "ELL"; break;
-        case Format::DIA: return "DIA"; break;
-        case Format::JDS: return "JDS"; break;
-        case Format::COO: return "COO"; break;
-        case Format::DENSE: return "DENSE"; break;
-        case Format::ASSEMBLY: return "ASSEMBLY"; break;
-        case Format::UNDEFINED: return "UNDEFINED"; break;
+        case Format::CSR:
+            return "CSR";
+            break;
+
+        case Format::ELL:
+            return "ELL";
+            break;
+
+        case Format::DIA:
+            return "DIA";
+            break;
+
+        case Format::JDS:
+            return "JDS";
+            break;
+
+        case Format::COO:
+            return "COO";
+            break;
+
+        case Format::DENSE:
+            return "DENSE";
+            break;
+
+        case Format::ASSEMBLY:
+            return "ASSEMBLY";
+            break;
+
+        case Format::UNDEFINED:
+            return "UNDEFINED";
+            break;
     }
 
     return "UNDEFINED";
@@ -911,7 +934,7 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
         const HArray<ValueType>&,
         const ValueType,
         const HArray<ValueType>& ) const
-    = &MatrixStorage<ValueType>::matrixTimesVector;
+        = &MatrixStorage<ValueType>::matrixTimesVector;
     using scai::common::bind;
     using scai::common::ref;
     using scai::common::cref;
@@ -936,7 +959,7 @@ SyncToken* MatrixStorage<ValueType>::vectorTimesMatrixAsync(
         const HArray<ValueType>&,
         const ValueType,
         const HArray<ValueType>& ) const
-    = &MatrixStorage<ValueType>::vectorTimesMatrix;
+        = &MatrixStorage<ValueType>::vectorTimesMatrix;
     using scai::common::bind;
     using scai::common::ref;
     using scai::common::cref;
@@ -972,7 +995,7 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
         const HArray<ValueType>&,
         const HArray<ValueType>&,
         const ValueType ) const
-    = &MatrixStorage<ValueType>::jacobiIterate;
+        = &MatrixStorage<ValueType>::jacobiIterate;
     using scai::common::bind;
     using scai::common::cref;
     using scai::common::ref;
@@ -1390,7 +1413,7 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
 
 #define LAMA_MATRIXSTORAGE2_INST( ValueType, OtherValueType )                                                                   \
     template COMMON_DLL_IMPORTEXPORT void MatrixStorage<ValueType>::setRawDenseData<OtherValueType>(                            \
-                const IndexType, const IndexType, const OtherValueType*, const ValueType );
+            const IndexType, const IndexType, const OtherValueType*, const ValueType );
 
 #define LAMA_MATRIXSTORAGE_INST( ValueType )                                                                                    \
     SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )

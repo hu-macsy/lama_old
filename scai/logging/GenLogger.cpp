@@ -190,7 +190,7 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
 
     if ( myLine[firstPos] == '"' )
     {
-        // look for matching " and do not 
+        // look for matching " and do not
 
         firstPos++;
 
@@ -341,7 +341,7 @@ void GenLogger::configure()
         setFormat( "#date, #time #name @ #thread ( #func -> #file::#line ) #level #msg" );
     }
 
-    std::string configFile;  
+    std::string configFile;
 
     bool logDefined = Settings::getEnvironment( configFile, "SCAI_LOG" );
 
@@ -369,7 +369,7 @@ void GenLogger::configure()
         configFile.clear();
     }
 
-    if ( configFile.length() == 0 )  
+    if ( configFile.length() == 0 )
     {
         rootLogger->setLevel( level::WARN );
     }
@@ -381,7 +381,7 @@ void GenLogger::configure()
     {
         rootLogger->setLevel( level::FATAL );
     }
-    else if ( configFile == level2str( level::SERROR ) ) 
+    else if ( configFile == level2str( level::SERROR ) )
     {
         rootLogger->setLevel( level::SERROR );
     }
@@ -507,10 +507,10 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
         }
         else if ( formatTokens[i] == "#STACK" )
         {
-            // undocumented feature: print stack 
+            // undocumented feature: print stack
             scai::common::Exception::addCallStack( output );
         }
-        else 
+        else
         {
             // ignore first character # and take it as environment variable
 
@@ -537,7 +537,7 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
        output << ": " << getFullName() << "@" << common::Thread::getCurrentThreadName();
        output << " (" << loc.mFileName << "::" << loc.mLine << ",func=" << loc.mFuncName << ")";
        output << " " << level << " " << msg << std::endl;
-     
+
     */
 
     myPrintf( "%s", output.str().c_str() );
@@ -619,10 +619,10 @@ static void tokenize( std::vector<std::string>& tokens, const std::string& input
 
     std::string::size_type lastPos = 0;
     std::string::size_type pos     = input.find_first_of( "#", lastPos );
-    
+
     while ( std::string::npos != pos )
     {
-        // found 
+        // found
 
         if ( lastPos < pos )
         {
@@ -630,7 +630,7 @@ static void tokenize( std::vector<std::string>& tokens, const std::string& input
         }
 
         lastPos = input.find_first_not_of( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ_", pos + 1 );
- 
+
         tokens.push_back( input.substr( pos, lastPos - pos ) );
 
         pos = input.find_first_of( "#", lastPos );

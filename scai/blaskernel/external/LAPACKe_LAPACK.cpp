@@ -46,13 +46,13 @@
 // external
 #include <mkl_lapacke.h>
 
-namespace scai 
+namespace scai
 {
 
 using common::scoped_array;
 using common::TypeTraits;
 
-namespace blaskernel 
+namespace blaskernel
 {
 
 /* ------------------------------------------------------------------------- */
@@ -65,32 +65,36 @@ SCAI_LOG_DEF_LOGGER(LAPACKe_LAPACK::logger, "LAPACKe.LAPACK")
 
 template<typename ValueType>
 IndexType LAPACKe_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
-		const IndexType n, ValueType* const A, const IndexType lda,
-		IndexType* const ipiv)
+                                const IndexType n, ValueType* const A, const IndexType lda,
+                                IndexType* const ipiv)
 {
-	SCAI_LOG_INFO(logger, "getrf<float> for A of size " << m << " x " << n)
+    SCAI_LOG_INFO(logger, "getrf<float> for A of size " << m << " x " << n)
 
-	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
+    typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
-	if (TypeTraits<IndexType>::stype
-			!= TypeTraits<LAPACKIndexType>::stype) {
-		// ToDo: convert ipiv array
-		COMMON_THROWEXCEPTION("indextype mismatch");
-	}
+    if (TypeTraits<IndexType>::stype
+            != TypeTraits<LAPACKIndexType>::stype)
+    {
+        // ToDo: convert ipiv array
+        COMMON_THROWEXCEPTION("indextype mismatch");
+    }
 
-	int info = LAPACKeWrapper<ValueType>::getrf(LAPACKeTrait::enum2order(order),
-			static_cast<LAPACKIndexType>(m),
-			static_cast<LAPACKIndexType>(n), A,
-			static_cast<LAPACKIndexType>(lda), ipiv);
+    int info = LAPACKeWrapper<ValueType>::getrf(LAPACKeTrait::enum2order(order),
+               static_cast<LAPACKIndexType>(m),
+               static_cast<LAPACKIndexType>(n), A,
+               static_cast<LAPACKIndexType>(lda), ipiv);
 
-	if (info < 0) {
-		COMMON_THROWEXCEPTION("illegal argument " << ( -info ))
-	} else if (info > 0) {
-		COMMON_THROWEXCEPTION(
-				"value(" << info << "," << info << ")" << " is exactly zero")
-	}
+    if (info < 0)
+    {
+        COMMON_THROWEXCEPTION("illegal argument " << ( -info ))
+    }
+    else if (info > 0)
+    {
+        COMMON_THROWEXCEPTION(
+            "value(" << info << "," << info << ")" << " is exactly zero")
+    }
 
-	return info;
+    return info;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -99,38 +103,40 @@ IndexType LAPACKe_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 
 template<typename ValueType>
 void LAPACKe_LAPACK::getinv(const IndexType n, ValueType* a,
-		const IndexType lda)
+                            const IndexType lda)
 {
-	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
+    typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
-	LAPACKIndexType info = 0;
+    LAPACKIndexType info = 0;
 
-	// scoped_array, will also be freed in case of exception
+    // scoped_array, will also be freed in case of exception
 
-	scoped_array<LAPACKIndexType> ipiv(
-			new LAPACKIndexType[n]);
+    scoped_array<LAPACKIndexType> ipiv(
+        new LAPACKIndexType[n]);
 
-	SCAI_LOG_INFO(logger,
-			"getinv<float> for " << n << " x " << n << " matrix, uses MKL")
+    SCAI_LOG_INFO(logger,
+                  "getinv<float> for " << n << " x " << n << " matrix, uses MKL")
 
-	info = LAPACKeWrapper<ValueType>::getrf(LAPACK_COL_MAJOR,
-			static_cast<LAPACKIndexType>(n),
-			static_cast<LAPACKIndexType>(n), a,
-			static_cast<LAPACKIndexType>(lda), ipiv.get());
+    info = LAPACKeWrapper<ValueType>::getrf(LAPACK_COL_MAJOR,
+                                            static_cast<LAPACKIndexType>(n),
+                                            static_cast<LAPACKIndexType>(n), a,
+                                            static_cast<LAPACKIndexType>(lda), ipiv.get());
 
-	// return error if factorization did not work
+    // return error if factorization did not work
 
-	if (info) {
-		COMMON_THROWEXCEPTION("MKL sgetrf failed, info = " << info)
-	}
+    if (info)
+    {
+        COMMON_THROWEXCEPTION("MKL sgetrf failed, info = " << info)
+    }
 
-	info = LAPACKeWrapper<ValueType>::getri(LAPACK_COL_MAJOR,
-			static_cast<LAPACKIndexType>(n), a,
-			static_cast<LAPACKIndexType>(lda), ipiv.get());
+    info = LAPACKeWrapper<ValueType>::getri(LAPACK_COL_MAJOR,
+                                            static_cast<LAPACKIndexType>(n), a,
+                                            static_cast<LAPACKIndexType>(lda), ipiv.get());
 
-	if (info) {
-		COMMON_THROWEXCEPTION("MKL sgetri failed, info = " << info)
-	}
+    if (info)
+    {
+        COMMON_THROWEXCEPTION("MKL sgetri failed, info = " << info)
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -139,32 +145,36 @@ void LAPACKe_LAPACK::getinv(const IndexType n, ValueType* a,
 
 template<typename ValueType>
 int LAPACKe_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
-		ValueType* const a, const IndexType lda, IndexType* const ipiv)
+                          ValueType* const a, const IndexType lda, IndexType* const ipiv)
 {
-	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
+    typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
-	SCAI_LOG_INFO(logger, "getri<float> for A of size " << n << " x " << n)
+    SCAI_LOG_INFO(logger, "getri<float> for A of size " << n << " x " << n)
 
-	if (TypeTraits<IndexType>::stype
-			!= TypeTraits<LAPACKIndexType>::stype) {
-		// ToDo: convert ipiv array
-		COMMON_THROWEXCEPTION("indextype mismatch");
-	}
+    if (TypeTraits<IndexType>::stype
+            != TypeTraits<LAPACKIndexType>::stype)
+    {
+        // ToDo: convert ipiv array
+        COMMON_THROWEXCEPTION("indextype mismatch");
+    }
 
-	LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order(order);
+    LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order(order);
 
-	LAPACKIndexType info = LAPACKeWrapper<ValueType>::getri(matrix_order,
-			static_cast<LAPACKIndexType>(n), a,
-			static_cast<LAPACKIndexType>(lda), ipiv);
+    LAPACKIndexType info = LAPACKeWrapper<ValueType>::getri(matrix_order,
+                           static_cast<LAPACKIndexType>(n), a,
+                           static_cast<LAPACKIndexType>(lda), ipiv);
 
-	if (info < 0) {
-		COMMON_THROWEXCEPTION("illegal argument " << ( -info ))
-	} else if (info > 0) {
-		COMMON_THROWEXCEPTION(
-				"value(" << info << "," << info << ")" << " is exactly zero")
-	}
+    if (info < 0)
+    {
+        COMMON_THROWEXCEPTION("illegal argument " << ( -info ))
+    }
+    else if (info > 0)
+    {
+        COMMON_THROWEXCEPTION(
+            "value(" << info << "," << info << ")" << " is exactly zero")
+    }
 
-	return info;
+    return info;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -173,35 +183,36 @@ int LAPACKe_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 
 template<typename ValueType>
 int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
-		const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
-		const IndexType nrhs, const ValueType* AP, ValueType* B,
-		const IndexType ldb)
+                          const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
+                          const IndexType nrhs, const ValueType* AP, ValueType* B,
+                          const IndexType ldb)
 {
-	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
+    typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
-	LAPACKeTrait::LAPACKFlag UL = LAPACKeTrait::enum2char(uplo);
-	LAPACKeTrait::LAPACKFlag TA = LAPACKeTrait::enum2char(trans);
-	LAPACKeTrait::LAPACKFlag DI = LAPACKeTrait::enum2char(diag);
+    LAPACKeTrait::LAPACKFlag UL = LAPACKeTrait::enum2char(uplo);
+    LAPACKeTrait::LAPACKFlag TA = LAPACKeTrait::enum2char(trans);
+    LAPACKeTrait::LAPACKFlag DI = LAPACKeTrait::enum2char(diag);
 
-	LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order(order);
+    LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order(order);
 
-	if (TypeTraits<IndexType>::stype
-			!= TypeTraits<LAPACKIndexType>::stype) {
-		// ToDo: convert ipiv array
-		COMMON_THROWEXCEPTION("indextype mismatch");
-	}
+    if (TypeTraits<IndexType>::stype
+            != TypeTraits<LAPACKIndexType>::stype)
+    {
+        // ToDo: convert ipiv array
+        COMMON_THROWEXCEPTION("indextype mismatch");
+    }
 
-	SCAI_LOG_INFO(logger,
-			"tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI);
+    SCAI_LOG_INFO(logger,
+                  "tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI);
 
-	SCAI_ASSERT_ERROR(ldb >= std::max(1, n), "ldb = " << ldb << " out of range");
+    SCAI_ASSERT_ERROR(ldb >= std::max(1, n), "ldb = " << ldb << " out of range");
 
-	int info = LAPACKeWrapper<ValueType>::tptrs(matrix_order, UL, TA, DI,
-			static_cast<LAPACKIndexType>(n),
-			static_cast<LAPACKIndexType>(nrhs), AP, B,
-			static_cast<LAPACKIndexType>(ldb));
+    int info = LAPACKeWrapper<ValueType>::tptrs(matrix_order, UL, TA, DI,
+               static_cast<LAPACKIndexType>(n),
+               static_cast<LAPACKIndexType>(nrhs), AP, B,
+               static_cast<LAPACKIndexType>(ldb));
 
-	return info;
+    return info;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -211,7 +222,7 @@ int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 template<typename ValueType>
 void LAPACKe_LAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-	using kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
 
     const common::context::ContextType ctx = common::context::Host;
 
@@ -236,7 +247,7 @@ LAPACKe_LAPACK::LAPACKe_LAPACK()
     }
 
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
-                            kregistry::KernelRegistry::KERNEL_REPLACE );
+        kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 LAPACKe_LAPACK::~LAPACKe_LAPACK()
@@ -252,7 +263,7 @@ LAPACKe_LAPACK::~LAPACKe_LAPACK()
     }
 
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
-                            kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 /* --------------------------------------------------------------------------- */

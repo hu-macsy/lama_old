@@ -128,6 +128,7 @@ int main( int argc, char* argv[] )
         {
             cout << "Usage: " << argv[0] << " <filename> [Host|CUDA] [CSR|ELL|JDS]" << endl;
         }
+
         exit( 1 );
     }
 
@@ -270,7 +271,7 @@ int main( int argc, char* argv[] )
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
 
     LoggerPtr logger( new CommonLogger ( loggerName.str(), LogLevel::advancedInformation,
-                   LoggerWriteBehaviour::toConsoleOnly ) );
+                                         LoggerWriteBehaviour::toConsoleOnly ) );
 
     CG mySolver( "CGSolver", logger );
 
@@ -288,7 +289,7 @@ int main( int argc, char* argv[] )
     if ( lamaconf.hasMaxIter() )
     {
         CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
- 
+
         // stop if iteration count reached OR residual threshold is reached
 
         rt.reset( new Criterion ( it, rt, Criterion::OR ) );
@@ -297,10 +298,10 @@ int main( int argc, char* argv[] )
     mySolver.setStoppingCriterion( rt );
 
     LoggerPtr amgLogger( new CommonLogger ( loggerName.str(), LogLevel::solverInformation,
-                   LoggerWriteBehaviour::toConsoleOnly ) );
+                                            LoggerWriteBehaviour::toConsoleOnly ) );
 
     common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
- 
+
     amgSolver->setHostOnlyLevel( 4 );
     amgSolver->setReplicatedLevel( 5 );
     amgSolver->setMaxLevels( 25 );
@@ -340,14 +341,14 @@ int main( int argc, char* argv[] )
 
     if ( writeFlag )
     {
-         start = Walltime::get();
-         solution.writeToFile( "CG_solution" );
-         stop = Walltime::get();
+        start = Walltime::get();
+        solution.writeToFile( "CG_solution" );
+        stop = Walltime::get();
 
-         if ( myRank == 0 )
-         {
-             cout << "Writing solution: " << stop - start << " secs." << endl;
-         }
+        if ( myRank == 0 )
+        {
+            cout << "Writing solution: " << stop - start << " secs." << endl;
+        }
     }
 }
 

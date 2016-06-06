@@ -68,14 +68,14 @@ int main()
     const IndexType irow = 3;
 
     const int N = sizeof( perm ) / sizeof( IndexType );
- 
+
     CSRSparseMatrix<ValueType> a;
 
     common::scoped_array<ValueType> values( new ValueType[ N * N ] );
 
-    for ( IndexType i = 0; i < N; ++i )  
+    for ( IndexType i = 0; i < N; ++i )
     {
-        for ( IndexType j = 0; j < N; ++j )  
+        for ( IndexType j = 0; j < N; ++j )
         {
             values[ i * N + j ] = mv( i, j );
         }
@@ -97,7 +97,7 @@ int main()
         }
 
     }
-  
+
     std::cout << *comm << ": have " << myGlobalIndexes.size() << " indexes" << std::endl;
 
     DistributionPtr dist( new GeneralDistribution( N, myGlobalIndexes, comm ) );
@@ -128,6 +128,7 @@ int main()
             errors++;
         }
     }
+
     std::cout << std::endl;
 
     std::cout << "Errors = " << errors << std::endl;

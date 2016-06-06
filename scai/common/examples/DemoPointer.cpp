@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Example of pointer use 
+ * @brief Example of pointer use
  *        /
  * @author Thomas Brandes
  * @date 26.08.2015
@@ -43,12 +43,12 @@ int main()
 
     for ( int i = 0; i < 10; ++ i )
     {
-       vals[i] = i;
+        vals[i] = i;
     }
 
     for ( int i = 0; i < 10; ++ i )
     {
-       *sum += vals[i];
+        *sum += vals[i];
     }
 
     std::cout << "Sum = " << *sum << std::endl;

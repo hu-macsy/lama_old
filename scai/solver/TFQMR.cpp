@@ -58,29 +58,30 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( TFQMR::logger, "Solver.TFQMR" )
 
 TFQMR::TFQMR( const std::string& id )
-    : IterativeSolver(id){}
+    : IterativeSolver(id) {}
 
 
 TFQMR::TFQMR( const std::string& id, LoggerPtr logger )
-    : IterativeSolver(id ,logger){}
+    : IterativeSolver(id ,logger) {}
 
 TFQMR::TFQMR( const TFQMR& other )
-    : IterativeSolver( other ){}
+    : IterativeSolver( other ) {}
 
 
 
 TFQMR::TFQMRRuntime::TFQMRRuntime()
-    : IterativeSolverRuntime(){}
+    : IterativeSolverRuntime() {}
 
-TFQMR::~TFQMR(){}
+TFQMR::~TFQMR() {}
 
-TFQMR::TFQMRRuntime::~TFQMRRuntime(){}
+TFQMR::TFQMRRuntime::~TFQMRRuntime() {}
 
-void TFQMR::initialize( const Matrix& coefficients ){
+void TFQMR::initialize( const Matrix& coefficients )
+{
     SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     IterativeSolver::initialize( coefficients );
- 	TFQMRRuntime& runtime = getRuntime();
+    TFQMRRuntime& runtime = getRuntime();
 
     runtime.mAlpha = 0.0;
     runtime.mBeta = 0.0;
@@ -99,7 +100,8 @@ void TFQMR::initialize( const Matrix& coefficients ){
     runtime.mVecVT.reset( coefficients.newDenseVector() );
 }
 
-void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
+void TFQMR::solveInit( Vector& solution, const Vector& rhs )
+{
     TFQMRRuntime& runtime = getRuntime();
 
     runtime.mRhs = &rhs;
@@ -111,23 +113,24 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
 
     // Initialize
-    this->getResidual();   
+    this->getResidual();
 
     const Matrix& A = *runtime.mCoefficients;
 
     *runtime.mInitialR = *runtime.mResidual;
-    *runtime.mVecVEven = *runtime.mResidual;  
+    *runtime.mVecVEven = *runtime.mResidual;
 
     // PRECONDITIONING
-    if(mPreconditioner != NULL){
+    if(mPreconditioner != NULL)
+    {
         *runtime.mVecW = Scalar(0.0);
-        mPreconditioner->solve( *runtime.mVecW , *runtime.mResidual );      
-    } 
+        mPreconditioner->solve( *runtime.mVecW , *runtime.mResidual );
+    }
     else    *runtime.mVecW = *runtime.mResidual;
 
     *runtime.mVecZ = A * (*runtime.mVecW);
     *runtime.mVecW = *runtime.mResidual;
-    *runtime.mVecD = Scalar(0.0);                   
+    *runtime.mVecD = Scalar(0.0);
 
     lama::L2Norm norm;
     runtime.mTau = norm.apply(*runtime.mInitialR);
@@ -136,117 +139,128 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
     runtime.mSolveInit = true;
 }
 
-void TFQMR::iterationEven(){
-	TFQMRRuntime& runtime = getRuntime();
+void TFQMR::iterationEven()
+{
+    TFQMRRuntime& runtime = getRuntime();
 
-	const Vector& vecZ = *runtime.mVecZ;
-	const Vector& initialR = *runtime.mInitialR;
-	const Vector& vecVEven = *runtime.mVecVEven;
-    Vector& vecVOdd	= *runtime.mVecVOdd;
-	const Scalar& rho = runtime.mRhoOld;
+    const Vector& vecZ = *runtime.mVecZ;
+    const Vector& initialR = *runtime.mInitialR;
+    const Vector& vecVEven = *runtime.mVecVEven;
+    Vector& vecVOdd = *runtime.mVecVOdd;
+    const Scalar& rho = runtime.mRhoOld;
     const Scalar& eps = runtime.mEps;
 
 
-	const Scalar dotProduct	= initialR.dotProduct(vecZ);
-	Scalar& alpha = runtime.mAlpha;	
+    const Scalar dotProduct = initialR.dotProduct(vecZ);
+    Scalar& alpha = runtime.mAlpha;
 
     if(abs(dotProduct)< eps)  // scalar is small
         alpha = 0.0;
-	else alpha = rho / dotProduct;
+    else alpha = rho / dotProduct;
 
-	vecVOdd  = vecVEven - alpha*vecZ;
+    vecVOdd  = vecVEven - alpha*vecZ;
 }
 
-void TFQMR::iterationOdd(){
-	TFQMRRuntime& runtime = getRuntime();
+void TFQMR::iterationOdd()
+{
+    TFQMRRuntime& runtime = getRuntime();
 
-	const Matrix& A = *runtime.mCoefficients;
+    const Matrix& A = *runtime.mCoefficients;
     const Vector& initialR = *runtime.mInitialR;
-	const Vector& vecW = *runtime.mVecW;
-	const Vector& vecVOdd = *runtime.mVecVOdd;
-	Vector& vecVEven = *runtime.mVecVEven;
-	Scalar& rhoOld= runtime.mRhoOld;	  	  
-	Scalar& rhoNew = runtime.mRhoNew;
-	Scalar& beta = runtime.mBeta;
-	Vector& vecZ = *runtime.mVecZ;
+    const Vector& vecW = *runtime.mVecW;
+    const Vector& vecVOdd = *runtime.mVecVOdd;
+    Vector& vecVEven = *runtime.mVecVEven;
+    Scalar& rhoOld= runtime.mRhoOld;
+    Scalar& rhoNew = runtime.mRhoNew;
+    Scalar& beta = runtime.mBeta;
+    Vector& vecZ = *runtime.mVecZ;
     Vector& vecVT = *runtime.mVecVT;
     const Scalar& eps = runtime.mEps;
 
-	rhoNew 	= initialR.dotProduct(vecW);
+    rhoNew  = initialR.dotProduct(vecW);
 
     if(abs(rhoOld)<eps)                 // scalar is small
         beta=0.0;
     else beta = rhoNew / rhoOld;
 
-	vecVEven = vecW + beta* vecVOdd;
+    vecVEven = vecW + beta* vecVOdd;
+
 //  PRECONDITIONING
-    if(mPreconditioner != NULL){
+    if(mPreconditioner != NULL)
+    {
         vecVT = Scalar(0.0);
         mPreconditioner->solve(vecVT,vecVEven);
     }
     else vecVT = vecVEven;
 
-	vecZ *= beta;
-	vecZ = beta * A * vecVOdd + beta * vecZ;
-	vecZ = A * vecVT + vecZ;
+    vecZ *= beta;
+    vecZ = beta * A * vecVOdd + beta * vecZ;
+    vecZ = A * vecVT + vecZ;
     rhoOld = rhoNew;
-}	
+}
 
-void TFQMR::iterate(){
+void TFQMR::iterate()
+{
     TFQMRRuntime& runtime = getRuntime();
-	const IndexType& iteration = runtime.mIterations; 
-	lama::L2Norm norm;
+    const IndexType& iteration = runtime.mIterations;
+    lama::L2Norm norm;
 
     const Matrix& A = *runtime.mCoefficients;
     Vector& vecW = *runtime.mVecW;
     Vector& vecD = *runtime.mVecD;
-	Vector& solution = *runtime.mSolution;
+    Vector& solution = *runtime.mSolution;
     const Scalar& alpha = runtime.mAlpha;
-	Scalar& c = runtime.mC;
+    Scalar& c = runtime.mC;
     Scalar& eta = runtime.mEta;
     Scalar& theta = runtime.mTheta;
     Scalar& tau = runtime.mTau;
     Scalar& eps = runtime.mEps;
     const Vector* vecVp;
-   
-    // if iteration = even -> need mVecVEven, else need mVecVOdd    
+
+    // if iteration = even -> need mVecVEven, else need mVecVOdd
     if( (iteration % 2) == 0 ) vecVp = &(*runtime.mVecVEven);
     else vecVp = &(*runtime.mVecVOdd);
+
     const Vector& vecV = *vecVp;
 
     if( (iteration % 2) == 0 )
-    	iterationEven();
+        iterationEven();
 
     vecW = vecW - alpha * A * vecV;
 
     Scalar tempScal;
-    if(abs(alpha)<eps || abs(theta)< eps || abs(eta)<eps)   // scalar is small 
+
+    if(abs(alpha)<eps || abs(theta)< eps || abs(eta)<eps)   // scalar is small
         tempScal=0.0;
     else tempScal = (theta*theta/alpha)*eta;
 
     vecD = vecV + tempScal * vecD;
 
     if(abs(tau)<eps)        // scalar is small
-        theta = 0.0;			
+        theta = 0.0;
     else theta = norm.apply(vecW)/tau;
-    
+
     c = 1.0 / sqrt( 1.0 + theta*theta);
     tau = tau* theta * c;
     eta = c*c*alpha;
     solution = solution + eta * vecD;
+
     if( (iteration % 2) == 1 )
         iterationOdd();
 }
 
-SolverPtr TFQMR::copy(){
+SolverPtr TFQMR::copy()
+{
     return SolverPtr( new TFQMR( *this ) );
 }
 
-TFQMR::TFQMRRuntime& TFQMR::getRuntime(){
+TFQMR::TFQMRRuntime& TFQMR::getRuntime()
+{
     return mTFQMRRuntime;
 }
 
-const TFQMR::TFQMRRuntime& TFQMR::getConstRuntime() const{
+const TFQMR::TFQMRRuntime& TFQMR::getConstRuntime() const
+{
     return mTFQMRRuntime;
 }
 void TFQMR::writeAt( std::ostream& stream ) const
@@ -256,12 +270,12 @@ void TFQMR::writeAt( std::ostream& stream ) const
 
 std::string TFQMR::createValue()
 {
-	return "TFQMR";
+    return "TFQMR";
 }
 
 Solver* TFQMR::create( const std::string name )
 {
-	return new TFQMR( name );
+    return new TFQMR( name );
 }
 
 } /* end namespace solver */

@@ -28,7 +28,7 @@
  */
 
 #ifndef BOOST_TEST_DYN_LINK
-   #define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_DYN_LINK
 #endif
 
 #define BOOST_TEST_MODULE dmemoTest
@@ -50,7 +50,7 @@ bool init_function()
     {
         scai::dmemo::CommunicatorPtr comm = scai::dmemo::Communicator::getCommunicatorPtr();
         return true;
-    } 
+    }
     catch ( scai::common::Exception& ex )
     {
         return false;

@@ -93,7 +93,7 @@ typedef boost::mpl::list< CSRStorage<float>,
 
 BOOST_AUTO_TEST_CASE( buildHaloTest )
 {
-    // it should be okay just to test one ValueType 
+    // it should be okay just to test one ValueType
 
     typedef SCAI_TEST_TYPE ValueType;
 
@@ -134,9 +134,9 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
         SCAI_LOG_DEBUG( logger, *comm << ": join done, result = " << storage );
         BOOST_REQUIRE_EQUAL( storage.getNumRows(), numRows );
         BOOST_REQUIRE_EQUAL( storage.getNumColumns(), numColumns );
-    
+
         // Now we should have the original matrix
-    
+
         for ( IndexType i = 0; i < numRows; ++i )
         {
             for ( IndexType j = 0; j < numColumns; ++j )
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
 
 BOOST_AUTO_TEST_CASE( replicateTest )
 {
-    // it should be okay just to test one ValueType 
+    // it should be okay just to test one ValueType
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -181,9 +181,9 @@ BOOST_AUTO_TEST_CASE( replicateTest )
 
         BOOST_REQUIRE_EQUAL( matrixStorage.getNumRows(), numRows );
         BOOST_REQUIRE_EQUAL( matrixStorage.getNumColumns(), numColumns );
-    
+
         // Now we should have the original matrix
-    
+
         for ( IndexType i = 0; i < numRows; ++i )
         {
             for ( IndexType j = 0; j < numColumns; ++j )
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE( replicateTest )
 
 BOOST_AUTO_TEST_CASE( redistributeTest )
 {
-    // it should be okay just to test one ValueType 
+    // it should be okay just to test one ValueType
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
 BOOST_AUTO_TEST_CASE( exchangeHaloTest )
 {
-    // it should be okay just to test one ValueType 
+    // it should be okay just to test one ValueType
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
         // build a vector of required indexes
         Halo halo;
         std::vector<IndexType> requiredIndexes;// will keep ALL non-local indexes
-    
+
         for ( IndexType i = 0; i < numRows; ++i )
         {
             if ( ! rowDist->isLocal( i ) )
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
                 requiredIndexes.push_back( i );
             }
         }
-    
+
         SCAI_LOG_INFO( logger, *comm << ": #required rows = " << requiredIndexes.size() );
 
         HaloBuilder::build( *rowDist, requiredIndexes, halo );
@@ -287,13 +287,13 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
         SCAI_LOG_INFO( logger, *comm << ": halo matrix = " << *haloMatrix );
         BOOST_REQUIRE_EQUAL( haloMatrix->getNumRows(), static_cast<IndexType>( requiredIndexes.size() ) );
         BOOST_REQUIRE_EQUAL( haloMatrix->getNumColumns(), numColumns );
-    
+
         // Halo matrix must contain the right values
-    
+
         for ( IndexType i = 0; i < haloMatrix->getNumRows(); ++i )
         {
             IndexType globalRow = requiredIndexes[i];
-    
+
             for ( IndexType j = 0; j < numColumns; ++j )
             {
                 BOOST_CHECK_EQUAL( haloMatrix->getValue( i, j ),
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
         }
     }
 }
-    
+
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

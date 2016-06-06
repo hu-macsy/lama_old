@@ -34,13 +34,14 @@
 
 int f ( double x, int p )
 {
-   double f = 1.0;
+    double f = 1.0;
 
-   for ( int i = 0; i < p; ++i )
-   {
-      f *= 10.0;
-   }
-   return static_cast<int>( x * f );
+    for ( int i = 0; i < p; ++i )
+    {
+        f *= 10.0;
+    }
+
+    return static_cast<int>( x * f );
 }
 
 using namespace scai::common;

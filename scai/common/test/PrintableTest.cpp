@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE( PrintableTest )
     X2 x2;
 
     std::ostringstream out;
-  
+
     out << x1;
     BOOST_CHECK_EQUAL( out.str(), typeid(X1).name() );
 

@@ -39,7 +39,7 @@ namespace scai
 namespace logging
 {
 
-// Attention: Do not use any static (string) variables here 
+// Attention: Do not use any static (string) variables here
 // as init might be done after first loggings
 
 const char* level2str( const level::Level level )

@@ -59,140 +59,142 @@ using namespace scai;
 
 int main()
 {
-  srand( (unsigned int)time(NULL) );
+    srand( (unsigned int)time(NULL) );
 
-  //
-  // Define the ValueType used for the vector
-  // Change this type definition to double if your gpu supports that
-  //
-  typedef RealType ScalarType;
+    //
+    // Define the ValueType used for the vector
+    // Change this type definition to double if your gpu supports that
+    //
+    typedef RealType ScalarType;
 
-  /////////////////////////////////////////////////
-  ///////////// Scalar operations /////////////////
-  /////////////////////////////////////////////////
+    /////////////////////////////////////////////////
+    ///////////// Scalar operations /////////////////
+    /////////////////////////////////////////////////
 
-  //
-  // Define a few scalars:
-  //
-  lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between t and double by typedef
-  lama::Scalar s2( static_cast<ScalarType>( 2.71763 ) );
-  lama::Scalar s3( static_cast<ScalarType>( 42.0 ) );
+    //
+    // Define a few scalars:
+    //
+    lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between t and double by typedef
+    lama::Scalar s2( static_cast<ScalarType>( 2.71763 ) );
+    lama::Scalar s3( static_cast<ScalarType>( 42.0 ) );
 
-  // pure scalar operations only can be executed on the host
-  std::cout << "Manipulating a few scalars..." << std::endl;
-  std::cout << "operator +=" << std::endl;
-  s1 += s2;
+    // pure scalar operations only can be executed on the host
+    std::cout << "Manipulating a few scalars..." << std::endl;
+    std::cout << "operator +=" << std::endl;
+    s1 += s2;
 
-  std::cout << "operator *=" << std::endl;
-  s1 *= s2;
+    std::cout << "operator *=" << std::endl;
+    s1 *= s2;
 
-  std::cout << "operator -=" << std::endl;
-  s1 -= s2;;
+    std::cout << "operator -=" << std::endl;
+    s1 -= s2;;
 
-  std::cout << "operator /=" << std::endl;
-  s1 /= s2;
+    std::cout << "operator /=" << std::endl;
+    s1 /= s2;
 
-  std::cout << "operator +" << std::endl;
-  s1 = s2 + s3;
+    std::cout << "operator +" << std::endl;
+    s1 = s2 + s3;
 
-  std::cout << "multiple operators" << std::endl;
-  s1 = s2 + s3 * s2 - s3 / s1;
+    std::cout << "multiple operators" << std::endl;
+    s1 = s2 + s3 * s2 - s3 / s1;
 
-  //
-  // Output stream is overloaded as well:
-  //
+    //
+    // Output stream is overloaded as well:
+    //
 
-  std::cout << "Scalar s3: " << s3 << std::endl;
+    std::cout << "Scalar s3: " << s3 << std::endl;
 
 
-  /////////////////////////////////////////////////
-  ///////////// Vector operations /////////////////
-  /////////////////////////////////////////////////
+    /////////////////////////////////////////////////
+    ///////////// Vector operations /////////////////
+    /////////////////////////////////////////////////
 
-  //
-  // Define a few vectors and fill them with random values
-  //
-  ScalarType plain_vec[ 10 ];
+    //
+    // Define a few vectors and fill them with random values
+    //
+    ScalarType plain_vec[ 10 ];
 
-  for ( unsigned int i = 0; i < 10; ++i )
-  {
-    plain_vec[ i ] = static_cast<ScalarType>( rand() ) / static_cast<ScalarType>( RAND_MAX );
-  }
+    for ( unsigned int i = 0; i < 10; ++i )
+    {
+        plain_vec[ i ] = static_cast<ScalarType>( rand() ) / static_cast<ScalarType>( RAND_MAX );
+    }
 
-  lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
+    lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
 
-  utilskernel::LArray<ScalarType> lama_array1 ( 10, plain_vec );
-  lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
-  lama_vec2.setValues( lama_array1 );
+    utilskernel::LArray<ScalarType> lama_array1 ( 10, plain_vec );
+    lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
+    lama_vec2.setValues( lama_array1 );
 
-  dmemo::DistributionPtr noDist( new dmemo::NoDistribution( 10 ) );
-  lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
+    dmemo::DistributionPtr noDist( new dmemo::NoDistribution( 10 ) );
+    lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
 
-  std::cout << "DenseVector with rand values filled" << std::endl;
+    std::cout << "DenseVector with rand values filled" << std::endl;
 
-  //
-  // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
-  //
-  hmemo::ContextPtr cudaContext;
-  if ( hmemo::Context::canCreate( hmemo::Context::CUDA ) )
-  {
-      cudaContext = hmemo::Context::getContextPtr( hmemo::Context::CUDA, 0 );
-  }
-  else
-  {
-      cudaContext = hmemo::Context::getContextPtr( hmemo::Context::Host );
-  }
-  lama_vec1.setContextPtr( cudaContext );
-  lama_vec2.setContextPtr( cudaContext );
-  lama_vec1.prefetch();
-  lama_vec1.prefetch();
+    //
+    // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
+    //
+    hmemo::ContextPtr cudaContext;
 
-  lama_vec3.prefetch( cudaContext );
+    if ( hmemo::Context::canCreate( hmemo::Context::CUDA ) )
+    {
+        cudaContext = hmemo::Context::getContextPtr( hmemo::Context::CUDA, 0 );
+    }
+    else
+    {
+        cudaContext = hmemo::Context::getContextPtr( hmemo::Context::Host );
+    }
 
-  std::cout << "vectors copied to CUDA context" << std::endl;
+    lama_vec1.setContextPtr( cudaContext );
+    lama_vec2.setContextPtr( cudaContext );
+    lama_vec1.prefetch();
+    lama_vec1.prefetch();
 
-  //
-  // Compute the inner product of two GPU vectors and write the result to either CPU or GPU
-  //
+    lama_vec3.prefetch( cudaContext );
 
-  s1 = lama_vec1.dotProduct( lama_vec2 );
+    std::cout << "vectors copied to CUDA context" << std::endl;
 
-  std::cout << "dot product calculated" << std::endl;
+    //
+    // Compute the inner product of two GPU vectors and write the result to either CPU or GPU
+    //
 
-  //
-  // Compute norms:
-  //
+    s1 = lama_vec1.dotProduct( lama_vec2 );
 
-  s1 = lama_vec1.l1Norm();
-  s2 = lama_vec2.l2Norm();
-  s3 = lama_vec3.maxNorm();
+    std::cout << "dot product calculated" << std::endl;
 
-  std::cout << "norms calculated" << std::endl;
+    //
+    // Compute norms:
+    //
 
-  //
-  // Plane rotation of two vectors:
-  // Computes (x,y) <- (alpha * x + beta * y, -beta * x + alpha * y)
-  //
+    s1 = lama_vec1.l1Norm();
+    s2 = lama_vec2.l2Norm();
+    s3 = lama_vec3.maxNorm();
 
-  lama::Scalar alpha( 1.1f );
-  lama::Scalar beta( 2.3f );
-  lama_vec1 = alpha * lama_vec1 + beta * lama_vec2;
-  lama_vec2 = -beta * lama_vec1 + alpha * lama_vec2;
+    std::cout << "norms calculated" << std::endl;
 
-  std::cout << "plain rotation calculated" << std::endl;
+    //
+    // Plane rotation of two vectors:
+    // Computes (x,y) <- (alpha * x + beta * y, -beta * x + alpha * y)
+    //
 
-  //
-  // Swap the content of two vectors without a temporary vector:
-  //
+    lama::Scalar alpha( 1.1f );
+    lama::Scalar beta( 2.3f );
+    lama_vec1 = alpha * lama_vec1 + beta * lama_vec2;
+    lama_vec2 = -beta * lama_vec1 + alpha * lama_vec2;
 
-  lama_vec1.swap( lama_vec2 );  //swaps all entries in memory
+    std::cout << "plain rotation calculated" << std::endl;
 
-  std::cout << "vectors swapped" << std::endl;
+    //
+    // Swap the content of two vectors without a temporary vector:
+    //
 
-  //
-  //  That's it.
-  //
-  std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
+    lama_vec1.swap( lama_vec2 );  //swaps all entries in memory
 
-  return EXIT_SUCCESS;
+    std::cout << "vectors swapped" << std::endl;
+
+    //
+    //  That's it.
+    //
+    std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
+
+    return EXIT_SUCCESS;
 }

@@ -220,14 +220,14 @@ void IterativeSolver::logIterationStart()
 
 IterativeSolver* IterativeSolver::create( const std::string type, const std::string name )
 {
-	IterativeSolver* sov = dynamic_cast<IterativeSolver*>( Solver::create( type, name ) );
+    IterativeSolver* sov = dynamic_cast<IterativeSolver*>( Solver::create( type, name ) );
 
-	if( !sov )
-	{
-		COMMON_THROWEXCEPTION( "requested Solver is not inherited from IterativeSolver" )
-	}
+    if( !sov )
+    {
+        COMMON_THROWEXCEPTION( "requested Solver is not inherited from IterativeSolver" )
+    }
 
-	return sov;
+    return sov;
 }
 
 void IterativeSolver::writeAt( std::ostream& stream ) const

@@ -85,7 +85,7 @@ void CGNR::initialize( const Matrix& coefficients )
     CGNRRuntime& runtime = getRuntime();
 
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
-    
+
     runtime.mTransposedMat.reset( coefficients.newMatrix() );
 
     runtime.mVecD.reset( coefficients.newDenseVector() );
@@ -113,7 +113,8 @@ void CGNR::solveInit( Vector& solution, const Vector& rhs )
     this->getResidual();
     *runtime.mResidual2 = (*runtime.mTransposedMat) * (*runtime.mResidual);
 
-    if(mPreconditioner != NULL){
+    if(mPreconditioner != NULL)
+    {
         *runtime.mVecZ = Scalar(0.0);
         mPreconditioner->solve(*runtime.mVecZ,*runtime.mResidual2);
     }
@@ -144,7 +145,7 @@ void CGNR::iterate()
     vecW = A * vecD;
     Scalar normVecW = norm.apply( vecW );
     Scalar scalarProduct = vecZ.dotProduct(residual2);
-    
+
     if ( normVecW < eps || 1.0/normVecW < eps )           //norm is small
     {
         alpha = 0.0;
@@ -161,7 +162,7 @@ void CGNR::iterate()
     // PRECONDITIONING
     if(mPreconditioner != NULL) mPreconditioner->solve(vecZ,residual2);
     else vecZ = residual2;
-    
+
     if ( abs(scalarProduct) < eps || 1.0/abs(scalarProduct) < eps )        //norm is small
     {
         beta = 0.0;

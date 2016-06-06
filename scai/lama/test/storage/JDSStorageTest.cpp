@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_arithmetic_test
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
-    // use template storage test 
+    // use template storage test
 
     storageSwapTest<JDSStorage<ValueType> >();
 }
