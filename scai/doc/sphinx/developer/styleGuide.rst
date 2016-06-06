@@ -196,7 +196,7 @@ Naming
   **printFunctionName();**). Types are starting with a upper case letter (Exp. **class Matrix;** or **enum
   ExpressionTypes;**) all other identifiers are starting with a lower case letter.
 
-- Makros are all **UPPERCASE_WITH_UNDERSCORE**, should be quite long and should be prefixed with ``LAMA_`` to avoid any
+- Makros are all **UPPERCASE_WITH_UNDERSCORE**, should be quite long and should be prefixed with ``SCAI_`` to avoid any
   accidentally replacement by the preprocessor.
 
 - In C source files we do not use CamelCase, because it should be callable by the case insensitiv language Fortran.
@@ -204,7 +204,7 @@ Naming
 Namespace
 ^^^^^^^^^
 
-- To avoid naming conflicts we use the name space lama in the C++ part and prefix global names with ``lama_`` in the C part.
+- To avoid naming conflicts we use the general namespace scai for the complete project and specific namespaces for each subproject.
 
 - The statement **using namespace ...** is not allowed in header files, because it would negate the reason to use name spaces.
 
