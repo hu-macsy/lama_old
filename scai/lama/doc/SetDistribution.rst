@@ -17,11 +17,11 @@ For creating a ``Distribution`` you always also need a ``Communicator``, that la
 
 .. code-block:: c++
 
-	CommunicatorPtr noComm  = Communicator::getCommunicatorPtr( Communicator::NO );
-	CommunicatorPtr mpiComm = Communicator::getCommunicatorPtr( Communicator::MPI );
-	CommunicatorPtr gpiComm = Communicator::getCommunicatorPtr( Communicator::GPI );
+	dmemo::CommunicatorPtr noComm  = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::NO );
+	dmemo::CommunicatorPtr mpiComm = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::MPI );
+	dmemo::CommunicatorPtr gpiComm = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::GPI );
 
-	CommunicatorPtr comm = Communicator::getCommunicatorPtr(); // returning the default communicator
+	dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr(); // returning the default communicator
 
 Now you can create a ``Distribution`` by calling the constructor or you can get one from the factory by calling ``getDistributionPtr``.
 
@@ -29,12 +29,25 @@ Now you can create a ``Distribution`` by calling the constructor or you can get 
 
 	IndexType size = 71;
 	float weight = 1.0;
-	DistributionPtr dist ( Distribution::getDistribution( "CYCLIC", comm, size, weight ) );
+	
+	// calling the constructor (resulting in a distribution variable)
+	dmemo::BlockDistribution block ( size, comm );
 
-You only can get an instance of a context by the factory by calling ``getContextPtr`` with a context name:
+	// calling the constructor to initialize a distribution pointer
+	dmemo::DistribtionPtr blockPtr ( new dmemo::BlockDistribution( size, comm ) );
+
+	// calling the factory (resulting in distribution pointer)
+	dmemo::DistributionPtr cyclicDist ( dmemo::Distribution::getDistribution( "CYCLIC", comm, size, weight ) );
 
 
+You can set a ``Distribution`` to a ``Vector`` or ``Matrix`` at initialization time by calling the constructor. For the different constructors please refer to :ref:`lama_Vector` or :ref:`lama_matrix`. To set a distribution after creation, e.g. after initialization, or just to change it later in your application, you can call ``redistribute`` on both with one (``Vector``) or two (``Matrix``) ``Distributions``.
 
 .. code-block:: c++
 
-    z.redistribute( dist );
+	DenseVector<float> x( ... );
+	CSRSparseMatrix<float> m( ... );
+
+    x.redistribute( blockPtr );
+    m.redistribute( cyclicDist, blockPtr );
+
+Note: what you have to keep in mind, distributions in parallel applications are just like matrix and vector sizes in serial applications and have to match for the usage in expressions, e.g. in a matrix-vector-multiplication with **m** and **x** x must have the same ``Distribution`` as m has for its column ``Distribution``. Furthermore the resulting vector has the same ``Distribution`` as m has for its row ``Distribution``.
