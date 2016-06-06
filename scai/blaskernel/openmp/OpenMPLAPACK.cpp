@@ -368,8 +368,10 @@ int OpenMPLAPACK::tptrs(
         }
         else if( trans == CblasTrans )
         {
+            // Todo: implement
             COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasTrans yet" )
 
+            /*
             if( uplo == CblasUpper )
             {
                 if( diag == CblasUnit )
@@ -391,7 +393,7 @@ int OpenMPLAPACK::tptrs(
                 {
 
                 }
-            }
+            }*/
         }
         else if( trans == CblasConjTrans )
         {
@@ -445,8 +447,10 @@ int OpenMPLAPACK::tptrs(
         }
         else if( trans == CblasTrans )
         {
+            // Todo: implement
             COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs - colmajor - conjtrans not implemented" );
 
+            /*
             if( uplo == CblasUpper )
             {
                 if( diag == CblasUnit )
@@ -468,7 +472,7 @@ int OpenMPLAPACK::tptrs(
                 {
 
                 }
-            }
+            }*/
         }
         else if( trans == CblasConjTrans )
         {

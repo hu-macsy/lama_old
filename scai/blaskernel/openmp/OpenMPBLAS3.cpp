@@ -135,9 +135,11 @@ void OpenMPBLAS3::gemm(
         }
         else if( TransA == CblasConjTrans )
         {
+            // Todo: implement
             COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
 
             //'C'
+            /*
             if( TransB == CblasNoTrans )
             {
 
@@ -153,7 +155,7 @@ void OpenMPBLAS3::gemm(
             else
             {
                 COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
-            }
+            }*/
         }
         else if( TransA == CblasNoTrans )
         {
@@ -204,13 +206,11 @@ void OpenMPBLAS3::gemm(
             else
             {
                 COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
-                return;
             }
         }
         else
         {
             COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
-            return;
         }
     }
     else if( order == CblasRowMajor )
@@ -323,8 +323,10 @@ void OpenMPBLAS3::gemm(
         }
         else if( TransA == CblasConjTrans )
         {
+            // Todo: implement
             COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
 
+            /*
             if( TransB == CblasNoTrans )
             {
 
@@ -340,7 +342,7 @@ void OpenMPBLAS3::gemm(
             else
             {
                 COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
-            }
+            }*/
         }
     }
     else
