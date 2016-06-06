@@ -28,8 +28,8 @@ In the following you see all possible constructor calls:
 
   // for later use:
   const int size = 4;
-  dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr( "MPI" ) );
-  dmemo::DistributionPtr dist( dmemo::Distribution::getDistribution( "BLOCK", comm, size, 1.0 ) );
+  dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr( Communicator::MPI ) );
+  dmemo::DistributionPtr dist( dmemo::Distribution::getDistributionPtr( "BLOCK", comm, size, 1.0 ) );
   common::ContextPtr cudaContextPtr = common::Context::getContextPtr( common::context::CUDA );
 
   // empty (not initialized) float vector (with context, distribution, or both)

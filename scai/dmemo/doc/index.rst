@@ -61,7 +61,7 @@ Here is a short example:
 
     IndexType size = 71;
     float weight = 1.0;
-    DistributionPtr dist ( Distribution::getDistribution( "CYCLIC", comm, size, weight ) );
+    DistributionPtr dist ( Distribution::getDistributionPtr( "CYCLIC", comm, size, weight ) );
 
 *********************
 Environment Variables

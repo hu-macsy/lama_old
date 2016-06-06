@@ -50,9 +50,9 @@ another using the copy constructor.
   // for later use:
   int numRows    = 6;
   int numColumns = 4;
-  dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr( "MPI" ) );
-  dmemo::DistributionPtr rDist( dmemo::Distribution::getDistribution( "BLOCK", comm, numRows, 1.0 ) );
-  dmemo::DistributionPtr cDist( dmemo::Distribution::getDistribution( "BLOCK", comm, numColumns, 1.0 ) );
+  dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr( Communicator::MPI ) );
+  dmemo::DistributionPtr rDist( dmemo::Distribution::getDistributionPtr( "BLOCK", comm, numRows, 1.0 ) );
+  dmemo::DistributionPtr cDist( dmemo::Distribution::getDistributionPtr( "BLOCK", comm, numColumns, 1.0 ) );
   common::ContextPtr cudaContextPtr = common::Context::getContextPtr( common::context::CUDA );
 
   // empty (not initialized) float matrices (with size or distribution)
