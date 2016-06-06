@@ -43,7 +43,7 @@ int main()
 
     float weight = 1.0;
 
-    DistributionPtr dist ( Distribution::getDistribution( "CYCLIC", comm, size, weight ) );
+    DistributionPtr dist ( Distribution::getDistributionPtr( "CYCLIC", comm, size, weight ) );
 
     // Note: distribution pointers are always const pointers, so distributions can never be changed
 

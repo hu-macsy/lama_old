@@ -73,8 +73,8 @@ void initMatrix( Matrix& matrix, const char* rowDistKind, const char* colDistKin
 
     // get the distributions from the factory
 
-    DistributionPtr rowDist( Distribution::getDistribution( rowDistKind, comm, numRows ) );
-    DistributionPtr colDist( Distribution::getDistribution( colDistKind, comm, numColumns ) );
+    DistributionPtr rowDist( Distribution::getDistributionPtr( rowDistKind, comm, numRows ) );
+    DistributionPtr colDist( Distribution::getDistributionPtr( colDistKind, comm, numColumns ) );
 
     matrix.redistribute( rowDist, colDist );
 }

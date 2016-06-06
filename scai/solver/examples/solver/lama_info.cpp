@@ -224,7 +224,7 @@ void distributionInfo()
 
         CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // get the default one
 
-        scai::common::shared_ptr<Distribution> dist( Distribution::getDistribution( values[i], comm, 10, 1.0 ) );
+        scai::common::shared_ptr<Distribution> dist( Distribution::getDistributionPtr( values[i], comm, 10, 1.0 ) );
 
         cout << "    Distribution: " << *dist << endl;
     }

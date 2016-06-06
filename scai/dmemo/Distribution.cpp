@@ -532,7 +532,7 @@ void Distribution::replicateRagged(
 
 /* ---------------------------------------------------------------------- */
 
-Distribution* Distribution::getDistribution(
+Distribution* Distribution::getDistributionPtr(
     const std::string& kind,
     CommunicatorPtr comm,
     const IndexType globalSize,
@@ -541,7 +541,7 @@ Distribution* Distribution::getDistribution(
     return Distribution::create( kind, DistributionArguments( comm, globalSize, NULL, weight ) );
 }
 
-Distribution* Distribution::getDistribution(
+Distribution* Distribution::getDistributionPtr(
     const std::string& kind,
     CommunicatorPtr comm,
     const Distributed& matrix,

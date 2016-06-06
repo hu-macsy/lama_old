@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistribution( values[i], comm, globalSize ) );
+        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
 
         BOOST_CHECK_EQUAL( dist->getKind(), values[i] );
 
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( local2GlobalTest )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistribution( values[i], comm, globalSize ) );
+        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
 
         SCAI_LOG_INFO( logger, *comm << ": local2GlobalTest, dist = " << *dist )
 
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistribution( values[i], comm, globalSize ) );
+        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
 
         SCAI_LOG_INFO( logger, *comm << ": global2LocalTest, dist = " << *dist )
 
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistribution( values[i], comm, globalSize ) );
+        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
 
         SCAI_LOG_INFO( logger, *comm << ": writeAt, dist = " << *dist )
 
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( printDistributionVector )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistribution( values[i], comm, globalSize ) );
+        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
 
         // ToDo: does not test the content of these files
 

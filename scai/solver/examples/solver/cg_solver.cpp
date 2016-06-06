@@ -156,7 +156,7 @@ int main( int argc, char* argv[] )
         if ( lamaconf.useMetis() )
         {
             LamaTiming timer( comm, "Metis" );
-            dist.reset( Distribution::getDistribution( "METIS", lamaconf.getCommunicatorPtr(), matrix, weight ) );
+            dist.reset( Distribution::getDistributionPtr( "METIS", lamaconf.getCommunicatorPtr(), matrix, weight ) );
         }
         else
         {

@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
 
     IndexType globalSize = 17;
 
-    DistributionPtr bdist( Distribution::getDistribution( "BLOCK", comm, globalSize, 1.0 ) );
+    DistributionPtr bdist( Distribution::getDistributionPtr( "BLOCK", comm, globalSize, 1.0 ) );
 
     BOOST_REQUIRE( bdist );
 
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE( createTest )
 {
     DistributionPtr bdist ( BlockDistribution::create( DistributionArguments( comm, 1, NULL, 1.0 ) ) );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), 1 );
-    bdist.reset( Distribution::getDistribution( "BLOCK", comm, 1 ) );
+    bdist.reset( Distribution::getDistributionPtr( "BLOCK", comm, 1 ) );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), 1 );
 }
 

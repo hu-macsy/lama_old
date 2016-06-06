@@ -109,17 +109,17 @@ public:
      *  // Using a MetisDistribution requires its availabilty
      *  Distribution* dist = MetisDistribution( comm, size, weight )
      *  // code using the factory does not require the availability
-     *  Distribution* dist = Distribution::getDistribution( "METIS", comm, size, weight )
+     *  Distribution* dist = Distribution::getDistributionPtr( "METIS", comm, size, weight )
      *  if ( dist == NULL )
      *  {
-     *      dist = Distribution::getDistribution( "GEN_BLOCK", comm, size, weight )
+     *      dist = Distribution::getDistributionPtr( "GEN_BLOCK", comm, size, weight )
      *  }
      *  /endcode
      *
      *  Note: Internally, this routine requires that all derived classes implement a corresponding
      *        create method that will be registered during static initialization.
      */
-    static Distribution* getDistribution(
+    static Distribution* getDistributionPtr(
         const std::string& kind,
         const CommunicatorPtr comm,
         const IndexType globalSize,
@@ -137,7 +137,7 @@ public:
      *
      * Note: the current distribution of matrix does not matter.
      */
-    static Distribution* getDistribution(
+    static Distribution* getDistributionPtr(
         const std::string& kind,
         const CommunicatorPtr comm,
         const Distributed& matrix,
