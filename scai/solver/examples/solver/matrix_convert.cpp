@@ -68,15 +68,17 @@ struct CommandLineOptions
     {
         if ( option == "-a" )
         {
-            outFileType = File::SAMG;
+            outFileType = File::SAMG_FORMAT;
+            writeBinary = false;
         }
         else if ( option == "-mm" )
         {
             outFileType = File::MATRIX_MARKET;
+            writeBinary = false;
         }
         else if ( option == "-b" )
         {
-            outFileType = File::SAMG;
+            outFileType = File::SAMG_FORMAT;
             writeBinary = true;
         } 
         else if ( option == "-S" )
@@ -160,7 +162,7 @@ struct CommandLineOptions
 
         if ( _StorageIO::hasSuffix( inFileName, ".mtx" ) )
         {
-             outFileType = File::SAMG;
+             outFileType = File::SAMG_FORMAT;
         }
         else
         {

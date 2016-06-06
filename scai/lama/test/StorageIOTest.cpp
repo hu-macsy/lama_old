@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, scai_arithmetic_te
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
     std::string filename = "out_formatted";
-    csrMatrix.writeToFile( filename, File::SAMG );
+    csrMatrix.writeToFile( filename, File::SAMG_FORMAT );
     readMatrix.readFromFile( filename + ".frm" );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, scai_arithmetic_test_
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
     std::string filename = "out_binary";
-    csrMatrix.writeToFile( filename, File::SAMG, TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, TypeTraits<IndexType>::stype, true );
+    csrMatrix.writeToFile( filename, File::SAMG_FORMAT, TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, TypeTraits<IndexType>::stype, true );
     readMatrix.readFromFile( filename + ".frm" );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );

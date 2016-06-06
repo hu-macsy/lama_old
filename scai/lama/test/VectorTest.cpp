@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmeti
     std::string prefix = scai::test::Configuration::getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
-    vector.writeToFile( prefix + "/" + testfilename, File::SAMG, TypeTraits<ValueType>::stype );
+    vector.writeToFile( prefix + "/" + testfilename, File::SAMG_FORMAT, TypeTraits<ValueType>::stype );
     DenseVector<ValueType> vector2( prefix + "/" + testfilename + ".frv" );
     // replicate vector2 as it is only on first processor
     vector2.redistribute( result.getDistributionPtr() );
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmeti
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
 
-    vector.writeToFile( fileName, File::SAMG, TypeTraits<ValueType>::stype, true );
+    vector.writeToFile( fileName, File::SAMG_FORMAT, TypeTraits<ValueType>::stype, true );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
     DenseVector<ValueType> vector3( prefix + "/" + testfilename + ".frv" );
     vector3.redistribute( result.getDistributionPtr() );

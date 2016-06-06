@@ -12,3 +12,11 @@ creates a 3-dimensional 27-point poisson star with dimension 100 in every direct
 2 GPU:   mpirun -np 2 cg_solver.exe example CUDA JDS
 
 mpirun -bind-to-socket --map-by socket -np 2 cg_solver.exe ...
+
+Further arguments:
+
+   Wxxx gives the process a weight,
+
+        mpirun -np 2 cg_solver.exe ... W1,W2
+
+        first process gets approximately half number of rows as second process
