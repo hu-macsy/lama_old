@@ -2449,12 +2449,12 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     IndexType myRank = comm->getRank();
-    IndexType host = 0; // reading processor
+    IndexType master = 0; // reading processor
 
     IndexType numRows = 0; // will be the size of the vector
     IndexType numCols = 0; // will be the size of the vector
 
-    if( myRank == host )
+    if( myRank == master )
     {
         mLocalData->readFromFile( fileName );
         numRows = mLocalData->getNumRows();
@@ -2463,13 +2463,13 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
         mHalo.clear();
     }
 
-    comm->bcast( &numRows, 1, host );
-    comm->bcast( &numCols, 1, host );
+    comm->bcast( &numRows, 1, master );
+    comm->bcast( &numCols, 1, master );
 
     DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
     DistributionPtr colDist( new NoDistribution( numCols ) );
 
-    if( myRank == host )
+    if( myRank == master )
     {
         Matrix::setDistributedMatrix( dist, colDist );
     }
