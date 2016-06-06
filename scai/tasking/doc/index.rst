@@ -8,34 +8,54 @@ SCAI Tasking
 Description 
 ***********
 
-* Handles asynchronous executions
-* Supported for asynchronous computations, memory transfer and communication
-* Provides the SyncToken as central concept
 
-Tasking is a library that provides support for:
+Tasking is a library that provides support for all kind of asynchronous executions:
 
 * asynchronous computations on different context devices
 * asynchronous memory transfer, either in one memory class but also between different memory classes
 * asynchronous communication 
 
-********
-Contents
-********
+It provides the SyncToken class as the central concept for synchronization. An object of this class
+hides the context wherever the asynchronous execution has started and its destructor frees 
+all occupied resources.
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 2
+*************************
+Tasking Library Reference
+*************************
+
+For using this library the base class ``SyncToken`` is needed as well as the derived
+classes to start asynchronous executions.
+
+====================         ==========================================
+Class                        Description
+====================         ==========================================
+:ref:`SyncToken`             Common base class for all asynchronous operations
+:ref:`TaskSyncToken`         Asynchronous execution of a task by a Host thread
+:ref:`CUDAStreamSyncToken`   Asynchronous execution of a CUDA kernel on a GPU device
+:ref:`MICSyncToken`          Asynchronous execution of a kernel on the Intel Xeon Phi
+MPISyncToken                 Asynchronous execution of a MPI communication.
+GPISyncToken                 Asynchronous execution of a GPI communication.
+
+The design of this library is done in such a way that other libraries can define 
+their own derived classes for asynchronous executions. So the classes MPISyncToken
+and GPISyncToken are not part of this library but part of the library dmemo.
+
+Internally, some helper classes are used to faciliate the use and to decrease
+the overhead of asynchronous executions.
+
+====================         ==========================================
+Class                        Description
+====================         ==========================================
+:ref:`ThreadPool`            Thread pool avoids overhead due to thread creation
+:ref:`Task`                  Helper class that describes a task executed in a thread pool
+:ref:`CUDAStreamPool`        Management of streams on a CUDA device
    
-   SyncToken
-   ThreadPool
-   Task
-   TaskSyncToken
-   CUDAStreamPool
-   CUDAStreamSyncToken
-
 *******
 Example
 *******
+
+The following example shows how the main program can start a thread that executes
+a certain function g while the main thread itself executes another function f.
 
 .. code-block:: c++
 
@@ -70,4 +90,4 @@ Internal dependencies:
 Related Work
 ************
 
-Thread pools are not provided in the C++ 11 standard, but also by Boost.
+Thread pools are not provided by the C++ 11 standard, but by the Boost task library. 

@@ -45,8 +45,7 @@ SCAI_LOG_DEF_LOGGER( KernelRegistry::logger, "KernelRegistry" )
 
 // define static variable for KernelMap here
 
-//KernelRegistry::KernelMap KernelRegistry::theKernelMap;
-KernelRegistry* KernelRegistry::mInstance;
+KernelRegistry* KernelRegistry::mInstance = NULL;
 
 /* -----------------------------------------------------------------------------*/
 
@@ -103,9 +102,7 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, cont
 
 void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, context::ContextType ctx, VoidFunction fn )
 {
-    // can cause serious segmentation violoation in case of unregister after destructo of KernelMap
-
-    return;
+    // this is safe at program exit as registry is still alive
 
     SCAI_LOG_INFO( logger, "unregister ctx = " << ctx << " with " << key )
 
@@ -115,7 +112,10 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
 
     if ( it == kreg.theKernelMap.end() )
     {
+<<<<<<< HEAD
+=======
 //        SCAI_LOG_ERROR( logger, "unregister: no entry for key = " << key )
+>>>>>>> 125b4b305edb5a71403cab82710d6c0083ad1476
         SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " not found")
     }
     else
@@ -142,8 +142,8 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
 
         if( it->second.isEmpty() )
         {
-            SCAI_LOG_INFO( logger, "erasing complete entry" )
             kreg.theKernelMap.erase( it );
+            SCAI_LOG_INFO( logger, "erased complete entry, #entries = " << kreg.theKernelMap.size() )
         }
     }
 }

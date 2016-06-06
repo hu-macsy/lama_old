@@ -153,7 +153,7 @@ public:
     template<typename FunctionType>
     static void get( FunctionType& fn, const char* name, common::context::ContextType ctx )
     {
-    	KernelRegistry& kreg = getInstance();
+        KernelRegistry& kreg = getInstance();
 
         KernelRegistryKey key( typeid( FunctionType ), name );
 
@@ -184,7 +184,7 @@ public:
     template<typename FunctionType>
     static void get( ContextFunction<FunctionType>& contextFunction, const char* name )
     {
-    	KernelRegistry& kreg = getInstance();
+        KernelRegistry& kreg = getInstance();
 
         KernelRegistryKey key( typeid( FunctionType ), name );
 
@@ -260,31 +260,17 @@ private:
 
     static KernelRegistry& getInstance()
     {
-    	static Guardian g;
+        if ( !KernelRegistry::mInstance )
+        {
+             SCAI_LOG_INFO( KernelRegistry::logger, "Guardian --> create Instance")
+             mInstance = new KernelRegistry();
+        }
 
-    	return *mInstance;
+        return *mInstance;
+
+        // Note: the registry map itself is never deleted as destructor of registrators
+        //       try to delete entries in this map at exit of program
     }
-
-    class Guardian
-    {
-    public:
-    	Guardian()
-    	{
-    		if( !KernelRegistry::mInstance )
-    		{
-    			SCAI_LOG_INFO( KernelRegistry::logger, "Guardian --> create Instance")
-    			KernelRegistry::mInstance = new KernelRegistry();
-    		}
-    	}
-
-    	~Guardian()
-    	{
-    		if( KernelRegistry::mInstance )
-    		{
-    			delete KernelRegistry::mInstance;
-    		}
-    	}
-    };
 };
 
 } /* end namespace kregistry */
