@@ -5,7 +5,7 @@ Solution Task 2
 
 Here is the solution of task 2. The code demonstrate a self-provided CG-Solver. 
 
-.. literalinclude:: ../../examples/lecture/task2.cpp 
+.. literalinclude:: ../../../solver/examples/lecture/task2.cpp 
    :language: c++
    :emphasize-lines: 54,57,70
 
@@ -17,7 +17,7 @@ Here is the solution of task 2. The code demonstrate a self-provided CG-Solver.
 
 An alternative solution for task 2 is the CG-class of LAMA, which contains the same calculation.
 
-.. literalinclude:: ../../examples/lecture/task2a.cpp 
+.. literalinclude:: ../../../solver/examples/lecture/task2a.cpp 
    :language: c++
    :lines: 44-50
    
@@ -28,7 +28,7 @@ An alternative solution for task 2 is the CG-class of LAMA, which contains the s
 To see results, it is possible to print out the values of vectors. By the way, an explicit function to print out results does not exist.
 But it is possible to use a HostReadAccess to get reading access to the values.
 
-.. literalinclude:: ../../examples/lecture/task2a.cpp 
+.. literalinclude:: ../../../solver/examples/lecture/task2a.cpp 
    :language: c++
    :lines: 51-61
 

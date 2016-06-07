@@ -3,7 +3,7 @@
 Solution Task 1 (a)
 -------------------
 
-.. literalinclude:: ../../examples/lecture/task1a.cpp 
+.. literalinclude:: ../../../solver/examples/lecture/task1a.cpp 
    :language: c++
    :lines: 0-24,37-38
    :emphasize-lines: 21-23
@@ -19,7 +19,7 @@ Solution Task 1 (b)
 The following Code is an alternative solution for task 1. Explanations for each
 line are listened below.
 
-.. literalinclude:: ../../examples/lecture/task1b.cpp 
+.. literalinclude:: ../../../solver/examples/lecture/task1b.cpp 
    :language: c++
    :lines: 0-34,47-48
    :emphasize-lines: 16,18,33
@@ -31,7 +31,7 @@ line are listened below.
 Setting the right hand side and the solution vector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../examples/lecture/task1b.cpp 
+.. literalinclude:: ../../../solver/examples/lecture/task1b.cpp 
    :language: c++
    :emphasize-lines: 35,36,37,42,44
 
