@@ -12,7 +12,7 @@ Writing a configuration
 
 To create a configuration you define a text file with the content or hand it over to the configure method as a std::string.
 
-::
+.. code-block:: c++
 
    CommonLogger loggerDef( <CGpre>, solverInformation, toConsoleOnly, Timer );
 
@@ -30,7 +30,7 @@ To create a configuration you define a text file with the content or hand it ove
 Run a MetaSolver
 ^^^^^^^^^^^^^^^^
 
-::
+.. code-block:: c++
 
    void userFunction( 
       const std::string& confgiuration, 

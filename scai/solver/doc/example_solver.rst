@@ -1,3 +1,5 @@
+:orphan:
+
 Solver Example
 ==============
 

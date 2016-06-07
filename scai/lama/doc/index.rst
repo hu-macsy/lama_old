@@ -45,7 +45,7 @@ Usage
 For implementing a dedicated application with a choosen data type and storage format, target architecture,and distribution strategy, you need to know how to use and set them.
 
 ======================    ==========================================
-Class                     Description
+How to                    Description
 ======================    ==========================================
 :doc:`SetValueType`       How to use a value type
 :doc:`SetStorage`         How to use/set a ``MatrixStorage``
