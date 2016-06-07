@@ -79,7 +79,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ResidualThresholdTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( ContstructorTest )
+BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     BOOST_CHECK_EQUAL( mCriterionDouble->getPrecision().getValue<double>(), 1.0e-6 );
     BOOST_CHECK_EQUAL( mCriterionDouble->getCheckMode(), ResidualThreshold::Absolute );
