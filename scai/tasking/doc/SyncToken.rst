@@ -1,3 +1,5 @@
+.. _SyncToken:
+
 SyncToken
 =========
 
