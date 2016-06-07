@@ -47,6 +47,10 @@ if    ( NOT WIN32 )
 
 	set ( CXX11_COMPILE_FLAG "-std=c++11" )
 
+	if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
+		set ( CXX11_COMPILE_FLAG "${CXX11_COMPILE_FLAG} -stdlib=libc++" )
+	endif ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
+
 	include ( CheckCXXCompilerFlag )
 
 	if ( NOT DEFINED CXX_SUPPORTS_C11 )
