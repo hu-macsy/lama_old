@@ -1,3 +1,5 @@
+.. _ThreadPool:
+
 ThreadPool
 ==========
 
