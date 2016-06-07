@@ -3,9 +3,11 @@
 GPI-2
 ^^^^^
 
-GPI-2__ is an API for asynchronous communication. It provides a flexible, scalable and fault tolerant interface for parallel applications.
+|GPI-2| is an API for asynchronous communication. It provides a flexible, scalable and fault tolerant interface for parallel applications.
 
-__ http://www.gpi-site.com/gpi2/
+.. |GPI-2| raw:: html
+
+  <a href="http://www.gpi-site.com/gpi2/" target="_blank">GPI-2</a>
 
 Use of GPI in LAMA
 ^^^^^^^^^^^^^^^^^^

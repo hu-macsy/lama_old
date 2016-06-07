@@ -74,7 +74,7 @@ public:
 
     /** Own mutex class for synchronization of threads */
 
-    class Mutex 
+    class COMMON_DLL_IMPORTEXORT Mutex 
     {
 
         friend class ScopedLock;  // allow access to the mutex
@@ -111,7 +111,7 @@ public:
 
     /** Add derived class which is a recursive mutex by default constructor. */
 
-    class RecursiveMutex : public Mutex
+    class COMMON_DLL_IMPORTEXORT RecursiveMutex : public Mutex
     {
     public:
 
@@ -126,7 +126,7 @@ public:
 
     /** Locking of a mutex within a scope, unlock by destructor. */
 
-    class ScopedLock 
+    class COMMON_DLL_IMPORTEXORT ScopedLock 
     {
 
         friend class Condition;  // allow access to the mutex
@@ -142,7 +142,7 @@ public:
 
     /** Own condition class for synchronization of threads */
 
-    class Condition : std::condition_variable_any
+    class COMMON_DLL_IMPORTEXORT Condition : std::condition_variable_any
     {
     public:
 

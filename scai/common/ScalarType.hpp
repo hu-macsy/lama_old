@@ -33,7 +33,6 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/common/SCAITypes.hpp>
 #include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/macros/throw.hpp>
 
