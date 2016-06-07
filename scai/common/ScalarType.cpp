@@ -30,6 +30,8 @@
 // hpp
 #include <scai/common/ScalarType.hpp>
 
+#include <cstring>
+
 namespace scai
 {
 

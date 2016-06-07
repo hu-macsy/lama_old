@@ -40,6 +40,35 @@
 #define omp_get_max_threads() 1
 #define omp_set_num_threads( x ) 
 
+#if defined( WIN32 )
+
+#include <windows.h>
+
+inline double omp_get_wtime( void )
+{
+    SYSTEMTIME lpSystemTime;
+    GetLocalTime( &lpSystemTime );
+    return ( lpSystemTime.wHour * 60.0 + lpSystemTime.wMinute ) * 60.0 +
+           lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
+}
+
+#else
+
+#include <sys/time.h>
+
+inline double omp_get_wtime( void )
+{
+
+    struct timeval tp;
+    struct timezone tzp;
+
+    gettimeofday( &tp, &tzp );
+
+    return (double) tp.tv_sec + tp.tv_usec * 0.000001;
+}
+
+#endif
+
 #endif
 
 /** atomicAdd used for reductions as reduction directive is unsupported for complex numbers.

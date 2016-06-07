@@ -29,6 +29,7 @@
 
 // hpp
 #include <scai/common/Walltime.hpp>
+#include <scai/common/OpenMP.hpp>
 
 #if defined( _WIN32 )
 
@@ -85,24 +86,7 @@ INTEGER_8 Walltime::timerate()
 
 double Walltime::get()
 {
-#if defined( WIN32 )
-
-    SYSTEMTIME lpSystemTime;
-    GetLocalTime( &lpSystemTime );
-    return ( lpSystemTime.wHour * 60.0 + lpSystemTime.wMinute ) * 60.0 +
-           lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
-
-#else
-
-    struct timeval tp;
-    struct timezone tzp;
-
-    gettimeofday( &tp, &tzp );
-
-    return (double) tp.tv_sec + tp.tv_usec * 0.000001;
-
-#endif
-
+    return omp_get_wtime();
 }
 
 void Walltime::sleep( unsigned int milliseconds )
