@@ -44,6 +44,7 @@
 
 // internal scai libraries
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
 
 // std
