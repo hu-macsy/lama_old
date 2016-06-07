@@ -3,19 +3,20 @@
 Solver Usage
 ============
 
-SCAI solver provides different linear equation solvers.
+SCAI solver provides different linear equation solvers. Using one of the predefined solvers is really easy: you just create an instance of it, initialize it with the equation matrix and can start to solve it. By default the solver just makes one iteration. For running till a predefined criteria set a (combination of) stopping criteria (see :ref:`here <stopping-criteria>`). You can call solve for different right hand sides and initialize the solver with different equation matrices as you want.
 
-See the example for a short introduction how the solvers can be used. 
-
-Usage
------
-
-For using one of the predefined solver you create an instance of it, initialize it with the matrix, set a stopping
-criteria and start to solve it.
+The general call to a CG solver is:
 
 .. code-block:: c++
 
-    CG cgSolver( "CGSolver" );
+    CG cgSolver( "myCGSolver" );
     cgSolver.intialize( matrix );
-    // set stopping critia (see below)
     cgSolver.solve( solutionVector, rhsVector );
+
+You may also create the solver instance by calling the factory:
+
+.. code-block:: c++
+
+    SolverPtr solver( Solver::create( "CG", "myCGsolver" ) );
+    solver->intialize( matrix );
+    solver->solve( solutionVector, rhsVector );

@@ -1,4 +1,4 @@
-.. _main-page_solver:
+.. _solver_solver:
 
 ***********
 Solver List
@@ -37,7 +37,7 @@ Multigrid methods
 
 * SimpleAMG
 
-NOTE: SCAI solver does not support a full AMG. We prepare an interface to |SAMG| - another (commercial) Fraunhofer SCAI library. Please contact us via lama[at]scai.fraunhofer.de if you are interested.
+NOTE: SCAI solver does not support a full AMG. We prepare an interface to |SAMG| - another (commercial) Fraunhofer SCAI library. Please contact us via lama[at]scai.fraunhofer.de if you are interested in using SCAI solver with SAMG.
 
 .. |SAMG| raw:: html
 

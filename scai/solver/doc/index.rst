@@ -8,13 +8,13 @@ Solver
 Description
 ***********
 
-The SCAI solver library implements with LAMA's text book syntax linear iterative solvers. The solver palette includes splitting methods like Jacobi or Richardson, krylow subspace methods like CG or GMRES and a simple multigrid method. Preconditioning is preserved and general stopping criteria a available.
+The SCAI solver library implements with LAMA's text book syntax linear iterative solvers. The solver palette includes splitting methods like Jacobi or Richardson, krylow subspace methods like CG or GMRES and a simple multigrid method. General stopping criteria are available and preconditioning is preserved.
 
 *****************
 Library Reference
 *****************
 
-A full list of all prepared solvers can be found :doc:`here <SolverList>`
+A full list of all prepared solvers can be found :doc:`here <SolverList>`.
 
 .. toctree::
    :hidden:
@@ -40,7 +40,7 @@ A full list of all prepared solvers can be found :doc:`here <SolverList>`
 Usage
 -----
 
-In the following we explain how to use a solver in general, solver logging, set and combine stopping criteria and add preconditioning.
+In the following we explain how to use a solver and solver logging as well as how to set and combine stopping criteria and how to add preconditioning.
 
 =======================    ==========================================
 How to                     Description
@@ -49,8 +49,9 @@ How to                     Description
 :doc:`SolverLogger`        How to use to solver logger
 :doc:`StoppingCriteria`    How to use stopping criteria
 :doc:`Preconditioning`     How to use a preconditioning
-.. :doc:`WritingSolver`       How to write your own solver
 =======================    ==========================================
+
+.. :doc:`WritingSolver`    ..   How to write your own solver
 
 .. toctree::
    :hidden:
