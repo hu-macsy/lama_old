@@ -73,10 +73,10 @@ if    ( NOT WIN32 )
 		#set ( CXX11_FEATURE_NUMBER  "2546" "2431"    "2927"   "1720"          "2118"              "2343"     "2555"               "2235"      "2253"          "2340"     )
 		#set ( CXX11_LINK_LIBRARIES  ""     ""        ""       ""              ""                  ""         ""                   ""          ""              ""         )
 
-		# needed c++11 features - replacing boost
-		set ( CXX11_FEATURE_LIST    "bind" "function" "shared_ptr" "thread_local" "unique_ptr" "weak_ptr" )
-		set ( CXX11_FEATURE_NUMBER  ""     ""         ""           ""             ""           ""         )
-		set ( CXX11_LINK_LIBRARIES  ""     ""         ""           "pthread"      ""           ""         ) #todo:: pthreads only for gnu !?
+		# needed c++11 features - replacing boost                                            # replacing pthread
+		set ( CXX11_FEATURE_LIST    "bind" "function" "shared_ptr" "unique_ptr" "weak_ptr" ) # "thread_local" )
+		set ( CXX11_FEATURE_NUMBER  ""     ""         ""           ""           ""         ) # ""             )
+		set ( CXX11_LINK_LIBRARIES  ""     ""         ""           ""           ""         ) # "pthread"      ) #todo:: pthreads only for gnu !?
 
 		set ( COUNT 0 )
 		foreach    ( FEATURE ${CXX11_FEATURE_LIST} )

@@ -216,13 +216,13 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 ## configure c++11/pthread dependent headers, add specific sources
 
-if    ( CXX_SUPPORTS_C11 )
-    list ( APPEND COMMON_SOURCES Thread )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in" "${CONFIGURE_DIR}/Thread.hpp" )
-else  ( CXX_SUPPORTS_C11 )
+#if    ( CXX_SUPPORTS_C11 )
+#    list ( APPEND COMMON_SOURCES Thread )
+#    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in" "${CONFIGURE_DIR}/Thread.hpp" )
+#else  ( CXX_SUPPORTS_C11 )
     list ( APPEND COMMON_SOURCES Thread_pthread )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in_pthread" "${CONFIGURE_DIR}/Thread.hpp" )
-endif (  CXX_SUPPORTS_C11 )
+#endif (  CXX_SUPPORTS_C11 )
 
 install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
                 ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
