@@ -54,7 +54,42 @@ WriteAccess           Template class for write access on HArray
 Example
 *******
 
-ToDo: Example with basic idea.
+The following example defines three heterogeneous arrays A, B, C. B and C are allocated
+and defined on the host CPU, and will then be added into an array A on the GPU.
+
+.. code-block:: c++
+
+    const IndexType N = 10;
+
+    HArray<double> a, b, c;
+
+    ContextPtr host = Context::getHostPtr();
+    {
+        WriteOnlyAccess<double> wB( b, host, N );  // allocate on host
+        WriteOnlyAccess<double> wC( c, host, N );  // allocate on host
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            wB[i] = 1.0;
+            wC[i] = 2.0;
+        }
+    }
+
+    ContextPtr gpu = Context::getContextPtr( Context::CUDA );
+    {
+        ReadAccess<double> rB( b, gpu );   // implicit allocate, transfer to GPU
+        ReadAccess<double> rC( c, gpu );   // implicit allocate, transfer to GPU
+        WriteOnlyAccess<double> wA( a, gpu, N );  // allocate on GPU
+
+        double* ptrA = a.get();  // pointer to GPU data
+        double* ptrB = b.get();  // pointer to GPU data
+        double* ptrC = c.get();  // pointer to GPU data
+
+        add_kernel_gpu( ptrA, ptrB, ptrC, N );  // run code on the GPU
+    }
+
+The library kregistry provides support to write this code in such a way that
+the context where the addition is done can be chosen at runtime.
 
 *****
 Usage
@@ -78,11 +113,16 @@ Internal dependencies:
 
 External dependencies:
 
-* `CUDA <http://www.nvidia.com/object/cuda_home_new.html>`_ for CUDA Context
+* :ref:`CUDA<scaicommon:CUDA>`
 * Compiler supporting Intel MIC Architecture for using the Xeon Phi Coprocessor
 
 ************
 Related Work
 ************
 
-* `Hemi <http://harrism.github.io/hemi>`_ is very close but restricted to Host and CUDA
+* |Hemi| is very close but restricted to Host and CUDA
+
+.. |Hemi| raw:: html
+
+  <a href="http://harrism.github.io/hemi/" target="_blank">Hemi</a>
+
