@@ -1,1 +1,1 @@
-:orphan:
+.. _solver-solver:

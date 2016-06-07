@@ -95,7 +95,6 @@ Example
 
       DenseVector<ValueType> result( csrMatrix * vector ); // calculation takes place with CUDA (possibly distributed)
       result.writeToFile( "resultVec.mtx", File::MATRIX_MARKET );
-
    }
 
 .. *****************

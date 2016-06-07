@@ -1,12 +1,11 @@
 .. _solver-usage:
 
-Solver
-======
+Solver Usage
+============
 
-LAMA provides different linear equation solvers. These are available in the ``scai/lama/solver/`` directory.
+SCAI solver provides different linear equation solvers.
 
-See the example for a short introduction how the solvers can be used. For writing your own solver see
-:doc:`here <solver/writingSolver>`.
+See the example for a short introduction how the solvers can be used. 
 
 Usage
 -----

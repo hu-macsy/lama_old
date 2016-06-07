@@ -1,6 +1,6 @@
 :orphan:
 
-Writing your own LAMA solver
+Writing your own ScAI solver
 ----------------------------
 
 coming soon...

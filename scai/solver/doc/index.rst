@@ -31,6 +31,12 @@ A full list of all prepared solvers can be found :doc:`here <SolverList>`
 .. :doc:`IterativeSolver`
 .. =======================    ==========================================
 
+.. toctree::
+   :hidden:
+
+   Solver
+   IterativeSolver
+
 Usage
 -----
 
@@ -43,12 +49,13 @@ How to                     Description
 :doc:`SolverLogger`        How to use to solver logger
 :doc:`StoppingCriteria`    How to use stopping criteria
 :doc:`Preconditioning`     How to use a preconditioning
+.. :doc:`WritingSolver`       How to write your own solver
 =======================    ==========================================
 
 .. toctree::
    :hidden:
    
-   Solver
+   SolverUsage
    SolverLogger
    StoppingCriteria
    Preconditioning
@@ -71,25 +78,25 @@ Example
 
       IndexType size = 30;
 
-      DenseVector<ValueType> x( size, 1.0, cudaCtx );
+      DenseVector<ValueType> rhs( size, 1.0 );
+      DenseVector<ValueType> solution( size, 0.0 );
       CSRSparseMatrix<ValueType> csrMatrix( "gr_30_30.mtx" );
 
       LoggerPtr logger( new CommonLogger ( "myLogger",
                                            LogLevel::convergenceHistory,
                                            LoggerWriteBehaviour::toConsoleOnly ) );
 
-	  CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
-	  CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
-	  CriterionPtr both( new Criterion ( it, rt, Criterion::OR ) );
+	   CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+	   CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
+	   CriterionPtr both( new Criterion ( it, rt, Criterion::OR ) );
 
-	  solver->setLogger( logger );
-	  solver->setStoppingCriterion( rt );
+	   solver->setLogger( logger );
+	   solver->setStoppingCriterion( rt );
 
-	  solver->initialize( matrix );
-	  solver->solve( solution, rhs );
+	   solver->initialize( csrMatrix );
+	   solver->solve( solution, rhs );
 
       solution.writeToFile( "resultVec.mtx", File::MATRIX_MARKET );
-
    }
 
 ************
