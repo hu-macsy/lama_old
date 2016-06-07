@@ -166,9 +166,11 @@ public:
 
     };
 
-    typedef void* ( *pthread_routine ) ( void* );
+    /** Only supported signature, void* might be replaced by any pointer type. */
 
-    Thread() : running( false )
+    typedef void* ( *ThreadFunction ) ( void* );
+
+    Thread() 
     {
     }
 
@@ -186,11 +188,11 @@ public:
     void run( void ( *work ) ( T& ), T& arg )
     {
         void* parg = ( void* ) ( &arg );
-        pthread_routine routine = ( pthread_routine ) work;
+        ThreadFunction routine = ( ThreadFunction ) work;
         start( routine, parg );
     }
 
-    void start( pthread_routine start_routine, void* arg );
+    void start( ThreadFunction start_routine, void* arg );
 
     void join();
 
@@ -208,8 +210,6 @@ private:
     std::thread *mThread;  // contructed by start
 
     Id mId;
-
-    bool  running;
 };
 
 /** Encapsulation class of a pointer to restrict its use for thread private pointers */

@@ -163,7 +163,7 @@ public:
         pthread_cond_t p_condition;
     };
 
-    typedef void* ( *pthread_routine ) ( void* );
+    typedef void* ( *ThreadFunction ) ( void* );
 
     Thread() : running( false )
     {
@@ -183,11 +183,11 @@ public:
     void run( void ( *work ) ( T& ), T& arg )
     {
         void* parg = ( void* ) ( &arg );
-        pthread_routine routine = ( pthread_routine ) work;
+        ThreadFunction routine = ( ThreadFunction ) work;
         start( routine, parg );
     }
 
-    void start( pthread_routine start_routine, void* arg );
+    void start( ThreadFunction start_routine, void* arg );
 
     void join();
 

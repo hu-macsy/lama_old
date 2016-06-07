@@ -33,11 +33,18 @@
 #string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" CC_COMPILER_VERSION ${_cc_compiler_output} )
 
 ## CXX Compiler
-execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _cxx_compiler_output )
-string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" CXX_COMPILER_VERSION ${_cxx_compiler_output} )
-if    ( "${CXX_COMPILER_VERSION}" STREQUAL "" )
-    string ( REGEX MATCH "([0-9]+\\.[0-9])" CXX_COMPILER_VERSION ${_cxx_compiler_output} )
+
+if ( DEFINED CMAKE_CXX_COMPILER_VERSION )
+    # later CMAKE versions deliver the version of the compiler in a variable
+    set ( CXX_COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}" )
+else ( DEFINED CMAKE_CXX_COMPILER_VERSION )
+    # Query the version of the compiler by a Linux command
+    execute_process ( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE _cxx_compiler_output ERROR_VARIABLE _cxx_compiler_output )
+    string ( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" CXX_COMPILER_VERSION ${_cxx_compiler_output} )
     if    ( "${CXX_COMPILER_VERSION}" STREQUAL "" )
-    	string ( REGEX MATCH "([0-9])" CXX_COMPILER_VERSION ${_cxx_compiler_output} )
-	endif ( "${CXX_COMPILER_VERSION}" STREQUAL "" ) 
-endif ( "${CXX_COMPILER_VERSION}" STREQUAL "" ) 
+        string ( REGEX MATCH "([0-9]+\\.[0-9])" CXX_COMPILER_VERSION ${_cxx_compiler_output} )
+        if    ( "${CXX_COMPILER_VERSION}" STREQUAL "" )
+    	    string ( REGEX MATCH "([0-9])" CXX_COMPILER_VERSION ${_cxx_compiler_output} )
+	    endif ( "${CXX_COMPILER_VERSION}" STREQUAL "" ) 
+    endif ( "${CXX_COMPILER_VERSION}" STREQUAL "" ) 
+endif ( DEFINED CMAKE_CXX_COMPILER_VERSION )

@@ -233,7 +233,7 @@ const char* Thread::getCurrentThreadName()
     return getThreadName( getSelf() );
 }
 
-void Thread::start( pthread_routine start_routine, void* arg )
+void Thread::start( ThreadFunction start_routine, void* arg )
 {
     mThread = new std::thread( start_routine, arg );
 }
