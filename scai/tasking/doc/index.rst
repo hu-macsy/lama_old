@@ -98,6 +98,15 @@ a certain function g while the main thread itself executes another function f.
     :align: center
     :width: 600px
 
+*********************
+Environment Variables
+*********************
+
+The number of threads available in the thread pool can be configured by this
+environmnent variable.
+
+* ``SCAI_THREADPOOL_SIZE`` (integer value)
+
 ************
 Dependencies
 ************
