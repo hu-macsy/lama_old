@@ -19,7 +19,7 @@ NOTE: The solver logging is an additional logging to the general :ref:`scailoggi
    BiCG biCG ( "BiCGSolver" );
    biCG.setLogger( logger );
 
-A solver logger has five ``LogLevel``s and three ``LoggerWriteBehaviour`` you can select.
+A solver logger has five ``LogLevel`` and three ``LoggerWriteBehaviour`` you can select.
 
 Available log levels:
 
