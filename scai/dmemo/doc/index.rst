@@ -29,9 +29,9 @@ Here is a list of provided classes of the DMemo library
 Class                    Description
 ======================== ================================================================================
 :ref:`Communicator`      Base class for communication between different partitions
-NoCommunicator           Default communicator 
+:ref:`NoCommunicator`    Default Communicator to be used on serial machines
 :ref:`MPICommunicator`   MPI Communicator
-GPICommunicator          GASPI Communicator
+:ref:`GPICommunicator`   GPI Communicator
 :ref:`Distribution`      Mapping of an index range to a number of partitions
 :ref:`CommunicationPlan` Communication schedule for exchanging non-local values
 ======================== ================================================================================
@@ -42,7 +42,9 @@ GPICommunicator          GASPI Communicator
    Distribution
    Communicator
    CommunicationPlan
+   NoCommunicator
    MPICommunicator
+   GPICommunicator
 
 *******
 Example
@@ -110,4 +112,9 @@ Related Work
 ************
 
 * Boost MPI
-* `CUDA Aware MPI <https://devblogs.nvidia.com/parallelforall/introduction-cuda-aware-mpi>`_
+* |CUDA_MPI|
+
+.. |CUDA_MPI| raw:: html
+
+  <a href="https://devblogs.nvidia.com/parallelforall/introduction-cuda-aware-mpi>" target="_blank">CUDA Aware MPI</a>
+

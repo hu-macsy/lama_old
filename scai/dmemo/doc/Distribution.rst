@@ -1,3 +1,5 @@
+.. _Distribution:
+
 Distributions
 =============
 
@@ -105,25 +107,27 @@ no distribution of the data and all processes have a local copy.
 
    DistributionPtr no( new NoDistribution ( numRows ) );
 
-------------
+Comparison of Distributions
+---------------------------
 
-Expression Rules:
-
-.. code-block:: c++
-
-    A = B + C
-
-versus
+Usually, many data structures will be distributed among the available processors, e.g. two vectors might be distributed.
+For the implementation of operations on these distributed data structures, it is important to know whether two data
+structures have the same distribution, as in such a case many operations can be implemented without any 
+communication at all.
 
 .. code-block:: c++
 
-    A( B + C )
+   DistributionPtr d1( new GenBlockDistribution ( n ) );
+   DistributionPtr d2( new GenBlockDistribution ( n ) );
 
-Matrix versus Solver Distribution
----------------------------------
+   ...
 
-Force distribution solver related 
-
-.. code-block:: c++
-
-    CG.setDistribution( A.getDistributionPtr() )
+   if ( *d1 == *d2 )
+   {
+      // implement the operation on the local parts
+      ....
+   } 
+   else
+   {
+       COMMON_THROWEXCEPTION( "Operation not available, different distributions" )
+   }

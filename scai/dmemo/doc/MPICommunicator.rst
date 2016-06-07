@@ -12,6 +12,5 @@ Communicator Factory
 
 .. code-block:: c++
 
-   CommunicatorPtr mpiComm = Communicator::get( Communicator::MPI );
-   CommunicatorPtr gpiComm = Communicator::get( Communicator::GPI );
+   CommunicatorPtr mpiComm = Communicator::getCommunicatorPtr( Communicator::MPI );
 
