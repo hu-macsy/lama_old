@@ -69,6 +69,35 @@ Class                     Description
 Example
 *******
 
+.. code-block:: c++
+
+   #include <scai/hmemo.hpp>
+   #include <scai/dmemo.hpp>
+   #include <scai/lama.hpp>
+
+   using namespace scai::lama;
+
+   int main()
+   {
+      typedef double ValueType;
+
+      IndexType size = 30;
+
+      dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+      dmemo::DistribtionPtr dist( new dmemo::BlockDistribution( size, comm ) );
+
+      hmemo::ContextPtr cudaCtx = hmemo::Context::getContextPtr( common::Context::CUDA, 0 );
+
+      DenseVector<ValueType> x( size, 1.0, cudaCtx );
+      CSRSparseMatrix<ValueType> csrMatrix( "gr_30_30.mtx" );
+      csrMatrix.redistribute( dist );
+      csrMatrix.setContext( cudaCtx );
+
+      DenseVector<ValueType> result( csrMatrix * vector ); // calculation takes place with CUDA (possibly distributed)
+      result.writeToFile( "resultVec.mtx", File::MATRIX_MARKET );
+
+   }
+
 .. *****************
 .. Runtime Variables
 .. *****************
@@ -92,25 +121,68 @@ LAMA is dependant of all underlying libraries:
 
 And therefore inherit all there external dependencies:
 
-* |MPI| (Message Passing Interface)
+* |Boost|: for additional C++ features [#f2]_
+
+.. |Boost| raw:: html
+
+   <a href="http://www.boost.org/" target="_blank"> Boost </a>
+
+* |PThread|: for asynchronous tasking
+
+.. |PThread| raw:: html
+   
+   <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/pthread.h.html" target="_blank"> Pthread </a>
+
+* |Java|: for tasking GUI
+
+.. |Java| raw:: html
+   
+   <a href="https://www.java.com/en/" target="_blank"> Java </a>
+
+* |CUDA|: for Nvidia GPU programming [#f1]_
+
+.. |CUDA| raw:: html
+
+   <a href="http://www.nvidia.com/object/cuda_home_new.html" target="_blank"> CUDA </a>
+
+* Compiler supporting Intel MIC Architecture for using the Xeon Phi Coprocessor
+
+* |MKL|: for Intel optimized blas routines [#f1]_
+
+.. |MKL| raw:: html
+
+   <a href="https://software.intel.com/en-us/intel-mkl" target="_blank"> Intel MKL </a>
+
+* |CUBLAS|: for Nvidia optimized blas routines [#f1]_
+
+.. |CUBLAS| raw:: html
+
+   <a href="https://developer.nvidia.com/cublas" target="_blank"> CUBLAS </a>
+
+
+* |CUSPARSE|: for Nvidia optimized sparse blas routines [#f1]_
+
+.. |CUSPARSE| raw:: html
+
+   <a href="https://developer.nvidia.com/cusparse" target="_blank"> CUSPARSE </a>
+
+* |MPI| (Message Passing Interface): for Interprocess Communication [#f1]_
 
 .. |MPI| raw:: html
 
 	<a href="https://www.mpi-forum.org/docs/docs.html" target="_blank"> MPI </a>
 
-* |GPI| (Global Adress Programming Interface)
+* |GPI| (Global Adress Programming Interface): for Interprocess Communication [#f1]_
 
 .. |GPI| raw:: html
 
 	<a href="http://www.gpi-site.com/gpi2" target="_blank"> GPI </a>
 
-* |Metis| Graph Partitioning Software
+* |Metis|: for Graph Partitioning [#f1]_
 
 .. |Metis| raw:: html
 
 	<a href="http://glaros.dtc.umn.edu/gkhome/views/metis" target="_blank"> Metis </a>
-
-dmemo, sparsekernel, utilskernel, blaskernel, kregistry, hmemo, tasking, tracing, logging and common as well as there external libraries MPI [#f1]_, GPI [#f1]_, MKL [#f1]_/BLAS, cuBlas [#f1]_, cuSparse [#f1]_, OpenMP [#f1]_, CUDA [#f1]_, Java [#f1]_, pThreads, Boost [#f2]_, dl 
 
 .. rubric:: Footnotes
 
@@ -123,19 +195,25 @@ Related Work
 
 There are a couple of other frameworks that are working on the same field of interest. Just to name a few of them:
    
-|MTL4| Matrix Template Library 4
+|MTL4| (Matrix Template Library 4)
 
 .. |MTL4| raw:: html
 	
 	<a href="http://http://www.simunova.com/de/node/65" target="_blank"> MTL4 </a>
 
-|ViennaCL| OpenCL-based
+|ViennaCL|
 
 .. |ViennaCL| raw:: html
 
 	<a href="http://viennacl.sourceforge.net/" target="_blank"> ViennaCL </a>
 
-|PETSc| Portable, Extensible Toolkit for Scientific Computation
+|Paralution| 
+
+.. |Paralution| raw:: html
+
+   <a href="http://www.paralution.com/" target="_blank"> Paralution </a>
+
+|PETSc| (Portable, Extensible Toolkit for Scientific Computation)
 
 .. |PETSc| raw:: html
 
