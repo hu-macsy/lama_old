@@ -99,7 +99,10 @@ endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
 
     set ( SCAI_WARNING_FLAGS       "-Wall -Werror" ) # "-Weverything" # wow this creates so much warnings
-    set ( SCAI_CXX_FLAGS           "-stdlib=libc++" )
+
+	if    ( CXX_SUPPORTS_C11 )
+	    set ( SCAI_CXX_FLAGS           "-stdlib=libc++" )
+	endif ( CXX_SUPPORTS_C11 )
     set ( SCAI_CXX_FLAGS_DEBUG     "" )
     set ( SCAI_CXX_FLAGS_RELEASE   "-ffast-math" )
     #set ( SCAI_CODE_COVERAGE_FLAGS "-fsanitize-coverage=???" )
