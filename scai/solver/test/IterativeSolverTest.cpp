@@ -95,7 +95,8 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
 
     for(int i=0; i < numSolvers; i++)
     {
-        Solver* solver = Solver::create( values[i], "" );
+        Solver* solver( Solver::create( values[i], "" ) );
+
         IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver );
 
         if( iterativeSolver == NULL )

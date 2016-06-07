@@ -171,7 +171,7 @@ void solverInfo()
     {
         cout << "   Registered values[" << i << "] = " << values[i] << endl;
 
-        scai::common::shared_ptr<Solver> solver( Solver::create( values[i], "TestSolver" ) );
+        SolverPtr solver( Solver::create( values[i], "TestSolver" ) );
 
         cout << "      Solver: " << *solver << endl;
     }

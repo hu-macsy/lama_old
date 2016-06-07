@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     for(int i=0; i < numSolvers; i++)
     {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        Solver* solver = Solver::create( values[i], "" );
+        SolverPtr solver( Solver::create( values[i], "" ) );
 
         SCAI_COMMON_WRITEAT_TEST( *solver );
     }
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
     for(int i=0; i < numSolvers; i++)
     {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        Solver* solver = Solver::create( values[i], "" );
+        SolverPtr solver( Solver::create( values[i], "" ) );
 
         SolverPtr solverCpyPtr = solver->copy();
         // TODO: do a more proper test here!
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE( solveWithoutInitialization )
     for(int i=0; i < numSolvers; i++)
     {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        Solver* solver = Solver::create( values[i], "" );
+        SolverPtr solver( Solver::create( values[i], "" ) );
 
         BOOST_CHECK_THROW ( {solver->solve( solution, rhs );}, scai::common::Exception );
     }

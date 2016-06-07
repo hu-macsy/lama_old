@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE( SolveTest )
     IndexType maxExpectedIterations = 3000;
     CriterionPtr criterion( new IterationCount( maxExpectedIterations ) );
 
-    Solver* solver = Solver::create( "InverseSolver", "" );
+    SolverPtr solver ( Solver::create( "InverseSolver", "" ) );
     solver->initialize( coefficients );
     solver->solve( solution, rhs );
 
