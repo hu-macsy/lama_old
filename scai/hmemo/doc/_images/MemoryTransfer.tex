@@ -1,0 +1,104 @@
+\documentclass{article}
+\usepackage{amsfonts}              % fuer zusätzliche math. Symbole
+\usepackage{amssymb}               % weitere math. Symbole
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{arrows,shapes,positioning,shadows,trees,matrix}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{10pt}
+
+\usetikzlibrary{chains}
+
+\definecolor{c_device}{RGB}{50,127,180}
+\definecolor{c_host}{RGB}{0,148,116}
+\definecolor{c_memory}{RGB}{180,180,180}
+\definecolor{c_context}{RGB}{210,210,210}
+
+\begin{document}
+
+\begin{tikzpicture}
+
+% Host device
+
+\draw [fill=c_host] (0,0) rectangle (20,9);
+\node [above right] at (0,0) {Host};
+\draw [fill=c_memory] (3,5) rectangle (17,8);
+\node [above right] at (3,5) {HostMemory};
+\draw [fill=c_context] (3,2) rectangle (17,4);
+\node [above right] at (3,2) {HostContext};
+
+% getContext
+\draw [thick, ->] (10,5) --(10,4);
+\node [right] at (10,4.5) {getContext};
+
+% memcpy 
+
+\draw [thick, ->] (17,6) --(18,6) -- (18,7) -- (17,7);
+\node [above right] at (18,6) {memcpy};
+
+% Device 1
+
+\draw [fill=c_device] (0,10) rectangle (9.5,18);
+\node [above right] at (0,10) {Device1};
+\draw [fill=c_memory] (3,11) rectangle (8.5,14);
+\node [below right] at (3,14) {Memory1};
+\draw [fill=c_context] (3,15) rectangle (8.5,17);
+\node [above right] at (3,15) {Context1};
+
+% memcpy 
+
+\draw [thick, ->] (3,11.5) --(2,11.5) -- (2,12.5) -- (3,12.5);
+\node [left] at (2, 12) {memcpy};
+
+\draw [thick, ->] (2,13) --(3,13);
+\node [left] at (2, 13) {memset};
+
+
+% getContext
+\draw [thick,->] (5.5,14) --(5.5,15);
+\node [right] at (5.5,14.5) {getContext};
+
+\draw [thick,->] (4.5,11) -- (4.5,8);
+\node [below] at (4.5,8) {memcpyFrom};
+
+\draw [thick,->] (6.5,8) -- (6.5,11);
+\node [below] at (6.5,8) {memcpyTo};
+
+% Device 2
+
+\draw [fill=c_device] (10.5,10) rectangle (20,18);
+\node [above left] at (20,10) {Device2};
+\draw [fill=c_memory] (11.5,11) rectangle (17,14);
+\node [below right] at (11.5,14) {Memory2};
+\draw [fill=c_context] (11.5,15) rectangle (17,17);
+\node [above right] at (11.5,15) {Context2};
+
+% getContext
+\draw [thick,->] (14,14) --(14,15);
+\node [right] at (14,14.5) {getContext};
+
+% memcpy 
+
+\draw [thick,->] (17,11.5) -- (18,11.5) -- (18,12.5) -- (17,12.5);
+\node [right] at (18, 12) {memcpy};
+
+\draw [thick,->] (18,13) --(17,13);
+\node [right] at (18, 13) {memset};
+
+% memcpyTo, memcpyFrom
+
+\draw [thick,->] (13,11) -- (13,8);
+\node [above] at (13,11) {memcpyTo};
+
+\draw [thick,->] (15,8) -- (15,11);
+\node [above] at (15,11) {memcpyFrom};
+
+\end{tikzpicture}
+
+\end{document}
+
