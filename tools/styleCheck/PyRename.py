@@ -8,7 +8,7 @@
 #  Fraunhofer Institute for Algorithms and Scientific Computing SCAI
 #  for Fraunhofer-Gesellschaft
 # 
-#  This file is part of the Library of Accelerated Math Applications (LAMA).
+#  This file is part of the SCAI framework LAMA.
 # 
 #  LAMA is free software: you can redistribute it and/or modify it under the
 #  terms of the GNU Affero General Public License as published by the Free
