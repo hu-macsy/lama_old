@@ -169,9 +169,9 @@ def unparseDate( date ):
 
     year = str( date["year"] )
 
-    # return day + "." + month + "." + year
+    return day + "." + month + "." + year
 
-    return monthIds[date["month"] - 1] + " " + day + ", " + year
+    # return monthIds[date["month"] - 1] + " " + day + ", " + year
 
 #  Method that returns true if filenames are equal at the end
 
