@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief CGNE.hpp
@@ -46,12 +51,12 @@ namespace solver
 {
 /**
  * @brief The class CGNE represents an IterativeSolver which uses the krylov subspace Conjugate
- * Gradients for Normal Equations (CGNE) method to solve a system of linear equations of type  
- * 
+ * Gradients for Normal Equations (CGNE) method to solve a system of linear equations of type
+ *
  *                             (A * A^t) * x = b
- * iteratively 
- * where 
- * A  .............. is some matrix (not necessary square) 
+ * iteratively
+ * where
+ * A  .............. is some matrix (not necessary square)
  * A^t.............. is the transposed of A
  * x  .............. solution vector
  * b  .............. rhs vector
@@ -61,8 +66,8 @@ namespace solver
  *
  */
 class COMMON_DLL_IMPORTEXPORT CGNE:
-		public IterativeSolver,
-		public Solver::Register<CGNE>
+    public IterativeSolver,
+    public Solver::Register<CGNE>
 {
 public:
     /**
@@ -101,17 +106,17 @@ public:
         CGNERuntime();
         virtual ~CGNERuntime();
 
-    common::shared_ptr<lama::Matrix> mTransposedMat;
-	common::shared_ptr<lama::Vector> mVecP;
-    common::shared_ptr<lama::Vector> mVecZ;
+        common::shared_ptr<lama::Matrix> mTransposedMat;
+        common::shared_ptr<lama::Vector> mVecP;
+        common::shared_ptr<lama::Vector> mVecZ;
 
-    lama::Scalar mEps;
+        lama::Scalar mEps;
     };
     /**
     * @brief Returns the complete configuration of the derived class
     */
     virtual CGNERuntime& getRuntime();
-    /** 
+    /**
     * @brief Initializes vectors and values of the runtime
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
@@ -120,7 +125,7 @@ public:
     * @brief Returns the complete const configuration of the derived class
     */
     virtual const CGNERuntime& getConstRuntime() const;
-    
+
     static std::string createValue();
     static Solver* create( const std::string name );
 
@@ -128,7 +133,7 @@ protected:
 
     CGNERuntime mCGNERuntime;
     /**
-     * @brief Performs one CGNE iteration based on Matrix/Vector operations. 
+     * @brief Performs one CGNE iteration based on Matrix/Vector operations.
      */
     virtual void iterate();
 

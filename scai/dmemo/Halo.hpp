@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Halo.hpp
@@ -105,7 +110,7 @@ public:
 
     inline bool isEmpty() const;
 
-    inline const std::map<IndexType,IndexType>& getMap() const
+    inline const std::map<IndexType, IndexType>& getMap() const
     {
         return mGlobal2Halo;
     }
@@ -127,7 +132,7 @@ private:
     hmemo::HArray<IndexType> mRequiredIndexes;
     hmemo::HArray<IndexType> mProvidesIndexes;
 
-    std::map<IndexType,IndexType> mGlobal2Halo;
+    std::map<IndexType, IndexType> mGlobal2Halo;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
@@ -161,9 +166,9 @@ void Halo::setGlobal2Halo( IndexType globalIndex, IndexType haloIndex )
 
 IndexType Halo::global2halo( const IndexType globalIndex ) const
 {
-    const std::map<IndexType,IndexType>::const_iterator elem = mGlobal2Halo.find( globalIndex );
+    const std::map<IndexType, IndexType>::const_iterator elem = mGlobal2Halo.find( globalIndex );
 
-    if( elem == mGlobal2Halo.end() )
+    if ( elem == mGlobal2Halo.end() )
     {
         return nIndex;
     }

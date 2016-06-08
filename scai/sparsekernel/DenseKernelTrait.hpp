@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Struct with traits for all LAMA utilities provided as kernels.
@@ -59,7 +64,10 @@ struct DenseKernelTrait
             const IndexType numColumns,
             const DenseValueType eps );
 
-        static const char* getId() { return "Dense.nonZeroValues"; }
+        static const char* getId()
+        {
+            return "Dense.nonZeroValues";
+        }
     };
 
     template <typename DenseValueType>
@@ -85,7 +93,10 @@ struct DenseKernelTrait
             const DenseValueType denseValues[],
             const DenseValueType eps );
 
-        static const char* getId() { return "Dense.getCSRSizes"; }
+        static const char* getId()
+        {
+            return "Dense.getCSRSizes";
+        }
     };
 
     template <typename DenseValueType, typename CSRValueType>
@@ -106,15 +117,18 @@ struct DenseKernelTrait
          *                  by getCSRSizes.
          */
         typedef void ( *FuncType ) ( IndexType csrJA[],
-                        CSRValueType csrValues[],
-                        const IndexType csrIA[],
-                        const bool diagonalFlag,
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const DenseValueType denseValues[],
-                        const DenseValueType eps );
+                                     CSRValueType csrValues[],
+                                     const IndexType csrIA[],
+                                     const bool diagonalFlag,
+                                     const IndexType numRows,
+                                     const IndexType numColumns,
+                                     const DenseValueType denseValues[],
+                                     const DenseValueType eps );
 
-        static const char* getId() { return "Dense.getCSRValues"; }
+        static const char* getId()
+        {
+            return "Dense.getCSRValues";
+        }
     };
 
     template <typename DenseValueType, typename CSRValueType>
@@ -123,13 +137,16 @@ struct DenseKernelTrait
         /** Conversion of CSR format to dense matrix. */
 
         typedef void ( *FuncType ) ( DenseValueType denseValues[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const CSRValueType csrValues[] );
+                                     const IndexType numRows,
+                                     const IndexType numColumns,
+                                     const IndexType csrIA[],
+                                     const IndexType csrJA[],
+                                     const CSRValueType csrValues[] );
 
-        static const char* getId() { return "Dense.setCSRValues"; }
+        static const char* getId()
+        {
+            return "Dense.setCSRValues";
+        }
     };
 
     template<typename DenseValueType1, typename DenseValueType2>
@@ -138,11 +155,14 @@ struct DenseKernelTrait
         /** Copy values of dense matrix; supports also conversion. */
 
         typedef void ( *FuncType ) ( DenseValueType1 newValues[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const DenseValueType2 oldValues[] );
+                                     const IndexType numRows,
+                                     const IndexType numColumns,
+                                     const DenseValueType2 oldValues[] );
 
-        static const char* getId() { return "Dense.copyDenseValues"; }
+        static const char* getId()
+        {
+            return "Dense.copyDenseValues";
+        }
     };
 
     template<typename RowValueType, typename DenseValueType>
@@ -157,7 +177,10 @@ struct DenseKernelTrait
             const IndexType numRows,
             const IndexType numColumns );
 
-        static const char* getId() { return "Dense.getRow"; }
+        static const char* getId()
+        {
+            return "Dense.getRow";
+        }
     };
 
     template<typename DenseValueType1, typename DenseValueType2>
@@ -166,12 +189,15 @@ struct DenseKernelTrait
         /** Get diagonal of a dense matrix, type conversion is supported. */
 
         typedef void ( *FuncType ) ( DenseValueType1 diagonalValues[],
-                        const IndexType numDiagonalValues,
-                        const DenseValueType2 denseValues[],
-                        const IndexType numRows,
-                        const IndexType numColumns );
+                                     const IndexType numDiagonalValues,
+                                     const DenseValueType2 denseValues[],
+                                     const IndexType numRows,
+                                     const IndexType numColumns );
 
-        static const char* getId() { return "Dense.getDiagonal"; }
+        static const char* getId()
+        {
+            return "Dense.getDiagonal";
+        }
     };
 
     template<typename DenseValueType1, typename DenseValueType2>
@@ -180,12 +206,15 @@ struct DenseKernelTrait
         /** Set diagonal of a dense matrix, type conversion is supported. */
 
         typedef void ( *FuncType ) ( DenseValueType1 denseValues[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const DenseValueType2 diagonalValues[],
-                        const IndexType numDiagonalValues );
+                                     const IndexType numRows,
+                                     const IndexType numColumns,
+                                     const DenseValueType2 diagonalValues[],
+                                     const IndexType numDiagonalValues );
 
-        static const char* getId() { return "Dense.setDiagonal"; }
+        static const char* getId()
+        {
+            return "Dense.setDiagonal";
+        }
     };
 
     template<typename DenseValueType>
@@ -193,13 +222,16 @@ struct DenseKernelTrait
     {
         /** Set all elements of the dense matrix with a value */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             DenseValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
             const DenseValueType val );
 
-        static const char* getId() { return "Dense.setValue"; }
+        static const char* getId()
+        {
+            return "Dense.setValue";
+        }
     };
 
     template<typename DenseValueType>
@@ -213,7 +245,10 @@ struct DenseKernelTrait
             const IndexType numColumns,
             const DenseValueType val );
 
-        static const char* getId() { return "Dense.scaleValue"; }
+        static const char* getId()
+        {
+            return "Dense.scaleValue";
+        }
     };
 
     template<typename DenseValueType>
@@ -221,13 +256,16 @@ struct DenseKernelTrait
     {
         /** Set diagonal elements with one and the same value. */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             DenseValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
             const DenseValueType val );
 
-        static const char* getId() { return "Dense.setDiagonalValue"; }
+        static const char* getId()
+        {
+            return "Dense.setDiagonalValue";
+        }
     };
 
     template<typename DenseValueType, typename OtherValueType>
@@ -241,13 +279,16 @@ struct DenseKernelTrait
          *  @param[in]     rowValues    scale values for each row, size is numRows
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             DenseValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
             const OtherValueType rowValues[] );
 
-        static const char* getId() { return "Dense.scaleRows"; }
+        static const char* getId()
+        {
+            return "Dense.scaleRows";
+        }
     };
 };
 

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class to deal with dynamic arrays in GASPI segments
@@ -45,7 +50,7 @@ namespace dmemo
 
 class GPICommunicator;
 
-/** Structure that behaves like a scoped array that can be used for communication. 
+/** Structure that behaves like a scoped array that can be used for communication.
  *  The array is released/freed by its destructor.
  *
  *  It is derived from Access so it can be used in SyncToken.
@@ -124,7 +129,7 @@ public:
 
     // return typed pointer to the segment data
 
-    T* get() 
+    T* get()
     {
         return mData;
     }

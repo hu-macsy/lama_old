@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief CyclicDistribution.cpp
@@ -62,7 +67,6 @@ PartitionId CyclicDistribution::getOwner( const IndexType globalIndex ) const
 {
     IndexType size = mCommunicator->getSize();
     IndexType globalChunkIndex = globalIndex / mChunkSize;
-
     return globalChunkIndex % size;
 }
 
@@ -85,24 +89,17 @@ bool CyclicDistribution::isLocal( const IndexType globalIndex ) const
 IndexType CyclicDistribution::getLocalSize() const
 {
     const PartitionId rank = mCommunicator->getRank();
-
     const IndexType elements = getPartitionSize( rank );
-
     SCAI_LOG_TRACE( logger, *mCommunicator << ": local size = " << elements << " elements" )
-
     return elements;
 }
 
 void CyclicDistribution::getChunkInfo( IndexType& localChunks, IndexType& extra, const PartitionId rank ) const
 {
     const PartitionId size = mCommunicator->getSize();
-
     const IndexType chunks = mGlobalSize / mChunkSize;
-
     // mGlobalSize % mChunkSize elements remain, are counted later
-
     localChunks = chunks / size;
-
     IndexType remainChunks = chunks % size;
     extra = 0;
 
@@ -123,7 +120,6 @@ IndexType CyclicDistribution::getNumChunks( const PartitionId rank ) const
 {
     IndexType localChunks = 0;
     IndexType extra = 0;
-
     getChunkInfo( localChunks, extra, rank );
 
     if ( extra )
@@ -155,11 +151,8 @@ IndexType CyclicDistribution::getPartitionSize( const PartitionId partition ) co
 {
     IndexType localChunks = 0;
     IndexType extra = 0;
-
     getChunkInfo( localChunks, extra, partition );
-
     IndexType elements = localChunks * mChunkSize + extra;
-
     return elements;
 }
 
@@ -167,7 +160,6 @@ IndexType CyclicDistribution::local2global( const IndexType localIndex ) const
 {
     IndexType size = mCommunicator->getSize();
     IndexType rank = mCommunicator->getRank();
-
     IndexType localChunk = localIndex / mChunkSize;
     IndexType localOffset = localIndex % mChunkSize;
     IndexType globalChunk = localChunk * size + rank;
@@ -180,7 +172,6 @@ IndexType CyclicDistribution::local2global( const IndexType localIndex ) const
 IndexType CyclicDistribution::allGlobal2local( const IndexType globalIndex ) const
 {
     IndexType size = mCommunicator->getSize();
-
     IndexType globalChunkIndex = globalIndex / mChunkSize;
     IndexType localChunkIndex = globalChunkIndex / size;
     IndexType localIndex = localChunkIndex * mChunkSize + globalIndex % mChunkSize;
@@ -208,7 +199,6 @@ void CyclicDistribution::computeOwners(
     IndexType size = mCommunicator->getSize();
     owners.clear();
     owners.reserve( requiredIndexes.size() );
-
     SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
 
     for ( size_t i = 0; i < requiredIndexes.size(); i++ )
@@ -248,7 +238,6 @@ bool CyclicDistribution::isEqual( const Distribution& other ) const
 void CyclicDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-
     stream << "CyclicDistribution(gsize=" << mGlobalSize << ",chunkSize=" << mChunkSize << ",numLocalChunks="
            << getNumLocalChunks() << ")";
 }
@@ -257,7 +246,6 @@ void CyclicDistribution::printDistributionVector( std::string name ) const
 {
     IndexType myRank = mCommunicator->getRank();
     IndexType parts = mCommunicator->getSize();
-
     IndexType totalNumChunks = getNumTotalChunks();
 
     if ( myRank == MASTER ) // process 0 is MASTER process

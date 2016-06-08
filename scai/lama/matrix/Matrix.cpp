@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Matrix.cpp
@@ -84,9 +89,7 @@ Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr co
     mCommunicationKind( other.mCommunicationKind )
 {
     // Very important: here we check that new distributions fit the matrix
-
     checkSettings();
-
     SCAI_LOG_INFO( logger,
                    "Creating copy of " << other << " with new distributions: " << "row = " << getDistribution() << ", col = " << getColDistribution() )
 }
@@ -101,7 +104,6 @@ Matrix::Matrix( const IndexType numRows, const IndexType numColumns ) :
     mNumColumns( numColumns )
 {
     setDefaultKind();
-
     SCAI_LOG_INFO( logger, "Creating a replicated Matrix of size " << mNumRows << " x " << mNumColumns )
 }
 
@@ -110,7 +112,6 @@ Matrix::Matrix( const IndexType numRows, const IndexType numColumns ) :
 void Matrix::setIdentity( const IndexType n )
 {
     // take replicated distribution and use pure method
-
     setIdentity( DistributionPtr( new NoDistribution( n ) ) );
 }
 
@@ -142,12 +143,9 @@ Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution
     : Distributed( rowDistribution )
 {
     setDistributedMatrix( rowDistribution, colDistribution );
-
     setDefaultKind();
-
     SCAI_LOG_INFO( logger,
                    "Construct a Matrix of size " << mNumRows << " x " << mNumColumns << " with the distribution " << getDistribution() )
-
     checkSettings();
 }
 
@@ -155,10 +153,8 @@ Matrix::Matrix( DistributionPtr distribution )
     : Distributed( distribution )
 {
     setDistributedMatrix( distribution, distribution );
-
     SCAI_LOG_INFO( logger,
                    "Construct a square Matrix of size " << mNumRows << " x " << mNumColumns << " with the row/col distribution " << getDistribution() )
-
     checkSettings();
 }
 
@@ -192,11 +188,8 @@ void Matrix::buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], co
 IndexType Matrix::getCSRGraphSize() const
 {
     // Currently only supported if column distribution is replicated
-
     SCAI_ASSERT_EQ_ERROR( getNumColumns(), getLocalStorage().getNumColumns(), "getCSRGraphSize only for replicated column distribution" )
-
     // diagonal elements will not be used
-
     return getLocalNumValues() - getDistribution().getLocalSize();
 }
 
@@ -233,7 +226,6 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 hmemo::_HArray* Matrix::createArray() const
 {
     // _HArray is also a factory so we can use it
-
     return hmemo::_HArray::create( getValueType() );
 }
 
@@ -288,13 +280,9 @@ void Matrix::writeAt( std::ostream& stream ) const
 Matrix& Matrix::operator=( const Matrix& other )
 {
     // assignment operator is just implemented by the assign method
-
     SCAI_LOG_INFO( logger, *this << ": operator = " << other )
-
     this->assign( other );
-
     SCAI_LOG_INFO( logger, *this << ": end operator = " << other )
-
     return *this;
 }
 
@@ -303,7 +291,6 @@ Matrix& Matrix::operator=( const Matrix& other )
 Matrix& Matrix::operator=( const Expression_SM& exp )
 {
     // exp is Expression object that stands for s * A
-
     const Matrix& A = exp.getArg2();
     const Scalar& s = exp.getArg1();
     this->matrixTimesScalar( A, s );
@@ -315,9 +302,7 @@ Matrix& Matrix::operator=( const Expression_SM& exp )
 Matrix& Matrix::operator*=( const Scalar exp )
 {
     // this *= alpha  -> this->scale( exp )
-
     this->scale( exp );
-
     return *this;
 }
 
@@ -326,9 +311,7 @@ Matrix& Matrix::operator*=( const Scalar exp )
 Matrix& Matrix::operator+=( const Expression_SM& exp )
 {
     // this += alpha * A  -> this = alpha * A + 1.0 * this
-
     *this = Expression_SM_SM( exp, Expression_SM( Scalar( 1.0 ), *this ) );
-
     return *this;
 }
 
@@ -337,11 +320,8 @@ Matrix& Matrix::operator+=( const Expression_SM& exp )
 Matrix& Matrix::operator-=( const Expression_SM& exp )
 {
     // this -= alpha * A  -> this = 1.0 * this + ( - alpha ) * A
-
     Expression_SM minusExp( -exp.getArg1(), exp.getArg2() );
-
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), minusExp );
-
     return *this;
 }
 
@@ -350,9 +330,7 @@ Matrix& Matrix::operator-=( const Expression_SM& exp )
 Matrix& Matrix::operator+=( const Matrix& exp )
 {
     // this += A  -> this = 1.0 * A + 1.0 * this
-
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( 1.0 ), exp ) );
-
     return *this;
 }
 
@@ -361,9 +339,7 @@ Matrix& Matrix::operator+=( const Matrix& exp )
 Matrix& Matrix::operator-=( const Matrix& exp )
 {
     // this -= A  -> this = -1.0 * A + 1.0 * this
-
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( -1.0 ), exp ) );
-
     return *this;
 }
 
@@ -373,11 +349,8 @@ Matrix& Matrix::operator=( const Expression_SMM& exp )
 {
     // exp is Expression object that stands for A * B with matrices A * B
     //   ->   1.0 * A * B + 0.0 * A
-
     Expression_SM exp2( Scalar( 0.0 ), *this );
-
     *this = Expression_SMM_SM( exp, exp2 );
-
     return *this;
 }
 
@@ -429,10 +402,8 @@ bool Matrix::checkSymmetry() const
 void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp )
 {
     // check sanity of matrix product exp = A * B
-
     const Matrix& A = exp.getArg1();
     const Matrix& B = exp.getArg2();
-
     const Distribution& colDistA = A.getColDistribution();
     const Distribution& rowDistB = B.getDistribution();
 
@@ -446,15 +417,11 @@ void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp )
 void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Matrix& C )
 {
     sanityCheck( exp ); // verify the sanity of the matrix product
-
     // verify that result of matrix multiplication and C are conform
-
     const Matrix& A = exp.getArg1();
     const Matrix& B = exp.getArg2();
-
     const Distribution& rowDistA = A.getDistribution();
     const Distribution& colDistB = B.getColDistribution();
-
     const Distribution& rowDistC = C.getDistribution();
     const Distribution& colDistC = C.getColDistribution();
 
@@ -472,10 +439,8 @@ void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Ma
 void Matrix::sanityCheck( const Matrix& A, const Matrix& B )
 {
     // verify that A and B are conform for addition
-
     const Distribution& rowDistA = A.getDistribution();
     const Distribution& colDistA = A.getColDistribution();
-
     const Distribution& rowDistB = B.getDistribution();
     const Distribution& colDistB = B.getColDistribution();
 
@@ -500,16 +465,13 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
     const Expression_SMM& arg1 = exp.getArg1();
     const Expression_SM& arg11 = arg1.getArg1();
     const Expression_SM& arg2 = exp.getArg2();
-
     const Matrix& A = arg11.getArg2();
     const Matrix& B = arg1.getArg2();
     const Matrix& C = arg2.getArg2();
     const Scalar& alpha = arg11.getArg1();
     const Scalar& beta = arg2.getArg1();
-
     SCAI_LOG_INFO( logger,
                    "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
-
     const Scalar zero( 0 );
 
     if ( beta == zero )
@@ -522,13 +484,9 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
     }
 
     SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
-
     A.matrixTimesMatrix( *this, alpha, B, beta, C );
-
     SCAI_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
-
     SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << *getContextPtr() )
-
     return *this;
 }
 
@@ -540,7 +498,6 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
 Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 {
     SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
-
     const Matrix& A = exp.getArg1().getArg2();
     const Matrix& B = exp.getArg2().getArg2();
     const Scalar& alpha = exp.getArg1().getArg1();
@@ -562,11 +519,8 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
     }
 
     // Do sanity checks
-
     sanityCheck( A, B );
-
     this->matrixPlusMatrix( alpha, A, beta, B );
-
     return *this;
 }
 
@@ -586,7 +540,6 @@ void Matrix::writeToFile(
     if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
         // make sure that only one processor writes to file
-
         const Communicator& comm = getDistribution().getCommunicator();
 
         if ( comm.getRank() == 0 )
@@ -596,16 +549,13 @@ void Matrix::writeToFile(
 
         // synchronization to avoid that other processors start with
         // something that might depend on the finally written file
-
         comm.synchronize();
     }
     else
     {
-        DistributionPtr rowDist( new NoDistribution( getNumRows() ));
-        DistributionPtr colDist( new NoDistribution( getNumColumns() ));
-
+        DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
+        DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
         common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
-
         repM->writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
     }
 }
@@ -616,16 +566,12 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
 {
     IndexType nRows = getNumRows();
     IndexType nCols = getNumColumns();
-
     SCAI_ASSERT_EQUAL( nRows, other.getNumRows(), "size mismatch" )
     SCAI_ASSERT_EQUAL( nCols, other.getNumColumns(), "size mismatch" )
-
     VectorCreateKeyType vectorType1( Vector::DENSE, getValueType() );
     VectorCreateKeyType vectorType2( Vector::DENSE, other.getValueType() );
-
     common::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
     common::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );
-
     Scalar diff( 0 );
 
     // now traverse  all rows
@@ -633,7 +579,6 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
     for ( IndexType i = 0; i < nRows; ++i )
     {
         // Note: rows will be broadcast in case of distributed matrices
-
         getRow( *ptrRow1, i );
         other.getRow( *ptrRow2, i );
 
@@ -643,7 +588,6 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
         {
             Scalar elem1 = ptrRow1->getValue( j );
             Scalar elem2 = ptrRow2->getValue( j );
-
             Scalar diff1  = abs( elem1 - elem2 );
 
             if ( diff1 > diff )
@@ -661,13 +605,9 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
 Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
 {
     // simple default implementation that works for each matrix
-
     common::unique_ptr<Matrix> rep( copy() );
-
     // unique_ptr guarantees that data is freed if redistribute fails for any reason
-
     rep->redistribute( rowDistribution, colDistribution );
-
     return rep.release();
 }
 

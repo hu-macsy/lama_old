@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for class HostContext.
@@ -64,9 +69,7 @@ HostContext::~HostContext()
 void HostContext::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-
     int nThreads = 1;
-
     #pragma omp parallel
     {
         #pragma omp master
@@ -74,7 +77,6 @@ void HostContext::writeAt( std::ostream& stream ) const
             nThreads = omp_get_num_threads();
         }
     }
-
     stream << "HostContext( #Threads = " << nThreads << " )";
 }
 
@@ -94,15 +96,12 @@ ContextPtr HostContext::create( int deviceNr )
     if ( contextInstance.expired() )
     {
         // create a new instance of HostContext and keep it for further uses
-
         context.reset( new HostContext() );
-
         contextInstance = context;
     }
     else
     {
         // the last context instance is still valid, so we return new shared pointer to it
-
         context = contextInstance.lock();
     }
 
@@ -122,7 +121,6 @@ bool HostContext::canUseMemory( const Memory& other ) const
     else if ( other.getContext().getType() == common::context::Host )
     {
         // If other memory can be used on Host it is okay
-
         canUseIt = true;
     }
 
@@ -141,7 +139,6 @@ MemoryPtr HostContext::getLocalMemoryPtr() const
 tasking::TaskSyncToken* HostContext::getSyncToken() const
 {
     // on Host we will run asynchronous computations as a task
-
     return new tasking::TaskSyncToken();
 }
 

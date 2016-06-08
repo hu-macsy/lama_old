@@ -3,7 +3,7 @@
 Solution Task 3
 ---------------
 
-.. literalinclude:: ../../examples/lecture/task3.cpp 
+.. literalinclude:: ../../../solver/examples/lecture/task3.cpp 
    :language: c++
    :emphasize-lines: 50-54
 

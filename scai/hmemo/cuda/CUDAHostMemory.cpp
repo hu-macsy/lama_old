@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for page-locked memory management to enable
@@ -82,25 +87,15 @@ void CUDAHostMemory::writeAt( std::ostream& stream ) const
 void* CUDAHostMemory::allocate( const size_t size ) const
 {
     SCAI_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
-
     void* pointer = 0;
-
     SCAI_CONTEXT_ACCESS( mCUDAContext );
-
     SCAI_CUDA_DRV_CALL( cuMemAllocHost( &pointer, size ), "cuMemAllocHost( size = " << size << " ) failed" )
-
     SCAI_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, pointer = " << pointer )
-
     unsigned int flags = 0;
-
     void* pDevice = NULL;
-
     // check if we can use HostMemory also for device computations
-
     SCAI_CUDA_RT_CALL( cudaHostGetDevicePointer( &pDevice, pointer, flags ), "cudaHostGetDevicePointer" )
-
     SCAI_ASSERT_EQUAL( pDevice, pointer, "Not yet supported: pointer conversion for different context" )
-
     return pointer;
 }
 
@@ -111,11 +106,8 @@ void CUDAHostMemory::free( void* pointer, const size_t size ) const
     // ContextAccess useCUDA( ContextPtr( mCUDAContext ) );
     // as this defines a function and not a variable
     // General rule: never use shared_ptr temporaries implicitly
-
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-
     SCAI_CUDA_DRV_CALL( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
-
     SCAI_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
 }
 
@@ -132,25 +124,17 @@ void CUDAHostMemory::memset( void* dst, const int val, const size_t size ) const
 SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-
     common::unique_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
-
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
-
     SCAI_CUDA_RT_CALL(
         cudaMemcpyAsync( dst, src, size, cudaMemcpyHostToHost, syncToken->getCUDAStream() ),
         "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", "
         << cudaMemcpyHostToHost << ", " << syncToken->getCUDAStream() << ") failed " )
-
     CUevent event;
-
     SCAI_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ), "Could not create event " )
-
     SCAI_CUDA_DRV_CALL( cuEventRecord( event, syncToken->getCUDAStream() ),
                         "cuEventRecord failed for CUevent " << event << '.' )
-
     syncToken->setEvent( event );
-
     return syncToken.release();
 }
 
@@ -159,7 +143,6 @@ ContextPtr CUDAHostMemory::getContextPtr() const
     // Currently Host device should do operations on Host memory
     // Possible extension: the corresponding CUDA device can also access the host memory
     //                     with limited PCIe bandwidth (Zero Copy, e.g. on Tegra K1)
-
     ContextPtr host = Context::getContextPtr( common::context::Host );
     return host;
 }
@@ -169,13 +152,11 @@ ContextPtr CUDAHostMemory::getContextPtr() const
 bool CUDAHostMemory::canCopyFrom( const Memory& other ) const
 {
     bool supported = false;
-
     memtype::MemoryType otherType = other.getType();
 
     if ( otherType == memtype::HostMemory )
     {
         // CUDHostMem -> Host is supported
-
         supported = true;
     }
     else if ( otherType == memtype::CUDAHostMemory )
@@ -189,13 +170,11 @@ bool CUDAHostMemory::canCopyFrom( const Memory& other ) const
 bool CUDAHostMemory::canCopyTo( const Memory& other ) const
 {
     bool supported = false;
-
     memtype::MemoryType otherType = other.getType();
 
     if ( otherType == memtype::HostMemory )
     {
         // CUDHostMem -> Host is supported
-
         supported = true;
     }
     else if ( otherType == memtype::CUDAHostMemory )
@@ -211,7 +190,6 @@ bool CUDAHostMemory::canCopyTo( const Memory& other ) const
 void CUDAHostMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
 {
     // all kind of Host <-> CUDAHost is supported
-
     if ( srcMemory.getType() == memtype::HostMemory )
     {
         ::memcpy( dst, src, size );
@@ -232,7 +210,6 @@ void CUDAHostMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void*
 void CUDAHostMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const
 {
     // all kind of Host <-> CUDAHost is supported
-
     if ( dstMemory.getType() == memtype::HostMemory )
     {
         ::memcpy( dst, src, size );

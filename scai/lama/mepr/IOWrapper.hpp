@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Wrapper for IO functions
@@ -36,11 +41,14 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace lama {
+namespace lama
+{
 
-namespace mepr {
+namespace mepr
+{
 
 /*
  * Forward declaration
@@ -53,14 +61,26 @@ template<typename ValueType, typename TList> struct IOWrapper;
 template<typename ValueType>
 struct IOWrapper<ValueType, common::mepr::NullType>
 {
-    static bool readBinary( const common::scalar::ScalarType, std::fstream&, ValueType*, const IndexType ) { return false; }
-    static bool writeBinary( const common::scalar::ScalarType, std::fstream&, const ValueType*, const IndexType, const IndexType ) { return false; }
+    static bool readBinary( const common::scalar::ScalarType, std::fstream&, ValueType*, const IndexType )
+    {
+        return false;
+    }
+    static bool writeBinary( const common::scalar::ScalarType, std::fstream&, const ValueType*, const IndexType, const IndexType )
+    {
+        return false;
+    }
 
     /*
      *
      */
-    static bool readBinary( const long, std::fstream&, ValueType*, const IndexType, const IndexType ){ return false; }
-    static bool writeBinary( const long, std::fstream&, const ValueType*, const IndexType, const IndexType ){ return false; }
+    static bool readBinary( const long, std::fstream&, ValueType*, const IndexType, const IndexType )
+    {
+        return false;
+    }
+    static bool writeBinary( const long, std::fstream&, const ValueType*, const IndexType, const IndexType )
+    {
+        return false;
+    }
 
 };
 
@@ -68,11 +88,11 @@ struct IOWrapper<ValueType, common::mepr::NullType>
  * Step n
  */
 template<typename ValueType, typename H, typename T>
-struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
+struct IOWrapper<ValueType, common::mepr::TypeList<H, T> >
 {
     static bool readBinary( const common::scalar::ScalarType dataType, std::fstream& in, ValueType* data, const IndexType n )
     {
-        if( dataType == common::getScalarType<H>() )
+        if ( dataType == common::getScalarType<H>() )
         {
             IOUtils::readBinaryData<H, ValueType>( in, data, n );
             return true;
@@ -85,9 +105,9 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
 
     static bool writeBinary( const common::scalar::ScalarType dataType, std::fstream& out, const ValueType* data, const IndexType n, const IndexType offset = 0 )
     {
-        if( dataType == common::getScalarType<H>() )
+        if ( dataType == common::getScalarType<H>() )
         {
-            IOUtils::writeBinary<H,ValueType>( out, data, n, offset );
+            IOUtils::writeBinary<H, ValueType>( out, data, n, offset );
             return true;
         }
         else
@@ -101,7 +121,7 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
      */
     static bool readBinary( const long expectedSize, std::fstream& in, ValueType* data, const IndexType n, const IndexType offset = 0 )
     {
-        if( expectedSize == sizeof( H ) )
+        if ( expectedSize == sizeof( H ) )
         {
             IOUtils::readBinaryData<H, ValueType>( in, data, n, offset );
             return true;
@@ -114,7 +134,7 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
 
     static bool writeBinary( const long dataTypeSize, std::fstream& out, const ValueType* data, const IndexType n, const IndexType offset = 0 )
     {
-        if( dataTypeSize == sizeof( H ) )
+        if ( dataTypeSize == sizeof( H ) )
         {
             IOUtils::writeBinary<H, ValueType>( out, data, n, offset );
             return true;

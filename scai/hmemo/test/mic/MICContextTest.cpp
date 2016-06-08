@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Extensive testing of MICContext.
@@ -48,13 +53,10 @@ template<typename ValueType>
 static void scal( int n, ValueType alpha, ValueType* array )
 {
     void* arrayPtr = array;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( arrayPtr, n, alpha )
     {
         ValueType* array = static_cast<ValueType*>( arrayPtr );
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; ++i )
@@ -105,7 +107,6 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 BOOST_AUTO_TEST_CASE( useTest )
 {
     ContextPtr micContext = Context::getContextPtr( context::MIC );
-
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief BLAS_BLAS2.cpp
@@ -77,17 +82,15 @@ void BLAS_BLAS2::gemv(
     const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS2.gemv" )
-
     SCAI_LOG_INFO( logger,
                    "gemv<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
-    if( m == 0 )
+    if ( m == 0 )
     {
         return; // empty X, Y, A
     }
 
     // N == 0: empty A, but deal with X, Y, we can handle this here
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -99,11 +102,11 @@ void BLAS_BLAS2::gemv(
 
 //    BLASWrapper<ValueType>::gemv( order, transA, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
         BLASTrait::BLASTrans ta = '-';
 
-        switch( transA )
+        switch ( transA )
         {
             case CblasNoTrans:
                 ta = 'N';
@@ -118,13 +121,13 @@ void BLAS_BLAS2::gemv(
                 break;
         }
 
-        BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
+        BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ) );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         BLASTrait::BLASTrans ta = '-';
 
-        switch( transA )
+        switch ( transA )
         {
             case CblasNoTrans:
                 ta = 'T';
@@ -139,12 +142,12 @@ void BLAS_BLAS2::gemv(
                 break;
         }
 
-        if( common::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
+        if ( common::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
         {
             COMMON_THROWEXCEPTION( "conj matrix vector multiply on complex numbers currently not supported" )
         }
 
-        BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
+        BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ) );
     }
 
     return;
@@ -158,20 +161,17 @@ template<typename ValueType>
 void BLAS_BLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::Host;
-
     bool useBLAS = false;
     int level = 0;
-
     useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );
 
-    if( !useBLAS || ( level <= 0 ) )
+    if ( !useBLAS || ( level <= 0 ) )
     {
         SCAI_LOG_INFO( logger, "BLAS2 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS not set or 0)" )
         return;
     }
-    else if( level > 1 )
+    else if ( level > 1 )
     {
         // only level 2 or level 3 wrappers might be used
         SCAI_LOG_INFO( logger,
@@ -180,7 +180,6 @@ void BLAS_BLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
     }
 
     SCAI_LOG_INFO( logger, "register BLAS2 wrapper routines for Host at kernel registry [" << flag << "]" )
-
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( BLAS_BLAS2::gemv, ctx, flag );
 }
 

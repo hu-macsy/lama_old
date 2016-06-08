@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test for TypeLists
@@ -45,14 +50,10 @@ BOOST_AUTO_TEST_SUITE( TypeListTest )
 BOOST_AUTO_TEST_CASE( containsTest )
 {
 #define TEST_LIST SCAI_TYPELIST( int, float, double )
-
     bool r = mepr::TypeListUtilsV<int, TEST_LIST>::contains;
-
     BOOST_CHECK( r );
-
     r = mepr::TypeListUtilsV<long long, TEST_LIST>::contains;
     BOOST_CHECK( !r );
-
 #undef TEST_LIST
 }
 
@@ -61,11 +62,8 @@ BOOST_AUTO_TEST_CASE( containsTest )
 BOOST_AUTO_TEST_CASE( sizeTest )
 {
 #define TEST_LIST SCAI_TYPELIST( int, float, double )
-
     IndexType size = mepr::TypeListUtils<TEST_LIST>::size;
-
     BOOST_CHECK( 3 == size );
-
 #undef TEST_LIST
 }
 
@@ -74,13 +72,9 @@ BOOST_AUTO_TEST_CASE( sizeTest )
 BOOST_AUTO_TEST_CASE( indexTest )
 {
 #define TEST_LIST SCAI_TYPELIST( int, float, double )
-
     IndexType index = mepr::TypeListUtilsV<float, TEST_LIST>::index;
-
     BOOST_CHECK( 1 == index );
-
     index = mepr::TypeListUtilsV<size_t, TEST_LIST>::index;
-
     BOOST_CHECK( -1 == index );
 #undef TEST_LIST
 }

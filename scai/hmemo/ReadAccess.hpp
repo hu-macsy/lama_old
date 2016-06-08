@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a template class ReadAccess for reading a HArray.
@@ -105,7 +110,7 @@ public:
     /**
      * @brief Allow type conversion.
      */
-    operator const ValueType*() const;
+    operator const ValueType* () const;
 
     /**
      * @brief return the memory where data has been allocated
@@ -130,8 +135,8 @@ public:
 
     common::function<void()> releaseDelayed();
 
-    /** 
-     * @brief Output of this object in a stream. 
+    /**
+     * @brief Output of this object in a stream.
      */
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -157,12 +162,9 @@ template<typename ValueType>
 ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array, ContextPtr contextPtr ) : mArray( &array )
 {
     SCAI_ASSERT( contextPtr.get(), "NULL context for read access not allowed" )
-
     SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id()
                     << "> : create for " << array << " @ " << *contextPtr )
-
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
-
     mData = mArray->get( mContextDataIndex );
 }
 
@@ -170,12 +172,9 @@ template<typename ValueType>
 ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array ) : mArray( &array )
 {
     ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
-
     SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id()
                     << "> : create for " << array << " @ " << *contextPtr )
-
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
-
     mData = mArray->get( mContextDataIndex );
 }
 
@@ -208,7 +207,6 @@ template<typename ValueType>
 const Memory& ReadAccess<ValueType>::getMemory() const
 {
     SCAI_ASSERT( mArray, "ReadAccess has already been released." )
-
     return mArray->getMemory( mContextDataIndex );
 }
 
@@ -218,15 +216,10 @@ template<typename ValueType>
 common::function<void()> ReadAccess<ValueType>::releaseDelayed()
 {
     SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
-
     void ( _HArray::*releaseAccess ) ( ContextDataIndex ) const = &_HArray::releaseReadAccess;
-
     const _HArray* ctxArray = mArray;
-
     // This access itself is treated as released
-
     mArray = NULL;
-
     return common::bind( releaseAccess, ctxArray, mContextDataIndex );
 }
 
@@ -268,17 +261,15 @@ template<typename ValueType>
 const ValueType* ReadAccess<ValueType>::get() const
 {
     SCAI_ASSERT( mArray, "ReadAccess::get fails, has already been released." )
-
     return mData;
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-ReadAccess<ValueType>::operator const ValueType*() const
+ReadAccess<ValueType>::operator const ValueType* () const
 {
     SCAI_ASSERT( mArray, "ReadAccess has already been released." )
-
     return mData;
 }
 

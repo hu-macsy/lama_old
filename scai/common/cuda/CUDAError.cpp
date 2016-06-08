@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains the implementation of the class CUDAError.
@@ -52,8 +57,7 @@ const char* cudaDriverErrorString( CUresult res )
 {
     const char* str = "";
 
-    switch( res )
-
+    switch ( res )
     {
         case CUDA_SUCCESS:
             str = "No errors";
@@ -174,8 +178,7 @@ const char* cublasErrorString( cublasStatus_t res )
 {
     const char* str = "";
 
-    switch( res )
-
+    switch ( res )
     {
         case CUBLAS_STATUS_SUCCESS:
             str = "CUBLAS successful";
@@ -221,7 +224,6 @@ const char* cusparseErrorString( cusparseStatus_t res )
     const char* str = "";
 
     switch ( res )
-
     {
         case CUSPARSE_STATUS_SUCCESS:
             str = "CUSPARSE successful";

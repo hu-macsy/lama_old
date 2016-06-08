@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a new dynamic array class where the array data can be
@@ -79,18 +84,16 @@ protected:
 
 template<typename ValueType>
 LArrayRef<ValueType>::LArrayRef( IndexType size, ValueType* pointer )
-                : LArray<ValueType>()
+    : LArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
-
-    if( size != 0 && pointer == NULL )
+    if ( size != 0 && pointer == NULL )
     {
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
     hmemo::ContextData& host = mContextDataManager[ hmemo::HostMemory::getIt() ];
     host.setRef( pointer, size * mValueSize );
-
     mSize = size;
 }
 
@@ -98,25 +101,19 @@ LArrayRef<ValueType>::LArrayRef( IndexType size, ValueType* pointer )
 
 template<typename ValueType>
 LArrayRef<ValueType>::LArrayRef( IndexType size, const ValueType* pointer )
-                : LArray<ValueType>()
+    : LArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
-
-    if( size != 0 && pointer == NULL )
+    if ( size != 0 && pointer == NULL )
     {
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
     hmemo::ContextData& host = mContextDataManager[ hmemo::HostMemory::getIt() ];
-
     // dealing with const references in ContextData is not supported
-
-    host.setRef( const_cast<ValueType*>( pointer ), size * sizeof(ValueType) );
-
+    host.setRef( const_cast<ValueType*>( pointer ), size * sizeof( ValueType ) );
     // Take care of const awareness by setting a flag
-
-    constFlag = true; 
-
+    constFlag = true;
     mSize = size;
 }
 

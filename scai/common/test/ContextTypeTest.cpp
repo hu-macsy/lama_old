@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,8 +20,13 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
-
+ *
  * @brief Test enum for different context types.
  * @author Thomas Brandes
  * @date 30.03.2016
@@ -33,6 +38,7 @@
 #include <sstream>
 
 using namespace scai;
+
 using namespace common;
 
 BOOST_AUTO_TEST_CASE( ContextTypeTest )
@@ -61,8 +67,8 @@ BOOST_AUTO_TEST_CASE( AccessKindTest )
         if ( type == context::Read )
         {
             // output should contain at least an R for read and no W at all
-            BOOST_CHECK( s.str().find( "R") != std::string::npos );
-            BOOST_CHECK( s.str().find( "W") == std::string::npos );
+            BOOST_CHECK( s.str().find( "R" ) != std::string::npos );
+            BOOST_CHECK( s.str().find( "W" ) == std::string::npos );
         }
     }
 }

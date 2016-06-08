@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a structure for a dense matrix.
@@ -53,7 +58,7 @@ template<typename ValueType> class DenseStorage;
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseStorageView:
-    public CRTPMatrixStorage<DenseStorageView<ValueType>,ValueType>
+    public CRTPMatrixStorage<DenseStorageView<ValueType>, ValueType>
 {
 public:
 
@@ -101,7 +106,7 @@ public:
     virtual void assign( const _MatrixStorage& other );
 
     void transposeImpl();
-    
+
     /** Getter routine for the data type of the elements. */
 
     virtual common::scalar::ScalarType getValueType() const;
@@ -387,8 +392,8 @@ public:
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseStorage:
-        public DenseStorageView<ValueType>,
-        public _MatrixStorage::Register<DenseStorage<ValueType> >    // register at factory
+    public DenseStorageView<ValueType>,
+    public _MatrixStorage::Register<DenseStorage<ValueType> >    // register at factory
 {
 public:
 

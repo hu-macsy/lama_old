@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains tests for the COOUtils interface to be tested on different devices
@@ -59,15 +64,10 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
 BOOST_AUTO_TEST_CASE( offsets2iaTest )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     KernelTraitContextFunction<COOKernelTrait::offsets2ia > offsets2ia;
-
     ContextPtr loc = Context::getContextPtr( offsets2ia.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "offsets2ia test for " << *testContext << " on " << *loc )
-
     // Test without diagonal property
     {
         const IndexType offsets_values[] =
@@ -80,7 +80,6 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
         HArray<IndexType> offsets( numOffsets, offsets_values, testContext );
-
         HArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         const IndexType numDiagonals = 0;
@@ -110,7 +109,6 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
         HArray<IndexType> offsets( numOffsets, offsets_values, testContext );
-
         HArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         const IndexType numDiagonals = 3;
@@ -134,17 +132,11 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_arithmetic_test_types )
 {
     typedef float CSRValueType;
-
     ContextPtr testContext = ContextFix::testContext;
-
     KernelTraitContextFunction<COOKernelTrait::setCSRData<ValueType, CSRValueType> > setCSRData;
-
     ContextPtr loc = Context::getContextPtr( setCSRData.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "setCSRData< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     // setCSRData is for conversion of CSR storage to COO storage
     // is usually just a copy but has some reordering if diagonal property is required
     // here we test only for csrJA
@@ -152,7 +144,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_arithmetic_test_t
         const IndexType offsets_values[] = { 0, 2, 5, 7, 9 };
         const CSRValueType csrja_values[]   = { 0, 5, 1, 4, 5, 2, 0, 4, 3 };
         const ValueType cooja_values[]   = { 0, 1, 2, 5, 4, 5, 0, 4, 3 };
-
         const IndexType numOffsets = sizeof( offsets_values ) / sizeof( IndexType );
         const IndexType numRows = numOffsets - 1;
         const IndexType numDiagonals = 3;
@@ -160,10 +151,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_arithmetic_test_t
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
         BOOST_REQUIRE( numDiagonals <= numRows );
-
         HArray<IndexType> offsets( numOffsets, offsets_values, testContext );
         HArray<CSRValueType> csrJA( numValues, csrja_values, testContext );
-
         HArray<ValueType> cooJA;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         ReadAccess<CSRValueType> rCSRJA( csrJA, loc );
@@ -179,7 +168,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_arithmetic_test_t
             BOOST_CHECK_EQUAL( rCOOJA[i], cooja_values[i] );
         }
     }
-
 } // setCSRData
 
 /* ------------------------------------------------------------------------------------------------------------------ */

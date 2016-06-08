@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a dynamic array class where the array data can be
@@ -53,7 +58,7 @@ namespace hmemo
  * indirectly accessed via a ReadAccess or a WriteAccess.
  *
  * Compared to a C++ container like std::vector some differences must be taken into account:
- * 
+ *
  *  - There is never a call of the default constructor, destructor or copy constructor of ValueType
  *    (so data is always handled bytewise in case of context transfers or reallocation)
  *  - Iterators are not provided
@@ -63,7 +68,7 @@ namespace hmemo
  *  or references; these might be invalid when data is moved to another context.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT HArray: 
+class COMMON_DLL_IMPORTEXPORT HArray:
 
     public _HArray,
     public _HArray::Register<HArray<ValueType> >
@@ -97,7 +102,7 @@ public:
     /**
      * @brief Create a Heterogeneous array and give it a first touch on a context
      *
-     * The first context decides about the default context and the default memory          
+     * The first context decides about the default context and the default memory
      * used for the array. This is only a performance issue in some situations.
      */
     explicit HArray( ContextPtr context );
@@ -164,14 +169,14 @@ public:
 
     HArray<ValueType>* copy() const;
 
-    /** 
+    /**
      *  Static create routine that is used for the _HArray factory.
      */
 
     static _HArray* create();
 
     /**
-     * @brief Assignment operator for Heterogeneous arrays.  
+     * @brief Assignment operator for Heterogeneous arrays.
      *
      * @param[in] other the HArray to assign
      * @return this array as a copy of the other array
@@ -226,7 +231,7 @@ public:
     using _HArray::clear;
 
     /** Method that must be provided to guarantee a correct registration in
-     *  the _HArray factory. 
+     *  the _HArray factory.
      */
 
     static common::scalar::ScalarType createValue()
@@ -261,7 +266,7 @@ protected:
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>::HArray() : 
+HArray<ValueType>::HArray() :
 
     _HArray( 0, sizeof( ValueType ) )
 
@@ -278,9 +283,7 @@ HArray<ValueType>::HArray( ContextPtr context ) :
 
 {
     // just make the first entry for the context
-
     /* ContextDataIndex data = */  mContextDataManager.getContextData( context );
-
     SCAI_LOG_DEBUG( logger, "created new HArray: " << *this )
 }
 
@@ -293,9 +296,7 @@ HArray<ValueType>::HArray( MemoryPtr memory ) :
 
 {
     // just make the first entry for the memory
-
     /* ContextDataIndex data = */  mContextDataManager.getMemoryData( memory );
-
     SCAI_LOG_DEBUG( logger, "created new HArray: " << *this )
 }
 
@@ -304,44 +305,35 @@ HArray<ValueType>::HArray( MemoryPtr memory ) :
 template<typename ValueType>
 HArray<ValueType>::HArray( const IndexType n ) :
 
-    _HArray( n, sizeof( ValueType) )
+    _HArray( n, sizeof( ValueType ) )
 
 {
     // reserves already memory on the host, but this data is not valid
-
     ContextPtr hostPtr = Context::getHostPtr();
     mContextDataManager.reserve( hostPtr, n * mValueSize, 0 );
-
     SCAI_LOG_DEBUG( logger, "created new HArray: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr context ) : 
+HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr context ) :
 
     _HArray( n, sizeof( ValueType ) )
 
 {
     mContextDataManager.getContextData( context );  // first touch here
-
-    // In constructor of the HArray lock of accesses is not required 
-
+    // In constructor of the HArray lock of accesses is not required
     ContextPtr host = Context::getHostPtr();
-
     size_t validSize = 0;   // no valid data availalbe, so even don't search for it
-
     // Use of acquireAccess guarantees allocation of data
-
     ContextDataIndex index = mContextDataManager.acquireAccess( host, common::context::Write, mSize * mValueSize, validSize );
-
     ContextData& data = mContextDataManager[index];
 
     if ( n > 0 )
     {
         ValueType* hostData = static_cast<ValueType*>( data.get() );
-
-#pragma omp parallel for 
+        #pragma omp parallel for
 
         for ( size_t i = 0; i < mSize; ++i )
         {
@@ -350,7 +342,6 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr
     }
 
     releaseWriteAccess( index );
-
     SCAI_LOG_DEBUG( logger, "constructed: " << *this )
 
     // if array is constructed for other context than host, we prefetch the data to it
@@ -366,7 +357,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr
 template<typename ValueType>
 HArray<ValueType>::HArray( const IndexType n, const ValueType values[], ContextPtr context ) :
 
-     _HArray( 0, sizeof( ValueType ) )
+    _HArray( 0, sizeof( ValueType ) )
 
 {
     /* ContextDataIndex data = */  mContextDataManager.getContextData( context );
@@ -376,7 +367,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType values[], ContextP
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>::HArray( const HArray<ValueType>& other ):  
+HArray<ValueType>::HArray( const HArray<ValueType>& other ):
 
     _HArray( other.mSize, sizeof( ValueType ) )
 
@@ -390,7 +381,6 @@ template<typename ValueType>
 HArray<ValueType>::~HArray()
 {
     // destructor of ContextDataManager does all the release/check stuff
-
     SCAI_LOG_DEBUG( logger, "~HArray = " << *this )
 }
 
@@ -416,7 +406,6 @@ template<typename ValueType>
 common::scalar::ScalarType HArray<ValueType>::getValueType() const
 {
     // Note: this is implementation of the pure method of base class _HArray.
-
     return common::TypeTraits<ValueType>::stype;
 }
 
@@ -426,7 +415,6 @@ template<typename ValueType>
 void HArray<ValueType>::init( const ValueType src[], const IndexType size )
 {
     // context manager copies the data to the first touch location
-
     mContextDataManager.init( src, sizeof( ValueType ) * size );
     mSize = size;
 }
@@ -460,19 +448,12 @@ HArray<ValueType>& HArray<ValueType>::operator=( const HArray<ValueType>& other 
 
     mSize      = other.mSize;
     mValueSize = other.mValueSize;
-
     SCAI_ASSERT( !mContextDataManager.locked(), "assign to a locked array (read/write access)" )
-
     // ToDo: we might add an exception on same thread: only valid write location is copied
-
     SCAI_ASSERT( !other.mContextDataManager.locked( common::context::Write ), "assign of a write locked array" )
-
     mContextDataManager.invalidateAll();
-
     // Now the same stuff as in copy constructor
-
     mContextDataManager.copyAllValidEntries( other.mContextDataManager, mSize * mValueSize );
-
     return *this;
 }
 
@@ -485,23 +466,17 @@ void HArray<ValueType>::assign( const HArray<ValueType>& other, ContextPtr conte
 
     if ( &other == this )
     {
-         mContextDataManager.setValidData( context, mContextDataManager, mSize * mValueSize );
-         return;
+        mContextDataManager.setValidData( context, mContextDataManager, mSize * mValueSize );
+        return;
     }
 
     mSize      = other.mSize;
     mValueSize = other.mValueSize;
-
     SCAI_ASSERT( !mContextDataManager.locked(), "assign to a locked array (read/write access)" )
-
     // ToDo: we might add an exception on same thread: only valid write location is copied
-
     SCAI_ASSERT( !other.mContextDataManager.locked( common::context::Write ), "assign of a write locked array" )
-
     mContextDataManager.invalidateAll();
-
     mContextDataManager.setValidData( context, other.mContextDataManager, mSize * mValueSize );
- 
     SCAI_LOG_DEBUG( logger, *this << " has now been assigned at " << *context )
 }
 
@@ -511,18 +486,12 @@ template<typename ValueType>
 void HArray<ValueType>::swap( HArray<ValueType>& other )
 {
     SCAI_LOG_DEBUG( logger, *this << ": swap with other = " << other )
-
     // we cannot swap if there is any access for any array
-
     SCAI_ASSERT_EQUAL( 0, other.mContextDataManager.locked(), "swap: other array locked: " << other )
     SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked(), "this array locked: " << *this )
-
     SCAI_ASSERT_EQUAL( mValueSize, other.mValueSize, "serious size mismatch" )
-
     mContextDataManager.swap( other.mContextDataManager );
-
     std::swap( mSize, other.mSize );
-
     SCAI_LOG_DEBUG( logger, *this << ": has been swapped with other = " << other )
 }
 
@@ -540,9 +509,7 @@ template<typename ValueType>
 void HArray<ValueType>::purge()
 {
     mContextDataManager.purge();
-
     mSize = 0;
- 
     SCAI_LOG_DEBUG( logger, *this << " purged" )
 }
 
@@ -568,12 +535,9 @@ template<typename ValueType>
 void HArray<ValueType>::clear( const ContextDataIndex index )
 {
     // make sure that we have exactly one write access at this context
-
     ContextData& data = mContextDataManager[index];
-
     SCAI_ASSERT_EQUAL( 1, mContextDataManager.locked( common::context::Write ), "multiple write access for clear" << data )
     SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked( common::context::Read ), "further read access, cannot clear " << data )
-
     mSize = 0;
 }
 
@@ -583,15 +547,10 @@ template<typename ValueType>
 void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 {
     ContextData& entry = mContextDataManager[index];
-
     bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
-
     // SCAI_ASSERT( entry.locked( common::context::Write ), "resize illegal here " << entry )
-
     // static cast to have multiplication with 64 bit values
-
     size_t allocSize = static_cast<size_t>( size ) * mValueSize;
-
     size_t validSize = static_cast<size_t>( mSize ) * mValueSize;
 
     if ( validSize > allocSize )
@@ -599,13 +558,10 @@ void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
         validSize = allocSize;   // some entries are no more needed
     }
 
-    SCAI_LOG_INFO( logger, *this << ": resize, needed = " << allocSize << " bytes, used = " 
-                         << validSize << " bytes, capacity = " << entry.capacity() << " bytes" )
-
+    SCAI_LOG_INFO( logger, *this << ": resize, needed = " << allocSize << " bytes, used = "
+                   << validSize << " bytes, capacity = " << entry.capacity() << " bytes" )
     entry.reserve( allocSize, validSize, inUse );
-
     // capacity is now sufficient for size elements
-
     mSize = size;
 }
 
@@ -620,14 +576,10 @@ void HArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) 
     }
 
     bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
-
     ContextData& entry = mContextDataManager[index];
-   
     size_t allocSize = size * mValueSize;
     size_t validSize = mSize * mValueSize;
-
     entry.reserve( allocSize, validSize, inUse );
-
     // Note: mSize does not change by the reserve
 }
 
@@ -647,7 +599,8 @@ void HArray<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "HArray<";
     stream << common::TypeTraits<ValueType>::id();
-    stream << ">(" << mSize; stream << ") ";
+    stream << ">(" << mSize;
+    stream << ") ";
     stream << mContextDataManager;
 }
 
@@ -656,9 +609,9 @@ void HArray<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 HArray<ValueType>* HArray<ValueType>::create( common::scalar::ScalarType key )
 {
-    if( key == createValue() )
+    if ( key == createValue() )
     {
-        return reinterpret_cast<HArray<ValueType>* >( _HArray::create( key ));
+        return reinterpret_cast<HArray<ValueType>* >( _HArray::create( key ) );
     }
     else
     {

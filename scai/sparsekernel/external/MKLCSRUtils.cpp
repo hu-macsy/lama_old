@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of CSR utilities with MKL
@@ -85,20 +90,17 @@ void MKLCSRUtils::normalGEMV(
     const ValueType csrValues[] )
 {
     SCAI_REGION( "MKL.scsrmv" )
-
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
-
     typedef MKLCSRTrait::BLASIndexType BLASIndexType;
     typedef MKLCSRTrait::BLASTrans BLASTrans;
     typedef MKLCSRTrait::BLASMatrix BLASMatrix;
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if (common::TypeTraits<IndexType>::stype
-            != common::TypeTraits<BLASIndexType>::stype)
+    if ( common::TypeTraits<IndexType>::stype
+            != common::TypeTraits<BLASIndexType>::stype )
     {
-        COMMON_THROWEXCEPTION("indextype mismatch");
+        COMMON_THROWEXCEPTION( "indextype mismatch" );
     }
 
     if ( syncToken )
@@ -113,19 +115,13 @@ void MKLCSRUtils::normalGEMV(
     }
 
     // performs y = alpha * A * x + beta * y
-
-
     BLASTrans transa = 'n';
-
     // General, - triangular, Non-Unit, C for zero-indexing
-
     BLASMatrix matdescra;
-
     matdescra[0] = 'g';
     matdescra[1] = ' ';
     matdescra[2] = 'n';
     matdescra[3] = 'c';
-
     // const_cast needed, MKL interface does not support it
     MKLCSRWrapper<ValueType>::csrmv( transa, numRows, numColumns, alpha, matdescra, csrValues,
                                      csrJA, csrIA, csrIA + 1, x, beta, result );
@@ -146,16 +142,12 @@ void MKLCSRUtils::convertCSR2CSC(
     IndexType numValues )
 {
     // Intel MKL supports csr to csc only for square matrices
-
-    if( numRows == numColumns )
+    if ( numRows == numColumns )
     {
         SCAI_REGION( "MKL.CSRUtils.convertCSR2CSC" )
-
         SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
-
         IndexType job[] =
         { 0, 0, 0, 0, 0, 1 };
-
         MKLCSRWrapper<ValueType>::csr2csc( job, numRows, csrValues, csrJA, csrIA, cscValues, cscJA, cscIA );
     }
     else
@@ -175,10 +167,8 @@ void MKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 {
     const common::context::ContextType ctx = common::context::Host;
     using kregistry::KernelRegistry;
-
     SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
-
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
 
@@ -190,36 +180,30 @@ MKLCSRUtils::MKLCSRUtils()
 {
     bool useMKL = true;
     int level = 0;
-
     // using MKL for CSR might be disabled explicitly by environment variable
-
     useMKL = common::Settings::getEnvironment( level, "SCAI_USE_MKL" );
 
-    if( !useMKL || ( level <= 0 ) )
+    if ( !useMKL || ( level <= 0 ) )
     {
         return;
     }
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
-
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );
 }
 
 MKLCSRUtils::~MKLCSRUtils()
 {
     bool useMKL = true;
-
     // using MKL for CSR might be disabled explicitly by environment variable
-
     common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
 
-    if( !useMKL )
+    if ( !useMKL )
     {
         return;
     }
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );
 }
 

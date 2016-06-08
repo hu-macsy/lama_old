@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief GMRES.hpp
@@ -50,8 +55,8 @@ namespace solver
  *        to solve a system of linear equations iteratively.
  */
 class COMMON_DLL_IMPORTEXPORT GMRES:
-		public IterativeSolver,
-		public Solver::Register<GMRES>
+    public IterativeSolver,
+    public Solver::Register<GMRES>
 {
 public:
 
@@ -110,15 +115,15 @@ public:
         common::scoped_array<double> mHd;
 
         // krylov space
-        std::vector<lama::Vector*> *mV;
+        std::vector<lama::Vector*>* mV;
 
         // temp-arrays
-        lama::Vector *mW;
-        lama::Vector *mT;
+        lama::Vector* mW;
+        lama::Vector* mT;
 
         // remember starting solution
         // only needed if x is modified within krylov loop
-        lama::Vector *mX0;
+        lama::Vector* mX0;
     };
 
     /**

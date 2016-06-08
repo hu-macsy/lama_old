@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class to spy CSR sparse matrix as a bitmap
@@ -58,16 +63,12 @@ public:
     Bitmap( const int w, const int h, const int s )
     {
         SCAI_ASSERT( s > 0, "scale factor s = " << s << " must be positive" )
-
         scale  = s;
         width  = w;
         height = h;
-
         bit_depth  = 8;
         color_type = PNG_COLOR_TYPE_RGBA;
-
         row_pointers = new png_bytep[ height * scale ];
-
         Color background( 220, 220, 220 );
 
         for ( int y = 0; y < height * scale; ++y )
@@ -76,10 +77,10 @@ public:
 
             for ( int x = 0; x < width * scale; ++x )
             {
-               row_pointers[y][4 * x ] = static_cast<png_byte> ( background.r );
-               row_pointers[y][4 * x + 1 ] = static_cast<png_byte> ( background.g );
-               row_pointers[y][4 * x + 2 ] = static_cast<png_byte> ( background.b );
-               row_pointers[y][4 * x + 3 ] = 255;
+                row_pointers[y][4 * x ] = static_cast<png_byte> ( background.r );
+                row_pointers[y][4 * x + 1 ] = static_cast<png_byte> ( background.g );
+                row_pointers[y][4 * x + 2 ] = static_cast<png_byte> ( background.b );
+                row_pointers[y][4 * x + 3 ] = 255;
             }
         }
 
@@ -118,13 +119,12 @@ public:
         }
 
         int r, g, b;
-
         getColor( r, g, b, val );
 
         for ( int i = 0; i < scale; ++i )
         {
             for ( int j = 0; j < scale; ++j )
-            { 
+            {
                 setPixel( scale * x + i, scale * y + j, r, g, b );
             }
         }
@@ -139,18 +139,25 @@ public:
         for ( int k = 0; k < ia[nRows]; ++k )
         {
             ValueType v = values[k];
-            if ( v < minval ) minval = v;
-            if ( v > maxval ) maxval = v;
+
+            if ( v < minval )
+            {
+                minval = v;
+            }
+
+            if ( v > maxval )
+            {
+                maxval = v;
+            }
         }
 
         double multRow = double( height ) / double( nRows );
         double multCol = double( width ) / double( nCols );
+        setMinMax( minval, maxval );
 
-        setMinMax( minval, maxval);
- 
         for ( int i = 0; i < nRows; ++i )
         {
-            for ( int j = ia[i]; j < ia[i+1]; ++j )
+            for ( int j = ia[i]; j < ia[i + 1]; ++j )
             {
                 set( static_cast<int>( i * multRow ), static_cast<int>( ja[j] * multCol ), values[j] );
             }
@@ -160,7 +167,7 @@ public:
 
         for ( int i = 0; i < nRows; ++i )
         {
-            for ( int j = ia[i]; j < ia[i+1]; ++j )
+            for ( int j = ia[i]; j < ia[i + 1]; ++j )
             {
                 if ( ja[j] == i )
                 {
@@ -180,14 +187,21 @@ public:
             g = palette[0].g;
             b = palette[0].b;
         }
-        else 
+        else
         {
             double sval = val;
-            if ( sval < minval) sval = minval;
-            if ( sval > maxval) sval = maxval;
+
+            if ( sval < minval )
+            {
+                sval = minval;
+            }
+
+            if ( sval > maxval )
+            {
+                sval = maxval;
+            }
 
             sval = ( sval - minval ) / ( maxval - minval ); // normed between 0.0 and 1.0
-
             r = static_cast<int>( palette[0].r + sval * ( palette[1].r - palette[0].r ) );
             g = static_cast<int>( palette[0].g + sval * ( palette[1].g - palette[0].g ) );
             b = static_cast<int>( palette[0].b + sval * ( palette[1].b - palette[0].b ) );
@@ -241,7 +255,6 @@ public:
         png_set_IHDR( png_ptr, info_ptr, width * scale, height * scale,
                       bit_depth, color_type, PNG_INTERLACE_NONE,
                       PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE );
-
         png_write_info( png_ptr, info_ptr );
 
         /* write bytes */
@@ -299,7 +312,7 @@ private:
     struct Color
     {
         int r, g, b;
- 
+
         Color( const int red, const int green, const int blue )
         {
             r = red;
@@ -307,6 +320,6 @@ private:
             b = blue;
         }
     };
-   
+
     std::vector<Color> palette;
 };

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Conversion from ScalarType to ValueType and other way round
@@ -33,11 +38,14 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace common {
+namespace common
+{
 
-namespace mepr {
+namespace mepr
+{
 
 /*
  * Forward declartion
@@ -67,11 +75,11 @@ struct ScalarTypeHelper<NullType>
  * Step n
  */
 template<typename H, typename T>
-struct ScalarTypeHelper< TypeList<H,T> >
+struct ScalarTypeHelper< TypeList<H, T> >
 {
     static long sizeOf( const scalar::ScalarType& s )
     {
-        if( s == common::getScalarType<H>() )
+        if ( s == common::getScalarType<H>() )
         {
             return sizeof( H );
         }
@@ -83,7 +91,7 @@ struct ScalarTypeHelper< TypeList<H,T> >
 
     static scalar::ScalarType getBySize( const long size )
     {
-        if( sizeof( H ) == size )
+        if ( sizeof( H ) == size )
         {
             return TypeTraits<H>::stype;
         }

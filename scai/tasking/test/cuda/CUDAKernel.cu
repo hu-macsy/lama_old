@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Basic tests for LAMA arrays with context/memory at CUDA devices
@@ -44,13 +49,9 @@ using namespace tasking;
 float sum( const float array[], const int n )
 {
     thrust::device_ptr<float> data( const_cast<float*>( array ) );
-
     float zero = static_cast<float>( 0 );
-
     float result = thrust::reduce( data, data + n, zero, thrust::plus<float>() );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     return result;
 }
 
@@ -68,23 +69,18 @@ void initKernel( float* out, const int n, const float value )
 void init( float array[], const int n, const float value )
 {
     SCAI_CHECK_CUDA_ACCESS
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
-
     cudaStream_t stream = 0;
 
     if ( syncToken )
     {
         // asynchronous execution takes other stream and will not synchronize later
-
         stream = syncToken->getCUDAStream();
     }
 
     const int blockSize = common::CUDASettings::getBlockSize( n );
-
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-
     initKernel <<< dimGrid, dimBlock, 0, stream>>>( array, n, value );
 }
 

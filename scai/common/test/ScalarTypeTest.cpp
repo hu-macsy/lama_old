@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test enum for ScalarType
@@ -40,14 +45,10 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
     for ( int type = scalar::INDEX_TYPE; type <= scalar::UNKNOWN; ++type )
     {
         scalar::ScalarType stype = scalar::ScalarType( type );
-
         std::ostringstream s;
         s << stype;
-
         BOOST_CHECK( s.str().length() > 0 );
-
         BOOST_CHECK_EQUAL( stype, str2ScalarType( s.str().c_str() ) );
-
         size_t pos = s.str().find( "Complex" );
 
         if ( isComplex( stype ) )

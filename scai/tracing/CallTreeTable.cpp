@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of class that keeps call tree informations and writes it to a file.
@@ -162,7 +167,6 @@ void CallTreeTable::open( const char* prefix, const char* threadSuffix )
 
     mFileName = prefix;
     mFileName += ".ct";
-
     std::string rank;
 
     if ( scai::common::Settings::getEnvironment( rank, "SCAI_RANK" ) )
@@ -178,7 +182,6 @@ void CallTreeTable::open( const char* prefix, const char* threadSuffix )
     }
 
     SCAI_LOG_DEBUG( logger, "open calltree file " << mFileName );
-
     outfile.open( mFileName.c_str(), ios::out );
 
     if ( outfile.fail() )

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class for a CUDA device
@@ -57,11 +62,11 @@ namespace common
  */
 
 class COMMON_DLL_IMPORTEXPORT CUDACtx : private NonCopyable
-{   
+{
 
 public:
 
-    /** Constructor will check for a CUDA device and create a context for it 
+    /** Constructor will check for a CUDA device and create a context for it
      *
      *  @param[in] deviceNr is the number of the device to access
      *  @throws Exception if the device cannot be accessed
@@ -104,7 +109,7 @@ public:
     {
         return mDeviceNr;
     }
-    
+
     /** Add a routine to be called with destructor */
 
     void addShutdown( common::function<void()> routine );

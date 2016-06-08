@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief MIC implemenations for routines to be avaialble for COOKernelTrait.
@@ -65,7 +70,7 @@ public:
 
     /** MIC implementation for COOKernelTrait::getCSRValues */
 
-    template<typename COOValueType,typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     static void getCSRValuesP(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -78,7 +83,7 @@ public:
 
     /** MIC serial implementation for COOKernelTrait::getCSRValues */
 
-    template<typename COOValueType,typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     static void getCSRValuesS(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -100,7 +105,7 @@ public:
 
     /** MIC implementation for COOKernelTrait::setCSRData */
 
-    template<typename COOValueType,typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     static void setCSRData(
         COOValueType cooValues[],
         const CSRValueType csrValues[],
@@ -136,7 +141,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        const IndexType numRows);
+        const IndexType numRows );
 
 private:
 

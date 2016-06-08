@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./solver/examples/lecture/task2.cpp
@@ -65,9 +70,7 @@ int main( int argc, char* argv[] )
     CSRSparseMatrix<ValueType> A( argv[1] );
     std::cout << "Read matrix A : " << A << std::endl;
     IndexType size = A.getNumRows();
-
     DenseVector<ValueType> b( size, 0 );
-
     {
         WriteAccess<ValueType> writeB( b.getLocalValues() );
 
@@ -77,22 +80,18 @@ int main( int argc, char* argv[] )
             writeB[i] = ValueType( i + 1 );
         }
     }
-
     std::cout << "Vector b : " << b << std::endl;
     DenseVector<ValueType> x( size , 0.0 );
     std::cout << "Vector x : " << x << std::endl;
-
     // d = r = b - A * x
     // help = A * x;
-
     DenseVector<ValueType> r = b - A * x;
     DenseVector<ValueType> d = r;
     Scalar rOld = r.dotProduct( r );
     Scalar eps = 0.00001;
-
     L2Norm norm;
 
-    for ( int k = 0 ; k < maxIter and norm(r) > eps; k++ )
+    for ( int k = 0 ; k < maxIter and norm( r ) > eps; k++ )
     {
         DenseVector<ValueType> z = A * d;
         Scalar alpha = rOld / d.dotProduct( z );
@@ -102,7 +101,6 @@ int main( int argc, char* argv[] )
         Scalar beta = rNew / rOld;
         d = r + beta * d;
         rOld = rNew;
-
         Scalar rnorm = norm( r );
         std::cout << "Iter k = " << k << " : norm( r ) = " << rnorm.getValue<ValueType>() << std::endl;
     }

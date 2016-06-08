@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief BiCGTest.cpp
@@ -48,17 +53,13 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BiCGTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     BiCG bicgSolver( "BiCGTestSolver", slogger );
     BOOST_CHECK_EQUAL( bicgSolver.getId(), "BiCGTestSolver" );
-
     BiCG bicgSolver2( "BiCGTestSolver2" );
     BOOST_CHECK_EQUAL( bicgSolver2.getId(), "BiCGTestSolver2" );
-
     BiCG bicgSolver3( bicgSolver2 );
     BOOST_CHECK_EQUAL( bicgSolver3.getId(), "BiCGTestSolver2" );
     BOOST_CHECK( bicgSolver3.getPreconditioner() == 0 );
-
     BiCG bicgSolver4( "BiCGTestSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     bicgSolver4.setPreconditioner( preconditioner );

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief CUDABLAS2.cpp
@@ -78,16 +83,15 @@ void CUDABLAS2::gemv(
     const IndexType incy )
 {
     typedef CUBLASTrait::BLASTrans BLASTrans;
-
     IndexType order_m = m;
     IndexType order_n = n;
 //    char trans_char = ' ';
     BLASTrans trans_char;
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = CUBLAS_OP_T;
         }
@@ -101,7 +105,7 @@ void CUDABLAS2::gemv(
     }
     else
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = CUBLAS_OP_N;
         }
@@ -112,9 +116,7 @@ void CUDABLAS2::gemv(
     }
 
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0; // default stream if no syncToken is given
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -123,18 +125,15 @@ void CUDABLAS2::gemv(
     }
 
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ),
                       "CUDABLAS2::gemv set cublas kernel stream = " << stream );
-
     SCAI_LOG_INFO( logger,
                    "gemv<" << TypeTraits<ValueType>::id() << "> with cuBLAS: m = " << order_m << " x " << order_n )
-
     CUBLASWrapper<ValueType>::gemv( handle, trans_char,  order_m ,  order_n , alpha, A,  lda, x, incx , beta, y, incy );
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -150,11 +149,8 @@ template<typename ValueType>
 void CUDABLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
-
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( CUDABLAS2::gemv, ctx, flag );
 }
 

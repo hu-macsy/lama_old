@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains the implementation of the class SolutionProxyTest
@@ -51,7 +56,6 @@ struct SolutionProxyTestConfig
     ~SolutionProxyTestConfig()
     {
         // the vector must be deleted explicitly
-
         VectorType& vec = mProxy.getReference();
         delete &vec;
     }
@@ -106,13 +110,9 @@ BOOST_AUTO_TEST_CASE( testGetConstReference )
 BOOST_AUTO_TEST_CASE( testGetReference )
 {
     mProxy.setDirty( false );
-
     BOOST_CHECK( !mProxy.isDirty() );
-
     VectorType& vec = mProxy.getReference();
-
     BOOST_CHECK( mProxy.isDirty() );
-
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 0 ) );
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 1 ) );
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 2 ) );

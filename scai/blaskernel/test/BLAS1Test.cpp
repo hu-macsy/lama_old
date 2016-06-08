@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains tests for the blas1 methods.
@@ -58,29 +63,20 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( asumTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;   // initialization/free  of context not here
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
-
     ContextPtr loc = Context::getContextPtr( asum.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "asum< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     {
         ValueType values[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
-
         const IndexType nValues = sizeof( values ) / sizeof( ValueType );
         const IndexType incX1 = 1;
         const IndexType incX2 = 2;
         const ValueType result1 = 21.0;
         const ValueType result2 = 9.0;
-
         HArray<ValueType> AValues( nValues, values, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
-
             ReadAccess<ValueType> rAValues( AValues, loc );
             // n <= 0
             ValueType sum = asum[loc->getType()]( -1, rAValues.get(), incX1 );
@@ -96,7 +92,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( asumTest, ValueType, blas_test_types )
             BOOST_CHECK_EQUAL( sum, result2 );
         }
     }
-
 } // asumTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -104,29 +99,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( asumTest, ValueType, blas_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
-
     ContextPtr loc = Context::getContextPtr( axpy.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "axpy< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     // check with n <= 0
     {
         ValueType x[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         ValueType y[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0 };
-
         const IndexType incX = 2;
         const IndexType incY = 3;
-
         const IndexType nX = sizeof( x ) /  sizeof( ValueType );
         const IndexType nY = sizeof( y ) / sizeof( ValueType );
-
         HArray<ValueType> Ax( nX, x, testContext );
         HArray<ValueType> Ay( nY, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -146,13 +132,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, blas_test_types )
     {
         ValueType x[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         ValueType y[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0 };
-
         const IndexType nX = sizeof( x ) / sizeof( ValueType );
         const IndexType nY = sizeof( y ) / sizeof( ValueType );
-
         HArray<ValueType> Ax( nX, x, testContext );
         HArray<ValueType> Ay( nY, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -204,15 +187,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, blas_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
-
     ContextPtr loc = Context::getContextPtr( copy.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "copy< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     // check with n <= 0
     {
         ValueType x[] =
@@ -271,15 +249,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, blas_test_types )
     {
         ValueType x[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         ValueType y[] = { -9.0, 8.0, -7.0, 6.0, 5.0, -4.0, 3.0, 2.0, -1.0 };
-
         ValueType yResult[] = { 1.0, 8.0, -7.0, -3.0, 5.0, -4.0, 5.0, 2.0, -1.0 };
-
         const IndexType incX = 2;
         const IndexType incY = 3;
-
         HArray<ValueType> Ax( 6, x, testContext );
         HArray<ValueType> Ay( 9, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -302,25 +276,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, blas_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( dotTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
-
     ContextPtr loc = Context::getContextPtr( dot.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "dot< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     {
         ValueType x[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         ValueType y[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0 };
-
         const IndexType incX = 2;
         const IndexType incY = 3;
-
         HArray<ValueType> Ax( 6, x, testContext );
         HArray<ValueType> Ay( 9, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -343,18 +309,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dotTest, ValueType, blas_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( iamaxTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::iamax<ValueType> > iamax;
-
     ContextPtr loc = Context::getContextPtr( iamax.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "iamax< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     {
         ValueType values[] =  { 1.0, 2.0, 3.0, 6.0, 5.0, 6.0 };
-
         const IndexType nValues = sizeof( values ) / sizeof( ValueType );
         const IndexType incX1 = 1;
         const IndexType incX2 = 2; // { 1, 3, 5}
@@ -384,26 +344,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( iamaxTest, ValueType, blas_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( nrm2Test, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::nrm2<ValueType> > nrm2;
-
     ContextPtr loc = Context::getContextPtr( nrm2.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "nrm2< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     {
         ValueType values[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
         const IndexType nValues = sizeof( values ) / sizeof( ValueType );
-
         const IndexType incX1 = 1;
         const IndexType incX2 = 2;
         const ValueType result1 = 91.0;
         const ValueType result2 = 35.0;
-
         HArray<ValueType> AValues( nValues, values, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
@@ -427,25 +379,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( nrm2Test, ValueType, blas_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( scalTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::scal<ValueType> > scal;
-
     ContextPtr loc = Context::getContextPtr( scal.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "scal< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     // same values for all subcases
-
     ValueType values[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
-
     const IndexType nValues = sizeof( values ) / sizeof( ValueType );
-
     // check with n <= 0
     {
         HArray<ValueType> AValues( nValues, values, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
@@ -463,7 +406,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scalTest, ValueType, blas_test_types )
     // check with incX <= 0
     {
         HArray<ValueType> AValues( nValues, values, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
@@ -481,9 +423,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scalTest, ValueType, blas_test_types )
     // check with n > 0 and incX > 0
     {
         HArray<ValueType> AValues( nValues, values, testContext );
-
         IndexType incX = 3;
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
@@ -503,25 +443,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scalTest, ValueType, blas_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
-
     ContextPtr loc = Context::getContextPtr( sum.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "sum< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     // check with n <= 0
     {
         ValueType x[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
         ValueType y[] = { 7.0, 6.0, 5.0, 4.0, 3.0 };
         ValueType z[] = { 4.0, 3.0, -2.0, 0.0, -17.0 };
-
         HArray<ValueType> Ax( 5, x, testContext );
         HArray<ValueType> Ay( 5, y, testContext );
         HArray<ValueType> Az( 5, z, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAx( Ax, loc );
@@ -538,17 +471,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, blas_test_types )
             }
         }
     }
-
     // check with n > 0 and incX > 0
     {
         ValueType x[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
         ValueType y[] = { 7.0, 6.0, 5.0, 4.0, 3.0 };
-
         HArray<ValueType> Ax( 5, x, testContext );
         HArray<ValueType> Ay( 5, y, testContext );
-
-        HArray<ValueType> Az( testContext);
-
+        HArray<ValueType> Az( testContext );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAx( Ax, loc );
@@ -572,26 +501,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, blas_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::swap<ValueType> > swap;
-
     ContextPtr loc = Context::getContextPtr( swap.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "swap< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     // check with n <= 0
     {
         ValueType x[] = {   1.0, 2.0, 3.0, 4.0, 5.0};
         ValueType y[] = {   7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
-
         const IndexType incX = 2;
         const IndexType incY = 3;
-
         HArray<ValueType> Ax( 5, x, testContext );
         HArray<ValueType> Ay( 7, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAValues1( Ax, loc );
@@ -613,15 +534,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, blas_test_types )
     {
         ValueType x[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
         ValueType y[] = { 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
-
         const IndexType nX = sizeof( x ) / sizeof( ValueType );
         const IndexType nY = sizeof( y ) / sizeof( ValueType );
-
         const IndexType nValues = 3;
-
         HArray<ValueType> Ax( nX, x, testContext );
         HArray<ValueType> Ay( nY, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAx( Ax, loc );
@@ -643,17 +560,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, blas_test_types )
     {
         ValueType x[] = { 1.0, 2.0, 3.0, 4.0, 5.0};
         ValueType y[] = { 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
-
         const IndexType nX = sizeof( x ) / sizeof( ValueType );
         const IndexType nY = sizeof( y ) / sizeof( ValueType );
-
         const IndexType nValues = 3;
         const IndexType incX = 2;
         const IndexType incY = 3;
-
         HArray<ValueType> Ax( nX, x, testContext );
         HArray<ValueType> Ay( nY, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAValues1( Ax, loc );

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test methods for the communicator
@@ -65,18 +70,12 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 BOOST_AUTO_TEST_CASE( basicTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     SCAI_LOG_INFO( logger, "basicTest for comm = " << *comm )
-
     BOOST_CHECK( comm->getRank() >= 0 );
     BOOST_CHECK( comm->getRank() < comm->getSize() );
-
     std::stringstream out;
-
     out << *comm;
-
     BOOST_CHECK( out.str().length() > 0 );
 }
 
@@ -85,14 +84,10 @@ BOOST_AUTO_TEST_CASE( basicTest )
 BOOST_AUTO_TEST_CASE( computeOwnersTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     IndexType n = 17;
-
     std::vector<IndexType> localIndexes;
     std::vector<IndexType> nonLocalIndexes;
 
@@ -142,12 +137,9 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 BOOST_AUTO_TEST_CASE( allocatePlanTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     std::vector<IndexType> reqQuantities( size );
 
     for ( PartitionId p = 0; p < size; ++p )
@@ -163,9 +155,7 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
     }
 
     CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
-
     // verify that requiredPlan is correctly set up
-
     IndexType offsetCheck = 0;
 
     for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
@@ -194,7 +184,6 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
     }
 
     BOOST_CHECK_EQUAL( offsetCheck, providesPlan.totalQuantity() );
-
 }
 
 /* --------------------------------------------------------------------- */
@@ -202,11 +191,8 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
 BOOST_AUTO_TEST_CASE( bcastStringTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     std::string val = "Dummy";
-
     IndexType root = 0;
 
     if ( comm->getRank() == root )
@@ -215,11 +201,8 @@ BOOST_AUTO_TEST_CASE( bcastStringTest )
     }
 
     SCAI_LOG_INFO( logger, *comm << ": val = " << val );
-
     comm->bcast( val, root );
-
     SCAI_LOG_INFO( logger, *comm << ": val = " << val );
-
     BOOST_CHECK_EQUAL( "Hello", val );
 }
 
@@ -228,12 +211,9 @@ BOOST_AUTO_TEST_CASE( bcastStringTest )
 BOOST_AUTO_TEST_CASE( buildHaloTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     IndexType vectorSize = size;
     BlockDistribution distribution( vectorSize, comm );
     std::vector<IndexType> requiredIndexes;
@@ -252,19 +232,12 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     }
 
     const IndexType noReqIndexes = static_cast<IndexType>( requiredIndexes.size() );
-
     Halo halo;
-
     HaloBuilder::build( distribution, requiredIndexes, halo );
-
     const Halo& haloRef = halo;
-
     const CommunicationPlan& requiredPlan = haloRef.getRequiredPlan();
-
     const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
-
     // check for a correct provide plan
-
     IndexType offsetCheck = 0;
 
     for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
@@ -278,7 +251,6 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     }
 
     BOOST_CHECK_EQUAL( noReqIndexes, requiredPlan.totalQuantity() );
-
     offsetCheck = 0;
     PartitionId nProvides = providesPlan.size();
 
@@ -293,7 +265,6 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     }
 
     BOOST_CHECK_EQUAL( noReqIndexes, providesPlan.totalQuantity() );
-
     const ReadAccess<IndexType> providesIndexes( haloRef.getProvidesIndexes() );
 
     for ( PartitionId p = 0; p < providesPlan.size(); ++p )
@@ -304,7 +275,6 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     }
 
     BOOST_CHECK_EQUAL( noReqIndexes, halo.getHaloSize() );
-
     IndexType nIndexes = static_cast<IndexType>( requiredIndexes.size() );
 
     for ( IndexType i = 0; i < nIndexes; ++i )
@@ -312,7 +282,6 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
         const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
         BOOST_CHECK( 0 <= haloIndex && haloIndex < halo.getHaloSize() );
     }
-
 }
 
 /* --------------------------------------------------------------------- */
@@ -320,12 +289,9 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     SCAI_LOG_INFO( logger, "updateHaloTest<" << common::getScalarType<ValueType>() << ">" );
     const IndexType factor = 4;
     const IndexType vectorSize = factor * size;
@@ -401,9 +367,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_arithmetic_test_t
 BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
 
@@ -415,7 +379,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_arithmetic_test_types 
     if ( size > 1 )
     {
         const IndexType vectorSize = size;
-
         HArray<ValueType> sendBuffer( vectorSize, static_cast<ValueType>( -1 ) );
         HArray<ValueType> recvBuffer( vectorSize );
 
@@ -425,9 +388,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_arithmetic_test_types 
                 WriteAccess<ValueType> sendBufferAccess( sendBuffer );
                 sendBufferAccess[rank] = static_cast<ValueType>( rank );
             }
-
             // Note: recvBuffer will be allocated with same size as sendBuffer
-
             comm->shiftArray( recvBuffer, sendBuffer, 1 );
             sendBuffer.swap( recvBuffer );
         }
@@ -449,11 +410,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_arithmetic_test_types 
 BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
-
     HArray<ValueType> sendBuffer( 2, static_cast<ValueType>( rank ) );
     HArray<ValueType> recvBuffer;
     {
@@ -531,12 +489,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_arithmetic_test_t
 BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     SCAI_LOG_INFO( logger, "bcastTest<" << common::getScalarType<ValueType>() << ">" )
     IndexType N = 5;
     ValueType dummyVal = 13;
@@ -574,12 +529,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, scai_arithmetic_test_types 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     const PartitionId root = 0;
     IndexType n = 2;
     IndexType allN = 0; // only root will have full size
@@ -618,12 +570,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, scai_arithmetic_test_type
 BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     const PartitionId root = 0;
     IndexType n = rank; // number of elements I receive
     IndexType allN = 0;
@@ -676,12 +625,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     const PartitionId root = 0;
     IndexType allN = 0; // only root will have full size
 
@@ -722,12 +668,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_arithmetic_test_types
 BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     const PartitionId root = 0;
     IndexType n = rank; // number of elements I send
     IndexType allN = 0;
@@ -788,12 +731,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_type
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     BOOST_REQUIRE( comm );
-
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-
     int n = 10;
     scoped_array<ValueType> vector( new ValueType[n] );
 

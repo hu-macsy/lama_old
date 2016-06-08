@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./kregistry/test/SimpleTest.cpp
@@ -41,30 +46,23 @@ static void dummyRoutine()
 BOOST_AUTO_TEST_CASE( SimpleTest )
 {
     // This simple test registers a function in the kernel registry and uses it later
-
     KernelRegistry::set( dummyRoutine, "dummy", context::Host, KernelRegistry::KERNEL_ADD );
-
-    KernelContextFunction<void(*)()> f( "dummy" );
-
+    KernelContextFunction<void( * )()> f( "dummy" );
     f[ context::Host ]();  // just call it
-
     // throw exception if called for CUDA, not registered
-
     BOOST_CHECK_THROW(
     {
         f[ context::CUDA ]();
 
     }, KernelRegistryException );
-
     BOOST_CHECK_THROW(
     {
-        KernelContextFunction<void(*)()> g( "dummy1" );  // wrong name
+        KernelContextFunction<void( * )()> g( "dummy1" ); // wrong name
 
     }, KernelRegistryException );
-
     BOOST_CHECK_THROW(
     {
-        KernelContextFunction<int(*)()> g( "dummy" );   // wrong signature
+        KernelContextFunction<int( * )()> g( "dummy" ); // wrong signature
 
     }, KernelRegistryException );
 }

@@ -5,7 +5,7 @@ Solution Task 5
 
 Setting a Context was realized as simple as possible:
 
-.. literalinclude:: ../../examples/lecture/task5.cpp 
+.. literalinclude:: ../../../solver/examples/lecture/task5.cpp 
    :language: c++
    :emphasize-lines: 37,38,50,52
 

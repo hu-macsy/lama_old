@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains the implementation of the class MatrixTest.
@@ -128,7 +133,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     std::string formattedInputFile = prefix + "/impcol_b.mtx";
     MatrixType formattedMatrix( formattedInputFile );
     SCAI_LOG_INFO( logger, "formatted input matrix = " << formattedMatrix );
-
     /*
      * Its not sure why we need to test with these big matrices here
     if ( formattedMatrix.getMatrixKind() == Matrix::SPARSE )
@@ -141,34 +145,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
         testSameMatrix( formattedPoisson, xdrPoisson );
     }
     */
-
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
     std::string formattedFileName = prefix + "/test_matrix_formatted.tmp";
-
     formattedMatrix.writeToFile( formattedFileName, File::SAMG_FORMAT, scai::common::scalar::FLOAT, scai::common::scalar::INT, scai::common::scalar::INT );
     MatrixType readFormattedMatrix( formattedFileName + ".frm" );
     testSameMatrix( formattedMatrix, readFormattedMatrix );
-
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading binary matrix" );
     std::string binaryFileName = prefix + "/test_matrix_bin.tmp.frm";
 // Be careful: binary read must fit to the format that has been used for the write
     formattedMatrix.writeToFile( binaryFileName, File::SAMG_FORMAT, scai::common::scalar::INTERNAL, scai::common::scalar::INT, scai::common::scalar::INT, true );
     MatrixType readBinaryMatrix( binaryFileName );
     testSameMatrix( formattedMatrix, readBinaryMatrix );
-
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading Matrix Market matrix" );
     std::string matrixMarketFileName = prefix + "/test_matrix_mm.tmp";
     formattedMatrix.writeToFile( matrixMarketFileName, File::MATRIX_MARKET, scai::common::scalar::DOUBLE );
     MatrixType readMarketMatrix( matrixMarketFileName + ".mtx" );
     SCAI_LOG_INFO( logger, "mtx matrix: " << readMarketMatrix )
     testSameMatrix( formattedMatrix, readMarketMatrix );
-
     // remove temporarily created matrix files
-    std::remove( (formattedFileName + ".frm").c_str() );
-    std::remove( (formattedFileName + ".amg").c_str() );
+    std::remove( ( formattedFileName + ".frm" ).c_str() );
+    std::remove( ( formattedFileName + ".amg" ).c_str() );
     std::remove( binaryFileName.c_str() );
-    std::remove( (prefix + "/test_matrix_bin.tmp.amg").c_str() );
-    std::remove( (matrixMarketFileName + ".mtx" ).c_str() );
+    std::remove( ( prefix + "/test_matrix_bin.tmp.amg" ).c_str() );
+    std::remove( ( matrixMarketFileName + ".mtx" ).c_str() );
 }
 
 /* --------------------------------------------------------------------- */

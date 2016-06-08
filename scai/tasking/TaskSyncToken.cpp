@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for class TaskSyncToken.
@@ -62,16 +67,13 @@ TaskSyncToken::TaskSyncToken()
 void TaskSyncToken::run( common::function<void()> routine, int numOmpThreads /* = 0 */ )
 {
     mTask = shared_ptr<Task>( new Task( routine, numOmpThreads ) );
-
     SCAI_LOG_DEBUG( logger, "Thread " << *mTask << " with routine started." )
 }
 
 TaskSyncToken::~TaskSyncToken()
 {
     SCAI_LOG_DEBUG( logger, "~TaskSyncToken: wait" )
-
     wait();
-
     SCAI_LOG_DEBUG( logger, "~TaskSyncToken: wait done" )
 }
 
@@ -98,7 +100,6 @@ void TaskSyncToken::wait()
         }
 
         mTask = shared_ptr<Task>(); // implies call destructor of mTask
-
         mTask.reset();  // implies call destructor of mTask
     }
     else
@@ -107,7 +108,6 @@ void TaskSyncToken::wait()
     }
 
     // Now we can free tokens and call clean functions, do not call it before mTask is synchronized
-
     setSynchronized();
 }
 
@@ -147,7 +147,6 @@ TaskSyncToken* TaskSyncToken::getCurrentSyncToken()
     }
 
     // make a dynamic CAST
-
     TaskSyncToken* taskSyncToken = dynamic_cast<TaskSyncToken*>( syncToken );
 
     // If the current sync token is not a Task token it is very likely an error
@@ -158,7 +157,6 @@ TaskSyncToken* TaskSyncToken::getCurrentSyncToken()
     }
 
     // But might not be too serious so probably NULL results in synchronous execution
-
     return taskSyncToken;
 }
 

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of macro that applies another macro to a variadic argument list
@@ -36,7 +41,7 @@
  * Level 1
  */
 
-#define SCAI_COMMON_LOOP_0( _macro, type ) 
+#define SCAI_COMMON_LOOP_0( _macro, type )
 #define SCAI_COMMON_LOOP_1( _macro, type ) _macro( type )
 #define SCAI_COMMON_LOOP_2( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_1( _macro, __VA_ARGS__ )
 #define SCAI_COMMON_LOOP_3( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_2( _macro, __VA_ARGS__ )

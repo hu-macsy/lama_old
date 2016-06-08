@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for generic logger.
@@ -60,7 +65,7 @@ bool GenLogger::sFlush = false;
 
 std::vector<std::string> GenLogger::formatTokens;
 
-void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void (* ) ( const char* format, ... ) )& printf ;
+void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void ( * ) ( const char* format, ... ) )& printf ;
 
 /********************************************************************
  *  Static variable: rootLogger for generic logging                  *
@@ -177,10 +182,8 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
     }
 
     // now find the name without blanks, e.g. "atom vec = " is only atom
-
     string::size_type lastPos = myLine.find_first_of( " =", firstPos );
     string name = myLine.substr( firstPos, lastPos - firstPos );
-
     firstPos = myLine.find_first_not_of( " ", equalPos + 1 );
 
     if ( string::npos == firstPos )
@@ -191,9 +194,7 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
     if ( myLine[firstPos] == '"' )
     {
         // look for matching " and do not
-
         firstPos++;
-
         lastPos = myLine.find_first_of( "\"", firstPos );
 
         if ( string::npos == lastPos )
@@ -236,11 +237,8 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
     if ( strncmp( name.c_str(), "SCAI_", 5 ) == 0 )
     {
         // this is not a logging entry so take it as environment
-
         bool replace = false;   // do not override existing settings
-
         Settings::putEnvironment( name.c_str(), value.c_str(), replace );
-
         return 1;
     }
 
@@ -317,7 +315,6 @@ int GenLogger::readConfig( const char* fname )
     }
 
     fclose( configFile );
-
     return noEntries;
 }
 
@@ -342,17 +339,14 @@ void GenLogger::configure()
     }
 
     std::string configFile;
-
     bool logDefined = Settings::getEnvironment( configFile, "SCAI_LOG" );
 
     if ( !logDefined )
     {
         // environment variable SCAI_LOG not set, so we try it at $HOME/.loggingrc
-
         if ( Settings::getEnvironment( configFile, "HOME" ) )
         {
             configFile += "/.loggingrc";
-
             FILE* fp = fopen ( configFile.c_str(), "r" );
 
             if ( fp != NULL )
@@ -427,11 +421,8 @@ static void writeVal2( std::ostringstream& stream, int val )
 static void writeTime( std::ostringstream& stream )
 {
     time_t timer;
-
     time ( &timer );
-
     struct tm* tp = localtime( &timer );
-
     writeVal2( stream, tp->tm_hour );
     stream << ":";
     writeVal2( stream, tp->tm_min );
@@ -442,11 +433,8 @@ static void writeTime( std::ostringstream& stream )
 static void writeDate( std::ostringstream& stream )
 {
     time_t timer;
-
     time ( &timer );
-
     struct tm* tp = localtime( &timer );
-
     stream << ( 1900 + tp->tm_year ) << "-";
     writeVal2( stream, 1 + tp->tm_mon );
     stream << "-";
@@ -513,9 +501,7 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
         else
         {
             // ignore first character # and take it as environment variable
-
             const char* var = formatTokens[i].c_str() + 1;
-
             std::string val;
 
             if ( scai::common::Settings::getEnvironment( val, var ) )
@@ -530,7 +516,6 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
     }
 
     output << std::endl;
-
     /* old code:
 
        writeTime( output );
@@ -539,7 +524,6 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
        output << " " << level << " " << msg << std::endl;
 
     */
-
     myPrintf( "%s", output.str().c_str() );
 
     if ( sFlush )
@@ -616,23 +600,19 @@ void GenLogger::setFlush( bool flush )
 static void tokenize( std::vector<std::string>& tokens, const std::string& input )
 {
     tokens.clear();
-
     std::string::size_type lastPos = 0;
     std::string::size_type pos     = input.find_first_of( "#", lastPos );
 
     while ( std::string::npos != pos )
     {
         // found
-
         if ( lastPos < pos )
         {
             tokens.push_back( input.substr( lastPos, pos - lastPos ) );
         }
 
         lastPos = input.find_first_not_of( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ_", pos + 1 );
-
         tokens.push_back( input.substr( pos, lastPos - pos ) );
-
         pos = input.find_first_of( "#", lastPos );
     }
 
@@ -652,11 +632,11 @@ void GenLogger::setFormat( const std::string& format )
     {
         std::string& val = formatTokens[i];
 
-        if( val.length() > 0  && val[0] == '#' )
+        if ( val.length() > 0  && val[0] == '#' )
         {
             for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
             {
-                *p = static_cast<string::value_type>( toupper( *p) );
+                *p = static_cast<string::value_type>( toupper( *p ) );
             }
         }
     }

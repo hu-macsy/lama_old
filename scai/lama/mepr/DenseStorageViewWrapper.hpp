@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./lama/mepr/DenseStorageViewWrapper.hpp
@@ -36,11 +41,14 @@
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace lama {
+namespace lama
+{
 
-namespace mepr {
+namespace mepr
+{
 
 template<typename ValueType, typename TList> struct DenseStorageViewWrapper;
 
@@ -58,7 +66,7 @@ struct DenseStorageViewWrapper<ValueType, common::mepr::TypeList<H, T> >
 {
     static bool assignImpl( DenseStorageView<ValueType>& obj, const _MatrixStorage& other )
     {
-        if( other.getValueType() == common::getScalarType<H>() )
+        if ( other.getValueType() == common::getScalarType<H>() )
         {
             const DenseStorageView<H>& otherTyped = reinterpret_cast<const DenseStorageView<H>& >( other );
             obj.assignDenseStorageImpl( otherTyped );

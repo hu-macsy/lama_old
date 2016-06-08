@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief This file contains the implementation of the FileLogger.hpp file
@@ -44,7 +49,7 @@ namespace solver
 
 FileLogger::~FileLogger()
 {
-    if( mFileStream.is_open() )
+    if ( mFileStream.is_open() )
     {
         mFileStream.close();
     }
@@ -63,18 +68,18 @@ void FileLogger::logMessage( const std::string& message )
 
 void FileLogger::setLogFile( const std::string& logFileName )
 {
-    if( !mFileStream.is_open() )
+    if ( !mFileStream.is_open() )
     {
         mFileStream.open( logFileName.c_str(), std::fstream::out );
 
-        if( mFileStream.fail() )
+        if ( mFileStream.fail() )
         {
             COMMON_THROWEXCEPTION( "Could not open log file " << logFileName );
         }
 
         mFileName = logFileName;
     }
-    else if( logFileName != mFileName )
+    else if ( logFileName != mFileName )
     {
         COMMON_THROWEXCEPTION( "Tried to set the log file of the logger to two different files." );
     }
@@ -82,7 +87,7 @@ void FileLogger::setLogFile( const std::string& logFileName )
 
 void FileLogger::closeLogFile()
 {
-    if( mFileStream.is_open() )
+    if ( mFileStream.is_open() )
     {
         mFileStream.close();
         mFileName = "";

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of matrix class for distributed matrixes in Dense format.
@@ -64,9 +69,9 @@ template<typename ValueType> class DenseVector;
  */
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DenseMatrix: 
+class COMMON_DLL_IMPORTEXPORT DenseMatrix:
 
-    public CRTPMatrix<DenseMatrix<ValueType>,ValueType>,
+    public CRTPMatrix<DenseMatrix<ValueType>, ValueType>,
     public Matrix::Register<DenseMatrix<ValueType> >    // register at factory
 {
 
@@ -250,7 +255,7 @@ public:
 
     virtual void setContextPtr( const hmemo::ContextPtr context );
 
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::setContextPtr; // setContextPtr( localContext, haloContext )
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setContextPtr; // setContextPtr( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 
@@ -259,7 +264,7 @@ public:
         return mData[0]->getContextPtr();
     }
 
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::setIdentity; // setIdentity( const IndexType n )
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setIdentity; // setIdentity( const IndexType n )
 
     /** Implementation of pure method Matrix::setIdentity. */
 
@@ -326,7 +331,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void assignTranspose( const Matrix& other );  
+    virtual void assignTranspose( const Matrix& other );
 
     void assignTransposeImpl( const DenseMatrix<ValueType>& Mat );
 
@@ -342,7 +347,7 @@ public:
 
     /** Method that assigns a sparse matrix, specialization of assign( const Matrix& ) */
 
-    void assignSparse( const CRTPMatrix<SparseMatrix<ValueType>,ValueType>& other );
+    void assignSparse( const CRTPMatrix<SparseMatrix<ValueType>, ValueType>& other );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -564,13 +569,13 @@ public:
 
     std::vector<common::shared_ptr<DenseStorage<ValueType> > > mData;
 
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getNumRows;
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getNumColumns;
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getNumRows;
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getNumColumns;
 
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getRowDistribution;
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getRowDistributionPtr;
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getColDistribution;
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getColDistributionPtr;
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getRowDistribution;
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getRowDistributionPtr;
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistribution;
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistributionPtr;
 
     const std::vector<PartitionId>& getOwners() const
     {
@@ -593,8 +598,8 @@ public:
 
 protected:
 
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::mNumRows;
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::mNumColumns;
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumRows;
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumColumns;
 
     std::vector<PartitionId> mOwners;
 
@@ -691,7 +696,7 @@ public:
 
     static Matrix* create();
 
-    // key for factory 
+    // key for factory
 
     static MatrixCreateKeyType createValue();
 
@@ -705,23 +710,16 @@ template<typename OtherValueType>
 void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>& other )
 {
     // check for valid pointer, might be dynamic cast went wrong somewhere else
-
     SCAI_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
-
     SCAI_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
-
     // inherit size and distributions
-
     Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
-
     mData.resize( other.mData.size() );
-
     IndexType n = static_cast<IndexType>( other.mData.size() );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         SCAI_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
-
         mData[i].reset( new DenseStorage<ValueType>( *other.mData[i] ) );
     }
 
@@ -738,7 +736,7 @@ DenseMatrix<ValueType>::DenseMatrix(
     const IndexType* const ja,
     const OtherValueType* const values )
 
-    : CRTPMatrix<DenseMatrix<ValueType>,ValueType>( numRows, numColumns )
+    : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
 {
     mData.resize( 1 );
     mData[0].reset( new DenseStorage<ValueType>( mNumRows, mNumColumns ) );

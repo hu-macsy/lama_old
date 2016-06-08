@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief SparseAssemblyStorage.hpp
@@ -55,7 +60,7 @@ namespace lama
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage:
 
-    public CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>,
+    public CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType>,
     public _MatrixStorage::Register<SparseAssemblyStorage<ValueType> >    // register at factory
 {
 public:
@@ -367,9 +372,9 @@ private:
 
     void print( std::ostream& stream ) const;
 
-    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mDiagonalProperty;
-    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mNumRows;
-    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mNumColumns;
+    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType>::mDiagonalProperty;
+    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType>::mNumRows;
+    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType>::mNumColumns;
 
     struct Row
     {

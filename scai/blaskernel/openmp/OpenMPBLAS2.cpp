@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of BLAS2 routines used in LAMA with own C++/OpenMP implementations.
@@ -69,17 +74,16 @@ void OpenMPBLAS2::gemv(
     const IndexType incY )
 {
     SCAI_LOG_INFO( logger,
-                   "gemv<" << common::TypeTraits<ValueType>::id()<< ">: M = " << M << ", N = " << N
+                   "gemv<" << common::TypeTraits<ValueType>::id() << ">: M = " << M << ", N = " << N
                    << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY
                    << ", alpha = " << alpha << ", beta = " << beta )
 
-    if( M == 0 )
+    if ( M == 0 )
     {
         return; // empty X, Y, A
     }
 
     // N == 0: empty A, but deal with X, Y, we can handle this here
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -87,23 +91,23 @@ void OpenMPBLAS2::gemv(
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( TransA == CblasNoTrans )
+        if ( TransA == CblasNoTrans )
         {
             //'N'
             // y = alpha * A * x + beta * y
             ValueType Z;
 
-            if( incX == 1 && incY == 1 )
+            if ( incX == 1 && incY == 1 )
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int i = 0; i < M; i++ )
+                for ( int i = 0; i < M; i++ )
                 {
-                    Z = static_cast<ValueType>(0.0);
+                    Z = static_cast<ValueType>( 0.0 );
 
-                    for( int j = 0; j < N; j++ )
+                    for ( int j = 0; j < N; j++ )
                     {
                         Z += A[lda * j + i] * X[j];
                     }
@@ -115,11 +119,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for( int i = 0; i < M; i++ )
+                for ( int i = 0; i < M; i++ )
                 {
-                    Z = static_cast<ValueType>(0.0);
+                    Z = static_cast<ValueType>( 0.0 );
 
-                    for( int j = 0; j < N; j++ )
+                    for ( int j = 0; j < N; j++ )
                     {
                         Z += A[lda * j + i] * X[j * incX];
                     }
@@ -127,23 +131,22 @@ void OpenMPBLAS2::gemv(
                     Y[i * incY] = Z * alpha + Y[i * incY] * beta;
                 }
             }
-
         }
-        else if( TransA == CblasTrans )
+        else if ( TransA == CblasTrans )
         {
             //'T'
             // y = alpha * A^T * x + beta * y
             ValueType Z;
 
-            if( incX == 1 && incY == 1 )
+            if ( incX == 1 && incY == 1 )
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int i = 0; i < N; i++ )
+                for ( int i = 0; i < N; i++ )
                 {
-                    Z = static_cast<ValueType>(0.0);
+                    Z = static_cast<ValueType>( 0.0 );
 
-                    for( int j = 0; j < M; j++ )
+                    for ( int j = 0; j < M; j++ )
                     {
                         Z += A[lda * i + j] * X[j];
                     }
@@ -155,11 +158,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for( int i = 0; i < N; i++ )
+                for ( int i = 0; i < N; i++ )
                 {
-                    Z = static_cast<ValueType>(0.0);
+                    Z = static_cast<ValueType>( 0.0 );
 
-                    for( int j = 0; j < M; j++ )
+                    for ( int j = 0; j < M; j++ )
                     {
                         Z += A[lda * i + j] * X[j * incX];
                     }
@@ -167,9 +170,8 @@ void OpenMPBLAS2::gemv(
                     Y[i * incY] = Z * alpha + Y[i * incY] * beta;
                 }
             }
-
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             //'C'
         }
@@ -177,24 +179,23 @@ void OpenMPBLAS2::gemv(
         {
             COMMON_THROWEXCEPTION( "Illegal TransA setting " << TransA )
         }
-
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
-        if( TransA == CblasNoTrans )
+        if ( TransA == CblasNoTrans )
         {
             //'T'
             ValueType Z;
 
-            if( incX == 1 && incY == 1 )
+            if ( incX == 1 && incY == 1 )
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int i = 0; i < M; i++ )
+                for ( int i = 0; i < M; i++ )
                 {
-                    Z = static_cast<ValueType>(0.0);
+                    Z = static_cast<ValueType>( 0.0 );
 
-                    for( int j = 0; j < N; j++ )
+                    for ( int j = 0; j < N; j++ )
                     {
                         Z += A[lda * i + j] * X[j];
                     }
@@ -206,11 +207,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for( int i = 0; i < M; i++ )
+                for ( int i = 0; i < M; i++ )
                 {
-                    Z = static_cast<ValueType>(0.0);
+                    Z = static_cast<ValueType>( 0.0 );
 
-                    for( int j = 0; j < N; j++ )
+                    for ( int j = 0; j < N; j++ )
                     {
                         Z += A[lda * i + j] * X[j * incX];
                     }
@@ -218,22 +219,21 @@ void OpenMPBLAS2::gemv(
                     Y[i * incY] = Z * alpha + Y[i * incY] * beta;
                 }
             }
-
         }
-        else if( TransA == CblasTrans )
+        else if ( TransA == CblasTrans )
         {
             //'N'
             ValueType Z;
 
-            if( incX == 1 && incY == 1 )
+            if ( incX == 1 && incY == 1 )
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int i = 0; i < N; i++ )
+                for ( int i = 0; i < N; i++ )
                 {
-                    Z = static_cast<ValueType>(0.0);
+                    Z = static_cast<ValueType>( 0.0 );
 
-                    for( int j = 0; j < M; j++ )
+                    for ( int j = 0; j < M; j++ )
                     {
                         Z += A[lda * j + i] * X[j];
                     }
@@ -245,11 +245,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for( int i = 0; i < N; i++ )
+                for ( int i = 0; i < N; i++ )
                 {
-                    Z = static_cast<ValueType>(0.0);
+                    Z = static_cast<ValueType>( 0.0 );
 
-                    for( int j = 0; j < M; j++ )
+                    for ( int j = 0; j < M; j++ )
                     {
                         Z += A[lda * j + i] * X[j * incX];
                     }
@@ -258,7 +258,7 @@ void OpenMPBLAS2::gemv(
                 }
             }
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             //TA = 'N'
         }
@@ -266,7 +266,6 @@ void OpenMPBLAS2::gemv(
         {
             COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
         }
-
     }
     else
     {
@@ -284,11 +283,8 @@ template<typename ValueType>
 void OpenMPBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::Host;
-
     SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
-
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( OpenMPBLAS2::gemv, ctx, flag );
 }
 

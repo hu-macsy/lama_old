@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief SingleGridSetup.hpp
@@ -71,34 +76,26 @@ SingleGridSetup::~SingleGridSetup()
 void SingleGridSetup::initialize( const Matrix& coefficients )
 {
     SCAI_REGION( "initialize_SingleGridSetup" )
-
     SCAI_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
 
     // set default solver
-    if( !mSolver )
+    if ( !mSolver )
     {
         SCAI_LOG_DEBUG( logger, "new Jacobi" )
         Jacobi* jacobiSolver = new Jacobi( "10x SingleGridSetup Jacobi Solver" );
-
         CriterionPtr criterion( new IterationCount( 10 ) );
-
         jacobiSolver->setStoppingCriterion( criterion );
-
         mSolver.reset( jacobiSolver );
     }
 
     SCAI_LOG_DEBUG( logger, "mSolver->initialize" )
     mSolver->initialize( coefficients );
-
     SCAI_LOG_DEBUG( logger, "mIdentity.reset" )
     mIdentity.reset( coefficients.newMatrix() );
-
     SCAI_LOG_DEBUG( logger, "before identity" )
     mIdentity->setIdentity( coefficients.getRowDistributionPtr() );
     SCAI_LOG_DEBUG( logger, "after identity" )
-
     SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
-
     mSolutionVector.reset( coefficients.newDenseVector() );
     mRhsVector.reset( coefficients.newDenseVector() );
     mTmpResVector.reset( coefficients.newDenseVector() );

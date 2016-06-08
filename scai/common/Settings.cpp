@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Managing some settings for CUDA specified by environment variables
@@ -37,7 +42,7 @@
 #include <sstream>
 #include <iostream>
 
-extern char **environ;
+extern char** environ;
 
 namespace scai
 {
@@ -50,7 +55,6 @@ namespace common
 void Settings::parseArgs( int& argc, const char* argv[] )
 {
     const bool replace = true;   // command line args overwrite environment settings
-
     int unused_args = 0;
 
     for ( int i = 0; i < argc; ++i )
@@ -58,16 +62,13 @@ void Settings::parseArgs( int& argc, const char* argv[] )
         if ( strncmp( argv[i], "--SCAI_", 7 ) == 0 )
         {
             std::string arg = argv[i] + 2;
-
             std::string::size_type equalPos = arg.find_first_of( "=", 0 );
 
             if ( std::string::npos != equalPos )
             {
                 // tokenize it  name = val
-
                 std::string name = arg.substr( 0, equalPos );
                 std::string val  = arg.substr( equalPos + 1 );
-
                 putEnvironment( name.c_str(), val.c_str(), replace );
             }
         }
@@ -86,7 +87,7 @@ bool Settings::convertValue( int& flag, const char* stringVal )
 {
     int nread = sscanf( stringVal, "%d", &flag );
 
-    if( nread == 1 )
+    if ( nread == 1 )
     {
         return true;
     }
@@ -97,36 +98,35 @@ bool Settings::convertValue( int& flag, const char* stringVal )
 bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 {
     char key = static_cast<char>( toupper( stringVal[0] ) );
-
     bool done = true; // becomes false if no legal value has been found
 
     // to upper
 
-    if( key == '0' )
+    if ( key == '0' )
     {
         flag = false;
     }
-    else if( key == '1' )
+    else if ( key == '1' )
     {
         flag = true;
     }
-    else if( key == 'J' )
+    else if ( key == 'J' )
     {
         flag = true;
     }
-    else if( key == 'Y' )
+    else if ( key == 'Y' )
     {
         flag = true;
     }
-    else if( key == 'T' )
+    else if ( key == 'T' )
     {
         flag = true;
     }
-    else if( key == 'N' )
+    else if ( key == 'N' )
     {
         flag = false;
     }
-    else if( key == 'F' )
+    else if ( key == 'F' )
     {
         flag = false;
     }
@@ -197,13 +197,9 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
     if ( std::string::npos != val.find_first_of( RANK_SEPARATOR_CHAR, 0 ) )
     {
         // val = val_1,val_2,val_3
-
         std::vector<std::string> values;
-
         tokenize( values, env, RANK_SEPARATOR_CHAR );
-
         int pos = sRank % static_cast<int>( values.size() );
-
         val = values[pos];
     }
 
@@ -215,7 +211,6 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
 void Settings::tokenize( std::vector<std::string>& values, const std::string& input, const char seperator )
 {
     values.clear();
-
     size_t found = std::string::npos;
 
     do
@@ -230,7 +225,6 @@ void Settings::tokenize( std::vector<std::string>& values, const std::string& in
 bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char separator )
 {
     std::string val;
-
     bool found = getEnvironment( val, envVarName );
 
     if ( found )
@@ -246,7 +240,7 @@ bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVa
 void Settings::printEnvironment()
 {
     int i = 0;
-    char *s = *environ;
+    char* s = *environ;
 
     for ( ; s; i++ )
     {
@@ -271,7 +265,6 @@ void Settings::putEnvironment( const char* envVarName, const char* val, bool rep
     }
 
     // Note: use of putenv is unsafe for auto-strings
-
 #ifdef WIN32
 
     if ( replace || ( getenv( envVarName ) == NULL ) )
@@ -289,9 +282,7 @@ void Settings::putEnvironment( const char* envVarName, const char* val, bool rep
 void Settings::putEnvironment( const char* envVarName, int val, bool replace )
 {
     std::ostringstream str_val;
-
     str_val << val;
-
     putEnvironment( envVarName, str_val.str().c_str(), replace );
 }
 

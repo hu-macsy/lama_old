@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of template class that stands for a dense vector of a certain type.
@@ -65,7 +70,7 @@ namespace lama
  * @tparam ValueType the value type for the vector values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DenseVector: 
+class COMMON_DLL_IMPORTEXPORT DenseVector:
 
     public Vector,
 
@@ -211,28 +216,28 @@ public:
      *
      * @param[in] expression     alpha * A * x
      */
-    DenseVector( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression );
+    DenseVector( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A.
      *
      * @param[in] expression     alpha * x * A
      */
-    DenseVector( const Expression<Scalar,Expression<Vector,Matrix,Times>,Times>& expression );
+    DenseVector( const Expression<Scalar, Expression<Vector, Matrix, Times>, Times>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
-    DenseVector( const Expression<Matrix,Vector,Times>& expression );
+    DenseVector( const Expression<Matrix, Vector, Times>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression x * A.
      *
      * @param[in] expression     x * A
      */
-    DenseVector( const Expression<Vector,Matrix,Times>& expression );
+    DenseVector( const Expression<Vector, Matrix, Times>& expression );
 
     /**
      * @brief releases all allocated resources.
@@ -391,7 +396,7 @@ public:
     virtual void redistribute( dmemo::DistributionPtr distribution );
 
     /**
-     * @brief Implementatio of pure method, see Vector::writeToFile 
+     * @brief Implementatio of pure method, see Vector::writeToFile
      *
      */
     virtual void writeToFile(
@@ -418,7 +423,7 @@ public:
 
     static Vector* create();
 
-    // key for factory 
+    // key for factory
 
     static VectorCreateKeyType createValue();
 
@@ -430,18 +435,13 @@ public:
 template<typename ValueType>
 template<typename OtherValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, hmemo::ContextPtr context )
-                : Vector( size, context )
+    : Vector( size, context )
 {
     // use LAMA array reference to avoid copy of the raw data
-
     hmemo::HArrayRef<OtherValueType> valuesArrayRef( size, values );
-
     // use mContext instead of context to avoid NULL pointer
-
     utilskernel::HArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
-
     // Halo is not used yet
-
 }
 
 } /* end namespace lama */

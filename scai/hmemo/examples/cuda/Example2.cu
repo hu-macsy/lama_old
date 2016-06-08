@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./hmemo/examples/cuda/Example2.cu
@@ -47,15 +52,10 @@ template<typename ValueType>
 ValueType sum( const ValueType array[], const IndexType n )
 {
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
     ValueType zero = static_cast<ValueType>( 0 );
-
     ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
-
     return result;
 }
 
@@ -64,7 +64,6 @@ __global__
 void add_kernel( ValueType* array, IndexType n )
 {
     const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
-
     ValueType one = 1;
 
     if ( i < n )
@@ -78,11 +77,9 @@ void add( ValueType array[], const IndexType n )
 {
     const int blockSize = 256;
     const int nblocks   = ( n + blockSize - 1 ) / blockSize;
-
     dim3 block( blockSize, 1, 1 );
     dim3 grid( nblocks, 1, 1 );
-
-    add_kernel<<<grid, block>>>( array, n );
+    add_kernel <<< grid, block>>>( array, n );
 }
 
 int main()
@@ -117,23 +114,19 @@ int main()
     std::cout << "try to get " << Context::Host << " context from factory" << std::endl;
     ContextPtr hostContext = Context::getContextPtr( Context::Host, 1 );
     std::cout << "hostContext = " << *hostContext << std::endl;
-
     const IndexType N = 100;
-
     HArray<double> data;
-    
     std::cout << "data = " << data << std::endl;
-
     {
         SCAI_LOG_INFO( logger, "write only on host" )
         WriteOnlyAccess<double> write( data, hostContext, N );
         double* v = write.get();
+
         for ( IndexType i = 0; i < N; ++i )
         {
             v[i] = 1.0;
         }
     }
-
     {
         SCAI_LOG_INFO( logger, "read on gpu 0" )
         ReadAccess<double> read( data, cudaContext1 );
@@ -141,25 +134,23 @@ int main()
         double s = sum( read.get(), data.size() );
         std::cout << "sum = " << s << ", should be " << N  << std::endl;
     }
-
     {
         SCAI_LOG_INFO( logger, "write on gpu1" )
         WriteAccess<double> write( data, cudaContext1 );
         SCAI_CONTEXT_ACCESS( cudaContext1 )
         add( write.get(), data.size() );
     }
-
     {
         SCAI_LOG_INFO( logger, "write on gpu2" )
         WriteAccess<double> write( data, cudaContext2 );
         SCAI_CONTEXT_ACCESS( cudaContext2 )
         add( write.get(), data.size() );
     }
-
     {
         SCAI_LOG_INFO( logger, "read on host" )
         ReadAccess<double> read( data, hostContext );
         const double* values = read.get();
+
         for ( IndexType i = 0; i < N; ++i )
         {
             SCAI_ASSERT_EQUAL( values[i], 3.0, "wrong value after add" )

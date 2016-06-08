@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief CGNR.cpp
@@ -80,19 +85,14 @@ CGNR::CGNRRuntime::~CGNRRuntime() {}
 void CGNR::initialize( const Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
-
     IterativeSolver::initialize( coefficients );
     CGNRRuntime& runtime = getRuntime();
-
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
-
     runtime.mTransposedMat.reset( coefficients.newMatrix() );
-
     runtime.mVecD.reset( coefficients.newDenseVector() );
     runtime.mVecW.reset( coefficients.newDenseVector() );
     runtime.mVecZ.reset( coefficients.newDenseVector() );
     runtime.mResidual2.reset( coefficients.newDenseVector() );
-
     runtime.mTransposedMat->assignTranspose( coefficients );
     runtime.mTransposedMat->conj();
 }
@@ -100,25 +100,25 @@ void CGNR::initialize( const Matrix& coefficients )
 void CGNR::solveInit( Vector& solution, const Vector& rhs )
 {
     CGNRRuntime& runtime = getRuntime();
-
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
-
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
-
     // Initialize
     this->getResidual();
-    *runtime.mResidual2 = (*runtime.mTransposedMat) * (*runtime.mResidual);
+    *runtime.mResidual2 = ( *runtime.mTransposedMat ) * ( *runtime.mResidual );
 
-    if(mPreconditioner != NULL)
+    if ( mPreconditioner != NULL )
     {
-        *runtime.mVecZ = Scalar(0.0);
-        mPreconditioner->solve(*runtime.mVecZ,*runtime.mResidual2);
+        *runtime.mVecZ = Scalar( 0.0 );
+        mPreconditioner->solve( *runtime.mVecZ, *runtime.mResidual2 );
     }
-    else *runtime.mVecZ = *runtime.mResidual2;
+    else
+    {
+        *runtime.mVecZ = *runtime.mResidual2;
+    }
 
     *runtime.mVecD = *runtime.mVecZ;
     runtime.mSolveInit = true;
@@ -127,7 +127,6 @@ void CGNR::solveInit( Vector& solution, const Vector& rhs )
 void CGNR::iterate()
 {
     CGNRRuntime& runtime = getRuntime();
-
     const Matrix& A = *runtime.mCoefficients;
     const Matrix& transposedA = *runtime.mTransposedMat;
     Vector& vecW = *runtime.mVecW;
@@ -138,15 +137,13 @@ void CGNR::iterate()
     Vector& solution = *runtime.mSolution;
     Scalar alpha;
     Scalar beta;
-
     lama::L2Norm norm;
     const Scalar& eps = runtime.mEps;
-
     vecW = A * vecD;
     Scalar normVecW = norm.apply( vecW );
-    Scalar scalarProduct = vecZ.dotProduct(residual2);
+    Scalar scalarProduct = vecZ.dotProduct( residual2 );
 
-    if ( normVecW < eps || 1.0/normVecW < eps )           //norm is small
+    if ( normVecW < eps || 1.0 / normVecW < eps )         //norm is small
     {
         alpha = 0.0;
     }
@@ -160,16 +157,22 @@ void CGNR::iterate()
     residual2 = transposedA * residual;
 
     // PRECONDITIONING
-    if(mPreconditioner != NULL) mPreconditioner->solve(vecZ,residual2);
-    else vecZ = residual2;
+    if ( mPreconditioner != NULL )
+    {
+        mPreconditioner->solve( vecZ, residual2 );
+    }
+    else
+    {
+        vecZ = residual2;
+    }
 
-    if ( abs(scalarProduct) < eps || 1.0/abs(scalarProduct) < eps )        //norm is small
+    if ( abs( scalarProduct ) < eps || 1.0 / abs( scalarProduct ) < eps )  //norm is small
     {
         beta = 0.0;
     }
     else
     {
-        beta = vecZ.dotProduct(residual2) / scalarProduct;
+        beta = vecZ.dotProduct( residual2 ) / scalarProduct;
     }
 
     vecD = vecZ + beta * vecD;

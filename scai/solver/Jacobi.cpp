@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of class Jacobi.
@@ -65,7 +70,7 @@ Jacobi::Jacobi( const std::string& id, LoggerPtr logger )
 {
 }
 
-Jacobi::Jacobi( const std::string & id, lama::Scalar omega )
+Jacobi::Jacobi( const std::string& id, lama::Scalar omega )
     : OmegaSolver( id, omega )
 {
 }
@@ -99,33 +104,29 @@ void Jacobi::initialize( const Matrix& coefficients )
 {
     using hmemo::_HArray;
 
-    if( coefficients.getMatrixKind() == Matrix::DENSE )
+    if ( coefficients.getMatrixKind() == Matrix::DENSE )
     {
         COMMON_THROWEXCEPTION(
-            "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for Jacobi specialization (must be SparseMatrix)." );
+            "Coefficients matrix " << typeid( coefficients ).name() << "(" << coefficients << ") is of unsupported type for Jacobi specialization (must be SparseMatrix)." );
     }
 
     OmegaSolver::initialize( coefficients );
-
     SCAI_LOG_DEBUG( logger, "Initialization started" )
-
     SCAI_LOG_DEBUG( logger, "diagonal property of coefficients: " << coefficients.hasDiagonalProperty() )
-
     SCAI_ASSERT( coefficients.hasDiagonalProperty(), "Diagonal Property not set." )
-
     JacobiRuntime& runtime = getRuntime();
 
-    if( !runtime.mOldSolution.get() )
+    if ( !runtime.mOldSolution.get() )
     {
         SCAI_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " )
         runtime.mOldSolution.reset( runtime.mCoefficients->newDenseVector() );
     }
 
-    if( runtime.mCoefficients->getMatrixKind() == Matrix::SPARSE )
+    if ( runtime.mCoefficients->getMatrixKind() == Matrix::SPARSE )
     {
-        if( !runtime.mDiagonal.get() )
+        if ( !runtime.mDiagonal.get() )
         {
-            runtime.mDiagonal.reset( _HArray::create( runtime.mCoefficients->getValueType()));
+            runtime.mDiagonal.reset( _HArray::create( runtime.mCoefficients->getValueType() ) );
         }
 
         runtime.mCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );
@@ -142,17 +143,17 @@ void Jacobi::initialize( const Matrix& coefficients )
 void Jacobi::solveInit( Vector& solution, const Vector& rhs )
 {
     //Check if oldSolution already exists, if not create copy of solution
-    if( !getConstRuntime().mOldSolution.get() )
+    if ( !getConstRuntime().mOldSolution.get() )
     {
         getRuntime().mOldSolution.reset( Vector::create( solution.getCreateValue() ) );
 
-        if( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
+        if ( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
         {
             COMMON_THROWEXCEPTION(
                 "Size of old solution vector " << *getConstRuntime().mOldSolution << " does not match number of columns of the coefficient matrix " << getConstRuntime().mCoefficients->getNumColumns() );
         }
 
-        if( getConstRuntime().mCoefficients->getColDistribution() != getConstRuntime().mOldSolution->getDistribution() )
+        if ( getConstRuntime().mCoefficients->getColDistribution() != getConstRuntime().mOldSolution->getDistribution() )
         {
             COMMON_THROWEXCEPTION(
                 "Distribution of " << *getConstRuntime().mOldSolution << " = " << getConstRuntime().mOldSolution->getDistribution() << " does not match column distribution of " << *getConstRuntime().mCoefficients << " = " << getConstRuntime().mCoefficients->getColDistribution() );
@@ -160,7 +161,6 @@ void Jacobi::solveInit( Vector& solution, const Vector& rhs )
     }
 
     getRuntime().mProxyOldSolution = getConstRuntime().mOldSolution.get();
-
     IterativeSolver::solveInit( solution, rhs );
 }
 
@@ -169,7 +169,7 @@ void Jacobi::solveFinalize()
 //    MF: ?????
 //    if( &( mProxyOldSolution.getConstReference() ) ==
 //        &( mSolution.getConstReference() ) )
-    if( getConstRuntime().mIterations % 2 )
+    if ( getConstRuntime().mIterations % 2 )
     {
         SCAI_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
         *getRuntime().mProxyOldSolution = *getRuntime().mSolution;
@@ -181,9 +181,7 @@ void Jacobi::solveFinalize()
 void Jacobi::iterate()
 {
     SCAI_REGION( "Solver.SpJacobi.iterate" )
-
     // for each supported arithmetic type we have to dynamic cast and instatiate typed version
-
 #define SCAI_SOLVER_TYPE_CAST( _type )                                                                                  \
     {                                                                                               \
         const lama::SparseMatrix<_type>* sparseTypedCoefficients =                                  \
@@ -194,13 +192,9 @@ void Jacobi::iterate()
             return;                                                                                 \
         }                                                                                           \
     }
-
     SCAI_COMMON_LOOP( SCAI_SOLVER_TYPE_CAST, SCAI_ARITHMETIC_HOST )
-
 #undef SCAI_SOLVER_TYPE_CAST
-
     // has already been check in initialize, but in any case
-
     COMMON_THROWEXCEPTION        (
         getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
 }
@@ -209,35 +203,29 @@ template<typename ValueType>
 void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
 {
     using hmemo::HArray;
-
     SCAI_REGION( "Solver.SpJacobi.iterateTyped" )
-
     SCAI_LOG_INFO( logger,
                    *getConstRuntime().mSolution << " = " << coefficients << " * " << *getConstRuntime().mOldSolution << " = " << *getConstRuntime().mRhs )
 
-    if( coefficients.getNumRows() == 0 )
+    if ( coefficients.getNumRows() == 0 )
     {
         SCAI_LOG_WARN( logger, "Zero sized matrix given. Won't execute any calculations in this iteration. " )
         return;
     }
 
     SCAI_LOG_INFO( logger, "Swap old solution and solution pointer." )
-
     Vector* ptr_OldSolution = &( *getRuntime().mProxyOldSolution );
     Vector* ptr_solution = &( *getRuntime().mSolution );
-
     getRuntime().mProxyOldSolution = ptr_solution;
     getRuntime().mSolution = ptr_OldSolution;
-
     //swap end now m_proxOldSolution holds the solution of the last iteration
     //and m_solution will be the output of the current iteration
-
     const Vector& oldSolution = getRuntime().mProxyOldSolution.getConstReference();
 
     //1. Check if all Vectors are DenseVectors
-    if(  DenseVector<ValueType>::createValue() == oldSolution.getCreateValue()
-            && (*getRuntime().mSolution).getCreateValue() == oldSolution.getCreateValue()
-            && (*getRuntime().mRhs).getCreateValue() == oldSolution.getCreateValue() )
+    if (  DenseVector<ValueType>::createValue() == oldSolution.getCreateValue()
+            && ( *getRuntime().mSolution ).getCreateValue() == oldSolution.getCreateValue()
+            && ( *getRuntime().mRhs ).getCreateValue() == oldSolution.getCreateValue() )
 //    if( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
 //            && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
 //            && typeid( *getRuntime().mRhs ) == typeid( oldSolution ) )
@@ -246,81 +234,64 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
         const DenseVector<ValueType>& denseOldSolution = dynamic_cast<const DenseVector<ValueType>&>( oldSolution );
         DenseVector<ValueType>& denseSolution = dynamic_cast<DenseVector<ValueType>&>( *getRuntime().mSolution );
         const DenseVector<ValueType>& denseRhs = dynamic_cast<const DenseVector<ValueType>&>( *getRuntime().mRhs );
-
         hmemo::ContextPtr localContext = coefficients.getLocalStorage().getContextPtr();
 
-        if( mContext )
+        if ( mContext )
         {
             localContext = mContext;
         }
 
         const ValueType omega = mOmega.getValue<ValueType>();
-
         // from rhs and solution we need only the local parts as LAMA arrays
-
         const HArray<ValueType>& localRhs = denseRhs.getLocalValues();
         HArray<ValueType>& localSolution = denseSolution.getLocalValues();
         const HArray<ValueType>& localOldSolution = denseOldSolution.getLocalValues();
         HArray<ValueType>& haloOldSolution = denseOldSolution.getHaloValues();
-
         const HArray<ValueType>* diagonal = dynamic_cast<const HArray<ValueType>*>( getRuntime().mDiagonal.get() );
-
         using namespace scai::common;  // placeholders are also needed
-
-        void (scai::lama::MatrixStorage<ValueType>::*jacobiIterateHalo)(
+        void ( scai::lama::MatrixStorage<ValueType>::*jacobiIterateHalo )(
             HArray<ValueType>& localSolution,
             const HArray<ValueType>& localDiagonal,
             const HArray<ValueType>& oldHaloSolution,
             const ValueType omega ) const = &lama::MatrixStorage<ValueType>::jacobiIterateHalo;
-
         // will call jacobiIterateHalo( haloMatrix, localSolution, diagonal, haloOldSolution, omega )
-
-        function<
+        function <
         void(
             const lama::MatrixStorage<ValueType>* haloMatrix,
             HArray<ValueType>& localResult,
-            const HArray<ValueType>& haloX )> haloF =
-
+            const HArray<ValueType>& haloX ) > haloF =
                 bind( jacobiIterateHalo, _1, _2, cref( *diagonal ), _3, omega );
 
-        if( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
+        if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
         {
             // For the local operation a jacobi step is done
-
-            void (lama::MatrixStorage<ValueType>::*jacobiIterate)(
+            void ( lama::MatrixStorage<ValueType>::*jacobiIterate )(
                 HArray<ValueType>& solution,
                 const HArray<ValueType>& oldSolution,
                 const HArray<ValueType>& rhs,
                 const ValueType omega ) const = &lama::MatrixStorage<ValueType>::jacobiIterate;
-
             // Bind the additional arguments like localRhs and omega
-
-            function<
+            function <
             void(
                 const lama::MatrixStorage<ValueType>* haloMatrix,
                 HArray<ValueType>& localResult,
-                const HArray<ValueType>& localX )> localF =
-
+                const HArray<ValueType>& localX ) > localF =
                     bind( jacobiIterate, _1, _2, _3, cref( localRhs ), omega );
-
             coefficients.haloOperationSync( localSolution, localOldSolution, haloOldSolution, localF, haloF );
         }
         else
         {
-            SyncToken* (lama::MatrixStorage<ValueType>::*jacobiIterateAsync)(
+            SyncToken* ( lama::MatrixStorage<ValueType>::*jacobiIterateAsync )(
                 HArray<ValueType>& solution,
                 const HArray<ValueType>& oldSolution,
                 const HArray<ValueType>& rhs,
                 const ValueType omega ) const = &lama::MatrixStorage<ValueType>::jacobiIterateAsync;
-
-            function<
+            function <
             SyncToken*(
                 const lama::MatrixStorage<ValueType>* haloMatrix,
                 HArray<ValueType>& localResult,
-                const HArray<ValueType>& localX )> localAsyncF =
-
+                const HArray<ValueType>& localX ) > localAsyncF =
                     bind( jacobiIterateAsync, _1, _2, _3, cref( localRhs ), omega );
-
             coefficients.haloOperationAsync( localSolution, localOldSolution, haloOldSolution, localAsyncF, haloF );
         }
     }

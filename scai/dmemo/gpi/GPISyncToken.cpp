@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief GPISyncToken.cpp
@@ -85,7 +90,6 @@ void GPISyncToken::wait()
     if ( isSynchronized() )
     {
         SCAI_LOG_WARN( logger, *this << ": waiting twice" )
-
         return; // do not wait twice, especially do not clean-up twice
     }
 
@@ -93,22 +97,19 @@ void GPISyncToken::wait()
     {
         gaspi_notification_id_t waitNotId = mNotifications[i];
         gaspi_notification_id_t gotNotId;
-        SCAI_GASPI_CALL ( gaspi_notify_waitsome( mSegId, waitNotId, 1 , &gotNotId, GASPI_BLOCK) );
+        SCAI_GASPI_CALL ( gaspi_notify_waitsome( mSegId, waitNotId, 1 , &gotNotId, GASPI_BLOCK ) );
         gaspi_notification_t notifyVal;
-        SCAI_GASPI_CALL( gaspi_notify_reset( mSegId, gotNotId, &notifyVal) );
+        SCAI_GASPI_CALL( gaspi_notify_reset( mSegId, gotNotId, &notifyVal ) );
     }
 
     mNotifications.clear();
-
     SCAI_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" )
-
     setSynchronized();
 }
 
 bool GPISyncToken::probe() const
 {
     // no accurate functionality in GPI
-
     return false;
 }
 

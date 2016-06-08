@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Example program for logging in OpenMP Threads
@@ -36,9 +41,7 @@ SCAI_LOG_DEF_LOGGER( myLogger, "LogOpenMP" )
 int main( int, char** )
 {
     SCAI_LOG_THREAD( "main" )
-
     // Here we name the OpenMP Threads
-
     #pragma omp parallel
     {
         int thread_id = omp_get_thread_num();
@@ -48,15 +51,12 @@ int main( int, char** )
             SCAI_LOG_THREAD( "OMP_Thread_" << thread_id )
         }
     }
-
     const int N = 20;
-
     #pragma omp parallel for schedule( static, 2 )
 
-    for ( int i = 0; i < N; ++i)
+    for ( int i = 0; i < N; ++i )
     {
         // logging per thread shows exactly which thread executes which iteration
-
         SCAI_LOG_INFO( myLogger, "executes iteration " << i << " of " << N )
     }
 }

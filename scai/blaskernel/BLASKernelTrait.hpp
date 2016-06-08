@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Kernel traits for BLAS operations used in LAMA.
@@ -41,7 +46,7 @@ namespace scai
 {
 
 /** Namespace for all kernel implementations of BLAS routines. */
- 
+
 namespace blaskernel
 {
 
@@ -247,7 +252,7 @@ struct BLASKernelTrait
          * @brief axpy multiplies scalar alpha by vector x and
          * adds the result to vector y.
          *
-         *            y = y + alpha * x 
+         *            y = y + alpha * x
          *
          * @param[in] n      number of considered elements in input vectors.
          * @param[in] alpha  scalar multiplier
@@ -463,7 +468,7 @@ struct BLASKernelTrait
          * @param[in] ldc     leading dimension of two-dimensional array used to store matrix C.
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER order,
             const CBLAS_TRANSPOSE transA,
             const CBLAS_TRANSPOSE transB,

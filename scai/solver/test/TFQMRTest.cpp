@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief TFQMRT.cpp
@@ -50,24 +55,18 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.TFQMRTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
     BOOST_CHECK_EQUAL( TFQMRSolver.getId(), "TFQMRTestSolver" );
-
     TFQMR TFQMRSolver2( "TFQMRTestSolver2" );
     BOOST_CHECK_EQUAL( TFQMRSolver2.getId(), "TFQMRTestSolver2" );
-
     TFQMR TFQMRSolver3( TFQMRSolver2 );
     BOOST_CHECK_EQUAL( TFQMRSolver3.getId(), "TFQMRTestSolver2" );
     BOOST_CHECK( TFQMRSolver3.getPreconditioner() == 0 );
-
     TFQMR TFQMRSolver4( "TFQMRSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     TFQMRSolver4.setPreconditioner( preconditioner );
-
     CriterionPtr criterion( new IterationCount( 10 ) );
     TFQMRSolver4.setStoppingCriterion( criterion );
-
     TFQMR TFQMRSolver5( TFQMRSolver4 );
     BOOST_CHECK_EQUAL( TFQMRSolver5.getId(), TFQMRSolver4.getId() );
     BOOST_CHECK_EQUAL( TFQMRSolver5.getPreconditioner()->getId(), TFQMRSolver4.getPreconditioner()->getId() );

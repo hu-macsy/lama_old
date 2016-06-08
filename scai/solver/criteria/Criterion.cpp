@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Criterion.cpp
@@ -90,23 +95,22 @@ Criterion& Criterion::operator=( const Criterion& other )
 bool Criterion::isSatisfied( const IterativeSolver& solver )
 {
     SCAI_LOG_INFO( logger, "isSatisfied: " << *this );
-
     bool satisfied = true;
 
-    if( !hasLeftChild() && !hasRightChild() )
+    if ( !hasLeftChild() && !hasRightChild() )
     {
         return mModifier;
     }
 
-    if( !hasLeftChild() )
+    if ( !hasLeftChild() )
     {
         satisfied = mRightChild->isSatisfied( solver );
     }
-    else if( !hasRightChild() )
+    else if ( !hasRightChild() )
     {
         satisfied = mLeftChild->isSatisfied( solver );
     }
-    else if( mOperation == AND )
+    else if ( mOperation == AND )
     {
         satisfied = mLeftChild->isSatisfied( solver ) && mRightChild->isSatisfied( solver );
     }
@@ -160,16 +164,16 @@ void Criterion::setOperation( const Criterion::BooleanOperator operation )
 
 void Criterion::writeAt( std::ostream& stream ) const
 {
-    if( hasLeftChild() && hasRightChild() ) //boolean operation
+    if ( hasLeftChild() && hasRightChild() ) //boolean operation
     {
-        if( !mModifier )
+        if ( !mModifier )
         {
             stream << "!";
         }
 
         stream << "(" << *getLeftChild();
 
-        if( getOperation() == Criterion::AND )
+        if ( getOperation() == Criterion::AND )
         {
             stream << " && ";
         }
@@ -182,7 +186,7 @@ void Criterion::writeAt( std::ostream& stream ) const
     }
     else if ( hasLeftChild() || hasRightChild() )
     {
-        if( !mModifier )
+        if ( !mModifier )
         {
             stream << "!";
         }

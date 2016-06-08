@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Extensive test program for TaskSyncToken
@@ -46,7 +51,6 @@ static const int WORKLOAD = 1000000;
 static void work( int& out, const int in )
 {
     out = in - 1;
-
     int factor = in % 4 + 1;
 
     // just do some stupid work, workload depends on in
@@ -82,11 +86,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 {
     int in  = 15;
     int out = 3;
-
     {
         TaskSyncToken token( bind( &work, ref( out ), in ) );
     }
-
     BOOST_CHECK_EQUAL( in, out );
 }
 
@@ -97,11 +99,8 @@ BOOST_AUTO_TEST_CASE( runTest )
     for ( int i = 0; i < 10; ++i )
     {
         int out = 3;
-
         TaskSyncToken token( bind( &work, ref( out ), i ) );
-
         token.wait();
-
         BOOST_CHECK_EQUAL( i, out );
     }
 }
@@ -111,13 +110,9 @@ BOOST_AUTO_TEST_CASE( runTest )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     int out = 0;
-
     TaskSyncToken testToken( bind( &work, ref( out ), 1 ) );
-
     SCAI_COMMON_WRITEAT_TEST( testToken );
-
     testToken.wait();
-
     BOOST_CHECK_EQUAL( 1, out );
 }
 
@@ -126,9 +121,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 BOOST_AUTO_TEST_CASE( fullTest )
 {
     const int N = 15;
-
     SyncToken* tokenArray[15];
-
     int out[15];
 
     for ( int i = 0; i < N; ++i )

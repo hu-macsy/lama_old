@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of COO storage utilities with OpenMP
@@ -70,14 +75,14 @@ void OpenMPCOOUtils::getCSRSizes(
 
     // initialize size array for each row
 
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         csrSizes[i] = 0;
     }
 
     // increment size of a row for each used row value
 
-    for( IndexType k = 0; k < numValues; k++ )
+    for ( IndexType k = 0; k < numValues; k++ )
     {
         IndexType i = cooIA[k];
         SCAI_ASSERT_DEBUG( i < numRows, "cooIA[" << k << "] = " << i << " out of range, #rows = " << numRows )
@@ -93,10 +98,8 @@ bool OpenMPCOOUtils::hasDiagonalProperty(
     const IndexType n )
 {
     bool diagonalProperty = true;
-
     // The diagonal property is given if the first n entries
     // are the diagonal elements
-
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for ( IndexType i = 0; i < n; ++i )
@@ -117,7 +120,7 @@ bool OpenMPCOOUtils::hasDiagonalProperty(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename COOValueType,typename CSRValueType>
+template<typename COOValueType, typename CSRValueType>
 void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
                                    CSRValueType csrValues[],
                                    IndexType csrIA[], // used as tmp, remains unchanged
@@ -130,19 +133,14 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<COOValueType>::id() << ", "
                    << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
-
     // traverse the non-zero values and put data at the right places
     // each thread reads all COO indexes but takes care for a certain range of CSR rows
-
     #pragma omp parallel
     {
         // get thread rank, size
-
         PartitionId rank = omp_get_thread_num();
         PartitionId nthreads = omp_get_num_threads();
-
         // compute range for which this thread is responsbile
-
         IndexType blockSize = ( numRows + nthreads - 1 ) / nthreads;
         IndexType lb = rank * blockSize;
         IndexType ub = ( rank + 1 ) * blockSize - 1;
@@ -158,12 +156,9 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
             }
 
             IndexType& offset = csrIA[i];
-
             csrJA[offset] = cooJA[k];
             csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
-
             SCAI_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
-
             offset++;
         }
     }
@@ -176,7 +171,6 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
     }
 
     csrIA[0] = 0;
-
     SCAI_ASSERT_EQUAL_DEBUG( csrIA[numRows], numValues )
 }
 
@@ -191,22 +185,18 @@ void OpenMPCOOUtils::offsets2ia(
 {
     SCAI_LOG_INFO( logger,
                    "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
-
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
         IndexType csrOffset = csrIA[i];
         IndexType cooOffset = 0; // additional offset due to diagonals
 
-        if( i < numDiagonals )
+        if ( i < numDiagonals )
         {
             // make sure that we really have at least one element in this row
-
             SCAI_ASSERT_DEBUG( csrIA[i] < csrIA[i + 1], "no elem in row " << i );
-
             // diagonal elements will be the first nrows entries
-
             cooIA[i] = i;
             csrOffset += 1; // do not fill diagonal element again
             cooOffset = numDiagonals - i - 1; // offset in coo moves
@@ -214,7 +204,7 @@ void OpenMPCOOUtils::offsets2ia(
 
         // now fill remaining part of row i
 
-        for( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
         {
             SCAI_LOG_TRACE( logger,
                             "cooIA[ " << ( jj + cooOffset ) << "] = " << i << ", jj = " << jj << ", cooOffset = " << cooOffset )
@@ -225,7 +215,7 @@ void OpenMPCOOUtils::offsets2ia(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename COOValueType,typename OtherValueType>
+template<typename COOValueType, typename OtherValueType>
 void OpenMPCOOUtils::scaleRows(
     COOValueType cooValues[],
     const OtherValueType rowValues[],
@@ -233,7 +223,6 @@ void OpenMPCOOUtils::scaleRows(
     const IndexType numValues )
 {
     SCAI_LOG_INFO( logger, "scaleRows in COO format" )
-
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for ( IndexType i = 0; i < numValues; ++i )
@@ -245,7 +234,7 @@ void OpenMPCOOUtils::scaleRows(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename COOValueType,typename CSRValueType>
+template<typename COOValueType, typename CSRValueType>
 void OpenMPCOOUtils::setCSRData(
     COOValueType cooValues[],
     const CSRValueType csrValues[],
@@ -256,27 +245,24 @@ void OpenMPCOOUtils::setCSRData(
 {
     SCAI_LOG_INFO( logger,
                    "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
-
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
         IndexType csrOffset = csrIA[i];
         IndexType cooOffset = 0; // additional offset due to diagonals
 
-        if( i < numDiagonals )
+        if ( i < numDiagonals )
         {
             // diagonal elements become the first 'numDiagonal' entries
-
             cooValues[i] = static_cast<COOValueType>( csrValues[csrOffset] );
-
             csrOffset += 1; // do not fill diagonal element again
             cooOffset = numDiagonals - i - 1; // offset in coo moves
         }
 
         // now fill remaining part of row i
 
-        for( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
         {
             cooValues[jj + cooOffset] = static_cast<COOValueType>( csrValues[jj] );
         }
@@ -320,10 +306,8 @@ void OpenMPCOOUtils::normalGEMV(
     if ( syncToken )
     {
         // bind has limited number of arguments, so take help routine for call
-
         SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
-
         syncToken->run( common::bind( normalGEMV_a<ValueType>,
                                       result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
@@ -335,26 +319,19 @@ void OpenMPCOOUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">,"
                    << " result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
-
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
-
     utilskernel::OpenMPUtils::setScale( result, beta, y, numRows );
-
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.COO.normalGEMV" )
-
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType k = 0; k < numValues; ++k )
+        for ( IndexType k = 0; k < numValues; ++k )
         {
             IndexType i = cooIA[k];
             IndexType j = cooJA[k];
-
             // we must use atomic updates as different threads might update same row i
-
             const ValueType resultUpdate = alpha * cooValues[k] * x[j];
-
             atomicAdd( result[i], resultUpdate );
         }
     }
@@ -395,15 +372,12 @@ void OpenMPCOOUtils::normalGEVM(
                    "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + "
                    << beta << " * y " )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
         // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in pair structs
-
         SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
-
         syncToken->run( common::bind( normalGEVM_a<ValueType>,
                                       result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
@@ -413,26 +387,19 @@ void OpenMPCOOUtils::normalGEVM(
     }
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
-
     utilskernel::OpenMPUtils::setScale( result, beta, y, numColumns );
-
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.COO.normalGEMV" )
-
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType k = 0; k < numValues; ++k )
+        for ( IndexType k = 0; k < numValues; ++k )
         {
             IndexType i = cooIA[k];
             IndexType j = cooJA[k];
-
             // we must use atomic updates as different threads might update same row i
-
             const ValueType resultUpdate = alpha * cooValues[k] * x[i];
-
             // thread-safe atomic update
-
             atomicAdd( result[j], resultUpdate );
         }
     }
@@ -454,10 +421,9 @@ void OpenMPCOOUtils::jacobi(
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
@@ -466,29 +432,24 @@ void OpenMPCOOUtils::jacobi(
     // done in two steps
     // solution = omega * rhs * dinv + ( 1 - omega * oldSolution
     // solution -= omega * B * oldSolution * dinv
-
     #pragma omp parallel for
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        solution[i] = omega * rhs[i] / cooValues[i] + ( static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
+        solution[i] = omega * rhs[i] / cooValues[i] + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
     }
 
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.COO.jacobi" )
-
         #pragma omp for
 
-        for( IndexType k = numRows; k < cooNumValues; ++k )
+        for ( IndexType k = numRows; k < cooNumValues; ++k )
         {
             IndexType i = cooIA[k];
             IndexType j = cooJA[k];
-
             // we must use atomic updates as different threads might update same row i
-
             const ValueType update = -omega * cooValues[k] * oldSolution[j] / cooValues[i];
-
             atomicAdd( solution[i], update );
         }
     }
@@ -501,11 +462,8 @@ void OpenMPCOOUtils::jacobi(
 void OpenMPCOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     common::context::ContextType ctx = common::context::Host;
-
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
-
     KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( OpenMPCOOUtils::hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<COOKernelTrait::offsets2ia>( OpenMPCOOUtils::offsets2ia, ctx, flag );
     KernelRegistry::set<COOKernelTrait::getCSRSizes>( OpenMPCOOUtils::getCSRSizes, ctx, flag );
@@ -516,12 +474,9 @@ template<typename ValueType>
 void OpenMPCOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     common::context::ContextType ctx = common::context::Host;
-
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
-
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( OpenMPCOOUtils::normalGEMV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( OpenMPCOOUtils::normalGEVM, ctx, flag );
     KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( OpenMPCOOUtils::jacobi, ctx, flag );
@@ -531,12 +486,9 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     common::context::ContextType ctx = common::context::Host;
-
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
     KernelRegistry::set<COOKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
     KernelRegistry::set<COOKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
@@ -550,7 +502,6 @@ void OpenMPCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
 OpenMPCOOUtils::OpenMPCOOUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
@@ -559,7 +510,6 @@ OpenMPCOOUtils::OpenMPCOOUtils()
 OpenMPCOOUtils::~OpenMPCOOUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );

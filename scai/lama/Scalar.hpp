@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of dummy class whose objects stand for arbitrary arithmetic types.
@@ -76,7 +81,7 @@ namespace lama
  * following relation must / should  hold:
  *
  * \code
- *    ARITHEMTIC_TYPE( ScalarRepType( x ) ) == x  
+ *    ARITHEMTIC_TYPE( ScalarRepType( x ) ) == x
  * \endcode
  */
 class COMMON_DLL_IMPORTEXPORT Scalar: public common::Printable
@@ -303,7 +308,7 @@ inline bool operator==( const Scalar& a, const Scalar& b )
 {
     return a.getValue<ScalarRepType>() == b.getValue<ScalarRepType>();
 }
- 
+
 /**
  * @brief Check inequality of a and b.
  *
@@ -339,7 +344,6 @@ inline bool operator>( const Scalar& a, const Scalar& b )
 inline Scalar sqrt( const Scalar scalar )
 {
     // call sqrt for ScalarRepType
-
     return Scalar( common::Math::sqrt( scalar.getValue<ScalarRepType>() ) );
 }
 
@@ -350,7 +354,6 @@ inline Scalar sqrt( const Scalar scalar )
 inline Scalar abs( const Scalar scalar )
 {
     // call abs for ScalarRepType
-
     return Scalar( common::Math::abs( scalar.getValue<ScalarRepType>() ) );
 }
 
@@ -365,29 +368,29 @@ inline Scalar conj( const Scalar scalar )
 
 inline Scalar max( const Scalar a, const Scalar b )
 {
-    if( a.hasComplexValue() || b.hasComplexValue() )
+    if ( a.hasComplexValue() || b.hasComplexValue() )
     {
         return Scalar( common::Math::max( a.getValue<ScalarRepType>(), b.getValue<ScalarRepType>() ) );
     }
     else
     {
         return Scalar( common::Math::max(
-            common::Math::real( a.getValue<ScalarRepType>() ),
-            common::Math::real( b.getValue<ScalarRepType>() ) ) );
+                           common::Math::real( a.getValue<ScalarRepType>() ),
+                           common::Math::real( b.getValue<ScalarRepType>() ) ) );
     }
 }
 
 inline Scalar min( const Scalar a, const Scalar b )
 {
-    if( a.hasComplexValue() || b.hasComplexValue() )
+    if ( a.hasComplexValue() || b.hasComplexValue() )
     {
         return Scalar( common::Math::min( a.getValue<ScalarRepType>(), b.getValue<ScalarRepType>() ) );
     }
     else
     {
         return Scalar( common::Math::min(
-            common::Math::real( a.getValue<ScalarRepType>() ),
-            common::Math::real( b.getValue<ScalarRepType>() ) ) );
+                           common::Math::real( a.getValue<ScalarRepType>() ),
+                           common::Math::real( b.getValue<ScalarRepType>() ) ) );
     }
 }
 

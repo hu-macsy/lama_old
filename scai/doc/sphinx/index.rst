@@ -20,6 +20,7 @@ Contents
    installation
    projects
    tutorial
+   lecture
    faq
 
 .. toctree::

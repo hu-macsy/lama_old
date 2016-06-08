@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class that stores a context function from the kernel registry
@@ -37,7 +42,7 @@ namespace scai
 namespace kregistry
 {
 
-template<typename FunctionType> 
+template<typename FunctionType>
 class KernelContextFunction : public ContextFunction<FunctionType>
 {
 public:
@@ -45,13 +50,12 @@ public:
     /** Constructor by name, function type is given by the template name */
 
     KernelContextFunction( const char* name ) :
- 
+
         ContextFunction<FunctionType>(),
-        mName ( name ) 
+        mName ( name )
 
     {
         // get this context function pointers via the kernel registry
-
         KernelRegistry::get( *this, mName );
     }
 
@@ -62,12 +66,10 @@ public:
         if ( fn == NULL )
         {
             // Throw exception
-
-            SCAI_THROWEXCEPTION( KernelRegistryException, 
+            SCAI_THROWEXCEPTION( KernelRegistryException,
                                  "Context function " << mName << " - " << typeid( FunctionType ).name()
-                                 << " not available for context = " << ctx 
+                                 << " not available for context = " << ctx
                                  << ", registered is " <<  this->printIt() )
-
         }
 
         return fn;
@@ -76,12 +78,12 @@ public:
 private:
 
     const char* mName;   // keep the name for error messages
- 
+
     using _ContextFunction::mContextFuncArray;
 };
 
 /**
- * Template class for ContextFunction by using a Kernel Trait 
+ * Template class for ContextFunction by using a Kernel Trait
  *
  * @tparam KernelTrait struct that constains signature (function type defintion) and name of the context function.
  *
@@ -95,7 +97,7 @@ private:
  * \endcode
  */
 
-template<typename KernelTrait> 
+template<typename KernelTrait>
 class KernelTraitContextFunction : public KernelContextFunction<typename KernelTrait::FuncType>
 {
 public:
@@ -104,8 +106,8 @@ public:
 
     typedef typename KernelTrait::FuncType ContextFunctionType;
 
-    KernelTraitContextFunction() : 
- 
+    KernelTraitContextFunction() :
+
         KernelContextFunction<ContextFunctionType>( KernelTrait::getId() )
     {
     }

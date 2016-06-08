@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./hmemo/test/ContextTest.cpp
@@ -51,15 +56,10 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ContextTest" )
 BOOST_AUTO_TEST_CASE( hostContextText )
 {
     // make sure that host context is always available
-
     BOOST_CHECK( Context::canCreate( common::context::Host ) );
-
     ContextPtr host = Context::create( common::context::Host, -1 );
-
     BOOST_CHECK( host.get() );
-
     BOOST_CHECK( host == Context::getHostPtr() );
-
     SCAI_LOG_INFO( logger, "host context = " << *host )
 }
 
@@ -68,21 +68,13 @@ BOOST_AUTO_TEST_CASE( hostContextText )
 BOOST_AUTO_TEST_CASE( getContextText )
 {
     // some basic test to get the specified context
-
     ContextPtr ctx = Context::getContextPtr();
-
     SCAI_LOG_INFO( logger, "context = " << *ctx << ", type = " << ctx->getType() )
-
     BOOST_CHECK( ctx.get() );
-
     BOOST_CHECK( Context::hasContext( ctx->getType() ) );
-
     // context of this type should be available directly
-
     ContextPtr ctx1 = Context::getContextPtr( ctx->getType() );
-
     // equality of devices checked by pointer equality
-
     BOOST_CHECK_EQUAL( ctx.get(), ctx1.get() );
 }
 
@@ -91,32 +83,22 @@ BOOST_AUTO_TEST_CASE( getContextText )
 BOOST_AUTO_TEST_CASE( useContextTest )
 {
     SCAI_LOG_DEF_LOGGER( logger, "Test" )
-
     ContextPtr userContext  = Context::getContextPtr( Context::UserContext, 1 );
     ContextPtr hostContext  = Context::getContextPtr( Context::Host );
     ContextPtr testContext  = Context::getContextPtr();
-
     SCAI_LOG_INFO( logger, "testContext = " << *testContext << ", userContext = " << *userContext );
-
     const IndexType N = 7;
-
     HArray<double> X( N, 5.0 );
-
     // take ownership on userContext
     {
         WriteAccess<double> write( X, userContext );
     }
-
     // take ownership on testContext
-
     {
         WriteAccess<double> write( X, testContext );
     }
-
     // read @ userContext: valid data is transfered from testContext to here
-
     ReadAccess<double> read( X, userContext );
-
     const double* vals = read.get();
 
     for ( int i = 0; i < 7; ++i )
@@ -127,9 +109,7 @@ BOOST_AUTO_TEST_CASE( useContextTest )
     HArray<double> Y( X );
     Y.clear();
     Y.purge();
-
     HArray<float> v ( 4, 1.0f );
-
     {
         ReadAccess<float> read( v, userContext );
         WriteAccess<float> write( v, userContext );
@@ -140,7 +120,6 @@ BOOST_AUTO_TEST_CASE( useContextTest )
     if ( userContext.get() != testContext.get() )
     {
         SCAI_LOG_DEBUG( logger, "exception must be thrown for read/write on different devices" )
-
         BOOST_CHECK_THROW(
         {
             ReadAccess<float> read( v, userContext );

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief MICSyncToken.cpp
@@ -51,17 +56,16 @@ MICSyncToken::~MICSyncToken()
 
 void MICSyncToken::wait()
 {
-    if( isSynchronized() )
+    if ( isSynchronized() )
     {
         return;
     }
 
     SCAI_LOG_DEBUG( logger, "wait for offload computation by signal" )
 
-    if( mSignal >= 0 )
+    if ( mSignal >= 0 )
     {
         // SCAI_REGION( "MIC.offloadSynchronize" )
-
 #pragma offload target( mic:mDevice ) wait(mSignal)
         {
         }
@@ -73,11 +77,8 @@ void MICSyncToken::wait()
 void MICSyncToken::setSignal( int signal )
 {
     SCAI_ASSERT_ERROR( !isSynchronized(), "cannot set signal as SyncToken is already synchronized" )
-
     SCAI_ASSERT_ERROR( mSignal < 0, "signal already set, cannot handle multiple signals" )
-
     // this signal will be used to wait for synchronization
-
     mSignal = signal;
 }
 
@@ -86,8 +87,7 @@ bool MICSyncToken::probe() const
     // No idea what to do so wait
 
     // wait();
-
-    if( isSynchronized() )
+    if ( isSynchronized() )
     {
         return true;
     }
@@ -105,7 +105,6 @@ MICSyncToken* MICSyncToken::getCurrentSyncToken()
     }
 
     // make a dynamic CAST
-
     MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
 
     // If the current sync token is not a CUDA stream token it is very likely an error
@@ -116,7 +115,6 @@ MICSyncToken* MICSyncToken::getCurrentSyncToken()
     }
 
     // But might not be too serious so return NULL that forces synchronous execution
-
     return micSyncToken;
 }
 

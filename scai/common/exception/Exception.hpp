@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of class Exception and macro for throwing it
@@ -90,9 +95,9 @@ public:
 
 protected:
 
-    std::string mMessage;  //!< message for this exception 
+    std::string mMessage;  //!< message for this exception
 
-    /** Help routine that demangles the C++ function names of the call stack. 
+    /** Help routine that demangles the C++ function names of the call stack.
      *
      *  @param[in] string name of the C++ function
      *  @return demangled name as a string

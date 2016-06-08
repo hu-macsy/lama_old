@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief MINRES.cpp
@@ -60,11 +65,11 @@ using lama::Vector;
 using lama::Scalar;
 
 MINRES::MINRES( const std::string& id )
-    : IterativeSolver(id) {}
+    : IterativeSolver( id ) {}
 
 
 MINRES::MINRES( const std::string& id, LoggerPtr logger )
-    : IterativeSolver(id ,logger) {}
+    : IterativeSolver( id , logger ) {}
 
 MINRES::MINRES( const MINRES& other )
     : IterativeSolver( other ) {}
@@ -80,53 +85,41 @@ MINRES::MINRESRuntime::~MINRESRuntime() {}
 
 void MINRES::initialize( const Matrix& coefficients )
 {
-    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
-
+    SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
     MINRESRuntime& runtime = getRuntime();
-
     runtime.mBetaNew = 0.0;
     runtime.mC = 1.0;
     runtime.mCNew = 1.0;
     runtime.mS = 0.0;
     runtime.mSNew = 0.0;
-
     runtime.mVecV.reset( coefficients.newDenseVector() );
     runtime.mVecVOld.reset( coefficients.newDenseVector() );
     runtime.mVecVNew.reset( coefficients.newDenseVector() );
     runtime.mVecP.reset( coefficients.newDenseVector() );
     runtime.mVecPOld.reset( coefficients.newDenseVector() );
     runtime.mVecPNew.reset( coefficients.newDenseVector() );
-
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
 }
 
 void MINRES::solveInit( Vector& solution, const Vector& rhs )
 {
     MINRESRuntime& runtime = getRuntime();
-
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
-
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
-
     // Initialize
-
     this->getResidual();
     *runtime.mVecVNew = *runtime.mResidual;
-
-    *runtime.mVecV *= Scalar(0.0);
-    *runtime.mVecP *= Scalar(0.0);
-    *runtime.mVecPNew *= Scalar(0.0);
-
+    *runtime.mVecV *= Scalar( 0.0 );
+    *runtime.mVecP *= Scalar( 0.0 );
+    *runtime.mVecPNew *= Scalar( 0.0 );
     lama::L2Norm norm;
-    runtime.mZeta = norm.apply(*runtime.mResidual);
+    runtime.mZeta = norm.apply( *runtime.mResidual );
     *runtime.mVecVNew /= runtime.mZeta;
-
-
     runtime.mSolveInit = true;
 }
 
@@ -140,28 +133,24 @@ void MINRES::Lanczos()
     Scalar& alpha = runtime.mAlpha;
     Scalar& betaNew = runtime.mBetaNew;
     Scalar& beta = runtime.mBeta;
-
     Scalar& eps = runtime.mEps;
     lama::L2Norm norm;
+    beta = betaNew;
+    vecVOld.swap( vecV );
+    vecV.swap( vecVNew );
+    vecVNew = A * vecV - beta * vecVOld;
+    alpha = vecV.dotProduct( vecVNew );
+    vecVNew = vecVNew - alpha * vecV;
+    betaNew = norm.apply( vecVNew );
 
-    beta=betaNew;
-
-    vecVOld.swap(vecV);
-    vecV.swap(vecVNew);
-    vecVNew = A*vecV - beta*vecVOld;
-    alpha = vecV.dotProduct(vecVNew);
-    vecVNew = vecVNew - alpha*vecV;
-    betaNew = norm.apply(vecVNew);
-
-    if(abs(betaNew) < eps || 1.0/abs(betaNew) < eps)
+    if ( abs( betaNew ) < eps || 1.0 / abs( betaNew ) < eps )
     {
-        vecVNew = Scalar(0.0);
+        vecVNew = Scalar( 0.0 );
     }
     else
     {
-        vecVNew = vecVNew/betaNew;
+        vecVNew = vecVNew / betaNew;
     }
-
 }
 
 void MINRES::applyGivensRotation()
@@ -177,23 +166,20 @@ void MINRES::applyGivensRotation()
     Scalar& beta = runtime.mBeta;
     Scalar& betaNew = runtime.mBetaNew;
     Scalar rho1, rho2, rho3;
-
     Scalar& eps = runtime.mEps;
     //Old Givens-rotation
     cOld = c;
-    c=cNew;
+    c = cNew;
     sOld = s;
-    s=sNew;
-
-    rho1 = sOld*beta;
-    rho2 = c*cOld*beta+s*alpha;
-    rho3 = c*alpha-s*cOld*beta;
-
+    s = sNew;
+    rho1 = sOld * beta;
+    rho2 = c * cOld * beta + s * alpha;
+    rho3 = c * alpha - s * cOld * beta;
     Scalar tau, nu;
     //New Givens-rotation
-    tau = abs(rho3)+betaNew;
+    tau = abs( rho3 ) + betaNew;
 
-    if(abs(tau) < eps || 1.0/abs(tau) < eps)
+    if ( abs( tau ) < eps || 1.0 / abs( tau ) < eps )
     {
         nu = 1.0;
         rho3 = 1.0;
@@ -202,45 +188,37 @@ void MINRES::applyGivensRotation()
     }
     else
     {
-        nu = tau * sqrt((rho3/tau)*(rho3/tau) + (betaNew/tau)*(betaNew/tau));
+        nu = tau * sqrt( ( rho3 / tau ) * ( rho3 / tau ) + ( betaNew / tau ) * ( betaNew / tau ) );
         cNew = rho3 / nu;
         sNew = betaNew / nu;
         rho3 = nu;
-
     }
-
-
 
     Vector& vecP = *runtime.mVecP;
     Vector& vecPOld = *runtime.mVecPOld;
     Vector& vecPNew = *runtime.mVecPNew;
     const Vector& vecV = *runtime.mVecV;
     //Update P
-    vecPOld.swap(vecP);
-    vecP.swap(vecPNew);
-    vecPNew = vecV-rho1*vecPOld;
-    vecPNew = vecPNew -rho2*vecP;
-    vecPNew = vecPNew/rho3;
-
+    vecPOld.swap( vecP );
+    vecP.swap( vecPNew );
+    vecPNew = vecV - rho1 * vecPOld;
+    vecPNew = vecPNew - rho2 * vecP;
+    vecPNew = vecPNew / rho3;
 }
 
 void MINRES::iterate()
 {
     MINRESRuntime& runtime = getRuntime();
-
     const Vector& vecPNew = *runtime.mVecPNew;
     Vector& solution = *runtime.mSolution;
     Scalar& cNew = runtime.mCNew;
     Scalar& sNew = runtime.mSNew;
     Scalar& zeta = runtime.mZeta;
-
     Lanczos();
     applyGivensRotation();
-
     //New approximation
-    solution = solution + cNew*zeta*vecPNew;
-    zeta = -sNew*zeta;
-
+    solution = solution + cNew * zeta * vecPNew;
+    zeta = -sNew * zeta;
     //MINRES Implementation End
 }
 

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definitions for MKL interface on mic
@@ -32,21 +37,23 @@
 // macros
 #define MIC_BLAS_NAME( name, prefix ) prefix##name
 
-#define MIC_BLAS_CALL( name, prefix, ... )	\
-		SCAI_MIC_CALL( CUBLAS_BLAS_NAME( name, prefix ), __VAR_ARGS__ )
+#define MIC_BLAS_CALL( name, prefix, ... )  \
+    SCAI_MIC_CALL( CUBLAS_BLAS_NAME( name, prefix ), __VAR_ARGS__ )
 
 // external
 #include <mkl_blas.h>
 
-namespace scai {
+namespace scai
+{
 
-namespace blaskernel {
+namespace blaskernel
+{
 
 class COMMON_DLL_IMPORTEXPORT MICBLASTrait
 {
 public:
-	typedef int BLASIndexType;
-	typedef char BLASTrans;
+    typedef int BLASIndexType;
+    typedef char BLASTrans;
 };
 
 } /* end namespace blaskernel */

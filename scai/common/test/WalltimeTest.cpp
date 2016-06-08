@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test routines for class Walltime
@@ -33,26 +38,17 @@
 
 BOOST_AUTO_TEST_CASE( WalltimeTest )
 {
-
     using scai::common::Walltime;
     using scai::common::INTEGER_8;
-
     INTEGER_8 i0 = Walltime::timestamp();
     double t0 = Walltime::get();
-
     Walltime::sleep( 1000 );
     double t1 = Walltime::get();
     INTEGER_8 i1 = Walltime::timestamp();
-
     // time in seconds
-
     double time = t1 - t0;
-
     // should be rather accurate one second
-
     BOOST_CHECK_CLOSE( 1.0, time, 1 );
-
     // using timestamp instead of get() should give same result
-
     BOOST_CHECK_CLOSE( double( i1 - i0 ) / double( Walltime::timerate() ), time, 1 );
 }

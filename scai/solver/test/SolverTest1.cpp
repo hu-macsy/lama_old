@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief SolverTest1.cpp
@@ -55,14 +60,12 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     // Get all available solvers
     std::vector<std::string> values;
     Solver::getCreateValues( values );
+    const int numSolvers = ( int )values.size();
 
-    const int numSolvers = (int)values.size();
-
-    for(int i=0; i < numSolvers; i++)
+    for ( int i = 0; i < numSolvers; i++ )
     {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        Solver* solver = Solver::create( values[i], "" );
-
+        SolverPtr solver( Solver::create( values[i], "" ) );
         SCAI_COMMON_WRITEAT_TEST( *solver );
     }
 }
@@ -74,14 +77,12 @@ BOOST_AUTO_TEST_CASE( copyTest )
     // Get all available solvers
     std::vector<std::string> values;
     Solver::getCreateValues( values );
+    const int numSolvers = ( int )values.size();
 
-    const int numSolvers = (int)values.size();
-
-    for(int i=0; i < numSolvers; i++)
+    for ( int i = 0; i < numSolvers; i++ )
     {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        Solver* solver = Solver::create( values[i], "" );
-
+        SolverPtr solver( Solver::create( values[i], "" ) );
         SolverPtr solverCpyPtr = solver->copy();
         // TODO: do a more proper test here!
         BOOST_CHECK_EQUAL( solverCpyPtr->getId(), "" );
@@ -93,32 +94,25 @@ BOOST_AUTO_TEST_CASE( copyTest )
 BOOST_AUTO_TEST_CASE( solveWithoutInitialization )
 {
     typedef SCAI_TEST_TYPE ValueType;
-
     // Some test data are required to call the solve method, we don't want to work with these data
     // therefore we do not need to set a context or a proper distribution here
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-
     const ValueType solutionInitValue = 1.0;
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
-
-    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue+1.0 );
+    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue + 1.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
-
     // Get all available solvers
     std::vector<std::string> values;
     Solver::getCreateValues( values );
+    const int numSolvers = ( int )values.size();
 
-    const int numSolvers = (int)values.size();
-
-    for(int i=0; i < numSolvers; i++)
+    for ( int i = 0; i < numSolvers; i++ )
     {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        Solver* solver = Solver::create( values[i], "" );
-
+        SolverPtr solver( Solver::create( values[i], "" ) );
         BOOST_CHECK_THROW ( {solver->solve( solution, rhs );}, scai::common::Exception );
     }
 }

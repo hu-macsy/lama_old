@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of help class that disables default copy constructors.
@@ -43,14 +48,14 @@ namespace common
  *  All classes where the default copy constructor might result in serious problems should
  *  derive from this class.
  *
- *  In the following class dynamically allocated data is freed in the destructor. If an 
+ *  In the following class dynamically allocated data is freed in the destructor. If an
  *  instance variable has been copied the destructor is called twice and the data
  *  would be freed twice.
  *
  *  \code
  *  class Example : common::NonCopyable
  *  {
- *      ~Example() 
+ *      ~Example()
  *      {
  *         if ( mData != NULL) delete mData;
  *         mData = NULL;

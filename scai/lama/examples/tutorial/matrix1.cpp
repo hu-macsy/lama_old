@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief matrix1.cpp is an example to show how getRow works
@@ -62,15 +67,10 @@ static inline ValueType mv( const IndexType i, const IndexType j )
 
 int main()
 {
-
     IndexType perm [] = { 5, 2, 1, 0, 3, 4 };
-
     const IndexType irow = 3;
-
     const int N = sizeof( perm ) / sizeof( IndexType );
-
     CSRSparseMatrix<ValueType> a;
-
     common::scoped_array<ValueType> values( new ValueType[ N * N ] );
 
     for ( IndexType i = 0; i < N; ++i )
@@ -82,11 +82,8 @@ int main()
     }
 
     DistributionPtr rep( new NoDistribution( N ) );
-
     a.setRawDenseData( rep, rep, values.get() );
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     std::vector<IndexType> myGlobalIndexes;
 
     for ( IndexType i = 0; i < N; ++i )
@@ -95,27 +92,17 @@ int main()
         {
             myGlobalIndexes.push_back( i );
         }
-
     }
 
     std::cout << *comm << ": have " << myGlobalIndexes.size() << " indexes" << std::endl;
-
     DistributionPtr dist( new GeneralDistribution( N, myGlobalIndexes, comm ) );
-
     a.redistribute( dist, dist );
-
     std::cout << "Communicator = " << *comm << std::endl;
-
     DenseVector<ValueType> row( dist );     // any type, any distribution
-
     a.getRow( row, irow );
-
     std::cout << "a( " << irow << ", : ) = " << row << std::endl;
-
     ReadAccess<ValueType> rowRead( row.getLocalValues() );
-
     int errors = 0;
-
     std::cout << "Values = ";
 
     for ( IndexType j = 0; j < rowRead.size(); ++ j )
@@ -130,8 +117,6 @@ int main()
     }
 
     std::cout << std::endl;
-
     std::cout << "Errors = " << errors << std::endl;
-
     a.writeToFile( "MatrixA", File::MATRIX_MARKET );
 }

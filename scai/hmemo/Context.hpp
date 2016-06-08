@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of base class for a context that specifies where data is
@@ -50,7 +55,7 @@ namespace scai
 
 namespace tasking
 {
-    class SyncToken;    // forward declaration
+class SyncToken;    // forward declaration
 }
 
 /** Namespace for all data structures of the the heterogeneous memory management. */
@@ -80,8 +85,8 @@ typedef common::shared_ptr<const Context> ContextPtr;
  *
  *  A copy constructor for a context is not provided.
  */
-class COMMON_DLL_IMPORTEXPORT Context: 
-  
+class COMMON_DLL_IMPORTEXPORT Context:
+
     public  common::Factory1<common::context::ContextType, int, ContextPtr>,
     public  common::Printable,
     public  common::context,
@@ -131,7 +136,7 @@ public:
      */
     virtual void disable( const char* file, int line ) const;
 
-    /** This method returns the memory that can be used at this context. 
+    /** This method returns the memory that can be used at this context.
      *
      *  Note: canUseMemory( *getMemory() ) must be true.
      *
@@ -157,11 +162,11 @@ public:
     MemoryPtr getMemoryPtr() const;
 
     /** If zero copy is enabled, the default memory is not the local memory
-     *  but the host memory so Host and this context can work on the same memory. 
+     *  but the host memory so Host and this context can work on the same memory.
      */
 
     virtual void enableZeroCopy( bool flag ) const;
- 
+
     /** @brief Get a context of a certain type from the Context factory.
      *
      *  Note: This is the same as Factory::create but with default values.
@@ -178,7 +183,7 @@ public:
      */
     static ContextPtr getContextPtr( const ContextType type, int deviceNr = -1 );
 
-    /** @brief get context as set by SCAI_CONTEXT and SCAI_DEVICE 
+    /** @brief get context as set by SCAI_CONTEXT and SCAI_DEVICE
      *
      *  @return             a context of the type as set by environment variable SCAI_CONTEXT (Host if not set)
      *  @throws Exception if the context set by SCAI_CONTEXT is not available or unknown

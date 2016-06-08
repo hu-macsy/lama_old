@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Wrapper for LAPACK functions
@@ -36,66 +41,68 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/SCAITypes.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace blaskernel {
+namespace blaskernel
+{
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT LAPACKWrapper;
 
-#define LAPACKWRAPPER_DEF( ValueType, prefix ) 															\
-template<>																								\
-class COMMON_DLL_IMPORTEXPORT LAPACKWrapper<ValueType>													\
-{																										\
-public:																									\
-	typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;												\
-	typedef LAPACKTrait::LAPACKFlag LAPACKFlag;															\
-																										\
-	static LAPACKIndexType getrf(																		\
-			const LAPACKIndexType m,																	\
-			const LAPACKIndexType n, ValueType* a,														\
-			const LAPACKIndexType lda,																	\
-			LAPACKIndexType* ipivot)																	\
-	{																									\
-		LAPACKIndexType info;																			\
-		FORTRAN_LAPACK_NAME( getrf, prefix )(&m, &n, a, &lda, ipivot, &info);							\
-		return info;																					\
-	}																									\
-																										\
-	static LAPACKIndexType getri(																		\
-			const LAPACKIndexType n, ValueType* a,														\
-			const LAPACKIndexType lda,																	\
-			LAPACKIndexType* ipivot, ValueType* work,													\
-			const LAPACKIndexType ldwork)																\
-	{																									\
-		LAPACKIndexType info;																			\
-		FORTRAN_LAPACK_NAME( getri, prefix )(&n, a, &lda, ipivot, work, &ldwork, &info);				\
-		return info;																					\
-	}																									\
-																										\
-	static LAPACKIndexType tptrs(LAPACKFlag uplo,														\
-			LAPACKFlag transa, LAPACKFlag diag,															\
-			const LAPACKIndexType n,																	\
-			const LAPACKIndexType nrhs, const ValueType* ap,											\
-			ValueType* b, const LAPACKIndexType ldb)													\
-	{																									\
-		LAPACKIndexType info;																			\
-		FORTRAN_LAPACK_NAME( tptrs, prefix )(&uplo, &transa, &diag, &n, &nrhs, ap, b, &ldb, &info );	\
-		return info;																					\
-	}																									\
-																										\
-	static void laswp(																					\
-			const LAPACKIndexType n,																	\
-			ValueType* a,																				\
-			const LAPACKIndexType lda,																	\
-			const LAPACKIndexType k1,																	\
-			const LAPACKIndexType k2,																	\
-			const LAPACKIndexType* ipiv,																\
-			const LAPACKIndexType incx)																	\
-	{																									\
-		FORTRAN_LAPACK_NAME( laswp, prefix )( &n, a, &lda, &k1, &k2, ipiv, &incx);						\
-	}																									\
-};
+#define LAPACKWRAPPER_DEF( ValueType, prefix )                                                          \
+    template<>                                                                                              \
+    class COMMON_DLL_IMPORTEXPORT LAPACKWrapper<ValueType>                                                  \
+    {                                                                                                       \
+    public:                                                                                                 \
+        typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;                                               \
+        typedef LAPACKTrait::LAPACKFlag LAPACKFlag;                                                         \
+        \
+        static LAPACKIndexType getrf(                                                                       \
+                const LAPACKIndexType m,                                                                    \
+                const LAPACKIndexType n, ValueType* a,                                                      \
+                const LAPACKIndexType lda,                                                                  \
+                LAPACKIndexType* ipivot)                                                                    \
+        {                                                                                                   \
+            LAPACKIndexType info;                                                                           \
+            FORTRAN_LAPACK_NAME( getrf, prefix )(&m, &n, a, &lda, ipivot, &info);                           \
+            return info;                                                                                    \
+        }                                                                                                   \
+        \
+        static LAPACKIndexType getri(                                                                       \
+                const LAPACKIndexType n, ValueType* a,                                                      \
+                const LAPACKIndexType lda,                                                                  \
+                LAPACKIndexType* ipivot, ValueType* work,                                                   \
+                const LAPACKIndexType ldwork)                                                               \
+        {                                                                                                   \
+            LAPACKIndexType info;                                                                           \
+            FORTRAN_LAPACK_NAME( getri, prefix )(&n, a, &lda, ipivot, work, &ldwork, &info);                \
+            return info;                                                                                    \
+        }                                                                                                   \
+        \
+        static LAPACKIndexType tptrs(LAPACKFlag uplo,                                                       \
+                                     LAPACKFlag transa, LAPACKFlag diag,                                                         \
+                                     const LAPACKIndexType n,                                                                    \
+                                     const LAPACKIndexType nrhs, const ValueType* ap,                                            \
+                                     ValueType* b, const LAPACKIndexType ldb)                                                    \
+        {                                                                                                   \
+            LAPACKIndexType info;                                                                           \
+            FORTRAN_LAPACK_NAME( tptrs, prefix )(&uplo, &transa, &diag, &n, &nrhs, ap, b, &ldb, &info );    \
+            return info;                                                                                    \
+        }                                                                                                   \
+        \
+        static void laswp(                                                                                  \
+                const LAPACKIndexType n,                                                                    \
+                ValueType* a,                                                                               \
+                const LAPACKIndexType lda,                                                                  \
+                const LAPACKIndexType k1,                                                                   \
+                const LAPACKIndexType k2,                                                                   \
+                const LAPACKIndexType* ipiv,                                                                \
+                const LAPACKIndexType incx)                                                                 \
+        {                                                                                                   \
+            FORTRAN_LAPACK_NAME( laswp, prefix )( &n, a, &lda, &k1, &k2, ipiv, &incx);                      \
+        }                                                                                                   \
+    };
 
 
 LAPACKWRAPPER_DEF( float, s )

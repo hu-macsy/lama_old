@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief QMR.hpp
@@ -52,15 +57,15 @@ namespace solver
 
 /**
  * @brief The class QMR represents a IterativeSolver which uses the krylov subspace stabilized Quasi Minimal Residual method
- *        to solve a system of linear equations iteratively. 
+ *        to solve a system of linear equations iteratively.
  *
- * Remark: 
+ * Remark:
  * The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
 class COMMON_DLL_IMPORTEXPORT QMR:
-        public IterativeSolver,
-        public Solver::Register<QMR>
+    public IterativeSolver,
+    public Solver::Register<QMR>
 {
 public:
     /**
@@ -131,11 +136,11 @@ public:
      * @brief Returns the complete configuration of the derived class
      */
     virtual QMRRuntime& getRuntime();
-    /** 
+    /**
     * @brief Initializes vectors and values of the runtime
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
-    
+
     /**
      * @brief Returns the complete configuration of the derived class
      */

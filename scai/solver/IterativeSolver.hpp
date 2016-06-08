@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief IterativeSolver.h
@@ -54,7 +59,7 @@ typedef common::shared_ptr<IterativeSolver> IterativeSolverPtr;
  * @brief Uses iterative methods to solve the equation system.
  */
 class COMMON_DLL_IMPORTEXPORT IterativeSolver:
-		public Solver
+    public Solver
 {
 public:
     /**
@@ -149,7 +154,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy() =0;
+    virtual SolverPtr copy() = 0;
 
     struct IterativeSolverRuntime: SolverRuntime
     {
@@ -168,12 +173,12 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual IterativeSolverRuntime& getRuntime() =0;
+    virtual IterativeSolverRuntime& getRuntime() = 0;
 
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const IterativeSolverRuntime& getConstRuntime() const =0;
+    virtual const IterativeSolverRuntime& getConstRuntime() const = 0;
 
     static IterativeSolver* create( const std::string type, const std::string name );
 

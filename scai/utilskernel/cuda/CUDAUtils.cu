@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of CSR utilities with CUDA
@@ -77,7 +82,6 @@ __global__
 void setScaleKernel( T1* out, const T1 beta, const T2* in, IndexType n )
 {
     // Note: out == in does not harm, also not for performance
-
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
@@ -106,14 +110,11 @@ void CUDAUtils::scale( ValueType* values, const ValueType scale, const IndexType
     }
 
     SCAI_CHECK_CUDA_ACCESS
-
     const int blockSize = CUDASettings::getBlockSize( n );
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-
     // there is no performance loss in using same kernel as setScale
     // kernel fits well even if in and out are aliased
-
     setScaleKernel <<< dimGrid, dimBlock>>>( values, scale, values, n );
 }
 
@@ -139,19 +140,14 @@ struct InvalidIndex
 bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
 {
     SCAI_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
-
     bool validFlag = true;
 
     if ( n > 0 )
     {
         SCAI_CHECK_CUDA_ACCESS
-
         thrust::device_ptr<IndexType> arrayPtr( const_cast<IndexType*> ( array ) );
-
         bool error = false;
-
         // count invalid indexes
-
         error = thrust::transform_reduce( arrayPtr,
                                           arrayPtr + n,
                                           InvalidIndex<IndexType>( size ),
@@ -173,19 +169,12 @@ template<typename ValueType>
 ValueType CUDAUtils::reduceSum( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
-
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
     ValueType zero = ValueType( 0 );
-
     ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
-
     return result;
 }
 
@@ -195,19 +184,12 @@ template<typename ValueType>
 ValueType CUDAUtils::reduceMaxVal( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
-
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
     ValueType zero( TypeTraits<ValueType>::getMin() );
-
     ValueType result = thrust::reduce( data, data + n, zero, thrust::maximum<ValueType>() );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
-
     return result;
 }
 
@@ -217,19 +199,12 @@ template<typename ValueType>
 ValueType CUDAUtils::reduceMinVal( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "minval for " << n << " elements " )
-
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
     ValueType zero( TypeTraits<ValueType>::getMax() );
-
     ValueType result = thrust::reduce( data, data + n, zero, thrust::minimum<ValueType>() );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     SCAI_LOG_INFO( logger, "min of " << n << " values = " << result )
-
     return result;
 }
 
@@ -250,20 +225,13 @@ template<typename ValueType>
 ValueType CUDAUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
-
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
     ValueType zero( 0 );
-
     ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), zero,
                        thrust::maximum<ValueType>() );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
-
     return result;
 }
 
@@ -273,7 +241,6 @@ template<typename ValueType>
 ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, reduction::ReductionOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
-
     ValueType result;
 
     switch ( op )
@@ -281,15 +248,19 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, reducti
         case reduction::ADD :
             result = reduceSum( array, n );
             break;
+
         case reduction::MAX :
             result = reduceMaxVal( array, n );
             break;
+
         case reduction::MIN :
             result = reduceMinVal( array, n );
             break;
+
         case reduction::ABS_MAX :
             result = reduceAbsMaxVal( array, n );
             break;
+
         default:
             COMMON_THROWEXCEPTION( "Unsupported reduce op " << op )
     }
@@ -303,9 +274,7 @@ template<typename ValueType>
 void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op )
 {
     using namespace thrust::placeholders;
-
     SCAI_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val << ", op = " << op )
-
     SCAI_CHECK_CUDA_ACCESS
 
     if ( n > 0 )
@@ -313,41 +282,46 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
         ValueType value = static_cast<ValueType>( val );
 
-        switch ( op ) 
+        switch ( op )
         {
             case reduction::COPY:
                 thrust::fill( data, data + n, value );
                 break;
+
             case reduction::ADD:
-                thrust::for_each( data, data + n,  _1 += value);
+                thrust::for_each( data, data + n,  _1 += value );
                 break;
+
             case reduction::SUB:
-                thrust::for_each( data, data + n,  _1 -= value);
+                thrust::for_each( data, data + n,  _1 -= value );
                 break;
+
             case reduction::MULT:
+            {
+                if ( val == scai::common::constants::ZERO )
                 {
-                    if ( val == scai::common::constants::ZERO )
-                    {
-                        thrust::fill( data, data + n, ValueType( 0 ) );
-                    }
-                    else
-                    {
-                        thrust::for_each( data, data + n,  _1 *= value );
-                    }
+                    thrust::fill( data, data + n, ValueType( 0 ) );
                 }
-                break;
+                else
+                {
+                    thrust::for_each( data, data + n,  _1 *= value );
+                }
+            }
+            break;
+
             case reduction::DIVIDE:
+            {
+                if ( val == scai::common::constants::ZERO )
                 {
-                    if ( val == scai::common::constants::ZERO )
-                    {
-                        COMMON_THROWEXCEPTION( "Divide by ZERO" )
-                    }
-                    else
-                    {
-                        thrust::for_each( data, data + n,  _1 /= value );
-                    }
+                    COMMON_THROWEXCEPTION( "Divide by ZERO" )
                 }
-                break;
+                else
+                {
+                    thrust::for_each( data, data + n,  _1 /= value );
+                }
+            }
+            break;
+
             default:
                 COMMON_THROWEXCEPTION( "unsupported reduction op: " << op )
         }
@@ -363,10 +337,8 @@ void CUDAUtils::setOrder( ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n )
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
     thrust::sequence( array_ptr, array_ptr + n );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
 
@@ -377,10 +349,8 @@ ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
 {
     SCAI_LOG_INFO( logger, "getValue # i = " << i )
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<ValueType> arrayPtr( const_cast<ValueType*>( array ) );
     thrust::host_vector<ValueType> arrayHost( arrayPtr + i, arrayPtr + i + 1 );
-
     return arrayHost[0];
 }
 
@@ -390,21 +360,14 @@ template<typename ValueType>
 ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " )
-
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<ValueType> data1( const_cast<ValueType*>( array1 ) );
     thrust::device_ptr<ValueType> data2( const_cast<ValueType*>( array2 ) );
-
     thrust::device_vector<ValueType> temp( n );
-
     // compute temp =  array1 - array2
-
     thrust::transform( data1, data1 + n, data2, temp.begin(), thrust::minus<ValueType>() );
-
     ValueType result = thrust::transform_reduce( temp.begin(), temp.end(), absolute_value<ValueType>(), static_cast<ValueType>( 0.0 ),
                        thrust::maximum<ValueType>() );
-
     /* Not available, but would be useful:
 
      ValueType result = thrust::transform_reduce( data1, data1 + n,
@@ -413,11 +376,8 @@ ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType ar
      zero,
      thrust::maximum<ValueType>());
      */
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" )
-
     SCAI_LOG_INFO( logger, "abs max diff of " << n << " values = " << result )
-
     return result;
 }
 
@@ -437,12 +397,12 @@ void isSortedKernel( bool* result, const IndexType numValues, const ValueType* v
             // not possible, <= not defined on complex
             // ToDo: warp divergence possible?
 //            result[i] = values[i] <= values[i + 1];
-            result[i] = values[i] < values[i + 1] || values[i] == values[i+1];
+            result[i] = values[i] < values[i + 1] || values[i] == values[i + 1];
         }
         else
         {
 //            result[i] = values[i] >= values[i + 1];
-            result[i] = values[i] > values[i + 1] || values[i] == values[i+1];
+            result[i] = values[i] > values[i + 1] || values[i] == values[i + 1];
         }
     }
 }
@@ -452,7 +412,6 @@ bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascen
 {
     SCAI_LOG_INFO( logger, "isSorted<" << TypeTraits<ValueType>::id()
                    << ">, n = " << n << ", ascending = " << ascending )
-
     SCAI_CHECK_CUDA_ACCESS
 
     if ( n < 2 )
@@ -461,11 +420,8 @@ bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascen
     }
 
     // create a tempory bool array on device with n-1 entries
-
     thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( n - 1 );
-
     bool* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
-
     const int blockSize = 256;
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n - 1, dimBlock.x );
@@ -480,9 +436,7 @@ bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascen
     }
 
     cudaStreamSynchronize( 0 );
-
     SCAI_CHECK_CUDA_ERROR
-
     return thrust::reduce( resultPtr, resultPtr + n - 1, true, thrust::logical_and<bool>() );
 }
 
@@ -493,7 +447,6 @@ __global__
 void gatherKernel( ValueType1* out, const ValueType2* in, const IndexType* indexes, IndexType n )
 {
     // Kernel also supports implicit type conversions
-
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
@@ -507,15 +460,11 @@ void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexT
 {
     SCAI_LOG_INFO( logger,
                    "setGather<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
-
     SCAI_CHECK_CUDA_ACCESS
-
     const int blockSize = 256;
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-
     gatherKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
 
@@ -542,13 +491,10 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
     if ( n > 0 )
     {
         SCAI_CHECK_CUDA_ACCESS
-
         const int blockSize = 256;
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( n, dimBlock.x );
-    
         scatter_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
-    
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
 }
@@ -620,7 +566,6 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n,
 {
     SCAI_LOG_INFO( logger,
                    "set<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
-
     SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
     if ( n <= 0 )
@@ -629,7 +574,6 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n,
     }
 
     SCAI_CHECK_CUDA_ACCESS
-
     const int blockSize = CUDASettings::getBlockSize( n );
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
@@ -639,19 +583,24 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n,
         case reduction::COPY :
             setKernelCopy <<< dimGrid, dimBlock>>>( out, in, n );
             break;
+
         case reduction::ADD :
             setKernelAdd <<< dimGrid, dimBlock>>>( out, in, n );
             break;
+
         case reduction::SUB :
             setKernelSub <<< dimGrid, dimBlock>>>( out, in, n );
             break;
+
         case reduction::MULT :
             setKernelMult <<< dimGrid, dimBlock>>>( out, in, n );
             break;
+
         case reduction::DIVIDE :
             setKernelDivide <<< dimGrid, dimBlock>>>( out, in, n );
             break;
-         default:
+
+        default:
             COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
     }
 
@@ -667,7 +616,6 @@ void CUDAUtils::setScale( ValueType1 out[],
 {
     SCAI_LOG_INFO( logger,
                    "set<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
-
     SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
     if ( n <= 0 )
@@ -678,19 +626,15 @@ void CUDAUtils::setScale( ValueType1 out[],
     if ( beta == scai::common::constants::ZERO )
     {
         // in array might be undefined
-
         setVal( out, n, beta, reduction::COPY );
         return;
     }
 
     SCAI_CHECK_CUDA_ACCESS
-
     const int blockSize = CUDASettings::getBlockSize( n );
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-
     setScaleKernel <<< dimGrid, dimBlock>>>( out, beta, in, n );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
 
@@ -701,7 +645,6 @@ __global__
 void invertVectorComponents_kernel( ValueType* array, IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
     ValueType one = 1.0;
 
     if ( i < n )
@@ -724,11 +667,9 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
     }
 
     SCAI_CHECK_CUDA_ACCESS
-
     const int blockSize = 256;
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-
     invertVectorComponents_kernel <<< dimGrid, dimBlock>>>( array, n );
     cudaStreamSynchronize( 0 );
     SCAI_CHECK_CUDA_ERROR
@@ -740,13 +681,10 @@ template<typename ValueType>
 ValueType CUDAUtils::scan( ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "scan<" << TypeTraits<ValueType>::id() <<  ">, #n = " << n )
-
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<ValueType> array_ptr( array );
-    thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr ); 
+    thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr );
     thrust::host_vector<ValueType> numValues( array_ptr + n, array_ptr + n + 1 );
-
     return numValues[0];
 }
 
@@ -759,17 +697,12 @@ void CUDAUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
 
     if ( n > 1 )
     {
-
         SCAI_CHECK_CUDA_ACCESS
-
         thrust::device_ptr<ValueType> array_d( array );
         thrust::device_ptr<IndexType> perm_d( perm );
         thrust::sequence( perm_d, perm_d + n );
-
         // stable sort, descending order, so override default comparison
-
         thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<ValueType>() );
-
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "Utils: synchronize for sort FAILED" )
     }
 }
@@ -781,13 +714,9 @@ void CUDAUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
 void CUDAUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
-
     // we keep the registrations for IndexType as we do not need conversions
-
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
 }
 
@@ -795,14 +724,10 @@ template<typename ValueType>
 void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
-
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
-
 //    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
@@ -819,12 +744,9 @@ template<typename ValueType, typename OtherValueType>
 void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
@@ -838,7 +760,6 @@ void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry:
 CUDAUtils::CUDAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
@@ -847,7 +768,6 @@ CUDAUtils::CUDAUtils()
 CUDAUtils::~CUDAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );

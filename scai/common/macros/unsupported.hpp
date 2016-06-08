@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Macro to give user info about an unsupported feature.
@@ -42,28 +47,28 @@
  *  will be given. For IGNORE no message is given at all. Otherwise an exception
  *  is thrown.
  */
- 
+
 #define SCAI_UNSUPPORTED( msg )                                                \
-{                                                                              \
-    if ( scai::common::UnsupportedException::getUnsupportedSetting() !=        \
-            scai::common::UnsupportedException::UNSUPPORTED_IGNORE )           \
-    {                                                                          \
-        std::ostringstream errorStr;                                           \
-        errorStr << "Unsupported at line ";                                    \
-        errorStr << __LINE__ << " of file " << __FILE__ << "\n";               \
-        errorStr << "    Message: " << msg << std::endl;                       \
-        errorStr << "Use environment variable SCAI_UNSUPPORTED";               \
-        errorStr << " (WARN or IGNORE) to get rid of this message";            \
-        errorStr << std::endl;                                                 \
-        if ( scai::common::UnsupportedException::getUnsupportedSetting() ==    \
-        		scai::common::UnsupportedException::UNSUPPORTED_ERROR )        \
-        {                                                                      \
-            throw scai::common::UnsupportedException( errorStr.str() );        \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            std::cout << errorStr.str() << std::endl;                          \
-        }                                                                      \
-    }                                                                          \
-}
+    {                                                                              \
+        if ( scai::common::UnsupportedException::getUnsupportedSetting() !=        \
+                scai::common::UnsupportedException::UNSUPPORTED_IGNORE )           \
+        {                                                                          \
+            std::ostringstream errorStr;                                           \
+            errorStr << "Unsupported at line ";                                    \
+            errorStr << __LINE__ << " of file " << __FILE__ << "\n";               \
+            errorStr << "    Message: " << msg << std::endl;                       \
+            errorStr << "Use environment variable SCAI_UNSUPPORTED";               \
+            errorStr << " (WARN or IGNORE) to get rid of this message";            \
+            errorStr << std::endl;                                                 \
+            if ( scai::common::UnsupportedException::getUnsupportedSetting() ==    \
+                    scai::common::UnsupportedException::UNSUPPORTED_ERROR )        \
+            {                                                                      \
+                throw scai::common::UnsupportedException( errorStr.str() );        \
+            }                                                                      \
+            else                                                                   \
+            {                                                                      \
+                std::cout << errorStr.str() << std::endl;                          \
+            }                                                                      \
+        }                                                                          \
+    }
 

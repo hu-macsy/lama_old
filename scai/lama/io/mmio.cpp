@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief mmio.cpp
@@ -154,44 +159,44 @@ int mm_read_banner( FILE* f, MM_typecode* matcode )
     char* p;
     mm_clear_typecode( matcode );
 
-    if( fgets( line, MM_MAX_LINE_LENGTH, f ) == NULL )
+    if ( fgets( line, MM_MAX_LINE_LENGTH, f ) == NULL )
     {
         return MM_PREMATURE_EOF;
     }
 
-    if( sscanf( line, "%s %s %s %s %s", banner, mtx, crd, data_type, storage_scheme ) != 5 )
+    if ( sscanf( line, "%s %s %s %s %s", banner, mtx, crd, data_type, storage_scheme ) != 5 )
     {
         return MM_PREMATURE_EOF;
     }
 
-    for( p = mtx; *p != '\0'; *p = (char) tolower( *p ), p++ )
+    for ( p = mtx; *p != '\0'; *p = ( char ) tolower( *p ), p++ )
     {
         ; /* convert to lower case */
     }
 
-    for( p = crd; *p != '\0'; *p = (char) tolower( *p ), p++ )
+    for ( p = crd; *p != '\0'; *p = ( char ) tolower( *p ), p++ )
     {
         ;
     }
 
-    for( p = data_type; *p != '\0'; *p = (char) tolower( *p ), p++ )
+    for ( p = data_type; *p != '\0'; *p = ( char ) tolower( *p ), p++ )
     {
         ;
     }
 
-    for( p = storage_scheme; *p != '\0'; *p = (char) tolower( *p ), p++ )
+    for ( p = storage_scheme; *p != '\0'; *p = ( char ) tolower( *p ), p++ )
     {
         ;
     }
 
     /* check for banner */
-    if( strncmp( banner, matrixMarketBanner, strlen( matrixMarketBanner ) ) != 0 )
+    if ( strncmp( banner, matrixMarketBanner, strlen( matrixMarketBanner ) ) != 0 )
     {
         return MM_NO_HEADER;
     }
 
     /* first field should be "mtx" */
-    if( strcmp( mtx, MM_MTX_STR ) != 0 )
+    if ( strcmp( mtx, MM_MTX_STR ) != 0 )
     {
         return MM_UNSUPPORTED_TYPE;
     }
@@ -201,11 +206,11 @@ int mm_read_banner( FILE* f, MM_typecode* matcode )
     /* second field describes whether this is a sparse matrix (in coordinate
      storage) or a dense array */
 
-    if( strcmp( crd, MM_SPARSE_STR ) == 0 )
+    if ( strcmp( crd, MM_SPARSE_STR ) == 0 )
     {
         mm_set_sparse( matcode );
     }
-    else if( strcmp( crd, MM_DENSE_STR ) == 0 )
+    else if ( strcmp( crd, MM_DENSE_STR ) == 0 )
     {
         mm_set_dense( matcode );
     }
@@ -216,19 +221,19 @@ int mm_read_banner( FILE* f, MM_typecode* matcode )
 
     /* third field */
 
-    if( strcmp( data_type, MM_REAL_STR ) == 0 )
+    if ( strcmp( data_type, MM_REAL_STR ) == 0 )
     {
         mm_set_real( matcode );
     }
-    else if( strcmp( data_type, MM_COMPLEX_STR ) == 0 )
+    else if ( strcmp( data_type, MM_COMPLEX_STR ) == 0 )
     {
         mm_set_complex( matcode );
     }
-    else if( strcmp( data_type, MM_PATTERN_STR ) == 0 )
+    else if ( strcmp( data_type, MM_PATTERN_STR ) == 0 )
     {
         mm_set_pattern( matcode );
     }
-    else if( strcmp( data_type, MM_INT_STR ) == 0 )
+    else if ( strcmp( data_type, MM_INT_STR ) == 0 )
     {
         mm_set_integer( matcode );
     }
@@ -239,19 +244,19 @@ int mm_read_banner( FILE* f, MM_typecode* matcode )
 
     /* fourth field */
 
-    if( strcmp( storage_scheme, MM_GENERAL_STR ) == 0 )
+    if ( strcmp( storage_scheme, MM_GENERAL_STR ) == 0 )
     {
         mm_set_general( matcode );
     }
-    else if( strcmp( storage_scheme, MM_SYMM_STR ) == 0 )
+    else if ( strcmp( storage_scheme, MM_SYMM_STR ) == 0 )
     {
         mm_set_symmetric( matcode );
     }
-    else if( strcmp( storage_scheme, MM_HERM_STR ) == 0 )
+    else if ( strcmp( storage_scheme, MM_HERM_STR ) == 0 )
     {
         mm_set_hermitian( matcode );
     }
-    else if( strcmp( storage_scheme, MM_SKEW_STR ) == 0 )
+    else if ( strcmp( storage_scheme, MM_SKEW_STR ) == 0 )
     {
         mm_set_skew( matcode );
     }
@@ -265,7 +270,7 @@ int mm_read_banner( FILE* f, MM_typecode* matcode )
 
 int mm_write_mtx_crd_size( FILE* f, int M, int N, int nz )
 {
-    if( fprintf( f, "%d %d %d\n", M, N, nz ) != 3 )
+    if ( fprintf( f, "%d %d %d\n", M, N, nz ) != 3 )
     {
         return MM_COULD_NOT_WRITE_FILE;
     }
@@ -285,15 +290,15 @@ int mm_read_mtx_crd_size( FILE* f, int* M, int* N, int* nz )
     /* now continue scanning until you reach the end-of-comments */
     do
     {
-        if( fgets( line, MM_MAX_LINE_LENGTH, f ) == NULL )
+        if ( fgets( line, MM_MAX_LINE_LENGTH, f ) == NULL )
         {
             return MM_PREMATURE_EOF;
         }
     }
-    while( line[0] == '%' );
+    while ( line[0] == '%' );
 
     /* line[] is either blank or has M,N, nz */
-    if( sscanf( line, "%d %d %d", M, N, nz ) == 3 )
+    if ( sscanf( line, "%d %d %d", M, N, nz ) == 3 )
     {
         return 0;
     }
@@ -302,12 +307,12 @@ int mm_read_mtx_crd_size( FILE* f, int* M, int* N, int* nz )
         {
             num_items_read = fscanf( f, "%d %d %d", M, N, nz );
 
-            if( num_items_read == EOF )
+            if ( num_items_read == EOF )
             {
                 return MM_PREMATURE_EOF;
             }
         }
-        while( num_items_read != 3 );
+        while ( num_items_read != 3 );
 
     return 0;
 }
@@ -353,7 +358,7 @@ int mm_read_mtx_array_size( FILE* f, int* M, int* N )
 
 int mm_write_mtx_array_size( FILE* f, int M, int N )
 {
-    if( fprintf( f, "%d %d\n", M, N ) != 2 )
+    if ( fprintf( f, "%d %d\n", M, N ) != 2 )
     {
         return MM_COULD_NOT_WRITE_FILE;
     }
@@ -528,7 +533,7 @@ int mm_write_banner( FILE* f, MM_typecode matcode )
     ret_code = fprintf( f, "%s %s\n", matrixMarketBanner, str );
     free( str );
 
-    if( ret_code != 2 )
+    if ( ret_code != 2 )
     {
         return MM_COULD_NOT_WRITE_FILE;
     }
@@ -600,7 +605,7 @@ int mm_write_banner( FILE* f, MM_typecode matcode )
 char* mm_strdup( const char* s )
 {
     size_t len = strlen( s );
-    char* s2 = (char*) malloc( ( len + 1 ) * sizeof(char) );
+    char* s2 = ( char* ) malloc( ( len + 1 ) * sizeof( char ) );
     return strcpy( s2, s );
 }
 
@@ -614,22 +619,22 @@ char* mm_typecode_to_str( MM_typecode matcode )
 //    int error = 0;
 
     /* check for MTX type */
-    if( mm_is_matrix( matcode ) )
+    if ( mm_is_matrix( matcode ) )
     {
-        types[0] = (char *) MM_MTX_STR;
+        types[0] = ( char* ) MM_MTX_STR;
     }
 
 //    else
 //        error=1;
 
     /* check for CRD or ARR matrix */
-    if( mm_is_sparse( matcode ) )
+    if ( mm_is_sparse( matcode ) )
     {
-        types[1] = (char *) MM_SPARSE_STR;
+        types[1] = ( char* ) MM_SPARSE_STR;
     }
-    else if( mm_is_dense( matcode ) )
+    else if ( mm_is_dense( matcode ) )
     {
-        types[1] = (char *) MM_DENSE_STR;
+        types[1] = ( char* ) MM_DENSE_STR;
     }
     else
     {
@@ -637,21 +642,21 @@ char* mm_typecode_to_str( MM_typecode matcode )
     }
 
     /* check for element data type */
-    if( mm_is_real( matcode ) )
+    if ( mm_is_real( matcode ) )
     {
-        types[2] = (char *) MM_REAL_STR;
+        types[2] = ( char* ) MM_REAL_STR;
     }
-    else if( mm_is_complex( matcode ) )
+    else if ( mm_is_complex( matcode ) )
     {
-        types[2] = (char *) MM_COMPLEX_STR;
+        types[2] = ( char* ) MM_COMPLEX_STR;
     }
-    else if( mm_is_pattern( matcode ) )
+    else if ( mm_is_pattern( matcode ) )
     {
-        types[2] = (char *) MM_PATTERN_STR;
+        types[2] = ( char* ) MM_PATTERN_STR;
     }
-    else if( mm_is_integer( matcode ) )
+    else if ( mm_is_integer( matcode ) )
     {
-        types[2] = (char *) MM_INT_STR;
+        types[2] = ( char* ) MM_INT_STR;
     }
     else
     {
@@ -659,21 +664,21 @@ char* mm_typecode_to_str( MM_typecode matcode )
     }
 
     /* check for symmetry type */
-    if( mm_is_general( matcode ) )
+    if ( mm_is_general( matcode ) )
     {
-        types[3] = (char *) MM_GENERAL_STR;
+        types[3] = ( char* ) MM_GENERAL_STR;
     }
-    else if( mm_is_symmetric( matcode ) )
+    else if ( mm_is_symmetric( matcode ) )
     {
-        types[3] = (char *) MM_SYMM_STR;
+        types[3] = ( char* ) MM_SYMM_STR;
     }
-    else if( mm_is_hermitian( matcode ) )
+    else if ( mm_is_hermitian( matcode ) )
     {
-        types[3] = (char *) MM_HERM_STR;
+        types[3] = ( char* ) MM_HERM_STR;
     }
-    else if( mm_is_skew( matcode ) )
+    else if ( mm_is_skew( matcode ) )
     {
-        types[3] = (char *) MM_SKEW_STR;
+        types[3] = ( char* ) MM_SKEW_STR;
     }
     else
     {
@@ -686,30 +691,30 @@ char* mm_typecode_to_str( MM_typecode matcode )
 
 char* getErrorString( int error )
 {
-    switch( error )
+    switch ( error )
     {
         case MM_COULD_NOT_READ_FILE:
-            return (char *) "MM_COULD_NOT_READ_FILE";
+            return ( char* ) "MM_COULD_NOT_READ_FILE";
 
         case MM_PREMATURE_EOF:
-            return (char *) "MM_PREMATURE_EOF";
+            return ( char* ) "MM_PREMATURE_EOF";
 
         case MM_NOT_MTX:
-            return (char *) "MM_NOT_MTX";
+            return ( char* ) "MM_NOT_MTX";
 
         case MM_NO_HEADER:
-            return (char *) "MM_NO_HEADER";
+            return ( char* ) "MM_NO_HEADER";
 
         case MM_UNSUPPORTED_TYPE:
-            return (char *) "MM_UNSUPPORTED_TYPE";
+            return ( char* ) "MM_UNSUPPORTED_TYPE";
 
         case MM_LINE_TOO_LONG:
-            return (char *) "MM_LINE_TOO_LONG";
+            return ( char* ) "MM_LINE_TOO_LONG";
 
         case MM_COULD_NOT_WRITE_FILE:
-            return (char *) "MM_COULD_NOT_WRITE_FILE";
+            return ( char* ) "MM_COULD_NOT_WRITE_FILE";
 
         default:
-            return (char *) "unspecified failure";
+            return ( char* ) "unspecified failure";
     }
 }

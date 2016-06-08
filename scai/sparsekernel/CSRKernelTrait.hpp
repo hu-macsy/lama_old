@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Struct with traits for all CSR utilities provided as kernels.
@@ -61,14 +66,17 @@ struct CSRKernelTrait
          *
          *  Note: This routine does not force the diagonal property, only if each diagonal element is already available
          */
-        typedef void (*FuncType)(
+        typedef void ( *FuncType )(
             IndexType csrJA[],
             ValueType csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
             const bool diagonalFlag );
 
-        static const char* getId() { return "CSR.sortRowElements"; }
+        static const char* getId()
+        {
+            return "CSR.sortRowElements";
+        }
     };
 
     /** Structure with type definitions for solver routines */
@@ -81,7 +89,7 @@ struct CSRKernelTrait
          *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
          *
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType solution[],
             const IndexType csrIA[],
             const IndexType csrJA[],
@@ -91,7 +99,10 @@ struct CSRKernelTrait
             const ValueType omega,
             const IndexType numRows );
 
-        static const char* getId() { return "CSR.jacobi"; }
+        static const char* getId()
+        {
+            return "CSR.jacobi";
+        }
     };
 
     template <typename ValueType>
@@ -102,7 +113,7 @@ struct CSRKernelTrait
          *  solution -= omega * ( B(halo) * oldSolution) * dinv
          *
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType solution[],
             const IndexType localIA[],
             const ValueType localValues[],
@@ -114,7 +125,10 @@ struct CSRKernelTrait
             const ValueType omega,
             const IndexType numNonEmptyRows );
 
-        static const char* getId() { return "CSR.jacobiHalo"; }
+        static const char* getId()
+        {
+            return "CSR.jacobiHalo";
+        }
     };
 
     template <typename ValueType>
@@ -126,7 +140,7 @@ struct CSRKernelTrait
          *
          *  @since 1.1.0
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType solution[],
             const ValueType localDiagValues[],
             const IndexType haloIA[],
@@ -137,7 +151,10 @@ struct CSRKernelTrait
             const ValueType omega,
             const IndexType numNonEmptyRows );
 
-        static const char* getId() { return "CSR.jacobiHaloWithDiag"; }
+        static const char* getId()
+        {
+            return "CSR.jacobiHaloWithDiag";
+        }
     };
 
     /** Structure with type definitions for offset routines. */
@@ -161,7 +178,10 @@ struct CSRKernelTrait
 
         typedef IndexType ( *FuncType ) ( IndexType array[], const IndexType n );
 
-        static const char* getId() { return "CSR.sizes2offsets"; }
+        static const char* getId()
+        {
+            return "CSR.sizes2offsets";
+        }
     };
 
     struct offsets2sizes
@@ -180,7 +200,10 @@ struct CSRKernelTrait
          */
         typedef void ( *FuncType ) ( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
-        static const char* getId() { return "CSR.offsets2sizes"; }
+        static const char* getId()
+        {
+            return "CSR.offsets2sizes";
+        }
     };
 
     struct validOffsets
@@ -197,7 +220,10 @@ struct CSRKernelTrait
 
         typedef bool ( *FuncType ) ( const IndexType array[], const IndexType n, const IndexType total );
 
-        static const char* getId() { return "CSR.validOffsets"; }
+        static const char* getId()
+        {
+            return "CSR.validOffsets";
+        }
     };
 
     struct matrixAddSizes
@@ -215,17 +241,20 @@ struct CSRKernelTrait
          *        otherwise the row sizes/offsets will not match
          */
 
-        typedef IndexType ( *FuncType ) ( 
-            IndexType cIa[], 
+        typedef IndexType ( *FuncType ) (
+            IndexType cIa[],
             const IndexType numRows,
-            const IndexType numColumns, 
+            const IndexType numColumns,
             bool diagonalProperty,
-            const IndexType aIA[], 
+            const IndexType aIA[],
             const IndexType aJA[],
-            const IndexType bIA[], 
+            const IndexType bIA[],
             const IndexType bJA[] );
 
-        static const char* getId() { return "CSR.matrixAddSizes"; }
+        static const char* getId()
+        {
+            return "CSR.matrixAddSizes";
+        }
     };
 
     struct matrixMultiplySizes
@@ -241,18 +270,21 @@ struct CSRKernelTrait
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          */
 
-        typedef IndexType ( *FuncType ) ( 
+        typedef IndexType ( *FuncType ) (
             IndexType cSizes[],
             const IndexType m,
             const IndexType n,
             const IndexType k,
             bool diagonalProperty,
-            const IndexType aIA[], 
+            const IndexType aIA[],
             const IndexType aJA[],
-            const IndexType bIA[], 
+            const IndexType bIA[],
             const IndexType bJA[] );
 
-        static const char* getId() { return "CSR.matrixMultiplySizes"; }
+        static const char* getId()
+        {
+            return "CSR.matrixMultiplySizes";
+        }
     };
 
     struct matrixMultiplyJA
@@ -268,18 +300,21 @@ struct CSRKernelTrait
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          */
 
-        typedef void ( *FuncType ) ( 
-            IndexType cJA[], 
+        typedef void ( *FuncType ) (
+            IndexType cJA[],
             const IndexType cIA[],
-            const IndexType numRows, 
+            const IndexType numRows,
             const IndexType numColumns,
             bool diagonalProperty,
-            const IndexType aIA[], 
+            const IndexType aIA[],
             const IndexType aJA[],
-            const IndexType bIA[], 
+            const IndexType bIA[],
             const IndexType bJA[] );
 
-        static const char* getId() { return "CSR.matrixMultiplyJA"; }
+        static const char* getId()
+        {
+            return "CSR.matrixMultiplyJA";
+        }
     };
 
     struct hasDiagonalProperty
@@ -293,12 +328,15 @@ struct CSRKernelTrait
          *
          *  The diagonal property is given if the first column index in the row is same as the row index.
          */
-        typedef bool ( *FuncType ) ( 
+        typedef bool ( *FuncType ) (
             const IndexType numDiagonals,
             const IndexType csrIA[],
             const IndexType csrJA[] );
 
-        static const char* getId() { return "CSR.hasDiagonalProperty"; }
+        static const char* getId()
+        {
+            return "CSR.hasDiagonalProperty";
+        }
     };
 
     /** Define structure that contains type definitions for the function pointers.
@@ -321,15 +359,18 @@ struct CSRKernelTrait
          */
 
         typedef void( *FuncType ) ( IndexType cscIA[],
-                        IndexType cscJA[],
-                        ValueType cscValues[],
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const ValueType csrValues[],
-                        IndexType numRows, IndexType numColumns,
-                        IndexType numValues );
+                                    IndexType cscJA[],
+                                    ValueType cscValues[],
+                                    const IndexType csrIA[],
+                                    const IndexType csrJA[],
+                                    const ValueType csrValues[],
+                                    IndexType numRows, IndexType numColumns,
+                                    IndexType numValues );
 
-        static const char* getId() { return "CSR.convertCSR2CSC"; }
+        static const char* getId()
+        {
+            return "CSR.convertCSR2CSC";
+        }
     };
 
     /** Define structure for multiplication routines.  */
@@ -350,13 +391,16 @@ struct CSRKernelTrait
          *  This routine supports different precision for matrix values and scale values.
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType1 csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
             const ValueType2 values[] );
 
-        static const char* getId() { return "CSR.scaleRows"; }
+        static const char* getId()
+        {
+            return "CSR.scaleRows";
+        }
     };
 
     /** Structure with type definitions for reduction routines. */
@@ -373,17 +417,20 @@ struct CSRKernelTrait
          *  @returns maximal value of absolute difference between two matrix elements
          */
 
-        typedef ValueType ( *FuncType ) ( 
-            IndexType numRows, 
+        typedef ValueType ( *FuncType ) (
+            IndexType numRows,
             bool sortedRows,
-            const IndexType csrIA1[], 
-            const IndexType csrJA1[], 
+            const IndexType csrIA1[],
+            const IndexType csrJA1[],
             const ValueType csrValues1[],
-            const IndexType csrIA2[], 
-            const IndexType csrJA2[], 
+            const IndexType csrIA2[],
+            const IndexType csrJA2[],
             const ValueType csrValues2[] );
 
-        static const char* getId() { return "CSR.absMaxDiffVal"; }
+        static const char* getId()
+        {
+            return "CSR.absMaxDiffVal";
+        }
     };
 
     /** Define structure for multiplication routines.
@@ -411,24 +458,27 @@ struct CSRKernelTrait
          */
 
         typedef void ( *FuncType ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType nnz,
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const ValueType csrValues[] );
+                                     const ValueType alpha,
+                                     const ValueType x[],
+                                     const ValueType beta,
+                                     const ValueType y[],
+                                     const IndexType numRows,
+                                     const IndexType numColumns,
+                                     const IndexType nnz,
+                                     const IndexType csrIA[],
+                                     const IndexType csrJA[],
+                                     const ValueType csrValues[] );
 
-        static const char* getId() { return "CSR.normalGEMV"; }
+        static const char* getId()
+        {
+            return "CSR.normalGEMV";
+        }
     };
 
     template<typename ValueType>
     struct normalGEVM
     {
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -440,7 +490,10 @@ struct CSRKernelTrait
             const IndexType csrJA[],
             const ValueType csrValues[] );
 
-        static const char* getId() { return "CSR.normalGEVM"; }
+        static const char* getId()
+        {
+            return "CSR.normalGEVM";
+        }
     };
 
     template<typename ValueType>
@@ -459,7 +512,7 @@ struct CSRKernelTrait
          *        to run over the full result vector
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -469,13 +522,16 @@ struct CSRKernelTrait
             const IndexType csrJA[],
             const ValueType csrValues[] );
 
-        static const char* getId() { return "CSR.sparseGEMV"; }
+        static const char* getId()
+        {
+            return "CSR.sparseGEMV";
+        }
     };
 
     template<typename ValueType>
     struct sparseGEVM
     {
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -486,7 +542,10 @@ struct CSRKernelTrait
             const IndexType csrJA[],
             const ValueType csrValues[] );
 
-        static const char* getId() { return "CSR.sparseGEMV"; }
+        static const char* getId()
+        {
+            return "CSR.sparseGEMV";
+        }
     };
 
     template<typename ValueType>
@@ -504,7 +563,7 @@ struct CSRKernelTrait
          *   @param[in]  csrVaues is value array of CSR matrix
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -517,7 +576,10 @@ struct CSRKernelTrait
             const IndexType csrJA[],
             const ValueType csrValues[] );
 
-        static const char* getId() { return "CSR.gemm"; }
+        static const char* getId()
+        {
+            return "CSR.gemm";
+        }
     };
 
     template<typename ValueType>
@@ -539,7 +601,7 @@ struct CSRKernelTrait
          *  before.
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             IndexType cJA[],
             ValueType cValues[],
             const IndexType cIA[],
@@ -555,7 +617,10 @@ struct CSRKernelTrait
             const IndexType bJA[],
             const ValueType bValues[] );
 
-        static const char* getId() { return "CSR.matrixAdd"; }
+        static const char* getId()
+        {
+            return "CSR.matrixAdd";
+        }
     };
 
     template<typename ValueType>
@@ -577,7 +642,7 @@ struct CSRKernelTrait
          *  an available entry.
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             const IndexType cIa[],
             IndexType cJA[],
             ValueType cValues[],
@@ -593,13 +658,16 @@ struct CSRKernelTrait
             const IndexType bJA[],
             const ValueType bValues[] );
 
-        static const char* getId() { return "CSR.matrixMultiply"; }
+        static const char* getId()
+        {
+            return "CSR.matrixMultiply";
+        }
     };
 
     template<typename ValueType>
     struct countNonZeros
     {
-        /** Count non zero entries in CSR storage after matrix operation like add, mult 
+        /** Count non zero entries in CSR storage after matrix operation like add, mult
          *
          * @param[out] sizes are the row sizes for the compressed data
          * @param[in] ia, ja, values, numRows are the data of the current CSR storage
@@ -615,7 +683,10 @@ struct CSRKernelTrait
             const ValueType eps,
             const bool diagonalFlag );
 
-        static const char* getId() { return "CSR.countNonZeros"; }
+        static const char* getId()
+        {
+            return "CSR.countNonZeros";
+        }
     };
 
     template<typename ValueType>
@@ -640,7 +711,10 @@ struct CSRKernelTrait
             const ValueType eps,
             const bool diagonalFlag );
 
-        static const char* getId() { return "CSR.compress"; }
+        static const char* getId()
+        {
+            return "CSR.compress";
+        }
     };
 };
 

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Operators to form symbolic expressions Scalar * Matrix * Vector + Scalar * Vector
@@ -97,14 +102,12 @@ inline Expression_SVM operator*( const Scalar& scalar, const Expression_VM& exp 
 inline Expression_SMV operator*( const Scalar& scalar, const Expression_SMV& exp )
 {
     const Expression_MV& mv = exp.getArg2();
-
     return Expression_SMV( scalar * exp.getArg1(), mv );
 }
 
 inline Expression_SVM operator*( const Scalar& scalar, const Expression_SVM& exp )
 {
     const Expression_VM& vm = exp.getArg2();
-
     return Expression_SVM( scalar * exp.getArg1(), vm );
 }
 
@@ -203,7 +206,6 @@ inline Expression_SVM_SV operator-( const Expression_SVM& exp, const Vector& vec
 inline Expression_SMV_SV operator-( const Vector& vector, const Expression_SMV& exp )
 {
     Expression_SMV minusExp( -exp.getArg1(), exp.getArg2() );
-
     return Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1.0 ), vector ) );
 }
 
@@ -218,7 +220,6 @@ inline Expression_SMV_SV operator-( const Vector& vector, const Expression_SMV& 
 inline Expression_SVM_SV operator-( const Vector& vector, const Expression_SVM& exp )
 {
     Expression_SVM minusExp( -exp.getArg1(), exp.getArg2() );
-
     return Expression_SVM_SV( minusExp, Expression_SV( Scalar( 1.0 ), vector ) );
 }
 
@@ -289,7 +290,6 @@ inline Expression_SVM_SV operator+( const Expression_SVM& exp, const Vector& vec
 inline Expression_SMV_SV operator-( const Expression_SMV& exp1, const Expression_SV& exp2 )
 {
     Expression_SV minusExp2( -exp2.getArg1(), exp2.getArg2() );
-
     return Expression_SMV_SV( exp1, minusExp2 );
 }
 
@@ -304,7 +304,6 @@ inline Expression_SMV_SV operator-( const Expression_SMV& exp1, const Expression
 inline Expression_SVM_SV operator-( const Expression_SVM& exp1, const Expression_SV& exp2 )
 {
     Expression_SV minusExp2( -exp2.getArg1(), exp2.getArg2() );
-
     return Expression_SVM_SV( exp1, minusExp2 );
 }
 

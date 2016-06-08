@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Extensive test program for ThreadPool
@@ -101,7 +106,6 @@ BOOST_AUTO_TEST_CASE( runTest )
         for ( int j = 0; j < thread_configs; ++j )
         {
             std::vector<int> x ( ntasks );
-
             {
                 ThreadPool pool( thread_sizes[j] );
 
@@ -164,22 +168,18 @@ BOOST_AUTO_TEST_CASE( waitTest )
 BOOST_AUTO_TEST_CASE( singleTest )
 {
     SCAI_LOG_THREAD( "main:singleTest" )
-
     SCAI_LOG_INFO( logger, "singleTest" );
     // Extensive test of a thread pool with one thread
     // Should verify that master never misses a notify at wait
     ThreadPool pool( 1 );
     int rnd = 15;
-
     const int NTIMES = 100;
 
     for ( int i = 0; i < NTIMES; ++i )
     {
         int resultThread;
         int resultMaster;
-
         shared_ptr<ThreadPoolTask> task = pool.schedule( bind( &work, i, ref( resultThread ) ) );
-
         // Master thread does something and then waits
         rnd = ( rnd + 19 ) % 17;
         work( i + rnd, ref( resultMaster ) );

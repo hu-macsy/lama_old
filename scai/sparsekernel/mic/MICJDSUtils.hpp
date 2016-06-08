@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of JDS utilities with MIC
@@ -53,7 +58,7 @@ public:
 
     /** This method scales the matrix using an value vector */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void scaleValue(
         const IndexType numRows,
         const IndexType perm[],
@@ -64,7 +69,7 @@ public:
 
     /** This method sets row as dens vector of the i'th row of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void getRow(
         OtherValueType row[],
         const IndexType i,
@@ -115,7 +120,7 @@ public:
 
     /** Conversion of JDS to CSR as specified in JDSKernelTrait::getCSRValues  */
 
-    template<typename JDSValueType,typename CSRValueType>
+    template<typename JDSValueType, typename CSRValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -129,7 +134,7 @@ public:
 
     /** Conversion of CSR to JDS as specified in JDSKernelTrait::setCSRValues. */
 
-    template<typename JDSValueType,typename CSRValueType>
+    template<typename JDSValueType, typename CSRValueType>
     static void setCSRValues(
         IndexType jdsJA[],
         JDSValueType jdsValues[],

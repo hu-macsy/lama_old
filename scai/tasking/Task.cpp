@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of the class Task for asynchronous function execution.
@@ -53,7 +58,6 @@ common::shared_ptr<ThreadPool> Task::theThreadPool;
 ThreadPool& Task::getThreadPool()
 {
     int poolSize = 1;
-
     common::Settings::getEnvironment( poolSize, "SCAI_THREADPOOL_SIZE" );
 
     if ( !theThreadPool )
@@ -74,9 +78,7 @@ Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 
 {
     SCAI_LOG_DEBUG( logger, "Creating Task" )
-
     mTask = getThreadPool().schedule( taskFunction, numOmpThreads );
-
     SCAI_LOG_DEBUG( logger, "Task created" )
 }
 
@@ -85,7 +87,6 @@ Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 Task::~Task()
 {
     SCAI_LOG_INFO( logger, "~Task" )
-
     synchronize();
 }
 
@@ -99,9 +100,7 @@ void Task::synchronize()
     }
 
     SCAI_LOG_DEBUG( logger, "Waiting for task = " << mTask->mTaskId << ", state = " << mTask->mState )
-
     getThreadPool().wait( mTask );
-
     SCAI_LOG_DEBUG( logger, "Task = " << mTask->mTaskId << " finished" << ", exception = " << mTask->mException )
 
     if ( mTask->mException )

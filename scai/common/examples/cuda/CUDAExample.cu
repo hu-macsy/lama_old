@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./examples/cuda/CUDAExample.cu
@@ -43,18 +48,14 @@
 float sum( const float array[], const int n )
 {
     thrust::device_ptr<float> data( const_cast<float*>( array ) );
-
     float zero = static_cast<float>( 0 );
-
     float result = thrust::reduce( data, data + n, zero, thrust::plus<float>() );
-
     return result;
 }
 
 void init( const float array[], const int n, const float value )
 {
     thrust::device_ptr<float> data( const_cast<float*>( array ) );
-
     thrust::fill( data, data + n, value );
 }
 
@@ -66,44 +67,24 @@ using namespace common;
 int main( int argc, const char** argv )
 {
     // at least --SCAI_DEVICE=id may be specified
-
     Settings::parseArgs( argc, argv );
-
     int nr = 0;   // take this as default
-
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
-
     CUDACtx device( nr );
-
     std::cout << "CUDA device available." << std::endl;
-
     CUDAAccess access( device );
-
     std::cout << "CUDA device accessed." << std::endl;
-
     // allocate memory
-
     const int N = 119;
-
     CUdeviceptr pointer = 0;
-
     size_t size = sizeof( float ) * N;
-
     SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
-
     std::cout << "CUDA memory allocated." << std::endl;
-
     float* fpointer = reinterpret_cast<float*>( pointer );
-
     init( fpointer, N, 3.0 );
-
     std::cout << "CUDA memory initialzed." << std::endl;
-
     float s = sum( fpointer, N );
-
     std::cout << "Computed sum = " << s << ", should be " << N * 3.0 << std::endl;
-
     // free memory
-
     SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
 }

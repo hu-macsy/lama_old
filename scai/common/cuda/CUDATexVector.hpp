@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Routines for indexed read access of a vector X
@@ -43,15 +48,15 @@
  *
  *************************************************************************************/
 
-static texture<int4,1> texVectorZXref;
+static texture<int4, 1> texVectorZXref;
 
-static texture<float2,1> texVectorCXref;
+static texture<float2, 1> texVectorCXref;
 
-static texture<float,1> texVectorSXref;
+static texture<float, 1> texVectorSXref;
 
-static texture<int2,1> texVectorDXref;
+static texture<int2, 1> texVectorDXref;
 
-static texture<int,1> texVectorIref;
+static texture<int, 1> texVectorIref;
 
 __inline__ static void vectorBindTexture( const float* vector )
 {
@@ -75,7 +80,7 @@ __inline__ static void vectorBindTexture( const ComplexDouble* vector )
     SCAI_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorZXref, vector ), "bind ComplexDouble vector x to texture" )
 }
 
-#endif 
+#endif
 
 __inline__ static void vectorBindTexture( const int* vector )
 {
@@ -147,7 +152,7 @@ __inline__ __device__
 ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const int i )
 {
     float2 v = tex1Dfetch( texVectorCXref, i );
-    return ComplexFloat(v.x, v.y);
+    return ComplexFloat( v.x, v.y );
 }
 
 template<>
@@ -155,7 +160,7 @@ __inline__ __device__
 ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, const int i )
 {
     int4 u = tex1Dfetch( texVectorZXref, i );
-    return ComplexDouble( __hiloint2double( u.y, u.x ), __hiloint2double( u.w, u.z));
+    return ComplexDouble( __hiloint2double( u.y, u.x ), __hiloint2double( u.w, u.z ) );
 }
 
 #endif

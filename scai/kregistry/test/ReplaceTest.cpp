@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./kregistry/test/ReplaceTest.cpp
@@ -61,21 +66,15 @@ struct UnaryOpTrait
 BOOST_AUTO_TEST_CASE( ReplaceTest )
 {
     // register unary operator for double
-
     KernelRegistry::set<UnaryOpTrait<double> >( add1<double>, context::Host, KernelRegistry::KERNEL_ADD );
     KernelRegistry::set<UnaryOpTrait<double> >( minus1<double>, context::Host, KernelRegistry::KERNEL_ADD );  // does not overwrite add1
-
     // register unary operator for float
-
     KernelRegistry::set<UnaryOpTrait<float> >( add1<float>, context::Host, KernelRegistry::KERNEL_ADD );
     KernelRegistry::set<UnaryOpTrait<float> >( minus1<float>, context::Host, KernelRegistry::KERNEL_REPLACE );  // overrides add1
-
     KernelTraitContextFunction<UnaryOpTrait<float> > opFloat;
     KernelTraitContextFunction<UnaryOpTrait<double> > opDouble;
-
     double xd = opDouble[ context::Host ]( 1.0 );
     float  xf = opFloat [ context::Host ]( 1.0f );
-
     BOOST_CHECK_EQUAL( 2.0, xd );
     BOOST_CHECK_EQUAL( 0.0, xf );
 }

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ResidualStagnation.hpp
@@ -55,7 +60,7 @@ ResidualStagnation::ResidualStagnation( lama::NormPtr norm, IndexType lookback, 
 {
 }
 
-ResidualStagnation::ResidualStagnation( const ResidualStagnation &other )
+ResidualStagnation::ResidualStagnation( const ResidualStagnation& other )
     : Criterion(), mNorm( other.mNorm ), mLookback( other.mLookback ), mLastResidualNorms(
           other.mLastResidualNorms ), mNextEntry( other.mNextEntry ), mEntriesReady(
           other.mEntriesReady ), mPrecision( other.mPrecision )
@@ -74,19 +79,17 @@ Criterion* ResidualStagnation::copy() const
 bool ResidualStagnation::isSatisfied( const IterativeSolver& solver )
 {
     mLastResidualNorms[mNextEntry] = ( *mNorm )( solver.getResidual() );
-
     mNextEntry = ( mNextEntry + 1 ) % mLookback;
 
-    if( mNextEntry == 0 )
+    if ( mNextEntry == 0 )
     {
         mEntriesReady = true;
     }
 
-    if( mEntriesReady )
+    if ( mEntriesReady )
     {
         lama::Scalar min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
         lama::Scalar max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
-
         min = std::max( std::numeric_limits<lama::Scalar>::min(), min );
         //std::cout<< " max ="<<max<<"       min = "<<min<<"      max/min = "<<max/min<<"1+p = "<<(1.0+mPrecision)<<std::endl;
         mEntriesReady = false;

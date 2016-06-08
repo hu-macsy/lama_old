@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./kregistry/test/TraitTest.cpp
@@ -54,23 +59,16 @@ BOOST_AUTO_TEST_CASE( TraitTest )
 {
     // Same as simple test but uses a Trait for registration
     // The trait avoids misspelling of the routine name and the signature
-
     KernelRegistry::set<TraitDummyRoutine>( dummyRoutine, context::CUDA, KernelRegistry::KERNEL_ADD );
-
     KernelTraitContextFunction<TraitDummyRoutine> f;
-
     int x = f[ context::CUDA ]();  // just call it
-
     BOOST_CHECK_EQUAL( 15, x );
-
     // throw exception if called for MIC, not registered
-
     BOOST_CHECK_THROW(
     {
         x = f[ context::MIC ]();
 
     }, KernelRegistryException );
-
     // misspelling of name or signature is no more possible here, so no further test for failure
 }
 

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./hmemo/test/MemoryTest.cpp
@@ -49,29 +54,17 @@ BOOST_AUTO_TEST_CASE( DeviceMemoryTest )
 {
     ContextPtr ctx = Context::getContextPtr();  // actual test context
     MemoryPtr  mem = ctx->getMemoryPtr();
-
     // make sure that it is not a NULL memory
-
     BOOST_REQUIRE( mem.get() != NULL );
-
     SCAI_LOG_INFO( logger, "Test of device memory " << *mem )
-
     // important: memory of context can be used with context
-
     BOOST_CHECK( ctx->canUseMemory( *mem ) );
-
     size_t N = 100;
-
-    void *data = mem->allocate( N );
-
+    void* data = mem->allocate( N );
     BOOST_ASSERT( data != NULL );
-
     mem->free( data, N );
-
     // Make sure that too much memory allocation throws an exception
-
     size_t MAX_N = std::numeric_limits<size_t>::max();
-
     BOOST_CHECK_THROW(
     {
         data = mem->allocate( MAX_N );
@@ -85,24 +78,15 @@ BOOST_AUTO_TEST_CASE( HostMemoryTest )
 {
     ContextPtr ctx = Context::getContextPtr();  // actual test context
     MemoryPtr  mem = ctx->getHostMemoryPtr();
-
     // make sure that it is not a NULL memory
-
     BOOST_REQUIRE( mem.get() != NULL );
-
     SCAI_LOG_INFO( logger, "Test of host memory " << *mem << " for " << *ctx )
-
     // important: host memory of context can be used on host
-
     ContextPtr host = Context::getHostPtr();  // host context
     BOOST_CHECK( host->canUseMemory( *mem ) );
-
     size_t N = 100;
-
-    void *data = mem->allocate( N );
-
+    void* data = mem->allocate( N );
     BOOST_ASSERT( data != NULL );
-
     mem->free( data, N );
 }
 
@@ -111,29 +95,19 @@ BOOST_AUTO_TEST_CASE( HostMemoryTest )
 BOOST_AUTO_TEST_CASE( CopyTest )
 {
     ContextPtr ctx  = Context::getContextPtr();  // actual test context
-
     MemoryPtr  cmem = ctx->getMemoryPtr();
     MemoryPtr  hmem = ctx->getHostMemoryPtr();   // can be usual host or pinned memory
-
     SCAI_LOG_INFO( logger, "CopyTest memory " << *cmem << " to/from " << *hmem )
-
     // each memory should be able to copy to and copy from Host
-
     BOOST_REQUIRE( cmem->canCopyTo( *hmem ) );
     BOOST_REQUIRE( cmem->canCopyFrom( *hmem ) );
-
     const size_t N = 10;
-
-    char *cdata = reinterpret_cast<char*>( cmem->allocate( N ) );
-    char *hdata = reinterpret_cast<char*>( hmem->allocate( N ) );
-
+    char* cdata = reinterpret_cast<char*>( cmem->allocate( N ) );
+    char* hdata = reinterpret_cast<char*>( hmem->allocate( N ) );
     // Init host memory with 0
-
     const char VAL = 13;  // should not be 0
-
     memset( hdata, VAL, N );
     cmem->memcpyFrom( cdata, *hmem, hdata, N );
-
     memset( hdata, 0, N );
     cmem->memcpyTo( *hmem, hdata, cdata, N );
 

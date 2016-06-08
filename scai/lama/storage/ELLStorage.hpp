@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a structure for a (non-distributed) ELL sparse matrix.
@@ -64,7 +69,7 @@ namespace lama
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT ELLStorage:
-    public CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>,
+    public CRTPMatrixStorage<ELLStorage<ValueType>, ValueType>,
     public _MatrixStorage::Register<ELLStorage<ValueType> >    // register at factory
 {
 public:
@@ -87,7 +92,7 @@ public:
      * @param[in] numColumns    the number of columns of the matrix
      * @param[in] context       the context where storage data will be first touched
      */
-    ELLStorage( const IndexType numRows, const IndexType numColumns, 
+    ELLStorage( const IndexType numRows, const IndexType numColumns,
                 const hmemo::ContextPtr context = hmemo::Context::getHostPtr() );
 
     /** Constructor for ELL storage by corresponding arrays.

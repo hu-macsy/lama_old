@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of derived exception class for unsupported values.
@@ -40,7 +45,7 @@ namespace common
 {
 
 /** Derived exception class that is used to throw an exception in all cases
- *  where an illegal or unsupported value is used. 
+ *  where an illegal or unsupported value is used.
  */
 
 class COMMON_DLL_IMPORTEXPORT NotSupportedValueTypeException : public Exception
@@ -49,14 +54,14 @@ public:
     /**
      * @brief The default constructor creates an NotSupportedValueTypeException with no message.
      */
-	NotSupportedValueTypeException( );
+    NotSupportedValueTypeException( );
 
     /**
      * @brief This constructor creates an NotSupportedValueTypeException with the passed message.
      *
      * @param[in] message  the message to assign to this.
      */
-	NotSupportedValueTypeException( const std::string& message );
+    NotSupportedValueTypeException( const std::string& message );
 
     /**
      * @brief The destructor destroys this NotSupportedValueTypeException.

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief MICBLAS1.cpp
@@ -88,15 +93,11 @@ void MICBLAS1::scal(
     }
 
     void* xPtr = x;
-
     int device = MICContext::getCurrentDevice();
-
     const ValueType* alphaPtr = &alpha;
-
 #pragma offload target( MIC : device ) in( xPtr, n, alphaPtr[0:1], incX )
     {
         ValueType* x = static_cast<ValueType*>( xPtr );
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; ++i )
@@ -120,7 +121,6 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 
     SCAI_LOG_DEBUG( logger,
                     "asum<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
-
     ValueType asum = static_cast<ValueType>( 0.0 );
 
     if ( n < 1 || incX < 1 )
@@ -129,21 +129,15 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
     }
 
     const void* xPtr = x;
-
     int device = MICContext::getCurrentDevice();
-
     ValueType* asumPtr = &asum;
-
 #pragma offload target( MIC : device ) in( xPtr, n, incX ), out( asumPtr[0:1] )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
-
         *asumPtr = static_cast<ValueType>( 0.0 );
-
         #pragma omp parallel
         {
             ValueType local_asum = static_cast<ValueType>( 0.0 );
-
             #pragma omp for
 
             for ( int i = 0; i < n; ++i )
@@ -155,7 +149,6 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
             *asumPtr += local_asum;
         }
     }
-
     return asum;
 }
 
@@ -173,7 +166,6 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
 
     SCAI_LOG_INFO( logger,
                    "iamax<" << common::TypeTraits<ValueType>::id() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
-
     IndexType maxIndex = 0;
 
     if ( n < 1 || incX < 1 )
@@ -182,22 +174,16 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
     }
 
     const void* xPtr = x;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( MIC : device ) in( xPtr, n, incX ), out( maxIndex )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
-
         maxIndex = 0;
-
         ValueType maxVal = -std::numeric_limits<ValueType>::max();
-
         #pragma omp parallel
         {
             IndexType threadMaxIndex = -1;
             ValueType threadMaxVal = -std::numeric_limits<ValueType>::max();
-
             #pragma omp for
 
             for ( int i = 0; i < n; ++i )
@@ -212,7 +198,6 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
             }
 
             // ordered reduction needed to get smallest index
-
             #pragma omp for ordered
 
             for ( int nt = 0; nt < omp_get_num_threads(); ++nt )
@@ -228,7 +213,6 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
             }
         }
     }
-
     return maxIndex;
 }
 
@@ -259,14 +243,11 @@ void MICBLAS1::swap(
 
     void* xPtr = x;
     void* yPtr = y;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( MIC : device ) in( xPtr, yPtr, incX, incY, n )
     {
         ValueType* x = static_cast<ValueType*>( xPtr );
         ValueType* y = static_cast<ValueType*>( yPtr );
-
         #pragma omp parallel for
 
         for ( int i = 0; i < n; ++i )
@@ -282,7 +263,6 @@ template<typename ValueType>
 ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_LOG_INFO( logger, "nrm2<" << common::TypeTraits<ValueType>::id() << ">( n = " << n << " )" )
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -291,7 +271,6 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
     }
 
     const void* xPtr = x;
-
     ValueType sum = static_cast<ValueType>( 0.0 );
 
     if ( n < 1 || incX < 1 )
@@ -301,13 +280,10 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 
     int device = MICContext::getCurrentDevice();
     ValueType* sumPtr = &sum;
-
 #pragma offload target( mic : device ) in( xPtr, n, incX ), out( sumPtr[0:1] )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
-
         *sumPtr = static_cast<ValueType>( 0.0 );
-
         #pragma omp parallel
         {
             ValueType local_sum = static_cast<ValueType>( 0.0 );
@@ -322,7 +298,6 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
             *sumPtr += local_sum;
         }
     }
-
     return common::Math::sqrt( sum );
 }
 
@@ -340,7 +315,6 @@ void MICBLAS1::copy(
 {
     SCAI_LOG_DEBUG( logger,
                     "copy<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -356,16 +330,12 @@ void MICBLAS1::copy(
     }
 
     const void* xPtr = x;
-
     void* yPtr = y;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ), in( xPtr, yPtr, n, incX, incY )
     {
         const ValueType* x = ( ValueType* ) xPtr;
         ValueType* y = ( ValueType* ) yPtr;
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; ++i )
@@ -389,10 +359,8 @@ void MICBLAS1::axpy(
     const IndexType incY )
 {
     // SCAI_REGION( "MIC.BLAS1.axpy" )
-
     SCAI_LOG_INFO( logger,
                    "axpy<" << common::TypeTraits<ValueType>::id() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -406,18 +374,13 @@ void MICBLAS1::axpy(
     }
 
     const void* xPtr = x;
-
     void* yPtr = y;
-
     int device = MICContext::getCurrentDevice();
-
     const ValueType* alphaPtr = &alpha;
-
 #pragma offload target( mic : device ), in( xPtr, yPtr, n, alphaPtr[0:1], incX, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         ValueType* y = static_cast<ValueType*>( yPtr );
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; ++i )
@@ -440,10 +403,8 @@ ValueType MICBLAS1::dot(
     const IndexType incY )
 {
     // SCAI_REGION( "MIC.BLAS1.dot" )
-
     SCAI_LOG_INFO( logger, "dot<" << common::TypeTraits<ValueType>::id() << ">"
                    << ", n = " << n << ", incX = " << incX << ", incY = " << incY );
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -459,24 +420,18 @@ ValueType MICBLAS1::dot(
     }
 
     int device = MICContext::getCurrentDevice();
-
     const void* xPtr = x;
     const void* yPtr = y;
-
     ValueType* valPtr = &val;
-
 #pragma offload target( MIC : device ), out( valPtr[0:1] ), in( xPtr, yPtr, n, incX, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
-
         *valPtr = static_cast<ValueType>( 0.0 );
-
         #pragma omp parallel
         {
             ValueType local_val = static_cast<ValueType>( 0.0 );
             *valPtr  = static_cast<ValueType>( 0.0 );
-
             #pragma omp for
 
             for ( IndexType i = 0; i < n; ++i )
@@ -488,9 +443,7 @@ ValueType MICBLAS1::dot(
             *valPtr += local_val;
         }
     }
-
     SCAI_LOG_INFO( logger, "dot: result = " << val )
-
     return val;
 }
 
@@ -507,7 +460,6 @@ void MICBLAS1::sum(
 {
     SCAI_LOG_DEBUG( logger,
                     "sum<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -516,21 +468,17 @@ void MICBLAS1::sum(
     }
 
     // SCAI_REGION( "MIC.BLAS1.sum" )
-
     const void* xPtr = x;
     const void* yPtr = y;
     void* zPtr = z;
     const ValueType* alphaPtr = &alpha;
     const ValueType* betaPtr = &beta;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( MIC : device ), in( xPtr, yPtr, zPtr, alphaPtr[0:1], betaPtr[0:1] )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
         ValueType* z = static_cast<ValueType*>( zPtr );
-
         #pragma omp parallel for
 
         for ( int i = 0; i < n; i++ )
@@ -538,7 +486,6 @@ void MICBLAS1::sum(
             z[i] = *alphaPtr * x[i] + *betaPtr * y[i];
         }
     }
-
     return;
 }
 
@@ -550,10 +497,8 @@ template<typename ValueType>
 void MICBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::MIC;
     SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
-
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( MICBLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( MICBLAS1::nrm2, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( MICBLAS1::asum, ctx, flag );

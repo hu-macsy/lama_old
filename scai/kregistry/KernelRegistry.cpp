@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of routines for KernelRegistry
@@ -52,21 +57,15 @@ KernelRegistry* KernelRegistry::mInstance = NULL;
 void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, context::ContextType ctx, VoidFunction fn, bool replace )
 {
     SCAI_LOG_INFO( logger, "register ctx = " << ctx << " with " << key )
-
     KernelRegistry& kreg = getInstance();
-
     KernelMap::iterator it = kreg.theKernelMap.find( key );
 
     if ( it == kreg.theKernelMap.end() )
     {
         SCAI_LOG_DEBUG( logger, "register: no entry yet, will add it" )
-
         _ContextFunction routine;
-
         routine.set( ctx, fn );
-
         kreg.theKernelMap.insert( std::pair<KernelRegistryKey, _ContextFunction>( key, routine ) );
-
         SCAI_LOG_DEBUG( logger, "added" )
     }
     else
@@ -103,16 +102,13 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, cont
 void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, context::ContextType ctx, VoidFunction fn )
 {
     // this is safe at program exit as registry is still alive
-
     SCAI_LOG_INFO( logger, "unregister ctx = " << ctx << " with " << key )
-
     KernelRegistry& kreg = getInstance();
-
     KernelMap::iterator it = kreg.theKernelMap.find( key );
 
     if ( it == kreg.theKernelMap.end() )
     {
-        SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " not found")
+        SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " not found" )
     }
     else
     {
@@ -121,13 +117,11 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
         if ( old_fn == NULL )
         {
             // rather likely to happen for multiple versions of kernel routines
-
             SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " available, but not for " << ctx );
         }
         else if ( old_fn != fn )
         {
             // rather likely to happen if kernel routines have been replaced
-
             SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " and ctx = " << ctx << " available, but does not match" )
         }
         else
@@ -136,7 +130,7 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
             it->second.set( ctx, NULL );
         }
 
-        if( it->second.isEmpty() )
+        if ( it->second.isEmpty() )
         {
             kreg.theKernelMap.erase( it );
             SCAI_LOG_INFO( logger, "erased complete entry, #entries = " << kreg.theKernelMap.size() )
@@ -149,9 +143,7 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, co
 void KernelRegistry::printAll()
 {
     KernelRegistry& kreg = getInstance();
-
     KernelMap::const_iterator it;
-
     std::cout << "KernelRegistry:" << std::endl;
     std::cout << "================" << std::endl;
 

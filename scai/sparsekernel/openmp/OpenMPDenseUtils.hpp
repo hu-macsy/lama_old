@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class defintion for OpenMP routines to be used for DenseKernelTrait.
@@ -79,7 +84,7 @@ public:
 
     /** OpenMP implementation for DenseKernelTrait::getCSRValues */
 
-    template<typename DenseValueType,typename CSRValueType>
+    template<typename DenseValueType, typename CSRValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -92,7 +97,7 @@ public:
 
     /** OpenMP implementation for DenseKernelTrait::copyDenseValues */
 
-    template<typename DenseValueType1,typename DenseValueType2>
+    template<typename DenseValueType1, typename DenseValueType2>
     static void copyDenseValues(
         DenseValueType1 newValues[],
         const IndexType numRows,
@@ -101,7 +106,7 @@ public:
 
     /** OpenMP implementation for DenseKernelTrait::setCSRValues */
 
-    template<typename DenseValueType,typename CSRValueType>
+    template<typename DenseValueType, typename CSRValueType>
     static void setCSRValues(
         DenseValueType denseValues[],
         const IndexType numRows,
@@ -116,13 +121,13 @@ public:
     static void getRow(
         RowValueType rowValues[],
         const DenseValueType denseValues[],
-        const IndexType irow, 
+        const IndexType irow,
         const IndexType numRows,
         const IndexType numColumns );
 
     /** OpenMP implementation for DenseKernelTrait::getDiagonal */
 
-    template<typename DiagonalValueType,typename DenseValueType>
+    template<typename DiagonalValueType, typename DenseValueType>
     static void getDiagonal(
         DiagonalValueType diagonalValues[],
         const IndexType numDiagonalValues,
@@ -132,7 +137,7 @@ public:
 
     /** OpenMP implementation for DenseKernelTrait::setDiagonal */
 
-    template<typename DenseValueType,typename DiagonalValueType>
+    template<typename DenseValueType, typename DiagonalValueType>
     static void setDiagonal(
         DenseValueType denseValues[],
         const IndexType numRows,

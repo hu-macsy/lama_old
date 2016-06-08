@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Benchmark of some CUDA stuff
@@ -41,21 +46,14 @@ using namespace scai::common;
 int main( int argc, const char** argv )
 {
     // at least --SCAI_DEVICE=id may be specified
-
     Settings::parseArgs( argc, argv );
-
     int nr = 0;   // take this as default
-
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
-
     {
         // do not measure overhead for 1st allocation
-
         CUDACtx dev( nr );
     }
-
     double t0 = Walltime::get();
-
     const int N_CONTEXT = 10;
 
     for ( int i = 0; i < N_CONTEXT; ++i )
@@ -64,15 +62,10 @@ int main( int argc, const char** argv )
     }
 
     double t1 = Walltime::get() - t0;
-
     t1 = t1 / N_CONTEXT;
-
     std::cout << "Time for CUDACtx(..) = " << ( t1 * 1000.0 * 1000.0 ) << " µs" << std::endl;
-
     const int N_ACCESS = 10000;
-
     t0 = Walltime::get();
-
     {
         CUDACtx dev( nr );
 
@@ -83,15 +76,10 @@ int main( int argc, const char** argv )
             SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
         }
     }
-
     t1 = Walltime::get() - t0;
-
     t1 = t1 / N_ACCESS;
-
     std::cout << "Time for push/pop context = " << ( t1 * 1000.0 * 1000.0 ) << " µs" << std::endl;
-
     t0 = Walltime::get();
-
     {
         CUDACtx dev( nr );
 
@@ -100,11 +88,7 @@ int main( int argc, const char** argv )
             CUDAAccess tmp( dev );
         }
     }
-
     t1 = Walltime::get() - t0;
-
     t1 = t1 / N_ACCESS;
-
     std::cout << "Time for CUDAAccess(..) = " << ( t1 * 1000.0 * 1000.0 ) << " µs" << std::endl;
-
 }

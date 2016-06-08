@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Extension of a derived matrix storage class with additional routines.
@@ -98,8 +103,8 @@ public:
         const hmemo::_HArray& values )
     {
         mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::setCSRDataImpl(
-                        static_cast<Derived*>( this ), numRows, numColumns,
-                        numValues, ia, ja, values, this->getContextPtr());
+            static_cast<Derived*>( this ), numRows, numColumns,
+            numValues, ia, ja, values, this->getContextPtr() );
     }
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
@@ -107,17 +112,15 @@ public:
     void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
     {
 // The sizes will be available via buildCSR with NULL for ja, values
-
         hmemo::HArray<IndexType>* ja = NULL;
         hmemo::HArray<ValueType>* values = NULL;
-
         static_cast<const Derived*>( this )->buildCSR( ia, ja, values, this->getContextPtr() );
     }
 
     void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
     {
-         mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::buildCSRDataImpl(
-                         static_cast<const Derived*>( this ), csrIA, csrJA, csrValues, this->getContextPtr() );
+        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::buildCSRDataImpl(
+            static_cast<const Derived*>( this ), csrIA, csrJA, csrValues, this->getContextPtr() );
     }
 
     /** Get the i-th row of a storage as LAMA array. */
@@ -174,7 +177,6 @@ public:
     void scaleRows( const hmemo::_HArray& values )
     {
         SCAI_ASSERT_EQUAL_ERROR( this->getNumRows(), values.size() )
-
         mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::scaleRowsImpl( static_cast<Derived*>( this ), values );
     }
 
@@ -183,7 +185,6 @@ public:
     virtual const char* getTypeName() const
     {
 // each derived class provides static method to get the type name.
-
         return Derived::typeName();
     }
 };

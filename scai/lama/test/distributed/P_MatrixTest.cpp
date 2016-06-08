@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Tests for all kind of distributed matrices
@@ -338,25 +343,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     SCAI_LOG_INFO( logger, "new distribution: " << *dist );
     CSRSparseMatrix<double> matrix( tmp, dist, dist );
     IndexType numLocalRows = matrix.getLocalNumRows();
-
     /* get distributed data */
-
     IndexType numLocalValues = matrix.getLocalStorage().getNumValues();
     IndexType numHaloValues = matrix.getHaloStorage().getNumValues();
-
     SCAI_LOG_INFO( logger, *comm << ": local N = " << numLocalRows << ", nnz = "
                    << numLocalValues << " (local) + " << numHaloValues << " (halo)" );
-
     common::scoped_array<IndexType> iaLocal( new IndexType[ numLocalRows + 1 ] );
     common::scoped_array<IndexType> jaLocal( new IndexType[ numLocalValues ] );
     common::scoped_array<double> valuesLocal( new double[ numLocalValues ] );
-
     common::scoped_array<IndexType> iaHalo( new IndexType[ numLocalRows + 1 ] );
     common::scoped_array<IndexType> jaHalo( new IndexType[ numHaloValues ] );
     common::scoped_array<double> valuesHalo( new double[ numHaloValues ] );
-
     const CSRStorage<double>& localSt = matrix.getLocalStorage();
-
     ReadAccess<IndexType> iaLocalRead( localSt.getIA() );
     ReadAccess<IndexType> jaLocalRead( localSt.getJA() );
     ReadAccess<double> valuesLocalRead( localSt.getValues() );
@@ -423,7 +421,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
                            iaLocal.get(), jaLocal.get(), valuesLocal.get(),
                            iaHalo.get(), jaHalo.get(), valuesHalo.get(),
                            globalIndexes, comm );
-
     testSameMatrix( matrix, distMatrix );
 }
 

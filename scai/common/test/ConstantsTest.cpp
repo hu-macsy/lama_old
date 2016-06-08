@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test routines for class Complex
@@ -45,9 +50,7 @@ BOOST_AUTO_TEST_SUITE( ConstantsTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( zeroTest, ValueType, scai_arithmetic_test_types )
 {
     ValueType zero( 0 );
-
     BOOST_CHECK( zero == constants::ZERO );
-
     BOOST_CHECK( constants::ZERO == zero );
 }
 
@@ -56,9 +59,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( zeroTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( oneTest, ValueType, scai_arithmetic_test_types )
 {
     ValueType one( 1 );
-
     BOOST_CHECK( one == constants::ONE );
-
     BOOST_CHECK( constants::ONE == one );
 }
 
@@ -67,11 +68,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( oneTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_arithmetic_test_types )
 {
     ValueType val;
-
     Math::random( val );
-
     BOOST_CHECK( val - val == constants::ZERO );
-
     BOOST_CHECK( constants::ZERO == val - val );
 }
 

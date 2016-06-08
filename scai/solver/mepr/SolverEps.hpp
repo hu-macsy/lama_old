@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Wrapper for templated calls in Solver
@@ -35,13 +40,13 @@
 
 #include <scai/lama/Scalar.hpp>
 
-namespace scai 
+namespace scai
 {
-	
+
 namespace solver
 {
 
-namespace mepr 
+namespace mepr
 {
 
 template<typename TList>
@@ -50,26 +55,26 @@ struct SolverEps;
 template<>
 struct SolverEps<common::mepr::NullType>
 {
-	static lama::Scalar get( const common::scalar::ScalarType& )
-	{
-		return lama::Scalar( 0.0 );
-	}
+    static lama::Scalar get( const common::scalar::ScalarType& )
+    {
+        return lama::Scalar( 0.0 );
+    }
 };
 
 template<typename H, typename T>
 struct SolverEps<common::mepr::TypeList<H, T> >
 {
-	static lama::Scalar get( const common::scalar::ScalarType& type )
-	{
-		if( common::TypeTraits<H>::stype == type )
-		{
-			return lama::Scalar( common::TypeTraits<H>::getEps() );
-		}
-		else
-		{
-			return SolverEps<T>::get( type );
-		}
-	}
+    static lama::Scalar get( const common::scalar::ScalarType& type )
+    {
+        if ( common::TypeTraits<H>::stype == type )
+        {
+            return lama::Scalar( common::TypeTraits<H>::getEps() );
+        }
+        else
+        {
+            return SolverEps<T>::get( type );
+        }
+    }
 };
 
 

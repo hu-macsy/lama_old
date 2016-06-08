@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Storage tests that require the storage type as template param
@@ -45,56 +50,37 @@ void storageSwapTest()
     using namespace hmemo;
     using namespace utilskernel;
     using namespace lama;
-
     typedef typename StorageType::StorageValueType ValueType;
-
     ContextPtr context = Context::getContextPtr();
-
     StorageType csr1;
     StorageType csr2;
-
     setDenseData( csr1 );
-
     IndexType n = csr1.getNumRows();
     IndexType m = csr1.getNumColumns();
-
     LArray<ValueType> x( context );
     LArray<ValueType> y( context );
     LArray<ValueType> z1( context );
     LArray<ValueType> z2( context );
-
     ValueType alpha = 1.3;
     ValueType beta  = -0.5;
-
     HArrayUtils::setRandom( x, m, 1.0f );
     HArrayUtils::setRandom( y, n, 1.0f );
-
     csr1.matrixTimesVector( z1, alpha, x, beta, y );
-
     csr1.swap( csr2 );
-
-    // now check sizes 
-
+    // now check sizes
     BOOST_CHECK_EQUAL( n, csr2.getNumRows() );
     BOOST_CHECK_EQUAL( m, csr2.getNumColumns() );
-
     BOOST_CHECK_EQUAL( 0, csr1.getNumRows() );
     BOOST_CHECK_EQUAL( 0, csr1.getNumColumns() );
-
     // now check that the other matrix contains the right values
-
     csr2.matrixTimesVector( z2, alpha, x, beta, y );
-
     typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
-
     AbsType diff = common::Math::real( z1.maxDiffNorm( z2 ) );
-
     // even if storages are the same we can have different rounding errors
-
     BOOST_CHECK( diff < 0.001 );
 }
 
-/** Each storage class has a static method typeName that is tested here. 
+/** Each storage class has a static method typeName that is tested here.
  *
  *  @param[in] subString  this string must be in the typename
  */
@@ -103,13 +89,9 @@ template<typename StorageType>
 void storageTypeNameTest( const char* subString )
 {
     // context does not matter here, so runs for every context
-
     std::string s = StorageType::typeName();
-
     BOOST_CHECK( s.length() > 0 );
-
     // substring must be in typename
-
     BOOST_CHECK( s.find( subString ) != std::string::npos );
 }
 
@@ -117,29 +99,20 @@ template<typename StorageType>
 void copyStorageTest()
 {
     StorageType storage;
-
     typedef typename StorageType::StorageValueType ValueType;
-
     float defaultThreshold = storage.getCompressThreshold();
     float fullThreshold = 1.0;
-
     BOOST_CHECK( fullThreshold != defaultThreshold );
-
     storage.setCompressThreshold( fullThreshold );
-
     setDenseHalo( storage );
-
     const scai::lama::MatrixStorage<ValueType>& matrixStorage = storage;
-
     StorageType copyStorage1( storage );          // default copy constructor
     StorageType copyStorage2( matrixStorage );    // own copy constructor
     StorageType copyStorage3;                     // default assignment operator
     copyStorage3 = storage;
     StorageType copyStorage4;                     // own assignment operator
     copyStorage4 = matrixStorage;
-
     // if default constructors are not overwritten compressThreshold is also copied
-
     BOOST_CHECK_EQUAL( copyStorage1.getCompressThreshold(), defaultThreshold );
     BOOST_CHECK_EQUAL( copyStorage2.getCompressThreshold(), defaultThreshold );
     BOOST_CHECK_EQUAL( copyStorage3.getCompressThreshold(), defaultThreshold );

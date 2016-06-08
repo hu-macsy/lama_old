@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of macros for assertions.
@@ -38,17 +43,17 @@ static inline void unused( ValueType const )
     // do nothing
 }
 
-template<typename ValueType1,typename ValueType2>
+template<typename ValueType1, typename ValueType2>
 static inline void unused( const ValueType1&, const ValueType2& )
 {
     // do nothing
 }
 
 #define UNUSED_STRING( ... )                                                \
-if ( false )                                                                \
-{                                                                           \
-    std::cout<< __VA_ARGS__;                                                \
-}
+    if ( false )                                                                \
+    {                                                                           \
+        std::cout<< __VA_ARGS__;                                                \
+    }
 
 /**
  * @brief The macro SCAI_ASSERT checks a condition and throws an exception
@@ -63,18 +68,18 @@ if ( false )                                                                \
  */
 
 #define SCAI_ASSERT( cond, msg )                                               \
-{                                                                              \
-    if (!(cond))                                                               \
-    {                                                                          \
-        std::ostringstream errorStr;                                           \
-        errorStr << "Assertion failed in line " << __LINE__;                   \
-        errorStr << " of file " << __FILE__ << "\n";                           \
-        errorStr << "    Condition: " << #cond << "\n";                        \
-        errorStr << "    Message: " << msg << "\n";                            \
-        scai::common::AssertException::addCallStack( errorStr );               \
-        throw scai::common::AssertException( errorStr.str() );                 \
-    }                                                                          \
-}
+    {                                                                              \
+        if (!(cond))                                                               \
+        {                                                                          \
+            std::ostringstream errorStr;                                           \
+            errorStr << "Assertion failed in line " << __LINE__;                   \
+            errorStr << " of file " << __FILE__ << "\n";                           \
+            errorStr << "    Condition: " << #cond << "\n";                        \
+            errorStr << "    Message: " << msg << "\n";                            \
+            scai::common::AssertException::addCallStack( errorStr );               \
+            throw scai::common::AssertException( errorStr.str() );                 \
+        }                                                                          \
+    }
 
 /**
  * @brief The macro SCAI_ASSERT_OPERATOR is used to create the other assert macros
@@ -92,61 +97,61 @@ if ( false )                                                                \
  */
 
 #define SCAI_ASSERT_OPERATOR( operator, exp1, exp2, msg )                          \
-{                                                                                  \
-    if ( ! ( ( exp1 ) operator ( exp2 ) ) )                                        \
-    {                                                                              \
-        std::ostringstream errorStr;                                               \
-        errorStr << "Assert exp_1 "#operator" exp_2 failed in line " << __LINE__;  \
-        errorStr << " of file " << __FILE__ << "\n";                               \
-        errorStr << "    Message: " << msg << "\n";                                \
-        errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";                  \
-        errorStr << "    exp_2: " << #exp2 " = " << exp2 << "\n";                  \
-        scai::common::AssertException::addCallStack( errorStr );                   \
-        throw scai::common::AssertException( errorStr.str() );                     \
-    }                                                                              \
-}
+    {                                                                                  \
+        if ( ! ( ( exp1 ) operator ( exp2 ) ) )                                        \
+        {                                                                              \
+            std::ostringstream errorStr;                                               \
+            errorStr << "Assert exp_1 "#operator" exp_2 failed in line " << __LINE__;  \
+            errorStr << " of file " << __FILE__ << "\n";                               \
+            errorStr << "    Message: " << msg << "\n";                                \
+            errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";                  \
+            errorStr << "    exp_2: " << #exp2 " = " << exp2 << "\n";                  \
+            scai::common::AssertException::addCallStack( errorStr );                   \
+            throw scai::common::AssertException( errorStr.str() );                     \
+        }                                                                              \
+    }
 
 #define SCAI_ASSERT_EQUAL( exp1, exp2, msg )       \
-	SCAI_ASSERT_OPERATOR( ==, exp1, exp2, msg )
+    SCAI_ASSERT_OPERATOR( ==, exp1, exp2, msg )
 
 #define SCAI_ASSERT_UNEQUAL( exp1, exp2, msg )     \
-	SCAI_ASSERT_OPERATOR( !=, exp1, exp2, msg )
+    SCAI_ASSERT_OPERATOR( !=, exp1, exp2, msg )
 
 #define SCAI_ASSERT_LT( exp1, exp2, msg )          \
-	SCAI_ASSERT_OPERATOR( <, exp1, exp2, msg )
+    SCAI_ASSERT_OPERATOR( <, exp1, exp2, msg )
 
 #define SCAI_ASSERT_LE( exp1, exp2, msg )          \
-	SCAI_ASSERT_OPERATOR( <=, exp1, exp2, msg )
+    SCAI_ASSERT_OPERATOR( <=, exp1, exp2, msg )
 
 #define SCAI_ASSERT_GT( exp1, exp2, msg )          \
-	SCAI_ASSERT_OPERATOR( >, exp1, exp2, msg )
+    SCAI_ASSERT_OPERATOR( >, exp1, exp2, msg )
 
 #define SCAI_ASSERT_GE( exp1, exp2, msg )          \
-	SCAI_ASSERT_OPERATOR( >=, exp1, exp2, msg )
+    SCAI_ASSERT_OPERATOR( >=, exp1, exp2, msg )
 
 /*
  * Check if ASSERT_LEVEL is set, if not print warning and use default ASSERT_LEVEL (ERROR)
  */
 #if !defined( SCAI_ASSERT_LEVEL_OFF ) && !defined( SCAI_ASSERT_LEVEL_DEBUG ) && !defined( SCAI_ASSERT_LEVEL_ERROR )
-	#pragma message( "Please specify SCAI_ASSERT_LEVEL_xxx with xxx = DEBUG, ERROR, or OFF" )
-	#pragma message( "Will use SCAI_ASSERT_LEVEL_ERROR by default." )
+#pragma message( "Please specify SCAI_ASSERT_LEVEL_xxx with xxx = DEBUG, ERROR, or OFF" )
+#pragma message( "Will use SCAI_ASSERT_LEVEL_ERROR by default." )
 
-	#define SCAI_ASSERT_LEVEL_ERROR
+#define SCAI_ASSERT_LEVEL_ERROR
 #endif
 
 #ifndef SCAI_ASSERT_LEVEL_OFF
-	#ifndef SCAI_CHECK_ASSERTS
-		/**
-		 * @brief The macro SCAI_CHECK_ASSERTS is used to control the checking of
-		 *        asserts.
-		 *
-		 * The macro LAMACHECKASSERTS is used to control the checking of asserts.
-		 * LAMACHECKASSERTS will be automatically defined if NDEBUG (for debug
-		 * builds) is not defined.
-		 * If LAMACHECKASSERTS is not defined the assertions will not be checked.
-		 */
-		#define SCAI_CHECK_ASSERTS
-	#endif
+#ifndef SCAI_CHECK_ASSERTS
+/**
+ * @brief The macro SCAI_CHECK_ASSERTS is used to control the checking of
+ *        asserts.
+ *
+ * The macro LAMACHECKASSERTS is used to control the checking of asserts.
+ * LAMACHECKASSERTS will be automatically defined if NDEBUG (for debug
+ * builds) is not defined.
+ * If LAMACHECKASSERTS is not defined the assertions will not be checked.
+ */
+#define SCAI_CHECK_ASSERTS
+#endif
 #endif // NDEBUG
 
 /*
@@ -157,85 +162,85 @@ if ( false )                                                                \
  * SCAI_ASSERT_LEVEL = OFF
  */
 #if defined( SCAI_ASSERT_LEVEL_OFF )
-	#define SCAI_ASSERT_DEBUG( exp, msg ) unused( exp ); UNUSED_STRING( msg );
-	#define SCAI_ASSERT_ERROR( exp, msg ) unused( exp ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_DEBUG( exp, msg ) unused( exp ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_ERROR( exp, msg ) unused( exp ); UNUSED_STRING( msg );
 
-	#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 ) unused( exp1, exp2 );
-	#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 ) unused( exp1, exp2 );
+#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 ) unused( exp1, exp2 );
+#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 ) unused( exp1, exp2 );
 
-	#define SCAI_ASSERT_EQ_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
-	#define SCAI_ASSERT_EQ_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_EQ_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_EQ_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 
-	#define SCAI_ASSERT_NE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
-	#define SCAI_ASSERT_NE_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_NE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_NE_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 
-	#define SCAI_ASSERT_LT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
-	#define SCAI_ASSERT_LT_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_LT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_LT_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 
-	#define SCAI_ASSERT_LE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
-	#define SCAI_ASSERT_LE_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_LE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_LE_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 
-	#define SCAI_ASSERT_GT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
-	#define SCAI_ASSERT_GT_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_GT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_GT_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 
-	#define SCAI_ASSERT_GE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
-	#define SCAI_ASSERT_GE_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_GE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_GE_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 
 /*
  * SCAI_ASSERT_LEVEL = ERROR
  */
 #elif defined( SCAI_ASSERT_LEVEL_ERROR )
 
-	#define SCAI_ASSERT_DEBUG( exp, msg ) unused( exp );
-	#define SCAI_ASSERT_ERROR( exp, msg ) SCAI_ASSERT( exp, msg );
+#define SCAI_ASSERT_DEBUG( exp, msg ) unused( exp );
+#define SCAI_ASSERT_ERROR( exp, msg ) SCAI_ASSERT( exp, msg );
 
-	#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 ) unused( exp1, exp2 );
-	#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 ) SCAI_ASSERT_EQUAL( exp1, exp2, "" );
+#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 ) unused( exp1, exp2 );
+#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 ) SCAI_ASSERT_EQUAL( exp1, exp2, "" );
 
-	#define SCAI_ASSERT_EQ_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
-	#define SCAI_ASSERT_EQ_ERROR( exp1, exp2, msg ) SCAI_ASSERT_EQUAL( exp1, exp2, msg );
+#define SCAI_ASSERT_EQ_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
+#define SCAI_ASSERT_EQ_ERROR( exp1, exp2, msg ) SCAI_ASSERT_EQUAL( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_NE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
-	#define SCAI_ASSERT_NE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
+#define SCAI_ASSERT_NE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
+#define SCAI_ASSERT_NE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_LT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
-	#define SCAI_ASSERT_LT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LT( exp1, exp2, msg );
+#define SCAI_ASSERT_LT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
+#define SCAI_ASSERT_LT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LT( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_LE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
-	#define SCAI_ASSERT_LE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LE( exp1, exp2, msg );
+#define SCAI_ASSERT_LE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
+#define SCAI_ASSERT_LE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LE( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_GT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
-	#define SCAI_ASSERT_GT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GT( exp1, exp2, msg );
+#define SCAI_ASSERT_GT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
+#define SCAI_ASSERT_GT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GT( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_GE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
-	#define SCAI_ASSERT_GE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GE( exp1, exp2, msg );
+#define SCAI_ASSERT_GE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
+#define SCAI_ASSERT_GE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GE( exp1, exp2, msg );
 
 /*
  * SCAI_ASSERT_LEVEL = DEBUG
  */
 #elif defined( SCAI_ASSERT_LEVEL_DEBUG )
 
-	#define SCAI_ASSERT_DEBUG( exp, msg ) SCAI_ASSERT( exp, msg );
-	#define SCAI_ASSERT_ERROR( exp, msg ) SCAI_ASSERT( exp, msg );
+#define SCAI_ASSERT_DEBUG( exp, msg ) SCAI_ASSERT( exp, msg );
+#define SCAI_ASSERT_ERROR( exp, msg ) SCAI_ASSERT( exp, msg );
 
-	#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 ) SCAI_ASSERT_EQUAL( exp1, exp2, "" );
-	#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 ) SCAI_ASSERT_EQUAL( exp1, exp2, "" );
+#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 ) SCAI_ASSERT_EQUAL( exp1, exp2, "" );
+#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 ) SCAI_ASSERT_EQUAL( exp1, exp2, "" );
 
-	#define SCAI_ASSERT_EQ_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_EQUAL( exp1, exp2, msg );
-	#define SCAI_ASSERT_EQ_ERROR( exp1, exp2, msg ) SCAI_ASSERT_EQUAL( exp1, exp2, msg );
+#define SCAI_ASSERT_EQ_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_EQUAL( exp1, exp2, msg );
+#define SCAI_ASSERT_EQ_ERROR( exp1, exp2, msg ) SCAI_ASSERT_EQUAL( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_NE_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
-	#define SCAI_ASSERT_NE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
+#define SCAI_ASSERT_NE_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
+#define SCAI_ASSERT_NE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_LT_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_LT( exp1, exp2, msg );
-	#define SCAI_ASSERT_LT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LT( exp1, exp2, msg );
+#define SCAI_ASSERT_LT_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_LT( exp1, exp2, msg );
+#define SCAI_ASSERT_LT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LT( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_LE_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_LE( exp1, exp2, msg );
-	#define SCAI_ASSERT_LE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LE( exp1, exp2, msg );
+#define SCAI_ASSERT_LE_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_LE( exp1, exp2, msg );
+#define SCAI_ASSERT_LE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LE( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_GT_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_GT( exp1, exp2, msg );
-	#define SCAI_ASSERT_GT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GT( exp1, exp2, msg );
+#define SCAI_ASSERT_GT_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_GT( exp1, exp2, msg );
+#define SCAI_ASSERT_GT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GT( exp1, exp2, msg );
 
-	#define SCAI_ASSERT_GE_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_GE( exp1, exp2, msg );
-	#define SCAI_ASSERT_GE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GE( exp1, exp2, msg );
+#define SCAI_ASSERT_GE_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_GE( exp1, exp2, msg );
+#define SCAI_ASSERT_GE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GE( exp1, exp2, msg );
 #endif

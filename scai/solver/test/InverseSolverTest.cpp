@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains the implementation of the class InverseSolverTest.
@@ -71,13 +76,10 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.InverseSolverTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     InverseSolver InverseSolverSolver( "InverseSolverSolver", slogger );
     BOOST_CHECK_EQUAL( InverseSolverSolver.getId(), "InverseSolverSolver" );
-
     InverseSolver InverseSolverSolver2( "InverseSolverSolver2" );
     BOOST_CHECK_EQUAL( InverseSolverSolver2.getId(), "InverseSolverSolver2" );
-
     InverseSolver InverseSolverSolver3( InverseSolverSolver2 );
     BOOST_CHECK_EQUAL( InverseSolverSolver3.getId(), "InverseSolverSolver2" );
 }
@@ -125,48 +127,35 @@ BOOST_AUTO_TEST_CASE( SolveTest )
     typedef SCAI_TEST_TYPE ValueType;
     ContextPtr context = Context::getContextPtr();
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     const IndexType N1 = 10;
     const IndexType N2 = 10;
-
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-
     CSRSparseMatrix<ValueType> coefficients;
     coefficients.setContextPtr( context );
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
     SCAI_LOG_INFO( logger, "InverseTest uses context = " << context->getType() );
-
     DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
     coefficients.redistribute( rowDist, colDist );
-
     const ValueType solutionInitValue = 1.0;
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
     // TODO: use constructor to set context
     solution.setContextPtr( context );
-
-    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue+1.0 );
+    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue + 1.0 );
     // TODO: use constructor to set context
     exactSolution.setContextPtr( context );
-
     DenseVector<ValueType> rhs( coefficients * exactSolution );
-
     IndexType maxExpectedIterations = 3000;
     CriterionPtr criterion( new IterationCount( maxExpectedIterations ) );
-
-    Solver* solver = Solver::create( "InverseSolver", "" );
+    SolverPtr solver ( Solver::create( "InverseSolver", "" ) );
     solver->initialize( coefficients );
     solver->solve( solution, rhs );
-
     DenseVector<ValueType> diff( solution - exactSolution );
-
     Scalar s                  = maxNorm( diff );
     ValueType realMaxNorm     = s.getValue<ValueType>();
     ValueType expectedMaxNorm = 1E-4;
-
     SCAI_LOG_INFO( logger, "maxNorm of diff = " << s << " = ( solution - exactSolution ) = " << realMaxNorm );
-
     BOOST_CHECK( realMaxNorm < expectedMaxNorm );
 }
 

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,12 +20,16 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Expansion of the std::fstream class
  * @author Jan Ecker
  * @date 16.03.2016
- * @since 2.0.0
  */
 #pragma once
 
@@ -140,31 +144,31 @@ struct FileStream::Wrapper<ValueType, common::mepr::NullType>
 };
 
 template<typename ValueType, typename H, typename T>
-struct FileStream::Wrapper<ValueType, common::mepr::TypeList<H,T> >
+struct FileStream::Wrapper<ValueType, common::mepr::TypeList<H, T> >
 {
-    static bool __write( FileStream& fs, const hmemo::HArray<ValueType>& data, const ValueType offset, const common::scalar::ScalarType type, const char delimiter)
+    static bool __write( FileStream& fs, const hmemo::HArray<ValueType>& data, const ValueType offset, const common::scalar::ScalarType type, const char delimiter )
     {
-        if( type == common::TypeTraits<H>::stype )
+        if ( type == common::TypeTraits<H>::stype )
         {
-           fs._write<H, ValueType>( data, offset, delimiter );
-           return true;
+            fs._write<H, ValueType>( data, offset, delimiter );
+            return true;
         }
         else
         {
-           return Wrapper<ValueType, T>::__write( fs, data, offset, type, delimiter );
+            return Wrapper<ValueType, T>::__write( fs, data, offset, type, delimiter );
         }
     }
 
     static bool __read( FileStream& fs, hmemo::HArray<ValueType>& data, const IndexType size, const ValueType offset, const common::scalar::ScalarType type, const char delimiter )
     {
-        if( type == common::TypeTraits<H>::stype )
+        if ( type == common::TypeTraits<H>::stype )
         {
-           fs._read<H, ValueType>( data, size, offset, delimiter );
-           return true;
+            fs._read<H, ValueType>( data, size, offset, delimiter );
+            return true;
         }
         else
         {
-           return Wrapper<ValueType, T>::__read( fs, data, size, offset, type, delimiter );
+            return Wrapper<ValueType, T>::__read( fs, data, size, offset, type, delimiter );
         }
     }
 };
@@ -177,7 +181,8 @@ inline FileStream::FileStream( const std::string& filename, ios_base::openmode m
 inline void FileStream::open( const std::string& filename, ios_base::openmode mode, Endian usedEndian /* = LITTLE */ )
 {
     std::fstream::open( filename.c_str(), mode );
-    if( mode & std::ios::binary )
+
+    if ( mode & std::ios::binary )
     {
         mType = BINARY;
     }
@@ -185,9 +190,10 @@ inline void FileStream::open( const std::string& filename, ios_base::openmode mo
     {
         mType = FORMATTED;
     }
+
     this->mUsedEndian = usedEndian;
 
-    if( !is_open() )
+    if ( !is_open() )
     {
         COMMON_THROWEXCEPTION( "Unable to open file " + filename + "." )
     }
@@ -199,19 +205,22 @@ inline void FileStream::write( const hmemo::HArray<ValueType>& data,
                                const common::scalar::ScalarType type,
                                const char delimiter /* = ' ' */ )
 {
-    if( !Wrapper<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::__write( *this, data, offset, type, delimiter ))
+    if ( !Wrapper<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::__write( *this, data, offset, type, delimiter ) )
     {
-        switch( type )
+        switch ( type )
         {
             case common::scalar::INT:
-                _write<int,ValueType>( data, offset, delimiter );
+                _write<int, ValueType>( data, offset, delimiter );
                 break;
+
             case common::scalar::LONG:
-                _write<long,ValueType>( data, offset, delimiter );
+                _write<long, ValueType>( data, offset, delimiter );
                 break;
+
             case common::scalar::INTERNAL:
-                _write<ValueType,ValueType>( data, offset, delimiter );
+                _write<ValueType, ValueType>( data, offset, delimiter );
                 break;
+
             default:
                 SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << type )
                 break;
@@ -226,20 +235,22 @@ inline void FileStream::read( hmemo::HArray<ValueType>& data,
                               const common::scalar::ScalarType type,
                               const char delimiter /* = ' ' */ )
 {
-
-    if( !Wrapper<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::__read( *this, data, size, offset, type, delimiter ) )
+    if ( !Wrapper<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::__read( *this, data, size, offset, type, delimiter ) )
     {
-        switch( type )
+        switch ( type )
         {
             case common::scalar::INT:
-                _read<int,ValueType>( data, size, offset, delimiter );
+                _read<int, ValueType>( data, size, offset, delimiter );
                 break;
+
             case common::scalar::LONG:
-                _read<long,ValueType>( data, size, offset, delimiter );
+                _read<long, ValueType>( data, size, offset, delimiter );
                 break;
+
             case common::scalar::INTERNAL:
-                _read<ValueType,ValueType>( data, size, offset, delimiter );
+                _read<ValueType, ValueType>( data, size, offset, delimiter );
                 break;
+
             default:
                 SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << type )
                 break;
@@ -253,35 +264,38 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
                                 const char delimiter /* = ' ' */ )
 {
     SCAI_LOG_INFO( logger, "write array data <" << common::TypeTraits<DataType>::id() << "> to <"
-                           << common::TypeTraits<FileType>::id() << ">, offset = " << offset )
-
+                   << common::TypeTraits<FileType>::id() << ">, offset = " << offset )
     SCAI_ASSERT( is_open(), "FileStream is not opened" );
 
-
-    if( offset == 0 && typeid(FileType) == typeid(DataType) )
+    if ( offset == 0 && typeid( FileType ) == typeid( DataType ) )
     {
         hmemo::ReadAccess<DataType> dataRead( data );
-        switch( mType )
+
+        switch ( mType )
         {
             case BINARY:
             {
-                if( mUsedEndian == mMachineEndian )
+                if ( mUsedEndian == mMachineEndian )
                 {
-                    std::fstream::write( reinterpret_cast<const char*>( dataRead.get() ), sizeof(DataType)*data.size() );
+                    std::fstream::write( reinterpret_cast<const char*>( dataRead.get() ), sizeof( DataType )*data.size() );
                 }
                 else
                 {
                     COMMON_THROWEXCEPTION( "Error, wrong Endian!!!" )
                 }
+
                 break;
             }
+
             case FORMATTED:
             {
                 const DataType* dataPtr = dataRead.get();
-                for( IndexType i = 0; i < data.size(); ++i )
+
+                for ( IndexType i = 0; i < data.size(); ++i )
                 {
                     *this << dataPtr[i] << delimiter;
                 }
+
                 break;
             }
         }
@@ -295,33 +309,35 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
             hmemo::ContextPtr loc = data.getValidContext();
             setVal.getSupportedContext( loc );
             set.getSupportedContext( loc );
-
             hmemo::ReadAccess<DataType> dataRead( data, loc );
             hmemo::WriteOnlyAccess<FileType> bufferWrite( buffer, loc, data.size() );
-
             set[loc]( bufferWrite, dataRead, data.size(), utilskernel::reduction::COPY );
             setVal[loc]( bufferWrite, buffer.size(), offset, utilskernel::reduction::ADD );
         }
         hmemo::ReadAccess<FileType> bufferRead( buffer );
 
-        switch( mType )
+        switch ( mType )
         {
             case BINARY:
             {
-                std::fstream::write( reinterpret_cast<const char*>( bufferRead.get() ), sizeof(FileType)*data.size() );
+                std::fstream::write( reinterpret_cast<const char*>( bufferRead.get() ), sizeof( FileType )*data.size() );
                 break;
             }
+
             case FORMATTED:
             {
                 const FileType* bufferPtr = bufferRead.get();
-                for( IndexType i = 0; i < data.size(); ++i )
+
+                for ( IndexType i = 0; i < data.size(); ++i )
                 {
                     *this << bufferPtr[i] << delimiter;
                 }
+
                 break;
             }
         }
     }
+
     std::fstream::flush();
 }
 
@@ -332,30 +348,34 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
                                const char delimiter /* = ' ' */ )
 {
     SCAI_LOG_INFO( logger, "read array data <" << common::TypeTraits<FileType>::id() << "> to <"
-                           << common::TypeTraits<DataType>::id() << ">, offset = " << offset << ", size = " << size )
-
+                   << common::TypeTraits<DataType>::id() << ">, offset = " << offset << ", size = " << size )
     hmemo::WriteOnlyAccess<DataType> dataWrite( data, size );
 
-    if(typeid(FileType) == typeid(DataType) )
+    if ( typeid( FileType ) == typeid( DataType ) )
     {
-        switch( mType )
+        switch ( mType )
         {
             case BINARY:
             {
-                    std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), sizeof(DataType)*size );
-                    if ( !*this )
-                    {
-                        COMMON_THROWEXCEPTION( "Error reading data!" )
-                    }
+                std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), sizeof( DataType )*size );
+
+                if ( !*this )
+                {
+                    COMMON_THROWEXCEPTION( "Error reading data!" )
+                }
+
                 break;
             }
+
             case FORMATTED:
             {
                 std::string buffer;
                 std::stringstream ssBuffer;
-                for( int i=0; i < size; ++i )
+
+                for ( int i = 0; i < size; ++i )
                 {
-                    std::getline(*this, buffer, delimiter );
+                    std::getline( *this, buffer, delimiter );
+
                     if ( !*this )
                     {
                         COMMON_THROWEXCEPTION( "Unexpected end of file" )
@@ -365,6 +385,7 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
                     ssBuffer << buffer;
                     ssBuffer >> dataWrite[i];
                 }
+
                 break;
             }
         }
@@ -374,24 +395,29 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
         hmemo::HArray<FileType> buffer;
         hmemo::WriteOnlyAccess<FileType> bufferWrite( buffer, size );
 
-        switch( mType )
+        switch ( mType )
         {
             case BINARY:
             {
-                std::fstream::read( reinterpret_cast<char*>( bufferWrite.get() ), sizeof(FileType)*size );
+                std::fstream::read( reinterpret_cast<char*>( bufferWrite.get() ), sizeof( FileType )*size );
+
                 if ( !*this )
                 {
                     COMMON_THROWEXCEPTION( "Error reading data!" )
                 }
+
                 break;
             }
+
             case FORMATTED:
             {
                 std::string buffer;
                 std::stringstream ssBuffer;
-                for( int i=0; i < size; ++i )
+
+                for ( int i = 0; i < size; ++i )
                 {
-                    std::getline(*this, buffer, delimiter );
+                    std::getline( *this, buffer, delimiter );
+
                     if ( !*this )
                     {
                         COMMON_THROWEXCEPTION( "Unexpected end of file" )
@@ -401,6 +427,7 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
                     ssBuffer << buffer;
                     ssBuffer >> bufferWrite[i];
                 }
+
                 break;
             }
         }
@@ -408,10 +435,11 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
         static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<DataType, FileType> > set;
         hmemo::ContextPtr loc = data.getValidContext();
         set.getSupportedContext( loc );
-        set[loc](dataWrite, bufferWrite, size, utilskernel::reduction::COPY);
+        set[loc]( dataWrite, bufferWrite, size, utilskernel::reduction::COPY );
     }
 
-    if( offset != 0 ){
+    if ( offset != 0 )
+    {
         static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<DataType> > setVal;
         hmemo::ContextPtr loc = data.getValidContext();
         setVal.getSupportedContext( loc );
@@ -422,9 +450,9 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
 inline FileStream::Endian FileStream::_determineMachineEndian()
 {
     int a = 1;
-    char *ch = reinterpret_cast<char*>( &a );
+    char* ch = reinterpret_cast<char*>( &a );
 
-    if( static_cast<int>( *ch ) != 0 )
+    if ( static_cast<int>( *ch ) != 0 )
     {
         return LITTLE;
     }

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Main program for test of LAMA storage classes
@@ -73,10 +78,7 @@ bool init_function()
 int main( int argc, char* argv[] )
 {
     SCAI_LOG_THREAD( "main" )
-
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
-
     int rc = boost::unit_test::unit_test_main( &init_function, argc, argv );
-
     return rc;
 }

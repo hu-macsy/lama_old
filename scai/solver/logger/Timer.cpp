@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Timer.cpp
@@ -57,7 +62,7 @@ void Timer::initialize( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         m_timerData.insert( PairType( timerId, TimerData() ) );
     }
@@ -71,14 +76,14 @@ void Timer::start( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         it = m_timerData.insert( PairType( timerId, TimerData() ) ).first;
     }
 
     TimerData& timer = it->second;
 
-    if( timer.isRunning )
+    if ( timer.isRunning )
     {
         COMMON_THROWEXCEPTION( "Tried to start an already started timer. Timer ID: " << timerId );
     }
@@ -93,14 +98,14 @@ void Timer::stop( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         COMMON_THROWEXCEPTION( "Tried to stop a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;
 
-    if( !( timer.isRunning ) )
+    if ( !( timer.isRunning ) )
     {
         COMMON_THROWEXCEPTION( "Tried to stop a not running Timer. Timer ID: " << timerId );
     }
@@ -113,13 +118,12 @@ void Timer::reset( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         COMMON_THROWEXCEPTION( "Tried to reset a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;
-
     timer.totalTime = 0.0;
     timer.startTime = common::Walltime::get();
 }
@@ -128,14 +132,14 @@ double Timer::getTime( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         COMMON_THROWEXCEPTION( "Tried to get time from a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;
 
-    if( !( timer.isRunning ) )
+    if ( !( timer.isRunning ) )
     {
         return timer.totalTime;
     }
@@ -147,13 +151,12 @@ void Timer::stopAndReset( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         COMMON_THROWEXCEPTION( "Tried to stop and reset a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;
-
     timer.totalTime = 0.0;
     timer.startTime = 0.0;
     timer.isRunning = false;

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,9 +20,14 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definition of context class that stands for execution on the host, 
+ * @brief Definition of context class that stands for execution on the host,
  *        i.e. convenctional CPU or multiple CPUs.
  * @author Thomas Brandes
  * @date 10.07.2011
@@ -58,9 +63,9 @@ namespace hmemo
  *  The default host context allocates/frees data in the usual way.
  */
 
-class COMMON_DLL_IMPORTEXPORT HostContext: 
+class COMMON_DLL_IMPORTEXPORT HostContext:
 
-    public Context, 
+    public Context,
     private Context::Register<HostContext>,
     public common::enable_shared_from_this<HostContext>
 {
@@ -96,7 +101,7 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-inline common::context::ContextType HostContext::createValue() 
+inline common::context::ContextType HostContext::createValue()
 {
     return common::context::Host;
 }

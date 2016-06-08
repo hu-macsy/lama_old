@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of base class for memory management.
@@ -46,7 +51,7 @@ namespace scai
 
 namespace tasking
 {
-    class SyncToken;    // forward declaration
+class SyncToken;    // forward declaration
 }
 
 namespace hmemo
@@ -57,7 +62,7 @@ namespace hmemo
 namespace memtype
 {
 
-/** Enumeration type for the supported memory locations. 
+/** Enumeration type for the supported memory locations.
  *
  *  The same memory type does not imply that two Memory objects are the same.
  *  E.g. the memory of two different CUDA devices are not the same.
@@ -76,7 +81,7 @@ enum MemoryType
  * This method make is possible to use enum values of MemoryType in output streams.
  */
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MemoryType& type );
- 
+
 }
 
 /** @brief This class is a common base class for all memory classes.
@@ -90,8 +95,8 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Me
  *
  *  A copy constructor for a memory is not provided (singleton class).
  */
-class COMMON_DLL_IMPORTEXPORT Memory: 
-  
+class COMMON_DLL_IMPORTEXPORT Memory:
+
     public  common::Printable,
     private common::NonCopyable
 {
@@ -103,8 +108,8 @@ public:
 
     memtype::MemoryType getType() const;
 
-    /** Predicate to check whether copy from other memory to this memory is supported. 
-     *  If the method returns true, a call of memcpyFrom with srcMemory is safe. 
+    /** Predicate to check whether copy from other memory to this memory is supported.
+     *  If the method returns true, a call of memcpyFrom with srcMemory is safe.
      *
      *  Note:  dstMemory.canCopyFrom( srcMemory ) and srcMemory.canCopyTo( dstMemory )
      *         can have different values, i.e. the corresponding memory transfer is only
@@ -113,8 +118,8 @@ public:
 
     virtual bool canCopyFrom( const Memory& srcMemory ) const;
 
-    /** Predicate to check whether copy to other memory from this memory is supported. 
-     *  If the method returns true, a call of memcpyTo with dstMemory is safe. 
+    /** Predicate to check whether copy to other memory from this memory is supported.
+     *  If the method returns true, a call of memcpyTo with dstMemory is safe.
      *
      *  Note:  dstMemory.canCopyFrom( srcMemory ) and srcMemory.canCopyTo( dstMemory )
      *         can have different values, i.e. the corresponding memory transfer is only
@@ -123,13 +128,13 @@ public:
 
     virtual bool canCopyTo( const Memory& dstMemory ) const;
 
-    /** Copy from other memory to this memory. 
+    /** Copy from other memory to this memory.
      *
      *  If canCopyFrom( srcMemory ) is false, this method throws an exception.
      */
     virtual void memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const;
 
-    /** Copy to other memory from this memory. 
+    /** Copy to other memory from this memory.
      *
      *  If canCopyTo( dstMemory ) is false, this method throws an exception.
      */
@@ -199,17 +204,17 @@ public:
      */
     virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
-    /** Return a context at which memory can be used, e.g. to be initialized. 
+    /** Return a context at which memory can be used, e.g. to be initialized.
      *
      *  This method must be implemented by all derived classes.
      *
      *  Hint: Often, Context and Memory come along together. Cyclic references with shared pointers
-     *        should be avoided. 
+     *        should be avoided.
      */
 
     virtual ContextPtr getContextPtr() const = 0;
 
-    const Context& getContext() const 
+    const Context& getContext() const
     {
         return *getContextPtr();
     }

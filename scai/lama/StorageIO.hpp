@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class providing IO routines for matrix storage
@@ -80,20 +85,20 @@ public:
         const PartitionId rank );
 
     static void writeMMHeader(
-    	const bool& vector,
-		const IndexType& numRows,
-		const IndexType& numColumns,
-		const IndexType& numValues,
-		FileStream& fileName,
-		const common::scalar::ScalarType& dataType);
+        const bool& vector,
+        const IndexType& numRows,
+        const IndexType& numColumns,
+        const IndexType& numValues,
+        FileStream& fileName,
+        const common::scalar::ScalarType& dataType );
 
     static void readMMHeader(
-		IndexType& numRows,
-		IndexType& numColumns,
-		IndexType& numValues,
-		bool& isPattern,
-		bool& isSymmetric,
-		FileStream& inFile	);
+        IndexType& numRows,
+        IndexType& numColumns,
+        IndexType& numValues,
+        bool& isPattern,
+        bool& isSymmetric,
+        FileStream& inFile  );
 
 
     /** Help routine that determines the availability of a given file by its name. */
@@ -101,7 +106,7 @@ public:
     static bool fileExists( const std::string& fileName );
 
     static bool hasSuffix( const std::string& fileName, const std::string& suffix );
-   
+
 protected:
 
     /** Logger for this class */

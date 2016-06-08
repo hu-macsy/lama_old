@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,13 +20,18 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Operators to build symbolic expressions scalar1 * vector1 + scalar2 * vector2.
  * @author Jiri Kraus
  * @date 01.06.2011
  */
-#pragma once 
+#pragma once
 
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/Vector.hpp>
@@ -77,7 +82,6 @@ inline Expression_SV operator*( const Vector& vectorX, const Scalar& alpha )
 inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector
-
     return Expression_SV( Scalar( 1.0 ) / alpha, vector );
 }
 
@@ -180,7 +184,6 @@ inline Expression_SV_SV operator-( const Expression_SV& exp, const Vector& vecto
 inline Expression_SV_SV operator-( const Vector& vector, const Expression_SV& exp )
 {
     Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
-
     return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), vector ), minusExp );
 }
 

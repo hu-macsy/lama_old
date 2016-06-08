@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains the implementation of methods for the class CUDAMemory.
@@ -72,9 +77,7 @@ CUDAMemory::CUDAMemory( common::shared_ptr<const CUDAContext> cudaContext )
 
 {
     SCAI_ASSERT( cudaContext, "NULL context for CUDA memory" )
-
     SCAI_LOG_DEBUG( logger, "construct CUDAMemory for context " << cudaContext )
-
     mNumberOfAllocatedBytes = 0;
     mNumberOfAllocates = 0;
     mMaxNumberOfAllocatedBytes = 0;
@@ -180,21 +183,14 @@ void CUDAMemory::memset( void* dst, const int val, const size_t size ) const
 void CUDAMemory::memcpyToCUDA( const CUDAMemory& dstMemory, void* dst, const void* src, const size_t size ) const
 {
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-
     unsigned int flags = 0;  // not any meaning now
-
     CUcontext dstCUcontext = dstMemory.mCUDAContext->getCUcontext();
-
     SCAI_CUDA_DRV_CALL( cuCtxEnablePeerAccess( dstCUcontext, flags ), "cuCtxEnablePeerAccess" )
-
     // unified adressing makes this possible
-
     SCAI_LOG_INFO( logger, "copy " << size << " bytes to " << dst << " @ " << dstMemory
                    << " from " << src << " @ " << *this )
-
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
-
     SCAI_CUDA_DRV_CALL( cuCtxDisablePeerAccess( dstCUcontext ), "cuCtxDisablePeerAccess" )
 }
 
@@ -203,21 +199,14 @@ void CUDAMemory::memcpyToCUDA( const CUDAMemory& dstMemory, void* dst, const voi
 void CUDAMemory::memcpyFromCUDA( void* dst, const CUDAMemory& srcMemory, const void* src, const size_t size ) const
 {
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-
     unsigned int flags = 0;  // not any meaning now
-
     CUcontext srcCUcontext = srcMemory.mCUDAContext->getCUcontext();
-
     SCAI_CUDA_DRV_CALL( cuCtxEnablePeerAccess( srcCUcontext, flags ), "cuCtxEnablePeerAccess" )
-
     // unified adressing makes this possible
-
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " @ " << srcMemory
                    << " to " << dst << " @ " << *this )
-
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
-
     SCAI_CUDA_DRV_CALL( cuCtxDisablePeerAccess( srcCUcontext ), "cuCtxDisablePeerAccess" )
 }
 
@@ -229,22 +218,14 @@ SyncToken* CUDAMemory::memcpyAsync( void* dst, const void* src, const size_t siz
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     // use auto pointer so memory will be freed in case of exceptions
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (device) " )
-
     CUDAStreamSyncToken* token = mCUDAContext->getTransferSyncToken();
-
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoDAsync( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size, token->getCUDAStream() ),
                         "cuMemcpyDtoDAsync( " << dst << ", " << src << ", " << size << ") failed " )
-
     // sync token should not synchronize on the full stream but only on the transfer, so add event
-
     CUevent event;
-
     SCAI_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ), "Could not create event " )
-
     SCAI_CUDA_DRV_CALL( cuEventRecord( event, token->getCUDAStream() ), "cuEventRecord failed for CUevent " << event << '.' )
-
     token->setEvent( event );
-
     return token;
 }
 
@@ -253,9 +234,7 @@ SyncToken* CUDAMemory::memcpyAsync( void* dst, const void* src, const size_t siz
 void CUDAMemory::memcpyFromHost( void* dst, const void* src, const size_t size ) const
 {
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
-
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-
     SCAI_CUDA_DRV_CALL( cuMemcpyHtoD( ( CUdeviceptr ) dst, src, size ),
                         "cuMemcpyHToD( " << dst << ", " << src << ", " << size << ") failed " )
 }
@@ -265,7 +244,6 @@ void CUDAMemory::memcpyFromHost( void* dst, const void* src, const size_t size )
 SyncToken* CUDAMemory::memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const
 {
     SCAI_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
-
     const size_t THRESHOLD_SIZE = 16 * 1024;   // number of bytes where new thread might be useful
 
     if ( size > THRESHOLD_SIZE )
@@ -284,9 +262,7 @@ SyncToken* CUDAMemory::memcpyAsyncFromHost( void* dst, const void* src, const si
 void CUDAMemory::memcpyToHost( void* dst, const void* src, const size_t size ) const
 {
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
-
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoH( dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDToH( " << dst << ", " << src << ", " << size << ") failed " )
 }
@@ -296,7 +272,6 @@ void CUDAMemory::memcpyToHost( void* dst, const void* src, const size_t size ) c
 SyncToken* CUDAMemory::memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const
 {
     SCAI_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
-
     const size_t THRESHOLD_SIZE = 16 * 1024;   // number of bytes where new thread might be useful
 
     if ( size > THRESHOLD_SIZE )
@@ -328,12 +303,9 @@ SyncToken* CUDAMemory::memcpyAsyncFromCUDAHost( void* dst, const void* src, cons
     // SCAI_REGION( "CUDA.memcpyHtoDAsync" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
-
     CUDAStreamSyncToken* token = mCUDAContext->getTransferSyncToken();
-
     SCAI_CUDA_DRV_CALL( cuMemcpyHtoDAsync( ( CUdeviceptr ) dst, src, size, token->getCUDAStream() ),
                         "cuMemcpyHtoDAsync( " << dst << ", " << src << ", " << size << ") failed " )
-
     return token;
 }
 
@@ -355,9 +327,7 @@ SyncToken* CUDAMemory::memcpyAsyncToCUDAHost( void* dst, const void* src, const 
     // SCAI_REGION( "CUDA.memcpyDtoHAsync" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
-
     CUDAStreamSyncToken* token = mCUDAContext->getTransferSyncToken();
-
     SCAI_CUDA_DRV_CALL(
         cuMemcpyDtoHAsync( dst, ( CUdeviceptr ) src, size, token->getCUDAStream() ),
         "cuMemcpyDtoHAsync( " << dst << ", " << src << ", " << size << ", " << token->getCUDAStream() << ") failed " )
@@ -365,9 +335,7 @@ SyncToken* CUDAMemory::memcpyAsyncToCUDAHost( void* dst, const void* src, const 
     CUevent event;
     SCAI_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ), "Could not create event " )
     SCAI_CUDA_DRV_CALL( cuEventRecord( event, token->getCUDAStream() ), "cuEventRecord failed for CUevent " << event << '.' )
-
     token->setEvent( event );
-
     return token;
 }
 
@@ -376,33 +344,27 @@ SyncToken* CUDAMemory::memcpyAsyncToCUDAHost( void* dst, const void* src, const 
 bool CUDAMemory::canCopyFrom( const Memory& other ) const
 {
     bool supported = false;
-
     memtype::MemoryType otherType = other.getType();
 
     if ( otherType == memtype::HostMemory )
     {
         // CUDACtx -> Host is supported
-
         supported = true;
     }
     else if ( otherType == memtype::CUDAHostMemory )
     {
         // CUDACtx -> CUDA Host is supported
         // Note: slower but okay if CUDA Host memory does not belong to this device
-
         supported = true;
     }
     else if ( otherType == memtype::CUDAMemory )
     {
         const CUDAMemory* otherCUDAMem = dynamic_cast<const CUDAMemory*>( &other );
-
         SCAI_ASSERT( otherCUDAMem, "dynamic_cast<CUDAMemory*> failed" )
-
         supported = canCopyCUDA( *otherCUDAMem );
     }
 
     SCAI_LOG_DEBUG( logger, "canCopyFrom " << other << " to this " << *this << ", supported = " << supported )
-
     return supported;
 }
 
@@ -419,11 +381,8 @@ bool CUDAMemory::canCopyCUDA( const CUDAMemory& other ) const
     else
     {
         // Check for the access capability
-
         SCAI_CONTEXT_ACCESS( mCUDAContext )
-
         int accessCapability = 0;
-
         SCAI_CUDA_DRV_CALL(
             cuDeviceCanAccessPeer( &accessCapability, getDeviceNr(), other.getDeviceNr() ),
             "cuDeviceCanAccessPeer failed" );
@@ -442,32 +401,26 @@ bool CUDAMemory::canCopyCUDA( const CUDAMemory& other ) const
 bool CUDAMemory::canCopyTo( const Memory& other ) const
 {
     bool supported = false;
-
     memtype::MemoryType otherType = other.getType();
 
     if ( otherType == memtype::HostMemory )
     {
         // CUDAMemory -> HostMemory is supported
-
         supported = true;
     }
     else if ( otherType == memtype::CUDAHostMemory )
     {
         // CUDAMemory -> CUDA Host is supported
-
         supported = true;
     }
     else if ( otherType == memtype::CUDAMemory )
     {
         const CUDAMemory* otherCUDA = dynamic_cast<const CUDAMemory*>( &other );
-
         SCAI_ASSERT( otherCUDA, "dynamic_cast<CUDAMemory*> failed" )
-
         supported = canCopyCUDA( *otherCUDA );
     }
 
     SCAI_LOG_DEBUG( logger, "canCopyTo " << other << " from this " << *this << ", supported = " << supported )
-
     return supported;
 }
 
@@ -486,9 +439,7 @@ void CUDAMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src
     else if ( srcMemory.getType() == memtype::CUDAMemory )
     {
         const CUDAMemory* srcCUDAMemory = dynamic_cast<const CUDAMemory*>( &srcMemory );
-
         SCAI_ASSERT( srcCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
-
         memcpyFromCUDA( dst, *srcCUDAMemory, src, size );
     }
     else
@@ -505,7 +456,6 @@ SyncToken* CUDAMemory::memcpyFromAsync( void* dst, const Memory& srcMemory, cons
     if ( srcMemory.getType() == memtype::HostMemory )
     {
         // here we have no asynchronous transfer
-
         return memcpyAsyncFromHost( dst, src, size );
     }
     else if ( srcMemory.getType() == memtype::CUDAHostMemory )
@@ -515,9 +465,7 @@ SyncToken* CUDAMemory::memcpyFromAsync( void* dst, const Memory& srcMemory, cons
     else if ( srcMemory.getType() == memtype::CUDAMemory )
     {
         const CUDAMemory* srcCUDAMemory = dynamic_cast<const CUDAMemory*>( &srcMemory );
-
         SCAI_ASSERT( srcCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
-
         memcpyFromCUDA( dst, *srcCUDAMemory, src, size );
     }
     else
@@ -544,9 +492,7 @@ void CUDAMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, 
     else if ( dstMemory.getType() == memtype::CUDAMemory )
     {
         const CUDAMemory* dstCUDAMemory = dynamic_cast<const CUDAMemory*>( &dstMemory );
-
         SCAI_ASSERT( dstCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
-
         memcpyToCUDA( *dstCUDAMemory, dst, src, size );
     }
     else
@@ -571,9 +517,7 @@ SyncToken* CUDAMemory::memcpyToAsync( const Memory& dstMemory, void* dst, const 
     else if ( dstMemory.getType() == memtype::CUDAMemory )
     {
         const CUDAMemory* dstCUDAMemory = dynamic_cast<const CUDAMemory*>( &dstMemory );
-
         SCAI_ASSERT( dstCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
-
         memcpyToCUDA( *dstCUDAMemory, dst, src, size );
     }
     else

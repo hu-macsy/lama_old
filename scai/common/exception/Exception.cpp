@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for class Exception.
@@ -72,13 +77,11 @@ const char* Exception::what() const throw ()
 void Exception::addCallStack( std::ostringstream& output )
 {
     const size_t maxDepth = 20;
-
-    void *stackAddrs[maxDepth];
-
+    void* stackAddrs[maxDepth];
     size_t stackDepth = backtrace( stackAddrs, maxDepth );
     char** stackStrings = backtrace_symbols( stackAddrs, stackDepth );
 
-    for( size_t i = 1; i < stackDepth; i++ )
+    for ( size_t i = 1; i < stackDepth; i++ )
     {
         output << "    stack[" << i << "] : " << demangle( stackStrings[i] ) << std::endl;
     }
@@ -89,39 +92,34 @@ void Exception::addCallStack( std::ostringstream& output )
 std::string Exception::demangle( const char* functionName )
 {
     // We need a copy of functionName for demangling it.
-
     std::vector<char> fName( strlen( functionName ) + 1 );
-
     strcpy( fName.data(), functionName );
-
     std::string demangledString;
-
     char* begin = 0;
     char* end = 0;
 
     // find the parentheses and address offset surrounding the mangled name
-    for( char *j = fName.data(); *j; ++j )
+    for ( char* j = fName.data(); *j; ++j )
     {
-        if( *j == '(' )
+        if ( *j == '(' )
         {
             begin = j;
         }
-        else if( *j == '+' )
+        else if ( *j == '+' )
         {
             end = j;
         }
     }
 
-    if( begin && end )
+    if ( begin && end )
     {
         begin++;
         *end = '\0';
         // found our mangled name, now in [begin, end)
-
         int status;
-        char *ret = abi::__cxa_demangle( begin, 0, 0, &status );
+        char* ret = abi::__cxa_demangle( begin, 0, 0, &status );
 
-        if( status == 0 )
+        if ( status == 0 )
         {
             // return value may be a realloc() of the input
             demangledString = ret;
@@ -135,7 +133,7 @@ std::string Exception::demangle( const char* functionName )
             demangledString = functionName;
         }
 
-        if( ret )
+        if ( ret )
         {
             free( ret );
         }

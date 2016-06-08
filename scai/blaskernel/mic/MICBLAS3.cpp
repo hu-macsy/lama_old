@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief MICBLAS3.cpp
@@ -59,8 +64,7 @@ SCAI_LOG_DEF_LOGGER( MICBLAS3::logger, "MIC.BLAS3" )
 inline static char trans2C( CBLAS_TRANSPOSE trans )
 {
     // Code-Style C Dehning
-
-    switch( trans )
+    switch ( trans )
     {
         case CblasTrans:
             return 'T';
@@ -102,12 +106,11 @@ void MICBLAS3::gemm(
 
     char ta = trans2C( transA );
     char tb = trans2C( transB );
-
     const void* aPtr = a;
     const void* bPtr = b;
     void* cPtr = c;
 
-    switch( order )
+    switch ( order )
     {
         case CblasColMajor:
             break;
@@ -124,18 +127,14 @@ void MICBLAS3::gemm(
     }
 
     SCAI_LOG_INFO( logger, "gemm<" << common::TypeTraits<ValueType>::id() << ">, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
-
     int device = MICContext::getCurrentDevice();
-
     const ValueType* alphaPtr = &alpha;
     const ValueType* betaPtr = &beta;
-
 #pragma offload target( mic : device ), in( ta, tb, m, n, k, alphaPtr[0:1], aPtr, lda, bPtr, ldb, betaPtr[0:1], cPtr, ldc )
     {
         const ValueType* a = static_cast<const ValueType*>( aPtr );
         const ValueType* b = static_cast<const ValueType*>( bPtr );
         ValueType* c = static_cast<ValueType*>( cPtr );
-
         MICBLASWrapper<ValueType>::gemm( ta, tb, m, n, k, *alphaPtr, a, lda, b, ldb, *betaPtr, c, ldc );
     }
 }
@@ -148,9 +147,7 @@ template<typename ValueType>
 void MICBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::MIC;
-
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( MICBLAS3::gemm, ctx, flag );
 }
 

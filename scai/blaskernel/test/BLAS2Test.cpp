@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains tests for the blas2 methods.
@@ -56,15 +61,10 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
-
     ContextPtr loc = Context::getContextPtr( gemv.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "gemv< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     // CblasRowMajor and CblasNoTrans
     {
         ValueType matrix[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
@@ -78,11 +78,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
         const ValueType beta = 13.0;
         const IndexType incY = 2;
         const ValueType result[] = { -74.0, 33.0 };
-
         HArray<ValueType> Am( 6, matrix, testContext );
         HArray<ValueType> Ax( 3, x, testContext );
         HArray<ValueType> Ay( 3, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
@@ -101,21 +99,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
         ValueType matrix[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
         ValueType x[] = { 2.0, -1.0, 4.0 };
         ValueType y[] = { 10.0, -20.0, 30.0 };
-
         const IndexType m = 2;
         const IndexType n = 3;
         const ValueType alpha = 17.0;
-
         const IndexType lda = 2;
         const IndexType incX = 1;
         const ValueType beta = 13.0;
         const IndexType incY = 2;
         const ValueType result[] = { -74.0, 33.0 };
-
         HArray<ValueType> Am( 6, matrix, testContext );
         HArray<ValueType> Ax( 3, x, testContext );
         HArray<ValueType> Ay( 3, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
@@ -146,11 +140,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
         const IndexType incY = 1;
         const ValueType result[] =
         { 436.0, 148.0, -120.0 };
-
         HArray<ValueType> Am( 6, matrix, testContext );
         HArray<ValueType> Ax( 3, x, testContext );
         HArray<ValueType> Ay( 3, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
@@ -170,7 +162,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
         ValueType matrix[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
         ValueType x[] = { 2.0, -1.0, 4.0 };
         ValueType y[] = { 10.0, -20.0, 30.0 };
-
         const IndexType m = 2;
         const IndexType n = 3;
         const ValueType alpha = 17.0;
@@ -179,11 +170,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, blas_test_types )
         const ValueType beta = 13.0;
         const IndexType incY = 1;
         const ValueType result[] = { 436.0, 148.0, -120.0 };
-
         HArray<ValueType> Am( 6, matrix, testContext );
         HArray<ValueType> Ax( 3, x, testContext );
         HArray<ValueType> Ay( 3, y, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );

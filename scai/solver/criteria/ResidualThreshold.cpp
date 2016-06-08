@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ResidualThreshold.cpp
@@ -80,7 +85,7 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
     lama::Scalar normResult = ( *mNorm )( solver.getResidual() );
     SCAI_ASSERT( normResult > 0.0 || normResult == 0.0, "A norm should be always positive but is " << normResult );
 
-    switch( mCheckMode )
+    switch ( mCheckMode )
     {
         case ResidualThreshold::Absolute:
             SCAI_LOG_DEBUG( logger,
@@ -90,27 +95,27 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
 
         case ResidualThreshold::Relative:
         {
-            if( mFirstNormResult == -1.0 )
+            if ( mFirstNormResult == -1.0 )
             {
                 //TODO define member variable for solver with getInitialResidual function
                 mFirstNormResult = normResult;
             }
 
             SCAI_LOG_DEBUG( logger,
-                            "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult/mFirstNormResult << " should become smaller than precision " << mPrecision );
+                            "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult / mFirstNormResult << " should become smaller than precision " << mPrecision );
             return ( normResult / mFirstNormResult ) < mPrecision;
         }
 
         case ResidualThreshold::Divergence:
         {
-            if( mFirstNormResult == -1.0 )
+            if ( mFirstNormResult == -1.0 )
             {
                 //TODO define member variable for solver with getInitialResidual function
                 mFirstNormResult = normResult;
             }
 
             SCAI_LOG_DEBUG( logger,
-                            "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult/mFirstNormResult << " should become larger than precision " << mPrecision );
+                            "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult / mFirstNormResult << " should become larger than precision " << mPrecision );
             return ( normResult / mFirstNormResult ) > mPrecision;
         }
     }

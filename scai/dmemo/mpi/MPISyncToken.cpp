@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for class MPISyncToken.
@@ -74,23 +79,18 @@ void MPISyncToken::wait()
     if ( isSynchronized() )
     {
         SCAI_LOG_WARN( logger, *this << ": waiting twice" )
-
         return; // do not wait twice, especially do not clean-up twice
     }
 
     SCAI_LOG_INFO( logger, *this << ": wait" )
-
     SCAI_MPICALL( logger, MPI_Waitall( mUsedRequests, mRequests.get(), mStatuses.get() ), "MPI_Waitall" );
-
     SCAI_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" )
-
     setSynchronized();
 }
 
 bool MPISyncToken::probe() const
 {
     // not well defined yet
-
     int flag = 0;
     SCAI_MPICALL( logger, MPI_Testall( mUsedRequests, mRequests.get(), &flag, mStatuses.get() ), "MPI_Testall" );
     return flag != 0;
@@ -100,9 +100,7 @@ void MPISyncToken::pushRequest( const MPI_Request& request )
 {
     SCAI_ASSERT_ERROR( mUsedRequests < mNRequests,
                        "too many requests" << ", MPISyncToken allocated for maximal " << mNRequests << " requests" )
-
     mRequests[mUsedRequests++] = request;
-
     SCAI_LOG_INFO( logger, "# used requests = " << mUsedRequests )
 }
 

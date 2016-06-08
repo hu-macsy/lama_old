@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Demo program of using Task and SyncToken
@@ -50,7 +55,6 @@ void task( int a[], const int b[], const int c[], int N )
     }
 
     SCAI_LOG_INFO( logger, "task done" )
-
     // Note: COMMON_THROWEXCEPTION( "I hate you" ) would be handled by Task
 }
 
@@ -63,10 +67,8 @@ using scai::common::shared_ptr;
 void simple()
 {
     const int N = 10;
-
     int* a = new int[N];
     int* b = new int[N];
-
     int* c = new int[N];
 
     for ( int i = 0; i < N; ++i )
@@ -76,9 +78,7 @@ void simple()
     }
 
     // using shared pointer will delete token automatically
-
     shared_ptr<SyncToken> t ( new TaskSyncToken( scai::common::bind( task, a, b, c , N ) ) );
-
     t->wait();
 
     for ( int i = 0; i < N; ++i )
@@ -89,7 +89,6 @@ void simple()
     delete [] c;
     delete [] b;
     delete [] a;
-
 }
 
 struct Data : private scai::common::NonCopyable, public SyncTokenMember
@@ -97,11 +96,9 @@ struct Data : private scai::common::NonCopyable, public SyncTokenMember
     Data( int N )
     {
         SCAI_LOG_INFO( logger, "construct Data( N = " << N << " )" )
-
         mA = new int[N];
         mB = new int[N];
         mC = new int[N];
-
         SCAI_LOG_INFO( logger, "a = " << mA << ", b = " << mB << ", c = " << mC )
 
         for ( int i = 0; i < N; ++i )
@@ -127,34 +124,21 @@ struct Data : private scai::common::NonCopyable, public SyncTokenMember
 shared_ptr<SyncToken> run( int N )
 {
     shared_ptr<Data> data( new Data( N ) );
-
     // call task synchronously
-
     task( data->mA, data->mB, data->mC, N );
-
     // call task asynchronously
-
     shared_ptr<SyncToken> t ( new TaskSyncToken( scai::common::bind( task, data->mA, data->mB, data->mC , N ) ) );
-
     // give ownership of data to the sync token
-
     t->pushToken( data );
-
     return t;
 }
 
 int main()
 {
     // simple();
-
     shared_ptr<SyncToken> t = run( 100000 );
-
     SCAI_LOG_INFO( logger, "run started" )
-
     t->wait();
-
     SCAI_LOG_INFO( logger, "wait done" )
-
     // destructor of token t waits for synchronization and frees data
-
 }

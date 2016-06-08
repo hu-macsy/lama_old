@@ -1,8 +1,9 @@
+:orphan:
+
 Solver Example
 ==============
 
-The following C++ program shows how to use a linear equation solver like the Conjugate Gradient 
-Method.
+The following C++ program shows how to use a linear equation solver like the Conjugate Gradient Method.
 
 .. literalinclude:: ../examples/solver/solver.cpp 
    :language: c++

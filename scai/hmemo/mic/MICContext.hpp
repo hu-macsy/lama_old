@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of context class for MIC devices and a context manager class.
@@ -56,9 +61,9 @@ namespace hmemo
  * @brief MICContext initializes the MIC device with the given number.
  *
  */
-class COMMON_DLL_IMPORTEXPORT MICContext: 
+class COMMON_DLL_IMPORTEXPORT MICContext:
 
-    public Context, 
+    public Context,
     public Context::Register<MICContext>,
     public common::enable_shared_from_this<MICContext>
 {
@@ -108,8 +113,8 @@ public:
      */
     virtual MemoryPtr getLocalMemoryPtr() const;
 
-    /** 
-     *  @brief Implementation of Context::canUseMemory for this class. 
+    /**
+     *  @brief Implementation of Context::canUseMemory for this class.
      */
 
     virtual bool canUseMemory( const Memory& other ) const;

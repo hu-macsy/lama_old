@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of DIA utilities with MIC
@@ -74,28 +79,26 @@ ValueType MICDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    ValueType maxValue = static_cast<ValueType>(0.0);
-
+    ValueType maxValue = static_cast<ValueType>( 0.0 );
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>(0.0);
-
+        ValueType threadVal = static_cast<ValueType>( 0.0 );
         #pragma omp for
 
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            for( IndexType d = 0; d < numDiagonals; ++d )
+            for ( IndexType d = 0; d < numDiagonals; ++d )
             {
                 const IndexType j = i + diaOffsets[d];
 
-                if( ( j < 0 ) || ( j >= numColumns ) )
+                if ( ( j < 0 ) || ( j >= numColumns ) )
                 {
                     continue;
                 }
 
                 const ValueType val = std::abs( diaValues[i + d * numRows] );
 
-                if( val > threadVal )
+                if ( val > threadVal )
                 {
                     threadVal = val;
                 }
@@ -106,19 +109,18 @@ ValueType MICDIAUtils::absMaxVal(
         {
             SCAI_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
 
-            if( threadVal > maxValue )
+            if ( threadVal > maxValue )
             {
                 maxValue = threadVal;
             }
         }
     }
-
     return maxValue;
 }
 
 /* --------------------------------------------------------------------------- */
 
-template<typename DIAValueType,typename CSRValueType>
+template<typename DIAValueType, typename CSRValueType>
 void MICDIAUtils::getCSRValues(
     IndexType csrJA[],
     CSRValueType csrValues[],
@@ -138,20 +140,18 @@ void MICDIAUtils::getCSRValues(
 
     // we cannot check for correct sizes, but at least for valid pointers
 
-    if( numDiagonals == 0 )
+    if ( numDiagonals == 0 )
     {
-        if( diagonalFlag )
+        if ( diagonalFlag )
         {
             IndexType n = std::min( numRows, numColumns );
-
             SCAI_ASSERT_EQUAL_DEBUG( n, csrIA[numRows] )
-
             #pragma omp parallel for
 
-            for( IndexType i = 0; i < n; i++ )
+            for ( IndexType i = 0; i < n; i++ )
             {
                 csrJA[i] = i;
-                csrValues[i] = static_cast<ValueType>(0.0);
+                csrValues[i] = static_cast<ValueType>( 0.0 );
             }
         }
         else
@@ -162,71 +162,61 @@ void MICDIAUtils::getCSRValues(
         return;
     }
 
-    if( numDiagonals > 0 )
+    if ( numDiagonals > 0 )
     {
         SCAI_ASSERT_DEBUG( diaOffsets != NULL, "offset array of DIA data is NULL" )
 
-        if( numRows > 0 )
+        if ( numRows > 0 )
         {
             SCAI_ASSERT_DEBUG( diaValues != NULL, "value array of DIA data is NULL" )
         }
     }
 
     // go through the DIA the same way again and copy the non-zeros
-
     #pragma omp parallel
     {
         // SCAI_REGION( "MIC.DIA->CSR_values" )
-
         #pragma omp for
-
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType offset = csrIA[i];
-
             IndexType ii0 = 0; // first index of diagonal
 
-            if( diagonalFlag && ( i < numColumns ) )
+            if ( diagonalFlag && ( i < numColumns ) )
             {
                 // store main diagonal at first, must be first diagonal
-
                 SCAI_ASSERT_EQUAL_ERROR( diaOffsets[0], 0 )
-
                 csrJA[offset] = i;
                 csrValues[offset] = static_cast<CSRValueType>( diaValues[i] );
-
                 SCAI_LOG_TRACE( logger,
                                 "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
-
                 offset++;
                 ii0 = 1;
             }
 
-            for( IndexType ii = ii0; ii < numDiagonals; ii++ )
+            for ( IndexType ii = ii0; ii < numDiagonals; ii++ )
             {
                 IndexType j = i + diaOffsets[ii];
 
-                if( j < 0 )
+                if ( j < 0 )
                 {
                     continue;
                 }
 
-                if( j >= numColumns )
+                if ( j >= numColumns )
                 {
                     break;
                 }
 
                 const DIAValueType value = diaValues[i + ii * numRows];
-
                 bool nonZero = std::abs( value ) > eps;
 
-                if( nonZero )
+                if ( nonZero )
                 {
                     csrJA[offset] = j;
                     csrValues[offset] = static_cast<CSRValueType>( value );
                     SCAI_LOG_TRACE( logger,
                                     "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
-
                     offset++;
                 }
             }
@@ -253,47 +243,45 @@ void MICDIAUtils::getCSRSizes(
                    "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix "
                    << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals
                    << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
-
     #pragma omp parallel for
 
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         IndexType count = 0;
 
-        if( diagonalFlag && ( i < numColumns ) )
+        if ( diagonalFlag && ( i < numColumns ) )
         {
             count = 1;
         }
 
-        for( IndexType ii = 0; ii < numDiagonals; ii++ )
+        for ( IndexType ii = 0; ii < numDiagonals; ii++ )
         {
             IndexType j = i + diaOffsets[ii]; // column index
 
-            if( j < 0 )
+            if ( j < 0 )
             {
                 continue;
             }
 
-            if( j >= numColumns )
+            if ( j >= numColumns )
             {
                 break;
             }
 
             bool nonZero = std::abs( diaValues[i + ii * numRows] ) > eps;
 
-            if( diagonalFlag && ( i == j ) )
+            if ( diagonalFlag && ( i == j ) )
             {
                 nonZero = false; // already counted
             }
 
-            if( nonZero )
+            if ( nonZero )
             {
                 count++;
             }
         }
 
         csrSizes[i] = count;
-
         SCAI_LOG_TRACE( logger, "#entries in row " << i << ": " << count )
     }
 }
@@ -315,7 +303,6 @@ void MICDIAUtils::normalGEMV(
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -324,46 +311,38 @@ void MICDIAUtils::normalGEMV(
     }
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
-
     // SCAI_REGION( "MIC.DIA.normalGEMV" )
-
     MICUtils::setScale( result, beta, y, numRows );
-
     void* resultPtr = result;
     const void* xPtr = x;
     const void* diaOffsetsPtr = diaOffsets;
     const void* diaValuesPtr = diaValues;
     const ValueType* alphaPtr = &alpha;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ), in( alphaPtr[0:1], xPtr, numRows, numColumns, numDiagonals, \
                                        diaOffsetsPtr, diaValuesPtr, resultPtr )
     {
         const IndexType* diaOffsets = static_cast<const IndexType*>( diaOffsetsPtr );
         const ValueType* diaValues = static_cast<const ValueType*>( diaValuesPtr );
-
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         ValueType* result = static_cast<ValueType*>( resultPtr );
-
         const ValueType& alphaRef = *alphaPtr;
-
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
-            ValueType accu = static_cast<ValueType>(0.0);
+            ValueType accu = static_cast<ValueType>( 0.0 );
 
-            for( IndexType ii = 0; ii < numDiagonals; ++ii )
+            for ( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
                 const IndexType j = i + diaOffsets[ii];
 
-                if( j >= numColumns )
+                if ( j >= numColumns )
                 {
                     break;
                 }
 
-                if( j >= 0 )
+                if ( j >= 0 )
                 {
                     accu += diaValues[ii * numRows + i] * x[j];
                 }
@@ -391,12 +370,9 @@ void MICDIAUtils::jacobi(
     const IndexType numRows )
 {
     // SCAI_REGION( "MIC.DIA.Jacobi" )
-
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
-
     // main diagonal must be first
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -410,46 +386,39 @@ void MICDIAUtils::jacobi(
     const void* diaOffsetPtr = diaOffset;
     const void* diaValuesPtr = diaValues;
     const ValueType* omegaPtr = &omega;
-
     bool error = false; // will be set true if diagonal is not first
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( diaOffsetPtr, diaValuesPtr, numRows, numDiagonals, numColumns, \
                                       solutionPtr, oldSolutionPtr, rhsPtr, omegaPtr[0:1] ), out( error )
     {
         const IndexType* diaOffset = static_cast<const IndexType*>( diaOffsetPtr );
 
-        if( 0 == diaOffset[0] )
+        if ( 0 == diaOffset[0] )
         {
             error = false;
-
             const ValueType* diaValues = static_cast<const ValueType*>( diaValuesPtr );
-
             const ValueType* oldSolution = static_cast<const ValueType*>( oldSolutionPtr );
             const ValueType* rhs = static_cast<const ValueType*>( rhsPtr );
             ValueType* solution = static_cast<ValueType*>( solutionPtr );
-
             const ValueType& omegaRef = *omegaPtr;
-            const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omegaRef;
-
+            const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omegaRef;
             #pragma omp parallel for
 
-            for( IndexType i = 0; i < numRows; i++ )
+            for ( IndexType i = 0; i < numRows; i++ )
             {
                 ValueType temp = rhs[i];
                 ValueType diag = diaValues[i]; // diagonal is first
 
-                for( IndexType ii = 1; ii < numDiagonals; ++ii )
+                for ( IndexType ii = 1; ii < numDiagonals; ++ii )
                 {
                     const IndexType j = i + diaOffset[ii];
 
-                    if( j >= numColumns )
+                    if ( j >= numColumns )
                     {
                         break;
                     }
 
-                    if( j >= 0 )
+                    if ( j >= 0 )
                     {
                         temp -= diaValues[ii * numRows + i] * oldSolution[j];
                     }
@@ -464,7 +433,7 @@ void MICDIAUtils::jacobi(
         }
     }
 
-    if( error )
+    if ( error )
     {
         COMMON_THROWEXCEPTION( "diagonal is not first, diaOffset[0] != 0" )
     }
@@ -476,12 +445,9 @@ template<typename ValueType>
 void MICDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::MIC;
-
     SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for MIC at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
-
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
@@ -493,14 +459,12 @@ void MICDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 MICDIAUtils::MICDIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICDIAUtils::~MICDIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 

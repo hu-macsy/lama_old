@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a new dynamic array class where the array data can be
@@ -87,7 +92,7 @@ public:
 
     ContextDataIndex getMemoryData( MemoryPtr context );
 
-    /** This routine provides context data for an access at a given context. 
+    /** This routine provides context data for an access at a given context.
      *
      *  @param[in] context context at which data is needed
      *  @param[in] kind    kind of access, read or write
@@ -99,7 +104,7 @@ public:
 
     ContextDataIndex acquireAccess( ContextPtr context, common::context::AccessKind kind, size_t allocSize, size_t validSize );
 
-    /** This routine must be called when an access is released, otherwise further accesses are not allowed. 
+    /** This routine must be called when an access is released, otherwise further accesses are not allowed.
      *
      *  @param[in] index   index to a corresponding entry for ContextData
      *  @param[in] kind    kind of access, read or write
@@ -120,7 +125,7 @@ public:
     /** Wait for last outstanding memory transfer. */
 
     void wait();
-  
+
     /** Return number of all accesses. */
 
     int locked() const;
@@ -175,7 +180,7 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Return context data that is valid currently. 
+    /** Return context data that is valid currently.
      *
      *  This routine throws an exception if there no valid data at all.
      *  This might happen for zero-sized arrays (do not call it then at all)
@@ -204,7 +209,7 @@ private:
      *  is also used for copy or assignment operations.
      *
      *  If a direct transfer from source to target is not possible (unsupported by
-     *  the context) it will be tried to copy the data by involving a tempoarary 
+     *  the context) it will be tried to copy the data by involving a tempoarary
      *  copy in the Host context (copy belongs to the array with this ContextDataManager).
      */
 
@@ -212,7 +217,7 @@ private:
 
     tasking::SyncToken* fetchAsync( ContextData& target, const ContextData& source, size_t size );
 
-    mutable common::Thread::Mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive 
+    mutable common::Thread::Mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive
     mutable common::Thread::Condition mAccessCondition;  // notify if all accesses are released
 
     void lockAccess( common::context::AccessKind kind, ContextPtr context );

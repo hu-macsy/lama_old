@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test cases for CSRStorage( only specific ones )
@@ -53,7 +58,6 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRStorageTest" );
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType ia[] =
@@ -125,9 +129,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_arithmetic_test_types )
 {
     return; // TODO: fails
-
     ContextPtr context = Context::getContextPtr();
-
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType ia[] = { 0, 1, 2, 4 };
@@ -136,24 +138,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_arithmetic_test_typ
     const IndexType numValues = ia[numRows];
     const IndexType sizeJA     = sizeof( ja ) / sizeof( IndexType );
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
-
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
-
     LArray<IndexType> csrIA( numRows + 1, ia );
     LArray<IndexType> csrJA( numValues, ja );
     LArray<ValueType> csrValues( numValues, values );
-
     CSRStorage<ValueType> csr( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
-
     csr.setContextPtr( context );
-
     BOOST_CHECK_EQUAL( numValues, csr.getNumValues() );
-
     csr.compress();
-
     // one zero element (not diagonal) is removed by compress
-
     BOOST_CHECK_EQUAL( numValues - 1, csr.getNumValues() );
 }
 
@@ -162,9 +156,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "swapTest for CSRStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
     // use template storage test
-
     storageSwapTest<CSRStorage<ValueType> >();
 }
 
@@ -173,7 +165,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for CSRStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
     storageTypeNameTest<CSRStorage<ValueType> >( "CSR" );
 }
 
@@ -182,41 +173,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE( sortRowTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-
     ContextPtr context = Context::getContextPtr();
-
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
-
     const IndexType ia[] = { 0, 2, 4, 6, 8 };
     const IndexType ja[] = { 1, 0, 2, 1, 3, 2, 0, 3 };
     const IndexType sorted_ja[] = { 0, 1, 1, 2, 2, 3, 0, 3 };
     const IndexType values[] = { 1, 0, 2, 1, 3, 2, 0, 3 };
-
     const IndexType numValues = ia[numRows];
-
     LArray<IndexType> csrIA( numRows + 1, ia, context );
     LArray<IndexType> csrJA( numValues, ja, context );
     LArray<ValueType> csrValues( numValues, values, context );
-
     CSRStorage<ValueType> csrStorage;
-
     csrStorage.setContextPtr( context );
     csrStorage.allocate( numRows, numColumns );
-
     csrStorage.swap( csrIA, csrJA, csrValues );
-
     BOOST_CHECK_EQUAL( 0, csrJA.size() );
     BOOST_CHECK_EQUAL( 0, csrValues.size() );
     BOOST_CHECK_EQUAL( numValues, csrStorage.getNumValues() );
-
     bool diagonalProperty = csrStorage.hasDiagonalProperty();
-
     csrStorage.sortRows( diagonalProperty );
-
     const LArray<IndexType>& sortedJA = csrStorage.getJA();
     const LArray<ValueType>& sortedVals = csrStorage.getValues();
-
     BOOST_REQUIRE_EQUAL( numValues, sortedJA.size() );
     BOOST_REQUIRE_EQUAL( numValues, sortedVals.size() );
 
@@ -232,7 +210,6 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 BOOST_AUTO_TEST_CASE( CSRCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-
     copyStorageTest<CSRStorage<ValueType> >();
 }
 

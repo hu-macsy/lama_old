@@ -45,7 +45,7 @@ Usage
 For implementing a dedicated application with a choosen data type and storage format, target architecture,and distribution strategy, you need to know how to use and set them.
 
 ======================    ==========================================
-Class                     Description
+How to                    Description
 ======================    ==========================================
 :doc:`SetValueType`       How to use a value type
 :doc:`SetStorage`         How to use/set a ``MatrixStorage``
@@ -95,7 +95,6 @@ Example
 
       DenseVector<ValueType> result( csrMatrix * vector ); // calculation takes place with CUDA (possibly distributed)
       result.writeToFile( "resultVec.mtx", File::MATRIX_MARKET );
-
    }
 
 .. *****************
@@ -157,14 +156,14 @@ And therefore inherit all there external dependencies:
 
 .. |CUBLAS| raw:: html
 
-   <a href="https://developer.nvidia.com/cublas" target="_blank"> CUBLAS </a>
+   <a href="https://developer.nvidia.com/cublas" target="_blank"> cuBLAS </a>
 
 
 * |CUSPARSE|: for Nvidia optimized sparse blas routines [#f1]_
 
 .. |CUSPARSE| raw:: html
 
-   <a href="https://developer.nvidia.com/cusparse" target="_blank"> CUSPARSE </a>
+   <a href="https://developer.nvidia.com/cusparse" target="_blank"> cuSPARSE </a>
 
 * |MPI| (Message Passing Interface): for Interprocess Communication [#f1]_
 

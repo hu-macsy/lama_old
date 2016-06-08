@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief BiCGstab.cpp
@@ -82,16 +87,13 @@ BiCGstab::BiCGstabRuntime::~BiCGstabRuntime() {}
 void BiCGstab::initialize( const Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
-
     IterativeSolver::initialize( coefficients );
     BiCGstabRuntime& runtime = getRuntime();
-
     runtime.mAlpha  = 1.0;
     runtime.mOmega = 1.0;
     runtime.mRhoOld = 1.0;
     runtime.mResNorm = 1.0;
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
-
     // get runtime vectors with same row distribution / context / type as cofficients matrix
     runtime.mRes0.reset( coefficients.newDenseVector() );
     runtime.mVecV.reset( coefficients.newDenseVector() );
@@ -107,7 +109,6 @@ void BiCGstab::initialize( const Matrix& coefficients )
 void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
 {
     BiCGstabRuntime& runtime = getRuntime();
-
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
@@ -125,24 +126,18 @@ void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
 
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "distribution mismatch" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), runtime.mRhs->getDistribution(), "distribution mismatch" )
-
     // Initialize
     this->getResidual();
-
     *runtime.mRes0 = *runtime.mResidual;
-
     *runtime.mVecV = Scalar( 0.0 );
     *runtime.mVecP = Scalar( 0.0 );
-
     runtime.mSolveInit = true;
 }
 
 void BiCGstab::iterate()
 {
     BiCGstabRuntime& runtime    = getRuntime();
-
     const Matrix& A = *runtime.mCoefficients;
-
     const Vector& res0 = *runtime.mRes0;
     Vector& res = *runtime.mResidual;
     Vector& vecV = *runtime.mVecV;
@@ -153,20 +148,17 @@ void BiCGstab::iterate()
     Vector& vecPT = *runtime.mVecPT;
     Vector& vecST = *runtime.mVecST;
     Vector& vecTT = *runtime.mVecTT;
-
     Scalar& alpha = runtime.mAlpha;
     Scalar& beta = runtime.mBeta;
     Scalar& omega = runtime.mOmega;
     Scalar& rhoOld = runtime.mRhoOld;
     Scalar& rhoNew = runtime.mRhoNew;
-
     const Scalar& eps = runtime.mEps;
     Scalar& resNorm = runtime.mResNorm;
     lama::L2Norm norm;
-
     rhoNew = res0.dotProduct( res );
 
-    if ( resNorm < eps || rhoOld < eps || omega < eps) // scalars are small
+    if ( resNorm < eps || rhoOld < eps || omega < eps ) // scalars are small
     {
         beta = 0.0;
     }
@@ -176,20 +168,21 @@ void BiCGstab::iterate()
     }
 
     SCAI_LOG_INFO( logger, "resNorm = " << resNorm << ", eps = " << eps << ", beta = " << beta )
-
     vecP = vecP - omega * vecV;
     vecP = res + beta * vecP;
 
     // PRECONDITIONING
-    if(mPreconditioner != NULL)
+    if ( mPreconditioner != NULL )
     {
-        vecPT = Scalar(0.0);
+        vecPT = Scalar( 0.0 );
         mPreconditioner->solve( vecPT, vecP );
     }
-    else    vecPT = vecP;
+    else
+    {
+        vecPT = vecP;
+    }
 
     vecV = A * vecPT;
-
     Scalar innerProd = res0.dotProduct( vecV );
 
     if ( resNorm < eps || innerProd < eps ) // scalar is small
@@ -204,14 +197,13 @@ void BiCGstab::iterate()
     vecS = res - alpha * vecV;
 
     // PRECONDITIONING
-    if(mPreconditioner != NULL)
+    if ( mPreconditioner != NULL )
     {
-        vecST = Scalar(0.0);
+        vecST = Scalar( 0.0 );
         mPreconditioner->solve( vecST, vecS );
-
         vecT = A * vecST;
-        vecTT = Scalar(0.0);
-        mPreconditioner->solve(vecTT,vecT);
+        vecTT = Scalar( 0.0 );
+        mPreconditioner->solve( vecTT, vecT );
     }
     else
     {
@@ -235,9 +227,7 @@ void BiCGstab::iterate()
     solution = solution + omega * vecS;
     res = vecS - omega * vecT;
     rhoOld = rhoNew;
-
     resNorm = norm.apply( res );
-
     //BiCGStab implementation end
     mBiCGstabRuntime.mSolution.setDirty( false );
 }

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class to search and load library modules
@@ -32,16 +37,16 @@
 #include <scai/common/config.hpp>
 
 #if defined( __APPLE__ )
-	//todo
-	#include <dirent.h>
-	#include <dlfcn.h>
+//todo
+#include <dirent.h>
+#include <dlfcn.h>
 #elif defined( _WIN32 )
-	#include <Windows.h>
-	#include <WinBase.h>
-	#include <direct.h>
+#include <Windows.h>
+#include <WinBase.h>
+#include <direct.h>
 #else // LINUX
-	#include <dlfcn.h>
-	#include <dirent.h>
+#include <dlfcn.h>
+#include <dirent.h>
 #endif
 
 namespace scai
@@ -59,7 +64,7 @@ public:
     /** Data type definition for library handle, might be OS specific. */
 
 #if defined( _WIN32 )
-	typedef HINSTANCE LibHandle;  //!< use HINSTANCE of MSVC
+    typedef HINSTANCE LibHandle;  //!< use HINSTANCE of MSVC
 #else
     typedef void* LibHandle;
 #endif
@@ -68,7 +73,7 @@ public:
 
     static LibHandle loadLib( const char* filename );
 
-    /** Unload a library 
+    /** Unload a library
      *
      *  Note: It is very likely that the libary is not unloaded now, e.g. there is no
      *        guarantee that the destructors of static objects are called.

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./lama/examples/tutorial/scalar.cpp
@@ -44,7 +49,6 @@ int main()
     Scalar a( 1 );    // a scalar of index type
     Scalar b( 2.5f ); // a scalar of type float
     Scalar c( 0.0 );  // a scalar representing zero
-
     //
     // binary operators
     //
@@ -52,17 +56,14 @@ int main()
     c = a - b;
     c = a * b;
     c = a / b;
-
     a += b;
     a -= b;
     a *= b;
     a /= b;
-
     //
     // unary operator '-'
     //
     c = -c;
-
     //
     //relational operators
     //
@@ -72,10 +73,8 @@ int main()
     boolean = ( a > b );
 //    boolean = ( a <= b );
 //    boolean = ( a >= b );
-
 //    std::cout << "a >= B : " << boolean << std::endl;
     std::cout << "a > B : " << boolean << std::endl;
-
     //
     // math functions
     //
@@ -83,19 +82,15 @@ int main()
     c = min( a, b );
     c = abs( a );
     c = sqrt( a );
-
     //
     // output operator
     //
     std::cout << "my Scalar is: " << a << std::endl;
-
     // alternative: getValue
 //    printf("my Scalar is: %d\n", a.getValue<int>() );
-
     //
     //  That's it.
     //
     std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
-
     return EXIT_SUCCESS;
 }

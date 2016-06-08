@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class that is useful for timing in MPI programs
@@ -40,7 +45,7 @@
  *  \endcode
  */
 
-class LamaTiming 
+class LamaTiming
 {
 
 public:
@@ -61,7 +66,7 @@ private:
 };
 
 /* ---------------------------------------------------------------------------- */
-  
+
 LamaTiming::LamaTiming( const scai::dmemo::Communicator& comm, const char* name ) :
     mComm( comm ),
     mName( name )
@@ -72,9 +77,7 @@ LamaTiming::LamaTiming( const scai::dmemo::Communicator& comm, const char* name 
 LamaTiming::~LamaTiming()
 {
     double myTime = scai::common::Walltime::get() - mStart;
-
     // can be that max is not available if double is not supported
-
     double maxTime = static_cast<double>( mComm.max( RealType( myTime ) ) );
 
     if ( mComm.getRank() == 0 )

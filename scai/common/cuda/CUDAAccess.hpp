@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class to enable/disable access to a CUDA context
@@ -41,7 +46,7 @@ class CUDACtx;
 
 /** This class accesses a CUDA context with the constructor and
  *  releases it with the destructor.
- * 
+ *
  *  It guarantees that accesses will also be released in case of exceptions.
  *
  *  Acccesing and releasing a CUDA context is necessary to make it possible
@@ -61,7 +66,7 @@ public:
 
     ~CUDAAccess();
 
-    /** This method enables an object CUDACtx 
+    /** This method enables an object CUDACtx
      *
      *  @param[in] ctx context that will be enabled
      *  @returns   pointer to the last enabled context (can be NULL)
@@ -74,7 +79,7 @@ public:
      */
     static void disable( const CUDACtx* last );
 
-    /** This static method returns the CUDACtx object currently accessed. 
+    /** This static method returns the CUDACtx object currently accessed.
      *
      *  @returns the currently set CUDACtx ( is thread-specific )
      *  @throws Exception if no CUDACtx has been enabled before

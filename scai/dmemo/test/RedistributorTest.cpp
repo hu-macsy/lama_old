@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains the implementation of the class RedistributorTest.
@@ -66,7 +71,6 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.RedistributorTest" );
 BOOST_AUTO_TEST_CASE( redistributeTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
-
     IndexType size = 10;
     IndexType chunkSize = 1;
     shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
@@ -109,11 +113,8 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
     shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
     Redistributor r( distCyclic, distBlock );
-
     std::ostringstream out;
-
     out << r ;
-
     BOOST_CHECK( out.str().length() >  0 );
 }
 

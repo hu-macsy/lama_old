@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for CUDA device.
@@ -49,25 +54,18 @@ CUDACtx::CUDACtx( int deviceNr )
     if ( !cudaInitialized )
     {
         unsigned int flags = 0;    // must be set to zero
-
         SCAI_CUDA_DRV_CALL( cuInit( flags ), "cuInit failed, probably no GPU devices available" )
         cudaInitialized = true;
     }
 
     mDeviceNr = deviceNr;   // no alternative is taken here
-
     SCAI_CUDA_DRV_CALL( cuDeviceGet( &mCUdevice, mDeviceNr ),
                         "cuDeviceGet device = " << mDeviceNr << " failed, probably not available" );
-
     SCAI_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
                         "cuCtxCreate for " << mDeviceNr )
-
     SCAI_CUBLAS_CALL( cublasCreate( &mcuBLASHandle ), "Initialization of cuBLAS library" );
-
     SCAI_CUSPARSE_CALL( cusparseCreate( &mcuSparseHandle ), "Initialization of cuBLAS library" );
-
     CUcontext tmp; // temporary for last context, not necessary to save it
-
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
 }
 
@@ -90,20 +88,17 @@ cublasHandle_t CUDACtx::getcuBLASHandle() const
 CUDACtx::~CUDACtx()
 {
     // call added shutdown routines
-
     for ( size_t i = 0; i < mShutdownFunctions.size(); ++i )
     {
         mShutdownFunctions[i]();
     }
 
     // do not throw exceptions in destructor
-
     CUresult res = cuCtxPushCurrent( mCUcontext );
 
     if ( res == CUDA_ERROR_DEINITIALIZED )
     {
         // this might happen with other software, e.g. VampirTrace
-
         std::cerr << "Warn: CUDA already deinitialized" << std::endl;
         return;
     }

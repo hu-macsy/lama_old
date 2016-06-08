@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Operators to build symbolic matrix expressions for alpha * matrix + beta * matrix.
@@ -114,7 +119,6 @@ inline Expression_SM operator*( const Matrix& matrix, const Scalar& scalar )
 inline Expression_SM operator/( const Matrix& matrix, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix
-
     return Expression_SM( Scalar( 1.0 ) / alpha, matrix );
 }
 
@@ -180,7 +184,6 @@ inline Expression_SMM operator*( const Expression_SM& exp, const Matrix& matrix 
 inline Expression_SMM operator*( const Scalar& scalar, const Expression_SMM& exp )
 {
     const Expression_SM sm = exp.getArg1();
-
     return Expression_SMM( Expression_SM( scalar * sm.getArg1(), sm.getArg2() ), exp.getArg2() );
 }
 
@@ -195,7 +198,6 @@ inline Expression_SMM operator*( const Scalar& scalar, const Expression_SMM& exp
 inline Expression_SMM operator*( const Expression_SMM& exp, const Scalar& scalar )
 {
     const Expression_SM sm = exp.getArg1();
-
     return Expression_SMM( Expression_SM( sm.getArg1() * scalar, sm.getArg2() ), exp.getArg2() );
 }
 
@@ -255,9 +257,7 @@ inline Expression_SMM_SM operator-( const Expression_SMM& exp1, const Expression
 inline Expression_SMM_SM operator-( const Expression_SM& exp2, const Expression_SMM& exp1 )
 {
     Expression_SM exp1SM = exp1.getArg1();
-
     Expression_SMM minusExp1( Expression_SM( -exp1SM.getArg1(), exp1SM.getArg2() ), exp1.getArg2() );
-
     return Expression_SMM_SM( minusExp1, exp2 );
 }
 
@@ -313,11 +313,8 @@ inline Expression_SMM_SM operator-( const Expression_SMM& exp, const Matrix& mat
 inline Expression_SMM_SM operator-( const Matrix& matrix, const Expression_SMM& exp )
 {
     // Build temporary expression for -exp
-
     Expression_SM expSM = exp.getArg1();
-
     Expression_SMM minusExp( Expression_SM( -expSM.getArg1(), expSM.getArg2() ), exp.getArg2() );
-
     return Expression_SMM_SM( minusExp, Expression_SM( Scalar( 1.0 ), matrix ) );
 }
 
@@ -353,9 +350,7 @@ inline Expression_SM_SM operator+( const Expression_SM& exp1, const Expression_S
 inline Expression_SM_SM operator-( const Expression_SM& exp1, const Expression_SM& exp2 )
 {
     Scalar minusBeta = -exp2.getArg1();
-
     Expression_SM minusExp2( -exp2.getArg1(), exp2.getArg2() );
-
     return Expression_SM_SM( exp1, minusExp2 );
 }
 

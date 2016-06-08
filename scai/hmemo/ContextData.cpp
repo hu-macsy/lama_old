@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for Contextdata.
@@ -78,7 +83,6 @@ ContextData::ContextData() :
 ContextData::~ContextData()
 {
     SCAI_LOG_DEBUG( logger, "~ContextData @ " << *mMemory << ", size = " << size )
-
     free();
 }
 
@@ -87,7 +91,6 @@ ContextData::~ContextData()
 void ContextData::allocate( const size_t size )
 {
     SCAI_ASSERT( 0 == pointer, "ContextData data already given at " << *mMemory )
-
     pointer = mMemory->allocate( size );
 
     if ( !pointer )
@@ -144,15 +147,11 @@ void ContextData::free()
 void ContextData::realloc( const size_t newSize, const size_t validSize )
 {
     // Note: realloc can also be used to shrink the array size
-
     SCAI_ASSERT( allocated, "Cannot realloc data set by reference" )
     SCAI_ASSERT( mMemory, "no mMemory available for realloc" )
-
     SCAI_ASSERT_LE( validSize, size, "size of valid data is more than actual size" )
     SCAI_ASSERT_LE( validSize, newSize, "size of valid data is more than new size" )
-
     void* oldPointer = pointer;
-
     size_t oldSize = size;
 
     if ( validSize <= 0 )
@@ -162,14 +161,12 @@ void ContextData::realloc( const size_t newSize, const size_t validSize )
     }
 
     // allocate new memory
-
     pointer = mMemory->allocate( newSize );
     size = newSize;
 
     if ( validSize > 0 )
     {
         // copy the old entries in the new memory befree free of old memory
-
         mMemory->memcpy( pointer, oldPointer, validSize );
         mMemory->free( oldPointer, oldSize );
     }
@@ -180,7 +177,6 @@ void ContextData::reserve( const size_t newSize, const size_t validSize, bool in
     if ( newSize <= size )
     {
         SCAI_ASSERT_LE( validSize, newSize, "size of valid data is more than new size" )
-
         // current capacity is sufficient
         return;
     }
@@ -190,9 +186,7 @@ void ContextData::reserve( const size_t newSize, const size_t validSize, bool in
     if ( size == 0 )
     {
         SCAI_ASSERT_LE( validSize, size, "size of valid data is more than actual size" )
-
         // first allocation of the data, validSize is also 0
-
         pointer = mMemory->allocate( newSize );
         size = newSize;
         allocated = true;
@@ -231,7 +225,6 @@ void ContextData::copyFrom( const ContextData& other, size_t size )
     else
     {
         SCAI_LOG_WARN( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << " UNSUPPORTED" )
-
         COMMON_THROWEXCEPTION( "copyFrom  "
                                << *other.mMemory << " to " << *mMemory << ", size = " << size  << " UNSUPPORTED" )
         // Note: calling routine can deal with it by involving ContextData available on host
@@ -241,13 +234,11 @@ void ContextData::copyFrom( const ContextData& other, size_t size )
 SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
 {
     SyncToken* token = NULL;    // default value avoids compiler warning due to exception
-
     SCAI_LOG_INFO( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << ", size = " << size )
 
     if ( mMemory.get() == other.mMemory.get() )
     {
         // pointer equality implies it is the same context
-
         token = mMemory->memcpyAsync( pointer, other.pointer, size );
     }
     else if ( mMemory->canCopyFrom( *other.mMemory ) )
@@ -262,7 +253,6 @@ SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
     {
         COMMON_THROWEXCEPTION( "copyFrom  "
                                << *other.mMemory << " to " << *mMemory << ", size = " << size  << " NOT SUPPORTED" )
-
         // Note: calling routine can deal with it by involving ContextData available on host
     }
 

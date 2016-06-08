@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./examples/cuda/DemoCUDACtx.cpp
@@ -40,20 +45,12 @@ using namespace common;
 int main( int argc, const char** argv )
 {
     // at least --SCAI_DEVICE=id may be specified
-
     Settings::parseArgs( argc, argv );
-
     int nr = 0;   // take this as default
-
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
-
     CUDACtx context( nr );
-
     // Note: no context access required for queries of the device
-
     char deviceName[256];
-
     SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, context.getCUdevice() ), "cuDeviceGetName" );
-
     std::cout << "CUDACtx( device = " << context.getDeviceNr() << " ), name of device = " << deviceName << std::endl;
 }

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Structure that contains configuration for LAMA
@@ -58,9 +63,9 @@
  *  ( so its constructor might be called before LAMA factories are available )
  *
  *  \code
- *      LamaConfig lamaconf;    // WRONG: constructur might fail 
+ *      LamaConfig lamaconf;    // WRONG: constructur might fail
  *
- *      int main () 
+ *      int main ()
  *      {
  *          LamaConfig lamaconf();   // RIGHT: lama has registered
  *      }
@@ -99,7 +104,6 @@ public:
     scai::hmemo::ContextPtr getContextPtr() const
     {
         // Create a new context if not done yet
-
         if ( !mContext )
         {
             mContext = scai::hmemo::Context::getContextPtr( mContextType, mDevice );
@@ -137,15 +141,15 @@ public:
     /** Query if use has set maximal number of iterations. */
 
     bool hasMaxIter() const
-    { 
-        return mMaxIter != nIndex; 
+    {
+        return mMaxIter != nIndex;
     }
 
     /** Get the maximal number of iterations. */
 
     IndexType getMaxIter() const
-    { 
-        return mMaxIter; 
+    {
+        return mMaxIter;
     }
 
     scai::solver::LogLevel::LogLevel getLogLevel() const
@@ -207,7 +211,7 @@ private:
 };
 
 /* ---------------------------------------------------------------------------- */
-  
+
 LamaConfig::LamaConfig()
 {
     mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
@@ -235,6 +239,7 @@ bool LamaConfig::isNumber( const char* arg )
         {
             continue;
         }
+
         return false;
     }
 
@@ -251,10 +256,12 @@ bool LamaConfig::isReal( const char* arg )
         {
             continue;
         }
+
         if ( arg[i] == '.' )
         {
             continue;
         }
+
         return false;
     }
 
@@ -263,7 +270,7 @@ bool LamaConfig::isReal( const char* arg )
 
 static void tokenize( std::vector<std::string>& tokens,
                       const std::string& str,
-                      const std::string& delimiters = " ")
+                      const std::string& delimiters = " " )
 {
     // Skip delimiters at beginning.
     std::string::size_type lastPos = str.find_first_not_of( delimiters, 0 );
@@ -273,7 +280,7 @@ static void tokenize( std::vector<std::string>& tokens,
     while ( std::string::npos != pos || std::string::npos != lastPos )
     {
         // Found a token, add it to the vector.
-        tokens.push_back(str.substr( lastPos, pos - lastPos ) );
+        tokens.push_back( str.substr( lastPos, pos - lastPos ) );
         // Skip delimiters.  Note the "not_of"
         lastPos = str.find_first_not_of( delimiters, pos );
         // Find next "non-delimiter"
@@ -284,7 +291,6 @@ static void tokenize( std::vector<std::string>& tokens,
 void LamaConfig::setArg( const char* arg )
 {
     using scai::common::Settings;
-
     std::string val = arg;
 
     // check for multi option on a node, e.g. 'cpu,mic,gpu,gpu', each processor
@@ -293,13 +299,11 @@ void LamaConfig::setArg( const char* arg )
     if ( strchr( arg, ',' ) )
     {
         std::vector<std::string> singleVals;
-
         tokenize( singleVals, val, "," );
 
-        if ( (int)singleVals.size() == mComm->getNodeSize() )
+        if ( ( int )singleVals.size() == mComm->getNodeSize() )
         {
             const std::string myVal = singleVals[ mComm->getNodeRank() ];
-
             setArg( myVal.c_str() );
         }
         else
@@ -307,6 +311,7 @@ void LamaConfig::setArg( const char* arg )
             std::cerr << val << " cannot be tokenized, #items = " << singleVals.size()
                       << " does not match node size = " << mComm->getNodeSize() << std::endl;
         }
+
         return;
     }
 
@@ -320,29 +325,26 @@ void LamaConfig::setArg( const char* arg )
     }
 
     if (   ( "CSR" == val ) || ( "ELL" == val ) || ( "COO" == val )
-        || ( "DIA" == val ) || ( "JDS" == val ) )
-
-    { 
+            || ( "DIA" == val ) || ( "JDS" == val ) )
+    {
         mMatrixFormat = val;
     }
     else if ( ( "HOST" == val ) || ( "CPU" == val ) )
-    { 
+    {
         // Host does not require a device id
-
         mContextType = scai::common::context::Host;
     }
     else if ( ( "MIC" == val ) || ( "PHI" == val ) )
-    { 
+    {
         mContextType = scai::common::context::MIC;
     }
     else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
-    { 
+    {
         mContextType = scai::common::context::CUDA;
     }
     else if ( "PINNED" == val )
     {
         // support fast memory transfer Host->CUDA
-
 #ifdef USE_CUDA
         scai::lama::CUDAHostContextManager::setAsCurrent( getContextPtr() );
 #endif
@@ -375,11 +377,11 @@ void LamaConfig::setArg( const char* arg )
     {
         mValueType = scai::common::scalar::COMPLEX;
     }
-    else if ( ( "DOUBLECOMPLEX" == val ) || ( "COMPLEXDOUBLE" == val) || ( "ZP" == val ) )
+    else if ( ( "DOUBLECOMPLEX" == val ) || ( "COMPLEXDOUBLE" == val ) || ( "ZP" == val ) )
     {
         mValueType = scai::common::scalar::DOUBLE_COMPLEX;
     }
-    else if ( ( "LONGCOMPLEX" == val ) || ( "COMPLEXLONG" == val) )
+    else if ( ( "LONGCOMPLEX" == val ) || ( "COMPLEXLONG" == val ) )
     {
         mValueType = scai::common::scalar::LONG_DOUBLE_COMPLEX;
     }
@@ -404,23 +406,23 @@ void LamaConfig::setArg( const char* arg )
         int replace = 1;
         Settings::putEnvironment( "SCAI_CUDA_USE_SHARED_MEM", true, replace );
     }
-    else if ( "LOG_HISTORY" == val ) 
+    else if ( "LOG_HISTORY" == val )
     {
         mLogLevel = scai::solver::LogLevel::convergenceHistory;
     }
-    else if ( "LOG_SOLVER" == val ) 
+    else if ( "LOG_SOLVER" == val )
     {
         mLogLevel = scai::solver::LogLevel::solverInformation;
     }
-    else if ( "LOG_ADVANCED" == val ) 
+    else if ( "LOG_ADVANCED" == val )
     {
         mLogLevel = scai::solver::LogLevel::advancedInformation;
     }
-    else if ( "LOG_COMPLETE" == val ) 
+    else if ( "LOG_COMPLETE" == val )
     {
         mLogLevel = scai::solver::LogLevel::completeInformation;
     }
-    else if ( "LOG_NO" == val ) 
+    else if ( "LOG_NO" == val )
     {
         mLogLevel = scai::solver::LogLevel::noLogging;
     }
@@ -428,6 +430,7 @@ void LamaConfig::setArg( const char* arg )
     {
         int numThreads;
         int narg = sscanf( val.c_str() + 1, "%d", &numThreads );
+
         if ( narg > 0 )
         {
             omp_set_num_threads( numThreads );
@@ -440,8 +443,8 @@ void LamaConfig::setArg( const char* arg )
     else if ( ( 'D' == val[0] ) && isNumber( val.c_str() + 1 ) )
     {
         int deviceArg;
-
         int narg = sscanf( val.c_str() + 1, "%d", &deviceArg );
+
         if ( narg > 0 )
         {
             mDevice = deviceArg;
@@ -455,6 +458,7 @@ void LamaConfig::setArg( const char* arg )
     {
         int numBlocks;
         int narg = sscanf( val.c_str() + 1, "%d", &numBlocks );
+
         if ( narg > 0 )
         {
             int replace = 1;
@@ -468,7 +472,6 @@ void LamaConfig::setArg( const char* arg )
     else if ( ( 'W' == val[0] ) && isReal( val.c_str() + 1 ) )
     {
         float weight;
-
         int narg = sscanf( val.c_str() + 1, "%f", &weight );
 
         if ( narg > 0 && weight >= 0.0f )
@@ -487,7 +490,6 @@ void LamaConfig::setArg( const char* arg )
     else if ( scai::solver::Solver::canCreate( arg ) )
     {
         // Note: for solver the names are case sensitive
-
         mSolverName = arg;
     }
     else
@@ -499,7 +501,6 @@ void LamaConfig::setArg( const char* arg )
 void LamaConfig::writeAt( std::ostream& stream ) const
 {
     using scai::common::Settings;
-
     stream << "LAMA configuration" << std::endl;
     stream << "==================" << std::endl;
     stream << "Solver            = " << getSolverName() << std::endl;
@@ -510,7 +511,6 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     stream << "ValueType         = " << mValueType << std::endl;
     stream << "#Threads/CPU      = " << omp_get_max_threads() << std::endl;
     stream << "weight            = " << mWeight << std::endl;
-
     bool useTexture;
     bool useSharedMem;
     int  blockSize;
@@ -519,14 +519,17 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     {
         stream << "useTexture(GPU)   = " << useTexture << std::endl;
     }
+
     if ( Settings::getEnvironment( useSharedMem, "SCAI_CUDA_USE_SHARED_MEM" ) )
     {
         stream << "useSharedMem(GPU) = " << useSharedMem << std::endl;
     }
+
     if ( Settings::getEnvironment( blockSize, "SCAI_CUDA_BLOCK_SIZE" ) )
     {
         stream << "BlockSize(GPU)    = " << blockSize << std::endl;
     }
+
     if ( hasMaxIter () )
     {
         stream << "Max iter          = " << mMaxIter << std::endl;
@@ -538,7 +541,6 @@ const char* LamaConfig::getFormat( ) const
     if ( mMatrixFormat == "" )
     {
         // choose default format by context: Host -> CSR, CUDA -> ELL
-
         if ( mContextType == scai::common::context::CUDA )
         {
             return "ELL";
@@ -569,9 +571,7 @@ const char* LamaConfig::getSolverName( ) const
 scai::lama::Matrix* LamaConfig::getMatrix()
 {
     scai::lama::Format::MatrixStorageFormat matFormat = scai::lama::str2Format( getFormat() );
-
     scai::common::scalar::ScalarType matType = getValueType();
-
     return scai::lama::Matrix::getMatrix( matFormat, matType );
 }
 

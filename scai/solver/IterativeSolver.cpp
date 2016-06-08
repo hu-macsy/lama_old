@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief IterativeSolver.cpp
@@ -61,17 +66,17 @@ IterativeSolver::IterativeSolver( const std::string& id, LoggerPtr logger )
 IterativeSolver::IterativeSolver( const IterativeSolver& other )
     : Solver( other )
 {
-    if( mCriterionRootComponent )
+    if ( mCriterionRootComponent )
     {
         mCriterionRootComponent.reset( new Criterion( *other.mCriterionRootComponent ) );
     }
     else
     {
-        SCAI_LOG_INFO( logger, other <<" has no conditions, that can be copied." )
+        SCAI_LOG_INFO( logger, other << " has no conditions, that can be copied." )
         mCriterionRootComponent.reset( new IterationCount( 1 ) );
     }
 
-    if( other.getPreconditioner() )
+    if ( other.getPreconditioner() )
     {
         mPreconditioner = other.getPreconditioner()->copy();
     }
@@ -98,9 +103,9 @@ void IterativeSolver::initialize( const Matrix& coefficients )
 {
     Solver::initialize( coefficients );
 
-    if( mPreconditioner )
+    if ( mPreconditioner )
     {
-        if( mPreconditioner->getConstRuntime().mInitialized )
+        if ( mPreconditioner->getConstRuntime().mInitialized )
         {
             SCAI_LOG_INFO( logger, "Preconditioner already initialized, skipping recursive init." )
             mLogger->logMessage( LogLevel::solverInformation,
@@ -118,7 +123,7 @@ void IterativeSolver::solveImpl()
 {
     getRuntime().mIterations = 0;
 
-    if( !getConstRuntime().mSolveInit )
+    if ( !getConstRuntime().mSolveInit )
     {
         COMMON_THROWEXCEPTION(
             "Solver " + this->getId()
@@ -128,13 +133,11 @@ void IterativeSolver::solveImpl()
 
     logStartSolve();
 
-    while( !criteriaAreSatisfied() )
+    while ( !criteriaAreSatisfied() )
     {
         logIterationStart();
-
         iterate();
         getRuntime().mIterations++;
-
         logIterationEndAndResidual();
     }
 
@@ -144,15 +147,13 @@ void IterativeSolver::solveImpl()
 void IterativeSolver::setStoppingCriterion( const CriterionPtr criterion )
 {
     SCAI_ASSERT_ERROR( criterion, "Criterion defined is NULL." )
-
     SCAI_LOG_INFO( logger, "Criteria " << *criterion << " defined." )
-
     mCriterionRootComponent = criterion;
 }
 
 bool IterativeSolver::criteriaAreSatisfied() const
 {
-    if( mCriterionRootComponent.get() == 0 )
+    if ( mCriterionRootComponent.get() == 0 )
     {
         COMMON_THROWEXCEPTION( this->getId() + ": No stopping criterion set." )
     }
@@ -208,7 +209,6 @@ void IterativeSolver::logEndSolve()
     mLogger->logTime( "SolutionTimer", LogLevel::solverInformation, "Total Runtime [s]: " );
     mLogger->stopAndResetTimer( "SolutionTimer" );
     mLogger->logNewLine( LogLevel::solverInformation );
-
 }
 
 void IterativeSolver::logIterationStart()
@@ -222,7 +222,7 @@ IterativeSolver* IterativeSolver::create( const std::string type, const std::str
 {
     IterativeSolver* sov = dynamic_cast<IterativeSolver*>( Solver::create( type, name ) );
 
-    if( !sov )
+    if ( !sov )
     {
         COMMON_THROWEXCEPTION( "requested Solver is not inherited from IterativeSolver" )
     }

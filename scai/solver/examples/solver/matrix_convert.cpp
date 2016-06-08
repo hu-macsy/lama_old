@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Conversion program between binary and matrix market
@@ -139,7 +144,10 @@ struct CommandLineOptions
 
     void checkOutFileName()
     {
-        if ( outFileName != "" ) return;
+        if ( outFileName != "" )
+        {
+            return;
+        }
 
         size_t i = inFileName.find( "." );
 
@@ -159,11 +167,14 @@ struct CommandLineOptions
 
     void checkOutFileType()
     {
-        if ( outFileType != File::DEFAULT ) return;
+        if ( outFileType != File::DEFAULT )
+        {
+            return;
+        }
 
         if ( _StorageIO::hasSuffix( inFileName, ".mtx" ) )
         {
-             outFileType = File::SAMG_FORMAT;
+            outFileType = File::SAMG_FORMAT;
         }
         else
         {
@@ -182,12 +193,9 @@ void convertMatrix(
 {
     MatrixCreateKeyType matrixType( Format::CSR, inDataType );
     common::shared_ptr<Matrix> m ( Matrix::create( matrixType ) );
-
     m->readFromFile( inFileName );
-
     cout << "read matrix from " << inFileName << " : " << *m << endl;
     cout << "write matrix to " << outFileName << ", format = " << outFileType << ", type = " << outDataType << endl;
-
     m->writeToFile( outFileName, outFileType, outDataType, common::scalar::INDEX_TYPE, common::scalar::INDEX_TYPE, writeBinary );
 }
 
@@ -201,15 +209,11 @@ void convertVector(
 {
     // Note: inFileType is given implicitly by the input file
     // use vector of inDataType so no information is lost
-
     VectorCreateKeyType vectorType( Vector::DENSE, inDataType );
     common::shared_ptr<Vector> v ( Vector::create( vectorType ) );
-
     v->readFromFile( inFileName );
-
     cout << "read vector from " << inFileName << " : " << *v << endl;
     cout << "write vector to " << outFileName << ", format = " << outFileType << ", type = " << outDataType << endl;
-
     v->writeToFile( outFileName, outFileType, outDataType, writeBinary );
 }
 
@@ -233,7 +237,6 @@ void printUsage( const char* progName )
 int main( int argc, char* argv[] )
 {
     bool isVector = false;
-
     CommandLineOptions options;
 
     if ( argc < 2 )
@@ -254,16 +257,13 @@ int main( int argc, char* argv[] )
 
     options.checkInFileName();
     options.checkOutFileName();
-
     options.checkOutFileType();
 
     if ( _StorageIO::hasSuffix( options.inFileName, ".mtx" ) )
     {
         bool isSym, isPat;
         IndexType m, n, nz;
-
         lama::FileStream inFile( options.inFileName, std::ios::in );
-
         _StorageIO::readMMHeader( m, n, nz, isSym, isPat, inFile );
         cout << "MM header of " << options.inFileName << ": m = " << m << ", n = " << n << ", nz = " << nz << endl;
         isVector = n == 1;

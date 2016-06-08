@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Example with thhreads and a critical region using the common library
@@ -49,12 +54,9 @@ static const int N_THREADS   = 4;
 static void threadRoutine( int& )
 {
     Thread::Id self = Thread::getSelf();
-
     cout << "Thread " << self << " starts" << endl;
-
     Thread::ScopedLock lock( threadRecursiveMutex );
     Thread::ScopedLock lock1( threadRecursiveMutex );   // second lock by same thread is okay for recursive threadRecursiveMutex
-
     cout << "Thread " << self << " enters critical region" << endl;
     Walltime::sleep( SLEEP_TIME * 1000 );
     cout << "Thread " << self << " leaves critical region" << endl;
@@ -63,11 +65,8 @@ static void threadRoutine( int& )
 int main( int, char** )
 {
     // macro to give the current thread a name that appears in further logs
-
     double time = Walltime::get();
-
     Thread threads[N_THREADS];
-
     int arg = 0;  // not needed
 
     for ( int i = 0; i < N_THREADS; ++i )
@@ -81,11 +80,8 @@ int main( int, char** )
     }
 
     time = Walltime::get() - time;
-
     cout << "Termination of " << N_THREADS << " threads after " << time << " seconds" << endl;
-
     // If critical region is implemented correctly, time must be > ( #threds * sleep_time )
-
     SCAI_ASSERT_LT( N_THREADS * SLEEP_TIME, time,
                     "ERROR: " << N_THREADS << " threads seem to enter critial region at same time" )
 }

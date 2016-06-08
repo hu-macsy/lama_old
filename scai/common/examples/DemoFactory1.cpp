@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Example of a factory
@@ -96,7 +101,7 @@ public:
 
     static Base* create( int val )
     {
-        return new Derived2( val);
+        return new Derived2( val );
     }
 
 private:
@@ -114,7 +119,6 @@ template Base::Register<Derived2>::RegisterGuard Base::Register<Derived2>::regis
 int main()
 {
     std::vector<Kind> values;
-
     Base::getCreateValues( values );
 
     for ( size_t i = 0; i < values.size(); ++i )
@@ -122,9 +126,8 @@ int main()
         std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
     }
 
-    Base* obj1 = Base::create(D1, 15);
-    Base* obj2 = Base::create(D2, -5);
-
+    Base* obj1 = Base::create( D1, 15 );
+    Base* obj2 = Base::create( D2, -5 );
     std::cout << "obj1 is " << *obj1 << std::endl;
     std::cout << "obj2 is " << *obj2 << std::endl;
 }

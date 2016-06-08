@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of routines for ContextFunction
@@ -79,7 +84,6 @@ common::context::ContextType _ContextFunction::validContext( common::context::Co
     }
 
     // throw exception
-
     return static_cast<context::ContextType>( common::context::MaxContext );
 }
 
@@ -88,7 +92,6 @@ common::context::ContextType _ContextFunction::validContext( const _ContextFunct
     if ( mContextFuncArray[preferedCtx] != NULL && other.mContextFuncArray[preferedCtx] != NULL )
     {
         // std::cout << "both valid at context = " << preferedCtx << std::endl;
-
         return preferedCtx;
     }
 
@@ -101,7 +104,6 @@ common::context::ContextType _ContextFunction::validContext( const _ContextFunct
     }
 
     // throw exception
-
     return static_cast<ContextType>( common::context::MaxContext );
 }
 
@@ -114,7 +116,6 @@ _ContextFunction::ContextType _ContextFunction::validContext(
             && other2.mContextFuncArray[preferedCtx] != NULL )
     {
         // std::cout << "both valid at context = " << preferedCtx << std::endl;
-
         return preferedCtx;
     }
 
@@ -127,7 +128,6 @@ _ContextFunction::ContextType _ContextFunction::validContext(
     }
 
     // throw exception
-
     return static_cast<ContextType>( common::context::MaxContext );
 }
 

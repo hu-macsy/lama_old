@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a common base class for all matrix storage formats.
@@ -49,14 +54,14 @@ namespace scai
 
 namespace tasking
 {
-	class SyncToken;
+class SyncToken;
 }
 
 namespace dmemo
 {
-    class Distribution;
-    class Halo;
-    class Redistributor;
+class Distribution;
+class Halo;
+class Redistributor;
 }
 
 namespace lama
@@ -72,17 +77,17 @@ template<typename ValueType> class DenseStorageView;
 struct Format
 {
 
-typedef enum
-{
-    DENSE,    //!< Dense, all elements are stored
-    CSR,      //!< Compressed Sparse Row
-    ELL,      //!< ELLPack
-    DIA,      //!< Diagonal
-    JDS,      //!< Jagged Diagonal Storage
-    COO,      //!< Coordinate list
-    ASSEMBLY, //!<  Matrix storage used for assembling of values
-    UNDEFINED //!<  Default value
-} MatrixStorageFormat;
+    typedef enum
+    {
+        DENSE,    //!< Dense, all elements are stored
+        CSR,      //!< Compressed Sparse Row
+        ELL,      //!< ELLPack
+        DIA,      //!< Diagonal
+        JDS,      //!< Jagged Diagonal Storage
+        COO,      //!< Coordinate list
+        ASSEMBLY, //!<  Matrix storage used for assembling of values
+        UNDEFINED //!<  Default value
+    } MatrixStorageFormat;
 
 }; /* end struct Format */
 
@@ -178,7 +183,7 @@ public:
      *        So allocation of a much smaller matrix compared to the existing
      *        one might result in some waste of memory.
      *
-     *  Note: For dense matrices all values are set to zero; for sparse matrices 
+     *  Note: For dense matrices all values are set to zero; for sparse matrices
      *        zero values are usually not stored and no initialization is done.
      *
      *  Note: Operations are done on the context set for the matrix storage.
@@ -520,7 +525,7 @@ protected:
      *        arrays have more memory reserved than needed for its current size.
      */
 
-    virtual size_t getMemoryUsageImpl() const =0;
+    virtual size_t getMemoryUsageImpl() const = 0;
 
     IndexType mNumRows; //!< numbers of matrix rows
 
@@ -927,7 +932,7 @@ public:
         const ValueType beta,
         const MatrixStorage<ValueType>& b );
 
-	/**
+    /**
      * @brief Returns the L1 norm of this.
      *
      * @return the L1 norm of this.
@@ -1124,13 +1129,10 @@ void MatrixStorage<ValueType>::setRawCSRData(
     const OtherValueType* const values )
 {
     // wrap the pointer data into LAMA arrays ( without copies )
-
     hmemo::HArrayRef<IndexType> csrIA( numRows + 1, ia );
     hmemo::HArrayRef<IndexType> csrJA( numValues, ja );
     hmemo::HArrayRef<OtherValueType> csrValues( numValues, values );
-
     // now set the data on the context of this storage via virtual method
-
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
 

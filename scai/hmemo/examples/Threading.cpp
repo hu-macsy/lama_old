@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Demo on aliasing problem with LAMA arrays
@@ -47,7 +52,6 @@ using namespace scai::hmemo;
 void readJob( HArray<double>& X )
 {
     ContextPtr contextPtr = Context::getHostPtr();
-
     ReadAccess<double> read( X, contextPtr );
     const double* data = read.get();
     double s = data[0];
@@ -76,13 +80,9 @@ void readJob( HArray<double>& X )
 void writeJob( HArray<double>& X )
 {
     // Note: different thread on same context will wait until other access is released
-
     ContextPtr contextPtr = Context::getHostPtr();
-
     WriteAccess<double> write( X, contextPtr );
-
     double* data = write.get();
-
     SCAI_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << data[0] )
 
     for ( IndexType i = 0; i < write.size(); ++i )
@@ -130,8 +130,6 @@ int main()
     }
 
     SCAI_LOG_INFO( logger, "synchronize" )
-
     // Wait on pool until all tasks are finished
-
     pool.shutdown();  // otherwise
 }

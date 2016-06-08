@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./hmemo/examples/mic/MICExample1.cpp
@@ -45,21 +50,14 @@ template<typename ValueType>
 ValueType sum( const ValueType array[], const IndexType n )
 {
     ValueType zero = static_cast<ValueType>( 0 );
-
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
-
     ValueType val = 0;
-
     const void* arrayPtr = array;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( arrayPtr, n ), out( val )
     {
         val = 0;
-
         const ValueType* array = static_cast<const ValueType*>( arrayPtr );
-
         #pragma omp parallel for reduction( +:val )
 
         for ( IndexType i = 0; i < n; ++i )
@@ -67,7 +65,6 @@ ValueType sum( const ValueType array[], const IndexType n )
             val += array[i];
         }
     }
-
     return val;
 }
 
@@ -75,15 +72,11 @@ template<typename ValueType>
 void add( ValueType* array, const IndexType n )
 {
     SCAI_LOG_INFO( logger, "add # array = " << array << ", n = " << n )
-
     void* arrayPtr = array;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( arrayPtr, n )
     {
         ValueType* array = static_cast<ValueType*>( arrayPtr );
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; ++i )
@@ -96,7 +89,6 @@ void add( ValueType* array, const IndexType n )
 void printContextFactory()
 {
     std::vector<common::context::ContextType> values;
-
     Context::getCreateValues( values );
 
     for ( size_t i = 0; i < values.size(); ++i )
@@ -108,40 +100,29 @@ void printContextFactory()
 int main()
 {
     printContextFactory();
-
     std::cout << "try to get " << context::MIC << " context from factory" << std::endl;
     ContextPtr micContext = Context::getContextPtr( context::MIC );
     SCAI_ASSERT( micContext, "NULL context" )
     std::cout << "micContext = " << *micContext << std::endl;
-
     MemoryPtr micMemory = micContext->getMemoryPtr();
     SCAI_ASSERT( micMemory, "NULL memory" )
     std::cout << "micMemory = " << *micMemory << std::endl;
-
     std::cout << "try to get " << context::Host << " context from factory" << std::endl;
     ContextPtr hostContext = Context::getContextPtr( context::Host );
     SCAI_ASSERT( hostContext, "NULL context" )
     std::cout << "hostContext = " << *hostContext << std::endl;
-
     MemoryPtr hostMemory = hostContext->getMemoryPtr();
     SCAI_ASSERT( hostMemory, "NULL memory" )
     std::cout << "hostMemory = " << *hostMemory << std::endl;
-
     MemoryPtr micHostMemory = micContext->getHostMemoryPtr();
     SCAI_ASSERT( micHostMemory, "NULL memory" )
     std::cout << "micHostMemory = " << *micHostMemory << std::endl;
-
     const IndexType N = 5;
-
     HArray<double> data( micContext );
-
     std::cout << "data = " << data << std::endl;
-
     {
         SCAI_LOG_INFO( logger, "write only on host" )
-
         WriteOnlyAccess<double> writeData( data, N );
-
         double* dataHost = writeData;
 
         for ( IndexType i = 0; i < N; ++i )
@@ -149,9 +130,7 @@ int main()
             writeData[i] = 1.0;
         }
     }
-
     std::cout << "After host write: data = " << data << std::endl;
-
     {
         SCAI_LOG_INFO( logger, "read on mic" )
         ReadAccess<double> read( data, micContext );
@@ -159,18 +138,14 @@ int main()
         double s = sum( read.get(), data.size() );
         std::cout << "sum = " << s << ", should be " << N  << std::endl;
     }
-
     std::cout << "After mic read: data = " << data << std::endl;
-
     {
         SCAI_LOG_INFO( logger, "write on mic" )
         WriteAccess<double> write( data, micContext );
         SCAI_CONTEXT_ACCESS( micContext )
         add( static_cast<double*>( write ), data.size() );
     }
-
     std::cout << "After mic write: data = " << data << std::endl;
-
     {
         SCAI_LOG_INFO( logger, "read on host" )
         ReadAccess<double> read( data );
@@ -181,7 +156,6 @@ int main()
             SCAI_ASSERT_EQUAL( read[i], 2 * 1.0, "wrong value after add, i = " << i )
         }
     }
-
     std::cout << "After host read: data = " << data << std::endl;
 }
 

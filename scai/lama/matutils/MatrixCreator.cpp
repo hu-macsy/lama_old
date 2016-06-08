@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief MatrixCreator.cpp
@@ -55,7 +60,7 @@ static inline void getStencilProperties(
     IndexType& distance,
     IndexType stencilType )
 {
-    switch( stencilType )
+    switch ( stencilType )
     {
         case 27:
             length = 1;
@@ -114,7 +119,7 @@ bool MatrixCreator<ValueType>::supportedStencilType( const IndexType dimension, 
         getStencilProperties( dim, length, distance, stencilType );
         supported = ( dim == dimension );
     }
-    catch( ... )
+    catch ( ... )
     {
         supported = false; // so it is not supported
     }
@@ -129,7 +134,7 @@ static inline IndexType getMatrixPosition(
     IndexType idZ,
     IndexType dimX,
     IndexType dimY,
-    IndexType /* dimZ */)
+    IndexType /* dimZ */ )
 {
     return idZ * dimX * dimY + idY * dimX + idX;
 }
@@ -139,11 +144,11 @@ static inline int getNumNeighbors( IndexType id, IndexType dim, int shift )
 {
     int neighbors = ::abs( shift );
 
-    if( shift < 0 )
+    if ( shift < 0 )
     {
         int leftBorder = id;
 
-        if( leftBorder < neighbors )
+        if ( leftBorder < neighbors )
         {
             neighbors = leftBorder;
         }
@@ -152,14 +157,13 @@ static inline int getNumNeighbors( IndexType id, IndexType dim, int shift )
     {
         int rightBorder = dim - 1 - id;
 
-        if( rightBorder < neighbors )
+        if ( rightBorder < neighbors )
         {
             neighbors = rightBorder;
         }
     }
 
     // printf("%d of %d, shift = %d, has %d neighbors\n", id, dim, shift, neighbors );
-
     return neighbors;
 }
 
@@ -177,27 +181,22 @@ static inline IndexType getNStencilValues(
     SCAI_ASSERT_DEBUG( idX < dimX, "idX = " << idX << " out of range, dimX = " << dimX )
     SCAI_ASSERT_DEBUG( idY < dimY, "idY = " << idY << " out of range, dimY = " << dimY )
     SCAI_ASSERT_DEBUG( idZ < dimZ, "idZ = " << idZ << " out of range, dimZ = " << dimZ )
-
     IndexType nX = getNumNeighbors( idX, dimX, -length ) + getNumNeighbors( idX, dimX, length );
     IndexType nY = getNumNeighbors( idY, dimY, -length ) + getNumNeighbors( idY, dimY, length );
     IndexType nZ = getNumNeighbors( idZ, dimZ, -length ) + getNumNeighbors( idZ, dimZ, length );
-
     // SCAI_LOG_DEBUG( logger, idX << "," << idY << "," << idZ << ": neighbors = "
     //                   << nX << "," << nY << "," << nZ )
-
     // printf("%d,%d,%d has %d,%d,%d neighbors\n", idX, idY, idZ, nX, nY, nZ);
-
     // Note: nZ will be 0 for dim <= 2, nZ will be 0 for dim <= 1
-
     IndexType numValues = 1 + nX + nY + nZ; // maxDistance 1
 
-    if( maxDistance >= 2 )
+    if ( maxDistance >= 2 )
     {
         SCAI_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
         numValues += nX * nY + nX * nZ + nY * nZ;
     }
 
-    if( maxDistance >= 3 )
+    if ( maxDistance >= 3 )
     {
         SCAI_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
         // dimension cannot be 1, 2
@@ -207,7 +206,7 @@ static inline IndexType getNStencilValues(
     return numValues;
 }
 
-template<typename IndexType,typename ValueType>
+template<typename IndexType, typename ValueType>
 static inline void getStencil(
     std::vector<IndexType>& positions,
     std::vector<ValueType>& values,
@@ -223,10 +222,8 @@ static inline void getStencil(
 {
     positions.clear(); // reset number of entries to 0
     values.clear(); // reset
-
     positions.push_back( getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) );
-    values.push_back( stencilType - static_cast<ValueType>(1.0) );
-
+    values.push_back( stencilType - static_cast<ValueType>( 1.0 ) );
     IndexType leftX = getNumNeighbors( idX, dimX, -length );
     IndexType rightX = getNumNeighbors( idX, dimX, length );
     IndexType leftY = getNumNeighbors( idY, dimY, -length );
@@ -234,37 +231,37 @@ static inline void getStencil(
     IndexType leftZ = getNumNeighbors( idZ, dimZ, -length );
     IndexType rightZ = getNumNeighbors( idZ, dimZ, length );
 
-    for( IndexType jz = idZ - leftZ; jz <= idZ + rightZ; ++jz )
+    for ( IndexType jz = idZ - leftZ; jz <= idZ + rightZ; ++jz )
     {
         IndexType distZ = std::abs( jz - idZ );
 
-        for( IndexType jy = idY - leftY; jy <= idY + rightY; ++jy )
+        for ( IndexType jy = idY - leftY; jy <= idY + rightY; ++jy )
         {
             IndexType distYZ = distZ + std::abs( jy - idY );
 
-            if( distYZ > maxDistance )
+            if ( distYZ > maxDistance )
             {
                 continue; // can already skip next loop
             }
 
-            for( IndexType jx = idX - leftX; jx <= idX + rightX; ++jx )
+            for ( IndexType jx = idX - leftX; jx <= idX + rightX; ++jx )
             {
                 IndexType distXYZ = distYZ + std::abs( jx - idX );
 
-                if( distXYZ > maxDistance )
+                if ( distXYZ > maxDistance )
                 {
                     continue;
                 }
 
                 // skip the diagonal element already added
 
-                if( distXYZ == 0 )
+                if ( distXYZ == 0 )
                 {
                     continue;
                 }
 
                 positions.push_back( getMatrixPosition( jx, jy, jz, dimX, dimY, dimZ ) );
-                values.push_back( static_cast<ValueType>(-1.0) );
+                values.push_back( static_cast<ValueType>( -1.0 ) );
             }
         }
     }
@@ -280,7 +277,6 @@ void MatrixCreator<ValueType>::buildPoisson(
     const IndexType dimZ )
 {
     // Calculate subdomains, subranges
-
     PartitionId gridSize[3] =
     { 1, 1, 1 };
     PartitionId gridRank[3] =
@@ -289,27 +285,25 @@ void MatrixCreator<ValueType>::buildPoisson(
     { 0, 0, 0 };
     PartitionId dimUB[3] =
     { dimX - 1, dimY - 1, dimZ - 1 };
-
     // ToDo: take communicator from input set
-
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
 
     // get rank of this processor
 
-    if( dimension == 1 )
+    if ( dimension == 1 )
     {
         gridSize[0] = comm->getSize();
         gridRank[0] = comm->getRank();
         dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
     }
-    else if( dimension == 2 )
+    else if ( dimension == 2 )
     {
         comm->factorize2( dimX, dimY, gridSize );
         comm->getGrid2Rank( gridRank, gridSize );
         dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
         dmemo::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
     }
-    else if( dimension == 3 )
+    else if ( dimension == 3 )
     {
         comm->factorize3( dimX, dimY, dimZ, gridSize );
         comm->getGrid3Rank( gridRank, gridSize );
@@ -320,21 +314,17 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     SCAI_LOG_INFO( logger,
                    *comm << ": rank = (" << gridRank[0] << "," << gridRank[1] << "," << gridRank[2] << ") of (" << gridSize[0] << "," << gridSize[1] << "," << gridSize[2] << "), local range = [" << dimLB[0] << ":" << dimUB[0] << "," << dimLB[1] << ":" << dimUB[1] << "," << dimLB[2] << ":" << dimUB[2] << "] of " << dimX << " x " << dimY << " x " << dimZ )
-
     IndexType globalSize = dimX * dimY * dimZ; // number of rows, columns of full matrix
-
     std::vector<IndexType> myGlobalIndexes; // row indexes of this processor
     std::vector<IndexType> myIA; // number of entries in my rows
     IndexType myNNA = 0; // accumulated sum for number of my entries
-
     // compute local size on this processor
-
     IndexType localSize = 1;
 
-    for( int i = 0; i < dimension; i++ )
+    for ( int i = 0; i < dimension; i++ )
     {
         // avoid negative sizes, can happen #procs >> #ndim
-        if( dimLB[i] > dimUB[i] )
+        if ( dimLB[i] > dimUB[i] )
         {
             localSize = 0;
             break;
@@ -344,40 +334,30 @@ void MatrixCreator<ValueType>::buildPoisson(
     }
 
     SCAI_LOG_DEBUG( logger, *comm << ": has local size = " << localSize )
-
     myGlobalIndexes.reserve( localSize );
     myIA.reserve( localSize );
-
     IndexType length;
     IndexType dimStencil;
     IndexType maxDistance;
-
     getStencilProperties( dimStencil, length, maxDistance, stencilType );
-
     SCAI_ASSERT_EQUAL_ERROR( dimStencil, dimension )
-
     SCAI_LOG_INFO( logger,
                    "stencil type = " << stencilType << " -> dim = " << dimStencil << ", direction length = " << length << ", max distance = " << maxDistance )
 
     // compute global indexes this processor is responsibile for and number of non-zero values
     // of the rows owned by this processor
 
-    for( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
+    for ( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
     {
-        for( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
+        for ( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
         {
-            for( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
+            for ( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
             {
                 const IndexType iPos = getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ );
-
                 myGlobalIndexes.push_back( iPos );
-
                 const IndexType numNonZeros = getNStencilValues( idX, idY, idZ, dimX, dimY, dimZ, length, maxDistance );
-
                 myIA.push_back( numNonZeros );
-
                 // accumulate number of stencil values
-
                 myNNA += numNonZeros;
             }
         }
@@ -385,66 +365,49 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     SCAI_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
     // allocate and fill local part of the distributed matrix
-
     dmemo::DistributionPtr distribution( new dmemo::GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
-
     SCAI_LOG_INFO( logger, "distribution = " << *distribution )
-
     // create new local CSR data ( # local rows x # columns )
-
     scai::lama::CSRStorage<ValueType> localMatrix;
     localMatrix.allocate( localSize, globalSize );
-
     // Allocate local matrix with correct sizes and correct first touch in case of OpenMP
     // ToDo: localMatrix( localSize, numColumns, numNonZeros, &myIA[0] );
-
     hmemo::HArray<IndexType> csrIA;
     hmemo::HArray<IndexType> csrJA;
     hmemo::HArray<ValueType> csrValues;
-
     {
         hmemo::WriteOnlyAccess<IndexType> ia( csrIA, localSize + 1 );
         hmemo::WriteOnlyAccess<IndexType> ja( csrJA, myNNA );
         hmemo::WriteOnlyAccess<ValueType> values( csrValues, myNNA );
-
         ia[0] = 0;
-
         std::vector<IndexType> colIndexes;
         std::vector<double> colValues;
         ;
         colIndexes.reserve( stencilType );
         colValues.reserve( stencilType );
-
         // compute global indexes this processor is responsibile for and number of non-zero values
         // Important: same loop order as above
-
         IndexType rowCounter = 0; // count local rows
         IndexType nnzCounter = 0; // count local non-zero elements
 
-        for( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
+        for ( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
         {
-            for( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
+            for ( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
             {
-                for( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
+                for ( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
                 {
                     // get column positions and values of matrix, diagonal element is first
-
                     getStencil( colIndexes, colValues, idX, idY, idZ, dimX, dimY, dimZ, stencilType, length,
                                 maxDistance );
-
                     // check colIndexes.size() against number of values given by getNStencilValues
-
-                    SCAI_ASSERT_EQUAL_DEBUG( (int ) colIndexes.size(),
+                    SCAI_ASSERT_EQUAL_DEBUG( ( int ) colIndexes.size(),
                                              getNStencilValues( idX, idY, idZ, dimX, dimY, dimZ, length, maxDistance ) );
-
                     SCAI_ASSERT_EQUAL_DEBUG( colIndexes.size(), colValues.size() )
-
                     SCAI_LOG_TRACE( logger,
                                     *comm << ": at " << idX << " x " << idY << " x " << idZ << ", local row : " << rowCounter << ", global row : " << getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) << ": " << colIndexes.size() << " entries: " << colIndexes[0] << ": " << colValues[0] << ", ..." )
-
                     ia[rowCounter + 1] = ia[rowCounter] + static_cast<IndexType>( colIndexes.size() );
 
-                    for( size_t k = 0; k < colIndexes.size(); ++k )
+                    for ( size_t k = 0; k < colIndexes.size(); ++k )
                     {
                         ja[nnzCounter] = colIndexes[k];
                         values[nnzCounter] = static_cast<ValueType>( colValues[k] );
@@ -456,18 +419,12 @@ void MatrixCreator<ValueType>::buildPoisson(
             }
         }
     }
-
     localMatrix.swap( csrIA, csrJA, csrValues );
-
     SCAI_LOG_DEBUG( logger, "replace owned data with " << localMatrix )
-
     matrix.assign( localMatrix, distribution, distribution ); // builds also halo
-
     // but now the local part of matrixA should have the diagonal property as global column
     // indexes have been localized
-
     SCAI_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), "CSR data has not diagonal property" )
-
     SCAI_LOG_INFO( logger, "built matrix A = " << matrix )
 }
 
@@ -480,7 +437,6 @@ void MatrixCreator<ValueType>::buildPoisson1D(
     const IndexType dim )
 {
     SCAI_LOG_INFO( logger, "build Poisson1D" << stencilType << "P( " << dim << ")" )
-
     buildPoisson( matrix, 1, stencilType, dim, 1, 1 );
 }
 
@@ -494,7 +450,6 @@ void MatrixCreator<ValueType>::buildPoisson2D(
     const IndexType dim2 )
 {
     SCAI_LOG_INFO( logger, "build Poisson2D" << stencilType << "P( " << dim1 << ", " << dim2 << ")" )
-
     buildPoisson( matrix, 2, stencilType, dim1, dim2, 1 );
 }
 
@@ -509,7 +464,6 @@ void MatrixCreator<ValueType>::buildPoisson3D(
     const IndexType dim3 )
 {
     SCAI_LOG_INFO( logger, "build Poisson3D" << stencilType << "P( " << dim1 << ", " << dim2 << ", " << dim3 << ")" )
-
     buildPoisson( matrix, 3, stencilType, dim1, dim2, dim3 );
 }
 
@@ -519,48 +473,39 @@ template<typename ValueType>
 void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 {
     int seed = 15191;
-
     // Shape and distribution of matrix is not changed
-
     const dmemo::Distribution& dist = matrix.getRowDistribution();
 
-    if( dist.getNumPartitions() == 1 )
+    if ( dist.getNumPartitions() == 1 )
     {
         // all processors must have the same random numbers
-
         std::srand( seed );
     }
     else
     {
         // processors must generate different numbers
-
         PartitionId rank = dist.getCommunicator().getRank();
         std::srand( seed + rank );
     }
 
     const IndexType localRowSize = dist.getLocalSize();
     const IndexType colSize = matrix.getNumColumns();
-
     const IndexType expectedEntries = static_cast<IndexType>( localRowSize * colSize * density + 30.0 );
-
     std::vector<IndexType> csrIA( localRowSize + 1 );
     std::vector<IndexType> csrJA;
     std::vector<ValueType> csrValues;
-
     csrJA.reserve( expectedEntries );
     csrValues.reserve( expectedEntries );
-
     IndexType numValues = 0;
-
     csrIA[0] = numValues;
 
-    for( int i = 0; i < localRowSize; ++i )
+    for ( int i = 0; i < localRowSize; ++i )
     {
-        for( int j = 0; j < colSize; ++j )
+        for ( int j = 0; j < colSize; ++j )
         {
             ValueType value = static_cast<ValueType>( rand() ) / static_cast<ValueType>( RAND_MAX );
 
-            if( value < density )
+            if ( value < density )
             {
                 value = static_cast<ValueType>( rand() ) / static_cast<ValueType>( RAND_MAX );
                 csrJA.push_back( j );
@@ -573,14 +518,10 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
     }
 
     CSRStorage<ValueType> localCSRStorage;
-
     localCSRStorage.setRawCSRData( localRowSize, colSize, numValues, &csrIA[0], &csrJA[0], &csrValues[0] );
-
     SCAI_LOG_DEBUG( logger, "replace owned data with " << localCSRStorage )
-
     // The new matrix data has the same row distribution as the input
     // matrix, also take over the original column distribution
-
     matrix.assign( localCSRStorage, matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() ); // builds also halo
 }
 
@@ -593,7 +534,6 @@ void MatrixCreator<ValueType>::buildRandom(
     const double density )
 {
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
-
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( size, comm ) );
     matrix.allocate( dist, dist );
     fillRandom( matrix, density );

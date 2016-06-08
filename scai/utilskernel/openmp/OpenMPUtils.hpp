@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of general utilities with OpenMP
@@ -60,7 +65,7 @@ public:
 
     /** OpenMP implementation for UtilKernelTrait::setScale */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void setScale(
         ValueType outValues[],
         const ValueType value,
@@ -101,12 +106,12 @@ public:
 
     /** OpenMP implementation for UtilKernelTrait::set */
 
-    template<typename ValueType1,typename ValueType2>
+    template<typename ValueType1, typename ValueType2>
     static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
 
     /** OpenMP implementation for UtilKernelTrait::setGather */
 
-    template<typename ValueType1,typename ValueType2>
+    template<typename ValueType1, typename ValueType2>
     static void setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::scatterVal */
@@ -116,7 +121,7 @@ public:
 
     /** OpenMP implementation for UtilKernelTrait::setScatter */
 
-    template<typename ValueType1,typename ValueType2>
+    template<typename ValueType1, typename ValueType2>
     static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::invert */
@@ -166,11 +171,11 @@ private:
     /** OpenMP implementation of UtilsKernelTrait::compress */
 
     template<typename ValueType>
-    static IndexType compress( 
-        ValueType sparseArray[], 
-        IndexType sparseIndexes[], 
-        const ValueType denseArray[], 
-        const IndexType n, 
+    static IndexType compress(
+        ValueType sparseArray[],
+        IndexType sparseIndexes[],
+        const ValueType denseArray[],
+        const IndexType n,
         const ValueType eps );
 
     /** Routine that registers all methods at the kernel registry. */

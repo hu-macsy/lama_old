@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains tests for the class CUDAELLUtils and OpenMPELLUtils
@@ -61,22 +66,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" )
 BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
 {
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::countNonEmptyRowsBySizes> countNonEmptyRowsBySizes;
-
     ContextPtr loc = Context::getContextPtr( countNonEmptyRowsBySizes.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "countNonEmptyRowsBySizes for " << *testContext << " on " << *loc )
-
     // count valid array
     {
         const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4 };
         const IndexType n = sizeof( values ) / sizeof( IndexType );
-
         HArray<IndexType> sizes( n, values, testContext );
-
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
         IndexType count = countNonEmptyRowsBySizes[loc->getType()]( rSizes.get(), n );
@@ -97,21 +95,15 @@ BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
 BOOST_AUTO_TEST_CASE( setNonEmptyRowsBySizesTest )
 {
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::setNonEmptyRowsBySizes> setNonEmptyRowsBySizes;
-
     ContextPtr loc = Context::getContextPtr( setNonEmptyRowsBySizes.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4, 3, 0 };
     const IndexType valuesResult[] = { 0, 2, 5, 7, 8 };
     const IndexType n = 10;
     const IndexType numNonEmptyRows = 5;
-
     HArray<IndexType> sizes( n, values, testContext );
     HArray<IndexType> rowIndexes( numNonEmptyRows, IndexType( 0 ), testContext );
-
     {
         ReadAccess<IndexType> rSizes( sizes, loc );
         WriteAccess<IndexType> wRowIndexes( rowIndexes, loc );
@@ -133,21 +125,15 @@ BOOST_AUTO_TEST_CASE( setNonEmptyRowsBySizesTest )
 BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
 {
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
-
     ContextPtr loc = Context::getContextPtr( hasDiagonalProperty.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     // positive test
     {
         const IndexType ellJaValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
         const IndexType n = sizeof( ellJaValues ) / sizeof( IndexType );
         const IndexType numDiagonals = 8;
-
         HArray<IndexType> ellJa( n, ellJaValues, testContext );
-
         ReadAccess<IndexType> rEllJa( ellJa, loc );
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = hasDiagonalProperty[loc->getType()]( numDiagonals, rEllJa.get() );
@@ -158,9 +144,7 @@ BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
         const IndexType ellJaValues[] = { 0, 1, 2, 3, 7, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
         const IndexType n = sizeof( ellJaValues ) / sizeof( IndexType );
         const IndexType numDiagonals = 8;
-
         HArray<IndexType> ellJa( n, ellJaValues, testContext );
-
         ReadAccess<IndexType> rEllJa( ellJa, loc );
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = hasDiagonalProperty[loc->getType()]( numDiagonals, rEllJa.get() );
@@ -182,13 +166,9 @@ BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
 BOOST_AUTO_TEST_CASE( checkTest )
 {
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::check> check;
-
     ContextPtr loc = Context::getContextPtr( check.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     // check with correct values
     {
         const IndexType valuesIa[] = { 4, 3, 5, 2 };
@@ -198,10 +178,8 @@ BOOST_AUTO_TEST_CASE( checkTest )
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
         const IndexType numColumns = 6;
-
         HArray<IndexType> ia( nIa, valuesIa, testContext );
         HArray<IndexType> ja( nJa, valuesJa, testContext );
-
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -216,10 +194,8 @@ BOOST_AUTO_TEST_CASE( checkTest )
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
         const IndexType numColumns = 5;
-
         HArray<IndexType> ia( nIa, valuesIa, testContext );
         HArray<IndexType> ja( nJa, valuesJa, testContext );
-
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -235,10 +211,8 @@ BOOST_AUTO_TEST_CASE( checkTest )
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
         const IndexType numColumns = 5;
-
         HArray<IndexType> ia( nIa, valuesIa, testContext );
         HArray<IndexType> ja( nJa, valuesJa, testContext );
-
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -277,15 +251,10 @@ BOOST_AUTO_TEST_CASE( checkTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types )
 {
     typedef float OtherValueType;
-
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::getRow<ValueType, OtherValueType> > getRow;
-
     ContextPtr loc = Context::getContextPtr( getRow.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     // check with valid dense values
     {
         ValueType valuesValues[] = { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
@@ -299,12 +268,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = nJa / nIa;
         const IndexType numColumns = 5;
-
         HArray<ValueType> values( nValues, valuesValues, testContext );
         HArray<IndexType> ia( nIa, valuesIa, testContext );
         HArray<IndexType> ja( nJa, valuesJa, testContext );
         HArray<OtherValueType> row( numColumns, OtherValueType( 0 ) );
-
         {
             ReadAccess<ValueType> rValues( values, loc );
             ReadAccess<IndexType> rIa( ia, loc );
@@ -335,12 +302,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
         const IndexType numRows = nIa;
         const IndexType numColumns = 11;
         const IndexType numValuesPerRow = nJa / nIa;
-
         HArray<ValueType> values( nValues, valuesValues, testContext );
         HArray<IndexType> ia( nIa, valuesIa, testContext );
         HArray<IndexType> ja( nJa, valuesJa, testContext );
         HArray<OtherValueType> row( numColumns, OtherValueType( 0 ) );
-
         {
             ReadAccess<ValueType> rValues( values, loc );
             ReadAccess<IndexType> rIa( ia, loc );
@@ -363,13 +328,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
 BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::getValue<ValueType> > getValue;
-
     ContextPtr loc = Context::getContextPtr( getValue.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     ValueType valuesValues[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
@@ -384,15 +345,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_typ
     const IndexType numRows = nIa;
     const IndexType numValuesPerRow = nValues / numRows;
     BOOST_REQUIRE_EQUAL( numRows * numValuesPerRow, nValues );
-
     HArray<ValueType> values( nValues, valuesValues, testContext );
     HArray<IndexType> ia( nIa, valuesIa, testContext );
     HArray<IndexType> ja( nJa, valuesJa, testContext );
-
     ReadAccess<ValueType> rValues( values, loc );
     ReadAccess<IndexType> rIa( ia, loc );
     ReadAccess<IndexType> rJa( ja, loc );
-
     SCAI_CONTEXT_ACCESS( loc );
 
     for ( IndexType i = 0; i < numRows; i++ )
@@ -410,15 +368,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_types )
 {
     typedef float OtherValueType;
-
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
-
     ContextPtr loc = Context::getContextPtr( scaleValue.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     ValueType mValues[] =
     { 1, 2, 3, 4, 5, 2, 2, 2, 2, 2, 4, 2, 0, 1, 3, 0, 0, 0, 0, 3 };
     const IndexType nValues = sizeof( mValues ) / sizeof( ValueType );
@@ -433,10 +386,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_t
         const IndexType n = sizeof( ellIaValues ) / sizeof( IndexType );
         const OtherValueType values[] =
         { 2, 2, 5, 2, 2 };
-
         HArray<IndexType> ellIa( n, ellIaValues );
         HArray<OtherValueType> scaleValues( n, values );
-
         ReadAccess<IndexType> rEllIa( ellIa, loc );
         WriteAccess<ValueType> wEllValues( ellValues, loc );
         ReadAccess<OtherValueType> rScaleValues( scaleValues, loc );
@@ -456,15 +407,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_t
 BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test_types )
 {
     typedef float OtherValueType;
-
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
-
     ContextPtr loc = Context::getContextPtr( getCSRValues.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     ValueType valuesELLValues[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
     const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
@@ -486,14 +432,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test
     // make sure that division did fit
     BOOST_REQUIRE_EQUAL( numValuesPerRow * numRows, nELLValues );
     const IndexType nCSRValues = 15;
-
     HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
     HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
     HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
     HArray<OtherValueType> csrValues( nCSRValues, OtherValueType( 0 ), testContext );
     HArray<IndexType> csrIa( nCSRIa, valuesCSRIa, testContext );
     HArray<IndexType> csrJa( nCSRValues, IndexType( 0 ), testContext );
-
     {
         ReadAccess<ValueType> rELLValues( ellValues, loc );
         ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -521,15 +465,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test
 
 {
     typedef float OtherValueType;
-
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::setCSRValues<OtherValueType, ValueType> > setCSRValues;
-
     ContextPtr loc = Context::getContextPtr( setCSRValues.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     ValueType valuesCSRValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
     const IndexType nCSRValues = sizeof( valuesCSRValues ) / sizeof( ValueType );
@@ -549,17 +488,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test
     const IndexType numRows = nELLIa;
     const IndexType nELLValues = 15;
     const IndexType numValuesPerRow = 5;
-
     HArray<ValueType> csrValues( nCSRValues, valuesCSRValues, testContext );
     HArray<IndexType> csrIa( nCSRIa, valuesCSRIa, testContext );
     HArray<IndexType> csrJa( nCSRJa, valuesCSRJa, testContext );
     HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
-
     // initialization of ellValues and ellJA, even if not mandatory
-
     HArray<OtherValueType> ellValues( nELLValues, OtherValueType( 0 ), testContext );
     HArray<IndexType> ellJa( nELLValues, IndexType( 0 ), testContext );
-
     {
         ReadAccess<ValueType> rCSRValues( csrValues, loc );
         ReadAccess<IndexType> rCSRIa( csrIa, loc );
@@ -587,13 +522,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
 
 {
     ContextPtr testContext = Context::getContextPtr();
-
     KernelTraitContextFunction<ELLKernelTrait::compressIA<ValueType> > compressIA;
-
     ContextPtr loc = Context::getContextPtr( compressIA.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     // Check without epsilon
     {
         ValueType valuesELLValues[] =
@@ -610,23 +541,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.0;
-
         HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
         HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
         HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
-
         HArray<IndexType> newEllIa( testContext );  // output array
-
         {
             SCAI_CONTEXT_ACCESS( loc );
-
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, nELLIa );
             compressIA[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
-
         ReadAccess<IndexType> rNewELLIa( newEllIa );
 
         for ( IndexType i = 0; i < nELLIa; i++ )
@@ -650,13 +576,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.01;
-
         HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
         HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
         HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
-
         HArray<IndexType> newEllIa( testContext );  // output array
-
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -685,17 +608,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
         const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType );
         IndexType expectedELLIa[] =
         { 5, 5, 5 };
-
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.0;
-
         HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
         HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
         HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
-
         HArray<IndexType> newEllIa( testContext ); // output array
-
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -718,13 +637,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
 BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     KernelTraitContextFunction<ELLKernelTrait::compressValues<ValueType> > compressValues;
-
     ContextPtr loc = Context::getContextPtr( compressValues.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     // Check without epsilon
     {
         /* Input Matrix:     1  4  0  0  0     0  3  4  5  6
@@ -735,7 +650,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
                              2  5  8  0        1  3  6  0
                              3  6  7  9        2  3  5  6
         */
-
         ValueType valuesELLValues[] =
         { 1, 2, 3, 4, 5, 6, 0, 0, 0, 0, 0, 7, 0, 8, 9 };
         const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
@@ -754,16 +668,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
         const ValueType eps = 0.0;
         const IndexType numValues = 12;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
-
         SCAI_LOG_INFO( logger, "compress ELL " << nELLValues )
-
         HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
         HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
         HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
-
         HArray<IndexType> newEllJa( testContext );      // output array
         HArray<ValueType> newEllValues( testContext );  // output array
-
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -805,14 +715,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
         const ValueType eps = 0.01;
         const IndexType numValues = 12;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
-
         HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
         HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
         HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
-
         HArray<IndexType> newEllJa( testContext );      // output array
         HArray<ValueType> newEllValues( testContext );  // output array
-
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -823,7 +730,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
             compressValues[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
                                             newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
-
         ReadAccess<ValueType> rNewELLValues( newEllValues );
         ReadAccess<IndexType> rNewELLJa( newEllJa );
 
@@ -855,14 +761,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
         const IndexType numValues = 12;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
-
         HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
         HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
         HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
-
         HArray<IndexType> newEllJa( testContext );      // output array
         HArray<ValueType> newEllValues( testContext );  // output array
-
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -889,13 +792,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_te
 BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     KernelTraitContextFunction<ELLKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
-
     ContextPtr loc = Context::getContextPtr( matrixMultiplySizes.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     // Check with symmetric matrix
     {
         IndexType valuesAIa[] =
@@ -915,14 +814,11 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
         IndexType numValues = 5; // all matrices have shape 5 x 5
         IndexType aNumValuesPerRow = aNumValues / numValues;
         IndexType bNumValuesPerRow = bNumValues / numValues;
-
         HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
         HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
         HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
-
         HArray<IndexType> CIa( testContext );
-
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -933,9 +829,7 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
             matrixMultiplySizes[loc->getType()]( wCIa.get(), numValues, numValues, numValues, false, rAIa.get(), rAJa.get(),
                                                  aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
-
         BOOST_CHECK_EQUAL( numValues, CIa.size() );
-
         ReadAccess<IndexType> rCIa( CIa );
 
         for ( IndexType i = 0; i < numValues; i++ )
@@ -968,14 +862,11 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
         // a and a * b have same number rows
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
-
         HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
         HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
         HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
-
         HArray<IndexType> CIa( testContext );
-
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -987,9 +878,7 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
             matrixMultiplySizes[loc->getType()]( wCIa.get(), aNumRows, numColumns, bNumRows, false, rAIa.get(), rAJa.get(),
                                                  aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
-
         BOOST_CHECK_EQUAL( cNumRows, CIa.size() );
-
         ReadAccess<IndexType> rCIa( CIa );
 
         for ( IndexType i = 0; i < cNumRows; i++ )
@@ -1002,13 +891,9 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     KernelTraitContextFunction<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
-
     ContextPtr loc = Context::getContextPtr( matrixMultiply.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     // Check with symmetric matrix
     {
         ValueType valuesAValues[] =
@@ -1038,7 +923,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
         { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 3, 2, 2, 3, 3, 0, 3, 3 };
         IndexType numValues = 20;
         ValueType alpha = 1;
-
         HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
         HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
         HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
@@ -1046,12 +930,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
         HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
         HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
-
         // output arrays
-
         HArray<ValueType> CValues( testContext );
         HArray<IndexType> CJa( testContext );
-
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = numValues / cNumRows;
@@ -1110,9 +991,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
         { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 3, 2, 2, 3, 3, 0, 3, 3 };
         IndexType numValues = 20;
         ValueType alpha = 2.5;
-
         // input arrays, directly initialized on context device
-
         HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
         HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
         HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
@@ -1120,16 +999,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
         HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
         HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
-
         // output arrays
-
         HArray<ValueType> CValues( testContext );
         HArray<IndexType> CJa( testContext );
-
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = numValues / cNumRows;
-
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -1147,7 +1022,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
                                             diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
                                             rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
-
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
 
@@ -1188,9 +1062,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
         { 0, 0, 0, 1, 1, 1, 2, 2, 2 };
         IndexType cNumValues = 9;
         ValueType alpha = 1;
-
         // input arrays, directly initialized on context device
-
         HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
         HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
         HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
@@ -1198,12 +1070,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
         HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
         HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
-
         // output arrays
-
         HArray<ValueType> CValues( testContext );
         HArray<IndexType> CJa( testContext );
-
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = cNumValues / cNumRows;
@@ -1238,13 +1107,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_te
 BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     KernelTraitContextFunction<ELLKernelTrait::matrixAddSizes > matrixAddSizes;
-
     ContextPtr loc = Context::getContextPtr( matrixAddSizes.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     IndexType valuesAIa[] =
     { 2, 3, 2, 3, 4 };
     const IndexType aNumRows = sizeof( valuesAIa ) / sizeof( IndexType );
@@ -1269,14 +1134,11 @@ BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
     BOOST_REQUIRE_EQUAL( aNumRows * aNumValuesPerRow, aNumValues );
     IndexType bNumValuesPerRow = bNumValues / bNumRows;
     BOOST_REQUIRE_EQUAL( bNumRows * bNumValuesPerRow, bNumValues );
-
     HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
     HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
     HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
     HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
-
     HArray<IndexType> CIa( testContext );
-
     {
         ReadAccess<IndexType> rAIa( AIa, loc );
         ReadAccess<IndexType> rAJa( AJa, loc );
@@ -1300,13 +1162,9 @@ BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     KernelTraitContextFunction<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
-
     ContextPtr loc = Context::getContextPtr( matrixAdd.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     // Check with neutral beta
     {
         ValueType valuesAValues[] =
@@ -1338,9 +1196,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
         IndexType numColumns = 5; // for convenience
         ValueType alpha = 1;
         ValueType beta = 1;
-
         // input arrays, directly initialized on context device
-
         HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
         HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
         HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
@@ -1348,12 +1204,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
         HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
         HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
-
         // output arrays, CValues, CJa
-
         HArray<ValueType> CValues( testContext );
         HArray<IndexType> CJa( testContext );
-
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = cNumValues / cNumRows;
@@ -1413,9 +1266,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
         IndexType numColumns = 5; // for convenience
         ValueType alpha = 1;
         ValueType beta = 2;
-
         // input arrays, directly initialized on context device
-
         HArray<ValueType> AValues( nAValues, valuesAValues, testContext );
         HArray<IndexType> AIa( aNumRows, valuesAIa, testContext );
         HArray<IndexType> AJa( aNumValues, valuesAJa, testContext );
@@ -1423,12 +1274,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_ty
         HArray<IndexType> BIa( bNumRows, valuesBIa, testContext );
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
         HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
-
         // output arrays
-
         HArray<ValueType> CValues( testContext );
         HArray<IndexType> CJa( testContext );
-
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = cNumValues / cNumRows;

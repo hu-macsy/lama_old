@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,9 +20,14 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Macro definitions for logging 
+ * @brief Macro definitions for logging
  * @author Thomas Brandes
  * @date 10.06.2015
  */
@@ -246,7 +251,7 @@
 #define SCAI_LOG_TRACE( logger, msg )                       \
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
-                                                            \
+        \
         if ( &cLogger && cLogger.isTraceEnabled() )         \
         {                                                   \
             std::ostringstream omsg;                        \
@@ -384,12 +389,12 @@
 #ifdef SCAI_LOG_LEVEL_OFF
 
 #define SCAI_LOG_THREAD( name )                  \
-{                                                \
-    if ( false )                                 \
-    {                                            \
-        std::cout << "";                         \
-    }                                            \
-}
+    {                                                \
+        if ( false )                                 \
+        {                                            \
+            std::cout << "";                         \
+        }                                            \
+    }
 
 #else
 
@@ -398,10 +403,10 @@
 // macro defines a name for the current thread
 
 #define SCAI_LOG_THREAD( name )                                            \
-{                                                                          \
-    std::ostringstream oname;                                              \
-    oname << name;                                                         \
-    scai::common::Thread::defineCurrentThreadName( oname.str().c_str() );  \
-}
+    {                                                                          \
+        std::ostringstream oname;                                              \
+        oname << name;                                                         \
+        scai::common::Thread::defineCurrentThreadName( oname.str().c_str() );  \
+    }
 
 #endif

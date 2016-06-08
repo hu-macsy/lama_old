@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Abstract base class for all matrices supported by LAMA.
@@ -66,7 +71,7 @@ typedef common::shared_ptr<class Matrix> MatrixPtr;
 
 /** Key type used for the Matrix factory.
  *
- *  Note: own struct instead of std::pair to allow definition of operator << 
+ *  Note: own struct instead of std::pair to allow definition of operator <<
  */
 
 typedef MatrixStorageCreateKeyType MatrixCreateKeyType;
@@ -77,7 +82,7 @@ typedef MatrixStorageCreateKeyType MatrixCreateKeyType;
  * Matrix is one of the LAMA Base Types and should be used in all situations where it is not necessary to access a
  * single element or to create a new Matrix.
  */
-class COMMON_DLL_IMPORTEXPORT Matrix: 
+class COMMON_DLL_IMPORTEXPORT Matrix:
 
     public common::Factory<MatrixCreateKeyType, Matrix*>,
     public dmemo::Distributed,
@@ -260,11 +265,8 @@ public:
     {
         const IndexType n = rowDist->getLocalSize();
         const IndexType m = colDist->getGlobalSize();
-
         // use of HArrayRef instead of HArray avoids additional copying of values
-
         const hmemo::HArrayRef<ValueType> valueArray( n * m, values );
-
         setDenseData( rowDist, colDist, valueArray, Scalar( eps ) );
     }
 
@@ -280,13 +282,10 @@ public:
         const ValueType* values )
     {
         const IndexType n = rowDist->getLocalSize();
-
         // use of HArrayRef instead of HArray avoids additional copying of values
-
         const hmemo::HArrayRef<IndexType> iaArray( n + 1, ia );
         const hmemo::HArrayRef<IndexType> jaArray( numValues, ja );
         const hmemo::HArrayRef<ValueType> valueArray( numValues, values );
-
         setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
     }
 
@@ -295,8 +294,8 @@ public:
     template<typename ValueType>
     void setRawDenseData( const IndexType n, const IndexType m, const ValueType* values, const ValueType eps = 0 )
     {
-        setRawDenseData( dmemo::DistributionPtr( new dmemo::NoDistribution( n ) ), 
-                         dmemo::DistributionPtr( new dmemo::NoDistribution( m ) ), 
+        setRawDenseData( dmemo::DistributionPtr( new dmemo::NoDistribution( n ) ),
+                         dmemo::DistributionPtr( new dmemo::NoDistribution( m ) ),
                          values,
                          eps );
     }
@@ -753,7 +752,7 @@ public:
      */
     virtual void invert( const Matrix& other ) = 0;
 
-	/**
+    /**
      * @brief Returns the L1 norm of this.
      *
      * @return the L1 norm of this.
@@ -787,35 +786,35 @@ public:
      * The maximal value is given by the largest difference between two elements
      * at the same position of the matrices.
      *
-     * Note: This method is the most general implementation and should be 
+     * Note: This method is the most general implementation and should be
      *       implemented more efficiently in derived classes.
      */
     virtual Scalar maxDiffNorm( const Matrix& other ) const;
 
-     /**
-      * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.
-      *
-      * \code
-      * void sub( ..., const Matrix& matrix, ...)
-      * {
-      *     ...
-      *     // Create a copy of the input matrix
-      *
-      *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
-      *     *newmatrix = matrix;
-      *
-      *     // Create a unity matrix of same type and same row distribution as matrix
-      *
-      *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
-      *     newmatrix->allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
-      *     newmatrix->setIdentity();
-      *     ...
-      * }
-      * \endcode
-      *
-      * This method is a workaround to call the constructor of a derived matrix class
-      * where the derived class is not known at compile time.
-      */
+    /**
+     * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.
+     *
+     * \code
+     * void sub( ..., const Matrix& matrix, ...)
+     * {
+     *     ...
+     *     // Create a copy of the input matrix
+     *
+     *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
+     *     *newmatrix = matrix;
+     *
+     *     // Create a unity matrix of same type and same row distribution as matrix
+     *
+     *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
+     *     newmatrix->allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
+     *     newmatrix->setIdentity();
+     *     ...
+     * }
+     * \endcode
+     *
+     * This method is a workaround to call the constructor of a derived matrix class
+     * where the derived class is not known at compile time.
+     */
     virtual Matrix* newMatrix() const = 0;
 
     /*
@@ -1078,7 +1077,7 @@ inline dmemo::DistributionPtr Matrix::getRowDistributionPtr() const
  */
 inline std::ostream& operator<<( std::ostream& stream, const scai::lama::Matrix::SyncKind& kind )
 {
-    switch( kind )
+    switch ( kind )
     {
         case scai::lama::Matrix::SYNCHRONOUS:
         {
@@ -1109,7 +1108,7 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::Matrix:
  */
 inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind& kind )
 {
-    switch( kind )
+    switch ( kind )
     {
         case scai::lama::Matrix::DENSE:
         {

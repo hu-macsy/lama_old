@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test cases for JDSStorage( only specific ones )
@@ -59,13 +64,9 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.JDSStorageTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     // This routine tests the check method of JDSStorage individually for this class
-
     JDSStorage<ValueType> jdsStorage;
-
     jdsStorage.setContextPtr( context );
-
     SCAI_LOG_INFO( logger, "checkTest for JDSStorage<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
 
     for ( int icase = 0; icase < 6; ++icase )
@@ -135,7 +136,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
             HArrayUtils::setVal( jdsPerm, 0, 0 );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
         }
-
     } // CASE_LOOP
 }
 
@@ -144,14 +144,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     SCAI_LOG_INFO( logger, "constructorTest for JDSStorage<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
-
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
-
     JDSStorage<ValueType> jdsStorage( numRows, numColumns );
-
     BOOST_REQUIRE_EQUAL( numRows, jdsStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, jdsStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( 0, jdsStorage.getNumValues() );
@@ -171,9 +167,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     SCAI_LOG_INFO( logger, "constructor1Test for JDSStorage<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
-
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
 // Note: ja, values are stored column-major order
@@ -275,7 +269,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_arithmetic_test
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     // use template storage test
-
     storageSwapTest<JDSStorage<ValueType> >();
 }
 
@@ -285,7 +278,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for JDSStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
     storageTypeNameTest<JDSStorage<ValueType> >( "JDS" );
 }
 
@@ -294,7 +286,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE( JDSCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-
     copyStorageTest<JDSStorage<ValueType> >();
 }
 

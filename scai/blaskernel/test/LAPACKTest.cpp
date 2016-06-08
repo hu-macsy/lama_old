@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test class for calling LAPACK routines via the LAMAInterface
@@ -63,24 +68,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.LAPACKTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     const IndexType n = 3;
-
     // set up values for A and B with A * B = identiy
-
     static ValueType avalues[] = { 2.0, 0.0, -1.0, -3.0, 0.0, 2.0, -2.0, -1.0, 0.0};
     static ValueType bvalues[] = { 2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
-
     HArray<ValueType> a( n * n, avalues, testContext );
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getinv<ValueType> > getinv;
-
     ContextPtr loc = Context::getContextPtr( getinv.validContext( testContext->getType() ) );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "getinv<" << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     {
         SCAI_CONTEXT_ACCESS( loc );
         WriteAccess<ValueType> wA( a, loc );
@@ -88,18 +84,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
     }
     {
         // comparison only possible on Host
-
         ContextPtr host = Context::getHostPtr();
-
         ReadAccess<ValueType> rA( a, host );
 
         for ( int i = 0; i < n * n; ++i )
         {
             typedef typename TypeTraits<ValueType>::AbsType CompareType;
-
             CompareType x1 = common::Math::abs( rA[i] );
             CompareType x2 = common::Math::abs( bvalues[i] );
-
             BOOST_CHECK_CLOSE( x1, x2, 1 );
         }
     }
@@ -110,25 +102,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
     static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getri<ValueType> > getri;
-
     SCAI_LOG_INFO( logger, "getrif<" << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << "host" )
-
     const IndexType n = 3;
 // set up values for A and B with A * B = identiy
     {
         //CblasRowMajor
-
         static ValueType avalues[] = { 2.0, 0.0, -1.0, -3.0, 0.0, 2.0, -2.0, -1.0, 0.0};
         static ValueType bvalues[] = { 2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
-
         HArray<ValueType> a( n * n, avalues, testContext );
         HArray<IndexType> permutation( n );
-
         ContextPtr loc = Context::getHostPtr();
-
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
@@ -152,12 +137,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {   2.0, -3.0, -2.0, 0.0, 0.0, -1.0, -1.0, 2.0, 0.0};
         static ValueType bvalues[] =
         {   2.0, -4.0, 3.0, 1.0, -2.0, 2.0, 0.0, -1.0, 0.0};
-
         HArray<ValueType> a( n * n, avalues, testContext );
         HArray<IndexType> permutation( n );
-
         ContextPtr loc = Context::getHostPtr();
-
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
@@ -182,9 +164,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
-
     {
         const IndexType n = 3;
         const IndexType ntri = n * ( n + 1 ) / 2;
@@ -197,7 +177,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         HArray<ValueType> a( ntri, avalues, testContext );
         HArray<ValueType> b1( n, bvalues1, testContext );
         HArray<ValueType> b2( n, bvalues2, testContext );
-
         ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA( a, loc );
@@ -256,7 +235,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         HArray<ValueType> a2( ntri, avalues2, testContext );
         HArray<ValueType> b1( n, bvalues1, testContext );
         HArray<ValueType> b2( n, bvalues2, testContext );
-
         ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA1( a1, loc );
@@ -374,9 +352,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         HArray<ValueType> a( ntri, avalues, testContext );
         HArray<ValueType> b1( n, bvalues1, testContext );
         HArray<ValueType> b2( n, bvalues2, testContext );
-
         ContextPtr loc = Context::getHostPtr();
-
         {
             ReadAccess<ValueType> rA( a, loc );
             WriteAccess<ValueType> wB1( b1, loc );

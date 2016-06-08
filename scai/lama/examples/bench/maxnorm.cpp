@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test of maxnorm for all valuetypes
@@ -52,16 +57,13 @@ template<typename ValueType>
 static void bench( IndexType size )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    DistributionPtr dist( new BlockDistribution( size, comm ));
-
+    DistributionPtr dist( new BlockDistribution( size, comm ) );
     DenseVector<ValueType> x( dist );
-
     x = ValueType( 7 );
-
     double tmpTime = Walltime::get();
     x.maxNorm();
     tmpTime = Walltime::get() - tmpTime;
-    std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision(3) << tmpTime;
+    std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision( 3 ) << tmpTime;
 }
 
 int main()
@@ -72,7 +74,6 @@ int main()
                           8388608, 16777216, 33554432
                         };
     IndexType n = sizeof( sizes ) / sizeof( IndexType );
-
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "Size";
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "float";
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "double";
@@ -81,24 +82,16 @@ int main()
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "ComplexDouble";
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "ComplexLongDouble";
     std::cout << std::endl;
-
     std::cout << std::setw( 110 ) << std::setfill( '-' ) << "-";
     std::cout << std::endl;
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
-
-        std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision(3) << sizes[i];
-
+        std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision( 3 ) << sizes[i];
 #define DO_BENCH( ValueType ) bench<ValueType>( sizes[i] );
-
         // do the benchmark for each supported A type
-
         SCAI_COMMON_LOOP( DO_BENCH, SCAI_ARITHMETIC_HOST )
-
 #undef DO_BENCH
-
         std::cout << std::endl;
     }
-
 }

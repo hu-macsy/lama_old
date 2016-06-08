@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief This file contains routines to check the equality of distributed matrices
@@ -64,32 +69,24 @@
  * If the absolute difference between the values is greater than small than the values
  * must be in a tolerance that depends on the precision.
  */
-static inline void testSameMatrix( const scai::lama::Matrix& m1, 
-                                   const scai::lama::Matrix& m2, 
+static inline void testSameMatrix( const scai::lama::Matrix& m1,
+                                   const scai::lama::Matrix& m2,
                                    scai::lama::Scalar small = scai::lama::Scalar( 0 ),
                                    scai::lama::Scalar tolerance = scai::lama::Scalar( 0.01 ) )
 {
     using namespace scai;
     using namespace lama;
-
     const IndexType nRows = m1.getNumRows();
     const IndexType nCols = m1.getNumColumns();
-
     // require for same sizes, otherwise it is illegal to access elements
-
     BOOST_REQUIRE_EQUAL( nRows, m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( nCols, m2.getNumColumns() );
-
     // create dense vectors for the rows with the same value type
-
     VectorCreateKeyType vectorType1( Vector::DENSE, m1.getValueType() );
     VectorCreateKeyType vectorType2( Vector::DENSE, m2.getValueType() );
-
     common::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
     common::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );
-
     typedef double CompareType;  // complex type does not work
-
     CompareType tol = tolerance.getValue<CompareType>();
 
     // now compare all rows
@@ -97,7 +94,6 @@ static inline void testSameMatrix( const scai::lama::Matrix& m1,
     for ( IndexType i = 0; i < nRows; ++i )
     {
         // Note: rows will be broadcast in case of distributed matrices
-
         m1.getRow( *ptrRow1, i );
         m2.getRow( *ptrRow2, i );
 
@@ -106,16 +102,13 @@ static inline void testSameMatrix( const scai::lama::Matrix& m1,
         for ( IndexType j = 0; j < nCols; j++ )
         {
             // std::cout << i << ", " << j << ": " << ptrRow1->getValue( j ) << ", " << ptrRow2->getValue( j ) << std::endl;
-
             Scalar elem1 = ptrRow1->getValue( j );
             Scalar elem2 = ptrRow2->getValue( j );
-
             Scalar diff  = abs( elem1 - elem2 );
 
             if ( diff > small )
             {
                 // for large numbers we just check for a tolerance
-
                 BOOST_CHECK_CLOSE( elem1.getValue<CompareType>(), elem2.getValue<CompareType>(), tol );
             }
         }
@@ -128,22 +121,18 @@ static inline void testSameMatrix( const scai::lama::Matrix& m1,
  * alternative)
  */
 template<typename ValueType1, typename ValueType2>
-void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, 
+void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1,
                             const scai::lama::MatrixStorage<ValueType2>& m2,
                             const scai::lama::Scalar small = 0.0,
                             const scai::lama::Scalar tolerance = 0.01 )
 {
     const IndexType m = m1.getNumRows();
     const IndexType n = m1.getNumColumns();
-
     BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
-
-    scai::hmemo::HArray<ValueType1> row1(n);
-    scai::hmemo::HArray<ValueType2> row2(n);
-
+    scai::hmemo::HArray<ValueType1> row1( n );
+    scai::hmemo::HArray<ValueType2> row2( n );
     typedef double CompareType;  // complex type does not work
-
     CompareType tolV   = tolerance.getValue<CompareType>();
     CompareType smallV = small.getValue<CompareType>();
 
@@ -151,23 +140,19 @@ void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1,
     {
         m1.getRow( row1, i );
         m2.getRow( row2, i );
-
         // compare the two vectors element-wise
-
-        scai::hmemo::ReadAccess<ValueType1> readRow1(row1);
-        scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
+        scai::hmemo::ReadAccess<ValueType1> readRow1( row1 );
+        scai::hmemo::ReadAccess<ValueType2> readRow2( row2 );
 
         for ( IndexType j = 0; j < n; j++ )
         {
             CompareType elem1 = static_cast<CompareType>( readRow1[j] );
             CompareType elem2 = static_cast<CompareType>( readRow2[j] );
-       
             CompareType diff = scai::common::Math::abs( elem1 - elem2 );
 
             if ( diff >= smallV )
             {
                 // if absolute difference is too big we check for close
-
                 BOOST_CHECK_CLOSE( elem1, elem2, tolV );
             }
         }

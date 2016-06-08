@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for Host memory by using stdlib routines.
@@ -63,18 +68,17 @@ HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContextPtr ) :
 {
     mNumberOfAllocatedBytes = 0;
     mNumberOfAllocates = 0;
-
     SCAI_LOG_INFO( logger, "HostMemory created" )
 }
 
 HostMemory::~HostMemory()
 {
-    if( mNumberOfAllocates > 0 )
+    if ( mNumberOfAllocates > 0 )
     {
         SCAI_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
     }
 
-    if( mNumberOfAllocatedBytes != 0 )
+    if ( mNumberOfAllocatedBytes != 0 )
     {
         SCAI_LOG_ERROR( logger,
                         *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes
@@ -87,43 +91,33 @@ HostMemory::~HostMemory()
 void HostMemory::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-
     stream << "HostMemory( " << *mHostContextPtr << " )";
 }
 
 void* HostMemory::allocate( const size_t size ) const
 {
     SCAI_ASSERT( size > 0, "allocate with size = " << size << " should not be done" )
-
     void* pointer = malloc( size );
 
-    if( pointer == NULL )
+    if ( pointer == NULL )
     {
         SCAI_THROWEXCEPTION( MemoryException, "malloc failed for size = " << size )
     }
 
     // allocate must be thread-safe in case where multiple threads use LAMA arrays
-
     common::Thread::ScopedLock lock( allocate_mutex );
-
     mNumberOfAllocatedBytes += size;
     mNumberOfAllocates++;
-
     SCAI_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size )
-
     return pointer;
 }
 
 void HostMemory::free( void* pointer, const size_t size ) const
 {
     SCAI_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
-
     SCAI_ASSERT( mNumberOfAllocates >= 1, "Invalid free, because there are no open allocates." )
-
     ::free( pointer );
-
     common::Thread::ScopedLock lock( allocate_mutex );
-
     mNumberOfAllocatedBytes -= size;
     mNumberOfAllocates--;
 }
@@ -131,16 +125,13 @@ void HostMemory::free( void* pointer, const size_t size ) const
 void HostMemory::memcpy( void* dst, const void* src, const size_t size ) const
 {
     SCAI_REGION( "Memory.Host_memcpy" )
-
     SCAI_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
-
     ::memcpy( dst, src, size );
 }
 
 void HostMemory::memset( void* dst, const int val, const size_t size ) const
 {
     SCAI_REGION( "Memory.Host_memset" )
-
     ::memset( dst, val, size );
 }
 
@@ -161,7 +152,6 @@ MemoryPtr HostMemory::getIt()
     if ( !instancePtr.get() )
     {
         SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" )
-
         ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
         common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );
         SCAI_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )

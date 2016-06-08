@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains only test specific for the CSR Sparse matrix
@@ -49,20 +54,14 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRSparseMatrixTest" );
 BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, ValueType, scai_arithmetic_test_types )
 {
     CSRSparseMatrix<ValueType> matrix;
-
     // check zero sizes
-
     BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
     BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );
-
     // check correct format / type
-
     BOOST_CHECK_EQUAL( common::TypeTraits<ValueType>::stype, matrix.getValueType() );
     BOOST_CHECK_EQUAL( Matrix::CSR, matrix.getFormat() );
-
     const CSRStorage<ValueType>& local = matrix.getLocalStorage();
     const CSRStorage<ValueType>& halo = matrix.getHaloStorage();
-
     BOOST_CHECK_EQUAL( local.getNumRows(), halo.getNumRows() );
 }
 

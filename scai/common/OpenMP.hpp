@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Common defintions for optional use of OpenMP
@@ -38,7 +43,7 @@
 #define omp_get_thread_num() 0
 #define omp_get_num_threads() 1
 #define omp_get_max_threads() 1
-#define omp_set_num_threads( x ) 
+#define omp_set_num_threads( x )
 
 #if defined( WIN32 )
 
@@ -58,13 +63,10 @@ inline double omp_get_wtime( void )
 
 inline double omp_get_wtime( void )
 {
-
     struct timeval tp;
     struct timezone tzp;
-
     gettimeofday( &tp, &tzp );
-
-    return (double) tp.tv_sec + tp.tv_usec * 0.000001;
+    return ( double ) tp.tv_sec + tp.tv_usec * 0.000001;
 }
 
 #endif

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief launchHelper.hpp
@@ -67,12 +72,11 @@ const unsigned int lama_maxGridSize_cuda = 65535;
 inline dim3 makeGrid( const unsigned int numThreads, const unsigned int blockSize )
 {
     // launch a kernel with numBlocks == 0 results in runtime error
-
     const unsigned int numBlocks = numThreads > 0 ? ( numThreads + blockSize - 1 ) / blockSize : 1;
 
     // will be safe as there is always check for legal value 0 <= ithread < numThreads
 
-    if( numBlocks <= lama_maxGridSize_cuda )
+    if ( numBlocks <= lama_maxGridSize_cuda )
     {
         //fits in a 1D grid
         return dim3( numBlocks );
@@ -80,7 +84,7 @@ inline dim3 makeGrid( const unsigned int numThreads, const unsigned int blockSiz
     else
     {
         //2D grid is required
-        const unsigned int side = (unsigned int) ceil( sqrt( (double) numBlocks ) );
+        const unsigned int side = ( unsigned int ) ceil( sqrt( ( double ) numBlocks ) );
         return dim3( side, side );
     }
 }
@@ -103,7 +107,7 @@ __inline__ __device__
 unsigned int threadId( const dim3 gridDim, const dim3 blockIdx, const dim3 blockDim, const dim3 threadIdx )
 {
     return __umul24( blockDim.x, blockIdx.
-                    x + __umul24( blockIdx.y, gridDim.x ) ) +threadIdx.x;
+                     x + __umul24( blockIdx.y, gridDim.x ) ) + threadIdx.x;
 }
 
 /** * @brief blockId calculates the one dimensional block id of a thread in a two
@@ -121,7 +125,7 @@ unsigned int threadId( const dim3 gridDim, const dim3 blockIdx, const dim3 block
 __inline__ __device__
 unsigned int blockId( const dim3 gridDim, const dim3 blockIdx )
 {
-    return __umul24( gridDim.x, blockIdx.y ) +blockIdx.x;
+    return __umul24( gridDim.x, blockIdx.y ) + blockIdx.x;
 }
 
 } /* end namespace scai */

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test to verify that 'relevant' CUDA kernel implementations have been registered
@@ -58,39 +63,32 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CUDA_KernelRegistry" );
 BOOST_AUTO_TEST_CASE_TEMPLATE( getKernelTest, ValueType, test_types )
 {
     // This test checks that CUDA routines have been registered correctly and are accessible
-
     ContextPtr context = Context::getContextPtr( Context::CUDA );
-
     {
         LAMAKernel<UtilKernelTrait::setVal<ValueType, ValueType> > setVal;
         SCAI_LOG_INFO( logger, "setVal = " << setVal.printIt() )
         BOOST_CHECK( setVal[context] != NULL );
     }
-
     {
         LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
         SCAI_LOG_INFO( logger, "CSR::normalGEMV = " << normalGEMV.printIt() )
         BOOST_CHECK( normalGEMV[context] != NULL );
     }
-
     {
         LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
         SCAI_LOG_INFO( logger, "ELL::normalGEMV = " << normalGEMV.printIt() )
         BOOST_CHECK( normalGEMV[context] != NULL );
     }
-
     {
         LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
         SCAI_LOG_INFO( logger, "JDS::normalGEMV = " << normalGEMV.printIt() )
         BOOST_CHECK( normalGEMV[context] != NULL );
     }
-
     {
         LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
         SCAI_LOG_INFO( logger, "COO::normalGEMV = " << normalGEMV.printIt() )
         BOOST_CHECK( normalGEMV[context] != NULL );
     }
-
     {
         LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
         BOOST_CHECK( normalGEMV[context] != NULL );

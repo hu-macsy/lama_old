@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of an abstract class for distributed vectors.
@@ -68,19 +73,19 @@ typedef common::shared_ptr<class Vector> VectorPtr;
 struct _Vector
 {
 
-/**
- * @brief VectorFormat describes if a vector is dense or sparse.
- */
-typedef enum
-{
-    DENSE,      //!< vector format for a dense vector
-    SPARSE,     //!< vector format for a sparse vector, not supported yet
-    UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
-} VectorFormat;
+    /**
+     * @brief VectorFormat describes if a vector is dense or sparse.
+     */
+    typedef enum
+    {
+        DENSE,      //!< vector format for a dense vector
+        SPARSE,     //!< vector format for a sparse vector, not supported yet
+        UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
+    } VectorFormat;
 
-static COMMON_DLL_IMPORTEXPORT const char* kind2Str( const VectorFormat vectorKind );
+    static COMMON_DLL_IMPORTEXPORT const char* kind2Str( const VectorFormat vectorKind );
 
-static COMMON_DLL_IMPORTEXPORT VectorFormat str2Kind( const char* str );
+    static COMMON_DLL_IMPORTEXPORT VectorFormat str2Kind( const char* str );
 
 };  // struct _Vector
 
@@ -88,7 +93,7 @@ static COMMON_DLL_IMPORTEXPORT VectorFormat str2Kind( const char* str );
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kind );
 
-/** Type definition for the key type used for the Vector factory. 
+/** Type definition for the key type used for the Vector factory.
  *
  *  The key for vector create is a pair of vector format and the value type.
  */
@@ -111,11 +116,11 @@ typedef std::pair<_Vector::VectorFormat, common::scalar::ScalarType> VectorCreat
  * This base class can be used to define dense and sparse vectors of
  * any type.
  */
-class COMMON_DLL_IMPORTEXPORT Vector: 
+class COMMON_DLL_IMPORTEXPORT Vector:
 
-     public common::Factory<VectorCreateKeyType, Vector*>,
-     public dmemo::Distributed,
-     public _Vector
+    public common::Factory<VectorCreateKeyType, Vector*>,
+    public dmemo::Distributed,
+    public _Vector
 
 {
 public:
@@ -493,8 +498,8 @@ public:
      */
     virtual void redistribute( dmemo::DistributionPtr distribution ) = 0;
 
-    /** 
-     *  Build the conjugate vector in place. 
+    /**
+     *  Build the conjugate vector in place.
      */
     virtual void conj() = 0;
 

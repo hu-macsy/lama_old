@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of LArray as HArray with additional kernel functionality.
@@ -152,7 +157,6 @@ public:
                      hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
         // SCAI_ASSERT( context.get(), "NULL context" )
-
         this->resize( n );  // size of the array must be known before a value can be assigned
 
         // context == NULL might happen by DenseVector
@@ -274,7 +278,6 @@ public:
     LArray& operator= ( const ValueType val )
     {
         //  assignment is done on the first touch memory/context
-
         hmemo::ContextPtr context = this->getFirstTouchContextPtr();
         SCAI_ASSERT( context.get(), "No first touch context" )
         HArrayUtils::setScalar( *this, val, reduction::COPY, this->getFirstTouchContextPtr() );

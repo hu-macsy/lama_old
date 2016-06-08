@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./mic/MICCallable.hpp
@@ -31,7 +36,7 @@
 
 //#if defined( __INTEL_OFFLOAD ) && defined( __MIC__ )
 #if defined( __INTEL_OFFLOAD )
-    #define MIC_CALLABLE_MEMBER __declspec( target(mic) )
+#define MIC_CALLABLE_MEMBER __declspec( target(mic) )
 #else
-    #define MIC_CALLABLE_MEMBER
+#define MIC_CALLABLE_MEMBER
 #endif

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test routines for class Factory
@@ -102,29 +107,21 @@ template Base::Register<TDerived<float> >::RegisterGuard Base::Register<TDerived
 BOOST_AUTO_TEST_CASE( FactoryTest )
 {
     std::vector<std::string> values;  // string is create type for the factory
-
     Base::getCreateValues( values );
-
     size_t size_expected = 3;  // we have registered 3 classes in factory
-
     BOOST_CHECK_EQUAL( size_expected, values.size() );
-
     BOOST_CHECK( Base::canCreate( "D" ) );
     BOOST_CHECK( !Base::canCreate( "F" ) );
-    BOOST_CHECK( Base::canCreate( typeid(int).name() ) );
-    BOOST_CHECK( !Base::canCreate( typeid(double).name() ) );
-
+    BOOST_CHECK( Base::canCreate( typeid( int ).name() ) );
+    BOOST_CHECK( !Base::canCreate( typeid( double ).name() ) );
     BOOST_CHECK_THROW( { Base::create( "e" ); }, Exception );
-
     Base* obj = Base::create( "D" );
     Derived* derivedObj = dynamic_cast<Derived*>( obj );
     BOOST_CHECK( derivedObj );
-
-    obj = Base::create( typeid(int).name() );
+    obj = Base::create( typeid( int ).name() );
     TDerived<int>* intObj = dynamic_cast<TDerived<int>*>( obj );
     TDerived<float>* floatObj = dynamic_cast<TDerived<float>*>( obj );
     TDerived<double>* doubleObj = dynamic_cast<TDerived<double>*>( obj );
-
     BOOST_CHECK( intObj );
     BOOST_CHECK( floatObj == NULL );
     BOOST_CHECK( doubleObj == NULL );

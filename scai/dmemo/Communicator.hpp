@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Base and interface class for communicators used in LAMA
@@ -86,13 +91,13 @@ typedef common::shared_ptr<const Communicator> CommunicatorPtr;
 struct _Communicator
 {
 
-typedef enum
-{
-    NO,                  //!< No communicator 
-    MPI,                 //!< MPI communicator
-    GPI,                 //!< GPI communicator
-    MAX_COMMUNICATOR     //!< dummy value for number of communicators
-} CommunicatorKind;
+    typedef enum
+    {
+        NO,                  //!< No communicator
+        MPI,                 //!< MPI communicator
+        GPI,                 //!< GPI communicator
+        MAX_COMMUNICATOR     //!< dummy value for number of communicators
+    } CommunicatorKind;
 
 };
 
@@ -490,88 +495,88 @@ public:
      */
 
 #define SCAI_DMEMO_COMMUNICATOR_METHODS( _type )                            \
-                                                                            \
+    \
     virtual void exchangeByPlan(                                            \
             _type* const recvData,                                          \
             const CommunicationPlan& recvPlan,                              \
             const _type* const sendData,                                    \
             const CommunicationPlan& sendPlan ) const = 0;                  \
-                                                                            \
+    \
     virtual tasking::SyncToken* exchangeByPlanAsync(                        \
             _type* const recvData,                                          \
             const CommunicationPlan& recvPlan,                              \
             const _type* const sendData,                                    \
             const CommunicationPlan& sendPlan ) const = 0;                  \
-                                                                            \
+    \
     virtual void bcast(                                                     \
             _type val[],                                                    \
             const IndexType n,                                              \
             const PartitionId root ) const = 0;                             \
-                                                                            \
+    \
     virtual void all2allv(                                                  \
             _type* recvVal[],                                               \
             IndexType recvCount[],                                          \
             _type* sendVal[],                                               \
             IndexType sendCount[] ) const = 0;                              \
-                                                                            \
+    \
     virtual void scatter(                                                   \
             _type myvals[],                                                 \
             const IndexType n,                                              \
             const PartitionId root,                                         \
             const _type allvals[] ) const = 0;                              \
-                                                                            \
+    \
     virtual void scatterV(                                                  \
             _type myvals[],                                                 \
             const IndexType n,                                              \
             const PartitionId root,                                         \
             const _type allvals[],                                          \
             const IndexType sizes[] ) const = 0;                            \
-                                                                            \
+    \
     virtual void gather(                                                    \
             _type allvals[],                                                \
             const IndexType n,                                              \
             const PartitionId root,                                         \
             const _type myvals[] ) const = 0;                               \
-                                                                            \
+    \
     virtual void gatherV(                                                   \
             _type allvals[],                                                \
             const IndexType n,                                              \
             const PartitionId root,                                         \
             const _type myvals[],                                           \
             const IndexType sizes[] ) const = 0;                            \
-                                                                            \
+    \
     virtual void swap(                                                      \
             _type val[],                                                    \
             const IndexType n,                                              \
             const PartitionId partner ) const = 0;                          \
-                                                                            \
+    \
     virtual void maxloc(                                                    \
             _type& val,                                                     \
             IndexType& location,                                            \
             const PartitionId root ) const = 0;                             \
-                                                                            \
+    \
     virtual _type min(                                                      \
             const _type value ) const = 0;                                  \
-                                                                            \
+    \
     virtual _type sum(                                                      \
             const _type value ) const = 0;                                  \
-                                                                            \
+    \
     virtual _type max(                                                      \
             const _type value ) const = 0;                                  \
-                                                                            \
+    \
     virtual IndexType shiftData(                                            \
             _type newVals[],                                                \
             const IndexType newSize,                                        \
             const _type oldVals[],                                          \
             const IndexType oldSize,                                        \
             const int direction ) const = 0;                                \
-                                                                            \
+    \
     virtual tasking::SyncToken* shiftDataAsync(                             \
             _type newVals[],                                                \
             const _type oldVals[],                                          \
             const IndexType size,                                           \
             const int direction ) const = 0;
-     
+
 
     // define communicator methods for all supported types
 
@@ -630,7 +635,6 @@ public:
         PartitionId root = 0;
         gather( allvals, n, root, myvals );
         bcast( allvals, n * getSize(), root );
-
         // @ToDo: implement this by a circular shift
     }
 
@@ -787,11 +791,8 @@ PartitionId Communicator::getNeighbor( int pos ) const
 {
     PartitionId size = getSize();
     PartitionId rank = getRank();
-
     PartitionId apos = common::Math::abs( pos );
-
     SCAI_ASSERT( apos <= size, "neighbor pos " << pos << " out of range (" << size << ")" )
-
     return ( size + rank + pos ) % size;
 }
 
@@ -805,23 +806,15 @@ void Communicator::exchangeByPlan(
     const CommunicationPlan& sendPlan ) const
 {
     SCAI_ASSERT_EQ_ERROR( sendArray.size(), sendPlan.totalQuantity(), "size mismatch" )
-
     IndexType recvSize = recvPlan.totalQuantity();
-
     // find a context where data of sendArray can be communicated
     // if possible try to find a context where valid data is available
     // CUDAaware MPI: might give GPU or Host context here
-
     hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
-
     SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlan, comCtx = " << *comCtx )
-
     hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
-
     // Data will be received at the same context where send data is
-
     hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
-
     exchangeByPlan( recvData.get(), recvPlan, sendData.get(), sendPlan );
 }
 
@@ -835,28 +828,18 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
     const CommunicationPlan& sendPlan ) const
 {
     SCAI_ASSERT_EQ_ERROR( sendArray.size(), sendPlan.totalQuantity(), "size mismatch" )
-
     IndexType recvSize = recvPlan.totalQuantity();
-
     // allocate accesses, SyncToken will take ownership
-
     hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
-
     SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
-
     hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
     hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
-
     tasking::SyncToken* token( exchangeByPlanAsync( recvData.get(), recvPlan, sendData.get(), sendPlan ) );
-
     // Add the read and write access to the sync token to get it freed after successful wait
     // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
-
     token->pushRoutine( recvData.releaseDelayed() );
     token->pushRoutine( sendData.releaseDelayed() );
-
     // return ownership of new created object
-
     return token;
 }
 

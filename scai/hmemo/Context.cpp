@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for the Context base class and its factory.
@@ -65,7 +70,6 @@ Context::~Context()
 void Context::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-
     stream << "Context";
 }
 
@@ -75,7 +79,7 @@ void Context::enable( const char* file, int line ) const
 {
     SCAI_LOG_INFO( logger, file << "( line = " << line << ") : enable " << *this )
 
-    if( mEnabled )
+    if ( mEnabled )
     {
         SCAI_LOG_INFO( logger,
                        "Enable " << *this << " at " << file << " ( line = " << line << " )" << ", already enabled at " << mFile << " ( line = " << mLine << " )" )
@@ -92,7 +96,7 @@ void Context::disable( const char* file, int line ) const
 {
     SCAI_LOG_INFO( logger, file << "( line = " << line << ") : disable " << *this )
 
-    if( !mEnabled )
+    if ( !mEnabled )
     {
         SCAI_LOG_INFO( logger,
                        "Disable " << *this << " at " << file << " ( line = " << line << " )" << ", context was not enabled before" )
@@ -129,7 +133,6 @@ void Context::enableZeroCopy( bool flag ) const
 MemoryPtr Context::getHostMemoryPtr() const
 {
     // take the host memory of the memory factory
-
     ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
     return hostContextPtr->getMemoryPtr();
 }
@@ -164,7 +167,6 @@ ContextPtr Context::getContextPtr()
     if ( common::Settings::getEnvironment( ctx_string, "SCAI_CONTEXT" ) )
     {
         // ctx_string name not case sensitive, take it upper case
-
         for ( std::string::iterator p = ctx_string.begin(); ctx_string.end() != p; ++p )
         {
             *p = static_cast<std::string::value_type>( toupper( *p ) );

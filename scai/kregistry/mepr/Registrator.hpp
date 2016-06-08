@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Registrator structure, for registering templated functions in KernelRegistry
@@ -54,11 +59,14 @@
         static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); \
     };
 
-namespace scai {
+namespace scai
+{
 
-namespace kregistry {
+namespace kregistry
+{
 
-namespace mepr {
+namespace mepr
+{
 
 /*
  * Instantiate the Registrator for one template-parameter with different kind of ValueTypes
@@ -66,18 +74,18 @@ namespace mepr {
 
 template<template<typename> class R, typename TList> struct RegistratorV;
 
-template<template<typename> class R> struct RegistratorV<R,common::mepr::NullType>
+template<template<typename> class R> struct RegistratorV<R, common::mepr::NullType>
 {
-    static void call( const KernelRegistry::KernelRegistryFlag ){}
+    static void call( const KernelRegistry::KernelRegistryFlag ) {}
 };
 
 template<template<typename> class R, typename H, typename T>
-struct RegistratorV< R, common::mepr::TypeList<H,T> >
+struct RegistratorV< R, common::mepr::TypeList<H, T> >
 {
     static void call( const KernelRegistry::KernelRegistryFlag flag )
     {
         R<H>::initAndReg( flag );
-        RegistratorV<R,T>::call( flag );
+        RegistratorV<R, T>::call( flag );
     }
 };
 
@@ -92,22 +100,22 @@ struct RegistratorV< R, common::mepr::TypeList<H,T> >
  * _RegistratorVO
  */
 
-template<template<typename,typename> class R, typename ValueType, typename TList> struct _RegistratorVO;
+template<template<typename, typename> class R, typename ValueType, typename TList> struct _RegistratorVO;
 
-template<template<typename,typename> class R, typename TList>
+template<template<typename, typename> class R, typename TList>
 struct _RegistratorVO<R, common::mepr::NullType, TList>
 {
-    static void call( const KernelRegistry::KernelRegistryFlag ){}
+    static void call( const KernelRegistry::KernelRegistryFlag ) {}
 };
 
-template<template<typename,typename> class R, typename ValueType>
+template<template<typename, typename> class R, typename ValueType>
 struct _RegistratorVO<R, ValueType, common::mepr::NullType>
 {
-    static void call( const KernelRegistry::KernelRegistryFlag ){}
+    static void call( const KernelRegistry::KernelRegistryFlag ) {}
 };
 
-template<template<typename,typename> class R, typename ValueType, typename H, typename T>
-struct _RegistratorVO< R, ValueType, common::mepr::TypeList<H,T> >
+template<template<typename, typename> class R, typename ValueType, typename H, typename T>
+struct _RegistratorVO< R, ValueType, common::mepr::TypeList<H, T> >
 {
     static void call( const KernelRegistry::KernelRegistryFlag flag )
     {
@@ -120,28 +128,27 @@ struct _RegistratorVO< R, ValueType, common::mepr::TypeList<H,T> >
  * RegistratorVO
  */
 
-template<template<typename,typename> class R, typename TList1, typename TList2> struct RegistratorVO;
+template<template<typename, typename> class R, typename TList1, typename TList2> struct RegistratorVO;
 
-template<template<typename,typename> class R >
+template<template<typename, typename> class R >
 struct RegistratorVO<R, common::mepr::NullType, common::mepr::NullType >
 {
-    static void call( const KernelRegistry::KernelRegistryFlag ){}
+    static void call( const KernelRegistry::KernelRegistryFlag ) {}
 };
 
-template<template<typename,typename> class R, typename TList >
+template<template<typename, typename> class R, typename TList >
 struct RegistratorVO<R, common::mepr::NullType, TList >
 {
-    static void call( const KernelRegistry::KernelRegistryFlag ){}
+    static void call( const KernelRegistry::KernelRegistryFlag ) {}
 };
 
-template<template<typename,typename> class R, typename H1, typename T1, typename H2, typename T2>
-struct RegistratorVO< R, common::mepr::TypeList<H1,T1>, common::mepr::TypeList<H2, T2> >
+template<template<typename, typename> class R, typename H1, typename T1, typename H2, typename T2>
+struct RegistratorVO< R, common::mepr::TypeList<H1, T1>, common::mepr::TypeList<H2, T2> >
 {
     static void call( const KernelRegistry::KernelRegistryFlag flag )
     {
-        _RegistratorVO<R, H1, common::mepr::TypeList<H2,T2> >::call( flag );
-
-        RegistratorVO<R, T1, common::mepr::TypeList<H2,T2> >::call( flag );
+        _RegistratorVO<R, H1, common::mepr::TypeList<H2, T2> >::call( flag );
+        RegistratorVO<R, T1, common::mepr::TypeList<H2, T2> >::call( flag );
     }
 };
 

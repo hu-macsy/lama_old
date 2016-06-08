@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Enum typ for the different reduction operator.s
@@ -45,7 +50,7 @@ namespace utilskernel
 
 struct reduction
 {
-    /** Enumeration type for reduction operators used in set/scatter ops  
+    /** Enumeration type for reduction operators used in set/scatter ops
      *
      *  The reduction operator specifies for typical reductions what kind
      *  of operator is applied to combine two elements.
@@ -53,7 +58,7 @@ struct reduction
      *  \code
      *  A[i] = A[i] reduction_op B[i]
      *  \endcode
-     *  
+     *
      */
 
     typedef enum
@@ -81,31 +86,40 @@ inline std::ostream& operator<<( std::ostream& stream, const reduction::Reductio
         case reduction::COPY:
             stream << "COPY";
             break;
+
         case reduction::ADD:
             stream << "ADD";
             break;
+
         case reduction::SUB:
             stream << "SUB";
             break;
+
         case reduction::MULT:
             stream << "MULT";
             break;
+
         case reduction::DIVIDE:
             stream << "DIVIDE";
             break;
+
         case reduction::MIN:
             stream << "MIN";
             break;
+
         case reduction::MAX:
             stream << "MAX";
             break;
+
         case reduction::ABS_MAX:
             stream << "ABS_MAX";
             break;
+
         default:
             stream << "<unknown_reduction_op>";
             break;
     }
+
     return stream;
 }
 

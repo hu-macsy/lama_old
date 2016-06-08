@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief vector.cpp
@@ -42,35 +47,26 @@ int main()
 
 {
     /** Take default real type for this example. */
-
     typedef RealType ValueType;
-
     Scalar singleValue( 2.0 );
-
     //
     // Create a DenseVector out of a simple c array
     //
     const ValueType inputData[] = { 1.0, 2.0, 3.0, 4.0 };
-
     DenseVector<ValueType> sequenceOfValues( 4, inputData );
-
     //
     // scale vector
     //
     sequenceOfValues = singleValue * sequenceOfValues;
-
     //
     // print vector to file vector.frm/.vec (SAMG format)
     //
     sequenceOfValues.writeToFile( "vector", File::SAMG_FORMAT );
-
     std::cout << "DenseVector is written to 'vector.frm/.vec'" << std::endl;
-
     //
     //  That's it.
     //
     std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
-
     return EXIT_SUCCESS;
 }
 

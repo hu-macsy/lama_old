@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Wrapper implementations for BLAS1 routines in CUDA using cuBLAS
@@ -96,11 +101,8 @@ void CUDABLAS1::sum(
 
     SCAI_LOG_DEBUG( logger,
                     "sum<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0; // default stream if no syncToken is given
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -111,10 +113,9 @@ void CUDABLAS1::sum(
     const int blockSize = 256;
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-
     sum_kernel <<< dimGrid, dimBlock, 0, stream>>> ( n, alpha, x, beta, y, z );
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( stream );
         SCAI_CHECK_CUDA_ERROR
@@ -139,9 +140,7 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
     }
 
     SCAI_LOG_DEBUG( logger, "scal<" << TypeTraits<ValueType>::id() << "> of x[" << n << "], alpha = " << alpha )
-
     cudaStream_t stream = NULL;
-
     SyncToken* syncToken = SyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -152,11 +151,8 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
     }
 
     // note: SCAI_CHECK_CUDA_ACCESS not required due to getCurrentCUDACtx
-
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::scal set stream" );
-
     CUBLASWrapper<ValueType>::scal( handle, n, alpha, x_d,  incX );
 
     // No error check here possible as kernel is started asynchronously
@@ -179,17 +175,14 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.nrm2" )
 
-    if( incX <= 0 )
+    if ( incX <= 0 )
     {
-        return static_cast<ValueType>(0.0);
+        return static_cast<ValueType>( 0.0 );
     }
 
     SCAI_LOG_DEBUG( logger, "nrm2<" << TypeTraits<ValueType>::id() << "> of x[" << n << "]" )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = NULL;
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -198,23 +191,19 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX )
     }
 
     // Note: we have to switch cublas Stream, this might be done globally later
-
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::nrm2 set stream" );
-
     ValueType res = CUBLASWrapper<ValueType>::nrm2( handle, n , x_d, incX );
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         SCAI_CHECK_CUDA_ERROR
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS1::nrm2 set stream null" );
-
     return res;
 }
 
@@ -227,17 +216,14 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
 {
     SCAI_REGION( "CUDA.BLAS1.asum" )
 
-    if( incX <= 0 )
+    if ( incX <= 0 )
     {
-        return static_cast<ValueType>(0.0);
+        return static_cast<ValueType>( 0.0 );
     }
 
     SCAI_LOG_DEBUG( logger, "asum<" << TypeTraits<ValueType>::id() << "> of x[" << n << "]" )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = NULL;
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -246,21 +232,18 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
     }
 
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::asum set stream" );
-
     ValueType res = CUBLASWrapper<ValueType>::asum( handle, n , x_d,  incX  );
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         SCAI_CHECK_CUDA_ERROR
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, NULL ), "CUDABLAS1::asum set stream NULL" );
-
     return res;
 }
 
@@ -272,13 +255,9 @@ template<typename ValueType>
 IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.iamax" )
-
     SCAI_LOG_DEBUG( logger, "iamax<" << TypeTraits<ValueType>::id() << "> of x[" << n << "]" )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = NULL;
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -287,14 +266,12 @@ IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const Index
     }
 
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUABLAS1::iamax set stream" );
-
     IndexType iamax = CUBLASWrapper<ValueType>::iamax( handle, n , x_d, incX );
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         SCAI_CHECK_CUDA_ERROR
@@ -318,17 +295,14 @@ void CUDABLAS1::swap(
 {
     SCAI_REGION( "CUDA.BLAS1.swap" )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
     SCAI_LOG_DEBUG( logger, "swap<" << TypeTraits<ValueType>::id() << "> of x, y with size " << n )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = NULL;
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -337,14 +311,12 @@ void CUDABLAS1::swap(
     }
 
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS::swap set stream" );
-
     CUBLASWrapper<ValueType>::swap( handle, n , x_d,  incX , y_d,  incY );
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         SCAI_CHECK_CUDA_ERROR
@@ -367,17 +339,14 @@ void CUDABLAS1::copy(
 {
     SCAI_REGION( "CUDA.BLAS1.copy" )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
     SCAI_LOG_DEBUG( logger, "copy<" << TypeTraits<ValueType>::id() << "> of x, y, n = " << n )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = NULL;
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -386,14 +355,12 @@ void CUDABLAS1::copy(
     }
 
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::copy set stream" );
-
     CUBLASWrapper<ValueType>::copy( handle, n , x_d,  incX, y_d, incY );
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         SCAI_CHECK_CUDA_ERROR
@@ -417,17 +384,14 @@ void CUDABLAS1::axpy(
 {
     SCAI_REGION( "CUDA.BLAS1.axpy" )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
     SCAI_LOG_DEBUG( logger, "axpy<" << TypeTraits<ValueType>::id() << "> of x, y, n = " << n << ", alpha = " << alpha )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = NULL;
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -436,14 +400,12 @@ void CUDABLAS1::axpy(
     }
 
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::axpy set stream" );
-
     CUBLASWrapper<ValueType>::axpy( handle, n , alpha, x_d,  incX, y_d,  incY );
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         SCAI_CHECK_CUDA_ERROR
@@ -465,19 +427,16 @@ ValueType CUDABLAS1::dot(
     IndexType incY )
 {
     SCAI_REGION( "CUDA.BLAS1.dot" )
-
     SCAI_LOG_DEBUG( logger,
                     "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", incX = " << incX << ", incY = " << incY << ", x_d = " << x_d << ", y_d = " << y_d )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
-        return static_cast<ValueType>(0.0);
+        return static_cast<ValueType>( 0.0 );
     }
 
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = NULL;
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -486,14 +445,12 @@ ValueType CUDABLAS1::dot(
     }
 
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ), "CUDABLAS1::dot set stream" );
-
     ValueType res = CUBLASWrapper<ValueType>::dot( handle, n , x_d,  incX , y_d, incY );
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         SCAI_CHECK_CUDA_ERROR
@@ -511,11 +468,8 @@ template<typename ValueType>
 void CUDABLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register BLAS1 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
-
     KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( CUDABLAS1::sum, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( CUDABLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( CUDABLAS1::nrm2, ctx, flag );
@@ -534,13 +488,13 @@ void CUDABLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
 CUDABLAS1::CUDABLAS1()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
-                    kregistry::KernelRegistry::KERNEL_ADD );
+        kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDABLAS1::~CUDABLAS1()
 {
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
-                    kregistry::KernelRegistry::KERNEL_ERASE );
+        kregistry::KernelRegistry::KERNEL_ERASE );
 }
 
 CUDABLAS1 CUDABLAS1::guard;    // guard variable for registration

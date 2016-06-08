@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implemenation of methods for class CUDAAccess.
@@ -51,22 +56,16 @@ static SCAI_THREAD_PRIVATE_PTR( const CUDACtx, currentCUDACtx )
 const CUDACtx* CUDAAccess::enable( const CUDACtx& ctx )
 {
     SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( ctx.getCUcontext() ), "could not push context" )
-
     const CUDACtx* last = currentCUDACtx.get();
-
     currentCUDACtx.set( &ctx );  // make it available globally in thread-private variable
-
     return last;
 }
 
 void CUDAAccess::disable( const CUDACtx* last )
 {
     CUcontext tmp; // result variable for current context, not needed here
-
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
-
     currentCUDACtx.set( last );
-
     // last != NULL -> current context is last->getCUcontext()
     // last == NULL -> current context is 0
 }
@@ -84,9 +83,7 @@ CUDAAccess::~CUDAAccess()
 const CUDACtx& CUDAAccess::getCurrentCUDACtx()
 {
     const CUDACtx* current = currentCUDACtx.get();
-
     SCAI_ASSERT( current, "Currently, no context is set" )
-
     return *current;
 }
 

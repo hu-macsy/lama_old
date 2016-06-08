@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief InverseSolver.cpp
@@ -55,13 +60,13 @@ using lama::Matrix;
 using lama::Vector;
 using lama::Scalar;
 
-InverseSolver::InverseSolver( const std::string & id )
+InverseSolver::InverseSolver( const std::string& id )
     : Solver( id )
 {
     SCAI_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << id )
 }
 
-InverseSolver::InverseSolver( const std::string & id, LoggerPtr logger )
+InverseSolver::InverseSolver( const std::string& id, LoggerPtr logger )
     : Solver( id, logger )
 {
     SCAI_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << id )
@@ -92,17 +97,11 @@ InverseSolver::InverseSolverRuntime::~InverseSolverRuntime()
 void InverseSolver::initialize( const Matrix& coefficients )
 {
     SCAI_REGION( "Solver.Inverse.intialize" )
-
     SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
-
     getRuntime().mInverse = lama::MatrixPtr( coefficients.newMatrix() );
-
     getRuntime().mInverse->invert( coefficients );
-
     getRuntime().mInverse->setContextPtr( coefficients.getContextPtr() );
-
     getRuntime().mInverse->prefetch();
-
     Solver::initialize( coefficients );
 }
 
@@ -111,7 +110,6 @@ void InverseSolver::initialize( const Matrix& coefficients )
 const Matrix& InverseSolver::getInverse() const
 {
     SCAI_ASSERT_ERROR( getConstRuntime().mInverse, "inverse not available (no call of initialize before)" );
-
     return *getConstRuntime().mInverse;
 }
 
@@ -120,11 +118,8 @@ const Matrix& InverseSolver::getInverse() const
 void InverseSolver::solveImpl()
 {
     SCAI_REGION( "Solver.Inverse.solve" )
-
     InverseSolverRuntime& runtime = getRuntime();
-
     SCAI_ASSERT_ERROR( runtime.mInverse.get(), "solve, but mInverse is NULL" )
-
     logStartSolve();
     *runtime.mSolution = ( *runtime.mInverse ) * ( *runtime.mRhs );
     logEndSolve();
@@ -136,7 +131,7 @@ void InverseSolver::setContextPtr( hmemo::ContextPtr context )
 {
     Solver::setContextPtr( context );
 
-    if( getRuntime().mInverse )
+    if ( getRuntime().mInverse )
     {
         getRuntime().mInverse->setContextPtr( mContext );
     }
@@ -162,7 +157,6 @@ void InverseSolver::logEndSolve()
     mLogger->logTime( "SolutionTimer", LogLevel::solverInformation, "Total Runtime [s]: " );
     mLogger->stopAndResetTimer( "SolutionTimer" );
     mLogger->logNewLine( LogLevel::solverInformation );
-
 }
 
 /* --------------------------------------------------------------------------- */

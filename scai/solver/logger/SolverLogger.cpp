@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of the functionality of the SolverLogger
@@ -60,7 +65,6 @@ SolverLogger::SolverLogger(
     : mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank( ignoreRank )
 {
     mTimer.reset( new Timer() );
-
     SCAI_LOG_INFO( logger, "SolverLogger created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = "
                    << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
@@ -89,7 +93,6 @@ SolverLogger::SolverLogger(
           ignoreRank )
 {
     FileLogger::getFileLogger().setLogFile( logFileName );
-
     SCAI_LOG_INFO( logger, "SolverLogger for file " << logFileName << " created, id = " << mId
                    << ", level = " << mLogLevel << ", writeBehaviour = "
                    << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
@@ -113,7 +116,7 @@ void SolverLogger::logString( const std::string& message )
 {
     std::string logMessage = this->createPrefix() + message;
 
-    switch( mWriteBehaviour )
+    switch ( mWriteBehaviour )
     {
         case LoggerWriteBehaviour::toFileAndConsole:
         {
@@ -135,14 +138,13 @@ void SolverLogger::logString( const std::string& message )
         break;
 
         default:
-
             SCAI_LOG_ERROR( logger, "illegal write behaviour: " << mWriteBehaviour )
     }
 }
 
 void SolverLogger::logString( LogLevel::LogLevel level, const std::string& message )
 {
-    if( level <= mLogLevel && !mIgnoreRank )
+    if ( level <= mLogLevel && !mIgnoreRank )
     {
         logString( message );
     }
@@ -166,7 +168,7 @@ void SolverLogger::logResidual(
     const lama::Norm& norm,
     const std::string iterationPrefix )
 {
-    if( level <= mLogLevel )
+    if ( level <= mLogLevel )
     {
         std::stringstream residualStream;
         residualStream << iterationPrefix;
@@ -180,10 +182,9 @@ void SolverLogger::logResidual(
 void SolverLogger::logTime( const std::string& timerId, LogLevel::LogLevel level, const std::string& message )
 {
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
-
     double time = mTimer->getTime( timerId );
 
-    if( level <= mLogLevel )
+    if ( level <= mLogLevel )
     {
         std::stringstream timeStringStream;
         timeStringStream << message;
@@ -196,21 +197,18 @@ void SolverLogger::logTime( const std::string& timerId, LogLevel::LogLevel level
 void SolverLogger::startTimer( const std::string& timerId )
 {
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
-
     mTimer->start( timerId );
 }
 
 void SolverLogger::stopTimer( const std::string& timerId )
 {
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
-
     mTimer->stop( timerId );
 }
 
 void SolverLogger::stopAndResetTimer( const std::string& timerId )
 {
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
-
     mTimer->stopAndReset( timerId );
 }
 

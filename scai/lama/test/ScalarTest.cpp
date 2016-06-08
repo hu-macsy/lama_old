@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains the implementation of the class ScalarTest.
@@ -58,19 +63,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ScalarTest" )
 BOOST_AUTO_TEST_CASE( ScalarGetTypeTest )
 {
     // Challenge: some of these types were not defined in module common but later in lama
-
     using namespace scai::common;
-
     BOOST_CHECK_EQUAL( getScalarType<float>(), scalar::FLOAT );
     BOOST_CHECK_EQUAL( getScalarType<double>(), scalar::DOUBLE );
     BOOST_CHECK_EQUAL( getScalarType<LongDouble>(), scalar::LONG_DOUBLE );
-
 #ifdef SCAI_COMPLEX_SUPPORTED
     BOOST_CHECK_EQUAL( getScalarType<ComplexFloat>(), scalar::COMPLEX );
     BOOST_CHECK_EQUAL( getScalarType<ComplexDouble>(), scalar::DOUBLE_COMPLEX );
     BOOST_CHECK_EQUAL( getScalarType<ComplexLongDouble>(), scalar::LONG_DOUBLE_COMPLEX );
 #endif
-
 }
 
 /* --------------------------------------------------------------------- */
@@ -161,7 +162,6 @@ BOOST_AUTO_TEST_CASE( MiscTests )
     BOOST_CHECK_EQUAL( abs( t ), 9.0 );
     BOOST_CHECK_EQUAL( max( s, t ), 9.0  );
     BOOST_CHECK_EQUAL( min( s, t ), 6.25 );
-
 #ifdef SCAI_COMPLEX_SUPPORTED
     Scalar c1( ComplexFloat( 3.0, 4.0 ) );
     Scalar c2( ComplexFloat( 2.0, 2.0 ) );
@@ -170,7 +170,6 @@ BOOST_AUTO_TEST_CASE( MiscTests )
     // Pythagoras: 3^2 + 4^2 = 5^2
     BOOST_CHECK_EQUAL( abs( c1 ), 5.0 );
 #endif
-
 }
 
 /* --------------------------------------------------------------------- */

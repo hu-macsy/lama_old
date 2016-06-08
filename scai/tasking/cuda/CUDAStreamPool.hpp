@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Pool to manage multiple streams for a CUDA context
@@ -50,7 +55,7 @@ struct streamtype
     } StreamType;
 };
 
-/** For each CUDA device/context there will be some streams available 
+/** For each CUDA device/context there will be some streams available
  *  that can be used for asynchronous computations and memory transfers.
  *
  *  The advantage of the pool is that create/destroy of the stream is only called once.
@@ -63,7 +68,7 @@ public:
 
     /** Get a stream of the pool, either for compute or memory transfer */
 
-    CUstream reserveStream( StreamType type ); 
+    CUstream reserveStream( StreamType type );
 
     /** Release a stream, no more used. */
 
@@ -76,7 +81,7 @@ public:
 
     static CUDAStreamPool& getPool( const common::CUDACtx& cuda );
 
-    /** Release the stream pool for a CUDA context. 
+    /** Release the stream pool for a CUDA context.
      *
      *  @throws an exception if not all streams have been released.
      */
@@ -89,7 +94,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    const common::CUDACtx& mCUDA;   
+    const common::CUDACtx& mCUDA;
 
     /** Construct a pool of streams for a given CUDA device. */
 

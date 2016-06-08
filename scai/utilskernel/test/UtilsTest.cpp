@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains tests for the class CUDAUtils and OpenMPUtils
@@ -63,15 +68,10 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-
     ContextPtr loc = testContext;
-
     setVal.getSupportedContext( loc );
-
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
-
     SCAI_LOG_INFO( logger, "scaleTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
-
     ValueType valuesValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
@@ -97,15 +97,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-
     ContextPtr loc = testContext;
-
     reduce.getSupportedContext( loc );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
-
     SCAI_LOG_INFO( logger, "sumTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
-
     {
         ValueType valuesValues[] =
         { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
@@ -132,15 +127,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-
     ContextPtr loc = testContext;
-
     setVal.getSupportedContext( loc );
-
     SCAI_LOG_INFO( logger, "setValTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
-
     {
         const IndexType n = 20;
         LArray<ValueType> values;
@@ -176,15 +166,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
-
     ContextPtr loc = testContext;
-
     isSorted.getSupportedContext( loc );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
-
     SCAI_LOG_INFO( logger, "isSortedTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
-
     {
         ValueType values1[] =
         { 1, 2, 2, 2, 5, 8 };
@@ -225,11 +210,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE( setOrderTest )
 {
     // setOrder is only for IndexType
-
     ContextPtr loc = Context::getContextPtr();
-
     SCAI_LOG_INFO( logger, "setOrderTest on " << *loc )
-
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     {
         const IndexType n = 20;
@@ -262,15 +244,10 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types )
 {
     static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
-
     ContextPtr loc = testContext;
-
     invert.getSupportedContext( loc );
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
-
     SCAI_LOG_INFO( logger, "invertTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
-
     {
         // TODO: should it be possible to pass 0 elements? What should be the result?
         ValueType valuesValues[] =

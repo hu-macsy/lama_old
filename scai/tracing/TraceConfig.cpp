@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of class TraceConfig
@@ -155,7 +160,6 @@ TraceConfig::TraceConfig()
     mCallTreeEnabled = false;
     mTraceFilePrefix = "_";
     // value of environmentvariable:  param1:param2=valx:param3:param4=valy
-
     std::vector<std::string> values;
 
     // get all values separated by :
@@ -163,7 +167,6 @@ TraceConfig::TraceConfig()
     if ( scai::common::Settings::getEnvironment( values, SCAI_ENV_TRACE_CONFIG, ':' ) )
     {
         // SCAI_TRACE=key1:key2:key3=val3:key4
-
         if ( values.size() != 1 || values[0] != "OFF" )
         {
             mEnabled = true;
@@ -171,9 +174,7 @@ TraceConfig::TraceConfig()
             for ( size_t i = 0; i < values.size(); ++i )
             {
                 std::vector<std::string> keys;
-
                 scai::common::Settings::tokenize( keys, values[i], '=' );
-
                 std::string& key = keys[0];
 
                 // make upper case of key
@@ -257,13 +258,9 @@ TraceConfig::~TraceConfig()
     }
 
     // now print all info in a file
-
     std::ostringstream fileName;
-
     fileName << mTraceFilePrefix << ".time";
-
     /* For parallel processes we should add suffix for rank */
-
     int rank;
 
     if ( scai::common::Settings::getEnvironment( rank, "SCAI_RANK" ) )
@@ -326,19 +323,14 @@ TraceData* TraceConfig::getTraceData( ThreadId threadId )
 {
     // make sure that not two different threads try to allocate a table
     // read / write access at same time might also result in a crash
-
     Thread::ScopedLock lock( mapMutex );
-
     shared_ptr<TraceData> traceData;
-
     // Old stuff: shared_ptr<TraceData> traceData = mTraceDataMap[threadId];
-
     std::map<ThreadId, common::shared_ptr<TraceData> >::const_iterator it = mTraceDataMap.find( threadId );
 
     if ( it == mTraceDataMap.end() )
     {
         // this thread calls the first time a region
-
         try
         {
             traceData.reset( new TraceData( mTraceFilePrefix.c_str(), threadId, mThreadEnabled, mCallTreeEnabled ) );

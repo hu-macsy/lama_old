@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./lama/examples/labelrank/labelrank.cpp
@@ -115,19 +120,16 @@ static void getEvidence( std::vector<IndexType>& evidenceVector, const DenseStor
 static void getEvidence( std::vector<IndexType>& evidenceVector, const CSRStorage<ValueType>& labelsMatrix )
 {
     // Get indexes of all rows where at least one element is found
-
     evidenceVector.clear();
-
     const IndexType numRows = labelsMatrix.getNumRows();
     //const IndexType numCols = labelsMatrix.getNumColumns();
-
     ReadAccess<IndexType> csrIA( labelsMatrix.getIA() );
 
     // if labelsMatrix[i,:] has entry, we add row index i
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        bool evidence = csrIA[i] < csrIA[i+1];
+        bool evidence = csrIA[i] < csrIA[i + 1];
 
         if ( evidence )
         {
@@ -177,9 +179,7 @@ static void update( CSRStorage<ValueType>& affinityMatrix, const std::vector<Ind
 {
     // This is some kind of hack to make sure that labelsMatrix is not updated in
     // all rows where at least one element is found
-
     const IndexType size = evidenceVector.size();
-
     ReadAccess<IndexType> csrIA( affinityMatrix.getIA() );
     WriteAccess<IndexType> csrJA( affinityMatrix.getJA() );
     WriteAccess<ValueType> csrValues( affinityMatrix.getValues() );
@@ -189,14 +189,13 @@ static void update( CSRStorage<ValueType>& affinityMatrix, const std::vector<Ind
 
     for ( IndexType ii = 0; ii < size; ++ii )
     {
-
         IndexType i = evidenceVector[ii];
 
         // set row i of affinityMatrix to identity
 
         // SCAI_ASSERT_ERROR( csrIA[i] < csrIA[i+1], "row " << i << " of affinity matrix empty" );
 
-        if( csrIA[i] >= csrIA[i+1] )
+        if ( csrIA[i] >= csrIA[i + 1] )
         {
             continue;
         }
@@ -214,16 +213,11 @@ static void update( CSRStorage<ValueType>& affinityMatrix, const std::vector<Ind
 
 int main( int argc, char* argv[] )
 {
-
     // config
-
     Config config;
-
     // set properties
-
     props.logLevel = 20;
     props.threshold = 1e-5;
-
     const char* wFilename;
     const char* yFilename;
 
@@ -244,44 +238,29 @@ int main( int argc, char* argv[] )
     }
 
     double start = Walltime::get();
-
     AffinityMatrix affinityMatrix( wFilename );
-
     cout << "loading affinityMatrix took " << Walltime::get() - start << " secs." << endl;
     cout << "affinityMatrix = " << affinityMatrix << endl;
-
     start = Walltime::get();
     LabelMatrix labelsMatrix( yFilename );
     cout << "loading labelsMatrix took " << Walltime::get() - start << " secs." << endl;
     cout << "labelsMatrix = " << labelsMatrix << endl;
-
     // compute diagonal degree matrix and invert it
-
     start = Walltime::get();
-
     //const IndexType numRows = affinityMatrix.getNumRows();
     const IndexType numCols = affinityMatrix.getNumColumns();
-
     DenseVector<ValueType> oneVector( numCols, 1.0 );
     DenseVector<ValueType> y( affinityMatrix * oneVector );  // rowSums
     y.invert();   // y(i) = 1.0 / y(i)
     affinityMatrix.scale( y );  // scales each row
-
     cout << "invert/scale calculations took " << Walltime::get() - start << " secs." << endl;
-
     // update affinityMatrix so that labelsMatrix remains unchanged
     // where initial entries are set
-
     std::vector<IndexType> evidences;
-
     getEvidence( evidences, labelsMatrix.getLocalStorage() );
-
     cout << "#evidences = " << evidences.size() << endl;
-
     update( affinityMatrix.getLocalStorage(), evidences );
-
     cout << "Starting Label Propagation..." << endl;
-
     LabelMatrix labelsMatrixNew;
 
     if ( props.logLevel < 30 )
@@ -291,45 +270,35 @@ int main( int argc, char* argv[] )
     }
 
     int iteration = 0;
-
     cout << "Running on " << config.getContext() << endl;
-
     // do all operations on matrices at CUDA device where possible
-
     labelsMatrix.setContextPtr( config.getContextPtr() );
     labelsMatrixNew.setContextPtr( config.getContextPtr() );
     affinityMatrix.setContextPtr( config.getContextPtr() );
-
     double totalStart = Walltime::get();
 
     while ( true )
     {
         iteration += 1;
         double start = Walltime::get();
-
         // (D−1 * W) * Y(t)
         // w already stores (D-1 * W)
-
         labelsMatrixNew = affinityMatrix * labelsMatrix;
-
         int nnzOld = labelsMatrix.getNumValues();
-
         ValueType maxDiff = labelsMatrix.maxDiffNorm( labelsMatrixNew ).getValue<ValueType>();
-
         // use more efficient swap instead of: labelsMatrix = labelsMatrixNew;
         // Note: works only for same matrix type
-
         labelsMatrix.swap( labelsMatrixNew );
 
         if ( props.logLevel < 30 )
         {
             cout << "| ";
-            cout << std::setw(5) << iteration << " | ";
-            cout << std::setiosflags(std::ios::fixed) << std::setprecision(6) << std::setw(8) << maxDiff << " | ";
-            cout << std::setw(9) << nnzOld << " | ";
+            cout << std::setw( 5 ) << iteration << " | ";
+            cout << std::setiosflags( std::ios::fixed ) << std::setprecision( 6 ) << std::setw( 8 ) << maxDiff << " | ";
+            cout << std::setw( 9 ) << nnzOld << " | ";
             int nnz = labelsMatrix.getNumValues();
-            cout << std::setw(9) << nnz << " | ";
-            cout << std::setiosflags(std::ios::fixed) << std::setprecision(6) << std::setw(8) << (Walltime::get() - start) << " | ";
+            cout << std::setw( 9 ) << nnz << " | ";
+            cout << std::setiosflags( std::ios::fixed ) << std::setprecision( 6 ) << std::setw( 8 ) << ( Walltime::get() - start ) << " | ";
             cout << endl;
         }
 
@@ -346,7 +315,7 @@ int main( int argc, char* argv[] )
 
         if ( iteration == config.mMaxIters )
         {
-            if ( props.logLevel < 30)
+            if ( props.logLevel < 30 )
             {
                 cout << "-------------------------------------------------------" << endl;
             }
@@ -357,8 +326,6 @@ int main( int argc, char* argv[] )
     }
 
     cout << "saving new labels to hdd..." << endl;
-
     labelsMatrix.writeToFile( "labels-new.mtx", File::MATRIX_MARKET );
-
     cout << "total run time was " << Walltime::get() - totalStart << " secs." << endl;
 }

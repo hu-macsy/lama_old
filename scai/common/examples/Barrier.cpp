@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Example with pthreads using Condition of the common library to implement barrier.
@@ -53,19 +58,14 @@ SCAI_THREAD_PRIVATE_PTR( int, threadArg )
 static void barrier()
 {
     std::cout << "Thread " << *threadArg.get() << " before lock" << std::endl;
-
     Thread::ScopedLock lock( barrierMutex );
-
     std::cout << "Thread " << *threadArg.get() << " after lock" << std::endl;
-
     thread_cnt ++;
-
     std::cout << "Thread " << *threadArg.get() << " thread_cnt = " << thread_cnt << std::endl;
 
     if ( thread_cnt != N_THREADS )
     {
         // Some others not at barrier so wait
-
         std::cout << "Thread " << *threadArg.get() << " before wait" << std::endl;
         barrierCondition.wait( lock );
         std::cout << "Thread " << *threadArg.get() << " after wait" << std::endl;
@@ -86,19 +86,12 @@ static int sharedArray[ N_THREADS ];
 static void threadRoutine( int& arg )
 {
     std::cout << "Thread " << scai::common::Thread::getSelf() << " runs, arg = " << arg << std::endl;
-
     threadArg.set( &arg );
-
     // sleep a little bit so if threadArg is not thread private it will be overwritten
-
     scai::common::Walltime::sleep( 100 );
-
     sharedArray[arg] = *threadArg.get();
-
     barrier();
-
     std::cout << "Thread " << arg << " after barrier" << std::endl;
-
     int sum = 0;
 
     for ( int i = 0; i < N_THREADS; ++i )
@@ -106,10 +99,8 @@ static void threadRoutine( int& arg )
         sum += sharedArray[i];
     }
 
-    int expected_sum = N_THREADS * ( N_THREADS-1 ) / 2;
-
+    int expected_sum = N_THREADS * ( N_THREADS - 1 ) / 2;
     SCAI_ASSERT_EQUAL( sum, expected_sum, "Wrong value after thread barrier" )
-
     {
         Thread::ScopedLock lock( printMutex );
         std::cout << "Thread " << arg << " has correct sum = " << sum << std::endl;

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief NoCommunicator.cpp
@@ -119,17 +124,11 @@ void NoCommunicator::exchangeByPlanImpl(
     }
 
     // send / recv plan have maximal one value
-
     SCAI_ASSERT_EQ_ERROR( 1, recvPlan.size(), "maximal one value in recvPlan" )
-
     int quantity = recvPlan[0].quantity;
-
     // recv and send plan must have same quantity
-
     SCAI_ASSERT_EQ_ERROR( quantity, sendPlan[0].quantity, "quantity mismatch" )
-
     // self copy of send data to recv data
-
     memcpy( recvData, sendData, quantity * sizeof( ValueType ) );
 }
 
@@ -304,15 +303,12 @@ CommunicatorPtr NoCommunicator::create()
     if ( theNoCommunicatorInstance.expired() )
     {
         // create a new instance of NoCommunicator and keep it for further uses
-
         communicator = common::shared_ptr<NoCommunicator>( new NoCommunicator() );
-
         theNoCommunicatorInstance = communicator;
     }
     else
     {
         // the last communicator instance is still valid, so we return new shared pointer to it
-
         communicator = theNoCommunicatorInstance.lock();
     }
 

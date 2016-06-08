@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Host memory management for page-locked memory for fast transfer to CUDA device
@@ -57,13 +62,13 @@ namespace hmemo
  *  and requires CUDA initialization, we will store also a shared pointer to the
  *  corresponding CUDA context.
  *
- *  Note: copy routines between CUDA Host and CUDA device are already provided 
+ *  Note: copy routines between CUDA Host and CUDA device are already provided
  *        by CUDA memory class and are not required here.
  */
 
-class COMMON_DLL_IMPORTEXPORT CUDAHostMemory: 
+class COMMON_DLL_IMPORTEXPORT CUDAHostMemory:
 
-    public Memory 
+    public Memory
 {
 
 public:
@@ -94,7 +99,10 @@ public:
 
     virtual ContextPtr getContextPtr() const;
 
-    const CUDAContext& getCUDAContext() const { return *mCUDAContext; }
+    const CUDAContext& getCUDAContext() const
+    {
+        return *mCUDAContext;
+    }
 
 protected:
 

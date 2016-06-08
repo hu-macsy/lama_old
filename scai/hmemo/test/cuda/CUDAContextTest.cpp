@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Extensive testing of CUDAContext.
@@ -58,7 +63,6 @@ typedef boost::mpl::list<double, float> test_types;
 static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToken )
 {
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = NULL;
 
     if ( syncToken )
@@ -69,9 +73,7 @@ static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToke
     }
 
     //std::cout << "scal( n = " << n << ", alpha = " << alpha << ", x[], inc_x = " << inc_x << std::endl;
-
     const common::CUDACtx& dev = common::CUDAAccess::getCurrentCUDACtx();
-
     SCAI_CUBLAS_CALL( cublasSetStream( dev.getcuBLASHandle(), stream ), "scal set stream" );
     SCAI_CUBLAS_CALL( cublasSscal( dev.getcuBLASHandle(), n, &alpha, x_d, inc_x ), "cublasSscal" );
 }
@@ -113,7 +115,6 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 BOOST_AUTO_TEST_CASE ( releaseTest )
 {
     ContextPtr contextPtr = Context::getContextPtr( Context::Host );
-
     HArray<IndexType> ctxArray; // default, not allocated at all
     ReadAccess<IndexType> readTestAccess( ctxArray, contextPtr );
     readTestAccess.release();
@@ -144,7 +145,6 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
     ContextPtr contextPtr = Context::getContextPtr( Context::Host );
-
     HArray<IndexType> ctxArray; // default, not allocated at all
     {
         WriteAccess<IndexType> writeAccess( ctxArray, contextPtr );
@@ -175,19 +175,14 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     const float alpha = 0.5;
     HArray<float> vector( n, value );
     common::shared_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
-
     common::shared_ptr<SyncToken> token( cudaContext->getSyncToken() );
-
     {
         SCAI_CONTEXT_ACCESS( cudaContext )
         scal( n, alpha, cudaV->get(), 1, token.get() );
         token->pushToken( cudaV );
     }
-
     cudaV.reset();  // give free the write access, but ownership also in token
-
     token->wait();
-
     ReadAccess<float> hostV( vector, hostContext );
 
     for ( IndexType i = 0; i < n; ++i )
@@ -202,7 +197,6 @@ BOOST_AUTO_TEST_CASE( syncTest )
 {
     ContextPtr hostContext = Context::getContextPtr( Context::Host );
     ContextPtr cudaContext = Context::getContextPtr( Context::CUDA );
-
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;

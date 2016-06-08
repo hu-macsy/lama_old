@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Vector with all HArray one for each supported type
@@ -33,24 +38,22 @@
 
 typedef scai::common::shared_ptr<scai::hmemo::_HArray> ArrayPtr;
 
-/** Class for a list of matrix storage pointers, one for each supported 
+/** Class for a list of matrix storage pointers, one for each supported
  *  matrix storage format and each supported arithmetic type.
  */
 
-class HArrays : public std::vector<ArrayPtr> 
+class HArrays : public std::vector<ArrayPtr>
 {
 
 public:
 
     /** Constructor creates already the list with all storage pointers. */
 
-    HArrays( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() ) 
+    HArrays( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::common;
         using namespace scai::hmemo;
-
         std::vector<scalar::ScalarType> values;  //  all create values
-
         _HArray::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )

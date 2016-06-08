@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Demo program for the Factory of HArray.
@@ -51,20 +56,13 @@ template class scai::hmemo::HArray<double>;
 int main()
 {
     SCAI_LOG_THREAD( "Main" )
-
     ContextPtr contextPtr = Context::getHostPtr();
-
     static IndexType N =  100;
-
     HArray<float> lamaArray ( N, 1.0 );
-
     scai::common::shared_ptr<HArray<float> > lamaArray1( HArray<float>::create( lamaArray.getValueType() ) );
-
     *lamaArray1 = lamaArray;
-
     ReadAccess<float> read( lamaArray, contextPtr );
     ReadAccess<float> read1( *lamaArray1, contextPtr );
-
     const float* data = read.get();
     const float* data1 = read1.get();
 
@@ -74,12 +72,8 @@ int main()
     }
 
     std::cout << "Create finished" << std::endl;
-
     scai::common::shared_ptr<_HArray> lamaArray2( _HArray::create( scai::common::scalar::FLOAT ) );
-
     std::cout << "lamaArray2 = " << *lamaArray2 << std::endl;
-
     scai::common::shared_ptr<_HArray> lamaArray3( _HArray::create( scai::common::scalar::DOUBLE ) );
-
     std::cout << "lamaArray3 = " << *lamaArray3 << std::endl;
 }

@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief CG.cpp
@@ -86,13 +91,10 @@ CG::CGRuntime::~CGRuntime()
 void CG::initialize( const Matrix& coefficients )
 {
     SCAI_REGION( "Solver.CG.initialize" )
-
     IterativeSolver::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
-
     runtime.mPScalar = 0.0;
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
-
     runtime.mP.reset( coefficients.newDenseVector() );
     runtime.mQ.reset( coefficients.newDenseVector() );
     runtime.mZ.reset( coefficients.newDenseVector() );
@@ -108,8 +110,7 @@ void CG::iterate()
     Scalar alpha;
     Scalar beta;
 
-
-    if( this->getIterationCount() == 0 )
+    if ( this->getIterationCount() == 0 )
     {
         this->getResidual();
     }
@@ -123,7 +124,7 @@ void CG::iterate()
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
     //CG implementation start
-    if( !mPreconditioner )
+    if ( !mPreconditioner )
     {
         SCAI_REGION( "Solver.CG.setZ" )
         z = residual;
@@ -131,7 +132,7 @@ void CG::iterate()
     else
     {
         SCAI_REGION( "Solver.CG.solvePreconditioner" )
-        z = Scalar(0.0);
+        z = Scalar( 0.0 );
         mPreconditioner->solve( z, residual );
     }
 
@@ -140,7 +141,7 @@ void CG::iterate()
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
-    if( this->getIterationCount() == 0 )
+    if ( this->getIterationCount() == 0 )
     {
         p = z;
     }
@@ -148,7 +149,7 @@ void CG::iterate()
     {
         SCAI_REGION( "Solver.CG.setP" )
 
-        if( lastPScalar.getValue<double>() < eps )  //scalar is small
+        if ( lastPScalar.getValue<double>() < eps ) //scalar is small
         {
             beta = 0.0;
         }
@@ -173,7 +174,7 @@ void CG::iterate()
     const Scalar pqProd = q.dotProduct( p );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if( pqProd.getValue<double>() < eps )   //scalar is small
+    if ( pqProd.getValue<double>() < eps )  //scalar is small
     {
         alpha = 0.0;
     }

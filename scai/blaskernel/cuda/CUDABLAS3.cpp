@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief CUDABLAS3.cpp
@@ -77,24 +82,20 @@ void CUDABLAS3::gemm(
     const IndexType ldc )
 {
     typedef CUBLASTrait::BLASTrans BLASTrans;
-
     BLASTrans transA_char = CUBLAS_OP_N;
     BLASTrans transB_char = CUBLAS_OP_N;
-
     //Swap matrix if RowMajor Order
-
     const IndexType lda_call = ( order == CblasRowMajor ) ? ldb : lda;
     const IndexType ldb_call = ( order == CblasRowMajor ) ? lda : ldb;
     const IndexType m_call = ( order == CblasRowMajor ) ? n : m;
     const IndexType n_call = ( order == CblasRowMajor ) ? m : n;
     const ValueType* const A_call = ( order == CblasRowMajor ) ? B : A;
     const ValueType* const B_call = ( order == CblasRowMajor ) ? A : B;
-
     SCAI_LOG_INFO( logger, "gemm<" << TypeTraits<ValueType>::id() << ">( m = " << m << ", n = " << n << ", k = " << k )
 
-    if( transa == CblasTrans )
+    if ( transa == CblasTrans )
     {
-        if( order == CblasRowMajor )
+        if ( order == CblasRowMajor )
         {
 //          transB_char = 'T';
             transB_char = CUBLAS_OP_T;
@@ -106,9 +107,9 @@ void CUDABLAS3::gemm(
         }
     }
 
-    if( transb == CblasTrans )
+    if ( transb == CblasTrans )
     {
-        if( order == CblasRowMajor )
+        if ( order == CblasRowMajor )
         {
 //          transA_char = 'T';
             transA_char = CUBLAS_OP_T;
@@ -121,9 +122,7 @@ void CUDABLAS3::gemm(
     }
 
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0; // default stream if no syncToken is given
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -132,18 +131,15 @@ void CUDABLAS3::gemm(
     }
 
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
-
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ),
                       "CUDABLAS3::gemm set cublas kernel stream = " << stream );
-
     SCAI_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
-
     CUBLASWrapper<ValueType>::gemm( handle, transA_char, transB_char,  m_call ,  n_call ,  k , alpha, A_call,  lda_call , B_call,  ldb_call , beta, C,
                                     ldc );
 
     // No error check here possible as kernel is started asynchronously in any case
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
@@ -404,11 +400,8 @@ template<typename ValueType>
 void CUDABLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
-
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( CUDABLAS3::gemm, ctx, flag );
 }
 

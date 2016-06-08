@@ -6,7 +6,7 @@
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief ToDo: Missing description in ./utilskernel/examples/vectorAdd.cpp
@@ -34,14 +39,11 @@ using namespace scai;
 void add( hmemo::HArray<double> res, const hmemo::HArray<double> a, const hmemo::HArray<double> b )
 {
     SCAI_ASSERT_LE( a.size(), b.size(), "size mismatch" )
-
     IndexType n = a.size();
     hmemo::ContextPtr hostCtx = hmemo::Context::getContextPtr( common::context::Host );
-
     hmemo::ReadAccess<double> read1( a, hostCtx );
     hmemo::ReadAccess<double> read2( b, hostCtx );
     hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
-
     double* resPtr = write.get();
     const double* aPtr = read1.get();
     const double* bPtr = read2.get();
@@ -52,27 +54,19 @@ void add( hmemo::HArray<double> res, const hmemo::HArray<double> a, const hmemo:
     }
 }
 
-int main(int, char**)
+int main( int, char** )
 {
     int size = 10;
     hmemo::HArray<double> a, b, c;
-
     static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<double> > setVal;
-
     hmemo::ContextPtr loc = hmemo::Context::getContextPtr( common::context::Host );
-
     setVal.getSupportedContext( loc );
-
-    hmemo::WriteOnlyAccess<double> writeB( b, loc, size);
-    hmemo::WriteOnlyAccess<double> writeC( c, loc, size);
-
+    hmemo::WriteOnlyAccess<double> writeB( b, loc, size );
+    hmemo::WriteOnlyAccess<double> writeC( c, loc, size );
     setVal[loc]( writeB.get(), size, double( 2 ), utilskernel::reduction::COPY );
     setVal[loc]( writeC.get(), size, double( 3 ), utilskernel::reduction::COPY );
-
     writeB.release();
     writeC.release();
-
     add ( a, b, c );
-
-    exit (0);
+    exit ( 0 );
 }
