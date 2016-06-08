@@ -2,18 +2,27 @@
         LAMA (Version 2.0.0)
 ##########################################################################
 
-2016-02-23    Fraunhofer SCAI
+2016-06-15    Fraunhofer SCAI
 
-VERSION 1.x.x:
+VERSION 2.0.0 (15.06.2016):
 
- * bug fixes, changes
- * texture use
- 
- + additions
- 
- - removed
+ * switch to AGPL license
+ * new project structure with well-designed subprojects.
+   Seperated:
+     * logging and tracing libraries
+     * heterogeneous memory and kernel management
+     * tasking model
+     * dense- & sparse-blas-kernel libraries
+     * communication layer
+ * new features:
+   * backend: Intel Xeon Phi
+   * distributed: GPI-2 (one-sided asynchronous communication)
+   * various new linear iterative solvers
+   * suported data types:
+     * complex data type (ComplexFloat, ComplexDouble)
+     * long double (not supported on GPU)
 
-VERSION 1.0.1:
+VERSION 1.0.1 (20.06.2013):
 
  * corrected libary name to libama, etc.
  * examples install dir corrected
@@ -25,7 +34,12 @@ VERSION 1.0.1:
  - dot product only available as vec.dotProduct() not as expression,
  	because of confusion of scaling a vector component-by-component
 
-VERSION 2.0.0
+VERSION 1.0.0 (22.05.2013):
 
- * new structure with subprojects
- * TODO: 
+ * first official LAMA release under the MIT license
+   * enables lineare algebra operations via text-book-syntax
+   * running on:
+     * CPU (OpenMP) and
+     * Nvidia GPU (CUDA)
+   * distributed support via MPI
+   * various linear iterative solvers

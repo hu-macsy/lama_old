@@ -7,22 +7,24 @@ A description on how to build LAMA is given afterwards or refer to our homepage 
 ## Requirements for building LAMA
 
 Required:
- * CMake >= 2.8
- * C/C++ compiler (optionally: OpenMP 2.0, recommendent: capable of C++11)
- * Boost-Library (thread, optional for tests: test and regex )
+ * CMake >= 2.8.8
+ * C/C++ compiler (optionally: OpenMP 2.0, recommended: capable of C++11)
+ * Boost-Library (header, optional for tests: unit-test-framework )
+ * pThread
 
 Recommended:
- * BLAS- and LAPack-Library (Intel MKL, BLAS)
- * CUDA >= 4.0
+ * BLAS- and LAPACK-Library (Intel MKL, BLAS)
+ * Nvidia GPU: CUDA >= 4.0 (with cuBLAS, cuSPARSE)
  * Intel Xeon Phi: Intel MKL
  * MPI
- * GPI-2
 
 Optional:
+ * GPI-2
  * Metis/ParMetis
- * Documentation (optional):
-   - doxygen for generating the documentation
-   - sphinx for user documentation
+ * Java
+ * Documentation:
+   - Sphinx for the user documentation
+   - Doxygen for the system documentation
 
 ## How to build and install LAMA
 
@@ -37,7 +39,7 @@ create a build directory and change to it
 configure cmake by giving the install prefix and pointing to the LAMA-src dir:
  $ cmake -DCMAKE_INSTALL_PREFIX=<path/to/install/dir> [optional options] ../scai
 
-For a Release build define -DCMAKE_BUILD_TYPE=Release.
+For a Release build be sure to define -DCMAKE_BUILD_TYPE=Release.
 
 start the build and installation process by running make (optionally in parallel):
 
@@ -46,3 +48,5 @@ start the build and installation process by running make (optionally in parallel
 you optionally can build the system doc (beneath the already installed userdoc) by:
 
  $ make doxygendoc
+
+make install is not(!) needed (and not possible).
