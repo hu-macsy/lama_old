@@ -1,5 +1,5 @@
 ###
- # @file FindGPI2.cmake
+ # @file Modules/FindIbverbs.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -20,6 +20,11 @@
  #
  # You should have received a copy of the GNU Affero General Public License
  # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ #
+ # Other Usage
+ # Alternatively, this file may be used in accordance with the terms and
+ # conditions contained in a signed written agreement between you and
+ # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
  # @brief Find Ibverbs

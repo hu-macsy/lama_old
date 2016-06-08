@@ -1,5 +1,4 @@
 /**
- * @dir  scai/common Source files of the common subproject.
  * @file scai/common.hpp
  *
  * @license
@@ -21,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Single header file that includes all header files of the common subproject.
