@@ -47,6 +47,10 @@ Added Operations
   - invert
  
   - conjuagte
+  
+- calculation
+  
+  - dot-product
  
 - norm
  
@@ -70,13 +74,15 @@ are used.
     input( A );
     LArray<float> B( A );   // implicit conversion
     ...
-    double x = A[0];
-    A[1] = x * 2.0;
-    A[2] = A[1];
 
-    LArray<IndexType> IND;
-    A[IND] = C;  !
-    C = B[IND];
-
-    A = 2.0 * B;
     A = A * B;   // componentwise multiplication  
+    
+    A *= 2.0; // scaling
+    
+    B -= 13; // componentwise subtraction
+    
+    double d = A.dotProduct( B ); // vector multiplication
+    
+    float mi = B.min(); // minimum
+    
+    double ma = A.max(); // maximum
