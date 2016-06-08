@@ -106,9 +106,12 @@ vector<IndexType>* readPartitionVector( const char* filename, int commSize, int 
     }
 }
 
-int main( int argc, char* argv[] )
+int main( int argc, const char* argv[] )
 {
+    common::Settings::parseArgs( argc, argv );
+
     LamaConfig lamaconf;
+
     // Get (default) communicator, will be MPI if available
     const CommunicatorPtr& comm = lamaconf.getCommunicatorPtr();
     int myRank   = comm->getRank();
@@ -119,7 +122,7 @@ int main( int argc, char* argv[] )
     {
         if ( myRank == 0 )
         {
-            cout << "Usage: " << argv[0] << " <filename> [Host|CUDA] [CSR|ELL|JDS]" << endl;
+            LamaConfig::printHelp( argv[0] );
         }
 
         exit( 1 );
@@ -128,11 +131,6 @@ int main( int argc, char* argv[] )
     filename = argv[1];
 
     // take the remaining arguments for configuration
-
-    for ( int i = 2; i < argc; ++i )
-    {
-        lamaconf.setArg( argv[i] );
-    }
 
     // use auto pointer so that matrix will be deleted at program exit
     MatrixPtr matrixPtr( lamaconf.getMatrix() );
