@@ -26,20 +26,10 @@ Here is a list of all provided classes of the HMemo library
 =================     ================================================================================
 Class                 Description
 =================     ================================================================================
-:ref:`Context`        Base class for different devices
-HostContext           Derived context class for working on CPU (host)
-CUDAContext           Derived context class for working on CUDA devices
-:ref:`Memory`         Base class for memory management at a certain location
-HostMemory            Derived memory class for CPU memory management
-CUDAMemory            Derived memory class for CPU memory management
-CUDAHostMemory        Derived memory class for pinned host memory
-HData                 One incarnation of a HArray at one memory location
-HDataManager          Deals with read and write requests and initiates corresponding memory transfers
-_HArray               Common base class for HArray
+:ref:`Context`        Polymorphic class for different devices
+:ref:`Memory`         Polymorphic class for memory management at a certain location
 :ref:`HArray`         Template container class
 :ref:`Access`         Read- and write access
-ReadAccess            Template class for read access on HArray
-WriteAccess           Template class for write access on HArray
 =================     ================================================================================
 
 .. toctree::
