@@ -4,10 +4,10 @@ import MultiBench
 
 # Important: log_complete must be switched on for Logger fo Solver
 
-cmd     = "cg_solver.exe data/2D5P_500 %x %y log_complete"
+cmd     = "cg_solver.exe data/2D5P_500 --SCAI_FORMAT=%x --SCAI_CONTEXT=%y log_complete"
 
-xlabels = ( "csr", "dia", "ell", "jds" )
-ylabels = ( "cpu", "gpu" )
+xlabels = ( "CSR", "DIA", "ELL", "JDS" )
+ylabels = ( "Host", "CUDA" )
 
 # Just final results
 

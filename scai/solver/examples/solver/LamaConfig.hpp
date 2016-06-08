@@ -29,7 +29,7 @@
  *
  * @brief Structure that contains configuration for LAMA
  * @author Thomas Brandes
- * @date 10.06.2013
+ * @date 10.06.2016
  */
 
 #pragma once
@@ -85,13 +85,13 @@ public:
 
     ~LamaConfig();
 
-    /** set an argument for configuration, e.g.  host, cuda, gpu, ell */
-
-    void setArg( const char* arg );
-
     /** Getter for the specified matrix format, might default */
 
-    const char* getFormat( ) const;
+    scai::lama::Matrix::MatrixStorageFormat getFormat( ) const;
+
+    /** Getter for the value type to be used */
+
+    scai::common::scalar::ScalarType getValueType() const;
 
     /** Getter for the solver id */
 
@@ -103,12 +103,6 @@ public:
 
     scai::hmemo::ContextPtr getContextPtr() const
     {
-        // Create a new context if not done yet
-        if ( !mContext )
-        {
-            mContext = scai::hmemo::Context::getContextPtr( mContextType, mDevice );
-        }
-
         return mContext;
     }
 
@@ -142,29 +136,18 @@ public:
 
     bool hasMaxIter() const
     {
-        return mMaxIter != nIndex;
+        return getMaxIter() != nIndex;
     }
 
     /** Get the maximal number of iterations. */
 
-    IndexType getMaxIter() const
-    {
-        return mMaxIter;
-    }
+    IndexType getMaxIter() const;
 
-    scai::solver::LogLevel::LogLevel getLogLevel() const
-    {
-        return mLogLevel;
-    }
+    scai::solver::LogLevel::LogLevel getLogLevel() const;
 
     scai::lama::Matrix::SyncKind getCommunicationKind() const
     {
         return mCommunicationKind;
-    }
-
-    scai::common::scalar::ScalarType getValueType() const
-    {
-        return mValueType;
     }
 
     bool useMetis() const
@@ -172,20 +155,17 @@ public:
         return mUseMetis;
     }
 
-    float getWeight() const
-    {
-        return mWeight;
-    }
+    float getWeight() const;
+
+    static inline void printHelp( const char* progName );
 
 private:
 
-    std::string              mSolverName;
+    std::string mSolverName;   // name of solver, used for factory
 
-    std::string              mMatrixFormat;
+    scai::lama::Matrix::MatrixStorageFormat mMatrixFormat;
 
-    scai::common::context::ContextType        mContextType;
-
-    mutable scai::hmemo::ContextPtr   mContext;
+    scai::hmemo::ContextPtr mContext;
 
     scai::lama::Matrix::SyncKind     mCommunicationKind;
 
@@ -193,286 +173,60 @@ private:
 
     scai::dmemo::CommunicatorPtr      mComm;
 
-    IndexType            mMaxIter;
+    mutable IndexType mMaxIter;
 
     scai::solver::LogLevel::LogLevel   mLogLevel;
 
     bool                       mUseMetis;
 
-    float                      mWeight;
-
-    int                        mDevice;
-
-    /** Help routine to query if argument has only digits. */
-
-    inline bool isNumber( const char* arg );
-
-    inline bool isReal( const char* arg );
+    float mWeight;
 };
 
 /* ---------------------------------------------------------------------------- */
 
 LamaConfig::LamaConfig()
 {
+    using scai::common::Settings;
+
     mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
     mComm              = scai::dmemo::Communicator::getCommunicatorPtr();
-    mContextType       = scai::common::context::Host;
     mMaxIter           = nIndex;
-    mValueType         = scai::common::scalar::DOUBLE;
-    mLogLevel          = scai::solver::LogLevel::convergenceHistory;
+    mValueType         = scai::common::scalar::UNKNOWN;
     mUseMetis          = false;
-    mWeight            = 1.0f;
-    mDevice            = 0;
-}
+    mWeight            = -1.0f;    // stands for undefined
 
-LamaConfig::~LamaConfig()
-{
-}
+    mContext           = scai::hmemo::Context::getContextPtr( );
 
-bool LamaConfig::isNumber( const char* arg )
-{
-    int len = strlen( arg );
+    bool isSet;
 
-    for ( int i = 0; i < len; ++i )
+    if ( Settings::getEnvironment( isSet, "SCAI_ASYNCHRONOUS" ) )
     {
-        if ( isdigit( arg[i] ) )
+        if ( isSet )
         {
-            continue;
-        }
-
-        return false;
-    }
-
-    return true;
-}
-
-bool LamaConfig::isReal( const char* arg )
-{
-    int len = strlen( arg );
-
-    for ( int i = 0; i < len; ++i )
-    {
-        if ( isdigit( arg[i] ) )
-        {
-            continue;
-        }
-
-        if ( arg[i] == '.' )
-        {
-            continue;
-        }
-
-        return false;
-    }
-
-    return true;
-}
-
-static void tokenize( std::vector<std::string>& tokens,
-                      const std::string& str,
-                      const std::string& delimiters = " " )
-{
-    // Skip delimiters at beginning.
-    std::string::size_type lastPos = str.find_first_not_of( delimiters, 0 );
-    // Find first "non-delimiter".
-    std::string::size_type pos     = str.find_first_of( delimiters, lastPos );
-
-    while ( std::string::npos != pos || std::string::npos != lastPos )
-    {
-        // Found a token, add it to the vector.
-        tokens.push_back( str.substr( lastPos, pos - lastPos ) );
-        // Skip delimiters.  Note the "not_of"
-        lastPos = str.find_first_not_of( delimiters, pos );
-        // Find next "non-delimiter"
-        pos = str.find_first_of( delimiters, lastPos );
-    }
-}
-
-void LamaConfig::setArg( const char* arg )
-{
-    using scai::common::Settings;
-    std::string val = arg;
-
-    // check for multi option on a node, e.g. 'cpu,mic,gpu,gpu', each processor
-    // on a node gets its own argument
-
-    if ( strchr( arg, ',' ) )
-    {
-        std::vector<std::string> singleVals;
-        tokenize( singleVals, val, "," );
-
-        if ( ( int )singleVals.size() == mComm->getNodeSize() )
-        {
-            const std::string myVal = singleVals[ mComm->getNodeRank() ];
-            setArg( myVal.c_str() );
-        }
-        else
-        {
-            std::cerr << val << " cannot be tokenized, #items = " << singleVals.size()
-                      << " does not match node size = " << mComm->getNodeSize() << std::endl;
-        }
-
-        return;
-    }
-
-    std::locale loc;
-
-    // make upper string for more convenience, e.g. Host is same as host or HOST
-
-    for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
-    {
-        *p = toupper( *p, loc );
-    }
-
-    if (   ( "CSR" == val ) || ( "ELL" == val ) || ( "COO" == val )
-            || ( "DIA" == val ) || ( "JDS" == val ) )
-    {
-        mMatrixFormat = val;
-    }
-    else if ( ( "HOST" == val ) || ( "CPU" == val ) )
-    {
-        // Host does not require a device id
-        mContextType = scai::common::context::Host;
-    }
-    else if ( ( "MIC" == val ) || ( "PHI" == val ) )
-    {
-        mContextType = scai::common::context::MIC;
-    }
-    else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
-    {
-        mContextType = scai::common::context::CUDA;
-    }
-    else if ( "PINNED" == val )
-    {
-        // support fast memory transfer Host->CUDA
-#ifdef USE_CUDA
-        scai::lama::CUDAHostContextManager::setAsCurrent( getContextPtr() );
-#endif
-    }
-    else if ( "METIS" == val )
-    {
-        mUseMetis = true;
-    }
-    else if ( "SYNC" == val )
-    {
-        mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
-    }
-    else if ( "ASYNC" == val )
-    {
-        mCommunicationKind = scai::lama::Matrix::ASYNCHRONOUS;
-    }
-    else if ( ( "FLOAT" == val ) || ( "SP" == val ) )
-    {
-        mValueType = scai::common::scalar::FLOAT;
-    }
-    else if ( ( "DOUBLE" == val ) || ( "DP" == val ) )
-    {
-        mValueType = scai::common::scalar::DOUBLE;
-    }
-    else if ( ( "LONGDOUBLE" == val ) || ( "LP" == val ) )
-    {
-        mValueType = scai::common::scalar::LONG_DOUBLE;
-    }
-    else if ( ( "COMPLEX" == val ) || ( "CP" == val ) )
-    {
-        mValueType = scai::common::scalar::COMPLEX;
-    }
-    else if ( ( "DOUBLECOMPLEX" == val ) || ( "COMPLEXDOUBLE" == val ) || ( "ZP" == val ) )
-    {
-        mValueType = scai::common::scalar::DOUBLE_COMPLEX;
-    }
-    else if ( ( "LONGCOMPLEX" == val ) || ( "COMPLEXLONG" == val ) )
-    {
-        mValueType = scai::common::scalar::LONG_DOUBLE_COMPLEX;
-    }
-    else if ( "TEXTURE" == val )
-    {
-        int replace = 1;
-        Settings::putEnvironment( "SCAI_CUDA_USE_TEXTURE", true, replace );
-    }
-    else if ( "NOTEXTURE" == val )
-    {
-        int replace = 1;
-        setenv( "SCAI_CUDA_USE_TEXTURE", "0", replace );
-        Settings::putEnvironment( "SCAI_CUDA_USE_TEXTURE", false, replace );
-    }
-    else if ( ( "SHAREDMEM" == val ) || ( "SM" == val ) )
-    {
-        int replace = 1;
-        Settings::putEnvironment( "SCAI_CUDA_USE_SHARED_MEM", true, replace );
-    }
-    else if ( ( "NOSHAREDMEM" == val ) || ( "NOSM" == val ) )
-    {
-        int replace = 1;
-        Settings::putEnvironment( "SCAI_CUDA_USE_SHARED_MEM", true, replace );
-    }
-    else if ( "LOG_HISTORY" == val )
-    {
-        mLogLevel = scai::solver::LogLevel::convergenceHistory;
-    }
-    else if ( "LOG_SOLVER" == val )
-    {
-        mLogLevel = scai::solver::LogLevel::solverInformation;
-    }
-    else if ( "LOG_ADVANCED" == val )
-    {
-        mLogLevel = scai::solver::LogLevel::advancedInformation;
-    }
-    else if ( "LOG_COMPLETE" == val )
-    {
-        mLogLevel = scai::solver::LogLevel::completeInformation;
-    }
-    else if ( "LOG_NO" == val )
-    {
-        mLogLevel = scai::solver::LogLevel::noLogging;
-    }
-    else if ( ( 'T' == val[0] ) && isNumber( val.c_str() + 1 ) )
-    {
-        int numThreads;
-        int narg = sscanf( val.c_str() + 1, "%d", &numThreads );
-
-        if ( narg > 0 )
-        {
-            omp_set_num_threads( numThreads );
-        }
-        else
-        {
-            std::cout << "Illegal for number of threads: " << arg << std::endl;
+            mCommunicationKind = scai::lama::Matrix::ASYNCHRONOUS;
         }
     }
-    else if ( ( 'D' == val[0] ) && isNumber( val.c_str() + 1 ) )
-    {
-        int deviceArg;
-        int narg = sscanf( val.c_str() + 1, "%d", &deviceArg );
 
-        if ( narg > 0 )
-        {
-            mDevice = deviceArg;
-        }
-        else
-        {
-            std::cout << "Illegal for number of device: " << arg << std::endl;
-        }
-    }
-    else if ( ( 'B' == val[0] ) && isNumber( val.c_str() + 1 ) )
+    if ( Settings::getEnvironment( isSet, "SCAI_USE_METIS" ) )
     {
-        int numBlocks;
-        int narg = sscanf( val.c_str() + 1, "%d", &numBlocks );
-
-        if ( narg > 0 )
-        {
-            int replace = 1;
-            Settings::putEnvironment( "SCAI_CUDA_BLOCK_SIZE", numBlocks, replace );
-        }
-        else
-        {
-            std::cout << "Illegal for block size on CUDA: " << arg << std::endl;
-        }
+        mUseMetis = isSet;
     }
-    else if ( ( 'W' == val[0] ) && isReal( val.c_str() + 1 ) )
+
+    int nThreads;
+
+    if ( Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    {
+        omp_set_num_threads( nThreads );
+    }
+
+    std::string val;
+
+    mWeight = 1.0;   // as default
+
+    if ( scai::common::Settings::getEnvironment( val, "SCAI_WEIGHT" ) )
     {
         float weight;
-        int narg = sscanf( val.c_str() + 1, "%f", &weight );
+        int narg = sscanf( val.c_str(), "%f", &weight );
 
         if ( narg > 0 && weight >= 0.0f )
         {
@@ -480,37 +234,107 @@ void LamaConfig::setArg( const char* arg )
         }
         else
         {
-            std::cout << "Illegal weight: " << arg << std::endl;
+            std::cout << "SCAI_WEIGHT=" << val << " illegal" <<  std::endl;
         }
     }
-    else if ( isNumber( val.c_str() ) )
+
+    mValueType = scai::common::TypeTraits<RealType>::stype;
+
+    if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
-        sscanf( val.c_str(), "%d", &mMaxIter );
+        scai::common::scalar::ScalarType type = scai::common::str2ScalarType( val.c_str() );
+
+
+        if ( type == scai::common::scalar::UNKNOWN )
+        {
+            std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
+        }
+        else if ( scai::lama::Vector::canCreate( scai::lama::VectorCreateKeyType( scai::lama::Vector::DENSE, type ) ) )
+        {
+            mValueType = type;
+        }
+        else
+        {
+            std::cout << "SCAI_TYPE=" << val << " known, but not supported for matrix/vector" << std::endl;
+        }
     }
-    else if ( scai::solver::Solver::canCreate( arg ) )
+
+    if ( mContext->getType() == scai::hmemo::Context::CUDA )
     {
-        // Note: for solver the names are case sensitive
-        mSolverName = arg;
+        mMatrixFormat = scai::lama::Matrix::ELL;
     }
     else
     {
-        std::cout << "Illegal argument: " << arg << std::endl;
+        mMatrixFormat = scai::lama::Matrix::CSR;
     }
+
+    if ( scai::common::Settings::getEnvironment( val, "SCAI_FORMAT" ) )
+    {
+        // check if we can create a matrix of this type
+
+        scai::lama::Format::MatrixStorageFormat format = scai::lama::str2Format( val.c_str() );
+
+        if ( format != scai::lama::Format::UNDEFINED )
+        {
+            mMatrixFormat = format;
+        }
+    }
+
+    mSolverName = "CG";
+
+    if ( scai::common::Settings::getEnvironment( val, "SCAI_SOLVER" ) )
+    {
+        // check if solver is available
+
+        if ( !scai::solver::Solver::canCreate( val ) )
+        {
+            std::cout << "ATTENTION: solver " << val << " not available" << std::endl;
+        }
+        else
+        {
+            mSolverName = val;
+        }
+    }
+
+    // solver log level, default is convergence History
+
+    mLogLevel = scai::solver::LogLevel::convergenceHistory;
+
+    if ( scai::common::Settings::getEnvironment( val, "SCAI_SOLVER_LOG" ) )
+    {
+        scai::solver::LogLevel::LogLevel level = scai::solver::str2LogLevel( val.c_str() );
+
+        if ( level == scai::solver::LogLevel::UNKNOWN )
+        {
+            std::cout << "SCAI_SOLVER_LOG: " << val << " is not a logging level" << std::endl;
+        }
+        else
+        {
+            mLogLevel = level;
+        }
+    }
+}
+
+LamaConfig::~LamaConfig()
+{
 }
 
 void LamaConfig::writeAt( std::ostream& stream ) const
 {
     using scai::common::Settings;
+
     stream << "LAMA configuration" << std::endl;
     stream << "==================" << std::endl;
-    stream << "Solver            = " << getSolverName() << std::endl;
+    stream << "Solver            = " << mSolverName << std::endl;
+    stream << "Solver Logging    = " << mLogLevel << std::endl;
     stream << "Context           = " << getContext() << std::endl;
     stream << "Communicator      = " << *mComm << std::endl;
     stream << "Matrix format     = " << getFormat() << std::endl;
     stream << "CommKind          = " << mCommunicationKind << std::endl;
-    stream << "ValueType         = " << mValueType << std::endl;
+    stream << "ValueType         = " << getValueType() << std::endl;
     stream << "#Threads/CPU      = " << omp_get_max_threads() << std::endl;
-    stream << "weight            = " << mWeight << std::endl;
+    stream << "weight            = " << getWeight() << std::endl;
+
     bool useTexture;
     bool useSharedMem;
     int  blockSize;
@@ -536,42 +360,74 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     }
 }
 
-const char* LamaConfig::getFormat( ) const
+scai::lama::Matrix::MatrixStorageFormat LamaConfig::getFormat( ) const
 {
-    if ( mMatrixFormat == "" )
-    {
-        // choose default format by context: Host -> CSR, CUDA -> ELL
-        if ( mContextType == scai::common::context::CUDA )
-        {
-            return "ELL";
-        }
-        else
-        {
-            return "CSR";
-        }
-    }
-    else
-    {
-        return mMatrixFormat.c_str();
-    }
+    return mMatrixFormat;
+}
+
+scai::common::scalar::ScalarType LamaConfig::getValueType() const
+{
+    return mValueType;
+}
+
+scai::solver::LogLevel::LogLevel LamaConfig::getLogLevel() const
+{
+    return mLogLevel;
 }
 
 const char* LamaConfig::getSolverName( ) const
 {
-    if ( mSolverName == "" )
+    return mSolverName.c_str();
+}
+
+float LamaConfig::getWeight() const
+{
+    return mWeight;
+}
+
+IndexType LamaConfig::getMaxIter() const
+{
+    if ( mMaxIter == nIndex )
     {
-        return "CG";   // take this as default
+        // not defined yet
+
+        IndexType iter;
+
+        if ( scai::common::Settings::getEnvironment( iter, "SCAI_MAX_ITER" ) )
+        {
+            mMaxIter = iter;
+        }
     }
-    else
-    {
-        return mSolverName.c_str();
-    }
+
+    return mMaxIter;
 }
 
 scai::lama::Matrix* LamaConfig::getMatrix()
 {
-    scai::lama::Format::MatrixStorageFormat matFormat = scai::lama::str2Format( getFormat() );
-    scai::common::scalar::ScalarType matType = getValueType();
-    return scai::lama::Matrix::getMatrix( matFormat, matType );
+    return scai::lama::Matrix::getMatrix( mMatrixFormat, mValueType );
+}
+
+void LamaConfig::printHelp( const char* progName )
+{
+    using std::cout;
+    using std::endl;
+
+    cout << "Usage: " << progName << " <filename> [ options ][ T<num_threads> ] " << endl;
+    cout << "         solver specific options:" << endl;
+    cout << "         --SCAI_SOLVER=[CG|BiCG|...]" << endl;
+    cout << "         --SCAI_SOLVER_LOG=[noLogging|convergenceHistory|solverInformation|advancedInformation|completeInformation]" << endl;
+    cout << "         --SCAI_MAX_ITER=<int_val>" << endl;
+    cout << "         --SCAI_FORMAT=[CSR|ELL|JDS|DIA|COO]" << endl;
+    cout << "         --SCAI_TYPE=[float|double|LongDouble|ComplexFloat|ComplexDouble|ComplexLongDouble]" << endl;
+    cout << "         --SCAI_NUM_THREADS=..." << endl;
+    cout << "         --SCAI_USE_METIS=<flag>" << endl;
+    cout << "         --SCAI_ASYNCHRONOUS=<flag>" << endl;
+    cout << "         or general options:" << endl;
+    cout << "         --SCAI_COMMUNICATOR=[MPI|GPI|NO]" << endl;
+    cout << "         --SCAI_CONTEXT=[Host|CUDA|MIC]" << endl;
+    cout << "         --SCAI_DEVICE=[0|1|...]" << endl;
+    cout << "         --SCAI_CUDA_USE_TEXTURE=[0|1]" << endl;
+    cout << "         --SCAI_CUDA_USE_SHARED_MEM=[0|1]" << endl;
+    cout << "         --SCAI_CUDA_BLOCK_SIZE=[64|128|...]" << endl;
 }
 

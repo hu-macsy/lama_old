@@ -64,33 +64,32 @@ typedef RealType ValueType;
  *  - all other arguments are passed to the configuration lamaconf
  *  - configuration will contain all information to setup the solver for the input matrix
  */
-int main( int argc, char* argv[] )
+int main( int argc, const char* argv[] )
 {
-    LamaConfig lamaconf;
+    common::Settings::parseArgs( argc, argv );
+
+    LamaConfig lamaconf;   // must be defined after parseArgs
+
     // Get (default) communicator, will be MPI if available
+
     const Communicator& comm = lamaconf.getCommunicator();
     int myRank   = comm.getRank();
     int numProcs = comm.getSize();
     const char* filename;
 
-    if ( argc < 2 )
+    // only one argument for the filename should remain
+
+    if ( argc != 2 )
     {
         if ( myRank == 0 )
         {
-            cout << "Usage: " << argv[0] << " <filename> [Host|CUDA] [CSR|ELL|JDS|DIA|COO] [CG|BiCG|...]" << endl;
+            LamaConfig::printHelp( argv[0] );
         }
 
         exit( 1 );
     }
 
     filename = argv[1];
-
-    // take the remaining arguments for configuration
-
-    for ( int i = 2; i < argc; ++i )
-    {
-        lamaconf.setArg( argv[i] );
-    }
 
     // use auto pointer so that matrix will be deleted at program exit
     scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );

@@ -54,14 +54,18 @@
 #include <scai/logging.hpp>
 
 using namespace std;
-using namespace scai::dmemo;
-using namespace scai::lama;
-using namespace scai::solver;
+using namespace scai;
+using namespace dmemo;
+using namespace lama;
+using namespace solver;
 
-int main( int argc, char* argv[] )
+int main( int argc, const char* argv[] )
 {
+    common::Settings::parseArgs( argc, argv );
+
     SCAI_REGION( "cg_solver" )
     SCAI_LOG_THREAD( "main" )
+
     LamaConfig lamaconf;
     // Get (default) communicator, will be MPI if available
     const Communicator& comm = lamaconf.getCommunicator();
@@ -69,24 +73,17 @@ int main( int argc, char* argv[] )
     int numProcs = comm.getSize();
     const char* filename;
 
-    if ( argc < 2 )
+    if ( argc != 2 )
     {
         if ( myRank == 0 )
         {
-            cout << "Usage: " << argv[0] << " <filename> [Host|CUDA] [CSR|ELL|JDS]" << endl;
+            LamaConfig::printHelp( argv[0] );
         }
 
         exit( 1 );
     }
 
     filename = argv[1];
-
-    // take the remaining arguments for configuration
-
-    for ( int i = 2; i < argc; ++i )
-    {
-        lamaconf.setArg( argv[i] );
-    }
 
     // using pointer classes MatrixPtr, VectorPtr take care of delete
     MatrixPtr matrixPtr( lamaconf.getMatrix() );
