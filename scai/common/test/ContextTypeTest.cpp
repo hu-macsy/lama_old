@@ -32,11 +32,6 @@
  * @date 30.03.2016
  */
 
-* @brief Test enum for different context types.
-* @author Thomas Brandes
-* @date 30.03.2016
-* /
-
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/ContextType.hpp>
