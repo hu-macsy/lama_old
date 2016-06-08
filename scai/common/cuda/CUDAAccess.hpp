@@ -46,7 +46,7 @@ class CUDACtx;
 
 /** This class accesses a CUDA context with the constructor and
  *  releases it with the destructor.
- * 
+ *
  *  It guarantees that accesses will also be released in case of exceptions.
  *
  *  Acccesing and releasing a CUDA context is necessary to make it possible
@@ -66,7 +66,7 @@ public:
 
     ~CUDAAccess();
 
-    /** This method enables an object CUDACtx 
+    /** This method enables an object CUDACtx
      *
      *  @param[in] ctx context that will be enabled
      *  @returns   pointer to the last enabled context (can be NULL)
@@ -79,7 +79,7 @@ public:
      */
     static void disable( const CUDACtx* last );
 
-    /** This static method returns the CUDACtx object currently accessed. 
+    /** This static method returns the CUDACtx object currently accessed.
      *
      *  @returns the currently set CUDACtx ( is thread-specific )
      *  @throws Exception if no CUDACtx has been enabled before

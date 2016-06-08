@@ -86,13 +86,13 @@ public:
         const IndexType mNumRows,
         const IndexType mNumValuesPerRow,
         const IndexType mNumColumns,
-        const IndexType *ia,
-        const IndexType *ja,
+        const IndexType* ia,
+        const IndexType* ja,
         const char* msg );
 
     /** Returns one row of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void getRow(
         OtherValueType row[],
         const IndexType i,
@@ -117,7 +117,7 @@ public:
 
     /** Scales matrix using an vector */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void scaleValue(
         const IndexType numRows,
         const IndexType numValuesPerRow,
@@ -127,7 +127,7 @@ public:
 
     /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
 
-    template<typename ELLValueType,typename CSRValueType>
+    template<typename ELLValueType, typename CSRValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -148,7 +148,7 @@ public:
 
     /** Helper routine for conversion CSR to ELL format.  */
 
-    template<typename ELLValueType,typename CSRValueType>
+    template<typename ELLValueType, typename CSRValueType>
     static void setCSRValues(
         IndexType ellJA[],
         ELLValueType ellValues[],

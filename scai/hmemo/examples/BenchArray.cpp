@@ -64,11 +64,8 @@ void sumIt( double& res, const double data[], IndexType size )
 void routineLAMA( double& res, IndexType n )
 {
     SCAI_LOG_TRACE( logger, "routineLAMA, n = " << n )
-
     ContextPtr contextPtr = Context::getHostPtr();
-
     HArray<double> X( contextPtr );
-
     {
         WriteOnlyAccess<double> write( X, contextPtr, n );
         init( write.get(), n, 1.0 );
@@ -88,9 +85,7 @@ void routineSCAI_1( double& res )
 void routineSCAI_2( double& res, IndexType n )
 {
     ContextPtr contextPtr = Context::getHostPtr();
-
     HArray<double> X;
-
     {
         WriteOnlyAccess<double> write( X, contextPtr, n );
     }
@@ -100,9 +95,7 @@ void routineSCAI_2( double& res, IndexType n )
 void routineSCAI_3( double& res, IndexType n )
 {
     ContextPtr contextPtr = Context::getHostPtr();
-
     HArray<double> X;
-
     {
         WriteOnlyAccess<double> write( X, contextPtr, n );
     }
@@ -131,10 +124,8 @@ int main()
 {
     ContextPtr host = Context::getHostPtr();
     MemoryPtr hostMem = host->getMemoryPtr();
-
     static int ITER_VEC[] = { 1000000, 100000, 20000, 5000,  1000,    300,     100 };
     static int N_VEC[]    = {       1,     10,   100, 1000, 10000, 100000, 1000000 };
-
     int NCASES = sizeof( ITER_VEC ) / sizeof( int );
 
     for ( int k = 0; k < NCASES; ++k )
@@ -142,10 +133,8 @@ int main()
         int ITER = ITER_VEC[k];
         int N    = N_VEC[k];
         double res = 0.0;  // avoids dead code elimination
-
         routineLAMA( res, N ); // warm up
         routineLAMA( res, N ); // warm up
-
         double time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
@@ -155,10 +144,8 @@ int main()
 
         double tl = ( scai::common::Walltime::get() - time );
         tl *= 1000.0 * 1000.0 / ITER;
-
         routineVector( res, N );  // warm up
         routineVector( res, N );  // warm up
-
         time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
@@ -168,10 +155,8 @@ int main()
 
         double tv = ( scai::common::Walltime::get() - time );
         tv *= 1000.0 * 1000.0 / ITER;
-
         routineSimple( res, N );   // warm up
         routineSimple( res, N );   // warm up
-
         time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
@@ -181,7 +166,6 @@ int main()
 
         double ts = ( scai::common::Walltime::get() - time );
         ts *= 1000.0 * 1000.0 / ITER;
-
         time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
@@ -191,7 +175,6 @@ int main()
 
         double tl1 = ( scai::common::Walltime::get() - time );
         tl1 *= 1000.0 * 1000.0 / ITER;
-
         time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
@@ -201,7 +184,6 @@ int main()
 
         double tl2 = ( scai::common::Walltime::get() - time );
         tl2 *= 1000.0 * 1000.0 / ITER;
-
         time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
@@ -211,7 +193,6 @@ int main()
 
         double tl3 = ( scai::common::Walltime::get() - time );
         tl3 *= 1000.0 * 1000.0 / ITER;
-
         cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;
         cout << "res = " << res << endl;
         cout << "routineSimple (malloc/write/read)                : " << ts << " µs "  << endl;

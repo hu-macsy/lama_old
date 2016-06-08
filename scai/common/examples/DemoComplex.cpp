@@ -44,10 +44,8 @@ int main()
     Complex<float> a( 1.0f, 1.0f );
     Complex<double> b( 2.0, -1.0 );
     std::cout << "a = " << a << ", b = " << b << std::endl;
-
     double b_re = b.real();
     double b_im = b.imag();
-
     std::cout << "b.real() = " << b_re << ", b.imag() = " << b_im << std::endl;
     std::cout << "conj( b ) = " << scai::common::Math::conj( b ) << std::endl;
     // not allowed for std::complex

@@ -63,11 +63,11 @@ using lama::Vector;
 using lama::Scalar;
 
 CGS::CGS( const std::string& id )
-    : IterativeSolver(id) {}
+    : IterativeSolver( id ) {}
 
 
 CGS::CGS( const std::string& id, LoggerPtr logger )
-    : IterativeSolver(id ,logger) {}
+    : IterativeSolver( id , logger ) {}
 
 CGS::CGS( const CGS& other )
     : IterativeSolver( other ) {}
@@ -83,14 +83,11 @@ CGS::CGSRuntime::~CGSRuntime() {}
 
 void CGS::initialize( const Matrix& coefficients )
 {
-    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
-
+    SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
     CGSRuntime& runtime = getRuntime();
-
     runtime.mNormRes = 1.0;
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
-
     runtime.mRes0.reset( coefficients.newDenseVector() );
     runtime.mVecT.reset( coefficients.newDenseVector() );
     runtime.mVecP.reset( coefficients.newDenseVector() );
@@ -105,44 +102,38 @@ void CGS::initialize( const Matrix& coefficients )
 void CGS::solveInit( Vector& solution, const Vector& rhs )
 {
     CGSRuntime& runtime = getRuntime();
-
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
-
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
-
     // Initialize
     this->getResidual();
-
     *runtime.mRes0 = *runtime.mResidual;
     *runtime.mVecP = *runtime.mResidual;
     *runtime.mVecU = *runtime.mResidual;
 
     // PRECONDITIONING
-    if(mPreconditioner != NULL)
+    if ( mPreconditioner != NULL )
     {
-        *runtime.mVecPT  = Scalar(0.0);
-        mPreconditioner->solve( *runtime.mVecPT, *runtime.mVecP);
+        *runtime.mVecPT  = Scalar( 0.0 );
+        mPreconditioner->solve( *runtime.mVecPT, *runtime.mVecP );
     }
-    else   *runtime.mVecPT = *runtime.mVecP;
-
-
+    else
+    {
+        *runtime.mVecPT = *runtime.mVecP;
+    }
 
     //initial <res,res> inner product;
-    runtime.mInnerProdRes = (*runtime.mRes0).dotProduct(*runtime.mRes0);
-
+    runtime.mInnerProdRes = ( *runtime.mRes0 ).dotProduct( *runtime.mRes0 );
     runtime.mSolveInit = true;
 }
 
 void CGS::iterate()
 {
     CGSRuntime& runtime = getRuntime();
-
     const Matrix& A = *runtime.mCoefficients;
-
     const Vector& res0 = *runtime.mRes0;
     Vector& res = *runtime.mResidual;
     Vector& vecP = *runtime.mVecP;
@@ -154,59 +145,66 @@ void CGS::iterate()
     Vector& vecTemp = *runtime.mVecTemp;
     Vector& solution = *runtime.mSolution;
     Scalar& innerProdRes = runtime.mInnerProdRes;
-
     Scalar alpha;
     Scalar beta;
-
     const Scalar& eps = runtime.mEps;
     Scalar& normRes = runtime.mNormRes;
     lama::L2Norm norm;
+    vecT = A * vecPT;
+    Scalar innerProduct = res0.dotProduct( vecT );
 
+    if ( normRes < eps || innerProduct < eps ) //innerProduct is small
+    {
+        alpha = 0.0;
+    }
+    else
+    {
+        alpha = innerProdRes / innerProduct;
+    }
 
-
-    vecT= A *vecPT;
-
-    Scalar innerProduct = res0.dotProduct(vecT);
-
-    if(normRes< eps || innerProduct < eps)    //innerProduct is small
-        alpha=0.0;
-    else alpha= innerProdRes/innerProduct;
-
-    vecQ= vecU - alpha*vecT;
+    vecQ = vecU - alpha * vecT;
 
     // PRECONDITIONING
-    if(mPreconditioner != NULL)
+    if ( mPreconditioner != NULL )
     {
-        vecUT = Scalar(0.0);
+        vecUT = Scalar( 0.0 );
         vecTemp = vecU + vecQ;
-        mPreconditioner->solve(vecUT,vecTemp);
+        mPreconditioner->solve( vecUT, vecTemp );
     }
-    else   vecUT  = vecU + vecQ;
+    else
+    {
+        vecUT  = vecU + vecQ;
+    }
 
-    solution = solution + alpha*vecUT;
-
+    solution = solution + alpha * vecUT;
     Scalar innerProdResOld = innerProdRes;
+    res = res - alpha * A * vecUT;
+    innerProdRes = res0.dotProduct( res );
+    normRes = norm.apply( res );
 
-    res = res - alpha*A*vecUT;
-    innerProdRes = res0.dotProduct(res);
+    if ( normRes < eps || innerProdResOld < eps )            // innerProdResOld is small
+    {
+        beta = 0.0;
+    }
+    else
+    {
+        beta = innerProdRes / innerProdResOld ;
+    }
 
-    normRes = norm.apply(res);
-
-    if(normRes < eps || innerProdResOld < eps)               // innerProdResOld is small
-        beta=0.0;
-    else beta = innerProdRes/ innerProdResOld ;
-
-    vecU = res + beta*vecQ;
-    vecP = vecU + beta*beta*vecP;
-    vecP = vecP + beta*vecQ;
+    vecU = res + beta * vecQ;
+    vecP = vecU + beta * beta * vecP;
+    vecP = vecP + beta * vecQ;
 
     // PRECONDITIONING
-    if(mPreconditioner != NULL)
+    if ( mPreconditioner != NULL )
     {
-        vecPT  = Scalar(0.0);
-        mPreconditioner->solve( vecPT, vecP);
+        vecPT  = Scalar( 0.0 );
+        mPreconditioner->solve( vecPT, vecP );
     }
-    else   vecPT = vecP ;
+    else
+    {
+        vecPT = vecP ;
+    }
 
     //End Implementation
     mCGSRuntime.mSolution.setDirty( false );

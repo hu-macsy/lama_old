@@ -53,14 +53,14 @@ public:
     /**
      * @brief The default constructor creates an AssertException with no message.
      */
-	AssertException( );
+    AssertException( );
 
     /**
      * @brief This constructor creates an AssertException with the passed message.
      *
      * @param[in] message  the message to assign to this.
      */
-	AssertException( const std::string& message );
+    AssertException( const std::string& message );
 
     /**
      * @brief The destructor destroys this AssertException.

@@ -97,16 +97,12 @@ QMR::QMRRuntime::~QMRRuntime()
 void QMR::initialize( const Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
-
     IterativeSolver::initialize( coefficients );
     QMRRuntime& runtime = getRuntime();
-
     runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
-
     runtime.mTransposeA.reset( coefficients.newMatrix() );
     runtime.mTransposeA->assignTranspose( coefficients );
     runtime.mTransposeA->conj();
-
     runtime.mVecD.reset( coefficients.newDenseVector() );
     runtime.mVecP.reset( coefficients.newDenseVector() );
     runtime.mVecQ.reset( coefficients.newDenseVector() );
@@ -125,28 +121,22 @@ void QMR::initialize( const Matrix& coefficients )
 void QMR::solveInit( Vector& solution, const Vector& rhs )
 {
     QMRRuntime& runtime = getRuntime();
-
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
-
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
-
     // Initialize
     this->getResidual();
-
     *runtime.mVecVT = *runtime.mResidual;
     *runtime.mVecWT = *runtime.mResidual;
-
     runtime.mSolveInit = true;
 }
 
 void QMR::iterate()
 {
     QMRRuntime& runtime    = getRuntime();
-
     const Matrix& A = *runtime.mCoefficients;
     const Matrix& transposedA = *runtime.mTransposeA;
     Vector& solution = *runtime.mSolution;
@@ -157,143 +147,164 @@ void QMR::iterate()
     Vector& vecQ = *runtime.mVecQ;
     Vector& vecS = *runtime.mVecS;
     Vector& vecD = *runtime.mVecD;
-
     Vector& vecY = *runtime.mVecY;      /*preconditioning*/
     Vector& vecZ = *runtime.mVecZ;
-
     Vector& vecVT = *runtime.mVecVT;
     Vector& vecYT = *runtime.mVecYT;
     Vector& vecZT = *runtime.mVecZT;
     Vector& vecWT = *runtime.mVecWT;
     Vector& vecPT = *runtime.mVecPT;
-
     Scalar& gamma = runtime.mGamma;
     Scalar& theta = runtime.mTheta;
     Scalar& psi = runtime.mPsi;
     Scalar& rho = runtime.mRho;
     Scalar& epsilon = runtime.mEpsilon;
-    Scalar& eta= runtime.mEta;
-
+    Scalar& eta = runtime.mEta;
     Scalar gamma1;
     Scalar theta1;
     Scalar rho1;
     const Scalar& eps = runtime.mEps;
     lama::L2Norm norm;
 
-    if(this->getIterationCount() == 0)
+    if ( this->getIterationCount() == 0 )
     {
         /*PRECONDITIONING*/
-        if(mPreconditioner != NULL)
+        if ( mPreconditioner != NULL )
         {
-            vecY = Scalar(0.0);
+            vecY = Scalar( 0.0 );
             mPreconditioner->solve( vecY, vecVT );
         }
-        else    vecY = vecVT;
+        else
+        {
+            vecY = vecVT;
+        }
 
         vecZ = vecWT;
-        rho = norm(vecY);
-        psi = norm(vecZ);
+        rho = norm( vecY );
+        psi = norm( vecZ );
         gamma = 1.0;
         eta = -1.0;
     }
 
-    if( abs(rho) < eps || abs(1.0/rho)<eps || abs(psi) < eps || abs(1.0/psi)<eps)
+    if ( abs( rho ) < eps || abs( 1.0 / rho ) < eps || abs( psi ) < eps || abs( 1.0 / psi ) < eps )
+    {
         return;
+    }
 
-    vecV = vecVT/rho;
-    vecY = vecY/rho;
-    vecW = vecWT/psi;
-    vecZ = vecZ/psi;
-    Scalar delta = vecZ.dotProduct(vecY);
+    vecV = vecVT / rho;
+    vecY = vecY / rho;
+    vecW = vecWT / psi;
+    vecZ = vecZ / psi;
+    Scalar delta = vecZ.dotProduct( vecY );
 
-    if(abs(delta) < eps)
+    if ( abs( delta ) < eps )
+    {
         return;
+    }
 
     /*PRECONDITIONING*/
     vecYT = vecY;
 
-    if(mPreconditioner != NULL)
+    if ( mPreconditioner != NULL )
     {
-        vecZT = Scalar(0.0);
+        vecZT = Scalar( 0.0 );
         mPreconditioner->solve( vecZT, vecZ );
     }
-    else vecZT = vecZ;
+    else
+    {
+        vecZT = vecZ;
+    }
 
-    if(this->getIterationCount() == 0)
+    if ( this->getIterationCount() == 0 )
     {
         vecP = vecYT;
         vecQ = vecZT;
     }
     else
     {
-        Scalar pde = psi*delta/epsilon;
+        Scalar pde = psi * delta / epsilon;
 
-        if(abs(pde) < eps || abs(1.0/pde)<eps)
+        if ( abs( pde ) < eps || abs( 1.0 / pde ) < eps )
+        {
             return;
+        }
 
-        Scalar rde = rho* conj(delta/epsilon);
+        Scalar rde = rho * conj( delta / epsilon );
 
-        if(abs(rde) < eps || abs(1.0/rde)<eps)
+        if ( abs( rde ) < eps || abs( 1.0 / rde ) < eps )
+        {
             return;
+        }
 
-        vecP = vecYT - pde*vecP;
-        vecQ = vecZT - rde*vecQ;
+        vecP = vecYT - pde * vecP;
+        vecQ = vecZT - rde * vecQ;
     }
 
-    vecPT = A*vecP;
-    epsilon = vecQ.dotProduct(vecPT);
+    vecPT = A * vecP;
+    epsilon = vecQ.dotProduct( vecPT );
 
-    if( abs(epsilon) < eps || abs(1.0/eps)<eps )
+    if ( abs( epsilon ) < eps || abs( 1.0 / eps ) < eps )
+    {
         return;
+    }
 
-    Scalar beta = epsilon/delta;
+    Scalar beta = epsilon / delta;
 
-    if(abs(beta)<eps || abs(1.0/beta)<eps)
+    if ( abs( beta ) < eps || abs( 1.0 / beta ) < eps )
+    {
         return;
+    }
 
-    vecVT = vecPT - beta *vecV;
+    vecVT = vecPT - beta * vecV;
 
     /*PRECONDITIONING*/
-    if(mPreconditioner != NULL)
+    if ( mPreconditioner != NULL )
     {
-        vecY = Scalar(0.0);
+        vecY = Scalar( 0.0 );
         mPreconditioner->solve( vecY, vecVT );
     }
-    else    vecY = vecVT;
+    else
+    {
+        vecY = vecVT;
+    }
 
-    rho1= rho;
-    rho = norm(vecY);
-
+    rho1 = rho;
+    rho = norm( vecY );
     vecWT = transposedA * vecQ;
-    vecWT = vecWT - conj(beta)*vecW;
-
+    vecWT = vecWT - conj( beta ) * vecW;
     vecZ = vecWT;
-    psi = norm(vecZ);
+    psi = norm( vecZ );
 
-    if(this->getIterationCount() > 0)
+    if ( this->getIterationCount() > 0 )
+    {
         theta1 = theta;
+    }
 
-    theta = rho / (gamma * abs(beta));
+    theta = rho / ( gamma * abs( beta ) );
     gamma1 = gamma;
-    gamma = 1.0 / sqrt(1.0+theta*theta);
+    gamma = 1.0 / sqrt( 1.0 + theta * theta );
 
-    if(abs(gamma) < eps)
+    if ( abs( gamma ) < eps )
+    {
         return;
+    }
 
-    eta = -eta * rho1* gamma*gamma / (beta * gamma1 * gamma1);
+    eta = -eta * rho1 * gamma * gamma / ( beta * gamma1 * gamma1 );
 
-    if(abs(1.0/eta) < eps)
+    if ( abs( 1.0 / eta ) < eps )
+    {
         return;
+    }
 
-    if(this->getIterationCount() == 0)
+    if ( this->getIterationCount() == 0 )
     {
         vecD = eta * vecP;
         vecS = eta * vecPT;
     }
     else
     {
-        vecD = eta * vecP + (theta1*gamma)*(theta1*gamma)*vecD;
-        vecS = eta * vecPT + (theta1*gamma)*(theta1*gamma)*vecS;
+        vecD = eta * vecP + ( theta1 * gamma ) * ( theta1 * gamma ) * vecD;
+        vecS = eta * vecPT + ( theta1 * gamma ) * ( theta1 * gamma ) * vecS;
     }
 
     solution = solution + vecD;

@@ -49,7 +49,7 @@ namespace scai
 namespace dmemo
 {
 
-/** 
+/**
  *  GPIMemory is just pinned memory that can be used on the host like usual memory.
  */
 

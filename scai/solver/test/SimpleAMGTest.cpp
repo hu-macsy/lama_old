@@ -60,24 +60,18 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.SimpleAMGTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<SimpleAMG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     SimpleAMG SimpleAMGSolver( "SimpleAMGSolver", slogger );
     BOOST_CHECK_EQUAL( SimpleAMGSolver.getId(), "SimpleAMGSolver" );
-
     SimpleAMG SimpleAMGSolver2( "SimpleAMGSolver2" );
     BOOST_CHECK_EQUAL( SimpleAMGSolver2.getId(), "SimpleAMGSolver2" );
-
     SimpleAMG SimpleAMGSolver3( SimpleAMGSolver2 );
     BOOST_CHECK_EQUAL( SimpleAMGSolver3.getId(), "SimpleAMGSolver2" );
     BOOST_CHECK( SimpleAMGSolver3.getPreconditioner() == 0 );
-
     SimpleAMG SimpleAMGSolver4( "SimpleAMGSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     SimpleAMGSolver4.setPreconditioner( preconditioner );
-
     CriterionPtr criterion( new IterationCount( 10 ) );
     SimpleAMGSolver4.setStoppingCriterion( criterion );
-
     SimpleAMG SimpleAMGSolver5( SimpleAMGSolver4 );
     BOOST_CHECK_EQUAL( SimpleAMGSolver5.getId(), SimpleAMGSolver4.getId() );
     BOOST_CHECK_EQUAL( SimpleAMGSolver5.getPreconditioner()->getId(), SimpleAMGSolver4.getPreconditioner()->getId() );
@@ -89,30 +83,22 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 BOOST_AUTO_TEST_CASE ( SetterTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
-
     const IndexType N = 40;
-
     scai::lama::CSRSparseMatrix<ValueType> coefficients;
     scai::lama::MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N, N );
-
     SimpleAMG SimpleAMGSolver( "SimpleAMGSolver" );
-
-
     /* cant not be tested: not getter
     SimpleAMGSolver.setHostOnlyLevel( IndexType hostOnlyLevel );
     SimpleAMGSolver.setHostOnlyVars( IndexType hostOnlyVars );
     SimpleAMGSolver.setReplicatedLevel( IndexType replicatedLevel );
     SimpleAMGSolver.setMaxLevels( unsigned int levels );
     SimpleAMGSolver.setMinVarsCoarseLevel( unsigned int vars );*/
-
     SolverPtr cgSolver ( new CG ( "CGCoarseLevelSolver" ) );
     scai::hmemo::ContextPtr context = scai::hmemo::Context::getContextPtr();
-
     // does not work because coarselevelsolver in SingleGridSetup gets overridden by smoother
     //SimpleAMGSolver.setCoarseLevelSolver( cgSolver );
     //SimpleAMGSolver.initialize( coefficients ); // solver needs to be initialized to have a AMGSetup to pass coarselevelsolver to setup
     //BOOST_CHECK_EQUAL( SimpleAMGSolver.getCoarseLevelSolver().getId(), cgSolver->getId() );
-
     SimpleAMGSolver.setSmoother( cgSolver );
     SimpleAMGSolver.setSmootherContext( context );
     SimpleAMGSolver.initialize( coefficients ); // solver needs to be initialized to have a AMGSetup to pass coarselevelsolver to setup

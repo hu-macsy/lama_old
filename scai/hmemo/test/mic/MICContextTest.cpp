@@ -53,13 +53,10 @@ template<typename ValueType>
 static void scal( int n, ValueType alpha, ValueType* array )
 {
     void* arrayPtr = array;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( arrayPtr, n, alpha )
     {
         ValueType* array = static_cast<ValueType*>( arrayPtr );
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; ++i )
@@ -110,7 +107,6 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 BOOST_AUTO_TEST_CASE( useTest )
 {
     ContextPtr micContext = Context::getContextPtr( context::MIC );
-
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;

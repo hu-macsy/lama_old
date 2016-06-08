@@ -55,24 +55,18 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.QMRTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<QMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     QMR QMRSolver( "QMRTestSolver", slogger );
     BOOST_CHECK_EQUAL( QMRSolver.getId(), "QMRTestSolver" );
-
     QMR QMRSolver2( "QMRTestSolver2" );
     BOOST_CHECK_EQUAL( QMRSolver2.getId(), "QMRTestSolver2" );
-
     QMR QMRSolver3( QMRSolver2 );
     BOOST_CHECK_EQUAL( QMRSolver3.getId(), "QMRTestSolver2" );
     BOOST_CHECK( QMRSolver3.getPreconditioner() == 0 );
-
     QMR QMRSolver4( "QMRSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     QMRSolver4.setPreconditioner( preconditioner );
-
     CriterionPtr criterion( new IterationCount( 10 ) );
     QMRSolver4.setStoppingCriterion( criterion );
-
     QMR QMRSolver5( QMRSolver4 );
     BOOST_CHECK_EQUAL( QMRSolver5.getId(), QMRSolver4.getId() );
     BOOST_CHECK_EQUAL( QMRSolver5.getPreconditioner()->getId(), QMRSolver4.getPreconditioner()->getId() );

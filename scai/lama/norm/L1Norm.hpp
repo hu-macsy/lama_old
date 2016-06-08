@@ -56,7 +56,7 @@ public:
 
     virtual Scalar apply( const Vector& vector ) const;
 
-	virtual Scalar apply( const Matrix& matrix ) const;
+    virtual Scalar apply( const Matrix& matrix ) const;
 };
 
 Scalar l1Norm( const Scalar& scalar );

@@ -50,13 +50,9 @@ template<typename T>
 void sumArray( const HArray<T>& array )
 {
     SCAI_LOG_INFO( logger, "read access on " << array );
-
     ContextPtr contextPtr = Context::getHostPtr();
-
     ReadAccess<T> readAccess( array, contextPtr );
-
     const T* data = readAccess.get();
-
     T sum = 0;
 
     for ( IndexType i = 0; i < array.size(); ++i )
@@ -71,13 +67,9 @@ template<typename T>
 void writeArray( HArray<T>& array )
 {
     SCAI_LOG_INFO( logger, "make write test access on empty array\n" );
-
     ContextPtr contextPtr = Context::getHostPtr();
-
     WriteAccess<T> writeAccess( array, contextPtr );
-
     writeAccess.resize( 10 );
-
     T* data = writeAccess.get();
 
     // data is on host, so we can work directly on it
@@ -123,17 +115,13 @@ std::ostream& operator<<( std::ostream& stream, const SSS& object )
 int main()
 {
     SCAI_LOG_THREAD( "Main" )
-
     HArray<IndexType> lamaArray; // default, not allocated at all
-
     sumArray( lamaArray );
     writeArray( lamaArray );
     sumArray( lamaArray );
-
     SSS val( 1, 0.5 );
     val.X = 1;
     val.Y = 0.5;
-
     HArray<SSS> sssArray( 10, val );
     sumArray( sssArray );
 }

@@ -57,8 +57,7 @@ const char* cudaDriverErrorString( CUresult res )
 {
     const char* str = "";
 
-    switch( res )
-
+    switch ( res )
     {
         case CUDA_SUCCESS:
             str = "No errors";
@@ -179,8 +178,7 @@ const char* cublasErrorString( cublasStatus_t res )
 {
     const char* str = "";
 
-    switch( res )
-
+    switch ( res )
     {
         case CUBLAS_STATUS_SUCCESS:
             str = "CUBLAS successful";
@@ -226,7 +224,6 @@ const char* cusparseErrorString( cusparseStatus_t res )
     const char* str = "";
 
     switch ( res )
-
     {
         case CUSPARSE_STATUS_SUCCESS:
             str = "CUSPARSE successful";

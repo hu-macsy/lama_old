@@ -76,34 +76,26 @@ SingleGridSetup::~SingleGridSetup()
 void SingleGridSetup::initialize( const Matrix& coefficients )
 {
     SCAI_REGION( "initialize_SingleGridSetup" )
-
     SCAI_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
 
     // set default solver
-    if( !mSolver )
+    if ( !mSolver )
     {
         SCAI_LOG_DEBUG( logger, "new Jacobi" )
         Jacobi* jacobiSolver = new Jacobi( "10x SingleGridSetup Jacobi Solver" );
-
         CriterionPtr criterion( new IterationCount( 10 ) );
-
         jacobiSolver->setStoppingCriterion( criterion );
-
         mSolver.reset( jacobiSolver );
     }
 
     SCAI_LOG_DEBUG( logger, "mSolver->initialize" )
     mSolver->initialize( coefficients );
-
     SCAI_LOG_DEBUG( logger, "mIdentity.reset" )
     mIdentity.reset( coefficients.newMatrix() );
-
     SCAI_LOG_DEBUG( logger, "before identity" )
     mIdentity->setIdentity( coefficients.getRowDistributionPtr() );
     SCAI_LOG_DEBUG( logger, "after identity" )
-
     SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
-
     mSolutionVector.reset( coefficients.newDenseVector() );
     mRhsVector.reset( coefficients.newDenseVector() );
     mTmpResVector.reset( coefficients.newDenseVector() );

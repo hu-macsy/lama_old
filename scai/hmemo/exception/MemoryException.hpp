@@ -50,15 +50,15 @@ class COMMON_DLL_IMPORTEXPORT MemoryException : public scai::common::Exception
 public:
 
     MemoryException();
-    
+
     MemoryException( const std::string& message );
 
     virtual ~MemoryException() throw();
-    
+
     virtual const char* what() const throw();
-    
+
 protected:
-        
+
     std::string mMessage;
 };
 

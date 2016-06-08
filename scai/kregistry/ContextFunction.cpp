@@ -84,7 +84,6 @@ common::context::ContextType _ContextFunction::validContext( common::context::Co
     }
 
     // throw exception
-
     return static_cast<context::ContextType>( common::context::MaxContext );
 }
 
@@ -93,7 +92,6 @@ common::context::ContextType _ContextFunction::validContext( const _ContextFunct
     if ( mContextFuncArray[preferedCtx] != NULL && other.mContextFuncArray[preferedCtx] != NULL )
     {
         // std::cout << "both valid at context = " << preferedCtx << std::endl;
-
         return preferedCtx;
     }
 
@@ -106,7 +104,6 @@ common::context::ContextType _ContextFunction::validContext( const _ContextFunct
     }
 
     // throw exception
-
     return static_cast<ContextType>( common::context::MaxContext );
 }
 
@@ -119,7 +116,6 @@ _ContextFunction::ContextType _ContextFunction::validContext(
             && other2.mContextFuncArray[preferedCtx] != NULL )
     {
         // std::cout << "both valid at context = " << preferedCtx << std::endl;
-
         return preferedCtx;
     }
 
@@ -132,7 +128,6 @@ _ContextFunction::ContextType _ContextFunction::validContext(
     }
 
     // throw exception
-
     return static_cast<ContextType>( common::context::MaxContext );
 }
 

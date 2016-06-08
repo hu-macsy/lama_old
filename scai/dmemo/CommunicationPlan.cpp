@@ -89,15 +89,10 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     : mAllocated( false ), mQuantity( 0 )
 {
     SCAI_LOG_INFO( logger, "extend plan for quantity of quantites: " << other )
-
     SCAI_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
-
     // copy the entries of the available plan, partitionIds do not change
-
     mEntries = other.mEntries;
-
     // This routine only works for running offsets, but should be the case
-
     IndexType offset = 0;
 
     for ( size_t i = 0; i < mEntries.size(); i++ )
@@ -112,7 +107,6 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     for ( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
-
         IndexType newQuantity = 0;
 
         for ( IndexType k = 0; k < entry.quantity; k++ )
@@ -126,11 +120,9 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     }
 
     // set other member variables
-
     mAllocated = true;
     mCompressed = other.compressed();
     mQuantity = offset;
-
     SCAI_LOG_INFO( logger, "extended quantity plan: " << *this )
 }
 
@@ -141,15 +133,10 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     : mAllocated( false ), mQuantity( 0 )
 {
     SCAI_LOG_INFO( logger, "Construct multiply plan: " << other << ", factor = " << n )
-
     SCAI_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
-
     // copy the entries of the available plan, partitionIds do not change
-
     mEntries = other.mEntries;
-
     // This routine only works for running offsets, but should be the case
-
     IndexType offset = 0; // running for new offsets
 
     for ( size_t i = 0; i < mEntries.size(); i++ )
@@ -162,11 +149,9 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     }
 
     // set other member variables
-
     mAllocated = true;
     mCompressed = other.compressed();
     mQuantity = offset;
-
     SCAI_LOG_INFO( logger, "multiplied quantity plan: " << *this )
 }
 
@@ -184,7 +169,6 @@ void CommunicationPlan::clear()
     mAllocated = false;
     mQuantity = 0;
     mCompressed = true; // does not matter, but no entry has quantity 0
-
     mEntries.clear();
 }
 
@@ -195,7 +179,6 @@ void CommunicationPlan::purge()
     mAllocated = false;
     mQuantity = 0;
     mCompressed = true; // does not matter, but no entry has quantity 0
-
     std::vector<Entry>().swap( mEntries ); // clear mEntries reallocating
 }
 
@@ -204,21 +187,16 @@ void CommunicationPlan::purge()
 void CommunicationPlan::allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag )
 {
     SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from quantities" )
-
     mEntries.resize( noPartitions );
-
     mQuantity = 0; // counts total quantity
 
     for ( PartitionId i = 0; i < noPartitions; ++i )
     {
         Entry& entry = mEntries[i];
-
         entry.quantity = quantities[i];
         entry.offset = mQuantity;
         entry.partitionId = i;
-
         mQuantity += entry.quantity;
-
         SCAI_LOG_TRACE( logger, "Entries[" << i << "].quantity = " << mEntries[i].quantity )
         SCAI_LOG_TRACE( logger, " mQuantity = " << mQuantity )
     }
@@ -240,7 +218,6 @@ void CommunicationPlan::allocate(
     bool compressFlag )
 {
     mEntries.resize( noPartitions );
-
     SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" )
 
     for ( PartitionId p = 0; p < noPartitions; ++p )
@@ -266,9 +243,7 @@ void CommunicationPlan::allocate(
     }
 
     // this assertion should be valid by the above algorithm
-
     SCAI_ASSERT_EQ_DEBUG( mQuantity, nOwners, "wrong sum up" )
-
     mAllocated = true;
 
     if ( compressFlag )
@@ -282,9 +257,7 @@ void CommunicationPlan::allocate(
 IndexType CommunicationPlan::maxQuantity() const
 {
     SCAI_ASSERT( allocated(), "Plan not allocated." )
-
     // Get the maximal quantity of another proc
-
     IndexType quantity = 0;
 
     for ( PartitionId id = 0; id < size(); id++ )
@@ -315,7 +288,6 @@ void CommunicationPlan::compress()
 
 {
     // remove all entries with zero quantity
-
     PartitionId count = 0;
 
     for ( PartitionId pid = 0; pid < size(); pid++ )
@@ -337,9 +309,7 @@ void CommunicationPlan::compress()
 
     SCAI_LOG_INFO( logger,
                    "CommunicationPlan compressed from " << size() << " to " << count << " entries, total quantity = " << mQuantity )
-
     mEntries.resize( count );
-
     mCompressed = true;
 }
 
@@ -348,12 +318,9 @@ void CommunicationPlan::compress()
 void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const Communicator& comm )
 {
     SCAI_ASSERT( plan.allocated(), "plan to reverse not allocated" )
-
     const int size = comm.getSize();
     comm.synchronize();
-
     // plan might be compressed, so build values again
-
     std::vector<IndexType> sendSizes( size, 0 );
 
     for ( PartitionId i = 0; i < plan.size(); ++i )
@@ -362,14 +329,10 @@ void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const 
     }
 
     std::vector<IndexType> recvSizes( size, 0 );
-
     // send each processor the number of indexes I require
     // and receive the number of indexes that I have to provide
-
     comm.all2all( &recvSizes[0], &sendSizes[0] );
-
     // now we can allocate by quantities
-
     allocate( &recvSizes[0], recvSizes.size() );
 }
 
@@ -378,7 +341,6 @@ void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const 
 void CommunicationPlan::writeAt( std::ostream& stream ) const
 {
     // stream output of a communication plan
-
     stream << "CommunicationPlan(size=" << mEntries.size() << ",quantity=" << mQuantity;
 
     for ( size_t i = 0; i < mEntries.size(); i++ )

@@ -123,7 +123,7 @@ public:
 
 private:
 
-    MPICommunicator( int& argc, char** & argv );
+    MPICommunicator( int& argc, char**& argv );
 
     template<typename ValueType>
     inline static MPI_Datatype getMPIType();
@@ -220,7 +220,7 @@ private:
         const ValueType sendData[],
         const CommunicationPlan& sendPlan ) const;
 
-    void initialize( int& argc, char** & argv );
+    void initialize( int& argc, char**& argv );
 
     const common::Thread::Id mMainThread;  // id of thread that calls constructor
 
@@ -232,7 +232,7 @@ private:
 
 protected:
 
-    MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type );
+    MPICommunicator( int& argc, char**& argv, const CommunicatorKind& type );
 
     MPICommunicator();
 
@@ -260,14 +260,14 @@ protected:
     static MPI_Op mMaxComplexLongDouble;
 
     template<typename ValueType>
-    static void max_operator( void* in, void *out, int *count, MPI_Datatype *dtype );
+    static void max_operator( void* in, void* out, int* count, MPI_Datatype* dtype );
 
     static MPI_Op mMinComplexFloat;
     static MPI_Op mMinComplexDouble;
     static MPI_Op mMinComplexLongDouble;
 
     template<typename ValueType>
-    static void min_operator( void* in, void *out, int *count, MPI_Datatype *dtype );
+    static void min_operator( void* in, void* out, int* count, MPI_Datatype* dtype );
 #endif
 
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;

@@ -51,8 +51,8 @@ namespace solver
 {
 
 class COMMON_DLL_IMPORTEXPORT Richardson:
-		public OmegaSolver,
-		public Solver::Register<Richardson>
+    public OmegaSolver,
+    public Solver::Register<Richardson>
 {
 public:
     Richardson( const std::string& id );
@@ -104,7 +104,7 @@ public:
         virtual ~RichardsonRuntime();
 
         common::unique_ptr<lama::Vector> mOldSolution;
-	common::unique_ptr<lama::Vector> mX;
+        common::unique_ptr<lama::Vector> mX;
         SolutionProxy mProxyOldSolution;
     };
     /**

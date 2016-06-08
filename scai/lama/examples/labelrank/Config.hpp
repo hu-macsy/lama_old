@@ -53,7 +53,6 @@ public:
     Config()
     {
         // overlap communication with local computation
-
         mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
         mComm              = scai::dmemo::Communicator::getCommunicatorPtr();
         mContext           = scai::hmemo::Context::getHostPtr();
@@ -63,7 +62,6 @@ public:
     ~Config()
     {
         // give up ownership for communicator and context
-
         mComm.reset();
         mContext.reset();
     }
@@ -83,15 +81,15 @@ public:
         // make it upper case
 
         if (   ( "CSR" == val ) || ( "Dense" == val ) )
-        { 
+        {
             mMatrixFormat = val;
         }
         else if ( "HOST" == val )
-        { 
+        {
             mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::Context::Host );
         }
         else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
-        { 
+        {
             // int device = mComm->getNodeRank();
             int device = 0;
             mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::Context::CUDA, device );
@@ -119,7 +117,6 @@ public:
         if ( mMatrixFormat == "" )
         {
             // choose default format by context: Host -> CSR, CUDA -> ELL
-
             if ( mContext->getType() == scai::hmemo::Context::CUDA )
             {
                 return "ELL";
@@ -177,7 +174,7 @@ private:
     inline bool isNumber( const char* arg )
     {
         int len = strlen( arg );
- 
+
         for ( int i = 0; i < len; ++i )
         {
             if ( !isdigit( arg[i] ) )

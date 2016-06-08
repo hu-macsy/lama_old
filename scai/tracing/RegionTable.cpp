@@ -126,7 +126,7 @@ int RegionTable::getRegionId( const char* regionName, const char* file, int scl 
         entry.mLine = scl;
         VTInterface::define( entry );
         // do not use this: mapTimer[regionName] = regionId; // causes problems with composed strings
-        mapTimer.insert( std::pair<const char*, int>( entry.mName.c_str(), regionId ));
+        mapTimer.insert( std::pair<const char*, int>( entry.mName.c_str(), regionId ) );
         SCAI_LOG_DEBUG( logger,
                         "Added region " << regionId << "( " << array[regionId].mName << ") for region " << regionName )
         return static_cast<int>( regionId );

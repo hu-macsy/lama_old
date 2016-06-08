@@ -59,8 +59,6 @@ bool init_function()
 int main( int argc, char* argv[] )
 {
     // parse command line argument and set them for environment
-
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
-
     return boost::unit_test::unit_test_main( &init_function, argc, argv );
 }

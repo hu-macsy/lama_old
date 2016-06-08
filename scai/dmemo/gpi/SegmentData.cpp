@@ -64,7 +64,6 @@ template<typename T>
 SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size )
 {
     mComm = comm;  // GPI communicator not really needed
-
     reserve( size );
 }
 
@@ -72,18 +71,12 @@ template<typename T>
 void SegmentData<T>::reserve( const IndexType size )
 {
     SCAI_REGION( "GASPI.SegmentData.reserve" )
-
     GPIMemManager::getSegmentData( mId, mPtr, mOffsetBytes, size * sizeof( T ) );
-
     SCAI_ASSERT_EQUAL_ERROR( 0, mOffsetBytes % sizeof( T ) )
-
     mData  = static_cast<T*>( mPtr );  // mData will allow for pointer arithmetic helpful for arrays
-
     mSize = size;
-
     SCAI_LOG_DEBUG( logger, "SegmentData ( size = " << size << " ), uses id = " << static_cast<int>( mId )
                     << ", offset = " << mOffsetBytes << ", mPtr = " << mPtr )
-
     mReleaseFlag = true;
 }
 
@@ -91,22 +84,17 @@ template<typename T>
 SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size, T* data )
 {
     mComm = comm;  // GPI communicator not really needed
-
     bool found = GPIMemManager::findSegment( mId, mOffsetBytes, data );
-
     SCAI_LOG_DEBUG( logger, "SegmentData( size = " << size << ", data = " << data
                     << ", found = " << found )
 
     if ( found )
     {
         SCAI_LOG_DEBUG( logger, "no reservation of SegmentData required, size = " << size )
-
         // @ToDo: verify that segment is sufficient
-
         mPtr  = data;
         mData = data;
         mSize = size;
-
         mReleaseFlag = false; // do not release at end
     }
     else
@@ -123,9 +111,7 @@ void SegmentData<T>::assign( const T values[], const IndexType n )
     if ( values == data )
     {
         SCAI_LOG_INFO( logger, "skipped assign of size " << n )
-
         // might happen if SegmentData has not been reserved here
-
         return;
     }
 
@@ -140,9 +126,7 @@ void SegmentData<T>::copyTo( T values[], const IndexType n ) const
     if ( values == data )
     {
         SCAI_LOG_INFO( logger, "skipped copyTo of size " << n )
-
         // might happen if SegmentData has not been reserved here
-
         return;
     }
 

@@ -66,15 +66,14 @@ public:
         return kregistry::KernelTraitContextFunction<KernelTrait>::operator[]( context->getType() );
     }
 
-    /** Update context if function is not supported on preferred context. 
-     * 
+    /** Update context if function is not supported on preferred context.
+     *
      *  @param[in,out] context where the kernel should be executed
      */
 
     void getSupportedContext( hmemo::ContextPtr& context ) const
     {
         SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
-
         common::context::ContextType defCtx = context->getType();
         common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( defCtx );
 
@@ -84,8 +83,8 @@ public:
         }
     }
 
-    /** Update context if function is not supported on preferred context. 
-     * 
+    /** Update context if function is not supported on preferred context.
+     *
      *  @param[in,out] context where the kernel should be executed (in) and can be executed (out)
      *  @param[in] other another kernel function that is also called
      */
@@ -93,7 +92,6 @@ public:
     void getSupportedContext( hmemo::ContextPtr& context, const kregistry::_ContextFunction& other ) const
     {
         SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
-
         common::context::ContextType defCtx = context->getType();
         common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( other, defCtx );
 
@@ -112,10 +110,9 @@ public:
     }
 
     void getSupportedContext( hmemo::ContextPtr& context, const kregistry::_ContextFunction& other1,
-                                                          const kregistry::_ContextFunction& other2 ) const
+                              const kregistry::_ContextFunction& other2 ) const
     {
         SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
-
         common::context::ContextType defCtx = context->getType();
         common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( other1, other2, defCtx );
 

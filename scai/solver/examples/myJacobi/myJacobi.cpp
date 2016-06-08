@@ -52,31 +52,22 @@ using namespace scai::hmemo;
 int main( int , char** )
 {
     typedef RealType ValueType;
-
     int dim = 3;
     int stencil = 7;
     int size = 100;
-
     CSRSparseMatrix<ValueType> matrix;
     MatrixCreator<ValueType>::buildPoisson( matrix, dim, stencil, size, size, size );
-
-    int vectorSize = static_cast<int>( std::pow(size,dim) );
-
+    int vectorSize = static_cast<int>( std::pow( size, dim ) );
     DenseVector<ValueType> exactSolution( vectorSize, 1.0 );
     DenseVector<ValueType> rhs = matrix * exactSolution;
-
     DenseVector<ValueType> solution( vectorSize, 0.0 );
-
-    LoggerPtr slogger( new CommonLogger( "MyJacobiLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly) );
+    LoggerPtr slogger( new CommonLogger( "MyJacobiLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly ) );
     MyJacobi jacobiSolver( "MyJacobi", slogger );
     jacobiSolver.initialize( matrix );
-
     CriterionPtr criterion( new IterationCount( 100 ) );
     jacobiSolver.setStoppingCriterion( criterion );
     jacobiSolver.solve( solution, rhs );
-
     DenseVector<ValueType> diff( solution - exactSolution );
-
     L2Norm l2Norm;
     Scalar norm = l2Norm( diff );
 }

@@ -45,16 +45,13 @@ void sub( int val )
     }
 
     SCAI_ASSERT ( val % 2 == 0, "val = " << val << " must be even" )
-
     SCAI_ASSERT_LT( val, 10, "val = " << val << " must be less than 10" )
-
     SCAI_ASSERT_EQUAL( val, 4, "None" )
 }
 
 int main()
 {
     int vals[] = { -1, 5, 14, 6, 4 };
-
     int nargs = sizeof( vals ) / sizeof( int );
 
     for ( int i = 0; i < nargs; ++ i )
@@ -67,7 +64,6 @@ int main()
         catch ( const std::exception& exception )
         {
             // Importation: exception is a reference, so we get the routine of common::Exception
-
             std::cout << "Got exception: " << exception.what() << std::endl;
         }
     }

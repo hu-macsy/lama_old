@@ -54,24 +54,18 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GMRESTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     GMRES GMRESSolver( "GMRESSolver", slogger );
     BOOST_CHECK_EQUAL( GMRESSolver.getId(), "GMRESSolver" );
-
     GMRES GMRESSolver2( "GMRESSolver2" );
     BOOST_CHECK_EQUAL( GMRESSolver2.getId(), "GMRESSolver2" );
-
     GMRES GMRESSolver3( GMRESSolver2 );
     BOOST_CHECK_EQUAL( GMRESSolver3.getId(), "GMRESSolver2" );
     BOOST_CHECK( GMRESSolver3.getPreconditioner() == 0 );
-
     GMRES GMRESSolver4( "GMRESSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     GMRESSolver4.setPreconditioner( preconditioner );
-
     CriterionPtr criterion( new IterationCount( 10 ) );
     GMRESSolver4.setStoppingCriterion( criterion );
-
     GMRES GMRESSolver5( GMRESSolver4 );
     BOOST_CHECK_EQUAL( GMRESSolver5.getId(), GMRESSolver4.getId() );
     BOOST_CHECK_EQUAL( GMRESSolver5.getPreconditioner()->getId(), GMRESSolver4.getPreconditioner()->getId() );

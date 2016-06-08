@@ -55,24 +55,18 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.TFQMRTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
     BOOST_CHECK_EQUAL( TFQMRSolver.getId(), "TFQMRTestSolver" );
-
     TFQMR TFQMRSolver2( "TFQMRTestSolver2" );
     BOOST_CHECK_EQUAL( TFQMRSolver2.getId(), "TFQMRTestSolver2" );
-
     TFQMR TFQMRSolver3( TFQMRSolver2 );
     BOOST_CHECK_EQUAL( TFQMRSolver3.getId(), "TFQMRTestSolver2" );
     BOOST_CHECK( TFQMRSolver3.getPreconditioner() == 0 );
-
     TFQMR TFQMRSolver4( "TFQMRSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     TFQMRSolver4.setPreconditioner( preconditioner );
-
     CriterionPtr criterion( new IterationCount( 10 ) );
     TFQMRSolver4.setStoppingCriterion( criterion );
-
     TFQMR TFQMRSolver5( TFQMRSolver4 );
     BOOST_CHECK_EQUAL( TFQMRSolver5.getId(), TFQMRSolver4.getId() );
     BOOST_CHECK_EQUAL( TFQMRSolver5.getPreconditioner()->getId(), TFQMRSolver4.getPreconditioner()->getId() );

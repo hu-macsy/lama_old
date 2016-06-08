@@ -120,9 +120,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
-
     typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
-
     AbsType sval = s.getValue<AbsType>();
 
     if ( ! ( sval < 1E-6 ) )
@@ -138,7 +136,6 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
     testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
     testSolveWithoutPreconditionmethod< DIASparseMatrix<ValueType> >( context );
@@ -191,7 +188,6 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s );
-
     typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
 
     if ( s.getValue<AbsType>() >= 1E-6 )

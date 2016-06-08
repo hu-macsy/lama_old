@@ -67,16 +67,13 @@ TaskSyncToken::TaskSyncToken()
 void TaskSyncToken::run( common::function<void()> routine, int numOmpThreads /* = 0 */ )
 {
     mTask = shared_ptr<Task>( new Task( routine, numOmpThreads ) );
-
     SCAI_LOG_DEBUG( logger, "Thread " << *mTask << " with routine started." )
 }
 
 TaskSyncToken::~TaskSyncToken()
 {
     SCAI_LOG_DEBUG( logger, "~TaskSyncToken: wait" )
-
     wait();
-
     SCAI_LOG_DEBUG( logger, "~TaskSyncToken: wait done" )
 }
 
@@ -103,7 +100,6 @@ void TaskSyncToken::wait()
         }
 
         mTask = shared_ptr<Task>(); // implies call destructor of mTask
-
         mTask.reset();  // implies call destructor of mTask
     }
     else
@@ -112,7 +108,6 @@ void TaskSyncToken::wait()
     }
 
     // Now we can free tokens and call clean functions, do not call it before mTask is synchronized
-
     setSynchronized();
 }
 
@@ -152,7 +147,6 @@ TaskSyncToken* TaskSyncToken::getCurrentSyncToken()
     }
 
     // make a dynamic CAST
-
     TaskSyncToken* taskSyncToken = dynamic_cast<TaskSyncToken*>( syncToken );
 
     // If the current sync token is not a Task token it is very likely an error
@@ -163,7 +157,6 @@ TaskSyncToken* TaskSyncToken::getCurrentSyncToken()
     }
 
     // But might not be too serious so probably NULL results in synchronous execution
-
     return taskSyncToken;
 }
 

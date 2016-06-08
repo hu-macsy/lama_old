@@ -60,10 +60,8 @@ void Halo::clear()
 {
     mRequiredPlan.clear();
     mProvidesPlan.clear();
-
     mRequiredIndexes.clear();
     mProvidesIndexes.clear();
-
     mGlobal2Halo.clear();
 }
 
@@ -71,27 +69,21 @@ void Halo::purge()
 {
     mRequiredPlan.purge();
     mProvidesPlan.purge();
-
     mRequiredIndexes.purge();
     mProvidesIndexes.purge();
-
     // free memory of map by reallocation
-
-    std::map<IndexType,IndexType>().swap( mGlobal2Halo );
+    std::map<IndexType, IndexType>().swap( mGlobal2Halo );
 }
 
 Halo& Halo::operator=( const Halo& other )
 {
-    if( this != &other )
+    if ( this != &other )
     {
         SCAI_LOG_DEBUG( logger, "make deep copy of Halo" )
-
         mRequiredPlan = other.mRequiredPlan;
         mProvidesPlan = other.mProvidesPlan;
-
         mRequiredIndexes = other.mRequiredIndexes;
         mProvidesIndexes = other.mProvidesIndexes;
-
         mGlobal2Halo = other.mGlobal2Halo;
     }
 
@@ -103,7 +95,6 @@ Halo& Halo::operator=( const Halo& other )
 void Halo::writeAt( std::ostream& stream ) const
 {
     // write info this object
-
     stream << "Halo( size = " << getHaloSize() << ", required plan = " << mRequiredPlan << ", provides plan = "
            << mProvidesPlan << ")";
 }

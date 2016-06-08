@@ -78,13 +78,13 @@ public:
         const IndexType numDiagonals );
 
 
-    template<typename COOValueType,typename OtherValueType>
+    template<typename COOValueType, typename OtherValueType>
     static void scaleRows(
         COOValueType cooValues[],
         const OtherValueType rowValues[],
         const IndexType cooIA[],
         const IndexType numValues );
-    
+
     /** OpenMP implementation for COOKernelTrait::getCSRSizes */
 
     static void getCSRSizes(
@@ -95,7 +95,7 @@ public:
 
     /** Serial implementation for COOKernelTrait::getCSRValues */
 
-    template<typename COOValueType,typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -108,7 +108,7 @@ public:
 
     /** OpenMP implementation for COOKernelTrait::setCSRData */
 
-    template<typename COOValueType,typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     static void setCSRData(
         COOValueType cooValues[],
         const CSRValueType csrValues[],

@@ -54,13 +54,13 @@ struct TypeListUtils;
 template<>
 struct TypeListUtils<NullType>
 {
-    enum{ size = 0 };
+    enum { size = 0 };
 };
 
 template<typename H, typename T>
 struct TypeListUtils< TypeList<H, T> >
 {
-    enum{ size = TypeListUtils<T>::size + 1 };
+    enum { size = TypeListUtils<T>::size + 1 };
 };
 
 /*
@@ -72,22 +72,22 @@ struct TypeListUtilsV;
 template<typename ValueType>
 struct TypeListUtilsV<ValueType, NullType>
 {
-    enum{ contains = 0 };
-    enum{ index = -1 };
+    enum { contains = 0 };
+    enum { index = -1 };
 };
 
 template<typename ValueType, typename T>
-struct TypeListUtilsV<ValueType, TypeList<ValueType,T> >
+struct TypeListUtilsV<ValueType, TypeList<ValueType, T> >
 {
-    enum{ contains = 1 };
-    enum{ index = TypeListUtils< T >::size };
+    enum { contains = 1 };
+    enum { index = TypeListUtils< T >::size };
 };
 
 template<typename ValueType, typename H, typename T>
-struct TypeListUtilsV<ValueType, TypeList<H,T> >
+struct TypeListUtilsV<ValueType, TypeList<H, T> >
 {
-    enum{ contains = TypeListUtilsV<ValueType, T>::contains };
-    enum{ index = TypeListUtilsV<ValueType, T>::index };
+    enum { contains = TypeListUtilsV<ValueType, T>::contains };
+    enum { index = TypeListUtilsV<ValueType, T>::index };
 };
 
 /*
@@ -97,7 +97,7 @@ struct TypeListUtilsV<ValueType, TypeList<H,T> >
 template<typename VT, typename TList1, typename TList2> struct TypeListUtilsVLL;
 
 template<typename VT, typename H, typename T>
-struct TypeListUtilsVLL<VT, TypeList<H,T>, NullType>
+struct TypeListUtilsVLL<VT, TypeList<H, T>, NullType>
 {
     typedef H ValueType;
 };

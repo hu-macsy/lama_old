@@ -58,7 +58,7 @@ typedef common::shared_ptr<class AMGSetup> AMGSetupPtr;
  * @todo The current Interface of AMGSetup is just for evaluation so this should be changed to meet all requirements.
  *       (e.g. Pre and Post Smoothing)
  */
-class COMMON_DLL_IMPORTEXPORT AMGSetup : 
+class COMMON_DLL_IMPORTEXPORT AMGSetup :
 
     public common::Factory<std::string, AMGSetup*>,
     public common::Printable

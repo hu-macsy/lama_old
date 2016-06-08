@@ -68,7 +68,10 @@ struct JDSKernelTrait
             const ValueType rhs[],
             const ValueType omega );
 
-        static const char* getId() { return "JDS.jacobi"; }
+        static const char* getId()
+        {
+            return "JDS.jacobi";
+        }
     };
 
     /** Structure with type definitions for solver routines */
@@ -90,7 +93,10 @@ struct JDSKernelTrait
             const ValueType oldSolution[],
             const ValueType omega );
 
-        static const char* getId() { return "JDS.jacobiHalo"; }
+        static const char* getId()
+        {
+            return "JDS.jacobiHalo";
+        }
     };
 
     struct sortRows
@@ -111,10 +117,13 @@ struct JDSKernelTrait
          */
 
         typedef void ( *FuncType ) ( IndexType array[],
-                        IndexType perm[],
-                        const IndexType n );
+                                     IndexType perm[],
+                                     const IndexType n );
 
-        static const char* getId() { return "JDS.sortRows"; }
+        static const char* getId()
+        {
+            return "JDS.sortRows";
+        }
     };
 
     struct setInversePerm
@@ -134,10 +143,13 @@ struct JDSKernelTrait
          */
 
         typedef void ( *FuncType ) ( IndexType inversePerm[],
-                        const IndexType perm[],
-                        const IndexType n );
+                                     const IndexType perm[],
+                                     const IndexType n );
 
-        static const char* getId() { return "JDS.setInversePerm"; }
+        static const char* getId()
+        {
+            return "JDS.setInversePerm";
+        }
     };
 
     struct ilg2dlg
@@ -163,9 +175,12 @@ struct JDSKernelTrait
          */
 
         typedef IndexType ( *FuncType ) ( IndexType dlg[], const IndexType numDiagonals,
-                        const IndexType ilg[], const IndexType numRows );
+                                          const IndexType ilg[], const IndexType numRows );
 
-        static const char* getId() { return "JDS.ilg2dlg"; }
+        static const char* getId()
+        {
+            return "JDS.ilg2dlg";
+        }
     };
 
     template<typename JDSValueType, typename CSRValueType>
@@ -185,16 +200,19 @@ struct JDSKernelTrait
          */
 
         typedef void ( *FuncType ) ( IndexType csrJA[],
-                        CSRValueType csrValues[],
-                        const IndexType csrIA[],
-                        const IndexType numRows,
-                        const IndexType jdsPerm[],
-                        const IndexType jdsILG[],
-                        const IndexType jdsDLG[],
-                        const IndexType jdsJA[],
-                        const JDSValueType jdsValues[] );
+                                     CSRValueType csrValues[],
+                                     const IndexType csrIA[],
+                                     const IndexType numRows,
+                                     const IndexType jdsPerm[],
+                                     const IndexType jdsILG[],
+                                     const IndexType jdsDLG[],
+                                     const IndexType jdsJA[],
+                                     const JDSValueType jdsValues[] );
 
-        static const char* getId() { return "JDS.getCSRValues"; }
+        static const char* getId()
+        {
+            return "JDS.getCSRValues";
+        }
     };
 
     template<typename JDSValueType, typename CSRValueType>
@@ -216,17 +234,20 @@ struct JDSKernelTrait
          */
 
         typedef void( *FuncType ) ( IndexType jdsJA[],
-                        JDSValueType jdsValues[],
-                        const IndexType numRows,
-                        const IndexType jdsPerm[],
-                        const IndexType jdsILG[],
-                        const IndexType numDiagonals,
-                        const IndexType jdsDLG[],
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const CSRValueType csrValues[] );
+                                    JDSValueType jdsValues[],
+                                    const IndexType numRows,
+                                    const IndexType jdsPerm[],
+                                    const IndexType jdsILG[],
+                                    const IndexType numDiagonals,
+                                    const IndexType jdsDLG[],
+                                    const IndexType csrIA[],
+                                    const IndexType csrJA[],
+                                    const CSRValueType csrValues[] );
 
-        static const char* getId() { return "JDS.setCSRValues"; }
+        static const char* getId()
+        {
+            return "JDS.setCSRValues";
+        }
     };
 
     template<typename ValueType>
@@ -245,94 +266,112 @@ struct JDSKernelTrait
          */
 
         typedef void ( *FuncType ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType jdsPerm[],
-                        const IndexType jdsILG[],
-                        const IndexType ndlg,
-                        const IndexType jdsDLG[],
-                        const IndexType jdsJA[],
-                        const ValueType jdsValues[] );
+                                     const ValueType alpha,
+                                     const ValueType x[],
+                                     const ValueType beta,
+                                     const ValueType y[],
+                                     const IndexType numRows,
+                                     const IndexType jdsPerm[],
+                                     const IndexType jdsILG[],
+                                     const IndexType ndlg,
+                                     const IndexType jdsDLG[],
+                                     const IndexType jdsJA[],
+                                     const ValueType jdsValues[] );
 
-        static const char* getId() { return "JDS.normalGEMV"; }
+        static const char* getId()
+        {
+            return "JDS.normalGEMV";
+        }
     };
 
     template<typename ValueType>
     struct normalGEVM
     {
         typedef void ( *FuncType ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numColumns,
-                        const IndexType jdsPerm[],
-                        const IndexType jdsILG[],
-                        const IndexType ndlg,
-                        const IndexType jdsDLG[],
-                        const IndexType jdsJA[],
-                        const ValueType jdsValues[] );
+                                     const ValueType alpha,
+                                     const ValueType x[],
+                                     const ValueType beta,
+                                     const ValueType y[],
+                                     const IndexType numColumns,
+                                     const IndexType jdsPerm[],
+                                     const IndexType jdsILG[],
+                                     const IndexType ndlg,
+                                     const IndexType jdsDLG[],
+                                     const IndexType jdsJA[],
+                                     const ValueType jdsValues[] );
 
-        static const char* getId() { return "JDS.normalGEVM"; }
+        static const char* getId()
+        {
+            return "JDS.normalGEVM";
+        }
     };
 
     template<typename ValueType, typename OtherValueType>
     struct getRow
     {
         typedef void ( *FuncType ) ( OtherValueType row[],
-                        const IndexType i,
-                        const IndexType numColumns,
-                        const IndexType numRows,
-                        const IndexType perm[],
-                        const IndexType ilg[],
-                        const IndexType dlg[],
-                        const IndexType ja[],
-                        const ValueType values[] );
+                                     const IndexType i,
+                                     const IndexType numColumns,
+                                     const IndexType numRows,
+                                     const IndexType perm[],
+                                     const IndexType ilg[],
+                                     const IndexType dlg[],
+                                     const IndexType ja[],
+                                     const ValueType values[] );
 
-        static const char* getId() { return "JDS.getRow"; }
+        static const char* getId()
+        {
+            return "JDS.getRow";
+        }
     };
 
     template<typename ValueType>
     struct getValue
     {
         typedef ValueType ( *FuncType ) ( const IndexType i,
-                        const IndexType j,
-                        const IndexType numRows,
-                        const IndexType* dlg,
-                        const IndexType* ilg,
-                        const IndexType* perm,
-                        const IndexType* ja,
-                        const ValueType* values );
+                                          const IndexType j,
+                                          const IndexType numRows,
+                                          const IndexType* dlg,
+                                          const IndexType* ilg,
+                                          const IndexType* perm,
+                                          const IndexType* ja,
+                                          const ValueType* values );
 
-        static const char* getId() { return "JDS.getValue"; }
+        static const char* getId()
+        {
+            return "JDS.getValue";
+        }
     };
 
     template<typename ValueType, typename OtherValueType>
     struct scaleValue
     {
         typedef void ( *FuncType ) ( const IndexType numRows,
-                        const IndexType perm[],
-                        const IndexType ilg[],
-                        const IndexType dlg[],
-                        ValueType mValues[],
-                        const OtherValueType values[] );
+                                     const IndexType perm[],
+                                     const IndexType ilg[],
+                                     const IndexType dlg[],
+                                     ValueType mValues[],
+                                     const OtherValueType values[] );
 
-        static const char* getId() { return "JDS.scaleValue"; }
+        static const char* getId()
+        {
+            return "JDS.scaleValue";
+        }
     };
 
     struct checkDiagonalProperty
     {
         typedef bool ( *FuncType ) ( const IndexType numDiagonals,
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType perm[],
-                        const IndexType ja[],
-                        const IndexType dlg[] );
+                                     const IndexType numRows,
+                                     const IndexType numColumns,
+                                     const IndexType perm[],
+                                     const IndexType ja[],
+                                     const IndexType dlg[] );
 
-        static const char* getId() { return "JDS.checkDiagonalProperty"; }
+        static const char* getId()
+        {
+            return "JDS.checkDiagonalProperty";
+        }
     };
 };
 

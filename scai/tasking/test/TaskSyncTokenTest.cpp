@@ -51,7 +51,6 @@ static const int WORKLOAD = 1000000;
 static void work( int& out, const int in )
 {
     out = in - 1;
-
     int factor = in % 4 + 1;
 
     // just do some stupid work, workload depends on in
@@ -87,11 +86,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 {
     int in  = 15;
     int out = 3;
-
     {
         TaskSyncToken token( bind( &work, ref( out ), in ) );
     }
-
     BOOST_CHECK_EQUAL( in, out );
 }
 
@@ -102,11 +99,8 @@ BOOST_AUTO_TEST_CASE( runTest )
     for ( int i = 0; i < 10; ++i )
     {
         int out = 3;
-
         TaskSyncToken token( bind( &work, ref( out ), i ) );
-
         token.wait();
-
         BOOST_CHECK_EQUAL( i, out );
     }
 }
@@ -116,13 +110,9 @@ BOOST_AUTO_TEST_CASE( runTest )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     int out = 0;
-
     TaskSyncToken testToken( bind( &work, ref( out ), 1 ) );
-
     SCAI_COMMON_WRITEAT_TEST( testToken );
-
     testToken.wait();
-
     BOOST_CHECK_EQUAL( 1, out );
 }
 
@@ -131,9 +121,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 BOOST_AUTO_TEST_CASE( fullTest )
 {
     const int N = 15;
-
     SyncToken* tokenArray[15];
-
     int out[15];
 
     for ( int i = 0; i < N; ++i )

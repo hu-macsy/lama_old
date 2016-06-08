@@ -74,13 +74,11 @@ void readTest( const ValueType values[], const IndexType N, const ValueType sum 
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
     ContextPtr hostContext = Context::getHostPtr();
-
     HArray<IndexType> hArray; // default, not allocated at all
     ReadAccess<IndexType> readTestAccess( hArray, hostContext );
     readTestAccess.release();
     WriteAccess<IndexType> writeAccess( hArray, hostContext );
     writeAccess.resize( 10 );
-
     IndexType* data = writeAccess.get();
 
     for ( IndexType i = 0; i < 10; i++ )
@@ -109,9 +107,7 @@ BOOST_AUTO_TEST_CASE( accessTest )
     const IndexType n = 10;
     const double value = 1.0;
     const double value2 = 2.0;
-
     ContextPtr hostContext = Context::getHostPtr();
-
     HArray<double> hArray( n, value );
     {
         ReadAccess<double> hArrayRAccess( hArray, hostContext );
@@ -132,9 +128,7 @@ BOOST_AUTO_TEST_CASE( accessTest )
         }
 
         hArrayWAccess.release();
-
         ReadAccess<double> tmpReadAccess( hArray, hostContext );
-
         ReadAccess<double> hArrayRAccess( hArray, hostContext );
 
         for ( IndexType i = 0; i < n; ++i )
@@ -151,12 +145,9 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     const IndexType N = 10;
     const double value = 1.0;
     HArray<double> hArray( N, value );
-
     ContextPtr hostContext = Context::getHostPtr();
-
     {
         // read and write access at same time by same thread
-
         ReadAccess<double> read( hArray, hostContext );
         WriteAccess<double> write( hArray, hostContext );
 
@@ -167,19 +158,16 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     }
     {
         // verify that operation was really on the same array
-
         ReadAccess<double> read( hArray, hostContext );
         readTest<double>( read.get(), N, N * value * 2.0 );
     }
     {
         // with a single write access resize is possilbe
-
         WriteAccess<double> write( hArray, hostContext );
         write.resize( 2 * N );
     }
     {
         // read and write access at same time by same thread
-
         WriteOnlyAccess<double> write( hArray, hostContext, 2 * N );
         BOOST_CHECK_THROW(
         {
@@ -190,7 +178,6 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     }
     {
         // with read and write at the same time resize throws Exception
-
         ReadAccess<double> read( hArray, hostContext );
         WriteAccess<double> write( hArray, hostContext );
         BOOST_CHECK_THROW(
@@ -200,13 +187,10 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     }
     {
         // read and write access at same time by same thread
-
         ReadAccess<double> read( hArray, hostContext );
         WriteAccess<double> write( hArray, hostContext );
-
         // a clear is not possible as it affects the other access
         // Note: clear is the same as resize( 0 )
-
         BOOST_CHECK_THROW(
         {
             write.clear();
@@ -229,9 +213,7 @@ BOOST_AUTO_TEST_CASE( delayedReleaseTest )
     }
 
     SCAI_LOG_INFO( logger, "delayedReleaseTest, test context = " << *testContext )
-
     HArray<double> X( 10, 5.0 );
-
     // write access on test Context
     {
         WriteAccess<double> write( X, testContext );
@@ -240,16 +222,12 @@ BOOST_AUTO_TEST_CASE( delayedReleaseTest )
     {
         ReadAccess<double> read( X, hostContext );
     }
-
     common::function<void()> delay;
-
     // write access on test context, but delay the release
     {
         WriteAccess<double> write( X, testContext );
         delay = write.releaseDelayed();
-
         // write access can no more be used
-
         BOOST_CHECK_THROW(
         {
             double* ptr = write.get();
@@ -257,38 +235,29 @@ BOOST_AUTO_TEST_CASE( delayedReleaseTest )
         },
         common::Exception );
     }
-
     // read access on Host, not possible as release on write is not done
     // this is the reason why we use on host a mock context
-
     BOOST_CHECK_THROW(
     {
         ReadAccess<double> read( X, hostContext );
     },
     common::Exception  );
-
     delay();  // now it is okay
-
     {
         ReadAccess<double> read( X, hostContext );
     }
-
     // read access on testContext, but delay the release
     {
         ReadAccess<double> read( X, testContext );
         delay = read.releaseDelayed();
     }
-
     // write access on Host, not possible as release on read is not done
-
     BOOST_CHECK_THROW(
     {
         WriteAccess<double> write( X, hostContext );
     },
     common::Exception );
-
     delay();  // now it is okay
-
     {
         WriteAccess<double> write( X, hostContext );
     }

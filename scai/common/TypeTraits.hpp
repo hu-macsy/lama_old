@@ -111,7 +111,7 @@ template<>
 class TypeTraits<IndexType>
 {
 public:
-	typedef IndexType AbsType;
+    typedef IndexType AbsType;
 
     static inline IndexType getEps()
     {
@@ -147,7 +147,7 @@ template<>
 class TypeTraits<long double>
 {
 public:
-	typedef long double AbsType;
+    typedef long double AbsType;
 
     static inline long double getEps()
     {
@@ -183,7 +183,7 @@ template<>
 class TypeTraits<double>
 {
 public:
-	typedef double AbsType;
+    typedef double AbsType;
 
     static inline double getEps()
     {
@@ -218,7 +218,7 @@ template<>
 class TypeTraits<float>
 {
 public:
-	typedef float AbsType;
+    typedef float AbsType;
 
     static inline float getEps()
     {
@@ -255,7 +255,7 @@ template<>
 class TypeTraits<ComplexFloat>
 {
 public:
-	typedef float AbsType;
+    typedef float AbsType;
 
     static inline ComplexFloat getEps()
     {
@@ -290,7 +290,7 @@ template<>
 class TypeTraits<ComplexDouble>
 {
 public:
-	typedef double AbsType;
+    typedef double AbsType;
 
     static inline ComplexDouble getEps()
     {
@@ -326,7 +326,7 @@ template<>
 class TypeTraits<ComplexLongDouble>
 {
 public:
-	typedef long double AbsType;
+    typedef long double AbsType;
 
     static inline ComplexLongDouble getEps()
     {

@@ -92,7 +92,6 @@ int main( int argc, char* argv[] )
     }
 
     std::cout << std::endl;
-
     hra.release();
     return 0;
 }

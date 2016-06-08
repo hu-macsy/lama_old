@@ -141,9 +141,7 @@ GMRES::GMRESRuntime::~GMRESRuntime()
 void GMRES::initialize( const Matrix& coefficients )
 {
     SCAI_REGION( "Solver.GMRES.initialize" )
-
     IterativeSolver::initialize( coefficients );
-
     GMRESRuntime& runtime = getRuntime();
 
     if ( runtime.mV != 0 )
@@ -178,31 +176,24 @@ void GMRES::initialize( const Matrix& coefficients )
     }
 
     runtime.mX0 = 0;
-
     scoped_array<double>& mCC = runtime.mCC;
     scoped_array<double>& mSS = runtime.mSS;
     scoped_array<double>& mG = runtime.mG;
     scoped_array<double>& mY = runtime.mY;
     scoped_array<double>& mH = runtime.mH;
     scoped_array<double>& mHd = runtime.mHd;
-
     mCC.reset( new double[mKrylovDim + 1] );
     mSS.reset( new double[mKrylovDim + 1] );
     mG.reset( new double[mKrylovDim + 1] );
     mY.reset( new double[mKrylovDim + 1] );
-
     mH.reset( new double[( mKrylovDim * ( mKrylovDim + 1 ) ) / 2] );
     mHd.reset( new double[mKrylovDim] );
-
     runtime.mV = new std::vector<Vector*>( mKrylovDim + 1, 0 );
-
     // 'force' vector operations to be computed at the same location where coefficients reside
-
     ( *runtime.mV )[0] = coefficients.newDenseVector();
     runtime.mW = coefficients.newDenseVector();
     runtime.mT = coefficients.newDenseVector();
     runtime.mX0 = coefficients.newDenseVector();
-
     totalIterationTime = 0.0;
     totalPreconditionerTime = 0.0;
 }
@@ -239,11 +230,8 @@ void GMRES::setKrylovDim( unsigned int krylovDim )
 void GMRES::iterate()
 {
     SCAI_REGION( "Solver.GMRES.iterate" )
-
     GMRESRuntime& runtime = getRuntime();
-
     double iterationTimeStart = common::Walltime::get();
-
     unsigned int krylovIndex = this->getIterationCount() % mKrylovDim;
     unsigned int hIdxStart = krylovIndex * ( krylovIndex + 1 ) / 2;
     unsigned int hIdxDiag = hIdxStart + krylovIndex;
@@ -265,10 +253,8 @@ void GMRES::iterate()
         // Compute r0=b-Ax0
         this->getResidual();
         Vector& residual = ( *runtime.mResidual );
-
         // store old solution
         *runtime.mX0 = runtime.mSolution.getConstReference();
-
         // set first search direction vCurrent
         SCAI_LOG_INFO( logger, "Doing initial preconditioning." )
 
@@ -296,7 +282,6 @@ void GMRES::iterate()
     // precondition next search direction
     Vector& w = ( *runtime.mW );
     Vector& tmp = ( *runtime.mT );
-
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
     if ( !mPreconditioner )
@@ -325,13 +310,11 @@ void GMRES::iterate()
     }
 
     runtime.mHd[krylovIndex] = w.l2Norm().getValue<double>();
-
     // normalize/store w in vNext (not needed in last step? Storage?)
     SCAI_LOG_DEBUG( logger, "Normalizing vNext." )
     Vector& vNext = *( *runtime.mV )[krylovIndex + 1];
     double scal = 1.0 / runtime.mHd[krylovIndex];
     vNext = scal * w;
-
     // apply Givens rotations to new column
     SCAI_LOG_DEBUG( logger, "Apply Givens rotations." )
 
@@ -341,7 +324,7 @@ void GMRES::iterate()
         double tmp1 = runtime.mH[hIdxStart + k];
         double tmp2 = runtime.mH[hIdxStart + k + 1];
         //for complex valuetype:
-        runtime.mH[hIdxStart + k] = lama::conj(runtime.mCC[k]).getValue<ScalarRepType>() * tmp1 + lama::conj(runtime.mSS[k]).getValue<ScalarRepType>() * tmp2;
+        runtime.mH[hIdxStart + k] = lama::conj( runtime.mCC[k] ).getValue<ScalarRepType>() * tmp1 + lama::conj( runtime.mSS[k] ).getValue<ScalarRepType>() * tmp2;
         runtime.mH[hIdxStart + k + 1] = runtime.mCC[k] * tmp2 - runtime.mSS[k] * tmp1;
     }
 
@@ -355,7 +338,6 @@ void GMRES::iterate()
         runtime.mCC[krylovIndex] = runtime.mH[hIdxDiag] / tmp;
         runtime.mSS[krylovIndex] = runtime.mHd[krylovIndex] / tmp;
     }
-
     // update Hessenberg-system
     {
         SCAI_REGION( "Solver.GMRES.updateHessenbergSystem" )
@@ -366,24 +348,20 @@ void GMRES::iterate()
                                + runtime.mSS[krylovIndex] * runtime.mHd[krylovIndex];
         SCAI_LOG_DEBUG( logger, "New Residual estimate " << common::Math::abs( runtime.mG[krylovIndex + 1] ) << "." )
     }
-
     // do (partial) update to solution (currently very expensive to do every iteration)
     // TODO do this more efficiently? Only do update if residual evaluation
     // required or krylov-subspace completely filled
     //if (krylovIndex == mKrylovDim-1)
     updateX( krylovIndex );
-
     totalIterationTime += common::Walltime::get() - iterationTimeStart;
 }
 
 void GMRES::updateX( unsigned int i )
 {
     SCAI_REGION( "Solver.GMRES.updateX" )
-
     // back-substitution Hessenberg system H*y=g
     // H stored in column 'packed' order
     SCAI_LOG_DEBUG( logger, "Updating X within krylov dimensions i+1 = " << i + 1 )
-
     GMRESRuntime& runtime = getRuntime();
 
     // implementation using LAPACK
@@ -393,16 +371,11 @@ void GMRES::updateX( unsigned int i )
     }
 
     // ContextPtr context = getCoefficients().getContextPtr();
-
     hmemo::ContextPtr context = hmemo::Context::getHostPtr();
-
     static LAMAKernel<blaskernel::BLASKernelTrait::tptrs<double> > tptrs;
-
     int info = tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
                                runtime.mY.get(), i + 1 );
-
     SCAI_LOG_DEBUG( logger, "tptrs returned with code = " << info )
-
     // Update of solution vector
     Vector& x = runtime.mSolution.getReference();
 

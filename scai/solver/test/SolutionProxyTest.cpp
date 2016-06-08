@@ -56,7 +56,6 @@ struct SolutionProxyTestConfig
     ~SolutionProxyTestConfig()
     {
         // the vector must be deleted explicitly
-
         VectorType& vec = mProxy.getReference();
         delete &vec;
     }
@@ -111,13 +110,9 @@ BOOST_AUTO_TEST_CASE( testGetConstReference )
 BOOST_AUTO_TEST_CASE( testGetReference )
 {
     mProxy.setDirty( false );
-
     BOOST_CHECK( !mProxy.isDirty() );
-
     VectorType& vec = mProxy.getReference();
-
     BOOST_CHECK( mProxy.isDirty() );
-
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 0 ) );
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 1 ) );
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 2 ) );

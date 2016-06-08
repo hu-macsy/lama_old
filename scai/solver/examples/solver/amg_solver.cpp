@@ -79,37 +79,29 @@ void dummy( const LamaConfig& lamaconf )
 vector<IndexType>* readPartitionVector( const char* filename, int commSize, int expectedSize )
 {
     // read in general distribution if available for number of processors
-
     ostringstream partitionFileName;
-
     partitionFileName << filename << "." << commSize ;
-
     ifstream pfile ( partitionFileName.str().c_str() );
 
     if ( pfile.is_open() )
     {
-        vector<IndexType> *pvector = new vector<IndexType>;
-
+        vector<IndexType>* pvector = new vector<IndexType>;
         pvector->reserve( expectedSize );
-
         IndexType elem;
 
         while ( pfile >> elem )
         {
-            pvector->push_back (elem);
+            pvector->push_back ( elem );
         }
 
         cout << "Read partitioning file " << partitionFileName.str()
              << ", actual size = " << pvector->size() << ", expected = " << expectedSize << endl;
-
         pfile.close();
-
         return pvector;
     }
     else
     {
         cout << "Could not open any partitioning file " << partitionFileName.str() << endl;
-
         return NULL;
     }
 }
@@ -117,14 +109,10 @@ vector<IndexType>* readPartitionVector( const char* filename, int commSize, int 
 int main( int argc, char* argv[] )
 {
     LamaConfig lamaconf;
-
     // Get (default) communicator, will be MPI if available
-
     const CommunicatorPtr& comm = lamaconf.getCommunicatorPtr();
-
     int myRank   = comm->getRank();
     int numProcs = comm->getSize();
-
     string filename;
 
     if ( argc < 2 )
@@ -147,39 +135,25 @@ int main( int argc, char* argv[] )
     }
 
     // use auto pointer so that matrix will be deleted at program exit
-
     MatrixPtr matrixPtr( lamaconf.getMatrix() );
     VectorPtr rhsPtr( matrixPtr->newDenseVector() );
-
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
-
     // Each processor should print its configuration
-
     cout << lamaconf << endl;
-
     double start = Walltime::get();   // start timing of reading
-
     // read matrix + rhs from disk
-
     matrix.readFromFile( filename + ".frm" );
     rhs.readFromFile( filename + ".frv" );
-
     // only square matrices are accetpted
-
     SCAI_ASSERT_EQUAL( matrix.getNumRows(), matrix.getNumColumns(), "size mismatch" )
     SCAI_ASSERT_EQUAL( matrix.getNumRows(), rhs.size(), "size mismatch" )
-
     int numRows = matrix.getNumRows();
-
     // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
-
     scai::common::unique_ptr<Vector> solutionPtr( rhs.newVector() );
     Vector& solution = *solutionPtr;
-
     solution.allocate( rhs.getDistributionPtr() );
     solution = 0.0;   // intialize of a vector
-
     double stop = Walltime::get();  // stop timing for reading
 
     if ( myRank == 0 )
@@ -190,17 +164,13 @@ int main( int argc, char* argv[] )
     if ( numProcs > 1 )
     {
         // determine a new distribution so that each processor gets part of the matrix according to its weight
-
         float weight = lamaconf.getWeight();
-
         DistributionPtr dist;
 
         if ( lamaconf.useMetis() )
         {
             // maybue there is already a partition vector storred as file
-
             common::shared_ptr<vector<IndexType> > mapVector;
-
             mapVector.reset( readPartitionVector( filename.c_str(), numProcs, numRows ) );
 
             if ( mapVector )
@@ -210,7 +180,6 @@ int main( int argc, char* argv[] )
             else
             {
                 start = Walltime::get();   // start timing of Metis
-
                 dist.reset( Distribution::getDistributionPtr( "METIS", lamaconf.getCommunicatorPtr(), matrix, weight ) );
                 stop = Walltime::get();   // stop timing of Metis
 
@@ -226,13 +195,10 @@ int main( int argc, char* argv[] )
         }
 
         start = Walltime::get();   // start timing of redistribution
-
         matrix.redistribute( dist, dist );
         rhs.redistribute ( dist );
         solution.redistribute ( dist );
-
         cout << comm << ": matrix = " << matrix ;
-
         stop = Walltime::get();   // stop timing of redistribution
 
         if ( myRank == 0 )
@@ -249,19 +215,15 @@ int main( int argc, char* argv[] )
     }
 
     start = Walltime::get();  // start time of data transfer
-
     dummy( lamaconf );
-
     matrix.setCommunicationKind( lamaconf.getCommunicationKind() );
     matrix.setContextPtr( lamaconf.getContextPtr() );
     rhs.setContextPtr( lamaconf.getContextPtr() );
     solution.setContextPtr( lamaconf.getContextPtr() );
-
     rhs.prefetch();
     matrix.prefetch();
     matrix.wait();
     rhs.wait();
-
     stop = Walltime::get();
 
     if ( myRank == 0 )
@@ -270,56 +232,38 @@ int main( int argc, char* argv[] )
     }
 
     // setting up solver from file "solveconfig.txt"
-
     std::ostringstream loggerName;
-
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
-
     LoggerPtr logger( new CommonLogger ( loggerName.str(), LogLevel::advancedInformation,
                                          LoggerWriteBehaviour::toConsoleOnly ) );
-
     CG mySolver( "CGSolver", logger );
-
     Scalar relEps = 1e-14;
     Scalar absEps = 1e-16;
-
     NormPtr relNorm = NormPtr( new L2Norm() );
     NormPtr absNorm = NormPtr( new L2Norm() );
-
     CriterionPtr relRT( new ResidualThreshold( relNorm, relEps, ResidualThreshold::Relative ) );
     CriterionPtr absRT( new ResidualThreshold( absNorm, absEps, ResidualThreshold::Absolute ) );
-
     CriterionPtr rt( new Criterion( relRT, absRT, Criterion::OR ) );
 
     if ( lamaconf.hasMaxIter() )
     {
         CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
-
         // stop if iteration count reached OR residual threshold is reached
-
         rt.reset( new Criterion ( it, rt, Criterion::OR ) );
     }
 
     mySolver.setStoppingCriterion( rt );
-
     LoggerPtr amgLogger( new CommonLogger ( loggerName.str(), LogLevel::solverInformation,
                                             LoggerWriteBehaviour::toConsoleOnly ) );
-
     common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
-
     amgSolver->setHostOnlyLevel( 4 );
     amgSolver->setReplicatedLevel( 5 );
     amgSolver->setMaxLevels( 25 );
     amgSolver->setMinVarsCoarseLevel( 200 );
-
     mySolver.setPreconditioner( amgSolver );
-
     start = Walltime::get();
-
     // initialize solver
-
     mySolver.initialize( matrix );
-
     stop = Walltime::get();
 
     if ( myRank == 0 )
@@ -328,13 +272,9 @@ int main( int argc, char* argv[] )
     }
 
     dummy( lamaconf );
-
     // run solver
-
     start = Walltime::get();
-
     mySolver.solve( solution, rhs );
-
     stop = Walltime::get();
 
     if ( myRank == 0 )

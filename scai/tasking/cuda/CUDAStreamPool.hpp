@@ -55,7 +55,7 @@ struct streamtype
     } StreamType;
 };
 
-/** For each CUDA device/context there will be some streams available 
+/** For each CUDA device/context there will be some streams available
  *  that can be used for asynchronous computations and memory transfers.
  *
  *  The advantage of the pool is that create/destroy of the stream is only called once.
@@ -68,7 +68,7 @@ public:
 
     /** Get a stream of the pool, either for compute or memory transfer */
 
-    CUstream reserveStream( StreamType type ); 
+    CUstream reserveStream( StreamType type );
 
     /** Release a stream, no more used. */
 
@@ -81,7 +81,7 @@ public:
 
     static CUDAStreamPool& getPool( const common::CUDACtx& cuda );
 
-    /** Release the stream pool for a CUDA context. 
+    /** Release the stream pool for a CUDA context.
      *
      *  @throws an exception if not all streams have been released.
      */
@@ -94,7 +94,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    const common::CUDACtx& mCUDA;   
+    const common::CUDACtx& mCUDA;
 
     /** Construct a pool of streams for a given CUDA device. */
 

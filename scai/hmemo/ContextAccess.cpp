@@ -47,19 +47,17 @@ ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
     : mContext( *context ), mReleased( false ), mFile( file ), mLine( line )
 {
     SCAI_LOG_INFO( logger, *this << " enabled" )
-
     mContext.enable( mFile, mLine );
 }
 
 void ContextAccess::release()
 {
-    if( mReleased )
+    if ( mReleased )
     {
         return;
     }
 
     SCAI_LOG_INFO( logger, *this << " released" )
-
     mContext.disable( mFile, mLine );
     mReleased = false;
 }

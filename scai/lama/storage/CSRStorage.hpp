@@ -83,7 +83,7 @@ namespace lama
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT CSRStorage:
-    public CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>,
+    public CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>,
     public _MatrixStorage::Register<CSRStorage<ValueType> >    // register at factory
 {
 public:
@@ -415,7 +415,7 @@ public:
      *
      *   Note: this routine does not support type conversion
      */
-     
+
     virtual void buildCSCData(
         hmemo::HArray<IndexType>& colIA,
         hmemo::HArray<IndexType>& colJA,

@@ -71,38 +71,34 @@ SCAI_LOG_DEF_LOGGER( CUSparseCSRUtils::logger, "CUDA.CSRUtilsSparse" )
 
 template<typename ValueType>
 void CUSparseCSRUtils::convertCSR2CSC(
-                IndexType cscIA[],
-                IndexType cscJA[],
-                ValueType cscValues[],
-                const IndexType csrIA[],
-                const IndexType csrJA[],
-                const ValueType csrValues[],
-                IndexType numRows,
-                IndexType numColumns,
-                IndexType numValues )
+    IndexType cscIA[],
+    IndexType cscJA[],
+    ValueType cscValues[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    IndexType numRows,
+    IndexType numColumns,
+    IndexType numValues )
 {
     SCAI_LOG_INFO( logger,
-                    "convertCSR2CSC<" << common::getScalarType<ValueType>() << "> -> cusparseScsr2csc" << ", matrix size = "
-                    << numRows << " x " << numColumns << ", nnz = " << numValues )
-
+                   "convertCSR2CSC<" << common::getScalarType<ValueType>() << "> -> cusparseScsr2csc" << ", matrix size = "
+                   << numRows << " x " << numColumns << ", nnz = " << numValues )
     typedef CUSPARSETrait::BLASIndexType BLASIndexType;
 
-    if (common::TypeTraits<IndexType>::stype
-                    != common::TypeTraits<BLASIndexType>::stype)
+    if ( common::TypeTraits<IndexType>::stype
+            != common::TypeTraits<BLASIndexType>::stype )
     {
-        COMMON_THROWEXCEPTION("indextype mismatch");
+        COMMON_THROWEXCEPTION( "indextype mismatch" );
     }
 
     // note: SCAI_CHECK_CUDA_ACCESS not required due to getCurrentCUDACtx
-
     cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
-
     CUSPARSEWrapper<ValueType>::csr2csc( handle,
-                    numRows, numColumns, numValues,
-                    csrValues, csrIA, csrJA,
-                    cscValues, cscJA, cscIA,
-                    CUSPARSE_ACTION_NUMERIC, CUSPARSE_INDEX_BASE_ZERO );
-
+                                         numRows, numColumns, numValues,
+                                         csrValues, csrIA, csrJA,
+                                         cscValues, cscJA, cscIA,
+                                         CUSPARSE_ACTION_NUMERIC, CUSPARSE_INDEX_BASE_ZERO );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
 }
 
@@ -126,20 +122,13 @@ void CUSparseCSRUtils::normalGEMV(
 {
     SCAI_LOG_INFO( logger, "normalGEMV<" << common::getScalarType<ValueType>() << ">" <<
                    " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
-
     SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0; // default stream if no syncToken is given
-
     cusparseMatDescr_t descrCSR;
-
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
-
     cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
     cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -155,11 +144,8 @@ void CUSparseCSRUtils::normalGEMV(
 
     // call result = alpha * op(A) * x + beta * result of cusparse
     // Note: alpha, beta are passed as pointers
-
     SCAI_LOG_INFO( logger, "Start cusparseXcsrmv, stream = " << stream )
-
     cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
-
     CUSPARSEWrapper<ValueType>::csrmv( handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                        numRows, numColumns, nnz, &alpha, descrCSR,
                                        csrValues, csrIA, csrJA, x, &beta, result );
@@ -167,7 +153,6 @@ void CUSparseCSRUtils::normalGEMV(
     if ( syncToken )
     {
         // set back stream for cusparse
-
         SCAI_CUSPARSE_CALL( cusparseSetStream( handle, 0 ),
                             "cusparseSetStream" )
     }
@@ -192,32 +177,21 @@ IndexType CUSparseCSRUtils::matrixAddSizes(
     const IndexType bJA[] )
 {
     SCAI_REGION( "CUDA.CSR.matrixAddSizes" )
-
     SCAI_LOG_INFO(
         logger,
         "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cusparseMatDescr_t descrCSR;
-
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
-
     cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
     cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
-
     int nnzA = 0; // aIA[ m ]
     int nnzB = 0;// bIA[ numColumns ]
-
     // we have not passed the values, so copy it from device to host
-
     cudaMemcpy( &nnzA, &aIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnzB, &bIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-
     int nnzC;
-
     cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
-
     SCAI_CUSPARSE_CALL(
         cusparseXcsrgeamNnz( handle,
                              numRows, numColumns,
@@ -225,11 +199,8 @@ IndexType CUSparseCSRUtils::matrixAddSizes(
                              descrCSR, nnzB, bIA, bJA,
                              descrCSR, cIA, &nnzC ),
         "cusparseXcsrgeamNnz" )
-
     // synchronization might be redundant due to the return value
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeamNnz" )
-
     return nnzC;
 }
 
@@ -249,36 +220,24 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
     const IndexType bJA[] )
 {
     SCAI_REGION( "CUDA.CSR.matrixMultiplySizes" )
-
     SCAI_LOG_INFO(
         logger,
         "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cusparseMatDescr_t descrCSR;
-
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
-
     cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
     cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
-
     int nnzA = 0; // aIA[ m ]
     int nnzB = 0;// bIA[ numColumns ]
-
     // we have not passed the values, so copy it
-
     cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-
     int nnzC;
-
     SCAI_LOG_DEBUG( logger, "multSizes, A is " << m << " x " << k << ", nnz = " << nnzA
                     << ", B is " << k << " x " << n << ", nnz = " << nnzB
                     << ", C = " << m << " x " << n )
-
     cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
-
     SCAI_CUSPARSE_CALL(
         cusparseXcsrgemmNnz( handle,
                              CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
@@ -287,13 +246,9 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
                              descrCSR, nnzB, bIA, bJA,
                              descrCSR, cIA, &nnzC ),
         "cusparseXcsrgemmNnz" )
-
     // synchronization might be redundant due to the return value
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
-
     SCAI_LOG_DEBUG( logger, "matrixMultiplySizes, nnzC = " << nnzC )
-
     return nnzC;
 }
 
@@ -319,38 +274,25 @@ void CUSparseCSRUtils::matrixAdd(
     const ValueType bValues[] )
 {
     SCAI_REGION( "CUDA.CSR.matrixAdd" )
-
     SCAI_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cusparseMatDescr_t descrCSR;
-
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
-
     cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
     cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
-
     int nnzA = 0; // aIA[ m ]
     int nnzB = 0;// bIA[ numColumns ]
-
     // we have not passed the values, so copy it
-
     cudaMemcpy( &nnzA, &aIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnzB, &bIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-
     // cIA requires const_cast, but will not be modified
-
     cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
-
     CUSPARSEWrapper<ValueType>::csrgeam( handle,
-                          numRows, numColumns,
-                          &alpha, descrCSR, nnzA, aValues, aIA, aJA,
-                          &beta, descrCSR, nnzB, bValues, bIA, bJA,
-                          descrCSR, cValues, const_cast<IndexType*>( cIA ), cJA );
-
+                                         numRows, numColumns,
+                                         &alpha, descrCSR, nnzA, aValues, aIA, aJA,
+                                         &beta, descrCSR, nnzB, bValues, bIA, bJA,
+                                         descrCSR, cValues, const_cast<IndexType*>( cIA ), cJA );
     // synchronization might be redundant
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeam" )
 }
 
@@ -376,23 +318,15 @@ void CUSparseCSRUtils::matrixMultiply(
     const ValueType bValues[] )
 {
     SCAI_REGION( "CUDA.CSR.matrixMultiply" )
-
     SCAI_LOG_INFO( logger, "matrixMultiply, result is " << m << "x" << n << " CSR storage" )
-
     SCAI_CHECK_CUDA_ACCESS
-
     cusparseMatDescr_t descrCSR;
-
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
-
     cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
     cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
-
     int nnzA = 0; // aIA[ m ]
     int nnzB = 0;// bIA[ numColumns ]
-
     // we have not passed the number of non-zero values for A, B, so copy it
-
     cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
@@ -402,16 +336,13 @@ void CUSparseCSRUtils::matrixMultiply(
     }
 
     cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
-
     CUSPARSEWrapper<ValueType>::csrgemm( handle,
-                          CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
-                          m, n, k,
-                          descrCSR, nnzA, aValues, aIA, aJA,
-                          descrCSR, nnzB, bValues, bIA, bJA,
-                          descrCSR, cValues, cIA, cJA );
-
+                                         CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                         m, n, k,
+                                         descrCSR, nnzA, aValues, aIA, aJA,
+                                         descrCSR, nnzB, bValues, bIA, bJA,
+                                         descrCSR, cValues, cIA, cJA );
     // synchronization might be redundant d
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csrSparseMatmulX" )
 }
 
@@ -424,11 +355,8 @@ void CUSparseCSRUtils::matrixMultiply(
 void CUSparseCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag << "]" )
-
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
 }
@@ -437,12 +365,9 @@ template<typename ValueType>
 void CUSparseCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
-
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
@@ -456,9 +381,7 @@ void CUSparseCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelReg
 CUSparseCSRUtils::CUSparseCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
-
     bool useCUSparse = true;
-
     common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
 
     if ( useCUSparse )
@@ -471,9 +394,7 @@ CUSparseCSRUtils::CUSparseCSRUtils()
 CUSparseCSRUtils::~CUSparseCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
     bool useCUSparse = true;
-
     common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
 
     if ( useCUSparse )

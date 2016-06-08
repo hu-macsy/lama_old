@@ -52,7 +52,6 @@ static const int WORKLOAD = 200;
 void work( int& out )
 {
     int in = out;
-
     int factor = in % 4 + 1;
 
     // just do some stupid work, workload depends on in
@@ -84,8 +83,7 @@ void doTasking( int N )
     {
         arg[i] = 1;
         int omp_threads = 1;
-
-        tasks[i] = new Task( common::bind( &work, common::ref( arg[i] )), omp_threads );
+        tasks[i] = new Task( common::bind( &work, common::ref( arg[i] ) ), omp_threads );
     }
 
     for ( int i = 0; i < N; ++i )
@@ -99,9 +97,7 @@ void doTasking( int N )
 void doThreading( int N )
 {
     static int MAX_THREADS = 256;
-
     using common::Thread;
-
     common::scoped_array<int> arg( new int[N] );
     common::scoped_array<Thread*> threads( new Thread*[N] );
 
@@ -141,25 +137,15 @@ int main()
 {
     // static int N = 100000;
     static int N = 100000;
-
     double time0 = common::Walltime::get();
-
     doSelf( N );
-
     time0 = common::Walltime::get() - time0;
-
     double time1 = common::Walltime::get();
-
     doThreading( N );
-
     time1 = common::Walltime::get() - time1;
-
     double time2 = common::Walltime::get();
-
     doTasking( N );
-
     time2 = common::Walltime::get() - time2;
-
     cout << "Execution of " << N << " work routines." << endl;
     cout << "Time for self    = " << time0 << endl;
     cout << "Time for threads = " << time1 << endl;

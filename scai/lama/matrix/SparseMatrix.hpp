@@ -75,7 +75,7 @@ template<typename > class DenseMatrix;
  */
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>, ValueType>
 {
 
 public:
@@ -108,7 +108,7 @@ public:
     }
 
     /**
-     * @brief Implemementation of pure routine 
+     * @brief Implemementation of pure routine
      */
     virtual Format::MatrixStorageFormat getFormat() const
     {
@@ -220,7 +220,7 @@ public:
 
     /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
 
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::setIdentity;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setIdentity;
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
@@ -374,16 +374,16 @@ public:
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
-        common::function<
+        common::function <
         void(
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX )> localF,
-        common::function<
+            const hmemo::HArray<ValueType>& localX ) > localF,
+        common::function <
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& haloX )> haloF ) const;
+            const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
 
     /**
      * @brief Operation on distributed matrix with halo exchange, async version
@@ -395,46 +395,46 @@ public:
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
-        common::function<
-        tasking::SyncToken*(
+        common::function <
+        tasking::SyncToken * (
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX )> localAsyncF,
-        common::function<
+            const hmemo::HArray<ValueType>& localX ) > localAsyncF,
+        common::function <
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& haloX )> haloF ) const;
+            const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
 
     void vectorHaloOperationSync(
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         const hmemo::HArray<ValueType>& localY,
-        common::function<
+        common::function <
         void(
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX )> calcF,
-        common::function<
+            const hmemo::HArray<ValueType>& localX ) > calcF,
+        common::function <
         void(
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX,
-            const hmemo::HArray<ValueType>& localY )> addF ) const;
+            const hmemo::HArray<ValueType>& localY ) > addF ) const;
 
     void vectorHaloOperationAsync(
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         const hmemo::HArray<ValueType>& localY,
-        common::function<
-        tasking::SyncToken*(
+        common::function <
+        tasking::SyncToken * (
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX )> calcF,
-        common::function<
+            const hmemo::HArray<ValueType>& localX ) > calcF,
+        common::function <
         /*tasking::SyncToken**/void(
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX,
-            const hmemo::HArray<ValueType>& localY )> addF ) const;
+            const hmemo::HArray<ValueType>& localY ) > addF ) const;
 
     /* Implemenation of pure method of class Matrix */
 
@@ -572,18 +572,18 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::operator=; // make overloaded routines visible before overwriting one
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::operator=; // make overloaded routines visible before overwriting one
 
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getColDistribution;
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getColDistributionPtr;
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getRowDistribution;
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getRowDistributionPtr;
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::setDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getRowDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getRowDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setDistributionPtr;
 
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getCommunicationKind;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getCommunicationKind;
 
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getNumColumns;
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getNumRows;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getNumColumns;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getNumRows;
 
     /** Override the default assignment operator to guarantee deep copy. */
 
@@ -643,9 +643,9 @@ protected:
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
 
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::mNumRows;
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::mNumColumns;
-    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::mColDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::mNumRows;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::mNumColumns;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::mColDistribution;
 private:
 
     /**

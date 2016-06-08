@@ -59,14 +59,10 @@ BOOST_AUTO_TEST_SUITE( CUDASyncTokenTest );
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
     int deviceNr = 0;
-
     common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
-
     common::CUDACtx myCuda( deviceNr );
-
     {
         CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::TransferStream );
-
         // wait is done implicitly at end of this scope
     }
 }
@@ -76,9 +72,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 BOOST_AUTO_TEST_CASE( destructorTest )
 {
     int deviceNr = 0;
-
     common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
-
     BOOST_CHECK_THROW(
     {
         common::CUDACtx myCuda( deviceNr );
@@ -92,7 +86,6 @@ BOOST_AUTO_TEST_CASE( destructorTest )
         // destructor of device will free the stream pool and detect the unreleased token
 
     }, common::Exception );
-
     // Note: there might be an additional ERROR logging message at the end of the test run
 }
 
@@ -101,37 +94,22 @@ BOOST_AUTO_TEST_CASE( destructorTest )
 BOOST_AUTO_TEST_CASE( asyncTest )
 {
     int deviceNr = 0;
-
     common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
-
     common::CUDACtx myCuda( deviceNr );
-
     common::CUDAAccess cudaAccess( myCuda );
-
     const int N = 100000;
-
     CUdeviceptr pointer = 0;
-
     size_t size = sizeof( float ) * N;
-
     SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
-
     float* fpointer = reinterpret_cast<float*>( pointer );
-
     {
         CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::ComputeStream );
-
         // launch kernel asynchronously
-
         init( fpointer, N, 3.0 );
-
         // wait is done here implicitly
     }
-
     float s = sum( fpointer, N );
-
     BOOST_CHECK_CLOSE( 3.0f * N, s, 0.01 );
-
     SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
 }
 

@@ -38,7 +38,7 @@
  *
  *  \code
  *     SCAI_COMMON_COUT_NARG( A, B, C, D, E ) -> 5
- *     SCAI_COMMON_COUT_NARG( ) -> 0 
+ *     SCAI_COMMON_COUT_NARG( ) -> 0
  *  \endcode
  */
 

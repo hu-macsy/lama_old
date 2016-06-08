@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Macro definitions for logging 
+ * @brief Macro definitions for logging
  * @author Thomas Brandes
  * @date 10.06.2015
  */
@@ -251,7 +251,7 @@
 #define SCAI_LOG_TRACE( logger, msg )                       \
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
-                                                            \
+        \
         if ( &cLogger && cLogger.isTraceEnabled() )         \
         {                                                   \
             std::ostringstream omsg;                        \
@@ -389,12 +389,12 @@
 #ifdef SCAI_LOG_LEVEL_OFF
 
 #define SCAI_LOG_THREAD( name )                  \
-{                                                \
-    if ( false )                                 \
-    {                                            \
-        std::cout << "";                         \
-    }                                            \
-}
+    {                                                \
+        if ( false )                                 \
+        {                                            \
+            std::cout << "";                         \
+        }                                            \
+    }
 
 #else
 
@@ -403,10 +403,10 @@
 // macro defines a name for the current thread
 
 #define SCAI_LOG_THREAD( name )                                            \
-{                                                                          \
-    std::ostringstream oname;                                              \
-    oname << name;                                                         \
-    scai::common::Thread::defineCurrentThreadName( oname.str().c_str() );  \
-}
+    {                                                                          \
+        std::ostringstream oname;                                              \
+        oname << name;                                                         \
+        scai::common::Thread::defineCurrentThreadName( oname.str().c_str() );  \
+    }
 
 #endif

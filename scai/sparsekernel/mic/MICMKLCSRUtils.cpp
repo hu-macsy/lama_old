@@ -83,14 +83,11 @@ void MICMKLCSRUtils::normalGEMV(
     const ValueType csrValues[] )
 {
     // SCAI_REGION( "MIC.MKLscsrmv" )
-
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
-
     typedef MKLCSRTrait::BLASIndexType BLASIndexType;
     typedef MKLCSRTrait::BLASTrans BLASTrans;
     typedef MKLCSRTrait::BLASMatrix BLASMatrix;
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -98,24 +95,19 @@ void MICMKLCSRUtils::normalGEMV(
         SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet" )
     }
 
-    if( y != result && beta != 0 )
+    if ( y != result && beta != 0 )
     {
         MICUtils::set( result, y, numRows, common::reduction::COPY );
     }
 
     // performs y = alpha * A * x + beta * y
-
     BLASTrans transa = 'n';
-
     // General, - triangular, Non-Unit, C for zero-indexing
-
     BLASMatrix matdescra;
-
     matdescra[0] = 'g';
     matdescra[1] = ' ';
     matdescra[2] = 'n';
     matdescra[3] = 'c';
-
     MICMKLCSRWrapper<ValueType>::csrmv( transa, numRows, numColumns, alpha, matdescra, csrValues, csrJA, csrIA, csrIA + 1, x, beta, result );
 }
 
@@ -128,10 +120,8 @@ void MICMKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
 {
     const common::context::ContextType ctx = common::context::MIC;
     using kregistry::KernelRegistry;
-
     SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for MIC at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
-
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
 
@@ -142,38 +132,32 @@ void MICMKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
 MICMKLCSRUtils::MICMKLCSRUtils()
 {
     bool useMKL = true;
-
     // using MKL for CSR might be disabled explicitly by environment variable
-
     common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
     int level = 0;
 
-    if( !useMKL || ( level <= 0 ) )
+    if ( !useMKL || ( level <= 0 ) )
     {
         return;
     }
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
-
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICMKLCSRUtils::~MICMKLCSRUtils()
 {
     bool useMKL = true;
-
     // using MKL for CSR might be disabled explicitly by environment variable
-
     common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
     int level = 0;
 
-    if( !useMKL || ( level <= 0 ) )
+    if ( !useMKL || ( level <= 0 ) )
     {
         return;
     }
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
-
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 

@@ -67,7 +67,7 @@ namespace lama
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT JDSStorage:
-    public CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>,
+    public CRTPMatrixStorage<JDSStorage<ValueType>, ValueType>,
     public _MatrixStorage::Register<JDSStorage<ValueType> >    // register at factory
 {
 public:
@@ -193,9 +193,9 @@ public:
         const hmemo::HArray<OtherValueType>& values,
         const hmemo::ContextPtr context );
 
-     /**
-      * Fill up a JDS storage with the given arrays.
-      */
+    /**
+     * Fill up a JDS storage with the given arrays.
+     */
     void setJDSData(
         const IndexType numRows,
         const IndexType numColumns,

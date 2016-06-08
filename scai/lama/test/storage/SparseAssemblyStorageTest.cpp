@@ -126,7 +126,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, ValueType, scai_arithmetic_test_types
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     // use template storage test
-
     storageSwapTest<SparseAssemblyStorage<ValueType> >();
 }
 
@@ -135,7 +134,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for SparseAssemblyStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
     storageTypeNameTest<SparseAssemblyStorage<ValueType> >( "SparseAssembly" );
 }
 
@@ -144,7 +142,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE( SparseAssemblyCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-
     copyStorageTest<SparseAssemblyStorage<ValueType> >();
 }
 

@@ -58,7 +58,6 @@ common::shared_ptr<ThreadPool> Task::theThreadPool;
 ThreadPool& Task::getThreadPool()
 {
     int poolSize = 1;
-
     common::Settings::getEnvironment( poolSize, "SCAI_THREADPOOL_SIZE" );
 
     if ( !theThreadPool )
@@ -79,9 +78,7 @@ Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 
 {
     SCAI_LOG_DEBUG( logger, "Creating Task" )
-
     mTask = getThreadPool().schedule( taskFunction, numOmpThreads );
-
     SCAI_LOG_DEBUG( logger, "Task created" )
 }
 
@@ -90,7 +87,6 @@ Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 Task::~Task()
 {
     SCAI_LOG_INFO( logger, "~Task" )
-
     synchronize();
 }
 
@@ -104,9 +100,7 @@ void Task::synchronize()
     }
 
     SCAI_LOG_DEBUG( logger, "Waiting for task = " << mTask->mTaskId << ", state = " << mTask->mState )
-
     getThreadPool().wait( mTask );
-
     SCAI_LOG_DEBUG( logger, "Task = " << mTask->mTaskId << " finished" << ", exception = " << mTask->mException )
 
     if ( mTask->mException )

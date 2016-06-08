@@ -43,7 +43,6 @@ int main()
 {
     scai::common::unique_ptr<double> sum( new double );
     scai::common::scoped_array<double> vals ( new double[10] );
-
     *sum = 0.0;
 
     for ( int i = 0; i < 10; ++ i )

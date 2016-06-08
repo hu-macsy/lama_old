@@ -89,7 +89,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIAStorage<ValueType
 template<typename ValueType>
 DIAStorage<ValueType>::DIAStorage( const IndexType numRows, const IndexType numColumns )
 
-    : CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals( 0 )
+    : CRTPMatrixStorage<DIAStorage<ValueType>, ValueType>( numRows, numColumns ), mNumDiagonals( 0 )
 {
     SCAI_LOG_DEBUG( logger, "DIAStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
 }
@@ -98,7 +98,7 @@ DIAStorage<ValueType>::DIAStorage( const IndexType numRows, const IndexType numC
 
 template<typename ValueType>
 DIAStorage<ValueType>::DIAStorage()
-    : CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>( 0, 0 ), mNumDiagonals( 0 )
+    : CRTPMatrixStorage<DIAStorage<ValueType>, ValueType>( 0, 0 ), mNumDiagonals( 0 )
 {
     SCAI_LOG_DEBUG( logger, "DIAStorage, matrix is 0 x 0." )
 }
@@ -113,11 +113,10 @@ DIAStorage<ValueType>::DIAStorage(
     const HArray<IndexType>& offsets,
     const HArray<ValueType>& values )
 
-    : CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals(
+    : CRTPMatrixStorage<DIAStorage<ValueType>, ValueType>( numRows, numColumns ), mNumDiagonals(
           numDiagonals ), mOffset( offsets ), mValues( values )
 {
     // set diagonal property inherited as given
-
     mDiagonalProperty = checkDiagonalProperty();
 }
 
@@ -126,10 +125,9 @@ DIAStorage<ValueType>::DIAStorage(
 template<typename ValueType>
 DIAStorage<ValueType>::DIAStorage( const DIAStorage<ValueType>& other )
 
-    : CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>( 0, 0 )
+    : CRTPMatrixStorage<DIAStorage<ValueType>, ValueType>( 0, 0 )
 {
     // @todo: copy of same storage format should be implemented more efficiently
-
     assign( other );
 }
 
@@ -139,37 +137,34 @@ template<typename ValueType>
 void DIAStorage<ValueType>::print( std::ostream& stream ) const
 {
     using std::endl;
-
     stream << "DIAStorage " << mNumRows << " x " << mNumColumns
            << ", #diags = " << mNumDiagonals
            << ", #values = " << mValues.size() << endl;
-
     ReadAccess<IndexType> offset( mOffset );
     ReadAccess<ValueType> values( mValues );
-
     stream << "Diagonal offsets:";
 
-    for( IndexType d = 0; d < mNumDiagonals; d++ )
+    for ( IndexType d = 0; d < mNumDiagonals; d++ )
     {
         stream << " " << offset[d];
     }
 
     stream << endl;
 
-    for( IndexType i = 0; i < mNumRows; i++ )
+    for ( IndexType i = 0; i < mNumRows; i++ )
     {
         stream << "Row " << i << " :";
 
-        for( IndexType ii = 0; ii < mNumDiagonals; ++ii )
+        for ( IndexType ii = 0; ii < mNumDiagonals; ++ii )
         {
             const IndexType j = i + offset[ii];
 
-            if( j < 0 )
+            if ( j < 0 )
             {
                 continue;
             }
 
-            if( j >= mNumColumns )
+            if ( j >= mNumColumns )
             {
                 break;
             }
@@ -189,10 +184,8 @@ void DIAStorage<ValueType>::clear()
     mNumRows = 0;
     mNumColumns = 0;
     mNumDiagonals = 0;
-
     mOffset.clear();
     mValues.clear();
-
     mDiagonalProperty = checkDiagonalProperty();
 }
 
@@ -210,24 +203,16 @@ template<typename ValueType>
 void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": has not diagonal property, cannot set diagonal" )
-
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
-
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-
     // take context of this storage to set
-
     ContextPtr loc = this->getContextPtr();
     setVal.getSupportedContext( loc );
-
     {
         // not all values might be changed, so use WriteAccess instead of WriteOnlyAccess
-
         WriteAccess<ValueType> wValues( mValues, loc );
         ReadAccess<IndexType> rOffset( mOffset, loc );
-
         SCAI_CONTEXT_ACCESS( loc )
-
         setVal[loc]( wValues.get(), numDiagonalElements, value, utilskernel::reduction::COPY );
     }
 }
@@ -239,22 +224,20 @@ template<typename OtherType>
 void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
-
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
-
     const ReadAccess<IndexType> offset( mOffset );
     const ReadAccess<ValueType> values( mValues );
 
-    for( IndexType j = 0; j < mNumColumns; ++j )
+    for ( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = static_cast<OtherType>(0.0);
+        wRow[j] = static_cast<OtherType>( 0.0 );
     }
 
-    for( IndexType d = 0; d < mNumDiagonals; ++d )
+    for ( IndexType d = 0; d < mNumDiagonals; ++d )
     {
         IndexType j = i + offset[d];
 
-        if( j < 0 || j >= mNumColumns )
+        if ( j < 0 || j >= mNumColumns )
         {
             continue;
         }
@@ -270,19 +253,13 @@ template<typename OtherType>
 void DIAStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
-
     ContextPtr loc = this->getContextPtr();
     set.getSupportedContext( loc );
-
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
-
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
-
     SCAI_CONTEXT_ACCESS( loc )
-
     // Diagonal is first column
-
     set[ loc ]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::reduction::COPY );
 }
 
@@ -293,19 +270,13 @@ template<typename OtherType>
 void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
-
     numDiagonalElements = std::min( numDiagonalElements, diagonal.size() );
-
     static LAMAKernel<UtilKernelTrait::set<ValueType, OtherType> > set;
-
     ContextPtr loc = this->getContextPtr();
     set.getSupportedContext( loc );
-
     SCAI_CONTEXT_ACCESS( loc )
-
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
-
     set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::reduction::COPY );
 }
 
@@ -336,18 +307,18 @@ void DIAStorage<ValueType>::scaleImpl( const HArray<OtherType>& diagonal )
         WriteAccess<ValueType> wValues( mValues );
         ReadAccess<IndexType> rOffset( mOffset );
 
-        for( IndexType i = 0; i < mNumRows; i++ )
+        for ( IndexType i = 0; i < mNumRows; i++ )
         {
-            for( IndexType ii = 0; ii < mNumDiagonals; ++ii )
+            for ( IndexType ii = 0; ii < mNumDiagonals; ++ii )
             {
                 const IndexType j = i + rOffset[ii];
 
-                if( j >= mNumColumns )
+                if ( j >= mNumColumns )
                 {
                     break;
                 }
 
-                if( j >= 0 )
+                if ( j >= 0 )
                 {
                     wValues[ii * mNumRows + i] *= static_cast<ValueType>( rDiagonal[j] );
                 }
@@ -355,7 +326,7 @@ void DIAStorage<ValueType>::scaleImpl( const HArray<OtherType>& diagonal )
         }
     }
 
-    if( SCAI_LOG_TRACE_ON( logger ) )
+    if ( SCAI_LOG_TRACE_ON( logger ) )
     {
         SCAI_LOG_TRACE( logger, "DIA after scale diagonal" )
         print();
@@ -369,43 +340,39 @@ bool DIAStorage<ValueType>::checkDiagonalProperty() const
 {
     bool diagonalProperty = true;
 
-    if( mNumRows != mNumColumns )
+    if ( mNumRows != mNumColumns )
     {
         diagonalProperty = false;
     }
-    else if( mNumRows == 0 )
+    else if ( mNumRows == 0 )
     {
         // zero sized matrix has diagonal property
-
         diagonalProperty = true;
     }
-    else if( mOffset.size() == 0 )
+    else if ( mOffset.size() == 0 )
     {
         // full zero matrix but not zero size -> no diagonal property
-
         diagonalProperty = false;
     }
     else
     {
         // diagonal property is given if first diagonal is the main one
-
         ReadAccess<IndexType> offset( mOffset );
         diagonalProperty = offset[0] == 0;
     }
 
     SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
-
     return diagonalProperty;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::check( const char* /* msg */) const
+void DIAStorage<ValueType>::check( const char* /* msg */ ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumDiagonals, mOffset.size() )
 
-    if( mNumDiagonals == 0 )
+    if ( mNumDiagonals == 0 )
     {
         SCAI_ASSERT_EQUAL_ERROR( false, mDiagonalProperty )
     }
@@ -419,38 +386,25 @@ template<typename ValueType>
 void DIAStorage<ValueType>::setIdentity( const IndexType size )
 {
     SCAI_LOG_DEBUG( logger, "set identity, size = " << size )
-
     mNumRows = size;
     mNumColumns = size;
-
     mNumDiagonals = 1; // identity has exactly one diagonal
-
     {
         static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
-
         ContextPtr loc = this->getContextPtr();
         setVal.getSupportedContext( loc );
-
         WriteOnlyAccess<IndexType> wOffset( mOffset, loc, mNumDiagonals );
-
         SCAI_CONTEXT_ACCESS( loc )
-
         setVal[ loc ]( wOffset.get(), 1, 0, utilskernel::reduction::COPY );
     }
-
     {
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-
         ContextPtr loc = this->getContextPtr();
         setVal.getSupportedContext( loc );
-
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumRows );
-
         SCAI_CONTEXT_ACCESS( loc )
-
         setVal[ loc ]( values.get(), mNumRows, ValueType( 1 ), utilskernel::reduction::COPY );
     }
-
     mDiagonalProperty = true;
 }
 
@@ -463,13 +417,13 @@ void DIAStorage<ValueType>::setUsedDiagonal(
     IndexType i,
     IndexType j )
 {
-    if( j >= i )
+    if ( j >= i )
     {
         bool& flag = upperDiagonalUsed[j - i];
 
         // set flag only if not already set, improves cache usage
 
-        if( !flag )
+        if ( !flag )
         {
             flag = true; // write only if not true,
         }
@@ -478,7 +432,7 @@ void DIAStorage<ValueType>::setUsedDiagonal(
     {
         bool& flag = lowerDiagonalUsed[i - j];
 
-        if( !flag )
+        if ( !flag )
         {
             flag = true; // write only if not true,
         }
@@ -496,45 +450,33 @@ void DIAStorage<ValueType>::buildCSR(
     const ContextPtr prefLoc ) const
 {
     SCAI_REGION( "Storage.DIA->CSR" )
-
     static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
     static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
     static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, CSRValueType> > getCSRValues;
-
     // do it where all routines are avaialble
-
     ContextPtr loc = prefLoc;
     sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
-
     SCAI_LOG_INFO( logger,
                    "buildTypedCSRData<" << common::getScalarType<CSRValueType>() << ">"
                    << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
-
     ReadAccess<IndexType> diaOffsets( mOffset );
     ReadAccess<ValueType> diaValues( mValues );
-
     WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
-
     // In contrary to COO and CSR, the DIA format stores also some ZERO values like Dense
-
     ValueType eps = static_cast<ValueType>( 0.0 );
-
     getCSRSizes[loc]( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(),
                       diaValues.get(), eps );
 
-    if( ja == NULL || values == NULL )
+    if ( ja == NULL || values == NULL )
     {
         csrIA.resize( mNumRows );
         return;
     }
 
     IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
-
     SCAI_LOG_INFO( logger, "CSR: #non-zero values = " << numValues )
-
     WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
     WriteOnlyAccess<CSRValueType> csrValues( *values, loc, numValues );
-
     getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
                        mNumDiagonals, diaOffsets.get(), diaValues.get(), eps );
 }
@@ -557,45 +499,31 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     if ( ia.size() == numRows )
     {
         // offset array required
-
         HArray<IndexType> offsets;
-
         IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
-
         SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
-
         setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
-
         return;
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
-
     static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
-
     // prefLoc is ignored, we do it on the Host
     // ToDo: replace Host code with kernels, implement kernels for other devices
-
     ContextPtr loc = Context::getHostPtr();
-
     ReadAccess<IndexType> csrIA( ia, loc );
     ReadAccess<IndexType> csrJA( ja, loc );
     ReadAccess<OtherValueType> csrValues( values, loc );
-
     _MatrixStorage::setDimension( numRows, numColumns );
-
     SCAI_LOG_DEBUG( logger, "fill DIA sparse matrix " << mNumRows << " x " << mNumColumns << " from csr data" )
-
     // build a set of all used lower and upper diagonals
-
     IndexType maxNumDiagonals = std::max( mNumRows, mNumColumns );
-
     scoped_array<bool> upperDiagonalUsed( new bool[maxNumDiagonals] );
     scoped_array<bool> lowerDiagonalUsed( new bool[maxNumDiagonals] );
 
-    for( IndexType i = 0; i < maxNumDiagonals; i++ )
+    for ( IndexType i = 0; i < maxNumDiagonals; i++ )
     {
         upperDiagonalUsed[i] = false;
         lowerDiagonalUsed[i] = false;
@@ -603,9 +531,9 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
-        for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; jj++ )
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; jj++ )
         {
             IndexType j = csrJA[jj]; // column used
             setUsedDiagonal( upperDiagonalUsed.get(), lowerDiagonalUsed.get(), i, j );
@@ -613,28 +541,21 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     }
 
     mDiagonalProperty = hasDiagonalProperty[loc]( numRows, csrIA.get(), csrJA.get() );
-
     // mDiagonalProperty forces upper diagonal to be the first one
-
     setOffsets( maxNumDiagonals, upperDiagonalUsed.get(), lowerDiagonalUsed.get() );
-
     // now we can allocate and set the values
     {
         ReadAccess<IndexType> offset( mOffset );
         WriteOnlyAccess<ValueType> myValues( mValues, mNumDiagonals * mNumRows );
-
         #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
-        for( int i = 0; i < mNumRows; i++ )
+        for ( int i = 0; i < mNumRows; i++ )
         {
-            for( IndexType d = 0; d < mNumDiagonals; d++ )
+            for ( IndexType d = 0; d < mNumDiagonals; d++ )
             {
                 ValueType& addrValue = myValues[diaindex( i, d, mNumRows, mNumDiagonals )];
-
                 // check for j >= 0 and j < mNumColumns not needed here
-
                 addrValue = ValueType( 0 );
-
                 IndexType j = i + offset[d];
 
                 if ( j < 0 || j >= mNumColumns )
@@ -644,7 +565,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
                 for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
                 {
-                    if( csrJA[jj] == j )
+                    if ( csrJA[jj] == j )
                     {
                         addrValue = static_cast<ValueType>( csrValues[jj] );
                         break;
@@ -664,48 +585,45 @@ void DIAStorage<ValueType>::setOffsets(
     const bool lowerDiagonalUsed[] )
 {
     // Help routine to set offsets from used diagonals
-
     mNumDiagonals = 0;
-
     IndexType firstIndex = 0;
 
-    if( mDiagonalProperty )
+    if ( mDiagonalProperty )
     {
         firstIndex = 1;
         mNumDiagonals = 1;
     }
 
-    for( IndexType i = firstIndex; i < maxNumDiagonals; i++ )
+    for ( IndexType i = firstIndex; i < maxNumDiagonals; i++ )
     {
-        if( upperDiagonalUsed[i] )
+        if ( upperDiagonalUsed[i] )
         {
             mNumDiagonals++;
         }
 
-        if( lowerDiagonalUsed[i] )
+        if ( lowerDiagonalUsed[i] )
         {
             mNumDiagonals++;
         }
     }
 
     SCAI_LOG_INFO( logger, "storage data requires " << mNumDiagonals << " diagonals a " << mNumRows << " values" )
-
     WriteOnlyAccess<IndexType> wOffset( mOffset, mNumDiagonals );
 
-    if( mNumDiagonals > 0 )
+    if ( mNumDiagonals > 0 )
     {
         mNumDiagonals = 0;
         firstIndex = 0;
 
-        if( mDiagonalProperty )
+        if ( mDiagonalProperty )
         {
             wOffset[mNumDiagonals++] = 0;
             firstIndex = 1;
         }
 
-        for( IndexType i = maxNumDiagonals - 1; i > 0; i-- )
+        for ( IndexType i = maxNumDiagonals - 1; i > 0; i-- )
         {
-            if( lowerDiagonalUsed[i] )
+            if ( lowerDiagonalUsed[i] )
             {
                 wOffset[mNumDiagonals++] = -i;
             }
@@ -713,9 +631,9 @@ void DIAStorage<ValueType>::setOffsets(
 
         SCAI_LOG_INFO( logger, "lower diagonals = " << mNumDiagonals )
 
-        for( IndexType i = firstIndex; i < maxNumDiagonals; i++ )
+        for ( IndexType i = firstIndex; i < maxNumDiagonals; i++ )
         {
-            if( upperDiagonalUsed[i] )
+            if ( upperDiagonalUsed[i] )
             {
                 wOffset[mNumDiagonals++] = i;
             }
@@ -744,10 +662,8 @@ void DIAStorage<ValueType>::purge()
     mNumColumns = 0;
     mNumRows = 0;
     mNumDiagonals = 0;
-
     mOffset.purge();
     mValues.purge();
-
     mDiagonalProperty = checkDiagonalProperty();
 }
 
@@ -757,12 +673,9 @@ template<typename ValueType>
 void DIAStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     SCAI_LOG_INFO( logger, "allocate DIA sparse matrix of size " << numRows << " x " << numColumns )
-
     clear();
-
     mNumRows = numRows;
     mNumColumns = numColumns;
-
     mDiagonalProperty = checkDiagonalProperty();
 }
 
@@ -782,9 +695,7 @@ template<typename ValueType>
 ValueType DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
-
     ContextPtr prefLoc = this->getContextPtr();
-
     return utilskernel::HArrayUtils::asum( mValues, prefLoc );
 }
 
@@ -794,11 +705,8 @@ template<typename ValueType>
 ValueType DIAStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
-
     ContextPtr prefLoc = this->getContextPtr();
-
     ValueType res = HArrayUtils::dotProduct( mValues, mValues, prefLoc );
-
     return common::Math::sqrt( res );
 }
 
@@ -808,19 +716,13 @@ template<typename ValueType>
 ValueType DIAStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
-
     static LAMAKernel<DIAKernelTrait::absMaxVal<ValueType> > absMaxVal;
-
     ContextPtr loc = this->getContextPtr();
     absMaxVal.getSupportedContext( loc );
-
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
-
     SCAI_CONTEXT_ACCESS( loc )
-
     ValueType maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
-
     return maxval;
 }
 
@@ -830,22 +732,19 @@ template<typename ValueType>
 ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     SCAI_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
-
     const ReadAccess<IndexType> offset( mOffset );
-
     ValueType myValue = 0;
 
     // check for a matching diagonal element in the row i
 
-    for( IndexType d = 0; d < mNumDiagonals; ++d )
+    for ( IndexType d = 0; d < mNumDiagonals; ++d )
     {
-        if( i + offset[d] == j )
+        if ( i + offset[d] == j )
         {
             const ReadAccess<ValueType> values( mValues );
             SCAI_LOG_DEBUG( logger,
                             "get value (" << i << ", " << j << ") is diag = " << d << ", offset = " << offset[d]
                             << ", index = " << diaindex( i, d, mNumRows, mNumDiagonals ) )
-
             myValue = values[diaindex( i, d, mNumRows, mNumDiagonals )];
             break;
         }
@@ -904,7 +803,6 @@ void DIAStorage<ValueType>::swap( DIAStorage<ValueType>& other )
     std::swap( mNumDiagonals, other.mNumDiagonals );
     mOffset.swap( other.mOffset );
     mValues.swap( other.mValues );
-
     MatrixStorage<ValueType>::swap( other );
 }
 
@@ -914,9 +812,9 @@ template<typename ValueType>
 size_t DIAStorage<ValueType>::getMemoryUsageImpl() const
 {
     size_t memoryUsage = 0;
-    memoryUsage += sizeof(IndexType);
-    memoryUsage += sizeof(IndexType) * mOffset.size();
-    memoryUsage += sizeof(ValueType) * mValues.size();
+    memoryUsage += sizeof( IndexType );
+    memoryUsage += sizeof( IndexType ) * mOffset.size();
+    memoryUsage += sizeof( ValueType ) * mValues.size();
     return memoryUsage;
 }
 
@@ -931,7 +829,6 @@ void DIAStorage<ValueType>::matrixTimesVector(
     const HArray<ValueType>& y ) const
 {
     SCAI_REGION( "Storage.DIA.timesVector" )
-
     SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y"
                    << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
@@ -939,7 +836,6 @@ void DIAStorage<ValueType>::matrixTimesVector(
     if ( alpha == common::constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-
         HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
         return;
     }
@@ -952,17 +848,12 @@ void DIAStorage<ValueType>::matrixTimesVector(
     }
 
     static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
     ContextPtr loc = this->getContextPtr();
     normalGEMV.getSupportedContext( loc );
-
     SCAI_CONTEXT_ACCESS( loc )
-
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
-
     // Note: read access to y must appear before write access to result in case of alias
-
     ReadAccess<ValueType> rX( x, loc );
 
     if ( beta != common::constants::ZERO )
@@ -975,7 +866,6 @@ void DIAStorage<ValueType>::matrixTimesVector(
     else
     {
         // do not access y at all
-
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );  // result might be aliased to y
         normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, NULL, mNumRows, mNumColumns, mNumDiagonals,
                          diaOffsets.get(), diaValues.get() );
@@ -994,11 +884,8 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 {
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
-
     SCAI_REGION( "Storage.DIA.VectorTimesMatrix" )
-
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-
     ContextPtr loc = this->getContextPtr();
 
     // Due to DIA format GEVM does not benefit of coupling all in one operation, so split it
@@ -1019,11 +906,8 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     }
 
     // Step 2: result = alpha * x * this + 1 * result
-
     bool async = false;
-
     SyncToken* token = incGEVM( result, alpha, x, async );
-
     SCAI_ASSERT( NULL == token, "syncrhonous execution has no token" )
 }
 
@@ -1038,48 +922,32 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
     const HArray<ValueType>& y ) const
 {
     SCAI_REGION( "Storage.DIA.timesVectorAsync" )
-
     ContextPtr loc = this->getContextPtr();
-
     static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
     normalGEMV.getSupportedContext( loc );
-
     // logging + checks not needed when started as a task
-
     SCAI_LOG_INFO( logger,
                    "Start z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this
                    << ", x = " << x << ", y = " << y << ", z = " << result << " on " << *loc )
-
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
-
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
-
     SCAI_ASYNCHRONOUS( *syncToken )
-
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
-
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
-
     ReadAccess<ValueType> rX( x, loc );
     ReadAccess<ValueType> rY( y, loc );
-
     WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-
     SCAI_CONTEXT_ACCESS( loc )
-
     normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
                      diaOffsets.get(), diaValues.get() );
-
     syncToken->pushRoutine( rY.releaseDelayed() );
     syncToken->pushRoutine( wResult.releaseDelayed() );
     syncToken->pushRoutine( rX.releaseDelayed() );
     syncToken->pushRoutine( diaValues.releaseDelayed() );
     syncToken->pushRoutine( diaOffsets.releaseDelayed() );
-
     return syncToken.release();
 }
 
@@ -1096,11 +964,8 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x
                    << ", beta = " << beta << ", y = " << y )
-
     SCAI_REGION( "Storage.DIA.vectorTimesMatrixAsync" )
-
     // Step 1: result = beta * y
-
     ContextPtr loc = this->getContextPtr();
 
     if ( beta == common::constants::ZERO )
@@ -1117,9 +982,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     }
 
     bool async = true;
-
     // Step 2: result = beta * y
-
     return incGEVM( result, alpha, x, async );
 }
 
@@ -1133,12 +996,9 @@ SyncToken* DIAStorage<ValueType>::incGEVM(
     bool async ) const
 {
     SCAI_LOG_INFO( logger, "incGEVM ( async = " << async << " ) , result += " << alpha << " * x * storage" )
-
     static LAMAKernel<DIAKernelTrait::normalGEVM<ValueType> > normalGEVM;
-
     ContextPtr loc = this->getContextPtr();
     normalGEVM.getSupportedContext( loc );
-
     common::unique_ptr<SyncToken> syncToken;
 
     if ( async )
@@ -1147,19 +1007,13 @@ SyncToken* DIAStorage<ValueType>::incGEVM(
     }
 
     SCAI_ASYNCHRONOUS( syncToken.get() );
-
     SCAI_CONTEXT_ACCESS( loc )
-
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues(  mValues, loc );
     ReadAccess<ValueType> rX( x, loc );
-
     WriteAccess<ValueType> wResult( result, loc, mNumColumns );
-
     // use general kernel, might change
-
     ValueType beta = 1;
-
     normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(),
                      mNumRows, mNumColumns, mNumDiagonals,
                      diaOffsets.get(), diaValues.get() );
@@ -1185,7 +1039,6 @@ void DIAStorage<ValueType>::jacobiIterate(
     const ValueType omega ) const
 {
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
-
     SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
@@ -1196,23 +1049,16 @@ void DIAStorage<ValueType>::jacobiIterate(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, rhs.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
-
     // matrix must be square
-
     static LAMAKernel<DIAKernelTrait::jacobi<ValueType> > jacobi;
-
     ContextPtr loc = this->getContextPtr();
     jacobi.getSupportedContext( loc );
-
     SCAI_CONTEXT_ACCESS( loc )
-
     ReadAccess<IndexType> diaOffset( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
-
     WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
-
     jacobi[loc]( wSolution.get(), mNumColumns, mNumDiagonals, diaOffset.get(), diaValues.get(),
                  rOldSolution.get(), rRhs.get(), omega, mNumRows );
 }
@@ -1247,7 +1093,7 @@ template<typename ValueType>
 std::string DIAStorage<ValueType>::initTypeName()
 {
     std::stringstream s;
-    s << std::string("DIAStorage<") << common::getScalarType<ValueType>() << std::string(">");
+    s << std::string( "DIAStorage<" ) << common::getScalarType<ValueType>() << std::string( ">" );
     return s.str();
 }
 

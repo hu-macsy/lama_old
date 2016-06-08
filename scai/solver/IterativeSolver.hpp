@@ -59,7 +59,7 @@ typedef common::shared_ptr<IterativeSolver> IterativeSolverPtr;
  * @brief Uses iterative methods to solve the equation system.
  */
 class COMMON_DLL_IMPORTEXPORT IterativeSolver:
-		public Solver
+    public Solver
 {
 public:
     /**
@@ -154,7 +154,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy() =0;
+    virtual SolverPtr copy() = 0;
 
     struct IterativeSolverRuntime: SolverRuntime
     {
@@ -173,12 +173,12 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual IterativeSolverRuntime& getRuntime() =0;
+    virtual IterativeSolverRuntime& getRuntime() = 0;
 
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const IterativeSolverRuntime& getConstRuntime() const =0;
+    virtual const IterativeSolverRuntime& getConstRuntime() const = 0;
 
     static IterativeSolver* create( const std::string type, const std::string name );
 

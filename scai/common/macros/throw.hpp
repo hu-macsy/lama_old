@@ -45,15 +45,15 @@
  */
 
 #define SCAI_THROWEXCEPTION( ExceptionClass, msg )                             \
-{                                                                              \
-    std::ostringstream errorStr;                                               \
-    errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
-    errorStr<<"    Message: "<<msg<<"\n";                                      \
-    scai::common::Exception::addCallStack( errorStr );                         \
-    throw ExceptionClass( errorStr.str() );                                    \
-}
+    {                                                                              \
+        std::ostringstream errorStr;                                               \
+        errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
+        errorStr<<"    Message: "<<msg<<"\n";                                      \
+        scai::common::Exception::addCallStack( errorStr );                         \
+        throw ExceptionClass( errorStr.str() );                                    \
+    }
 
 /** COMMON_THROWEXCEPTION just throws a simple exception */
 
 #define COMMON_THROWEXCEPTION( msg )   \
-        SCAI_THROWEXCEPTION( scai::common::Exception, msg )
+    SCAI_THROWEXCEPTION( scai::common::Exception, msg )

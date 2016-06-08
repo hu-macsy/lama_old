@@ -127,8 +127,8 @@ private:
         }
     };
 
-    typedef std::map<std::string,TimerData> MapType;
-    typedef std::pair<std::string,TimerData> PairType;
+    typedef std::map<std::string, TimerData> MapType;
+    typedef std::pair<std::string, TimerData> PairType;
     typedef MapType::iterator MapIteratorType;
 
     MapType m_timerData;

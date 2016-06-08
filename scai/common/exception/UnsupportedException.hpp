@@ -55,22 +55,22 @@ public:
     {
         UNSUPPORTED_WARN,      //!< give a warning if an unsupported feature is used
         UNSUPPORTED_ERROR,     //!< throw an Unspupprted exception
-        UNSUPPORTED_IGNORE,    //!< neither warning nor error 
+        UNSUPPORTED_IGNORE,    //!< neither warning nor error
         UNSUPPORTED_UNDEFINED  //!< for convenience
     };
-    
+
     UnsupportedException();
-    
+
     UnsupportedException( const std::string& message );
 
     virtual ~UnsupportedException() throw();
-    
+
     virtual const char* what() const throw();
-    
+
     static UnsupportedType getUnsupportedSetting();
-    
+
 protected:
-        
+
     std::string mMessage;
 
 private:

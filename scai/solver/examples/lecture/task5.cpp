@@ -69,10 +69,8 @@ int main( int argc, char* argv[] )
     CSRSparseMatrix<ValueType> m( argv[1] );
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
-
     ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA, 0 );
     m.setContextPtr( cudaContext );
-
     DenseVector<ValueType> rhs( size , 0 );
     WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
 
@@ -92,7 +90,6 @@ int main( int argc, char* argv[] )
     cgSolver.setStoppingCriterion( criterion );
     cgSolver.initialize( m );
     cgSolver.solve( solution, rhs );
-
     return 0;
 }
 

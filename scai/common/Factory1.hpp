@@ -75,12 +75,12 @@ public:
     static OutputType create( const InputType type, const ValueType val );
 
     /** This template class can be used as base class for derived classes
-     *  to force registration. 
+     *  to force registration.
      *
-     *  Derived class must provide create function and createValue 
+     *  Derived class must provide create function and createValue
      */
     template<class Derived>
-    class Register 
+    class Register
     {
     public:
 
@@ -134,12 +134,11 @@ private:
     static CreatorMap& getFactory();
 };
 
-template<typename InputType, typename ValueType, typename OutputType> 
+template<typename InputType, typename ValueType, typename OutputType>
 template<class Derived>
 Factory1<InputType, ValueType, OutputType>::Register<Derived>::Register()
 {
     // just some trick stuff to cheat most compilers so they instantiate the static variable
-
     if ( !registerGuard.initialized )
     {
         // Attention: caused problems on Intel MIC with dlopen
@@ -181,13 +180,11 @@ Factory1<InputType, ValueType, OutputType>::Register<Derived>::registerGuard;
 /*  Implementation of methods for template class                                */
 /* -----------------------------------------------------------------------------*/
 
-template<typename InputType, typename ValueType, typename OutputType> 
+template<typename InputType, typename ValueType, typename OutputType>
 OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType type, const ValueType val )
 {
     OutputType value;
-
     const CreatorMap& factory = getFactory();
-
     typename CreatorMap::const_iterator fn = factory.find( type );
 
     if ( fn != factory.end() )
@@ -205,11 +202,10 @@ OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType t
 /* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename ValueType, typename OutputType>
-std::map<InputType, OutputType(* )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
+std::map<InputType, OutputType( * )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
 {
     // Factory might be already used during static initialization, so dynamic allocation is needed
     // Factory might be used at program exit, so it is never deleted
-
     static CreatorMap* factory = NULL;
 
     if ( factory == NULL )
@@ -226,9 +222,7 @@ template<typename InputType, typename ValueType, typename OutputType>
 void Factory1<InputType, ValueType, OutputType>::addCreator( const InputType type, CreateFn create )
 {
     CreatorMap& factory = getFactory();
-
     // checks for multiple entries is not really necessary here, so just add entry in map container.
-
     factory.insert( std::pair<InputType, CreateFn>( type, create ) );
 }
 
@@ -238,9 +232,7 @@ template<typename InputType, typename ValueType, typename OutputType>
 void Factory1<InputType, ValueType, OutputType>::removeCreator( const InputType type )
 {
     CreatorMap& factory = getFactory();
-
     // checks for multiple entries is not really necessary here, so just add entry in map container.
-
     factory.erase( type );
 }
 
@@ -250,9 +242,7 @@ template<typename InputType, typename ValueType, typename OutputType>
 bool Factory1<InputType, ValueType, OutputType>::canCreate( InputType value )
 {
     CreatorMap& factory = getFactory();
-
     typename CreatorMap::const_iterator it = factory.find( value );
-
     return it != factory.end();
 }
 
@@ -262,10 +252,8 @@ template<typename InputType, typename ValueType, typename OutputType>
 void Factory1<InputType, ValueType, OutputType>::getCreateValues( std::vector<InputType>& values )
 {
     CreatorMap& factory = getFactory();
-
     values.clear();
     values.reserve( factory.size() );
-
     typename CreatorMap::const_iterator it;
 
     for ( it = factory.begin(); it != factory.end(); ++it )

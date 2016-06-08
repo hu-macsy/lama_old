@@ -157,14 +157,13 @@ struct CommandLineOptions
         }
         else if ( isValue( option.c_str() ) )
         {
-
 #ifdef SCAI_COMPLEX_SUPPORTED
             ComplexDouble x;
 #else
             double x;
 #endif
             std::string vstr = option;
-            std::replace( vstr.begin(), vstr.end(), ',', ' '); // replace all ',' to ' '
+            std::replace( vstr.begin(), vstr.end(), ',', ' ' ); // replace all ',' to ' '
             std::istringstream is( vstr );
             is >> x;
             cout << "Read value from " << vstr << ", value = " << x << endl;
@@ -197,7 +196,10 @@ struct CommandLineOptions
 
     void checkOutFileType()
     {
-        if ( outFileType != File::DEFAULT ) return;
+        if ( outFileType != File::DEFAULT )
+        {
+            return;
+        }
 
         if ( _StorageIO::hasSuffix( outFileName, ".mtx" ) )
         {
@@ -205,8 +207,8 @@ struct CommandLineOptions
         }
         else
         {
-             outFileType = File::SAMG_FORMAT;
-             writeBinary = true;
+            outFileType = File::SAMG_FORMAT;
+            writeBinary = true;
         }
 
         cout << "No output file type specified, take " << outFileType << endl;
@@ -214,7 +216,10 @@ struct CommandLineOptions
 
     void checkOutDataType()
     {
-        if ( outDataType != common::scalar::INTERNAL ) return;
+        if ( outDataType != common::scalar::INTERNAL )
+        {
+            return;
+        }
 
         // take double or complex double
 
@@ -274,13 +279,9 @@ int main( int argc, char* argv[] )
     options.checkOutFileName();
     options.checkOutFileType();
     options.checkOutDataType();
-
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
-
     // use vector of outDataType so no information is lost
-
     common::shared_ptr<Matrix> matrix;
-
     VectorCreateKeyType vectorType( Vector::DENSE, options.outDataType );
     common::shared_ptr<Vector> v ( Vector::create( vectorType ) );
 
@@ -303,26 +304,18 @@ int main( int argc, char* argv[] )
     }
 
     cout << "Vector (uninitialized): " << *v << endl;
-
     *v = options.value;
 
     if ( options.random )
     {
         using namespace hmemo;
-
         // we know what we do here, so const_cast is okay
-
         _HArray& vLocal = const_cast<_HArray&>( v->getLocalValues() );
-
         ContextPtr host = Context::getHostPtr();
-
         HArray<double> randomValues;
-
         {
             IndexType n = vLocal.size();
-
             std::srand( 171451 );
-
             WriteOnlyAccess<double> write( randomValues, host, n );
 
             for ( int i = 0; i < n; ++i )
@@ -330,9 +323,7 @@ int main( int argc, char* argv[] )
                 write[i] = static_cast<double>( rand() ) / static_cast<double>( RAND_MAX );
             }
         }
-
         // multiply random numbers with the scalar value
-
         utilskernel::HArrayUtils::assignOp( vLocal, randomValues, utilskernel::reduction::MULT, host );
     }
 
@@ -351,8 +342,6 @@ int main( int argc, char* argv[] )
     cout << ", format = " << options.outFileType;
     cout << ", data type = " << options.outDataType;
     cout << endl;
-
     v->writeToFile( options.outFileName, options.outFileType, common::scalar::INTERNAL, options.writeBinary );
-
     cout << "Done." << endl;
 }

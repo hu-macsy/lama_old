@@ -79,23 +79,18 @@ void MPISyncToken::wait()
     if ( isSynchronized() )
     {
         SCAI_LOG_WARN( logger, *this << ": waiting twice" )
-
         return; // do not wait twice, especially do not clean-up twice
     }
 
     SCAI_LOG_INFO( logger, *this << ": wait" )
-
     SCAI_MPICALL( logger, MPI_Waitall( mUsedRequests, mRequests.get(), mStatuses.get() ), "MPI_Waitall" );
-
     SCAI_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" )
-
     setSynchronized();
 }
 
 bool MPISyncToken::probe() const
 {
     // not well defined yet
-
     int flag = 0;
     SCAI_MPICALL( logger, MPI_Testall( mUsedRequests, mRequests.get(), &flag, mStatuses.get() ), "MPI_Testall" );
     return flag != 0;
@@ -105,9 +100,7 @@ void MPISyncToken::pushRequest( const MPI_Request& request )
 {
     SCAI_ASSERT_ERROR( mUsedRequests < mNRequests,
                        "too many requests" << ", MPISyncToken allocated for maximal " << mNRequests << " requests" )
-
     mRequests[mUsedRequests++] = request;
-
     SCAI_LOG_INFO( logger, "# used requests = " << mUsedRequests )
 }
 

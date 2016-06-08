@@ -54,8 +54,8 @@ namespace solver
 {
 
 class COMMON_DLL_IMPORTEXPORT SimpleAMG:
-		public IterativeSolver,
-		public Solver::Register<SimpleAMG>
+    public IterativeSolver,
+    public Solver::Register<SimpleAMG>
 {
 public:
 

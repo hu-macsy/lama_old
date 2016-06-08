@@ -60,7 +60,7 @@ public:
 
     /** This method scales the matrix using an value vector */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void scaleValue(
         const IndexType numRows,
         const IndexType perm[],
@@ -71,7 +71,7 @@ public:
 
     /** This method sets row as dens vector of the i'th row of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void getRow(
         OtherValueType row[],
         const IndexType i,
@@ -122,7 +122,7 @@ public:
 
     /** Conversion of JDS to CSR as specified in JDSUtilKernelTrait::Conversions::getCSRValues  */
 
-    template<typename JDSValueType,typename CSRValueType>
+    template<typename JDSValueType, typename CSRValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -136,7 +136,7 @@ public:
 
     /** Conversion of CSR to JDS as specified in JDSUtilKernelTrait::Conversions::setCSRValues. */
 
-    template<typename JDSValueType,typename CSRValueType>
+    template<typename JDSValueType, typename CSRValueType>
     static void setCSRValues(
         IndexType jdsJA[],
         JDSValueType jdsValues[],
@@ -213,10 +213,10 @@ public:
 
 private:
 
-    // We need for asynchronous execution versions with max 9 args 
+    // We need for asynchronous execution versions with max 9 args
 
     template<typename ValueType>
-    static void normalGEMV_a( 
+    static void normalGEMV_a(
         ValueType result[],
         const std::pair<ValueType, const ValueType*> ax,     // alpha, x
         const std::pair<ValueType, const ValueType*> by,     // beta, y
@@ -227,7 +227,7 @@ private:
         const ValueType jdsValues[] );
 
     template<typename ValueType>
-    static void normalGEVM_a( 
+    static void normalGEVM_a(
         ValueType result[],
         const std::pair<ValueType, const ValueType*> ax,     // alpha, x
         const std::pair<ValueType, const ValueType*> by,     // beta, y

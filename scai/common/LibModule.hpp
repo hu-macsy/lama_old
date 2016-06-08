@@ -37,16 +37,16 @@
 #include <scai/common/config.hpp>
 
 #if defined( __APPLE__ )
-	//todo
-	#include <dirent.h>
-	#include <dlfcn.h>
+//todo
+#include <dirent.h>
+#include <dlfcn.h>
 #elif defined( _WIN32 )
-	#include <Windows.h>
-	#include <WinBase.h>
-	#include <direct.h>
+#include <Windows.h>
+#include <WinBase.h>
+#include <direct.h>
 #else // LINUX
-	#include <dlfcn.h>
-	#include <dirent.h>
+#include <dlfcn.h>
+#include <dirent.h>
 #endif
 
 namespace scai
@@ -64,7 +64,7 @@ public:
     /** Data type definition for library handle, might be OS specific. */
 
 #if defined( _WIN32 )
-	typedef HINSTANCE LibHandle;  //!< use HINSTANCE of MSVC
+    typedef HINSTANCE LibHandle;  //!< use HINSTANCE of MSVC
 #else
     typedef void* LibHandle;
 #endif
@@ -73,7 +73,7 @@ public:
 
     static LibHandle loadLib( const char* filename );
 
-    /** Unload a library 
+    /** Unload a library
      *
      *  Note: It is very likely that the libary is not unloaded now, e.g. there is no
      *        guarantee that the destructors of static objects are called.

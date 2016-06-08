@@ -37,29 +37,31 @@
 // macros
 #define CUSPARSE_BLAS_NAME( name, prefix ) cusparse##prefix##name
 
-#define CUSPARSE_BLAS_DEF( name, prefix, retType, definition ) 			\
-        retType CUSPARSE_BLAS_NAME( name, prefix )( definition );
+#define CUSPARSE_BLAS_DEF( name, prefix, retType, definition )          \
+    retType CUSPARSE_BLAS_NAME( name, prefix )( definition );
 
-#define CUSPARSE_BLAS_CALL( name, prefix, ... )	\
-		SCAI_CUSPARSE_CALL( CUBLAS_CUSPARSE_NAME( name, prefix ), __VAR_ARGS__ )
+#define CUSPARSE_BLAS_CALL( name, prefix, ... ) \
+    SCAI_CUSPARSE_CALL( CUBLAS_CUSPARSE_NAME( name, prefix ), __VAR_ARGS__ )
 
 // external
 #include <cusparse_v2.h>
 
-namespace scai {
+namespace scai
+{
 
-namespace sparsekernel {
+namespace sparsekernel
+{
 
 class COMMON_DLL_IMPORTEXPORT CUSPARSETrait
 {
 public:
-	typedef int BLASIndexType;
-	typedef cusparseOperation_t BLASTrans;
-	typedef cusparseStatus_t BLASStatus;
-	typedef cusparseHandle_t BLASHandle;
-	typedef cusparseMatDescr_t BLASMatrix;
-	typedef cusparseAction_t BLASOperationType;
-	typedef cusparseIndexBase_t BLASIndexBase;
+    typedef int BLASIndexType;
+    typedef cusparseOperation_t BLASTrans;
+    typedef cusparseStatus_t BLASStatus;
+    typedef cusparseHandle_t BLASHandle;
+    typedef cusparseMatDescr_t BLASMatrix;
+    typedef cusparseAction_t BLASOperationType;
+    typedef cusparseIndexBase_t BLASIndexBase;
 };
 
 } /* end namespace sparsekernel */

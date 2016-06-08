@@ -152,11 +152,9 @@ void _MatrixStorage::swap( _MatrixStorage& other )
 void _MatrixStorage::_assignTranspose( const _MatrixStorage& other )
 {
     // make it safe also for other == &this
-
     IndexType tmpNumRows = other.mNumRows;
     mNumRows = other.mNumColumns;
     mNumColumns = tmpNumRows;
-
     mRowIndexes.clear();
     // remains unchanged: mCompressThreshold = other.mCompressThreshold;
     mDiagonalProperty = false;
@@ -215,15 +213,11 @@ void _MatrixStorage::localize( const _MatrixStorage& global, const Distribution&
 IndexType _MatrixStorage::getNumValues() const
 {
     // Default implementation builds sum of row sizes, derived classes have more efficient routines
-
     HArray<IndexType> sizes;
     buildCSRSizes( sizes );
-
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-
     ContextPtr loc = sizes.getValidContext();
-    reduce.getSupportedContext( loc);
-
+    reduce.getSupportedContext( loc );
     ReadAccess<IndexType> csrSizes( sizes, loc );
     IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, utilskernel::reduction::ADD );
     return numValues;
@@ -313,13 +307,9 @@ void _MatrixStorage::offsets2sizes( HArray<IndexType>& sizes, const HArray<Index
     }
 
     const IndexType n = offsets.size() - 1;
-
     ReadAccess<IndexType> readOffsets( offsets );
-
     WriteAccess<IndexType> writeSizes( sizes );
-
     writeSizes.clear(); // old values are not used
-
     writeSizes.resize( n );
 
     for ( IndexType i = 0; i < n; i++ )
@@ -346,7 +336,6 @@ IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& offsets, const HArra
         // allocate offsets with one more element that sizes
         WriteOnlyAccess<IndexType> wOffsets( offsets, loc, sizes.size() + 1 );
     }
-
     utilskernel::HArrayUtils::assign( offsets, sizes, loc );
     return utilskernel::HArrayUtils::scan( offsets, loc );
 }
@@ -424,12 +413,9 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     const IndexType numRows = rowIA.size() - 1;
     const IndexType numValues = rowJA.size();
     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
-
     static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
-
     ContextPtr loc = preferredLoc;
     convertCSR2CSC.getSupportedContext( loc );
-
     SCAI_LOG_INFO( logger,
                    "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
     SCAI_REGION( "Storage.CSR2CSC" )
@@ -1164,31 +1150,20 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
     }
 
     const IndexType numColumns = other.getNumColumns(); // does not change
-
     // check that source distribution fits with storage
     SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
     // get the matrix data from other in CSR format
     HArray<IndexType> sourceIA;
-
     HArray<IndexType> sourceJA;
-
     HArray<ValueType> sourceValues;
-
     other.buildCSRData( sourceIA, sourceJA, sourceValues );
-
     HArray<IndexType> targetIA;
-
     HArray<IndexType> targetJA;
-
     HArray<ValueType> targetValues;
-
     StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, sourceIA, sourceJA, sourceValues,
             redistributor );
-
     const IndexType targetNumRows = targetIA.size() - 1;
-
     const IndexType targetNumValues = targetJA.size();
-
     setCSRData( targetNumRows, numColumns, targetNumValues, targetIA, targetJA, targetValues );
 }
 
@@ -1222,23 +1197,16 @@ void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& oth
     }
 
     const IndexType numColumns = other.getNumColumns(); // does not change
-
     // check that source distribution fits with storage
     SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
     // it is not necessary to convert the other storage to CSR
     HArray<IndexType> targetIA;
-
     HArray<IndexType> targetJA;
-
     HArray<ValueType> targetValues;
-
     StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, other.getIA(), other.getJA(),
             other.getValues(), redistributor );
-
     const IndexType targetNumRows = targetIA.size() - 1;
-
     const IndexType targetNumValues = targetJA.size();
-
     setCSRData( targetNumRows, numColumns, targetNumValues, targetIA, targetJA, targetValues );
 }
 
@@ -1271,7 +1239,6 @@ void MatrixStorage<ValueType>::setDenseData(
     const ValueType epsilon )
 {
     mEpsilon = epsilon;
-
     mepr::MatrixStorageWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
 }
 
@@ -1342,7 +1309,6 @@ void _MatrixStorage::buildCSRGraph(
     const IndexType* globalRowIndexes ) const
 {
     IndexType numLocalRows = mNumRows;
-
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
     HArray<float> csrValues;

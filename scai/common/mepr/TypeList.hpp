@@ -92,7 +92,7 @@ struct TypeList
 
 #define TYPELIST_N( N, ... ) TYPELIST_##N( __VA_ARGS__ )
 
-/** Macro for type lists where the first argument N specifies the number of types.  
+/** Macro for type lists where the first argument N specifies the number of types.
  *  Be careful: the total number of arguments must be N + 1
  */
 

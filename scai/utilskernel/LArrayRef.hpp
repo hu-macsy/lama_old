@@ -84,18 +84,16 @@ protected:
 
 template<typename ValueType>
 LArrayRef<ValueType>::LArrayRef( IndexType size, ValueType* pointer )
-                : LArray<ValueType>()
+    : LArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
-
-    if( size != 0 && pointer == NULL )
+    if ( size != 0 && pointer == NULL )
     {
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
     hmemo::ContextData& host = mContextDataManager[ hmemo::HostMemory::getIt() ];
     host.setRef( pointer, size * mValueSize );
-
     mSize = size;
 }
 
@@ -103,25 +101,19 @@ LArrayRef<ValueType>::LArrayRef( IndexType size, ValueType* pointer )
 
 template<typename ValueType>
 LArrayRef<ValueType>::LArrayRef( IndexType size, const ValueType* pointer )
-                : LArray<ValueType>()
+    : LArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
-
-    if( size != 0 && pointer == NULL )
+    if ( size != 0 && pointer == NULL )
     {
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
     hmemo::ContextData& host = mContextDataManager[ hmemo::HostMemory::getIt() ];
-
     // dealing with const references in ContextData is not supported
-
-    host.setRef( const_cast<ValueType*>( pointer ), size * sizeof(ValueType) );
-
+    host.setRef( const_cast<ValueType*>( pointer ), size * sizeof( ValueType ) );
     // Take care of const awareness by setting a flag
-
-    constFlag = true; 
-
+    constFlag = true;
     mSize = size;
 }
 

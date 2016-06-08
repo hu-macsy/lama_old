@@ -42,11 +42,8 @@
 BOOST_AUTO_TEST_CASE( VersionTest )
 {
     std::string version = lama_get_version();
-
     // version is something like x.y.z
-
     int len = version.length();
-
     BOOST_CHECK( len >= 5 );
 }
 

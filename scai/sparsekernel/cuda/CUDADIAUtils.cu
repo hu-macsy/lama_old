@@ -136,7 +136,6 @@ __global__ void normal_gemv_kernel(
     if ( i < numRows )
     {
         ValueType summand = beta * y[i];
-
         ValueType temp = 0.0;
 
         for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
@@ -187,7 +186,6 @@ __global__ void normal_gemv_kernel_alpha_one_beta_one(
     if ( i < numRows )
     {
         ValueType summand = y[i];
-
         ValueType temp = 0.0;
 
         for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
@@ -399,7 +397,6 @@ __global__ void normal_gemv_kernel_beta_one(
     if ( i < numRows )
     {
         ValueType summand = y[i];
-
         ValueType temp = 0.0;
 
         for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
@@ -483,19 +480,14 @@ void CUDADIAUtils::normalGEMV(
     const ValueType diaValues[] )
 {
     SCAI_REGION( "CUDA.DIA.normalGEMV" )
-
     SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numRows << "] = " << alpha
                    << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
-
     const IndexType blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0;
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -504,13 +496,10 @@ void CUDADIAUtils::normalGEMV(
     }
 
     const bool useSharedMem = CUDASettings::useSharedMem();
-
     const bool useTexture = CUDASettings::useTexture();
-
     SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
-
     int sharedMemSize = 0;
 
     if ( useSharedMem )
@@ -707,7 +696,6 @@ void CUDADIAUtils::normalGEMV(
     if ( !syncToken )
     {
         // synchronize now, unbind used textures
-
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
 
         if ( useTexture )
@@ -723,12 +711,10 @@ void CUDADIAUtils::normalGEMV(
     else
     {
         // synchronize by syncToken, delay unbind texture
-
         if ( useTexture )
         {
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-
             syncToken->pushRoutine( common::bind( unbindV, x ) );
 
             if ( !useSharedMem )
@@ -812,19 +798,14 @@ void CUDADIAUtils::normalGEVM(
     const ValueType diaValues[] )
 {
     SCAI_REGION( "CUDA.DIA.normalGEVM" )
-
     SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numRows << "] = " << alpha
                    << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
-
     const IndexType blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0;
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -833,13 +814,10 @@ void CUDADIAUtils::normalGEVM(
     }
 
     const bool useSharedMem = CUDASettings::useSharedMem();
-
     const bool useTexture = CUDASettings::useTexture();
-
     SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
-
     int sharedMemSize = 0;
 
     if ( useSharedMem )
@@ -885,7 +863,6 @@ void CUDADIAUtils::normalGEVM(
     if ( !syncToken )
     {
         // synchronize now, unbind used textures
-
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
 
         if ( useTexture )
@@ -901,12 +878,10 @@ void CUDADIAUtils::normalGEVM(
     else
     {
         // synchronize by syncToken, delay unbind texture
-
         if ( useTexture )
         {
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-
             syncToken->pushRoutine( common::bind( unbindV, x ) );
 
             if ( !useSharedMem )
@@ -923,15 +898,11 @@ template<typename ValueType>
 void CUDADIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     SCAI_LOG_INFO( logger, "register DIAUtils CUDA-routines for CUDA at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
-
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
     const common::context::ContextType ctx = common::context::CUDA;
-
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
-
 }
 
 /* --------------------------------------------------------------------------- */
@@ -941,14 +912,12 @@ void CUDADIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistr
 CUDADIAUtils::CUDADIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDADIAUtils::~CUDADIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
 }
 

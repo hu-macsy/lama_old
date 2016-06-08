@@ -78,7 +78,10 @@ struct DIAKernelTrait
             const ValueType diaValues[],
             const ValueType eps );
 
-        static const char* getId() { return "DIA.getCSRSizes"; }
+        static const char* getId()
+        {
+            return "DIA.getCSRSizes";
+        }
     };
 
     template<typename DIAValueType, typename CSRValueType>
@@ -100,7 +103,7 @@ struct DIAKernelTrait
          *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             IndexType csrJA[],
             CSRValueType csrValues[],
             const IndexType csrIA[],
@@ -112,7 +115,10 @@ struct DIAKernelTrait
             const DIAValueType diaValues[],
             const DIAValueType eps );
 
-        static const char* getId() { return "DIA.getCSRValues"; }
+        static const char* getId()
+        {
+            return "DIA.getCSRValues";
+        }
     };
 
     template<typename ValueType>
@@ -130,7 +136,7 @@ struct DIAKernelTrait
          *  @param diaOffsets, diaValues are arrays of DIA storage
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -142,7 +148,10 @@ struct DIAKernelTrait
             const IndexType diaOffsets[],
             const ValueType diaValues[] );
 
-        static const char* getId() { return "DIA.normalGEMV"; }
+        static const char* getId()
+        {
+            return "DIA.normalGEMV";
+        }
     };
 
     template<typename ValueType>
@@ -161,7 +170,7 @@ struct DIAKernelTrait
          *  @param syncToken optional, if available starts asynchronous computation
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -173,7 +182,10 @@ struct DIAKernelTrait
             const IndexType diaOffsets[],
             const ValueType diaValues[] );
 
-        static const char* getId() { return "DIA.normalGEVM"; }
+        static const char* getId()
+        {
+            return "DIA.normalGEVM";
+        }
     };
 
     /** Structure with type definitions for solver routines */
@@ -186,7 +198,7 @@ struct DIAKernelTrait
          *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
          *
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType* solution,
             const IndexType numColumns,
             const IndexType numDiagonals,
@@ -197,7 +209,10 @@ struct DIAKernelTrait
             const ValueType omega,
             const IndexType numRows );
 
-        static const char* getId() { return "DIA.jacobi"; }
+        static const char* getId()
+        {
+            return "DIA.jacobi";
+        }
     };
 
     /** Structure with type definitions for reduction routines */
@@ -207,7 +222,7 @@ struct DIAKernelTrait
     {
         /** This method returns the maximal absolute value of a DIA storage. */
 
-        typedef ValueType (  *FuncType ) ( 
+        typedef ValueType (  *FuncType ) (
             const IndexType numRows,
             const IndexType numColumns,
             const IndexType numDiagonals,
@@ -215,7 +230,10 @@ struct DIAKernelTrait
             const ValueType diaValues[]
         );
 
-        static const char* getId() { return "DIA.absMaxVal"; }
+        static const char* getId()
+        {
+            return "DIA.absMaxVal";
+        }
     };
 };
 

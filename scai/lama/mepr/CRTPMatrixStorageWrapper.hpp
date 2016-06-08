@@ -36,11 +36,14 @@
 
 #include <scai/common/mepr/TypeList.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace lama {
+namespace lama
+{
 
-namespace mepr {
+namespace mepr
+{
 
 /*
  * Forward declaration
@@ -66,7 +69,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
     {}
 
     static void buildCSRDataImpl(
-        const Derived *,
+        const Derived*,
         hmemo::HArray<IndexType>&,
         hmemo::HArray<IndexType>&,
         hmemo::_HArray&,
@@ -74,7 +77,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
     {}
 
     static void getRowImpl(
-        const Derived *,
+        const Derived*,
         hmemo::_HArray&,
         const IndexType )
     { }
@@ -99,7 +102,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
  * Step n
  */
 template<typename Derived, typename H, typename T>
-struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
+struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H, T> >
 {
     static void setCSRDataImpl(
         Derived* obj,
@@ -111,7 +114,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
         const hmemo::_HArray& values,
         hmemo::ContextPtr ctx )
     {
-        if( values.getValueType() == common::getScalarType<H>() )
+        if ( values.getValueType() == common::getScalarType<H>() )
         {
             obj->setCSRDataImpl( numRows, numColumns, numValues, ia, ja, reinterpret_cast<const hmemo::HArray<H>& >( values ), ctx );
         }
@@ -122,13 +125,13 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
     }
 
     static void buildCSRDataImpl(
-            const Derived* obj,
-            hmemo::HArray<IndexType>& csrIA,
-            hmemo::HArray<IndexType>& csrJA,
-            hmemo::_HArray& csrValues,
-            const hmemo::ContextPtr ctx )
+        const Derived* obj,
+        hmemo::HArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::_HArray& csrValues,
+        const hmemo::ContextPtr ctx )
     {
-        if( csrValues.getValueType() == common::getScalarType<H>() )
+        if ( csrValues.getValueType() == common::getScalarType<H>() )
         {
             obj->buildCSR( csrIA, &csrJA, reinterpret_cast<hmemo::HArray<H>* >( &csrValues ), ctx );
         }
@@ -139,11 +142,11 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
     }
 
     static void getRowImpl(
-            const Derived * obj,
-            hmemo::_HArray& row,
-            const IndexType irow )
+        const Derived* obj,
+        hmemo::_HArray& row,
+        const IndexType irow )
     {
-        if( row.getValueType() == common::getScalarType<H>() )
+        if ( row.getValueType() == common::getScalarType<H>() )
         {
             obj->getRowImpl( reinterpret_cast<hmemo::HArray<H>& >( row ), irow );
         }
@@ -157,7 +160,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
         const Derived* obj,
         hmemo::_HArray& diagonal )
     {
-        if( diagonal.getValueType() == common::getScalarType<H>() )
+        if ( diagonal.getValueType() == common::getScalarType<H>() )
         {
             obj->getDiagonalImpl( reinterpret_cast<hmemo::HArray<H>& >( diagonal ) );
         }
@@ -171,7 +174,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
         Derived* obj,
         const hmemo::_HArray& diagonal )
     {
-        if( diagonal.getValueType() == common::getScalarType<H>() )
+        if ( diagonal.getValueType() == common::getScalarType<H>() )
         {
             obj->setDiagonalImpl( reinterpret_cast<const hmemo::HArray<H>& >( diagonal ) );
         }
@@ -185,7 +188,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H,T> >
         Derived* obj,
         const hmemo::_HArray& values )
     {
-        if( values.getValueType() == common::getScalarType<H>() )
+        if ( values.getValueType() == common::getScalarType<H>() )
         {
             obj->scaleImpl( reinterpret_cast<const hmemo::HArray<H>& >( values ) );
         }

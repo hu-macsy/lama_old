@@ -60,7 +60,7 @@ namespace lama
  */
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT JDSSparseMatrix: 
+class COMMON_DLL_IMPORTEXPORT JDSSparseMatrix:
 
     public SparseMatrix<ValueType>,
     public Matrix::Register<JDSSparseMatrix<ValueType> >    // register at factory
@@ -156,7 +156,7 @@ public:
      * @param[in] ownedIndexes       the global Indexes of the local rows
      * @param[in] communicator       communicator of the distribution
      */
-    template<typename LocalValueType,typename HaloValueType>
+    template<typename LocalValueType, typename HaloValueType>
     JDSSparseMatrix(
         const IndexType numLocalRows,
         const IndexType numLocalNonZeros,
@@ -262,13 +262,13 @@ public:
 
     static Matrix* create();
 
-    // key for factory 
+    // key for factory
 
     static MatrixCreateKeyType createValue();
 };
 
 template<typename ValueType>
-template<typename LocalValueType,typename HaloValueType>
+template<typename LocalValueType, typename HaloValueType>
 JDSSparseMatrix<ValueType>::JDSSparseMatrix(
     const IndexType numLocalRows,
     const IndexType numLocalNonZeros,
@@ -287,20 +287,13 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix(
 {
     SCAI_LOG_INFO( logger,
                    communicator << ": construct distributed matrix " << numLocalRows << " by local and halo data + owned indexes" );
-
     // For the distribution we need the global number of rows, not available as arg, so compute it
-
     IndexType numGlobalRows = communicator->sum( numLocalRows );
-
     mLocalData->setRawCSRData( numLocalRows, numLocalRows, numLocalNonZeros, localIA, localJA, localValues );
     mHaloData->setRawCSRData( numLocalRows, numGlobalRows, numHaloNonZeros, haloIA, haloJA, haloValues );
-
     dmemo::DistributionPtr dist( new dmemo::GeneralDistribution( numGlobalRows, ownedIndexes, communicator ) );
-
     // Halo is already splitted, but still contains the global indexes
-
     mHaloData->buildHalo( mHalo, *dist ); // build halo, maps global indexes to halo indexes
-
     Matrix::setDistributedMatrix( dist, dist );
 }
 

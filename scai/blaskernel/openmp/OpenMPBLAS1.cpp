@@ -76,13 +76,11 @@ void OpenMPBLAS1::scal(
     const IndexType incX )
 {
     SCAI_REGION( "OpenMP.BLAS1.scal" )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
         // run this routine with same arguments by another thread, running thread will have syncToken == NULL
-
         syncToken->run( common::bind( scal<ValueType>, n, alpha, x, incX ) );
         return;
     }
@@ -93,13 +91,13 @@ void OpenMPBLAS1::scal(
     }
 
     SCAI_LOG_DEBUG( logger,
-                    "scal<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+                    "scal<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
-    if( incX == 1 )
+    if ( incX == 1 )
     {
         #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-        for( int i = 0; i < n; i++ )
+        for ( int i = 0; i < n; i++ )
         {
             x[i] = x[i] * alpha;
         }
@@ -108,7 +106,7 @@ void OpenMPBLAS1::scal(
     {
         //incX != 1
         #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-        for( int i = 0; i < n; i++ )
+        for ( int i = 0; i < n; i++ )
         {
             x[i * incX] = x[i * incX] * alpha;
         }
@@ -121,16 +119,13 @@ template<typename ValueType>
 ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "OpenMP.BLAS1.nrm2" )
-
     SCAI_LOG_DEBUG( logger,
-                    "nrm2<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
-
+                    "nrm2<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
     ValueType sumOfSquares = 0;  // same as ... = ValueType( 0 )
 
     if ( incX <= 0 )
     {
         // considered as vector x is empty
-
         return sumOfSquares;
     }
 
@@ -142,16 +137,15 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
     }
 
     // OpenMP reduction clause cannot be used as it doesn't support complex numbers
-
     #pragma omp parallel shared( sumOfSquares )
     {
         ValueType tSumOfSquares = 0; // private for each thread
 
-        if( incX == 1 )
+        if ( incX == 1 )
         {
             #pragma omp for  schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 tSumOfSquares += x[i] * common::Math::conj( x[i] );
             }
@@ -160,7 +154,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
         {
             #pragma omp for  schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 tSumOfSquares += x[i * incX] * common::Math::conj( x[i * incX] );
             }
@@ -177,35 +171,32 @@ template<typename ValueType>
 ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "OpenMP.BLAS1.asum" )
-
     SCAI_LOG_DEBUG( logger,
-                    "asum<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
-
+                    "asum<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "asynchronous execution not supported yet" )
     }
 
     ValueType result = 0;
 
-    if( incX <= 0 )
+    if ( incX <= 0 )
     {
         return result;
     }
 
 // OpenMP reduction clause cannot be used as it doesn't support complex numbers
-
     #pragma omp parallel shared( result )
     {
         ValueType tResult = 0; // private for each thread
 
-        if( incX == 1 )
+        if ( incX == 1 )
         {
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 tResult += common::Math::abs( common::Math::real( x[i] ) ) + common::Math::abs( common::Math::imag( x[i] ) );
             }
@@ -214,7 +205,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
         {
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 tResult += common::Math::abs( common::Math::real( x[i * incX] ) ) + common::Math::abs( common::Math::imag( x[i * incX] ) );
             }
@@ -222,7 +213,6 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 
         atomicAdd( result, tResult );
     }
-
     return result;
 }
 
@@ -232,35 +222,32 @@ template<typename ValueType>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "OpenMP.BLAS1.iamax" )
-
     SCAI_LOG_INFO( logger,
-                   "iamax<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
-
+                   "iamax<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
 
-    if( n <= 0 || incX <= 0 )
+    if ( n <= 0 || incX <= 0 )
     {
         return 0;
     }
 
     IndexType maxPos = 0;
-
     #pragma omp parallel shared( maxPos )
     {
         IndexType tMaxPos = 0;
 
-        if( incX == 1 )
+        if ( incX == 1 )
         {
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
-                if( common::Math::abs( x[i] ) > common::Math::abs( x[tMaxPos] ) )
+                if ( common::Math::abs( x[i] ) > common::Math::abs( x[tMaxPos] ) )
                 {
                     tMaxPos = i;
                 }
@@ -270,9 +257,9 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
         {
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
-                if( common::Math::abs( x[i * incX] ) > common::Math::abs( x[tMaxPos * incX] ) )
+                if ( common::Math::abs( x[i * incX] ) > common::Math::abs( x[tMaxPos * incX] ) )
                 {
                     tMaxPos = i;
                 }
@@ -281,14 +268,13 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
 
         #pragma omp critical
         {
-            if( ( common::Math::abs( x[tMaxPos] ) > common::Math::abs( x[maxPos] ) )
+            if ( ( common::Math::abs( x[tMaxPos] ) > common::Math::abs( x[maxPos] ) )
                     || ( ( common::Math::abs( x[tMaxPos] ) == common::Math::abs( x[maxPos] ) ) && tMaxPos < maxPos ) )
             {
                 maxPos = tMaxPos;
             }
         }
     }
-
     return maxPos;
 }
 
@@ -303,46 +289,45 @@ void OpenMPBLAS1::swap(
     const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.swap" )
-
     SCAI_LOG_DEBUG( logger,
-                    "iamax<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "iamax<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
 
-    ValueType *temp = 0;
+    ValueType* temp = 0;
     temp = new ValueType[n];
 
-    if( incX == 1 && incY == 1 )
+    if ( incX == 1 && incY == 1 )
     {
         #pragma omp parallel
         {
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 temp[i] = x[i];
             }
 
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 x[i] = y[i];
             }
 
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 y[i] = temp[i];
             }
@@ -355,21 +340,21 @@ void OpenMPBLAS1::swap(
         {
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 temp[i] = x[i * incX];
             }
 
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 x[i * incX] = y[i * incY];
             }
 
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 y[i * incY] = temp[i];
             }
@@ -390,20 +375,19 @@ void OpenMPBLAS1::copy(
     const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.copy" )
-
     SCAI_LOG_DEBUG( logger,
                     "copy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
-    if( incX == 1 && incY == 1 )
+    if ( incX == 1 && incY == 1 )
     {
         #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-        for( int i = 0; i < n; i++ )
+        for ( int i = 0; i < n; i++ )
         {
             y[i] = x[i];
         }
@@ -412,7 +396,7 @@ void OpenMPBLAS1::copy(
     {
         //incX != 1 || incY != 1
         #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-        for( int i = 0; i < n; i++ )
+        for ( int i = 0; i < n; i++ )
         {
             y[i * incY] = x[i * incX];
         }
@@ -440,7 +424,6 @@ void OpenMPBLAS1::axpy(
     }
 
     SCAI_REGION( "OpenMP.BLAS1.axpy" )
-
     SCAI_LOG_DEBUG( logger,
                     "axpy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha
                     << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -450,11 +433,11 @@ void OpenMPBLAS1::axpy(
         return;
     }
 
-    if( incX == 1 && incY == 1 )
+    if ( incX == 1 && incY == 1 )
     {
         #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-        for( int i = 0; i < n; i++ )
+        for ( int i = 0; i < n; i++ )
         {
             y[i] = alpha * x[i] + y[i];
         }
@@ -463,12 +446,11 @@ void OpenMPBLAS1::axpy(
     {
         //incX != 1 || incY != 1
         #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-        for( int i = 0; i < n; i++ )
+        for ( int i = 0; i < n; i++ )
         {
             y[i * incY] = alpha * x[i * incX] + y[i * incY];
         }
     }
-
 }
 /** dot */
 
@@ -481,7 +463,6 @@ ValueType OpenMPBLAS1::dot(
     const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.dot" )
-
     SCAI_LOG_DEBUG( logger,
                     "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n
                     << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -499,7 +480,6 @@ ValueType OpenMPBLAS1::dot(
     }
 
     ValueType result = 0;
-
     #pragma omp parallel shared( result )
     {
         ValueType tResult = 0;
@@ -508,7 +488,7 @@ ValueType OpenMPBLAS1::dot(
         {
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 tResult += common::Math::conj( x[i] ) * y[i] ;
             }
@@ -517,7 +497,7 @@ ValueType OpenMPBLAS1::dot(
         {
             // incX != 1 || incY != 1
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
-            for( int i = 0; i < n; i++ )
+            for ( int i = 0; i < n; i++ )
             {
                 tResult += common::Math::conj( x[i * incX] ) * y[i * incY] ;
             }
@@ -525,7 +505,6 @@ ValueType OpenMPBLAS1::dot(
 
         atomicAdd( result, tResult );
     }
-
     return result;
 }
 
@@ -541,20 +520,18 @@ void OpenMPBLAS1::sum(
     ValueType* z )
 {
     SCAI_REGION( "OpenMP.BLAS1.dot" )
-
     SCAI_LOG_DEBUG( logger,
                     "sum<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         z[i] = alpha * x[i] + beta * y[i];
     }
@@ -570,12 +547,9 @@ template<typename ValueType>
 void OpenMPBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::Host;
-
     SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
-
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( OpenMPBLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( OpenMPBLAS1::nrm2, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( OpenMPBLAS1::asum, ctx, flag );

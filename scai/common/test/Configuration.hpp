@@ -39,9 +39,11 @@
 #define LAMA_TESTFILE_PATH "res/testfiles"
 #endif
 
-namespace scai {
+namespace scai
+{
 
-namespace test {
+namespace test
+{
 
 class Configuration
 {
@@ -49,7 +51,7 @@ class Configuration
 public:
     static std::string getPath()
     {
-    	return LAMA_TESTFILE_PATH;
+        return LAMA_TESTFILE_PATH;
     }
 
 private:

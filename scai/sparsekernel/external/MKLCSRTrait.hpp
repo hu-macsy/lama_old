@@ -39,16 +39,18 @@
 
 // external
 
-namespace scai {
+namespace scai
+{
 
-namespace sparsekernel {
+namespace sparsekernel
+{
 
 class COMMON_DLL_IMPORTEXPORT MKLCSRTrait
 {
 public:
-	typedef int  BLASIndexType;
-	typedef char BLASTrans;
-	typedef char BLASMatrix[6];
+    typedef int  BLASIndexType;
+    typedef char BLASTrans;
+    typedef char BLASMatrix[6];
 };
 
 } /* end namespace sparsekernel */

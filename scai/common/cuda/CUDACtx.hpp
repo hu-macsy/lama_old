@@ -62,11 +62,11 @@ namespace common
  */
 
 class COMMON_DLL_IMPORTEXPORT CUDACtx : private NonCopyable
-{   
+{
 
 public:
 
-    /** Constructor will check for a CUDA device and create a context for it 
+    /** Constructor will check for a CUDA device and create a context for it
      *
      *  @param[in] deviceNr is the number of the device to access
      *  @throws Exception if the device cannot be accessed
@@ -109,7 +109,7 @@ public:
     {
         return mDeviceNr;
     }
-    
+
     /** Add a routine to be called with destructor */
 
     void addShutdown( common::function<void()> routine );

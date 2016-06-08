@@ -32,10 +32,10 @@
  * @date 30.03.2016
  */
 
- * @brief Test enum for different context types.
- * @author Thomas Brandes
- * @date 30.03.2016
- */
+* @brief Test enum for different context types.
+* @author Thomas Brandes
+* @date 30.03.2016
+* /
 
 #include <boost/test/unit_test.hpp>
 
@@ -43,6 +43,7 @@
 #include <sstream>
 
 using namespace scai;
+
 using namespace common;
 
 BOOST_AUTO_TEST_CASE( ContextTypeTest )
@@ -71,8 +72,8 @@ BOOST_AUTO_TEST_CASE( AccessKindTest )
         if ( type == context::Read )
         {
             // output should contain at least an R for read and no W at all
-            BOOST_CHECK( s.str().find( "R") != std::string::npos );
-            BOOST_CHECK( s.str().find( "W") == std::string::npos );
+            BOOST_CHECK( s.str().find( "R" ) != std::string::npos );
+            BOOST_CHECK( s.str().find( "W" ) == std::string::npos );
         }
     }
 }

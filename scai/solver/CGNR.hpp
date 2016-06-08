@@ -52,11 +52,11 @@ namespace solver
 /**
  * @brief The class CGNR represents an IterativeSolver which uses the krylov subspace Conjugate
  * Gradients for Normal Residuals (CGNR) method to solve a system of linear equations of type
- * 
+ *
  *                             (A^t * A) * x = A^t * b
- * iteratively 
- * where 
- * A  .............. is some matrix (not necessary square) 
+ * iteratively
+ * where
+ * A  .............. is some matrix (not necessary square)
  * A^t.............. is the transposed of A
  * x  .............. solution vector
  * b  .............. rhs vector

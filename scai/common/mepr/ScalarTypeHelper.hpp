@@ -38,11 +38,14 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace common {
+namespace common
+{
 
-namespace mepr {
+namespace mepr
+{
 
 /*
  * Forward declartion
@@ -72,11 +75,11 @@ struct ScalarTypeHelper<NullType>
  * Step n
  */
 template<typename H, typename T>
-struct ScalarTypeHelper< TypeList<H,T> >
+struct ScalarTypeHelper< TypeList<H, T> >
 {
     static long sizeOf( const scalar::ScalarType& s )
     {
-        if( s == common::getScalarType<H>() )
+        if ( s == common::getScalarType<H>() )
         {
             return sizeof( H );
         }
@@ -88,7 +91,7 @@ struct ScalarTypeHelper< TypeList<H,T> >
 
     static scalar::ScalarType getBySize( const long size )
     {
-        if( sizeof( H ) == size )
+        if ( sizeof( H ) == size )
         {
             return TypeTraits<H>::stype;
         }

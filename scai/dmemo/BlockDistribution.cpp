@@ -196,9 +196,7 @@ std::string BlockDistribution::createValue()
 Distribution* BlockDistribution::create( const DistributionArguments arg )
 {
     SCAI_LOG_INFO( logger, "create" )
-
     // Note: weight argument is not used here
-
     return new BlockDistribution( arg.globalSize, arg.communicator );
 }
 

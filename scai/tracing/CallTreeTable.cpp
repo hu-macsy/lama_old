@@ -167,7 +167,6 @@ void CallTreeTable::open( const char* prefix, const char* threadSuffix )
 
     mFileName = prefix;
     mFileName += ".ct";
-
     std::string rank;
 
     if ( scai::common::Settings::getEnvironment( rank, "SCAI_RANK" ) )
@@ -183,7 +182,6 @@ void CallTreeTable::open( const char* prefix, const char* threadSuffix )
     }
 
     SCAI_LOG_DEBUG( logger, "open calltree file " << mFileName );
-
     outfile.open( mFileName.c_str(), ios::out );
 
     if ( outfile.fail() )

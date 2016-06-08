@@ -45,51 +45,53 @@
 // external
 #include <mkl_lapacke.h>
 
-namespace scai {
+namespace scai
+{
 
-namespace blaskernel {
+namespace blaskernel
+{
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT LAPACKeWrapper;
 
-#define LAPACKEWRAPPER_DEF( ValueType, MKLValueType, prefix )							\
-template<>																				\
-class COMMON_DLL_IMPORTEXPORT LAPACKeWrapper<ValueType>									\
-{																						\
-public:																					\
-	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;								\
-	typedef LAPACKeTrait::LAPACKFlag LAPACKFlag;										\
-	typedef LAPACKeTrait::LAPACKOrder LAPACKOrder;										\
-																						\
-	static LAPACKIndexType getrf(const LAPACKOrder matrix_order,						\
-			const LAPACKIndexType m, const LAPACKIndexType n,							\
-			ValueType* const a, const LAPACKIndexType lda,								\
-			LAPACKIndexType* const ipiv)												\
-	{																					\
-		return FORTRAN_LAPACKE_NAME(getrf, prefix)(matrix_order, m, n, 					\
-				reinterpret_cast<MKLValueType*>( a ), lda, ipiv);						\
-	}																					\
-																						\
-	static LAPACKIndexType getri(const LAPACKOrder matrix_order,						\
-			const LAPACKIndexType n, ValueType* const A,								\
-			const LAPACKIndexType lda,													\
-			LAPACKIndexType* const ipiv)												\
-	{																					\
-		return FORTRAN_LAPACKE_NAME(getri, prefix)(matrix_order, n, 					\
-				reinterpret_cast<MKLValueType*>( A ), lda, ipiv);						\
-	}																					\
-																						\
-	static LAPACKIndexType tptrs(const LAPACKOrder matrix_order,						\
-			const LAPACKFlag uplo, const LAPACKFlag trans,								\
-			const LAPACKFlag diag, const LAPACKIndexType n,								\
-			const LAPACKIndexType nrhs, const ValueType* AP,							\
-			ValueType* B, const LAPACKIndexType ldb) 									\
-	{																					\
-		return FORTRAN_LAPACKE_NAME( tptrs, prefix )(matrix_order, uplo, trans, 		\
-				diag, n, nrhs, reinterpret_cast<const MKLValueType*>( AP ),				\
-				reinterpret_cast<MKLValueType*>( B ), ldb);								\
-	}																					\
-};
+#define LAPACKEWRAPPER_DEF( ValueType, MKLValueType, prefix )                           \
+    template<>                                                                              \
+    class COMMON_DLL_IMPORTEXPORT LAPACKeWrapper<ValueType>                                 \
+    {                                                                                       \
+    public:                                                                                 \
+        typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;                              \
+        typedef LAPACKeTrait::LAPACKFlag LAPACKFlag;                                        \
+        typedef LAPACKeTrait::LAPACKOrder LAPACKOrder;                                      \
+        \
+        static LAPACKIndexType getrf(const LAPACKOrder matrix_order,                        \
+                                     const LAPACKIndexType m, const LAPACKIndexType n,                           \
+                                     ValueType* const a, const LAPACKIndexType lda,                              \
+                                     LAPACKIndexType* const ipiv)                                                \
+        {                                                                                   \
+            return FORTRAN_LAPACKE_NAME(getrf, prefix)(matrix_order, m, n,                  \
+                    reinterpret_cast<MKLValueType*>( a ), lda, ipiv);                       \
+        }                                                                                   \
+        \
+        static LAPACKIndexType getri(const LAPACKOrder matrix_order,                        \
+                                     const LAPACKIndexType n, ValueType* const A,                                \
+                                     const LAPACKIndexType lda,                                                  \
+                                     LAPACKIndexType* const ipiv)                                                \
+        {                                                                                   \
+            return FORTRAN_LAPACKE_NAME(getri, prefix)(matrix_order, n,                     \
+                    reinterpret_cast<MKLValueType*>( A ), lda, ipiv);                       \
+        }                                                                                   \
+        \
+        static LAPACKIndexType tptrs(const LAPACKOrder matrix_order,                        \
+                                     const LAPACKFlag uplo, const LAPACKFlag trans,                              \
+                                     const LAPACKFlag diag, const LAPACKIndexType n,                             \
+                                     const LAPACKIndexType nrhs, const ValueType* AP,                            \
+                                     ValueType* B, const LAPACKIndexType ldb)                                    \
+        {                                                                                   \
+            return FORTRAN_LAPACKE_NAME( tptrs, prefix )(matrix_order, uplo, trans,         \
+                    diag, n, nrhs, reinterpret_cast<const MKLValueType*>( AP ),             \
+                    reinterpret_cast<MKLValueType*>( B ), ldb);                             \
+        }                                                                                   \
+    };
 
 LAPACKEWRAPPER_DEF( float, float, s );
 LAPACKEWRAPPER_DEF( double, double, d );

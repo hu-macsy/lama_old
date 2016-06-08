@@ -69,7 +69,7 @@ public:
 
     /** Implementation for COOKernelTrait::setCSRData with CUDA on GPUs */
 
-    template<typename COOValueType,typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     static void setCSRData(
         COOValueType cooValues[],
         const CSRValueType csrValues[],

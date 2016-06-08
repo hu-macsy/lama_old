@@ -43,69 +43,81 @@
 // macros
 #define FORTRAN_LAPACKE_NAME( name, prefix ) LAPACKE_##prefix##name
 
-namespace scai {
+namespace scai
+{
 
-namespace blaskernel {
+namespace blaskernel
+{
 
 class COMMON_DLL_IMPORTEXPORT LAPACKeTrait
 {
 public:
-	typedef lapack_int LAPACKIndexType;
-	typedef char LAPACKFlag;
-	typedef int LAPACKOrder;
+    typedef lapack_int LAPACKIndexType;
+    typedef char LAPACKFlag;
+    typedef int LAPACKOrder;
 
-	static inline LAPACKFlag enum2char( const CBLAS_UPLO uplo )
-	{
-		switch( uplo )
-		{
-			case CblasUpper:
-				return 'U';
-			case CblasLower:
-				return 'L';
-			default:
-				COMMON_THROWEXCEPTION( "Illegal uplo: " << uplo );
-		}
-	}
+    static inline LAPACKFlag enum2char( const CBLAS_UPLO uplo )
+    {
+        switch ( uplo )
+        {
+            case CblasUpper:
+                return 'U';
 
-	static inline LAPACKFlag enum2char( const CBLAS_TRANSPOSE trans )
-	{
-		switch( trans )
-		{
-			case CblasNoTrans:
-				return 'N';
-			case CblasTrans:
-				return 'T';
-			case CblasConjTrans:
-				return 'C';
-			default:
-				COMMON_THROWEXCEPTION( "Illegal trans: " << trans );
-		}
-	}
+            case CblasLower:
+                return 'L';
 
-	static inline LAPACKFlag enum2char( const CBLAS_DIAG diag )
-	{
-		switch( diag )
-		{
-			case CblasNonUnit:
-				return 'N';
-			case CblasUnit:
-				return 'U';
-			default:
-				COMMON_THROWEXCEPTION( "Illegal diag: " << diag );
-		}
-	}
+            default:
+                COMMON_THROWEXCEPTION( "Illegal uplo: " << uplo );
+        }
+    }
 
-	static inline LAPACKOrder enum2order(const CBLAS_ORDER order) {
-		switch( order )
-		{
-			case CblasColMajor:
-				return LAPACK_COL_MAJOR;
-			case CblasRowMajor:
-				return LAPACK_ROW_MAJOR;
-			default:
-				COMMON_THROWEXCEPTION("illegal matrix order " << order )
-		}
-	}
+    static inline LAPACKFlag enum2char( const CBLAS_TRANSPOSE trans )
+    {
+        switch ( trans )
+        {
+            case CblasNoTrans:
+                return 'N';
+
+            case CblasTrans:
+                return 'T';
+
+            case CblasConjTrans:
+                return 'C';
+
+            default:
+                COMMON_THROWEXCEPTION( "Illegal trans: " << trans );
+        }
+    }
+
+    static inline LAPACKFlag enum2char( const CBLAS_DIAG diag )
+    {
+        switch ( diag )
+        {
+            case CblasNonUnit:
+                return 'N';
+
+            case CblasUnit:
+                return 'U';
+
+            default:
+                COMMON_THROWEXCEPTION( "Illegal diag: " << diag );
+        }
+    }
+
+    static inline LAPACKOrder enum2order( const CBLAS_ORDER order )
+    {
+        switch ( order )
+        {
+            case CblasColMajor:
+                return LAPACK_COL_MAJOR;
+
+            case CblasRowMajor:
+                return LAPACK_ROW_MAJOR;
+
+            default:
+                COMMON_THROWEXCEPTION( "illegal matrix order " << order )
+        }
+    }
 };
 
 } /* end namespace blaskernel */

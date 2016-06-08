@@ -52,7 +52,6 @@ template<typename T>
 void output()
 {
     bool isCmp = isComplex( TypeTraits<T>::stype );
-
     std::cout << "Running output<" << TypeTraits<T>::id() << ">, is complex = " << isCmp << std::endl;
     T x = 1;
     x = x / 3;

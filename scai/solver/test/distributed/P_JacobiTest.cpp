@@ -143,7 +143,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, scai_arithmetic_test_types 
     }
 
     ContextPtr context = Context::getContextPtr();
-
     testSolveMethod< CSRSparseMatrix<ValueType> >( context );
     testSolveMethod< ELLSparseMatrix<ValueType> >( context );
     testSolveMethod< JDSSparseMatrix<ValueType> >( context );

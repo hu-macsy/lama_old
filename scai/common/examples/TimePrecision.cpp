@@ -45,11 +45,8 @@ int main()
     for ( int i = 0; i < NITER; ++i )
     {
         long counter = 0;     // count changes of output value of Walltime.:get
-
         double t = Walltime::get();
-
         bool stop = false;   // set it to true after one second
-
         double tc = t;
 
         while ( !stop )
@@ -59,7 +56,6 @@ int main()
             if ( t1 > tc )
             {
                 // value has changed
-
                 counter++;
                 tc = t1;
             }

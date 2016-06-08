@@ -40,11 +40,14 @@
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace lama {
+namespace lama
+{
 
-namespace mepr {
+namespace mepr
+{
 
 template<typename ValueType, typename TList>
 struct DenseMatrixWrapper;
@@ -52,7 +55,7 @@ struct DenseMatrixWrapper;
 template<typename ValueType>
 struct DenseMatrixWrapper<ValueType, common::mepr::NullType>
 {
-    static void assignDenseImpl( DenseMatrix<ValueType>&, const Matrix& other)
+    static void assignDenseImpl( DenseMatrix<ValueType>&, const Matrix& other )
     {
         COMMON_THROWEXCEPTION( "type dense matrix not supported --> " << other )
     }
@@ -68,11 +71,11 @@ struct DenseMatrixWrapper<ValueType, common::mepr::NullType>
 };
 
 template<typename ValueType, typename H, typename T>
-struct DenseMatrixWrapper<ValueType, common::mepr::TypeList<H,T> >
+struct DenseMatrixWrapper<ValueType, common::mepr::TypeList<H, T> >
 {
-    static void assignDenseImpl( DenseMatrix<ValueType>& obj, const Matrix& other)
+    static void assignDenseImpl( DenseMatrix<ValueType>& obj, const Matrix& other )
     {
-        if( other.getValueType() == common::getScalarType<H>() )
+        if ( other.getValueType() == common::getScalarType<H>() )
         {
             obj.copyDenseMatrix( reinterpret_cast<const DenseMatrix<H>& >( other ) );
         }
@@ -84,7 +87,7 @@ struct DenseMatrixWrapper<ValueType, common::mepr::TypeList<H,T> >
 
     static void assignSparseImpl( DenseMatrix<ValueType>& obj, const Matrix& other )
     {
-        if( other.getValueType() == common::getScalarType<H>() )
+        if ( other.getValueType() == common::getScalarType<H>() )
         {
             const SparseMatrix<H>& sparse = reinterpret_cast<const SparseMatrix<H>& >( other );
             const CSRSparseMatrix<ValueType> tmp = sparse;
@@ -98,7 +101,7 @@ struct DenseMatrixWrapper<ValueType, common::mepr::TypeList<H,T> >
 
     static void getDiagonalImpl( const DenseMatrix<ValueType>& obj, Vector& diagonal )
     {
-        if( diagonal.getValueType() == common::getScalarType<H>() )
+        if ( diagonal.getValueType() == common::getScalarType<H>() )
         {
             DenseVector<H>& dense = reinterpret_cast<DenseVector<H>& >( diagonal );
             obj.getDiagonalImpl( dense );

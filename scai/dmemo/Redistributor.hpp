@@ -143,13 +143,10 @@ public:
         const hmemo::HArray<IndexType>& sourceIndexes )
     {
         hmemo::ContextPtr loc = hmemo::Context::getHostPtr();   // do it on host
-
         IndexType n = sourceIndexes.size();
-
         hmemo::WriteOnlyAccess<ValueType> target( targetArray, loc, n );
         hmemo::ReadAccess<ValueType> source( sourceArray, loc );
         hmemo::ReadAccess<IndexType> indexes( sourceIndexes, loc );
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; i++ )
@@ -166,11 +163,9 @@ public:
         const IndexType n )
     {
         hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-
         hmemo::WriteAccess<ValueType> target( targetArray, loc );
         hmemo::ReadAccess<ValueType> source( sourceArray, loc );
         hmemo::ReadAccess<IndexType> indexes( sourceIndexes, loc );
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < indexes.size(); i++ )
@@ -199,7 +194,6 @@ public:
         const hmemo::HArray<ValueType>& sourceArray )
     {
         hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-
         hmemo::WriteAccess<ValueType> target( targetArray, loc );
         hmemo::ReadAccess<IndexType> indexes( targetIndexes, loc );
         hmemo::ReadAccess<ValueType> source( sourceArray, loc );
@@ -207,7 +201,6 @@ public:
         for ( IndexType i = 0; i < indexes.size(); i++ )
         {
             SCAI_LOG_DEBUG( logger, "target[" << indexes[i] << "] = source[" << i << "] = " << source[i] )
-
             target[indexes[i]] = source[i];
         }
     }
@@ -220,11 +213,9 @@ public:
         const IndexType n )
     {
         hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-
         hmemo::WriteAccess<ValueType> target( targetArray, loc );
         hmemo::ReadAccess<IndexType> indexes( targetIndexes, loc );
         hmemo::ReadAccess<ValueType> source( sourceArray, loc );
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < indexes.size(); i++ )
@@ -254,19 +245,16 @@ public:
         const hmemo::HArray<IndexType>& sourceIndexes )
     {
         hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-
         hmemo::WriteAccess<ValueType> target( targetArray, loc );
         hmemo::ReadAccess<ValueType> source( sourceArray, loc );
         hmemo::ReadAccess<IndexType> tindexes( targetIndexes, loc );
         hmemo::ReadAccess<IndexType> sindexes( sourceIndexes, loc );
-
         SCAI_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
         for ( IndexType i = 0; i < tindexes.size(); i++ )
         {
             SCAI_LOG_DEBUG( logger,
                             "target[" << tindexes[i] << "] = source[" << sindexes[i] << "] = " << source[ sindexes[i] ] )
-
             target[tindexes[i]] = source[sindexes[i]];
         }
     }
@@ -280,14 +268,11 @@ public:
         IndexType n )
     {
         hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-
         hmemo::WriteAccess<ValueType> target( targetArray, loc );
         hmemo::ReadAccess<ValueType> source( sourceArray, loc );
         hmemo::ReadAccess<IndexType> tindexes( targetIndexes, loc );
         hmemo::ReadAccess<IndexType> sindexes( sourceIndexes, loc );
-
         SCAI_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
-
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < tindexes.size(); i++ )
@@ -402,30 +387,19 @@ template<typename ValueType>
 void Redistributor::redistribute( hmemo::HArray<ValueType>& targetArray, const hmemo::HArray<ValueType>& sourceArray ) const
 {
     SCAI_REGION( "Redistributor.redistribute" )
-
     {
         // make sure that target array has sufficient memory
-
         hmemo::WriteOnlyAccess<ValueType> target( targetArray, mTargetSize );
     }
-
     // allocate memory for source (provides) and target (required) halo
-
     hmemo::HArray<ValueType> sourceHalo( getHaloSourceSize() );
     hmemo::HArray<ValueType> targetHalo( getHaloTargetSize() );
-
     SCAI_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " values" )
-
     gather( sourceHalo, sourceArray, mHaloSourceIndexes );
-
     SCAI_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " values" )
-
     copy( targetArray, mLocalTargetIndexes, sourceArray, mLocalSourceIndexes );
-
     exchangeHalo( targetHalo, sourceHalo );
-
     SCAI_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " values" )
-
     scatter( targetArray, mHaloTargetIndexes, targetHalo );
 }
 
@@ -438,32 +412,20 @@ void Redistributor::redistributeN(
     IndexType n ) const
 {
     SCAI_REGION( "Redistributor.redistributeN" )
-
     hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-
     {
         // make sure that target array has sufficient memory
-
         hmemo::WriteOnlyAccess<ValueType> target( targetArray, loc, mTargetSize * n );
     }
-
     // allocate memory for source (provides) and target (required) halo
-
     hmemo::HArray<ValueType> sourceHalo( n * getHaloSourceSize() );
     hmemo::HArray<ValueType> targetHalo( n * getHaloTargetSize() );
-
     SCAI_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " * " << n << " values" )
-
     gatherN( sourceHalo, sourceArray, mHaloSourceIndexes, n );
-
     SCAI_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " * " << n << " values" )
-
     copyN( targetArray, mLocalTargetIndexes, sourceArray, mLocalSourceIndexes, n );
-
     exchangeHaloN( targetHalo, sourceHalo, n );
-
     SCAI_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " * " << n << " values" )
-
     scatterN( targetArray, mHaloTargetIndexes, targetHalo, n );
 }
 
@@ -477,18 +439,12 @@ void Redistributor::redistributeV(
     const hmemo::HArray<IndexType>& sourceOffsets ) const
 {
     SCAI_REGION( "Redistributor.redistributeV" )
-
     // allocate memory for source (provides) and target (required) halo
-
     hmemo::HArray<ValueType> sourceHalo( getVHaloSourceSize() );
     hmemo::HArray<ValueType> targetHalo( getVHaloTargetSize() );
-
     gatherV( sourceHalo, sourceArray, sourceOffsets, getHaloSourceIndexes() );
-
     copyV( targetArray, targetOffsets, mLocalTargetIndexes, sourceArray, sourceOffsets, mLocalSourceIndexes );
-
     exchangeVHalo( targetHalo, sourceHalo );
-
     scatterV( targetArray, targetOffsets, mHaloTargetIndexes, targetHalo );
 }
 
@@ -502,16 +458,12 @@ void Redistributor::gatherV(
     const hmemo::HArray<IndexType>& sourceIndexes )
 {
     const IndexType n = sourceIndexes.size();
-
     hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-
     hmemo::WriteAccess<ValueType> wTargetArray( targetArray, loc );
     hmemo::ReadAccess<ValueType> rSourceArray( sourceArray, loc );
     hmemo::ReadAccess<IndexType> rSourceOffsets( sourceOffsets, loc );
     hmemo::ReadAccess<IndexType> rSourceIndexes( sourceIndexes, loc );
-
     // Note: we have no target offsets array
-
     IndexType targetOffset = 0;
 
     for ( IndexType ii = 0; ii < n; ii++ )
@@ -535,16 +487,12 @@ void Redistributor::scatterV(
     const hmemo::HArray<ValueType>& sourceArray )
 {
     hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-
     const IndexType n = targetIndexes.size();
-
     hmemo::WriteAccess<ValueType> wTargetArray( targetArray, loc );
     hmemo::ReadAccess<IndexType> rTargetOffsets( targetOffsets, loc );
     hmemo::ReadAccess<IndexType> rTargetIndexes( targetIndexes, loc );
     hmemo::ReadAccess<ValueType> rSourceArray( sourceArray, loc );
-
     // Note: we have no source offsets array, no parallelization possible
-
     IndexType sourceOffset = 0;
 
     for ( IndexType ii = 0; ii < n; ii++ )
@@ -570,11 +518,8 @@ void Redistributor::copyV(
     const hmemo::HArray<IndexType>& sourceIndexes )
 {
     SCAI_ASSERT_EQ_ERROR( targetIndexes.size(), sourceIndexes.size(), "size mismatch" )
-
     hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-
     const IndexType n = targetIndexes.size();
-
     hmemo::WriteAccess<ValueType> wTargetArray( targetArray, loc );
     hmemo::ReadAccess<IndexType> rTargetOffsets( targetOffsets, loc );
     hmemo::ReadAccess<IndexType> rTargetIndexes( targetIndexes, loc );
@@ -586,7 +531,6 @@ void Redistributor::copyV(
     {
         IndexType sourceI = rSourceIndexes[ii];
         IndexType targetI = rTargetIndexes[ii];
-
         IndexType k = rTargetOffsets[targetI];
 
         for ( IndexType j = rSourceOffsets[sourceI]; j < rSourceOffsets[sourceI + 1]; ++j )
@@ -605,16 +549,11 @@ template<typename ValueType>
 void Redistributor::exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const
 {
     SCAI_REGION( "Redistributor.exchangeHalo" )
-
     const Communicator& comm = mSourceDistribution->getCommunicator();
-
     // use asynchronous communication to avoid deadlocks
-
     common::unique_ptr<tasking::SyncToken> token (
         comm.exchangeByPlanAsync( targetHalo, mHalo.getRequiredPlan(), sourceHalo, mHalo.getProvidesPlan() ) );
-
     token->wait();
-
     // synchronization is done implicitly
 }
 
@@ -627,21 +566,14 @@ void Redistributor::exchangeHaloN(
     const IndexType n ) const
 {
     SCAI_REGION( "Redistributor.exchangeHaloN" )
-
     const Communicator& comm = mSourceDistribution->getCommunicator();
-
     // Communication plans are built by multiplication with n
-
     CommunicationPlan requiredN( mHalo.getRequiredPlan(), n );
     CommunicationPlan providesN( mHalo.getProvidesPlan(), n );
-
     SCAI_LOG_DEBUG( logger, "requiredN ( n = " << n << "): " << requiredN )
     SCAI_LOG_DEBUG( logger, "providesN ( n = " << n << "): " << providesN )
-
     // use asynchronous communication to avoid deadlocks
-
     comm.exchangeByPlan( targetHalo, requiredN, sourceHalo, providesN );
-
     // synchronization is done implicitly at the end of this scope
 }
 
@@ -651,11 +583,8 @@ template<typename ValueType>
 void Redistributor::exchangeVHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const
 {
     SCAI_REGION( "Redistributor.exchangeVHalo" )
-
     const Communicator& comm = mSourceDistribution->getCommunicator();
-
     SCAI_ASSERT_ERROR( mRequiredPlan.get(), "There was no previous call of buildVPlan" )
-
     delete comm.exchangeByPlanAsync( targetHalo, *mRequiredPlan, sourceHalo, *mProvidesPlan );
 }
 

@@ -82,11 +82,9 @@ GeneralDistribution::GeneralDistribution(
     IndexType parts = mCommunicator->getSize();
     IndexType partSize = row2Partition.size();
     IndexType numMyRows = 0;
-
     // // gather number of local rows
     // IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
     // SCAI_ASSERT(mGlobalSize == partSize, "partition size " << partSize << " is not equal to global size " << mGlobalSize);
-
     std::vector<IndexType> displ;
     std::vector<IndexType> curpos;
     std::vector<IndexType> rows;
@@ -146,7 +144,6 @@ GeneralDistribution::GeneralDistribution(
     // scatter global indices of local rows
     mLocal2Global.resize( numMyRows );
     mCommunicator->scatterV( &mLocal2Global[0], numMyRows, MASTER, &rows[0], &curpos[0] );
-
     // Compute Global2Local
     std::vector<IndexType>::const_iterator end = mLocal2Global.end();
     std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
@@ -225,7 +222,6 @@ bool GeneralDistribution::isEqual( const Distribution& other ) const
 void GeneralDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-
     stream << "GeneralDistribution( size = " << mLocal2Global.size() << " of " << mGlobalSize << ", comm = "
            << *mCommunicator << " )";
 }
@@ -234,18 +230,15 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
 {
     IndexType myRank = mCommunicator->getRank();
     IndexType parts = mCommunicator->getSize();
-
     // gather number of local rows
     IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
     std::vector<IndexType> numRows( parts );
     mCommunicator->gather( &numRows[0], 1, MASTER, &numMyRows );
-
     std::vector<IndexType> displ;
 
     if ( myRank == MASTER )
     {
         displ.reserve( parts + 1 );
-
         IndexType displacement = 0;
 
         for ( IndexType i = 0; i < parts; i++ )
@@ -260,13 +253,11 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
 
     // gather global indices of local rows
     std::vector<IndexType> rows( mGlobalSize );
-
     mCommunicator->gatherV( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
 
     // build mapping row 2 partition
     if ( myRank == MASTER )
     {
-
         // for testing: init
         for ( IndexType i = 0; i < mGlobalSize; ++i )
         {
@@ -287,17 +278,13 @@ void GeneralDistribution::printDistributionVector( std::string /*name*/ ) const
 {
 //    IndexType myRank = mCommunicator->getRank();
     IndexType parts = mCommunicator->getSize();
-
     // gather number of local rows
     IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
     std::vector<IndexType> numRows( parts );
     mCommunicator->gather( &numRows[0], 1, MASTER, &numMyRows );
-
     // gather global indices of local rows
     std::vector<IndexType> rows( mGlobalSize );
-
     mCommunicator->gatherV( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
-
     std::vector<IndexType> row2Partition( mGlobalSize );
     getDistributionVector( row2Partition );
     // build mapping row 2 partition

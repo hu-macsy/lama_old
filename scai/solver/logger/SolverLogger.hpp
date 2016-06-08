@@ -313,13 +313,12 @@ private    :
 template<typename ValueType>
 void SolverLogger::logType( LogLevel::LogLevel level, const std::string& message, ValueType arg )
 {
-    if( level <= mLogLevel )
+    if ( level <= mLogLevel )
     {
         std::stringstream intStream;
         intStream << message;
         intStream << arg;
         intStream << "\n";
-
         logString( level, intStream.str() );
     }
 }

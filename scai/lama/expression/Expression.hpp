@@ -65,7 +65,7 @@ enum ExpressionTypes
  * for a binary expression. Operations on this object are just the constructor,
  * the getter for the expression type and the two getters for the operands.
  */
-template<typename T1,typename T2,ExpressionTypes type>
+template<typename T1, typename T2, ExpressionTypes type>
 class Expression
 {
 public:
@@ -87,7 +87,7 @@ public:
      * @param arg2 the second operand of the expression
      */
     Expression( const Arg1Type& arg1, const Arg2Type& arg2 )
-                    : mExpressionType( type ), mArg1( arg1 ), mArg2( arg2 )
+        : mExpressionType( type ), mArg1( arg1 ), mArg2( arg2 )
     {
     }
     ;
@@ -136,31 +136,31 @@ class Matrix;
 
 /** Symbolic expression 'Scalar * Vector' */
 
-typedef Expression<Scalar,Vector,Times> Expression_SV;
+typedef Expression<Scalar, Vector, Times> Expression_SV;
 
 /** Symbolic expression 'Scalar * Vector + Scalar * Vector' */
 
-typedef Expression<Expression_SV,Expression_SV,Plus> Expression_SV_SV;
+typedef Expression<Expression_SV, Expression_SV, Plus> Expression_SV_SV;
 
-typedef Expression<Matrix,Vector,Times> Expression_MV;
+typedef Expression<Matrix, Vector, Times> Expression_MV;
 
-typedef Expression<Vector,Matrix,Times> Expression_VM;
+typedef Expression<Vector, Matrix, Times> Expression_VM;
 
-typedef Expression<Scalar,Expression<Matrix,Vector,Times>,Times> Expression_SMV;
+typedef Expression<Scalar, Expression<Matrix, Vector, Times>, Times> Expression_SMV;
 
-typedef Expression<Scalar,Expression<Vector,Matrix,Times>,Times> Expression_SVM;
+typedef Expression<Scalar, Expression<Vector, Matrix, Times>, Times> Expression_SVM;
 
-typedef Expression<Expression_SMV,Expression_SV,Plus> Expression_SMV_SV;
+typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
 
-typedef Expression<Expression_SVM,Expression_SV,Plus> Expression_SVM_SV;
+typedef Expression<Expression_SVM, Expression_SV, Plus> Expression_SVM_SV;
 
-typedef Expression<Scalar,Matrix,Times> Expression_SM;
+typedef Expression<Scalar, Matrix, Times> Expression_SM;
 
-typedef Expression<Expression_SM,Matrix,Times> Expression_SMM;
+typedef Expression<Expression_SM, Matrix, Times> Expression_SMM;
 
-typedef Expression<Expression_SM,Expression_SM,Plus> Expression_SM_SM;
+typedef Expression<Expression_SM, Expression_SM, Plus> Expression_SM_SM;
 
-typedef Expression<Expression_SMM,Expression_SM,Plus> Expression_SMM_SM;
+typedef Expression<Expression_SMM, Expression_SM, Plus> Expression_SMM_SM;
 
 } /* end namespace lama */
 

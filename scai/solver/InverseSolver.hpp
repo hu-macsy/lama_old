@@ -56,8 +56,8 @@ namespace solver
  * @brief Solver class that uses matrix inverse to solve an equation system.
  */
 class COMMON_DLL_IMPORTEXPORT InverseSolver:
-		public Solver,
-		public Solver::Register<InverseSolver>
+    public Solver,
+    public Solver::Register<InverseSolver>
 {
 public:
     /**

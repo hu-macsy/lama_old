@@ -69,7 +69,6 @@ Memory::~Memory()
 void Memory::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-
     stream << "Memory";
 }
 
@@ -175,7 +174,7 @@ std::ostream& operator<<( std::ostream& stream, const MemoryType& type )
             break;
 
         default:
-            stream << "MemoryType_" << (int) type;
+            stream << "MemoryType_" << ( int ) type;
     }
 
     return stream;

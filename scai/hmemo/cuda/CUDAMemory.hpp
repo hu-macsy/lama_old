@@ -56,7 +56,7 @@ namespace scai
 
 namespace tasking
 {
-    class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken;
+class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken;
 }
 
 namespace hmemo
@@ -68,7 +68,7 @@ namespace hmemo
  * CUDAMemory keeps always a shared pointer to the CUDA context as most
  * operations require also access to the context.
  */
-class COMMON_DLL_IMPORTEXPORT CUDAMemory: 
+class COMMON_DLL_IMPORTEXPORT CUDAMemory:
 
     public Memory
 {

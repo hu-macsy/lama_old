@@ -64,8 +64,7 @@ SCAI_LOG_DEF_LOGGER( MICBLAS2::logger, "MIC.BLAS2" )
 inline static char trans2C( CBLAS_TRANSPOSE trans )
 {
     // Code-Style C Dehning
-
-    switch( trans )
+    switch ( trans )
     {
         case CblasNoTrans:
             return 'N';
@@ -84,8 +83,7 @@ inline static char trans2C( CBLAS_TRANSPOSE trans )
 inline static char trans2CT( CBLAS_TRANSPOSE trans )
 {
     // Code-Style C Dehning
-
-    switch( trans )
+    switch ( trans )
     {
         case CblasNoTrans:
             return 'T';
@@ -121,13 +119,12 @@ void MICBLAS2::gemv(
     SCAI_LOG_INFO( logger,
                    "gemv<" << common::TypeTraits<ValueType>::id() << ">: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
-    if( m == 0 )
+    if ( m == 0 )
     {
         return; // empty X, Y, A
     }
 
     // n == 0: empty A, but deal with X, Y, we can handle this here
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -137,7 +134,7 @@ void MICBLAS2::gemv(
 
     char ta = ' ';
 
-    switch( order )
+    switch ( order )
     {
         case CblasColMajor:
             ta = trans2C( transA );
@@ -155,18 +152,14 @@ void MICBLAS2::gemv(
     void* yPtr = y;
     const void* xPtr = x;
     const void* aPtr = a;
-
     const ValueType* alphaPtr = &alpha;
     const ValueType* betaPtr = &beta;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ), in( ta, m, n, alphaPtr[0:1], aPtr, lda, xPtr, incX, betaPtr[0:1], yPtr, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* a = static_cast<const ValueType*>( aPtr );
         ValueType* y = static_cast<ValueType*>( yPtr );
-
 //        sgemv( &ta, &m, &n, &alpha, a, &lda, x, &incX, &beta, y, &incY );
         MICBLASWrapper<ValueType>::gemv( ta, m, n, *alphaPtr, a, lda, x, incX, *betaPtr, y, incY );
     }
@@ -180,11 +173,8 @@ template<typename ValueType>
 void MICBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::MIC;
-
     SCAI_LOG_INFO( logger, "register BLAS2 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
-
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( MICBLAS2::gemv, ctx, flag );
 }
 

@@ -54,13 +54,13 @@ namespace solver
  * @brief The class BiCGstab represents a IterativeSolver which uses the krylov subspace stabilized BiCG method
  *        to solve a system of linear equations iteratively.
  *
- * Remark: 
+ * Remark:
  * The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
 class COMMON_DLL_IMPORTEXPORT BiCGstab:
-        public IterativeSolver,
-        public Solver::Register<BiCGstab>
+    public IterativeSolver,
+    public Solver::Register<BiCGstab>
 {
 public:
     /**
@@ -122,11 +122,11 @@ public:
      * @brief Returns the complete configuration of the derived class
      */
     virtual BiCGstabRuntime& getRuntime();
-    /** 
+    /**
     * @brief Initializes vectors and values of the runtime
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
-    
+
     /**
      * @brief Returns the complete configuration of the derived class
      */

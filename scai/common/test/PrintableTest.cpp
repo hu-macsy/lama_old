@@ -56,29 +56,20 @@ BOOST_AUTO_TEST_CASE( PrintableTest )
 {
     X1 x1;
     X2 x2;
-
     std::ostringstream out;
-
     out << x1;
-    BOOST_CHECK_EQUAL( out.str(), typeid(X1).name() );
-
+    BOOST_CHECK_EQUAL( out.str(), typeid( X1 ).name() );
     out.str( "" );
     out.clear();
-
     out << x2;
     BOOST_CHECK_EQUAL( out.str(), "X2object" );
-
     scai::common::Printable& p = x2;
-
     out.str( "" );
     out.clear();
-
     out << p;
     BOOST_CHECK_EQUAL( out.str(), "X2object" );
-
     out.str( "" );
     out.clear();
-
     p.Printable::writeAt( out );
-    BOOST_CHECK_EQUAL( out.str(), typeid(X2).name() );
+    BOOST_CHECK_EQUAL( out.str(), typeid( X2 ).name() );
 }

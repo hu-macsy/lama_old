@@ -56,23 +56,19 @@ int main()
     // Define the ValueType used for the vector
     //
     typedef double ValueType;
-
     //
     // Create DenseVectors for solution and right hand side
     //
     DenseVector<ValueType> solution( 10000, 2.0 );
     const DenseVector<ValueType> rhs( solution.getDistributionPtr(), 1.0 );
-
     //
     // Create a 2D Poisson Matrix with 9Points and dimension 100 in every direction
     //
     CSRSparseMatrix<ValueType> matrix;
     MatrixCreator<ValueType>::buildPoisson2D( matrix, 9, 100, 100 );
-
     //
     // Set up CG solver
     //
-
     // Logger (optional) prints out some solver information to console
     LoggerPtr logger(
         new CommonLogger(
@@ -80,28 +76,20 @@ int main()
             LogLevel::solverInformation,
             LoggerWriteBehaviour::toConsoleOnly,
             scai::common::shared_ptr<Timer>( new Timer() ) ) );
-
     // stopping criterion for solver: stopps after 10 iterations
     CriterionPtr criterion( new IterationCount( 10 ) );
-
     // solver itself
     CG solver( "mySolverName", logger );
-
     // initialization
     solver.setStoppingCriterion( criterion );
     solver.initialize( matrix );
-
     // solution phase
     solver.solve( solution, rhs );
-
     solution.writeToFile( "solution", File::FORMATTED );
-
     std::cout << "Solution vector is written to 'solution.frm/.vec'" << std::endl;
-
     //
     //  That's it.
     //
     std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
-
     return EXIT_SUCCESS;
 }

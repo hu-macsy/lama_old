@@ -47,7 +47,7 @@ namespace common
 {
 
 /**
- *  This singleton class provides methods to query settings of environment variables and 
+ *  This singleton class provides methods to query settings of environment variables and
  *  command line arguments.
  *
  *  Note: This should be the only module to access environment variables directly
@@ -58,7 +58,7 @@ class COMMON_DLL_IMPORTEXPORT Settings
 {
 public:
 
-    /** Parse the command line arguments. 
+    /** Parse the command line arguments.
      *
      *  @param[in,out] argc number of command line arguments
      *  @param[in,out] argv arguments
@@ -99,7 +99,7 @@ public:
 
     static void putEnvironment( const char* envVarName, const int val, bool replace = true );
 
-    /** Get tokenized string from an environment variable 
+    /** Get tokenized string from an environment variable
      *
      *  @param[out] vals is a vector of separated strings from the environment varialbe
      *  @param[in]  envVarName is name of the environment variable

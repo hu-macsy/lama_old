@@ -60,7 +60,7 @@ ResidualStagnation::ResidualStagnation( lama::NormPtr norm, IndexType lookback, 
 {
 }
 
-ResidualStagnation::ResidualStagnation( const ResidualStagnation &other )
+ResidualStagnation::ResidualStagnation( const ResidualStagnation& other )
     : Criterion(), mNorm( other.mNorm ), mLookback( other.mLookback ), mLastResidualNorms(
           other.mLastResidualNorms ), mNextEntry( other.mNextEntry ), mEntriesReady(
           other.mEntriesReady ), mPrecision( other.mPrecision )
@@ -79,19 +79,17 @@ Criterion* ResidualStagnation::copy() const
 bool ResidualStagnation::isSatisfied( const IterativeSolver& solver )
 {
     mLastResidualNorms[mNextEntry] = ( *mNorm )( solver.getResidual() );
-
     mNextEntry = ( mNextEntry + 1 ) % mLookback;
 
-    if( mNextEntry == 0 )
+    if ( mNextEntry == 0 )
     {
         mEntriesReady = true;
     }
 
-    if( mEntriesReady )
+    if ( mEntriesReady )
     {
         lama::Scalar min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
         lama::Scalar max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
-
         min = std::max( std::numeric_limits<lama::Scalar>::min(), min );
         //std::cout<< " max ="<<max<<"       min = "<<min<<"      max/min = "<<max/min<<"1+p = "<<(1.0+mPrecision)<<std::endl;
         mEntriesReady = false;

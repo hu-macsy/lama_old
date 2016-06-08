@@ -124,17 +124,11 @@ void NoCommunicator::exchangeByPlanImpl(
     }
 
     // send / recv plan have maximal one value
-
     SCAI_ASSERT_EQ_ERROR( 1, recvPlan.size(), "maximal one value in recvPlan" )
-
     int quantity = recvPlan[0].quantity;
-
     // recv and send plan must have same quantity
-
     SCAI_ASSERT_EQ_ERROR( quantity, sendPlan[0].quantity, "quantity mismatch" )
-
     // self copy of send data to recv data
-
     memcpy( recvData, sendData, quantity * sizeof( ValueType ) );
 }
 
@@ -309,15 +303,12 @@ CommunicatorPtr NoCommunicator::create()
     if ( theNoCommunicatorInstance.expired() )
     {
         // create a new instance of NoCommunicator and keep it for further uses
-
         communicator = common::shared_ptr<NoCommunicator>( new NoCommunicator() );
-
         theNoCommunicatorInstance = communicator;
     }
     else
     {
         // the last communicator instance is still valid, so we return new shared pointer to it
-
         communicator = theNoCommunicatorInstance.lock();
     }
 

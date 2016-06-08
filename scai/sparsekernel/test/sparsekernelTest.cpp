@@ -64,11 +64,9 @@ scai::hmemo::ContextPtr ContextFix::testContext;
 bool init_function()
 {
     // maybe the specified context is not available or illegal
-
     try
     {
         scai::hmemo::ContextPtr testContext = scai::hmemo::Context::getContextPtr();
-
         return true;
     }
     catch ( scai::common::Exception& ex )
@@ -81,10 +79,7 @@ bool init_function()
 int main( int argc, char* argv[] )
 {
     SCAI_LOG_THREAD( "main" )
-
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
-
     int rc = boost::unit_test::unit_test_main( &init_function, argc, argv );
-
     return rc;
 }

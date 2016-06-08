@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief simple.cpp
- * @author 
+ * @author
  * @date 17.05.2013
  */
 
@@ -54,17 +54,14 @@ int main()
     //
     IndexType size = 8;
     DenseVector<ValueType> v( size, 1.1 );
-
     //
     // Getting the L1 norm of the vector and printing out the scalar
     //
     Scalar s = v.l1Norm();
     std::cout << "L1 norm of v = " << s.getValue<ValueType>() << std::endl;
-
     //
     //  That's it.
     //
     std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
-
     return EXIT_SUCCESS;
 }

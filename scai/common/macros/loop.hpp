@@ -41,7 +41,7 @@
  * Level 1
  */
 
-#define SCAI_COMMON_LOOP_0( _macro, type ) 
+#define SCAI_COMMON_LOOP_0( _macro, type )
 #define SCAI_COMMON_LOOP_1( _macro, type ) _macro( type )
 #define SCAI_COMMON_LOOP_2( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_1( _macro, __VA_ARGS__ )
 #define SCAI_COMMON_LOOP_3( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_2( _macro, __VA_ARGS__ )

@@ -77,7 +77,7 @@ public:
      *
      * @param[in] other   IterationCount object to be copied.
      */
-    IterationCount( const IterationCount &other );
+    IterationCount( const IterationCount& other );
 
     /** Destructor. */
 

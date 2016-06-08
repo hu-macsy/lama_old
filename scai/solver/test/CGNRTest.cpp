@@ -56,24 +56,18 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CGNRTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     CGNR CGNRSolver( "CGNRTestSolver", slogger );
     BOOST_CHECK_EQUAL( CGNRSolver.getId(), "CGNRTestSolver" );
-
     CGNR CGNRSolver2( "CGNRTestSolver2" );
     BOOST_CHECK_EQUAL( CGNRSolver2.getId(), "CGNRTestSolver2" );
-
     CGNR CGNRSolver3( CGNRSolver2 );
     BOOST_CHECK_EQUAL( CGNRSolver3.getId(), "CGNRTestSolver2" );
     BOOST_CHECK( CGNRSolver3.getPreconditioner() == 0 );
-
     CGNR CGNRSolver4( "CGNRSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     CGNRSolver4.setPreconditioner( preconditioner );
-
     CriterionPtr criterion( new IterationCount( 10 ) );
     CGNRSolver4.setStoppingCriterion( criterion );
-
     CGNR CGNRSolver5( CGNRSolver4 );
     BOOST_CHECK_EQUAL( CGNRSolver5.getId(), CGNRSolver4.getId() );
     BOOST_CHECK_EQUAL( CGNRSolver5.getPreconditioner()->getId(), CGNRSolver4.getPreconditioner()->getId() );

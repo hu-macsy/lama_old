@@ -52,19 +52,12 @@ using namespace common;
 int main( int argc, const char** argv )
 {
     // at least --SCAI_DEVICE=id may be specified
-
     Settings::parseArgs( argc, argv );
-
     const int N_USES = 100000;   // number of stream uses
-
     int deviceNr = 0;
-
     Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
-
     CUDACtx device( deviceNr );
-
     CUDAAccess access( device );
-
     double t0 = Walltime::get();
 
     for ( int i = 0; i < N_USES; ++i )
@@ -76,9 +69,7 @@ int main( int argc, const char** argv )
     }
 
     double t1 =  Walltime::get() - t0;
-
     t0 =  Walltime::get();
-
     CUDAStreamPool& pool = CUDAStreamPool::getPool( device );
 
     for ( int i = 0; i < N_USES; ++i )
@@ -88,9 +79,7 @@ int main( int argc, const char** argv )
     }
 
     CUDAStreamPool::freePool( device );
-
     double t2 =  Walltime::get() - t0;
-
     t0 =  Walltime::get();
 
     for ( int i = 0; i < N_USES; ++i )
@@ -99,9 +88,8 @@ int main( int argc, const char** argv )
     }
 
     double t3 =  Walltime::get() - t0;
-
     std::cout << "Measure time for " << N_USES << " stream accesses." << std::endl;
     std::cout << "Time create/destroy stream of CUDA: " << ( t1 / N_USES ) * 1000.0 * 1000.0 << " µs" << std::endl;
-    std::cout << "Time get/release stream of pool:    " <<  (t2 / N_USES ) * 1000.0 * 1000.0 << " µs" << std::endl;
-    std::cout << "Time construct/destruct SyncToken:  " <<  (t3 / N_USES ) * 1000.0 * 1000.0 << " µs" << std::endl;
+    std::cout << "Time get/release stream of pool:    " <<  ( t2 / N_USES ) * 1000.0 * 1000.0 << " µs" << std::endl;
+    std::cout << "Time construct/destruct SyncToken:  " <<  ( t3 / N_USES ) * 1000.0 * 1000.0 << " µs" << std::endl;
 }

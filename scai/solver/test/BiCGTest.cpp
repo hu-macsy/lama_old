@@ -53,17 +53,13 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BiCGTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     BiCG bicgSolver( "BiCGTestSolver", slogger );
     BOOST_CHECK_EQUAL( bicgSolver.getId(), "BiCGTestSolver" );
-
     BiCG bicgSolver2( "BiCGTestSolver2" );
     BOOST_CHECK_EQUAL( bicgSolver2.getId(), "BiCGTestSolver2" );
-
     BiCG bicgSolver3( bicgSolver2 );
     BOOST_CHECK_EQUAL( bicgSolver3.getId(), "BiCGTestSolver2" );
     BOOST_CHECK( bicgSolver3.getPreconditioner() == 0 );
-
     BiCG bicgSolver4( "BiCGTestSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     bicgSolver4.setPreconditioner( preconditioner );

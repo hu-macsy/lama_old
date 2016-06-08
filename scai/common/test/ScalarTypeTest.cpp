@@ -45,14 +45,10 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
     for ( int type = scalar::INDEX_TYPE; type <= scalar::UNKNOWN; ++type )
     {
         scalar::ScalarType stype = scalar::ScalarType( type );
-
         std::ostringstream s;
         s << stype;
-
         BOOST_CHECK( s.str().length() > 0 );
-
         BOOST_CHECK_EQUAL( stype, str2ScalarType( s.str().c_str() ) );
-
         size_t pos = s.str().find( "Complex" );
 
         if ( isComplex( stype ) )

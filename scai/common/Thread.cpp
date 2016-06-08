@@ -72,7 +72,6 @@ static MapThreads& getMapThreads()
     if ( mapThreads == NULL )
     {
         // allocate it for when its used the first time
-
         mapThreads = new MapThreads;
     }
 
@@ -82,7 +81,6 @@ static MapThreads& getMapThreads()
 Thread::Mutex::Mutex( bool isRecursive ) : mIsRecursive( isRecursive )
 {
     // Only one of the member objects is allocated
-
     if ( mIsRecursive )
     {
         mRecursiveMutex.reset( new std::recursive_mutex() );
@@ -168,23 +166,17 @@ Thread::Mutex map_mutex; // Make access to map thread safe
 void Thread::defineCurrentThreadName( const char* name )
 {
     ScopedLock lock( map_mutex );
-
     Thread::Id id = getSelf();
-
 #ifdef LOCAL_DEBUG
     cout << "defineCurrentThreadName, id = " << id << ", name = " << name << endl;
 #endif
-
     MapThreads& mapThreads = getMapThreads();
-
     map<Thread::Id, string>::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
         // name not defined yet
-
         mapThreads.insert( std::pair<Thread::Id, string>( id, name ) );
-
 #ifdef LOCAL_DEBUG
         cout << "Thread " << id << " defines name " << name << endl;
 #endif
@@ -192,13 +184,10 @@ void Thread::defineCurrentThreadName( const char* name )
     else
     {
         // already defined, but probably on purporse
-
         // cout << "Redefine Thread " << id << " = " << it->second << " as " << name << endl;
-
 #ifdef LOCAL_DEBUG
         cout << "Thread " << id << " named " << it->second << ", renamed to " << name << endl;
 #endif
-
         it->second = name;
     }
 }
@@ -206,30 +195,21 @@ void Thread::defineCurrentThreadName( const char* name )
 const char* Thread::getThreadName( Thread::Id id )
 {
     Thread::ScopedLock lock( map_mutex );
-
     MapThreads& mapThreads = getMapThreads();
-
     MapThreads::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
         // No name defined yet, give it one, use internal numbering
         // Tracing requires unique name
-
         ostringstream thread_name;
-
         thread_name << "thread_" << mapThreads.size();
-
         // Attention: This would not possible if mapThreads is not statically initialized
-
         mapThreads.insert( std::pair<Thread::Id, string>( id, thread_name.str() ) );
-
         it = mapThreads.find( id );
-
     }
 
     // return the defined name
-
     return it->second.c_str();
 }
 

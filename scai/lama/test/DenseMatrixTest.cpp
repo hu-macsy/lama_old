@@ -590,7 +590,6 @@ void getMemoryUsageTest( )
     size_t size_float = 77;
     size_t size_double = 141;
     std::ostringstream omsg;
-
     omsg << common::getScalarType<ValueType>();
 
     if ( std::string( "double" ).compare( omsg.str() ) == 0 )
@@ -745,49 +744,38 @@ void swapTest( )
 template<typename ValueType>
 void transposeTest( )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr(Communicator::MPI);  // MPI
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr( Communicator::MPI ); // MPI
     CSRSparseMatrix<ValueType> testMatrixA = TestSparseMatrices::n6m4MatrixD1<ValueType>();
     CSRSparseMatrix<ValueType> testMatrixB = TestSparseMatrices::n6m6Full<ValueType>();
-    DenseMatrix<ValueType> matrixA(testMatrixA);
-    DenseMatrix<ValueType> matrixB(testMatrixB);
-
+    DenseMatrix<ValueType> matrixA( testMatrixA );
+    DenseMatrix<ValueType> matrixB( testMatrixB );
     // Block Distribution
-
     DistributionPtr rowsBlock( new BlockDistribution( matrixA.getNumRows(), comm ) );
-    DistributionPtr columnsBlock(new BlockDistribution( matrixA.getNumColumns(), comm ) );
-    matrixA.redistribute(rowsBlock,columnsBlock);
-
+    DistributionPtr columnsBlock( new BlockDistribution( matrixA.getNumColumns(), comm ) );
+    matrixA.redistribute( rowsBlock, columnsBlock );
     DistributionPtr rowBlock( new BlockDistribution( matrixB.getNumRows(), comm ) );
-    DistributionPtr columnBlock(new BlockDistribution( matrixB.getNumColumns(), comm ) );
-    matrixB.redistribute(rowBlock,columnBlock);
-
+    DistributionPtr columnBlock( new BlockDistribution( matrixB.getNumColumns(), comm ) );
+    matrixB.redistribute( rowBlock, columnBlock );
     //Transpose
-    matrixA.assignTranspose(matrixA);
-    matrixB.assignTranspose(matrixB);
-    matrixA.assignTranspose(matrixB);
-
+    matrixA.assignTranspose( matrixA );
+    matrixB.assignTranspose( matrixB );
+    matrixA.assignTranspose( matrixB );
     testSameMatrix ( testMatrixB, matrixA );
-
     //Cyclic Distribution
     matrixA = testMatrixA;
     matrixB = testMatrixB;
-
     IndexType chunkSize  = 1;
     DistributionPtr rowsCyclic( new CyclicDistribution( matrixA.getNumRows(), chunkSize, comm ) );
     DistributionPtr columnsCyclic( new CyclicDistribution( matrixA.getNumColumns(), chunkSize, comm ) );
-    matrixA.redistribute(rowsCyclic,columnsCyclic);
-
+    matrixA.redistribute( rowsCyclic, columnsCyclic );
     DistributionPtr rowCyclic( new CyclicDistribution( matrixB.getNumRows(), chunkSize, comm ) );
     DistributionPtr columnCyclic( new CyclicDistribution( matrixB.getNumColumns(), chunkSize, comm ) );
-    matrixB.redistribute(rowCyclic,columnCyclic);
-
+    matrixB.redistribute( rowCyclic, columnCyclic );
     //Transpose
-    matrixA.assignTranspose(matrixA);
-    matrixB.assignTranspose(matrixB);
-    matrixA.assignTranspose(matrixB);
-
+    matrixA.assignTranspose( matrixA );
+    matrixB.assignTranspose( matrixB );
+    matrixA.assignTranspose( matrixB );
     testSameMatrix ( testMatrixB, matrixA );
-
     //General Block Distribution
     /*
         IndexType numProcesses = 4;
@@ -812,7 +800,6 @@ void transposeTest( )
         DistributionPtr columnGenBlock( new GenBlockDistribution( matrixB.getNumColumns(), localColumnSizes, comm ) );
         matrixB.redistribute(rowGenBlock,columnGenBlock);
     */
-
     //GeneralDistribution
     // TODO: need a more general test method for working with an arbitrary number of processes
     // 4 processes
@@ -842,8 +829,6 @@ void transposeTest( )
         matrixB.assignTranspose(matrixB);
         matrixA.assignTranspose(matrixB);
         */
-
-
     //Printings
     /*
         std::cout<<"matrix A\n";
@@ -864,7 +849,6 @@ void transposeTest( )
         }
         std::cout<<"\n\n";
     */
-
 }
 
 } /* end namespace DenseMatrixTest */

@@ -73,18 +73,13 @@ int CUDASettings::theBlockSize = 128; // good value available after initialized
 int CUDASettings::getComputeCapability()
 {
     CUdevice dev; // curent device
-
     SCAI_CUDA_DRV_CALL( cuCtxGetDevice( &dev ), "get current device" )
-
     int major = 0;
     int minor = 0;
-
     // newer CUDA versions ( not tested yet )
     // CUdevice_attribute attr = CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR;
     // cuDeviceGetAttribute ( &major, attr, dev ),
-
     SCAI_CUDA_DRV_CALL( cuDeviceComputeCapability( &major, &minor, dev ), "getComputeCapability" )
-
     return major;
 }
 
@@ -93,30 +88,28 @@ int CUDASettings::getComputeCapability()
 void CUDASettings::initialize()
 {
     // check environment variables for settings
-
     bool setTexture = common::Settings::getEnvironment( theUseTextureFlag, "SCAI_CUDA_USE_TEXTURE" );
     bool setSharedMem = common::Settings::getEnvironment( theUseSharedMemFlag, "SCAI_CUDA_USE_SHARED_MEM" );
     bool setBlockSize = common::Settings::getEnvironment( theBlockSize, "SCAI_CUDA_BLOCK_SIZE" );
 
-    if( !setTexture || !setSharedMem || !setBlockSize )
+    if ( !setTexture || !setSharedMem || !setBlockSize )
     {
         // at least one environment variable not set, so define by compute capability
-
         int computeCapability = getComputeCapability();
 
-        if( !setTexture )
+        if ( !setTexture )
         {
             theUseTextureFlag = computeCapability == 1;
         }
 
-        if( !setSharedMem )
+        if ( !setSharedMem )
         {
             theUseSharedMemFlag = computeCapability == 1;
         }
 
-        if( !setBlockSize )
+        if ( !setBlockSize )
         {
-            if( computeCapability == 1 )
+            if ( computeCapability == 1 )
             {
                 theBlockSize = 128;
             }
@@ -134,7 +127,7 @@ void CUDASettings::initialize()
 
 bool CUDASettings::useTexture()
 {
-    if( !initialized )
+    if ( !initialized )
     {
         initialize();
     }
@@ -146,7 +139,7 @@ bool CUDASettings::useTexture()
 
 bool CUDASettings::useSharedMem()
 {
-    if( !initialized )
+    if ( !initialized )
     {
         initialize();
     }
@@ -158,7 +151,7 @@ bool CUDASettings::useSharedMem()
 
 int CUDASettings::getBlockSize()
 {
-    if( !initialized )
+    if ( !initialized )
     {
         initialize();
     }
@@ -170,21 +163,20 @@ int CUDASettings::getBlockSize()
 
 int CUDASettings::getBlockSize( int n )
 {
-    if( !initialized )
+    if ( !initialized )
     {
         initialize();
     }
 
     static int mp = 8; // multiprocessors available
 
-    if( n >= mp * theBlockSize )
+    if ( n >= mp * theBlockSize )
     {
         return theBlockSize;
     }
     else
     {
         // take smaller block size to get all multiprocessors occupied
-
         return theBlockSize >> 1; // mod 2
     }
 }
@@ -195,7 +187,6 @@ void CUDASettings::set( bool useSharedMemFlag, bool useTextureFlag )
 {
     theUseTextureFlag = useTextureFlag;
     theUseSharedMemFlag = useSharedMemFlag;
-
     initialized = true;
 }
 

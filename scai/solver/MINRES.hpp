@@ -54,8 +54,8 @@ namespace solver
  * method to solve a system of linear equations iteratively.
  */
 class COMMON_DLL_IMPORTEXPORT MINRES:
-	public IterativeSolver,
-	public Solver::Register<MINRES>
+    public IterativeSolver,
+    public Solver::Register<MINRES>
 {
 public:
     /**
@@ -92,33 +92,33 @@ public:
     struct MINRESRuntime: IterativeSolverRuntime
     {
         MINRESRuntime();
-        virtual ~MINRESRuntime();        
+        virtual ~MINRESRuntime();
 
-    common::shared_ptr<lama::Vector> mVecV;
-	common::shared_ptr<lama::Vector> mVecVOld;
-    common::shared_ptr<lama::Vector> mVecVNew;
-    common::shared_ptr<lama::Vector> mVecP;
-    common::shared_ptr<lama::Vector> mVecPOld;
-    common::shared_ptr<lama::Vector> mVecPNew;
+        common::shared_ptr<lama::Vector> mVecV;
+        common::shared_ptr<lama::Vector> mVecVOld;
+        common::shared_ptr<lama::Vector> mVecVNew;
+        common::shared_ptr<lama::Vector> mVecP;
+        common::shared_ptr<lama::Vector> mVecPOld;
+        common::shared_ptr<lama::Vector> mVecPNew;
 
-    lama::Scalar mAlpha;
-    lama::Scalar mBetaNew;
-    lama::Scalar mBeta;
-    lama::Scalar mC;
-    lama::Scalar mCOld;
-    lama::Scalar mCNew;
-    lama::Scalar mS;
-    lama::Scalar mSOld;
-    lama::Scalar mSNew;
-    lama::Scalar mZeta;
+        lama::Scalar mAlpha;
+        lama::Scalar mBetaNew;
+        lama::Scalar mBeta;
+        lama::Scalar mC;
+        lama::Scalar mCOld;
+        lama::Scalar mCNew;
+        lama::Scalar mS;
+        lama::Scalar mSOld;
+        lama::Scalar mSNew;
+        lama::Scalar mZeta;
 
-    lama::Scalar mEps;
+        lama::Scalar mEps;
     };
     /**
     * @brief Returns the complete configuration of the derived class
     */
     virtual MINRESRuntime& getRuntime();
-    /** 
+    /**
     * @brief Initializes vectors and values of the runtime
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
@@ -127,7 +127,7 @@ public:
     * @brief Returns the complete const configuration of the derived class
     */
     virtual const MINRESRuntime& getConstRuntime() const;
-    
+
     static std::string createValue();
     static Solver* create( const std::string name );
 

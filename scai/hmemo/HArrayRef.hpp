@@ -87,18 +87,16 @@ protected:
 
 template<typename ValueType>
 HArrayRef<ValueType>::HArrayRef( IndexType size, ValueType* pointer )
-                : HArray<ValueType>()
+    : HArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
-
-    if( size != 0 && pointer == NULL )
+    if ( size != 0 && pointer == NULL )
     {
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
     ContextData& host = mContextDataManager[ HostMemory::getIt() ];
     host.setRef( pointer, size * mValueSize );
-
     mSize = size;
 }
 
@@ -106,25 +104,19 @@ HArrayRef<ValueType>::HArrayRef( IndexType size, ValueType* pointer )
 
 template<typename ValueType>
 HArrayRef<ValueType>::HArrayRef( IndexType size, const ValueType* pointer )
-                : HArray<ValueType>()
+    : HArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
-
-    if( size != 0 && pointer == NULL )
+    if ( size != 0 && pointer == NULL )
     {
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
     ContextData& host = mContextDataManager[ HostMemory::getIt() ];
-
     // dealing with const references in ContextData is not supported
-
-    host.setRef( const_cast<ValueType*>( pointer ), size * sizeof(ValueType) );
-
+    host.setRef( const_cast<ValueType*>( pointer ), size * sizeof( ValueType ) );
     // Take care of const awareness by setting a flag
-
-    constFlag = true; 
-
+    constFlag = true;
     mSize = size;
 }
 

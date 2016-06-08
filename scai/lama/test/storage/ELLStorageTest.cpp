@@ -62,14 +62,10 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ELLStorageTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
-
     ValueType zero = 0;
-
     ELLStorage<ValueType> ellStorage( numRows, numColumns, context );
-
     BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( 0, ellStorage.getNumValues() );
@@ -89,7 +85,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
-
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType ia[] =
@@ -228,7 +223,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     // use template storage test
-
     storageSwapTest<ELLStorage<ValueType> >();
 }
 
@@ -237,7 +231,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for ELLStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
     storageTypeNameTest<ELLStorage<ValueType> >( "ELL" );
 }
 
@@ -246,7 +239,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE( ELLCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-
     copyStorageTest<ELLStorage<ValueType> >();
 }
 

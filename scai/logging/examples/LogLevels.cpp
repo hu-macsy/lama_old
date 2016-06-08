@@ -40,9 +40,7 @@ SCAI_LOG_DEF_LOGGER( myLogger, "Demo" )
 int main( int, char** )
 {
     // macro to give the current thread a name that appears in further logs
-
     SCAI_LOG_THREAD( "main" )
-
     SCAI_LOG_INFO( myLogger, "a message about progress in the program" )
     SCAI_LOG_DEBUG( myLogger, "a message useful to find bugs in the program" )
     SCAI_LOG_TRACE( myLogger, "a message with very detailled info, usually not compiled" )

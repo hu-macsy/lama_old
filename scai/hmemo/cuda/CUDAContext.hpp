@@ -59,7 +59,7 @@ namespace scai
 
 namespace tasking
 {
-    class CUDAStreamSyncToken;  // forward 
+class CUDAStreamSyncToken;  // forward
 }
 
 namespace hmemo
@@ -80,9 +80,9 @@ namespace hmemo
  * initialized in the constructor and cleaned up in the destructor. CUDAContext
  * uses a static counter to avoid multiple device initializations.
  */
-class COMMON_DLL_IMPORTEXPORT CUDAContext: 
+class COMMON_DLL_IMPORTEXPORT CUDAContext:
 
-    public Context, 
+    public Context,
     public Context::Register<CUDAContext>,
     public common::enable_shared_from_this<CUDAContext>,
     public common::CUDACtx
@@ -108,8 +108,8 @@ public:
      */
     virtual MemoryPtr getLocalMemoryPtr() const;
 
-    /** 
-     *  @brief Implementation of Context::canUseMemory for this class. 
+    /**
+     *  @brief Implementation of Context::canUseMemory for this class.
      */
 
     virtual bool canUseMemory( const Memory& other ) const;
@@ -130,15 +130,15 @@ public:
 
     tasking::CUDAStreamSyncToken* getTransferSyncToken() const;
 
-    /** 
-     *  @brief Implementation for Context::getSyncToken 
+    /**
+     *  @brief Implementation for Context::getSyncToken
      */
 
     virtual tasking::SyncToken* getSyncToken() const;
 
     /** This routine is required for Register in Context Factory. */
 
-    static common::context::ContextType createValue() 
+    static common::context::ContextType createValue()
     {
         return common::context::CUDA;
     }

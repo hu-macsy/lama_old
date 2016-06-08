@@ -41,11 +41,14 @@
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace lama {
+namespace lama
+{
 
-namespace mepr {
+namespace mepr
+{
 
 template<typename ValueType, typename TList> struct DenseStorageViewWrapper;
 
@@ -63,7 +66,7 @@ struct DenseStorageViewWrapper<ValueType, common::mepr::TypeList<H, T> >
 {
     static bool assignImpl( DenseStorageView<ValueType>& obj, const _MatrixStorage& other )
     {
-        if( other.getValueType() == common::getScalarType<H>() )
+        if ( other.getValueType() == common::getScalarType<H>() )
         {
             const DenseStorageView<H>& otherTyped = reinterpret_cast<const DenseStorageView<H>& >( other );
             obj.assignDenseStorageImpl( otherTyped );

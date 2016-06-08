@@ -44,7 +44,7 @@
  *  \endcode
  */
 
-class DynRoutine  : public scai::common::Factory<std::string, DynRoutine*> 
+class DynRoutine  : public scai::common::Factory<std::string, DynRoutine*>
 {
 public:
 

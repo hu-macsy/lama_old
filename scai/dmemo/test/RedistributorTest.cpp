@@ -71,7 +71,6 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.RedistributorTest" );
 BOOST_AUTO_TEST_CASE( redistributeTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
-
     IndexType size = 10;
     IndexType chunkSize = 1;
     shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
@@ -114,11 +113,8 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
     shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
     Redistributor r( distCyclic, distBlock );
-
     std::ostringstream out;
-
     out << r ;
-
     BOOST_CHECK( out.str().length() >  0 );
 }
 

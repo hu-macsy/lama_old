@@ -39,23 +39,21 @@
 
 #include <vector>
 
-/** Class for a list of matrix pointers, one for each supported 
+/** Class for a list of matrix pointers, one for each supported
  *  matrix storage format and each supported arithmetic type.
  */
 
-class Matrices : public std::vector<scai::lama::MatrixPtr> 
+class Matrices : public std::vector<scai::lama::MatrixPtr>
 {
 
 public:
 
     /** Constructor creates already the list with all matrix pointers. */
 
-    Matrices( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() ) 
+    Matrices( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::lama;
-
         std::vector<MatrixCreateKeyType> values;  //  all create values
-
         Matrix::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )
@@ -71,12 +69,10 @@ public:
         }
     }
 
-    Matrices( scai::common::scalar::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() ) 
+    Matrices( scai::common::scalar::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::lama;
-
         std::vector<MatrixCreateKeyType> values;  //  all create values
-
         Matrix::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )

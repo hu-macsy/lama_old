@@ -42,20 +42,15 @@
 float sum( const float array[], const int n )
 {
     thrust::device_ptr<float> data( const_cast<float*>( array ) );
-
     float zero = static_cast<float>( 0 );
-
     float result = thrust::reduce( data, data + n, zero, thrust::plus<float>() );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     return result;
 }
 
 void init( const float array[], const int n, const float value )
 {
     thrust::device_ptr<float> data( const_cast<float*>( array ) );
- 
     thrust::fill( data, data + n, value );
 }
 

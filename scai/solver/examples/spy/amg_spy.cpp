@@ -53,11 +53,10 @@ int main( int argc, char** argv )
     {
         std::cerr << "Missing filename for input matrix" << std::endl;
         std::cerr << "spy matrix_filename [ width [ height [ scale ] ] ]" << std::endl;
-        exit(1);
+        exit( 1 );
     }
 
     std::string filename = argv[1];
-
     int nRows = 800;
 
     if ( argc > 2 )
@@ -80,39 +79,28 @@ int main( int argc, char** argv )
     }
 
     matrix.readFromFile( filename.c_str() );
-
     // Build matrix hierarchy for Multigrid
-
     std::string loggerName = "<AMG>";
-
     LoggerPtr amgLogger( new CommonLogger ( loggerName, LogLevel::completeInformation,
                                             LoggerWriteBehaviour::toConsoleOnly,
                                             scai::common::shared_ptr<Timer>( new Timer() ) ) );
-
     scai::common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
-
     amgSolver->setHostOnlyLevel( 4 );
     amgSolver->setReplicatedLevel( 5 );
     amgSolver->setMaxLevels( 25 );
     amgSolver->setMinVarsCoarseLevel( 200 );
-
     amgSolver->initialize( matrix );
-
     std::cout << "amgSolver has " << amgSolver->getNumLevels() << " levels" << std::endl;
 
-    for ( int level = 0; level < (int)amgSolver->getNumLevels(); ++level )
+    for ( int level = 0; level < ( int )amgSolver->getNumLevels(); ++level )
     {
         const Matrix& mat = amgSolver->getGalerkin( level );
         std::cout << "Galerkin matrix on level " << level << ": " << mat << std::endl;
-
         HArray<IndexType> ia;
         HArray<IndexType> ja;
         HArray<ValueType> values;
-
         const _MatrixStorage& local = mat.getLocalStorage();
-
         local.buildCSRData( ia, ja, values );
-
         int m = nRows;
         int n = nColumns;
         int s = nZoom;
@@ -129,18 +117,13 @@ int main( int argc, char** argv )
         }
 
         std::cout << "Write png of size " << m << " x " << n << ", zoom = " << s << std::endl;
-
         Bitmap pic( m, n, s );
-
         pic.setColor( 240, 120, 0 );  // color for smallest value
         // pic.setColor( 0, 0, 255 );    // color for largest value
-
         ReadAccess<IndexType> csrIA( ia );
         ReadAccess<IndexType> csrJA( ja );
         ReadAccess<ValueType> csrValues( values );
-
         pic.drawCSR( local.getNumRows(), local.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
-
         std::ostringstream out_filename;
 
         if ( filename.find_last_of( "/" ) == std::string::npos )
@@ -152,27 +135,21 @@ int main( int argc, char** argv )
             out_filename << filename.substr( filename.find_last_of( "/" ) + 1 );
         }
 
-        out_filename << ".galerkin_" << level<< "." << local.getNumRows() << "x" << local.getNumColumns()
+        out_filename << ".galerkin_" << level << "." << local.getNumRows() << "x" << local.getNumColumns()
                      << "_" << values.size() << ".png";
-
         pic.write_png_file( out_filename.str().c_str() );
-
         std::cout << "png files has been written as " << out_filename.str() << std::endl;
     }
 
-    for ( int level = 0; level < (int)amgSolver->getNumLevels() - 1; ++level )
+    for ( int level = 0; level < ( int )amgSolver->getNumLevels() - 1; ++level )
     {
         const Matrix& mat = amgSolver->getInterpolation( level );
         std::cout << "Interpolation matrix on level " << level << ": " << mat << std::endl;
-
         HArray<IndexType> ia;
         HArray<IndexType> ja;
         HArray<ValueType> values;
-
         const _MatrixStorage& local = mat.getLocalStorage();
-
         local.buildCSRData( ia, ja, values );
-
         int m = nRows;
         int n = nRows * local.getNumColumns() / local.getNumRows();
         int s = nZoom;
@@ -185,18 +162,13 @@ int main( int argc, char** argv )
         }
 
         std::cout << "Write png of size " << m << " x " << n << ", zoom = " << s << std::endl;
-
         Bitmap pic( m, n, s );
-
         pic.setColor( 240, 120, 0 );  // color for smallest value
         // pic.setColor( 0, 0, 255 );    // color for largest value
-
         ReadAccess<IndexType> csrIA( ia );
         ReadAccess<IndexType> csrJA( ja );
         ReadAccess<ValueType> csrValues( values );
-
         pic.drawCSR( local.getNumRows(), local.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
-
         std::ostringstream out_filename;
 
         if ( filename.find_last_of( "/" ) == std::string::npos )
@@ -208,11 +180,9 @@ int main( int argc, char** argv )
             out_filename << filename.substr( filename.find_last_of( "/" ) + 1 );
         }
 
-        out_filename << ".interpolation_" << level<< "." << local.getNumRows() << "x" << local.getNumColumns()
+        out_filename << ".interpolation_" << level << "." << local.getNumRows() << "x" << local.getNumColumns()
                      << "_" << values.size() << ".png";
-
         pic.write_png_file( out_filename.str().c_str() );
-
         std::cout << "png files has been written as " << out_filename.str() << std::endl;
     }
 }

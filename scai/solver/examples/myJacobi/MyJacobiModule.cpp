@@ -86,7 +86,7 @@ void MyJacobi::initialize( const scai::lama::Matrix& coefficients )
 {
     MyJacobiRuntime& runtime = getRuntime();
 
-    if( !runtime.mDiagonalTimesRhs.get() )
+    if ( !runtime.mDiagonalTimesRhs.get() )
     {
         runtime.mDiagonalTimesRhs.reset( coefficients.newDenseVector() );
     }
@@ -94,25 +94,20 @@ void MyJacobi::initialize( const scai::lama::Matrix& coefficients )
     coefficients.getDiagonal( *runtime.mDiagonalTimesRhs );
     runtime.mDiagonalTimesRhs->invert();
     runtime.mDiagonalTimesLU.reset( coefficients.copy() );
-
     runtime.mDiagonalTimesLU->setDiagonal( 0.0 );
     runtime.mDiagonalTimesLU->scale( *runtime.mDiagonalTimesRhs );
-
     runtime.mDiagonalInverted.reset( coefficients.newMatrix() ); // zero matrix with same storage type
     runtime.mDiagonalInverted->setIdentity( coefficients.getRowDistributionPtr() );
     runtime.mDiagonalInverted->inheritAttributes( coefficients );
-
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
-
     runtime.mOldSolution.reset( scai::lama::Vector::create( runtime.mDiagonalTimesRhs->getCreateValue() ) );
     runtime.mOldSolution->setContextPtr( runtime.mDiagonalTimesRhs->getContextPtr() );
-
     scai::solver::OmegaSolver::initialize( coefficients );
 }
 
 void MyJacobi::solve( scai::lama::Vector& solution, const scai::lama::Vector& rhs )
 {
-    if( getConstRuntime().mSolveInit )
+    if ( getConstRuntime().mSolveInit )
     {
         std::cout << "Previous initialization of solver found! Will be overriden!" << std::endl;
     }
@@ -127,20 +122,19 @@ void MyJacobi::solveInit( scai::lama::Vector& solution, const scai::lama::Vector
     MyJacobiRuntime& runtime = getRuntime();
 
     //Check if oldSolution already exists, if not create copy of solution
-    if( !runtime.mOldSolution.get() )
+    if ( !runtime.mOldSolution.get() )
     {
         runtime.mOldSolution.reset( scai::lama::Vector::create( solution.getCreateValue() ) );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
 
-    if( !runtime.mDiagonalTimesRhs.get() || !runtime.mDiagonalInverted.get() )
+    if ( !runtime.mDiagonalTimesRhs.get() || !runtime.mDiagonalInverted.get() )
     {
         COMMON_THROWEXCEPTION( "No initialization executed before running solve." )
     }
 
     *runtime.mDiagonalTimesRhs = *runtime.mDiagonalInverted * rhs;
-
     IterativeSolver::solveInit( solution, rhs );
 }
 
@@ -148,7 +142,7 @@ void MyJacobi::solveFinalize()
 {
     MyJacobiRuntime& runtime = getRuntime();
 
-    if( runtime.mIterations % 2 )
+    if ( runtime.mIterations % 2 )
     {
         *runtime.mProxyOldSolution = *runtime.mSolution;
     }
@@ -158,24 +152,18 @@ template<typename ValueType>
 void MyJacobi::iterate()
 {
     ValueType omega = mOmega.getValue<ValueType>();
-
     MyJacobiRuntime& runtime = getRuntime();
-
     //swap old solution and solution pointer begin
     scai::lama::Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
     scai::lama::Vector* ptr_solution = &( *runtime.mSolution );
-
     runtime.mProxyOldSolution = ptr_solution;
     runtime.mSolution = ptr_OldSolution;
-
     //swap end now m_proxOldSolution holds the solution of the last iteration
     //and m_solution will be the output of the current iteration
-
     const scai::lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
-
     *runtime.mSolution = *runtime.mDiagonalTimesRhs - *runtime.mDiagonalTimesLU * oldSolution;
 
-    if( omega != 1.0 )
+    if ( omega != 1.0 )
     {
         *runtime.mSolution = omega * ( *runtime.mSolution ) - ( omega - 1.0 ) * oldSolution;
     }
@@ -183,7 +171,7 @@ void MyJacobi::iterate()
 
 void MyJacobi::iterate()
 {
-    switch( getRuntime().mDiagonalTimesLU->getValueType() )
+    switch ( getRuntime().mDiagonalTimesLU->getValueType() )
     {
         case scai::common::scalar::FLOAT:
             iterate<float>();

@@ -50,19 +50,13 @@ typedef hmemo::HArray<double> Array;
 void add ( Array& res, const Array& a, const Array& b )
 {
     SCAI_ASSERT_LE( a.size(), b.size(), "size mismatch" )
-
     IndexType n = a.size();
-
     ContextPtr hostCtx = hmemo::Context::getHostPtr();
-
     SCAI_LOG_INFO( logger, "res = a + b, n = " << n << ", on " << *hostCtx )
-
     // Be careful: read accesses should appear before write only access
-
     hmemo::ReadAccess<double>read1( a, hostCtx );
     hmemo::ReadAccess<double>read2( b, hostCtx );
     hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
-
     double* resPtr = write.get();
     const double* aPtr = read1.get();
     const double* bPtr = read2.get();
@@ -76,13 +70,9 @@ void add ( Array& res, const Array& a, const Array& b )
 void add1 ( Array& a )
 {
     ContextPtr gpuCtx = hmemo::Context::getContextPtr( common::context::Host );
-
     IndexType n = a.size();
-
     SCAI_LOG_INFO( logger, "a = a + 1, n = " << n << ", on " << *gpuCtx )
-
     hmemo::WriteAccess<double> write( a, gpuCtx );
-
     double* aPtr = write.get();
 
     for ( IndexType i = 0; i < n; ++i )
@@ -94,15 +84,10 @@ void add1 ( Array& a )
 void printIt( const Array& a )
 {
     using namespace std;
-
     ContextPtr hostCtx = hmemo::Context::getHostPtr();
-
     IndexType n = a.size();
-
     hmemo::ReadAccess<double>read( a, hostCtx );
-
     const double* aPtr = read.get();
-
     cout << "Array a =";
 
     for ( IndexType i = 0; i < n; ++i )
@@ -116,13 +101,9 @@ void printIt( const Array& a )
 int main()
 {
     static int N = 10;
-
     Array a, b, c;
-
     // initialize b and c
-
     ContextPtr host = Context::getHostPtr();
-
     {
         WriteOnlyAccess<double> wB( b, host, N );
         WriteOnlyAccess<double> wC( c, host, N );
@@ -133,16 +114,11 @@ int main()
             wC[i] = 2.0;
         }
     }
-
     add( a, b, c ); // this is okay
     add( a, a, b ); // this crashed in earlier versions
-
     // now make sure that we have only a valid copy on GPU
-
     add1( a );
-
     add( a, a, c );  // might use the old Host values
-
     printIt( a );  // should be 1 + 2 + 1 + 1 + 2 = 7
 }
 

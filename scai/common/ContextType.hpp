@@ -45,7 +45,7 @@ namespace scai
 namespace common
 {
 
-/** Own struct for the enumeration type ContextType and its values. 
+/** Own struct for the enumeration type ContextType and its values.
  *
  *  Note: This enumeration type was originally defined in the class Context so
  *        it did not require an own struct. But this is no longer possible as
@@ -62,7 +62,7 @@ struct context
      *  the same data. Two CUDA contexts might allocate their own data where data
      *  must be transfered explicitly.
      */
-    typedef enum 
+    typedef enum
     {
         Host,          //!< context for cpu + main memory
         CUDA,          //!< CUDA GPU device

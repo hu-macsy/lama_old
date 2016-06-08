@@ -50,7 +50,7 @@ namespace dmemo
 
 class GPICommunicator;
 
-/** Structure that behaves like a scoped array that can be used for communication. 
+/** Structure that behaves like a scoped array that can be used for communication.
  *  The array is released/freed by its destructor.
  *
  *  It is derived from Access so it can be used in SyncToken.
@@ -129,7 +129,7 @@ public:
 
     // return typed pointer to the segment data
 
-    T* get() 
+    T* get()
     {
         return mData;
     }

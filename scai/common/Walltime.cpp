@@ -56,27 +56,19 @@ namespace common
 INTEGER_8 Walltime::timestamp()
 {
 #if defined( WIN32 )
-
     SYSTEMTIME lpSystemTime;
     GetLocalTime( &lpSystemTime );
-
     INTEGER_8 ticks = lpSystemTime.wHour;
     ticks = ticks * 60 + lpSystemTime.wMinute;
     ticks = ticks * 60 + lpSystemTime.wSecond;
     ticks = ticks * 1000 + lpSystemTime.wMilliseconds;
-
 #else
-
     struct timeval tp;
     struct timezone tzp;
-
     gettimeofday( &tp, &tzp );
-
     INTEGER_8 ticks = tp.tv_sec;
     ticks = ticks * 1000000 + tp.tv_usec;
-
 #endif
-
     return ticks;
 }
 
@@ -101,7 +93,6 @@ void Walltime::sleep( unsigned int milliseconds )
 #else
     usleep( milliseconds * 1000 );
 #endif
-
 }
 
 } /* end namespace common */

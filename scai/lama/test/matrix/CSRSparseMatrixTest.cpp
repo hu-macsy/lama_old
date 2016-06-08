@@ -54,20 +54,14 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRSparseMatrixTest" );
 BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, ValueType, scai_arithmetic_test_types )
 {
     CSRSparseMatrix<ValueType> matrix;
-
     // check zero sizes
-
     BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
     BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );
-
     // check correct format / type
-
     BOOST_CHECK_EQUAL( common::TypeTraits<ValueType>::stype, matrix.getValueType() );
     BOOST_CHECK_EQUAL( Matrix::CSR, matrix.getFormat() );
-
     const CSRStorage<ValueType>& local = matrix.getLocalStorage();
     const CSRStorage<ValueType>& halo = matrix.getHaloStorage();
-
     BOOST_CHECK_EQUAL( local.getNumRows(), halo.getNumRows() );
 }
 

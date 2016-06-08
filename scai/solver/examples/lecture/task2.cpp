@@ -70,9 +70,7 @@ int main( int argc, char* argv[] )
     CSRSparseMatrix<ValueType> A( argv[1] );
     std::cout << "Read matrix A : " << A << std::endl;
     IndexType size = A.getNumRows();
-
     DenseVector<ValueType> b( size, 0 );
-
     {
         WriteAccess<ValueType> writeB( b.getLocalValues() );
 
@@ -82,22 +80,18 @@ int main( int argc, char* argv[] )
             writeB[i] = ValueType( i + 1 );
         }
     }
-
     std::cout << "Vector b : " << b << std::endl;
     DenseVector<ValueType> x( size , 0.0 );
     std::cout << "Vector x : " << x << std::endl;
-
     // d = r = b - A * x
     // help = A * x;
-
     DenseVector<ValueType> r = b - A * x;
     DenseVector<ValueType> d = r;
     Scalar rOld = r.dotProduct( r );
     Scalar eps = 0.00001;
-
     L2Norm norm;
 
-    for ( int k = 0 ; k < maxIter and norm(r) > eps; k++ )
+    for ( int k = 0 ; k < maxIter and norm( r ) > eps; k++ )
     {
         DenseVector<ValueType> z = A * d;
         Scalar alpha = rOld / d.dotProduct( z );
@@ -107,7 +101,6 @@ int main( int argc, char* argv[] )
         Scalar beta = rNew / rOld;
         d = r + beta * d;
         rOld = rNew;
-
         Scalar rnorm = norm( r );
         std::cout << "Iter k = " << k << " : norm( r ) = " << rnorm.getValue<ValueType>() << std::endl;
     }

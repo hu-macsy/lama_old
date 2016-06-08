@@ -93,7 +93,7 @@ COMMON_DLL_IMPORTEXPORT bool isComplex( const scalar::ScalarType t );
 /*
  * Output of ScalarType in stream by writing strings instead of numbers
  */
-    
+
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scalar::ScalarType& object );
 
 /**

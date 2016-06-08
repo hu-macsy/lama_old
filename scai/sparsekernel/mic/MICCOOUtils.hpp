@@ -70,7 +70,7 @@ public:
 
     /** MIC implementation for COOKernelTrait::getCSRValues */
 
-    template<typename COOValueType,typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     static void getCSRValuesP(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -83,7 +83,7 @@ public:
 
     /** MIC serial implementation for COOKernelTrait::getCSRValues */
 
-    template<typename COOValueType,typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     static void getCSRValuesS(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -105,7 +105,7 @@ public:
 
     /** MIC implementation for COOKernelTrait::setCSRData */
 
-    template<typename COOValueType,typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     static void setCSRData(
         COOValueType cooValues[],
         const CSRValueType csrValues[],
@@ -141,7 +141,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        const IndexType numRows);
+        const IndexType numRows );
 
 private:
 

@@ -55,9 +55,7 @@ int main( int argc, char* argv[] )
 
     //Read a sparse matrix from the passed input file
     CSRSparseMatrix<ValueType> m( argv[1] );
-
     IndexType size = m.getNumRows();
-
     DenseVector<ValueType> rhs( size , 0.0 );
     WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
 
@@ -67,9 +65,7 @@ int main( int argc, char* argv[] )
     }
 
     hwarhs.release();
-
     DenseVector<ValueType> solution( size , 0.0 );
-
     return 0;
 }
 

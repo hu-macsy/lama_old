@@ -70,13 +70,13 @@ void CUDALAPACK::laswp(
     IndexType info = 0;
     IndexType i = k1;
 
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
         IndexType feedback = 0;
 
-        for( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
+        for ( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
         {
-            if( ipiv_h[i * incx] == i )
+            if ( ipiv_h[i * incx] == i )
             {
                 continue;
             }
@@ -85,9 +85,9 @@ void CUDALAPACK::laswp(
             SCAI_CHECK_CUDA_ERROR
         }
 
-        info = -1 * (IndexType) feedback;
+        info = -1 * ( IndexType ) feedback;
     }
-    else if( order == CblasColMajor )
+    else if ( order == CblasColMajor )
     {
         info = n + lda;
     }
@@ -97,7 +97,7 @@ void CUDALAPACK::laswp(
         COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 
-    if( info < 0 )
+    if ( info < 0 )
     {
         //TODO: throw exception
     }
@@ -113,11 +113,8 @@ template<typename ValueType>
 void CUDALAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register LAPACK routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
-
     KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( CUDALAPACK::laswp, ctx, flag );
 }
 

@@ -67,15 +67,10 @@ static inline ValueType mv( const IndexType i, const IndexType j )
 
 int main()
 {
-
     IndexType perm [] = { 5, 2, 1, 0, 3, 4 };
-
     const IndexType irow = 3;
-
     const int N = sizeof( perm ) / sizeof( IndexType );
-
     CSRSparseMatrix<ValueType> a;
-
     common::scoped_array<ValueType> values( new ValueType[ N * N ] );
 
     for ( IndexType i = 0; i < N; ++i )
@@ -87,11 +82,8 @@ int main()
     }
 
     DistributionPtr rep( new NoDistribution( N ) );
-
     a.setRawDenseData( rep, rep, values.get() );
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     std::vector<IndexType> myGlobalIndexes;
 
     for ( IndexType i = 0; i < N; ++i )
@@ -100,27 +92,17 @@ int main()
         {
             myGlobalIndexes.push_back( i );
         }
-
     }
 
     std::cout << *comm << ": have " << myGlobalIndexes.size() << " indexes" << std::endl;
-
     DistributionPtr dist( new GeneralDistribution( N, myGlobalIndexes, comm ) );
-
     a.redistribute( dist, dist );
-
     std::cout << "Communicator = " << *comm << std::endl;
-
     DenseVector<ValueType> row( dist );     // any type, any distribution
-
     a.getRow( row, irow );
-
     std::cout << "a( " << irow << ", : ) = " << row << std::endl;
-
     ReadAccess<ValueType> rowRead( row.getLocalValues() );
-
     int errors = 0;
-
     std::cout << "Values = ";
 
     for ( IndexType j = 0; j < rowRead.size(); ++ j )
@@ -135,8 +117,6 @@ int main()
     }
 
     std::cout << std::endl;
-
     std::cout << "Errors = " << errors << std::endl;
-
     a.writeToFile( "MatrixA", File::MATRIX_MARKET );
 }

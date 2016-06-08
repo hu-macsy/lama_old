@@ -68,22 +68,14 @@ MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Distribu
     : GeneralDistribution( matrix.getDistribution().getGlobalSize(), comm )
 {
     SCAI_LOG_INFO( logger, "construct Metis distribution, weight at " << *comm << ": " << weight )
-
     // collect weights from all processors
-
     PartitionId numPartitions = comm->getSize();
-
     std::vector<float> weights( numPartitions );
-
     SCAI_LOG_INFO( logger, "#weights = " << weights.size() )
-
     comm->gather( &weights[0], 1, MASTER, &weight );
     comm->bcast( &weights[0], numPartitions, MASTER );
-
     // norm weights so that sum gives exactly 1.0
-
     normWeights( weights );
-
     SCAI_LOG_INFO( logger, "#weights = " << weights.size() )
 
     for ( size_t i = 0; i < weights.size(); ++i )
@@ -97,9 +89,7 @@ MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Distribu
 void MetisDistribution::normWeights( std::vector<float>& weights )
 {
     const size_t numPartitions = weights.size();
-
     // now each partition norms it
-
     float sum = 0;
 
     for ( size_t i = 0; i < numPartitions; ++i )
@@ -121,7 +111,6 @@ void MetisDistribution::normWeights( std::vector<float>& weights )
 void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights )
 {
     // TODO check only for replicated matrix
-
     IndexType size = comm->getSize();
     IndexType myRank = comm->getRank();
     IndexType totalRows = matrix.getDistribution().getGlobalSize();
@@ -129,7 +118,6 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
     if ( myRank == MASTER )
     {
         // MASTER must have all values of the matrix to build the graph
-
         SCAI_ASSERT_EQ_ERROR( totalRows, matrix.getDistribution().getLocalSize(),
                               *comm << ": must have all values of the distributed object" );
     }
@@ -145,10 +133,8 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
         // so reduce number of partitions and map partition index to the right process
         std::vector<real_t> tpwgts( size );
         std::vector<IndexType> mapping( size );
-
         IndexType count = 0;
         checkAndMapWeights( tpwgts, mapping, count, weights, size );
-
         // set size only for MASTER
         numRowsPerOwner.resize( size );
         distIA.resize( size + 1 );
@@ -159,7 +145,6 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
             IndexType minConstraint = 0;
             std::vector<IndexType> partition( totalRows );
             callPartitioning( partition, minConstraint, count, tpwgts, comm, matrix );
-
             IndexType offsetCounter[size];
 
             // init
@@ -215,7 +200,6 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
     comm->scatter( &numMyRows, 1, MASTER, &numRowsPerOwner[0] );
     mLocal2Global.resize( numMyRows );
     comm->scatterV( &mLocal2Global[0], numMyRows, MASTER, &rows[0], &numRowsPerOwner[0] );
-
     std::vector<IndexType>::const_iterator end = mLocal2Global.end();
     std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
 
@@ -236,7 +220,6 @@ MetisDistribution::~MetisDistribution()
 void MetisDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-
     stream << "MetisDistribution( size = " << mLocal2Global.size() << " of " << mGlobalSize << ", comm = "
            << *mCommunicator << " )";
 }
@@ -251,30 +234,23 @@ void MetisDistribution::callPartitioning(
     const Distributed& matrix ) const
 {
     SCAI_REGION( "METIScall" )
-
     // Note that here we have: global size == local size of distribution
-
     IndexType totalRows = matrix.getDistribution().getGlobalSize();
-
     std::vector<IndexType> csrXadj( totalRows + 1 ); // #rows + 1
     // std::vector<IndexType> csrAdjncy( matrix.getLocalNumValues() - totalRows ); // #values - #diagonalelements(rows)
     std::vector<IndexType> csrAdjncy( matrix.getCSRGraphSize() );
     std::vector<IndexType> csrVwgt( totalRows );
-
     matrix.buildCSRGraph( &csrXadj[0], &csrAdjncy[0], &csrVwgt[0], NULL );
-
     IndexType ncon = 1;
     IndexType options[METIS_NOPTIONS];
     METIS_SetDefaultOptions( options );
     options[METIS_OPTION_PTYPE] = METIS_PTYPE_RB;
-
     // use only with PartGraphKway
     // options[ METIS_OPTION_OBJTYPE ] = METIS_OBJTYPE_VOL;//METIS_OBJTYPE_CUT
     // options[ METIS_OPTION_DBGLVL ] = METIS_DBG_TIME;
     // recursive bisection
     METIS_PartGraphRecursive( &totalRows, &ncon, &csrXadj[0], &csrAdjncy[0], &csrVwgt[0], NULL, NULL, &parts,
                               &tpwgts[0], NULL, options, &minConstraint, &partition[0] );
-
     // multilevel k-way partitioning (used in ParMetis)
     // METIS_PartGraphKway( &totalRows, &ncon, &csrXadj[0], &csrAdjncy[0], &csrVwgt[0], NULL,
     // NULL, &parts, &tpwgts[0], NULL, options, &minConstraint, &partition[0] );
@@ -356,9 +332,7 @@ Distribution* MetisDistribution::create( const DistributionArguments arg )
     else
     {
         DistributionPtr dist( new NoDistribution( arg.globalSize ) );
-
         Distributed dummy( dist );
-
         return new MetisDistribution( arg.communicator, dummy, arg.weight );
     }
 }

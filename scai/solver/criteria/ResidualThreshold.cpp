@@ -85,7 +85,7 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
     lama::Scalar normResult = ( *mNorm )( solver.getResidual() );
     SCAI_ASSERT( normResult > 0.0 || normResult == 0.0, "A norm should be always positive but is " << normResult );
 
-    switch( mCheckMode )
+    switch ( mCheckMode )
     {
         case ResidualThreshold::Absolute:
             SCAI_LOG_DEBUG( logger,
@@ -95,27 +95,27 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
 
         case ResidualThreshold::Relative:
         {
-            if( mFirstNormResult == -1.0 )
+            if ( mFirstNormResult == -1.0 )
             {
                 //TODO define member variable for solver with getInitialResidual function
                 mFirstNormResult = normResult;
             }
 
             SCAI_LOG_DEBUG( logger,
-                            "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult/mFirstNormResult << " should become smaller than precision " << mPrecision );
+                            "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult / mFirstNormResult << " should become smaller than precision " << mPrecision );
             return ( normResult / mFirstNormResult ) < mPrecision;
         }
 
         case ResidualThreshold::Divergence:
         {
-            if( mFirstNormResult == -1.0 )
+            if ( mFirstNormResult == -1.0 )
             {
                 //TODO define member variable for solver with getInitialResidual function
                 mFirstNormResult = normResult;
             }
 
             SCAI_LOG_DEBUG( logger,
-                            "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult/mFirstNormResult << " should become larger than precision " << mPrecision );
+                            "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult / mFirstNormResult << " should become larger than precision " << mPrecision );
             return ( normResult / mFirstNormResult ) > mPrecision;
         }
     }

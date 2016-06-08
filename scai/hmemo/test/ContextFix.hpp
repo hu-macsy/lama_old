@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Test fixture for context 
+ * @brief Test fixture for context
  * @author Thomas Brandes
  * @date 15.03.2016
  */
@@ -40,7 +40,7 @@
 
 /* --------------------------------------------------------------------- */
 
-/** Fixture to be used for BOOST_GLOBAL_FIXTURE     
+/** Fixture to be used for BOOST_GLOBAL_FIXTURE
  *
  *  provides access to testContext used as context at which tests should run
  *
@@ -51,17 +51,17 @@
 struct ContextFix
 {
     ContextFix()
-    {   
+    {
         testContext = scai::hmemo::Context::getContextPtr();
-        // BOOST_TEST_MESSAGE( "Setup ContextFix: test context = " << *testContext ); 
+        // BOOST_TEST_MESSAGE( "Setup ContextFix: test context = " << *testContext );
     }
 
     ~ContextFix()
     {
-        // BOOST_TEST_MESSAGE( "Teardown ContextFix" ); 
+        // BOOST_TEST_MESSAGE( "Teardown ContextFix" );
         testContext.reset();
     }
-    
+
     static scai::hmemo::ContextPtr testContext;
 };
 

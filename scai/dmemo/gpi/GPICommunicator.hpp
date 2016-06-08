@@ -66,9 +66,9 @@ namespace dmemo
  *  gaspi_proc_init is called in the constructor, gaspi_proc_term is called in the destructor.
  */
 
-class COMMON_DLL_IMPORTEXPORT GPICommunicator: public CRTPCommunicator<GPICommunicator>, 
-                                               public Communicator::Register<GPICommunicator>,
-                                               public common::enable_shared_from_this<GPICommunicator>
+class COMMON_DLL_IMPORTEXPORT GPICommunicator: public CRTPCommunicator<GPICommunicator>,
+    public Communicator::Register<GPICommunicator>,
+    public common::enable_shared_from_this<GPICommunicator>
 
 {
     // Only GPICommunicatorManager is allowed to create GPI communicator
@@ -222,7 +222,7 @@ private:
     // Be careful here: dstOffset must be the logical offset
 
     template<typename T>
-    void localWrite( const SegmentData<T>& srcSegment, const IndexType srcOffset, 
+    void localWrite( const SegmentData<T>& srcSegment, const IndexType srcOffset,
                      SegmentData<T>& dstSegment, const IndexType dstOffset, const IndexType size ) const;
 
     template<typename T>
@@ -230,9 +230,9 @@ private:
                      const SegmentData<T>& remSegment, const IndexType remOffset, const IndexType size ) const;
 
     /** Helper routine regarding notification. */
-    void notify( const gaspi_segment_id_t segID, 
-                 PartitionId target, 
-                 PartitionId pos, 
+    void notify( const gaspi_segment_id_t segID,
+                 PartitionId target,
+                 PartitionId pos,
                  IndexType val ) const;
 
     IndexType notifyWait( const gaspi_segment_id_t segID, PartitionId pos ) const;
@@ -245,7 +245,7 @@ private:
     static const int defaultTag;
 
     //!< maximal number of notifications, should be >= 2 * mSize
-    PartitionId mMaxNotifications;  
+    PartitionId mMaxNotifications;
 
 protected:
 

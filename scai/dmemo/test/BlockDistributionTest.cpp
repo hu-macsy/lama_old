@@ -81,19 +81,12 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BlockDistributionTest" );
 BOOST_AUTO_TEST_CASE( factoryTest )
 {
     // verify that a BlockDistribution can be created via the factory
-
     IndexType globalSize = 17;
-
     DistributionPtr bdist( Distribution::getDistributionPtr( "BLOCK", comm, globalSize, 1.0 ) );
-
     BOOST_REQUIRE( bdist );
-
     SCAI_LOG_INFO( logger, "created by factory: " << *bdist )
-
     // verify by dynamic cast that it is really a BlockDistribution
-
     const BlockDistribution* b = dynamic_cast<const BlockDistribution*>( bdist.get() );
-
     BOOST_CHECK( b );
 }
 

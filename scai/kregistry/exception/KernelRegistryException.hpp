@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Derived exception class to allow specific exceptions thrown at KernelRegistry 
+ * @brief Derived exception class to allow specific exceptions thrown at KernelRegistry
  * @author Thomas Brandes
  * @date 10.10.2015
  */
@@ -50,15 +50,15 @@ class COMMON_DLL_IMPORTEXPORT KernelRegistryException : public scai::common::Exc
 public:
 
     KernelRegistryException();
-    
+
     KernelRegistryException( const std::string& message );
 
     virtual ~KernelRegistryException() throw();
-    
+
     virtual const char* what() const throw();
-    
+
 protected:
-        
+
     std::string mMessage;
 };
 

@@ -75,21 +75,14 @@ CUDAContext::CUDAContext( int deviceNr ) :
 
 {
     SCAI_LOG_DEBUG( logger, "construct CUDAContext, device nr = = " << deviceNr )
-
     // Note: logging is safe as CUDA context is always created after static initializations
-
     {
         char deviceName[256];
-
         SCAI_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, getCUdevice() ), "cuDeviceGetName" );
-
         mDeviceName = deviceName; // save it as string member variable for output
-
         SCAI_LOG_DEBUG( logger, "got device " << mDeviceName )
     }
-
     // count used devices to shutdown CUDA if no more device is used
-
     SCAI_LOG_INFO( logger, *this << " constructed, is disabled" )
 }
 
@@ -152,9 +145,7 @@ void CUDAContext::writeAt( std::ostream& stream ) const
 void CUDAContext::disable( const char* file, int line ) const
 {
     Context::disable( file, line ); // call routine of base class
-
     SCAI_ASSERT( !contextStack.empty(), "call of disable without previous enable" )
-
     common::CUDAAccess::disable( contextStack.top() );
     contextStack.pop();
 }
@@ -178,9 +169,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
     if ( other.getType() == memtype::CUDAMemory )
     {
         const CUDAMemory* otherCUDAMem = dynamic_cast<const CUDAMemory*>( &other );
-
         SCAI_ASSERT( otherCUDAMem, "serious type mismatch" )
-
         canUse = otherCUDAMem->getDeviceNr() == getDeviceNr();
     }
 
@@ -189,15 +178,12 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
     if ( other.getType() == memtype::CUDAHostMemory )
     {
         const CUDAHostMemory* otherCUDAHostMem = dynamic_cast<const CUDAHostMemory*>( &other );
-
         SCAI_ASSERT( otherCUDAHostMem, "serious type mismatch" )
-
         canUse = otherCUDAHostMem->getCUDAContext().getDeviceNr() == getDeviceNr();
     }
 
     SCAI_LOG_DEBUG( logger, *this << ": " << ( canUse ? "can use " : "can't use " )
                     << other )
-
     return canUse;
 }
 
@@ -208,7 +194,6 @@ CUDAStreamSyncToken* CUDAContext::getComputeSyncToken() const
     // ToDo: A possible problem might be that this CUDAContext is deleted before
     // synchronization has taken place. Solution: add a dummy routine where
     // one argument is bind to this context.
-
     return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::ComputeStream );
 }
 
@@ -246,10 +231,9 @@ ContextPtr CUDAContext::create( int deviceNr )
 {
     int cudaDeviceNr = deviceNr;
 
-    if( cudaDeviceNr == SCAI_DEFAULT_DEVICE_NUMBER )
+    if ( cudaDeviceNr == SCAI_DEFAULT_DEVICE_NUMBER )
     {
         cudaDeviceNr = getDefaultDeviceNr();
-
         // no need here to check for a good value
     }
     else
@@ -261,20 +245,16 @@ ContextPtr CUDAContext::create( int deviceNr )
 
     common::shared_ptr<CUDAContext> context = common::shared_ptr<CUDAContext>();
 
-    if( mCUDAContext[cudaDeviceNr].expired() )
+    if ( mCUDAContext[cudaDeviceNr].expired() )
     {
         // create a new context for the device and return the shared pointer
-
         context = common::shared_ptr<CUDAContext>( new CUDAContext( cudaDeviceNr ) );
-
         // we keep a weak pointer so that we can return
-
         mCUDAContext[cudaDeviceNr] = context;
     }
     else
     {
         // the weak pointer to the device is still okay, so return a shared pointer for it
-
         context = mCUDAContext[cudaDeviceNr].lock();
     }
 

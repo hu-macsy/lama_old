@@ -52,9 +52,7 @@ void subB( int& X )
 int main()
 {
     int X = 0;
-
     SCAI_REGION( "main" )
-
     #pragma omp parallel for
 
     for ( int i = 0; i < 10000; ++i )
@@ -70,7 +68,6 @@ int main()
         }
 
         SCAI_REGION_END( "main.loopA" )
-
         SCAI_REGION_START( "main.loopB" )
 
         for ( int j = 0; j < 20; ++ j )

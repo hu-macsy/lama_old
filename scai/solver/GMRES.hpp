@@ -55,8 +55,8 @@ namespace solver
  *        to solve a system of linear equations iteratively.
  */
 class COMMON_DLL_IMPORTEXPORT GMRES:
-		public IterativeSolver,
-		public Solver::Register<GMRES>
+    public IterativeSolver,
+    public Solver::Register<GMRES>
 {
 public:
 
@@ -115,15 +115,15 @@ public:
         common::scoped_array<double> mHd;
 
         // krylov space
-        std::vector<lama::Vector*> *mV;
+        std::vector<lama::Vector*>* mV;
 
         // temp-arrays
-        lama::Vector *mW;
-        lama::Vector *mT;
+        lama::Vector* mW;
+        lama::Vector* mT;
 
         // remember starting solution
         // only needed if x is modified within krylov loop
-        lama::Vector *mX0;
+        lama::Vector* mX0;
     };
 
     /**

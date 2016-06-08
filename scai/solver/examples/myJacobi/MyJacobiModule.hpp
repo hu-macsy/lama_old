@@ -45,8 +45,8 @@
 #include <scai/logging/Logger.hpp>
 
 class COMMON_DLL_IMPORTEXPORT MyJacobi:
-		public scai::solver::OmegaSolver,
-		public scai::solver::Solver::Register<MyJacobi>
+    public scai::solver::OmegaSolver,
+    public scai::solver::Solver::Register<MyJacobi>
 {
 public:
     MyJacobi( const std::string& id );
@@ -135,7 +135,7 @@ protected:
 private:
 
     template<typename ValueType>
-    void initialize(const scai::lama::Matrix& coefficients);
+    void initialize( const scai::lama::Matrix& coefficients );
 
     template<typename ValueType>
     void iterate();

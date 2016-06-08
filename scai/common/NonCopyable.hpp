@@ -48,14 +48,14 @@ namespace common
  *  All classes where the default copy constructor might result in serious problems should
  *  derive from this class.
  *
- *  In the following class dynamically allocated data is freed in the destructor. If an 
+ *  In the following class dynamically allocated data is freed in the destructor. If an
  *  instance variable has been copied the destructor is called twice and the data
  *  would be freed twice.
  *
  *  \code
  *  class Example : common::NonCopyable
  *  {
- *      ~Example() 
+ *      ~Example()
  *      {
  *         if ( mData != NULL) delete mData;
  *         mData = NULL;

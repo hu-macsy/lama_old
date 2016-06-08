@@ -42,7 +42,7 @@
 
 class MockMemory: public scai::hmemo::Memory
 {
-private: 
+private:
 
     // Member variables
 
@@ -115,14 +115,12 @@ public:
     virtual bool canCopyFrom( const scai::hmemo::Memory& other ) const
     {
         // copy from host to this context should always be supported
-
         return other.getType() == scai::hmemo::memtype::HostMemory;
     }
 
     virtual bool canCopyTo( const scai::hmemo::Memory& other ) const
     {
         // copy from this context to host should always be supported
-
         return other.getType() == scai::hmemo::memtype::HostMemory;
     }
 

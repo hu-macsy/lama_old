@@ -54,15 +54,11 @@ using scai::common::Walltime;
 static void bench( Matrix& b, Matrix& a )
 {
     ContextPtr host = Context::getHostPtr();
-
     a.setContextPtr( host );
     b.setContextPtr( host );
-
     a.prefetch();
     a.wait();
-
     const int nrepeat = 10;
-
     double timeHost = Walltime::get();
 
     for ( int k = 0; k < nrepeat; ++k )
@@ -71,15 +67,11 @@ static void bench( Matrix& b, Matrix& a )
     }
 
     timeHost = Walltime::get() - timeHost;
-
     ContextPtr gpu = Context::getContextPtr( Context::CUDA );
-
     a.setContextPtr( gpu );
     b.setContextPtr( gpu );
-
     a.prefetch();
     a.wait();
-
     double timeGPU = Walltime::get();
 
     for ( int k = 0; k < nrepeat; ++k )
@@ -88,19 +80,16 @@ static void bench( Matrix& b, Matrix& a )
     }
 
     timeGPU = Walltime::get() - timeGPU;
-
     // check maxDiff
-
     const int precision = 1;
-
     cout << "Size = " << a.getNumRows() << " x " << a.getNumColumns() << ", nnz = " << a.getNumValues() << endl;
     cout << "===================================" << endl;
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
-    cout << "time host = " << setw(6) << timeHost * 1000.0 << endl;
+    cout << "time host = " << setw( 6 ) << timeHost * 1000.0 << endl;
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
-    cout << "time cuda = " << setw(6) << timeGPU * 1000.0 << endl;
+    cout << "time cuda = " << setw( 6 ) << timeGPU * 1000.0 << endl;
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
-    cout << "speedup   = " << setw(6) << ( timeHost / timeGPU ) << endl;;
+    cout << "speedup   = " << setw( 6 ) << ( timeHost / timeGPU ) << endl;;
     cout << endl;
 }
 
@@ -114,7 +103,6 @@ int main()
 
     IndexType sizes[] = { 10000, 30000 };
     double fillrates[] = { 0.001, 0.002, 0.003 };
-
     int nsizes = sizeof( sizes ) / sizeof( IndexType );
     int nrates = sizeof( fillrates ) / sizeof( double );
 
@@ -125,55 +113,38 @@ int main()
         for ( int j = 0; j < nrates; ++j )
         {
             // a bit tricky here as we need two different value types
-
             typedef SCAI_COMMON_FIRST_ARG( SCAI_ARITHMETIC_HOST ) ValueType;
-
 #if SCAI_COMMON_COUNT_NARG( SCAI_ARITHTMETIC_HOST ) == 1
-
             // only one supported type, so take the same value type
-
             typedef ValueType ValueType1;
 #else
-
             // take the second supported value type
-
             typedef SCAI_COMMON_FIRST_ARG( SCAI_COMMON_TAIL( SCAI_ARITHMETIC_HOST ) ) ValueType1;
 #endif
-
             double rate = fillrates[j];
-
             CSRSparseMatrix<ValueType> a( size, size );
             CSRSparseMatrix<ValueType> a1( size, size );
-
             ELLSparseMatrix<ValueType1> b( size, size );
             JDSSparseMatrix<ValueType1> c( size, size );
             CSRSparseMatrix<ValueType1> d( size, size );
-
             MatrixCreator<ValueType>::fillRandom( a, rate );
-
             cout << "ELL <-- CSR" << endl;
             bench( b, a );
             cout << "CSR <-- ELL" << endl;
             bench( a1, b );
-
             // test for same
-
             Scalar maxDiff = a.maxDiffNorm( a1 );
             cout << "max diff = " << maxDiff.getValue<ValueType>() << endl;
-
             cout << "JDS <-- CSR" << endl;
             bench( c, a );
             cout << "CSR <-- JDS" << endl;
             bench( a1, c );
-
             maxDiff = a.maxDiffNorm( a1 );
             cout << "max diff = " << maxDiff.getValue<ValueType>() << endl;
-
             cout << "CSR <-- CSR" << endl;
             bench( d, a );
             cout << "CSR <-- CSR" << endl;
             bench( a1, d );
-
             maxDiff = a.maxDiffNorm( a1 );
             cout << "max diff = " << maxDiff.getValue<ValueType>() << endl;
         }

@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definition of macros for system calls 
+ * @brief Definition of macros for system calls
  * @author Thomas Brandes
  * @date 17.05.2106
  */

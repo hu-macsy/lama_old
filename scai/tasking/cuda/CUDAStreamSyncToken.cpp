@@ -55,7 +55,6 @@ namespace tasking
 CUDAStreamSyncToken::CUDAStreamSyncToken( const CUDACtx& cuda, const StreamType type ) : mCUDA( cuda )
 {
     // take a CUDA stream from a pool, that might be allocated at first use
-
     mStream = CUDAStreamPool::getPool( mCUDA ).reserveStream( type );
     mEvent = 0;
     SCAI_LOG_DEBUG( logger, "StreamSyncToken for " << mCUDA.getDeviceNr() << " generated, stream = " << mStream )
@@ -64,7 +63,6 @@ CUDAStreamSyncToken::CUDAStreamSyncToken( const CUDACtx& cuda, const StreamType 
 CUDAStreamSyncToken::~CUDAStreamSyncToken()
 {
     wait();
-
     CUDAStreamPool::getPool( mCUDA ).releaseStream( mStream );
 }
 
@@ -76,7 +74,6 @@ void CUDAStreamSyncToken::wait()
     }
 
     SCAI_LOG_DEBUG( logger, "wait on CUDA stream synchronization" )
-
     {
         common::CUDAAccess tmpAccess( mCUDA );
 
@@ -94,7 +91,6 @@ void CUDAStreamSyncToken::wait()
         }
 
         // finally called functions might also need the context, e.g. unbindTexture
-
         setSynchronized();
     }
 }
@@ -117,9 +113,7 @@ cudaStream_t CUDAStreamSyncToken::getCUDAStream() const
 bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 {
     SCAI_ASSERT( stopEvent != 0, "probe on invalid event" )
-
     common::CUDAAccess tmpAccess ( mCUDA );
-
     CUresult result = cuEventQuery( stopEvent );
 
     if ( result != CUDA_SUCCESS && result != CUDA_ERROR_NOT_READY )
@@ -133,7 +127,6 @@ bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 bool CUDAStreamSyncToken::queryEvent( const CUevent event ) const
 {
     common::CUDAAccess cudaAccess ( mCUDA );
-
     CUresult result = cuEventQuery( event );
 
     if ( result != CUDA_SUCCESS || result != CUDA_ERROR_NOT_READY )
@@ -147,7 +140,6 @@ bool CUDAStreamSyncToken::queryEvent( const CUevent event ) const
 void CUDAStreamSyncToken::synchronizeEvent( const CUevent event ) const
 {
     common::CUDAAccess cudaAccess ( mCUDA );
-
     SCAI_CUDA_DRV_CALL( cuEventSynchronize( event ), "cuEventSynchronize failed for CUevent " << event << '.' )
 }
 
@@ -161,7 +153,6 @@ CUDAStreamSyncToken* CUDAStreamSyncToken::getCurrentSyncToken()
     }
 
     // make a dynamic CAST
-
     CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
 
     // If the current sync token is not a CUDA stream token it is very likely an error
@@ -172,7 +163,6 @@ CUDAStreamSyncToken* CUDAStreamSyncToken::getCurrentSyncToken()
     }
 
     // But might not be too serious so probably NULL results in synchronous execution
-
     return cudaStreamSyncToken;
 }
 

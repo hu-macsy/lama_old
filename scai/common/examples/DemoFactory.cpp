@@ -180,9 +180,7 @@ using namespace std;
 int main()
 {
     vector<string> values;  // string is create type for the factory
-
     Base::getCreateValues( values );
-
     cout << "Factory of Base: " << values.size() << " entries" << endl;
 
     for ( size_t i = 0; i < values.size(); ++i )
@@ -193,10 +191,8 @@ int main()
     Base* obj1 = Base::create( "D1" );
     Base* obj2 = Base::create( "D2" );
     Base* obj3 = Base::create( typeid( int ).name() );
-
     cout << "obj1 is " << *obj1 << endl;
     cout << "obj2 is " << *obj2 << endl;
-
     cout << "obj3 is " << *obj3 << endl;
 
     try

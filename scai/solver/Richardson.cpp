@@ -81,7 +81,6 @@ Richardson::RichardsonRuntime::~RichardsonRuntime() {}
 void Richardson::initialize( const lama::Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
-
     IterativeSolver::initialize( coefficients );
 
     if ( mOmega == -1.0 )
@@ -102,13 +101,12 @@ void Richardson::solveInit( lama::Vector& solution, const lama::Vector& rhs )
         runtime.mOldSolution.reset( lama::Vector::create( solution.getCreateValue() ) );
     }
 
-    if( !runtime.mX.get() )
+    if ( !runtime.mX.get() )
     {
         runtime.mX.reset( lama::Vector::create( solution.getCreateValue() ) );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
-
     IterativeSolver::solveInit( solution, rhs );
 }
 
@@ -128,21 +126,16 @@ void Richardson::solveFinalize()
 void Richardson::iterate()
 {
     RichardsonRuntime& runtime = getRuntime();
-
     const lama::Vector& rhs = *runtime.mRhs;
     const lama::Matrix& A = *runtime.mCoefficients;
     //swap old solution and solution pointer begin
     lama::Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
     lama::Vector* ptr_solution = &( *runtime.mSolution );
-
     runtime.mProxyOldSolution = ptr_solution;
     runtime.mSolution = ptr_OldSolution;
-
     const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
-
     lama::Vector& xRef = *runtime.mX;
     xRef = A * oldSolution;
-
     *runtime.mSolution = rhs - xRef;
 
     if ( mOmega != 1.0 )

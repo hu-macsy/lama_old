@@ -49,7 +49,7 @@ namespace scai
 namespace solver
 {
 
-class SingleGridSetup: 
+class SingleGridSetup:
 
     public AMGSetup,
     public AMGSetup::Register<SingleGridSetup>    // register at factory
@@ -109,7 +109,7 @@ public:
 
     static std::string createValue();
 
-    // Create routine used for factory 
+    // Create routine used for factory
 
     static AMGSetup* create();
 

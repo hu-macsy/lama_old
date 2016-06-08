@@ -73,7 +73,7 @@ public:
 
     /** OpenMP implementation for DIAKernelTrait::getCSRValues.  */
 
-    template<typename DIAValueType,typename CSRValueType>
+    template<typename DIAValueType, typename CSRValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],

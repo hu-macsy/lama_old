@@ -49,7 +49,7 @@ using namespace common;
 /* -------------------------------------------------------------------------------- */
 
 template<typename T>
-T my_divide (T x, T y)
+T my_divide ( T x, T y )
 {
     return x / y;
 }
@@ -57,8 +57,8 @@ T my_divide (T x, T y)
 template<typename T>
 struct MyPair
 {
-    MyPair( T _a, T _b ): a(_a), b(_b) {}
-    T a,b;
+    MyPair( T _a, T _b ): a( _a ), b( _b ) {}
+    T a, b;
     T multiply()
     {
         return a * b;
@@ -69,14 +69,11 @@ struct MyPair
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( bindFunctionTest, ValueType, scai_arithmetic_test_types )
 {
-    function<ValueType()> fn_five = bind ( my_divide<ValueType>, static_cast<ValueType>(10),static_cast<ValueType>(2) );
+    function<ValueType()> fn_five = bind ( my_divide<ValueType>, static_cast<ValueType>( 10 ), static_cast<ValueType>( 2 ) );
     ValueType res1 = fn_five();
-
     BOOST_CHECK_EQUAL( res1, 5.0 );
-
     MyPair<ValueType> ten_two( 10, 2 );
     function<ValueType( MyPair<ValueType> )> bound_member_fn = bind ( &MyPair<ValueType>::multiply, _1 );
     ValueType res2 = bound_member_fn( ten_two );
-
     BOOST_CHECK_EQUAL( res2, 20.0 );
 }

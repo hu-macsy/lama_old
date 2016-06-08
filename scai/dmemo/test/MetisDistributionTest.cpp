@@ -55,18 +55,12 @@ struct MetisDistributionTestConfig
     MetisDistributionTestConfig()
     {
         comm = Communicator::getCommunicator();
-
         rank = comm->getRank();
         size = comm->getSize();
-
         globalSize = 17;
-
         DistributionPtr d ( new NoDistribution( globalSize ) );
-
         matrix.reset( new Distributed( d ) );
-
         // weights
-
         float weight = static_cast<float>( 1.0 / size );
         parts.reserve( size );
 

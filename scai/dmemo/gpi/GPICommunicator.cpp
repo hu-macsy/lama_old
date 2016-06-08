@@ -89,9 +89,7 @@ CommunicatorPtr GPICommunicator::create()
     if ( !theGPICommunicator )
     {
         SCAI_LOG_INFO( logger, "create new GPICommunicator" )
-
         // create a new instance of GPICommunicator, will call GPI_Init
-
         theGPICommunicator = shared_ptr<const GPICommunicator>( new GPICommunicator() );
     }
 
@@ -129,34 +127,21 @@ GPICommunicator::GPICommunicator( )
       mThreadSafetyLevel( Communicator::Funneled )
 {
     SCAI_TRACE_SCOPE( false )   // switch off tracing in this scope as it might call this constructor again
-
     // set gaspi_printf as print routine for logging
-
     logging::GenLogger::myPrintf = &gaspi_printf;
-
     SCAI_LOG_DEBUG( logger, "GPICommunicator(): call init" )
-
     gaspi_timeout_t init_timeout = 10000;   // in milli seconds
-
     SCAI_GASPI_CALL( gaspi_proc_init( init_timeout ) )
-
     SCAI_GASPI_CALL( gaspi_proc_num( &mSize ) )
     SCAI_GASPI_CALL( gaspi_proc_rank( &mRank ) )
-
-    SCAI_LOG_INFO( logger, "GASPI proc " << mRank << " of " << mSize << " started")
-
+    SCAI_LOG_INFO( logger, "GASPI proc " << mRank << " of " << mSize << " started" )
     gaspi_number_t num_notifications;
-
     SCAI_GASPI_CALL( gaspi_notification_num ( &num_notifications ) )
-
     mMaxNotifications = num_notifications;
-
     SCAI_ASSERT_ERROR( mMaxNotifications >= 2 * mSize,
                        "# notifications = " << mMaxNotifications << " not sufficient"
                        << ", need at least 2 * " << mSize )
-
     // the following call is for convenience to get correct node rank by hostnames
-
     setNodeData();   // determine mNodeRank, mNodeSize, also uses some communication pattern
 }
 
@@ -167,30 +152,21 @@ GPICommunicator::GPICommunicator( )
 void GPICommunicator::setNodeData()
 {
     char nodeName[GPI_MAX_PROCESSOR_NAME];  // name of node for this processor
-
-    memset( nodeName,'\0', GPI_MAX_PROCESSOR_NAME );
-
+    memset( nodeName, '\0', GPI_MAX_PROCESSOR_NAME );
     // GPI is available only on Linux, so use this Linux routine
-
     gethostname( nodeName, GPI_MAX_PROCESSOR_NAME );
-
     SCAI_LOG_DEBUG( logger, "Processor " << mRank << " runs on node " << nodeName )
-
     char* allNodeNames = new char[ GPI_MAX_PROCESSOR_NAME * mSize ];
 
-    if( allNodeNames == NULL )
+    if ( allNodeNames == NULL )
     {
         COMMON_THROWEXCEPTION( "Can't alloc enough memory for all node names." )
     }
 
-    memset( allNodeNames, '\0', GPI_MAX_PROCESSOR_NAME * mSize * sizeof( char) );
-
+    memset( allNodeNames, '\0', GPI_MAX_PROCESSOR_NAME * mSize * sizeof( char ) );
     const PartitionId root = 0;
-
     gatherImpl( allNodeNames, GPI_MAX_PROCESSOR_NAME, root, nodeName );
-
     bcastImpl( allNodeNames, GPI_MAX_PROCESSOR_NAME * mSize, root );
-
     mNodeSize = 0;
     mNodeRank = mSize;  // illegal value to verify that it will be set
 
@@ -212,11 +188,8 @@ void GPICommunicator::setNodeData()
     }
 
     delete[] allNodeNames;
-
     SCAI_ASSERT_ERROR( mNodeSize > 0, "Serious problem encountered to get node size" )
-
     SCAI_ASSERT_ERROR( mNodeRank < mNodeSize, "Serious problem encountered to get node size" )
-
     SCAI_LOG_INFO( logger, *this << ": runs on " << nodeName
                    << ", node rank " << mNodeRank << " of " << mNodeSize )
 }
@@ -226,11 +199,8 @@ void GPICommunicator::setNodeData()
 GPICommunicator::~GPICommunicator()
 {
     SCAI_LOG_INFO( logger, *this << ": ~GPICommunicator" )
-
     GPIMemManager::freeAll();
-
     // do not call synchronize here as instrumentation of that routine causes problems
-
     SCAI_GASPI_CALL( gaspi_barrier( GASPI_GROUP_ALL, timeout ) )
     SCAI_GASPI_CALL( gaspi_proc_term( timeout ) )
 }
@@ -346,16 +316,11 @@ void GPICommunicator::wait() const
 void GPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[] ) const
 {
     SCAI_REGION( "Communicator.GPI.all2all" )
-
     SCAI_ASSERT_ERROR( sendSizes != 0, " invalid sendSizes " )
     SCAI_ASSERT_ERROR( recvSizes != 0, " invalid recvSizes " )
-
-
     // mSize will be the same on all processors
-
     SegmentData<int> sendSegment( this, mSize, const_cast<IndexType*>( sendSizes ) );  // locally used for sending
     SegmentData<int> recvSegment( this, mSize, recvSizes );  // other procs do remote write here
-
     SCAI_LOG_DEBUG( logger, *this << ": all2all exchange of sizes" )
 
     // Step 1: notify each receive partner that segment is available and give him the write offset
@@ -368,7 +333,6 @@ void GPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
         }
 
         const IndexType recvOffset = fromP + recvSegment.getOffset();
-
         notify( recvSegment.getID(), fromP, mRank, recvOffset );
     }
 
@@ -379,20 +343,15 @@ void GPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
     for ( PartitionId toP = 0; toP < mSize; ++toP )
     {
         // blocking wait until we get the remote offset that also indicates availability
-
         const IndexType quantity = 1;
         const IndexType localOffset = toP;
 
         if ( toP != mRank )
         {
             const IndexType remoteOffset = notifyWait( recvSegment.getID(), toP );
-
             remoteWrite( sendSegment, localOffset, toP, recvSegment, remoteOffset, quantity );
-
             SCAI_LOG_DEBUG( logger, *this << ": write " << toP << " " << sendSegment[ localOffset ] )
-
             // notify partner and tell him the number of written items
-
             notify( recvSegment.getID(), toP, mRank + mSize, 1 );
         }
         else
@@ -414,14 +373,11 @@ void GPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
         }
 
         const IndexType quantity = notifyWait( recvSegment.getID(), fromP + mSize );
-
         // notifiaction value is written size that we match against what is expected
-
         SCAI_ASSERT_EQUAL_ERROR( 1, quantity );
     }
 
     recvSegment.copyTo( recvSizes, mSize );  // copy from recvSegment back to recvSizes
-
     SCAI_LOG_DEBUG( logger, *this << ": all2all done" )
 }
 
@@ -439,7 +395,6 @@ void GPICommunicator::all2allvImpl(
     SCAI_ASSERT_UNEQUAL( recvCount, 0, "illegal" )
     SCAI_ASSERT_UNEQUAL( sendBuffer, 0, "illegal" )
     SCAI_ASSERT_UNEQUAL( sendCount, 0, "illegal" )
-
     COMMON_THROWEXCEPTION( "Not available yet" )
 }
 
@@ -453,19 +408,14 @@ void GPICommunicator::notify( const gaspi_segment_id_t segID,
                               IndexType val ) const
 {
     SCAI_LOG_DEBUG( logger, *this << ": notify processor " << target << " at id " << pos << " with val = " << val )
-
     SCAI_ASSERT_ERROR( pos < mMaxNotifications, "notifiation id " << pos << " illegal, max = " << mMaxNotifications )
     SCAI_ASSERT_ERROR( target < mSize, "target rank = " << target << " illegal, size = " << mSize )
     SCAI_ASSERT_ERROR( target != mRank, *this << ": notify for myself is not supported yet" )
     SCAI_ASSERT_ERROR( val >= 0, "notify val must not be negative" )
-
     // Be careful: val must not be 0
-
     gaspi_notification_t notVal = static_cast<gaspi_notification_t>( val + 1 );
-
     gaspi_rank_t            rank   = target;
     gaspi_notification_id_t notID  = pos;
-
     SCAI_GASPI_CALL( gaspi_notify( segID, rank, notID, notVal, mQueueID, GASPI_BLOCK ) );
 }
 
@@ -476,21 +426,13 @@ void GPICommunicator::notify( const gaspi_segment_id_t segID,
 IndexType GPICommunicator::notifyWait( const gaspi_segment_id_t segID, PartitionId pos ) const
 {
     SCAI_LOG_DEBUG( logger, *this << ": wait for notification at " << pos );
-
     SCAI_ASSERT_ERROR( pos < mMaxNotifications, "notifiation id " << pos << " illegal, max = " << mMaxNotifications )
-
     gaspi_notification_id_t begin_id = pos;
-
     gaspi_notification_id_t notID;
-
-    SCAI_GASPI_CALL ( gaspi_notify_waitsome( segID, begin_id, 1 , &notID, GASPI_BLOCK) );
-
+    SCAI_GASPI_CALL ( gaspi_notify_waitsome( segID, begin_id, 1 , &notID, GASPI_BLOCK ) );
     gaspi_notification_t notifyVal;
-
-    SCAI_GASPI_CALL( gaspi_notify_reset( segID, notID, &notifyVal) );
-
+    SCAI_GASPI_CALL( gaspi_notify_reset( segID, notID, &notifyVal ) );
     SCAI_LOG_DEBUG( logger, *this << ": got notification at " << pos << ", val = " << ( notifyVal - 1 ) );
-
     return static_cast<IndexType>( notifyVal - 1 );
 }
 
@@ -506,24 +448,17 @@ void GPICommunicator::exchangeByPlanImpl(
     const CommunicationPlan& sendPlan ) const
 {
     SCAI_REGION( "Communicator.GPI.exchangeByPlan" )
-
     SCAI_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     SCAI_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
-
     SCAI_LOG_DEBUG( logger, *this << ": exchange by plan for values of type " << TypeTraits<T>::id()
                     << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
-
     int noReceives = recvPlan.size();
     int noSends = sendPlan.size();
-
     int totalSendSize = sendPlan.totalQuantity();
     int totalRecvSize = recvPlan.totalQuantity();
-
     // setup segment data
-
     SegmentData<T> srcDataSegment( this, totalSendSize, const_cast<T*>( sendData ) );
     SegmentData<T> dstDataSegment( this, totalRecvSize, recvData );
-
     SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlan, send = " << noSends << ", " << totalSendSize
                     << ", recv = " << noReceives << ", " << totalRecvSize )
 
@@ -537,7 +472,6 @@ void GPICommunicator::exchangeByPlanImpl(
     }
 
     // now fill my buffer with the send data
-
     srcDataSegment.assign( sendData, totalSendSize );  // copy only if new segment data was allocated
 
     // Step 2: wait for notifications and then write the remote data
@@ -546,16 +480,11 @@ void GPICommunicator::exchangeByPlanImpl(
     {
         IndexType quantity = sendPlan[i].quantity;
         PartitionId toP    = sendPlan[i].partitionId;
-
         // blocking wait until we get the remote offset that also indicates availability
-
         const IndexType remoteOffset = notifyWait( dstDataSegment.getID(), toP );
         const IndexType localOffset  = sendPlan[i].offset;
-
         remoteWrite( srcDataSegment, localOffset, toP, dstDataSegment, remoteOffset, quantity );
-
         // notify partner and tell him the number of written items
-
         notify( dstDataSegment.getID(), toP, mRank + mSize, quantity );
     }
 
@@ -565,22 +494,15 @@ void GPICommunicator::exchangeByPlanImpl(
     {
         const PartitionId fromP    = recvPlan[i].partitionId;
         const IndexType   quantity = recvPlan[i].quantity;
-
         const IndexType val = notifyWait( dstDataSegment.getID(), fromP + mSize );
-
         // notifiaction value is written size that we match against what is expected
-
         SCAI_ASSERT_EQUAL_ERROR( quantity, val );
     }
 
     wait();
-
     // cpy for dst vector value
-
     dstDataSegment.copyTo( recvData, totalRecvSize ); // copy from segment to ptr
-
     // synchronize();   // make sure that my data is available until all procs have read it
-
     SCAI_LOG_DEBUG( logger, *this << ": free segments" )
 }
 
@@ -596,30 +518,21 @@ tasking::SyncToken* GPICommunicator::exchangeByPlanAsyncImpl(
     const CommunicationPlan& sendPlan ) const
 {
     SCAI_REGION( "Communicator.GPI.exchangeByPlanAsync" )
-
     SCAI_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     SCAI_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
-
     // Some global information from the communication plans
-
     int noReceives = recvPlan.size();
     int noSends = sendPlan.size();
-
     int totalSendSize = sendPlan.totalQuantity();
     int totalRecvSize = recvPlan.totalQuantity();
-
     SCAI_LOG_INFO( logger, *this << ": async exchange for values of type " << TypeTraits<T>::id()
                    << ", send to " << sendPlan.size() << " processors " << totalSendSize << " values"
                    << ", recv from " << recvPlan.size() << " processors " << totalRecvSize << " values" )
-
     // setup segment data
-
     shared_ptr<SegmentData<T> > srcDataSegment( new SegmentData<T>( this, totalSendSize ) );
     shared_ptr<SegmentData<T> > dstDataSegment( new SegmentData<T>( this, totalRecvSize ) );
-
     {
         // Step 1: notify each receive partner that segment is available and give him the write offset
-
         const IndexType segOffset = dstDataSegment->getOffset();
         const gaspi_segment_id_t segId = dstDataSegment->getID();
 
@@ -630,7 +543,6 @@ tasking::SyncToken* GPICommunicator::exchangeByPlanAsyncImpl(
             notify( segId, source, mRank, offset );
         }
     }
-
     srcDataSegment->assign( sendData, totalSendSize );
 
     // Step 2: wait for notifications and then write the remote data
@@ -639,21 +551,15 @@ tasking::SyncToken* GPICommunicator::exchangeByPlanAsyncImpl(
     {
         IndexType quantity = sendPlan[i].quantity;
         PartitionId toP    = sendPlan[i].partitionId;
-
         // blocking wait until we get the remote offset that also indicates availability
-
         const IndexType remoteOffset = notifyWait( dstDataSegment->getID(), toP );
         const IndexType localOffset  = sendPlan[i].offset;
-
         remoteWrite( *srcDataSegment, localOffset, toP, *dstDataSegment, remoteOffset, quantity );
-
         // notify partner and tell him the number of written items
-
         notify( dstDataSegment->getID(), toP, mRank + mSize, quantity );
     }
 
     // need an GPI Sync Token that waits on queue
-
     unique_ptr<GPISyncToken> pSyncToken( new GPISyncToken( dstDataSegment->getID(), noReceives ) );
 
     // Step 3: deal with remote write notifications
@@ -665,17 +571,13 @@ tasking::SyncToken* GPICommunicator::exchangeByPlanAsyncImpl(
     }
 
     // Keep SegmentData until synchronization of token
-
     pSyncToken->pushToken( srcDataSegment );
     pSyncToken->pushToken( dstDataSegment );
-
     // routines to be executed after the asnchronous write
     // To be careful: routines should be executed before accesses are freed
-
     pSyncToken->pushRoutine( common::bind( &SegmentData<T>::copyTo, dstDataSegment.get(), recvData, totalRecvSize ) );
     // Also wait that all remote writes have been finished
     pSyncToken->pushRoutine( common::bind( &GPICommunicator::wait, this ) );
-
     return pSyncToken.release();
 }
 
@@ -693,62 +595,45 @@ IndexType GPICommunicator::shiftImpl(
     const PartitionId dest ) const
 {
     SCAI_REGION( "Communicator.GPI.shift" )
-
     SCAI_ASSERT_ERROR( source != mRank, "source must not be this partition" )
     SCAI_ASSERT_ERROR( dest != mRank, "dest must not be this partition" )
-
     SCAI_ASSERT_ERROR( sendSize <= recvSize, "too large send" )
-
     SCAI_LOG_INFO( logger,
                    *this << ": shift<" << TypeTraits<T>::id()
                    << ">, recv from " << source << " max " << recvSize << " values "
                    << ", send to " << dest << " " << sendSize << " values." )
-
     SegmentData<T> srcDataSegment( this, recvSize, const_cast<T*>( sendVals ) );
     SegmentData<T> dstDataSegment( this, recvSize, recvVals );
-
     SCAI_LOG_DEBUG( logger, "shift: srcDataSegment = " << srcDataSegment )
     SCAI_LOG_DEBUG( logger, "shift: dstDataSegment = " << dstDataSegment )
-
     // Give my source process the offset where it can write the data
     {
         const IndexType offset = dstDataSegment.getOffset();
         notify( dstDataSegment.getID(), source, mRank, offset );
     }
-
     {
         // SCAI_REGION( "Communicator.GPI.shift.assign" )
         srcDataSegment.assign( sendVals, sendSize );  // skipped if sendVals is segment data
     }
-
     IndexType realRecvSize;
-
     {
         // SCAI_REGION( "Communicator.GPI.shift.remWrite" )
-
         const IndexType remoteOffset = notifyWait( dstDataSegment.getID(), dest );
         const IndexType localOffset  = 0;
         remoteWrite( srcDataSegment, localOffset, dest, dstDataSegment, remoteOffset, sendSize );
     }
     {
         // SCAI_REGION( "Communicator.GPI.shift.notification" )
-
         notify( dstDataSegment.getID(), dest, mRank + mSize, sendSize );
         realRecvSize = notifyWait( dstDataSegment.getID(), source + mSize );
     }
-
     // cpy the real receive size and the received data
-
     {
         // SCAI_REGION( "Communicator.GPI.shift.copyOut" )
-
         dstDataSegment.copyTo( recvVals, recvSize );  // skipped if recvVals is segment data
     }
-
     wait();  // Queues should be empty before returning
-
     SCAI_LOG_DEBUG( logger, "shift ready, recvSize = " << realRecvSize )
-
     return realRecvSize;
 }
 
@@ -765,45 +650,30 @@ tasking::SyncToken* GPICommunicator::shiftAsyncImpl(
     const IndexType size ) const
 {
     // SCAI_REGION( "Communicator.GPI.shiftAsyncImpl" )
-
     SCAI_LOG_DEBUG( logger,
                     *this << ": recv from " << source << ", send to " << dest << ", both " << size << " values." )
-
     SCAI_ASSERT_ERROR( source != mRank, "source must not be this partition" )
     SCAI_ASSERT_ERROR( dest != mRank, "dest must not be this partition" )
-
     shared_ptr<SegmentData<T> > srcSegment( new SegmentData<T>( this, size ) );
     shared_ptr<SegmentData<T> > dstSegment( new SegmentData<T>( this, size ) );
-
     {
         const IndexType offset = dstSegment->getOffset();
         notify( dstSegment->getID(), source, mRank, offset );
     }
-
     srcSegment->assign( sendVals, size );
-
     // need an GPI communicator with 1 notification
-
     unique_ptr<GPISyncToken> pSyncToken( new GPISyncToken( dstSegment->getID(), 1 ) );
-
     const IndexType remoteOffset = notifyWait( dstSegment->getID(), dest );
     const IndexType localOffset  = 0;
     remoteWrite( *srcSegment, localOffset, dest, *dstSegment, remoteOffset, size );
     notify( dstSegment->getID(), dest, mRank + mSize, size );
-
     // wait on receive is pushed in SyncToken
-
     pSyncToken->pushNotification( source + mSize );
-
     // routines to be executed after the wait
-
     pSyncToken->pushRoutine( common::bind( &SegmentData<T>::copyTo, dstSegment.get(), recvVals, size ) );
-
     // Keep SegmentData until synchronization of token
-
     pSyncToken->pushToken( srcSegment );
     pSyncToken->pushToken( dstSegment );
-
     return pSyncToken.release();
 }
 
@@ -815,17 +685,11 @@ template<typename T>
 T GPICommunicator::sumImpl( const T value ) const
 {
     SCAI_REGION( "Communicator.GPI.sum" )
-
     T localSum = value;   // might be used also as buffer
-
     T globalSum;
-
     gaspi_datatype_t commType = getGPIType<T>();
-
     SCAI_GASPI_CALL( gaspi_allreduce( &localSum, &globalSum, 1, GASPI_OP_SUM, commType, group, timeout ) )
-
     SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << globalSum )
-
     return globalSum;
 }
 
@@ -837,19 +701,12 @@ template<typename T>
 T GPICommunicator::minImpl( const T value ) const
 {
     SCAI_REGION( "Communicator.GPI.min" )
-
     SCAI_LOG_DEBUG( logger, "minImpl: local value = " << value )
-
     T localMin = value;   // might be used also as buffer
-
     T globalMin = 0;
-
     gaspi_datatype_t commType = getGPIType<T>();
-
     SCAI_GASPI_CALL( gaspi_allreduce( &localMin, &globalMin, 1, GASPI_OP_MIN, commType, group, timeout ) )
-
     SCAI_LOG_DEBUG( logger, "minImpl: global value = " << globalMin )
-
     return globalMin;
 }
 
@@ -861,19 +718,12 @@ template<typename T>
 T GPICommunicator::maxImpl( const T value ) const
 {
     SCAI_REGION( "Communicator.GPI.max" )
-
     T localMax = value;   // might be used also as buffer
-
     T globalMax = 0;
-
     SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
-
     gaspi_datatype_t commType = getGPIType<T>();
-
     SCAI_GASPI_CALL( gaspi_allreduce( &localMax, &globalMax, 1, GASPI_OP_MAX, commType, group, timeout ) );
-
     SCAI_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
-
     return globalMax;
 }
 
@@ -884,11 +734,8 @@ T GPICommunicator::maxImpl( const T value ) const
 void GPICommunicator::synchronize() const
 {
     SCAI_REGION( "Communicator.GPI.synchronize" )
-
     SCAI_LOG_DEBUG( logger, *this << ": before barrier" )
-
     SCAI_GASPI_CALL( gaspi_barrier( GASPI_GROUP_ALL, timeout ) )
-
     SCAI_LOG_DEBUG( logger, *this << ": after barrier" )
 }
 
@@ -908,9 +755,7 @@ void GPICommunicator::bcastImpl( T val[], const IndexType n, const PartitionId r
     }
 
     SegmentData<T> segment( this, n );
-
     SCAI_LOG_DEBUG( logger, *this << ": bcast<" << TypeTraits<T>::id() << ">, root = " << root << ", n = " << n )
-
     int distance = 1;
 
     if ( mRank == root )
@@ -941,11 +786,8 @@ void GPICommunicator::bcastImpl( T val[], const IndexType n, const PartitionId r
             if ( partner < mSize )
             {
                 // send partner data
-
                 PartitionId target = ( partner + root ) % mSize;
-
                 SCAI_LOG_DEBUG( logger, *this << ": bcast send to " << target )
-
                 const IndexType remoteOffset = notifyWait( segment.getID(), target );
                 const IndexType localOffset  = 0;
                 remoteWrite( segment, localOffset, target, segment, remoteOffset, n );
@@ -956,13 +798,9 @@ void GPICommunicator::bcastImpl( T val[], const IndexType n, const PartitionId r
         if ( ( gRank % steph ) == distance )
         {
             PartitionId partner = gRank - distance;
-
             // receive partner data
-
             PartitionId source = ( partner + root ) % mSize;
-
             SCAI_LOG_DEBUG( logger, *this << ": bcast recv from " << source )
-
             const IndexType offset = segment.getOffset();
             notify( segment.getID(), source, mRank, offset );
             const IndexType val = notifyWait( segment.getID(), source + mSize );
@@ -1000,8 +838,7 @@ void GPICommunicator::scatterImpl( T myvals[], const IndexType n, const Partitio
 
     if ( mRank == root )
     {
-        srcSegment.assign( allvals, n * mSize); // copy from ptr to segment
-
+        srcSegment.assign( allvals, n * mSize ); // copy from ptr to segment
         IndexType offset = srcSegment.getOffset();
 
         for ( PartitionId pid = 0; pid < mSize; ++pid )
@@ -1030,7 +867,6 @@ void GPICommunicator::scatterImpl( T myvals[], const IndexType n, const Partitio
     }
 
     wait();  // make sure that remoteRead has finished
-
     dstSegment.copyTo( myvals, n );  // each proc copies its values from dst
 
     for ( int i = 0; i < n; ++i )
@@ -1071,9 +907,7 @@ void GPICommunicator::scatterVImpl(
     const IndexType sizes[] ) const
 {
     SCAI_REGION( "Communicator.GPI.scatterV" )
-
     SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
-
     int totalSize = 1;
 
     // Array sizes might be available only on root processor
@@ -1090,16 +924,13 @@ void GPICommunicator::scatterVImpl(
 
     SCAI_LOG_DEBUG( logger, *this << ": scatterV<" << TypeTraits<T>::id() << ">, n = "
                     << n << ", total = " << totalSize )
-
     SegmentData<T> srcSegment( this, totalSize );   // for allVals
     SegmentData<T> dstSegment( this, n );           // for myVals
-
     IndexType rootOffset = 0;  // only used if mRank == root and n > 0
 
     if ( mRank == root )
     {
-        srcSegment.assign( allvals, totalSize); // copy from ptr to segment
-
+        srcSegment.assign( allvals, totalSize ); // copy from ptr to segment
         IndexType offset = srcSegment.getOffset();
 
         for ( PartitionId pid = 0; pid < mSize; ++pid )
@@ -1141,7 +972,6 @@ void GPICommunicator::scatterVImpl(
         }
 
         wait();  // make sure that remoteRead has finished
-
         dstSegment.copyTo( myvals, n );  // each proc copies its values from dst
     }
 
@@ -1177,29 +1007,18 @@ void GPICommunicator::remoteWrite( const SegmentData<T>& localSegment, const Ind
                     << " @ p = " << remP << ", size = " << size
                     << " = local " << localSegment << ":" << localOffset
                     << ", size = " << size )
-
     // SegmentData might have an additonal offset to be considered
-
     const gaspi_offset_t localSegOffset = ( localSegment.getOffset() + localOffset ) * sizeof( T );
     const gaspi_offset_t remSegOffset   = remoteOffset * sizeof( T );
-
     // gaspi_write needs segment ids
-
     const gaspi_segment_id_t localID = localSegment.getID();
     const gaspi_segment_id_t remID   = remSegment.getID();
-
     gaspi_pointer_t ptr;
-
     SCAI_GASPI_CALL ( gaspi_segment_ptr ( localID, &ptr ) )
-
     gaspi_pointer_t s = static_cast<char*>( ptr ) + localSegOffset;
-
     SCAI_GASPI_CALL ( gaspi_segment_ptr ( remID, &ptr ) )
-
     gaspi_pointer_t t = static_cast<char*>( ptr ) + remSegOffset;
-
     SCAI_LOG_DEBUG( logger, *this << ": localAddr = " << s << ", remAddr = " << t )
-
     SCAI_GASPI_CALL( gaspi_write( localID, localSegOffset, remP, remID, remSegOffset, size * sizeof( T ), mQueueID, timeout ) )
 }
 
@@ -1211,7 +1030,6 @@ void GPICommunicator::localWrite( const SegmentData<T>& srcSegment, const IndexT
                     << ", size = " << size
                     << " = local " << srcSegment << ":" << srcOffset
                     << ", size = " << size )
-
     const T* srcPtr = srcSegment.get() + srcOffset;
     T* dstPtr = dstSegment.get() + dstOffset;
     memcpy( dstPtr, srcPtr, size * sizeof( T ) );
@@ -1224,16 +1042,12 @@ void GPICommunicator::remoteRead( SegmentData<T>& localSegment, const IndexType 
     SCAI_LOG_DEBUG( logger, *this << ": remoteRead<" << TypeTraits<T>::id()
                     << ">, local " << localSegment << ":" << localOffset
                     << " = remote " << remSegment  << ":" << remoteOffset
-                    << " @ p = " << remP << ", size = " << size)
-
+                    << " @ p = " << remP << ", size = " << size )
     const gaspi_offset_t localSegOffset = ( localSegment.getOffset() + localOffset ) * sizeof( T );
     const gaspi_offset_t remSegOffset = remoteOffset * sizeof( T );
-
     // Important: remoteOffset must have added remoteSegment.getOffset() of the remote processor
-
     const gaspi_segment_id_t localID = localSegment.getID();
     const gaspi_segment_id_t remID = remSegment.getID();
-
     SCAI_GASPI_CALL( gaspi_read( localID, localSegOffset, remP, remID, remSegOffset, size * sizeof( T ), mQueueID, timeout ) )
 }
 
@@ -1245,9 +1059,7 @@ template<typename T>
 void GPICommunicator::gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const
 {
     SCAI_REGION( "Communicator.GPI.gather" )
-
     SCAI_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
-
     SCAI_LOG_DEBUG( logger, *this << ": gather<" << TypeTraits<T>::id() <<
                     " of " << n << " elements, root = " << root )
 
@@ -1258,7 +1070,6 @@ void GPICommunicator::gatherImpl( T allvals[], const IndexType n, const Partitio
 
     SegmentData<T> srcSegment( this, n );          // keeps myvals to be accessed by root
     SegmentData<T> dstSegment( this, n * mSize );  // keeps allvals on root
-
     srcSegment.assign( myvals, n ); // copy from ptr to segment
 
     if ( root == mRank )
@@ -1325,10 +1136,8 @@ void GPICommunicator::gatherVImpl(
     const IndexType sizes[] ) const
 {
     SCAI_REGION( "Communicator.GPI.gatherV" )
-
     SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
     SCAI_LOG_DEBUG( logger, *this << ": gather, root = " << root )
-
     int totalSize = 1;   // default value for non-root processors
 
     if ( mRank == root )
@@ -1343,14 +1152,10 @@ void GPICommunicator::gatherVImpl(
 
     SCAI_LOG_DEBUG( logger, *this << ": gatherV<" << TypeTraits<T>::id() << ">, n = "
                     << n << ", total = " << totalSize )
-
     // Note: segment data is now safe against different values of n, totalSize
-
     SegmentData<T> srcSegment( this, n );
     SegmentData<T> dstSegment( this, totalSize );   // allValues on root
-
     srcSegment.assign( myvals, n ); // copy from ptr to segment
-
     IndexType rootOffset = 0;
 
     if ( root == mRank )
@@ -1430,24 +1235,22 @@ void GPICommunicator::maxlocImpl( T& val, IndexType& location, PartitionId root 
     // get max values
     T myVal = val;
     val = max( val );
-
     IndexType itsMyValue = -1;
 
-    if( myVal == val )
+    if ( myVal == val )
     {
         itsMyValue = location;
     }
 
     vector<IndexType> locations( mSize );
-
     gatherImpl( locations.data(), 1, root, &itsMyValue );
 
-    if( mRank == root )
+    if ( mRank == root )
     {
         // find first property not -1
-        for( int i = 0; i < mSize; ++i )
+        for ( int i = 0; i < mSize; ++i )
         {
-            if( locations[i] != -1 )
+            if ( locations[i] != -1 )
             {
                 location = i;
                 break;
@@ -1466,7 +1269,6 @@ template<typename T>
 void GPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner ) const
 {
     // this is now safe as there is no global synchronization
-
     if ( partner == mRank )
     {
         return;
@@ -1474,26 +1276,19 @@ void GPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner 
 
     SegmentData<T> srcSegment( this, n );   // used remote, will be read
     SegmentData<T> dstSegment( this, n );   // used locally
-
     SCAI_LOG_DEBUG( logger, *this << ": swap with processor " << partner << ", n = " << n )
-
     // Tell my partner where to write
-
     const IndexType offset = dstSegment.getOffset();
     notify( dstSegment.getID(), partner, mRank, offset );
-
     srcSegment.assign( val, n );
-
     // wait for ready to write of my partner
     const IndexType remoteOffset = notifyWait( dstSegment.getID(), partner );
     const IndexType localOffset  = 0;
     remoteWrite( srcSegment, localOffset, partner, dstSegment, remoteOffset, n );
     notify( dstSegment.getID(), partner, mRank + mSize, n );
-
     // wait for acknowledge that my data has been written
     const IndexType nn = notifyWait( dstSegment.getID(), partner + mSize );
     SCAI_ASSERT_EQUAL_ERROR( n, nn );
-
     dstSegment.copyTo( val, n );
 }
 
@@ -1505,7 +1300,6 @@ hmemo::ContextPtr GPICommunicator::getCommunicationContext( const hmemo::_HArray
 {
     // for comparison:
     // return ContextFactory::getContext( Context::Host );
-
     return hmemo::Context::getHostPtr();
 }
 

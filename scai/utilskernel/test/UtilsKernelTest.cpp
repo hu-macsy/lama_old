@@ -73,12 +73,8 @@ bool init_function()
 int main( int argc, char* argv[] )
 {
     SCAI_LOG_THREAD( "main" )
-
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
-
     int rc = boost::unit_test::unit_test_main( &init_function, argc, argv );
-
     testContext.reset();   // frees the context
-
     return rc;
 }

@@ -50,7 +50,7 @@ namespace utilskernel
 
 struct reduction
 {
-    /** Enumeration type for reduction operators used in set/scatter ops  
+    /** Enumeration type for reduction operators used in set/scatter ops
      *
      *  The reduction operator specifies for typical reductions what kind
      *  of operator is applied to combine two elements.
@@ -58,7 +58,7 @@ struct reduction
      *  \code
      *  A[i] = A[i] reduction_op B[i]
      *  \endcode
-     *  
+     *
      */
 
     typedef enum
@@ -86,31 +86,40 @@ inline std::ostream& operator<<( std::ostream& stream, const reduction::Reductio
         case reduction::COPY:
             stream << "COPY";
             break;
+
         case reduction::ADD:
             stream << "ADD";
             break;
+
         case reduction::SUB:
             stream << "SUB";
             break;
+
         case reduction::MULT:
             stream << "MULT";
             break;
+
         case reduction::DIVIDE:
             stream << "DIVIDE";
             break;
+
         case reduction::MIN:
             stream << "MIN";
             break;
+
         case reduction::MAX:
             stream << "MAX";
             break;
+
         case reduction::ABS_MAX:
             stream << "ABS_MAX";
             break;
+
         default:
             stream << "<unknown_reduction_op>";
             break;
     }
+
     return stream;
 }
 

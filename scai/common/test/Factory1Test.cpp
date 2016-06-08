@@ -122,30 +122,22 @@ template Base::Register<TDerived<float> >::RegisterGuard Base::Register<TDerived
 BOOST_AUTO_TEST_CASE( Factory1Test )
 {
     std::vector<std::string> values;  // string is create type for the factory
-
     Base::getCreateValues( values );
-
     size_t size_expected = 3;  // we have registered 3 classes in factory
-
     BOOST_CHECK_EQUAL( size_expected, values.size() );
-
     BOOST_CHECK( Base::canCreate( "D" ) );
     BOOST_CHECK( !Base::canCreate( "F" ) );
-    BOOST_CHECK( Base::canCreate( typeid(int).name() ) );
-    BOOST_CHECK( !Base::canCreate( typeid(double).name() ) );
-
+    BOOST_CHECK( Base::canCreate( typeid( int ).name() ) );
+    BOOST_CHECK( !Base::canCreate( typeid( double ).name() ) );
     BOOST_CHECK_THROW( { Base::create( "e", 1 ); }, Exception );
-
     Base* obj = Base::create( "D", 5 );
     Derived* derivedObj = dynamic_cast<Derived*>( obj );
     BOOST_REQUIRE( derivedObj );
     BOOST_CHECK_EQUAL( 5, derivedObj->getVal() );
-
-    obj = Base::create( typeid(int).name(), 0 );
+    obj = Base::create( typeid( int ).name(), 0 );
     TDerived<int>* intObj = dynamic_cast<TDerived<int>*>( obj );
     TDerived<float>* floatObj = dynamic_cast<TDerived<float>*>( obj );
     TDerived<double>* doubleObj = dynamic_cast<TDerived<double>*>( obj );
-
     BOOST_CHECK( intObj );
     BOOST_CHECK( floatObj == NULL );
     BOOST_CHECK( doubleObj == NULL );

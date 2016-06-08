@@ -45,7 +45,7 @@ namespace common
 {
 
 /** Derived exception class that is used to throw an exception in all cases
- *  where an illegal or unsupported value is used. 
+ *  where an illegal or unsupported value is used.
  */
 
 class COMMON_DLL_IMPORTEXPORT NotSupportedValueTypeException : public Exception
@@ -54,14 +54,14 @@ public:
     /**
      * @brief The default constructor creates an NotSupportedValueTypeException with no message.
      */
-	NotSupportedValueTypeException( );
+    NotSupportedValueTypeException( );
 
     /**
      * @brief This constructor creates an NotSupportedValueTypeException with the passed message.
      *
      * @param[in] message  the message to assign to this.
      */
-	NotSupportedValueTypeException( const std::string& message );
+    NotSupportedValueTypeException( const std::string& message );
 
     /**
      * @brief The destructor destroys this NotSupportedValueTypeException.

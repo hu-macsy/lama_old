@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Definition of derived class GPISyncToken that defines a SyncToken for GPI
- * @author Thomas Brandes    
+ * @author Thomas Brandes
  * @date 25.02.2014
  */
 
@@ -66,8 +66,8 @@ public:
     // TODO: doxy docu
     /** Constructor for an GPI synchronization token.
      *
-     *  @param segId 
-     *  @param numNotifications 
+     *  @param segId
+     *  @param numNotifications
      *
      *  Each pending send and receive will have its own request.
      */

@@ -60,7 +60,7 @@ public:
 
     /** This method scales the matrix using an value vector */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void scaleValue(
         const IndexType numRows,
         const IndexType perm[],
@@ -71,7 +71,7 @@ public:
 
     /** This method sets row as dens vector of the i'th row of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void getRow(
         OtherValueType row[],
         const IndexType i,
@@ -122,7 +122,7 @@ public:
 
     /** Conversion of JDS to CSR as specified in JDSKernelTrait::getCSRValues  */
 
-    template<typename JDSValueType,typename CSRValueType>
+    template<typename JDSValueType, typename CSRValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -136,7 +136,7 @@ public:
 
     /** Conversion of CSR to JDS in CUDA as specified in JDSKernelTrait::getCSRValues  */
 
-    template<typename JDSValueType,typename CSRValueType>
+    template<typename JDSValueType, typename CSRValueType>
     static void setCSRValues(
         IndexType jdsJA[],
         JDSValueType jdsValues[],

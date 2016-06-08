@@ -47,14 +47,10 @@ using namespace common;
 BOOST_AUTO_TEST_CASE_TEMPLATE( TypeTraitsTest, ValueType, scai_arithmetic_test_types )
 {
     scalar::ScalarType stype = TypeTraits<ValueType>::stype;
-
     std::ostringstream out1;
     std::ostringstream out2;
-
     out1 << TypeTraits<ValueType>::id();
     out2 << stype;
-
     // std::cout << "out1 = " << out1.str() << ", out2 = " << out2.str() << std::endl;
-
     BOOST_CHECK_EQUAL( out1.str(), out2.str() );
 }

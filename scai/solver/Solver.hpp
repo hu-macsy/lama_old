@@ -75,8 +75,8 @@ typedef common::shared_ptr<Solver> SolverPtr;
  * a custom ID for a solver and a residual calculation capabilities.
  */
 class COMMON_DLL_IMPORTEXPORT Solver:
-		public common::Printable,
-		public common::Factory1<std::string, std::string, Solver*>
+    public common::Printable,
+    public common::Factory1<std::string, std::string, Solver*>
 {
 public:
     /**
@@ -217,7 +217,10 @@ public:
      *
      * @returns the context where this solver would be executed.
      */
-    hmemo::ContextPtr getContextPtr() { return mContext; }
+    hmemo::ContextPtr getContextPtr()
+    {
+        return mContext;
+    }
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -225,7 +228,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy() =0;
+    virtual SolverPtr copy() = 0;
 
     /**
      * @brief Status independent solver informations
@@ -269,12 +272,12 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual SolverRuntime& getRuntime() =0;
+    virtual SolverRuntime& getRuntime() = 0;
 
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const SolverRuntime& getConstRuntime() const =0;
+    virtual const SolverRuntime& getConstRuntime() const = 0;
 
 protected:
 

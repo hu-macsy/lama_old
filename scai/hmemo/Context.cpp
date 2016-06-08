@@ -70,7 +70,6 @@ Context::~Context()
 void Context::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-
     stream << "Context";
 }
 
@@ -80,7 +79,7 @@ void Context::enable( const char* file, int line ) const
 {
     SCAI_LOG_INFO( logger, file << "( line = " << line << ") : enable " << *this )
 
-    if( mEnabled )
+    if ( mEnabled )
     {
         SCAI_LOG_INFO( logger,
                        "Enable " << *this << " at " << file << " ( line = " << line << " )" << ", already enabled at " << mFile << " ( line = " << mLine << " )" )
@@ -97,7 +96,7 @@ void Context::disable( const char* file, int line ) const
 {
     SCAI_LOG_INFO( logger, file << "( line = " << line << ") : disable " << *this )
 
-    if( !mEnabled )
+    if ( !mEnabled )
     {
         SCAI_LOG_INFO( logger,
                        "Disable " << *this << " at " << file << " ( line = " << line << " )" << ", context was not enabled before" )
@@ -134,7 +133,6 @@ void Context::enableZeroCopy( bool flag ) const
 MemoryPtr Context::getHostMemoryPtr() const
 {
     // take the host memory of the memory factory
-
     ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
     return hostContextPtr->getMemoryPtr();
 }
@@ -169,7 +167,6 @@ ContextPtr Context::getContextPtr()
     if ( common::Settings::getEnvironment( ctx_string, "SCAI_CONTEXT" ) )
     {
         // ctx_string name not case sensitive, take it upper case
-
         for ( std::string::iterator p = ctx_string.begin(); ctx_string.end() != p; ++p )
         {
             *p = static_cast<std::string::value_type>( toupper( *p ) );

@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Template class for Factory 
+ * @brief Template class for Factory
  * @author Thomas Brandes
  * @date 08.07.2015
  */
@@ -85,12 +85,12 @@ public:
     static OutputType create( const InputType type );
 
     /** This template class can be used as base class for derived classes
-     *  to force registration. 
+     *  to force registration.
      *
-     *  Derived class must provide create function and createValue 
+     *  Derived class must provide create function and createValue
      */
     template<class Derived>
-    class Register 
+    class Register
     {
     public:
 
@@ -117,9 +117,9 @@ public:
 
     static bool canCreate( const InputType type );
 
-    /** @brief Method to get all registered values. 
+    /** @brief Method to get all registered values.
      *
-     *  @param[out] values contains all registered values of InputType for 
+     *  @param[out] values contains all registered values of InputType for
      *              which a CreateFn has been registered.
      */
 
@@ -152,12 +152,11 @@ private:
 /*  Implementation of methods for class Register of template class              */
 /* -----------------------------------------------------------------------------*/
 
-template<typename InputType, typename OutputType> 
+template<typename InputType, typename OutputType>
 template<class Derived>
 Factory<InputType, OutputType>::Register<Derived>::Register()
 {
     // just some trick stuff to cheat most compilers so they instantiate the static variable
-
     if ( !registerGuard.initialized )
     {
         COMMON_THROWEXCEPTION( "Register without Guard" )
@@ -168,7 +167,7 @@ Factory<InputType, OutputType>::Register<Derived>::Register()
 /*  Constructor/Destructor  RegisterGuard                                       */
 /* -----------------------------------------------------------------------------*/
 
-template<typename InputType, typename OutputType> 
+template<typename InputType, typename OutputType>
 template<class Derived>
 Factory<InputType, OutputType>::Register<Derived>::RegisterGuard::RegisterGuard()
 {
@@ -176,17 +175,17 @@ Factory<InputType, OutputType>::Register<Derived>::RegisterGuard::RegisterGuard(
     initialized = true;
 }
 
-template<typename InputType, typename OutputType> 
+template<typename InputType, typename OutputType>
 template<class Derived>
 Factory<InputType, OutputType>::Register<Derived>::RegisterGuard::~RegisterGuard()
 {
     Derived::removeCreator( Derived::createValue() );
 }
 
-// ATTENTION: this instantiation is not sufficient for some compilers, 
+// ATTENTION: this instantiation is not sufficient for some compilers,
 //            so it must be done explicitly later for some compilers
 
-template<typename InputType, typename OutputType> 
+template<typename InputType, typename OutputType>
 template<class Derived>
 typename Factory<InputType, OutputType>::template Register<Derived>::RegisterGuard
 Factory<InputType, OutputType>::Register<Derived>::registerGuard;
@@ -195,15 +194,12 @@ Factory<InputType, OutputType>::Register<Derived>::registerGuard;
 /*  Implementation of methods for template class                                */
 /* -----------------------------------------------------------------------------*/
 
-template<typename InputType, typename OutputType> 
+template<typename InputType, typename OutputType>
 OutputType Factory<InputType, OutputType>::create( const InputType type )
 {
     using ::operator<<;
-
     OutputType value;
-
     const CreatorMap& factory = getFactory();
-
     typename CreatorMap::const_iterator fn = factory.find( type );
 
     if ( fn  != factory.end() )
@@ -213,7 +209,6 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
     else
     {
         // Be careful: operator<< for InputType must be available
-
         COMMON_THROWEXCEPTION( "Factory: no creator for " << type << " available" )
     }
 
@@ -221,11 +216,10 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 }
 
 template<typename InputType, typename OutputType>
-std::map<InputType, OutputType(* )() >& Factory<InputType, OutputType>::getFactory()
+std::map<InputType, OutputType( * )() >& Factory<InputType, OutputType>::getFactory()
 {
     // Factory will be created during static initialization when it is needed for the first time
     // A destructor is never called as registered objects still might remove themselves later
-
     static CreatorMap* factory = NULL;
 
     if ( factory == NULL )
@@ -242,9 +236,7 @@ template<typename InputType, typename OutputType>
 void Factory<InputType, OutputType>::addCreator( const InputType type, CreateFn create )
 {
     CreatorMap& factory = getFactory();
-
     // checks for multiple entries is not really necessary here, so just add entry in map container.
-
     factory.insert( std::pair<InputType, CreateFn>( type, create ) );
 }
 
@@ -254,11 +246,8 @@ template<typename InputType, typename OutputType>
 void Factory<InputType, OutputType>::removeCreator( const InputType type )
 {
     // Note: factory is never deleted so this call is safe at program exit
-
     CreatorMap& factory = getFactory();
-
     // the following call is also safe if factory does not contain the creator for type
-
     factory.erase( type );
 }
 
@@ -268,9 +257,7 @@ template<typename InputType, typename OutputType>
 bool Factory<InputType, OutputType>::canCreate( InputType value )
 {
     CreatorMap& factory = getFactory();
-
     typename CreatorMap::const_iterator it = factory.find( value );
-
     return it != factory.end();
 }
 
@@ -280,11 +267,8 @@ template<typename InputType, typename OutputType>
 void Factory<InputType, OutputType>::getCreateValues( std::vector<InputType>& values )
 {
     CreatorMap& factory = getFactory();
-
     values.clear();
-
     values.reserve( factory.size() );
-
     typename CreatorMap::const_iterator it;
 
     for ( it = factory.begin(); it != factory.end(); ++it )

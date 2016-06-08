@@ -89,35 +89,27 @@ void MICCOOUtils::getCSRSizes(
     const IndexType cooIA[] )
 {
     SCAI_LOG_INFO( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues )
-
     void* csrSizesPtr = csrSizes;
     const void* cooIAPtr = cooIA;
-
     // load distribution is done implicitly by block distribution of csrSizes
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( numRows, numValues, csrSizesPtr, cooIAPtr )
-
     {
-        IndexType* csrSizes = (IndexType*) csrSizesPtr;
-        const IndexType* cooIA = (const IndexType*) cooIAPtr;
-
+        IndexType* csrSizes = ( IndexType* ) csrSizesPtr;
+        const IndexType* cooIA = ( const IndexType* ) cooIAPtr;
         #pragma omp parallel
         {
             // initialize size array for each row
-
             #pragma omp for
-            for( IndexType i = 0; i <= numRows; i++ )
+            for ( IndexType i = 0; i <= numRows; i++ )
             {
                 csrSizes[i] = 0;
             }
 
             // increment size of a row for each used row value
-
             #pragma omp for
 
-            for( IndexType k = 0; k < numValues; k++ )
+            for ( IndexType k = 0; k < numValues; k++ )
             {
                 IndexType i = cooIA[k];
                 #pragma omp atomic
@@ -129,7 +121,7 @@ void MICCOOUtils::getCSRSizes(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename COOValueType,typename CSRValueType>
+template<typename COOValueType, typename CSRValueType>
 void MICCOOUtils::getCSRValuesP(
     IndexType csrJA[],
     CSRValueType csrValues[],
@@ -143,68 +135,55 @@ void MICCOOUtils::getCSRValuesP(
     SCAI_LOG_ERROR( logger,
                     "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
                     << ", #rows = " << numRows << ", #values = " << numValues )
-
     void* csrJAPtr = csrJA;
     void* csrValuesPtr = csrValues;
     void* csrIAPtr = csrIA;
-
     const void* cooIAPtr = cooIA;
     const void* cooJAPtr = cooJA;
     const void* cooValuesPtr = cooValues;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( numRows, numValues, csrJAPtr, csrValuesPtr, csrIAPtr, cooIAPtr, cooJAPtr, cooValuesPtr )
     {
         std::vector<IndexType> rowOffset( numRows ); // temp copy of csrIA
-
-        IndexType* csrJA = (IndexType*) cooJAPtr;
-        CSRValueType* csrValues = (CSRValueType*) csrValuesPtr;
-        const IndexType* csrIA = (IndexType*) csrIAPtr;
-
-        const IndexType* cooIA = (const IndexType*) cooIAPtr;
-        const IndexType* cooJA = (const IndexType*) cooJAPtr;
-        const COOValueType* cooValues = (const COOValueType*) cooValuesPtr;
-
+        IndexType* csrJA = ( IndexType* ) cooJAPtr;
+        CSRValueType* csrValues = ( CSRValueType* ) csrValuesPtr;
+        const IndexType* csrIA = ( IndexType* ) csrIAPtr;
+        const IndexType* cooIA = ( const IndexType* ) cooIAPtr;
+        const IndexType* cooJA = ( const IndexType* ) cooJAPtr;
+        const COOValueType* cooValues = ( const COOValueType* ) cooValuesPtr;
         #pragma omp parallel
         {
             #pragma omp for
 
-            for( IndexType i = 0; i < numRows; ++i )
+            for ( IndexType i = 0; i < numRows; ++i )
             {
                 rowOffset[i] = csrIA[i];
             }
 
             // traverse the non-zero values and put data at the right places
-
             #pragma omp for
 
             for ( IndexType k = 0; k < numValues; k++ )
             {
                 IndexType i = cooIA[k];
-
                 // better :  IndexType offset = __sync_fetch_and_add( &rowOffset[i], 1 );
-
                 IndexType offset;
-
                 #pragma omp critical
                 {
                     offset = rowOffset[i];
                     rowOffset[i]++;
                 }
-
                 csrJA[offset] = cooJA[k];
                 csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
             }
         }
     }
-
     // ToDo: still some problems with diagonal property
 }
 
 /* --------------------------------------------------------------------------- */
 
-template<typename COOValueType,typename CSRValueType>
+template<typename COOValueType, typename CSRValueType>
 void MICCOOUtils::getCSRValuesS(
     IndexType csrJA[],
     CSRValueType csrValues[],
@@ -218,30 +197,24 @@ void MICCOOUtils::getCSRValuesS(
     SCAI_LOG_ERROR( logger,
                     "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
                     << ", #rows = " << numRows << ", #values = " << numValues )
-
     void* csrJAPtr = csrJA;
     void* csrValuesPtr = csrValues;
     void* csrIAPtr = csrIA;
-
     const void* cooIAPtr = cooIA;
     const void* cooJAPtr = cooJA;
     const void* cooValuesPtr = cooValues;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( numRows, numValues, csrJAPtr, csrValuesPtr, csrIAPtr, cooIAPtr, cooJAPtr, cooValuesPtr )
     {
         std::vector<IndexType> rowOffset( numRows ); // temp copy of csrIA
+        IndexType* csrJA = ( IndexType* ) cooJAPtr;
+        CSRValueType* csrValues = ( CSRValueType* ) csrValuesPtr;
+        const IndexType* csrIA = ( IndexType* ) csrIAPtr;
+        const IndexType* cooIA = ( const IndexType* ) cooIAPtr;
+        const IndexType* cooJA = ( const IndexType* ) cooJAPtr;
+        const COOValueType* cooValues = ( const COOValueType* ) cooValuesPtr;
 
-        IndexType* csrJA = (IndexType*) cooJAPtr;
-        CSRValueType* csrValues = (CSRValueType*) csrValuesPtr;
-        const IndexType* csrIA = (IndexType*) csrIAPtr;
-
-        const IndexType* cooIA = (const IndexType*) cooIAPtr;
-        const IndexType* cooJA = (const IndexType*) cooJAPtr;
-        const COOValueType* cooValues = (const COOValueType*) cooValuesPtr;
-
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             rowOffset[i] = csrIA[i];
         }
@@ -251,9 +224,7 @@ void MICCOOUtils::getCSRValuesS(
         for ( IndexType k = 0; k < numValues; k++ )
         {
             IndexType i = cooIA[k];
-
             // better :  IndexType offset = __sync_fetch_and_add( &rowOffset[i], 1 );
-
             IndexType offset = rowOffset[i]++;
             csrJA[offset] = cooJA[k];
             csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
@@ -272,32 +243,25 @@ void MICCOOUtils::offsets2ia(
 {
     SCAI_LOG_INFO( logger,
                    "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
-
     const void* csrIAPtr = csrIA;
     void* cooIAPtr = cooIA;
-
     // parallel execution only possible if we have no separate diagonal elements
     // or if CSR data has diagonal property
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( numRows, numDiagonals, csrIAPtr, cooIAPtr )
     {
         const IndexType* csrIA = static_cast<const IndexType*>( csrIAPtr );
-
         IndexType* cooIA = static_cast<IndexType*>( cooIAPtr );
-
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             IndexType csrOffset = csrIA[i];
             IndexType cooOffset = 0; // additional offset due to diagonals
 
-            if( i < numDiagonals )
+            if ( i < numDiagonals )
             {
                 // diagonal elements will be the first nrows entries
-
                 cooIA[i] = i;
                 csrOffset += 1; // do not fill diagonal element again
                 cooOffset = numDiagonals - i - 1; // offset in coo moves
@@ -305,7 +269,7 @@ void MICCOOUtils::offsets2ia(
 
             // now fill remaining part of row i
 
-            for( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+            for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
             {
                 cooIA[jj + cooOffset] = i;
             }
@@ -315,7 +279,7 @@ void MICCOOUtils::offsets2ia(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename COOValueType,typename CSRValueType>
+template<typename COOValueType, typename CSRValueType>
 void MICCOOUtils::setCSRData(
     COOValueType cooValues[],
     const CSRValueType csrValues[],
@@ -326,41 +290,33 @@ void MICCOOUtils::setCSRData(
 {
     SCAI_LOG_INFO( logger,
                    "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
-
     const void* csrValuesPtr = csrValues;
     const void* csrIAPtr = csrIA;
-
     void* cooValuesPtr = cooValues;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ) in( numRows, numDiagonals, csrIAPtr, csrValuesPtr, cooValuesPtr )
     {
         const CSRValueType* csrValues = static_cast<const CSRValueType*>( csrValuesPtr );
         const IndexType* csrIA = static_cast<const IndexType*>( csrIAPtr );
-
         COOValueType* cooValues = static_cast<COOValueType*>( cooValuesPtr );
-
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             IndexType csrOffset = csrIA[i];
             IndexType cooOffset = 0; // additional offset due to diagonals
 
-            if( i < numDiagonals )
+            if ( i < numDiagonals )
             {
                 // diagonal elements become the first 'numDiagonal' entries
-
                 cooValues[i] = static_cast<COOValueType>( csrValues[csrOffset] );
-
                 csrOffset += 1; // do not fill diagonal element again
                 cooOffset = numDiagonals - i - 1; // offset in coo moves
             }
 
             // now fill remaining part of row i
 
-            for( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+            for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
             {
                 cooValues[jj + cooOffset] = static_cast<COOValueType>( csrValues[jj] );
             }
@@ -384,11 +340,9 @@ void MICCOOUtils::normalGEMV(
     const ValueType cooValues[] )
 {
     // SCAI_REGION( "MIC.COO.normalGEMV" )
-
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ">, result[" << numRows << "] = "
                    << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -397,42 +351,32 @@ void MICCOOUtils::normalGEMV(
     }
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
-
     MICUtils::setScale( result, beta, y, numRows );
-
     void* resultPtr = result;
     const void* cooIAPtr = cooIA;
     const void* cooJAPtr = cooJA;
     const void* cooValuesPtr = cooValues;
     const void* xPtr = x;
     const ValueType* alphaPtr = &alpha;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic : device ), in( numRows, numValues, resultPtr, alphaPtr[0:1], cooIAPtr, cooJAPtr, cooValuesPtr, xPtr )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
         const ValueType* x = static_cast<const ValueType*>( xPtr );
-
         const IndexType* cooIA = static_cast<const IndexType*>( cooIAPtr );
         const IndexType* cooJA = static_cast<const IndexType*>( cooJAPtr );
         const ValueType* cooValues = static_cast<const ValueType*>( cooValuesPtr );
-
         // Atomic update decreases performance by a factor of 4
-
         #pragma omp parallel
         {
             #pragma omp for
 
-            for( IndexType k = 0; k < numValues; ++k )
+            for ( IndexType k = 0; k < numValues; ++k )
             {
                 IndexType i = cooIA[k];
-
                 const ValueType val = *alphaPtr * cooValues[k] * x[cooJA[k]];
-
                 #pragma omp critical
                 result[i] += val;
-
             }
         }
     }
@@ -453,10 +397,8 @@ void MICCOOUtils::jacobi(
     const IndexType numRows )
 {
     // SCAI_REGION( "MIC.COO.jacobi" )
-
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
-
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -468,45 +410,37 @@ void MICCOOUtils::jacobi(
     // done in two steps
     // solution = omega * rhs * dinv + ( 1 - omega * oldSolution
     // solution -= omega * B * oldSolution * dinv
-
     void* solutionPtr = solution;
     const void* cooIAPtr = cooIA;
     const void* cooJAPtr = cooJA;
     const void* cooValuesPtr = cooValues;
     const void* oldSolutionPtr = oldSolution;
     const void* rhsPtr = rhs;
-
     int device = MICContext::getCurrentDevice();
-
 #pragma offload target( mic ), in( numRows, cooNumValues, solutionPtr, cooIAPtr, cooJAPtr, cooValuesPtr, \
                                        rhsPtr, oldSolutionPtr, omega )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
         const ValueType* oldSolution = static_cast<const ValueType*>( oldSolutionPtr );
         const ValueType* rhs = static_cast<const ValueType*>( rhsPtr );
-
         const IndexType* cooIA = static_cast<const IndexType*>( cooIAPtr );
         const IndexType* cooJA = static_cast<const IndexType*>( cooJAPtr );
         const ValueType* cooValues = static_cast<const ValueType*>( cooValuesPtr );
-
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            solution[i] = omega * rhs[i] / cooValues[i] + ( static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
+            solution[i] = omega * rhs[i] / cooValues[i] + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
         }
 
         #pragma omp parallel for
 
-        for( IndexType k = numRows; k < cooNumValues; ++k )
+        for ( IndexType k = numRows; k < cooNumValues; ++k )
         {
             IndexType i = cooIA[k];
             IndexType j = cooJA[k];
-
             // we must use atomic updates as different threads might update same row i
-
             const ValueType update = omega * cooValues[k] * oldSolution[j] / cooValues[i];
-
             #pragma omp atomic
             solution[i] -= update;
         }
@@ -520,11 +454,8 @@ void MICCOOUtils::jacobi(
 void MICCOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::MIC;
-
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
-
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );
     KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx, flag );
@@ -534,12 +465,9 @@ template<typename ValueType>
 void MICCOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::MIC;
-
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
-
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
 
@@ -547,27 +475,18 @@ template<typename ValueType, typename OtherValueType>
 void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::MIC;
-
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
-
     // ToDo: routine does not work yet
-
     // KernelRegistry::set<COOKernelTrait::getCSRValues<float, float> >( getCSRValuesS, ctx, flag );
     // KernelRegistry::set<COOKernelTrait::getCSRValues<float, double> >( getCSRValuesS, ctx, flag );
     // KernelRegistry::set<COOKernelTrait::getCSRValues<double, float> >( getCSRValuesS, ctx, flag );
     // KernelRegistry::set<COOKernelTrait::getCSRValues<double, double> >( getCSRValuesS, ctx, flag );
-
     // ToDo: jacobi does not work yet
-
     // KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, ctx, flag );
     // KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, ctx, flag );
-
-
 }
 
 /* --------------------------------------------------------------------------- */
@@ -577,7 +496,6 @@ void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
 MICCOOUtils::RegisterGuard::RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
@@ -586,7 +504,6 @@ MICCOOUtils::RegisterGuard::RegisterGuard()
 MICCOOUtils::RegisterGuard::~RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );

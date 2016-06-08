@@ -39,11 +39,14 @@
 #include <scai/common/mepr/TypeList.hpp>
 #include <scai/hmemo/HArray.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace lama {
+namespace lama
+{
 
-namespace mepr {
+namespace mepr
+{
 
 /*
  * Forward declaration
@@ -74,7 +77,7 @@ struct MatrixStorageWrapper<ValueType, common::mepr::TypeList<H, T> >
         const hmemo::_HArray& values,
         const ValueType epsilon )
     {
-        if( values.getValueType() == common::getScalarType<H>() )
+        if ( values.getValueType() == common::getScalarType<H>() )
         {
             hmemo::_HArray& mValues = const_cast<hmemo::_HArray&>( values );
             hmemo::HArray<H>& typedValues = reinterpret_cast<hmemo::HArray<H>& >( mValues );

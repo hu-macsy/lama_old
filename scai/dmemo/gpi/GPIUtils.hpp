@@ -46,7 +46,7 @@
 #define SCAI_GASPI_CALL( call )                                           \
     {                                                                     \
         gaspi_return_t status = call;                                     \
-                                                                          \
+        \
         if ( status != GASPI_SUCCESS )                                    \
         {                                                                 \
             std::ostringstream errorStr;                                  \

@@ -40,13 +40,13 @@
 
 #include <scai/lama/Scalar.hpp>
 
-namespace scai 
+namespace scai
 {
-	
+
 namespace solver
 {
 
-namespace mepr 
+namespace mepr
 {
 
 template<typename TList>
@@ -55,26 +55,26 @@ struct SolverEps;
 template<>
 struct SolverEps<common::mepr::NullType>
 {
-	static lama::Scalar get( const common::scalar::ScalarType& )
-	{
-		return lama::Scalar( 0.0 );
-	}
+    static lama::Scalar get( const common::scalar::ScalarType& )
+    {
+        return lama::Scalar( 0.0 );
+    }
 };
 
 template<typename H, typename T>
 struct SolverEps<common::mepr::TypeList<H, T> >
 {
-	static lama::Scalar get( const common::scalar::ScalarType& type )
-	{
-		if( common::TypeTraits<H>::stype == type )
-		{
-			return lama::Scalar( common::TypeTraits<H>::getEps() );
-		}
-		else
-		{
-			return SolverEps<T>::get( type );
-		}
-	}
+    static lama::Scalar get( const common::scalar::ScalarType& type )
+    {
+        if ( common::TypeTraits<H>::stype == type )
+        {
+            return lama::Scalar( common::TypeTraits<H>::getEps() );
+        }
+        else
+        {
+            return SolverEps<T>::get( type );
+        }
+    }
 };
 
 

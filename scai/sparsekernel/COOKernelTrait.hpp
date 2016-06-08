@@ -50,7 +50,7 @@ struct COOKernelTrait
     {
         /** Routine checks for diagonal property, first n entries are the diagonal elements.
          *
-         *  @param[in] cooIA row indexes 
+         *  @param[in] cooIA row indexes
          *  @param[in] cooJA column indexes
          *  @param[in] n number of diagonal elements
          *  @return true if first n entries stand for the diagonal elements
@@ -59,9 +59,12 @@ struct COOKernelTrait
         typedef bool ( *FuncType )(
             const IndexType cooIA[],
             const IndexType cooJA[],
-            const IndexType n ); 
+            const IndexType n );
 
-        static const char* getId() { return "COO.hasDiagonalProperty"; }
+        static const char* getId()
+        {
+            return "COO.hasDiagonalProperty";
+        }
     };
 
     struct getCSRSizes
@@ -80,7 +83,10 @@ struct COOKernelTrait
             const IndexType numValues,
             const IndexType cooIA[] );
 
-        static const char* getId() { return "COO.getCSRSizes"; }
+        static const char* getId()
+        {
+            return "COO.getCSRSizes";
+        }
     };
 
     struct offsets2ia
@@ -103,7 +109,10 @@ struct COOKernelTrait
             const IndexType numRows,
             const IndexType numDiagonals );
 
-        static const char* getId() { return "COO.offsets2ia"; }
+        static const char* getId()
+        {
+            return "COO.offsets2ia";
+        }
     };
 
     template<typename COOValueType, typename OtherValueType>
@@ -120,13 +129,16 @@ struct COOKernelTrait
          *  This routine supports different precision for matrix values and scale values.
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             COOValueType cooValues[],
             const OtherValueType rowValues[],
             const IndexType cooIA[],
             const IndexType numValues );
 
-        static const char* getId() { return "COO.scaleRows"; }
+        static const char* getId()
+        {
+            return "COO.scaleRows";
+        }
     };
 
     template<typename COOValueType, typename CSRValueType>
@@ -144,7 +156,7 @@ struct COOKernelTrait
          *  Note: this routine preserves the diagonal property of the COO format
          */
 
-        typedef void ( *FuncType )( 
+        typedef void ( *FuncType )(
             IndexType csrJA[],
             CSRValueType csrValues[],
             IndexType csrIA[],
@@ -154,7 +166,10 @@ struct COOKernelTrait
             const IndexType cooJA[],
             const COOValueType cooValues[] );
 
-        static const char* getId() { return "COO.getCSRValues"; }
+        static const char* getId()
+        {
+            return "COO.getCSRValues";
+        }
     };
 
     template<typename COOValueType, typename CSRValueType>
@@ -175,7 +190,7 @@ struct COOKernelTrait
          *  Note: For numDiagonals == 0, this routine can be replaced with Utils::set.
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             COOValueType cooValues[],
             const CSRValueType csrValues[],
             const IndexType numValues,
@@ -183,7 +198,10 @@ struct COOKernelTrait
             const IndexType numRows,
             const IndexType numDiagonals );
 
-        static const char* getId() { return "COO.setCSRData"; }
+        static const char* getId()
+        {
+            return "COO.setCSRData";
+        }
     };
 
     template<typename ValueType>
@@ -201,7 +219,7 @@ struct COOKernelTrait
          *  @param numValues is the size of the coo arrays
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -213,13 +231,16 @@ struct COOKernelTrait
             const IndexType cooJA[],
             const ValueType cooValues[] );
 
-        static const char* getId() { return "COO.normalGEMV"; }
+        static const char* getId()
+        {
+            return "COO.normalGEMV";
+        }
     };
 
     template<typename ValueType>
     struct normalGEVM
     {
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -231,7 +252,10 @@ struct COOKernelTrait
             const IndexType cooJA[],
             const ValueType cooValues[] );
 
-        static const char* getId() { return "COO.normalGEVM"; }
+        static const char* getId()
+        {
+            return "COO.normalGEVM";
+        }
     };
 
     /** Structure with type definitions for solver routines */
@@ -243,7 +267,7 @@ struct COOKernelTrait
          *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
          *
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType* const solution,
             const IndexType cooNumValues,
             const IndexType cooIA[],
@@ -254,7 +278,10 @@ struct COOKernelTrait
             const ValueType omega,
             const IndexType numRows );
 
-        static const char* getId() { return "COO.jacobi"; }
+        static const char* getId()
+        {
+            return "COO.jacobi";
+        }
     };
 
     template<typename ValueType>
@@ -265,7 +292,7 @@ struct COOKernelTrait
          *  solution -= omega * ( B(halo) * oldSolution) * dinv
          *
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType solution[],
             const ValueType diaValues[],
             const IndexType haloIA[],
@@ -276,7 +303,10 @@ struct COOKernelTrait
             const ValueType omega,
             const IndexType numNonEmptyRows );
 
-        static const char* getId() { return "COO.jacobiHalo"; }
+        static const char* getId()
+        {
+            return "COO.jacobiHalo";
+        }
     };
 };
 

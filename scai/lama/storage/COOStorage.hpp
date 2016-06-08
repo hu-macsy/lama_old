@@ -75,7 +75,7 @@ namespace lama
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT COOStorage:
-    public CRTPMatrixStorage<COOStorage<ValueType>,ValueType>,
+    public CRTPMatrixStorage<COOStorage<ValueType>, ValueType>,
     public _MatrixStorage::Register<COOStorage<ValueType> >    // register at factory
 {
 public:

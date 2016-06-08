@@ -42,7 +42,7 @@ namespace common
 namespace mepr
 {
 
-void (*TemplateSpecifier::theLastOne)();
+void ( *TemplateSpecifier::theLastOne )();
 
 } /* end namespace mepr */
 

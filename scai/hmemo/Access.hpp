@@ -53,7 +53,7 @@ namespace hmemo
 
 /**  class for all kind of access classes; accesses must always provide a release method. */
 
-class COMMON_DLL_IMPORTEXPORT Access: 
+class COMMON_DLL_IMPORTEXPORT Access:
 
     public  common::Printable,
     private common::NonCopyable,

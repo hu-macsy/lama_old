@@ -43,9 +43,7 @@ using namespace common;
 BOOST_AUTO_TEST_CASE( LibModuleTest )
 {
     std::string lib_path = "/usr/lib:/usr/local/lib";
-
     // try to load each of the libraries in the specified directories
     // Note: exceptions are caught
-
     LibModule::loadLibsByPath( lib_path.c_str() );
 }

@@ -54,45 +54,28 @@ BOOST_AUTO_TEST_SUITE( CUDAAccessTest );
 BOOST_AUTO_TEST_CASE( accessTest )
 {
     int nr = 0;
-
     scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
-
     scai::common::CUDACtx myCuda( nr );
-
     const int N = 100;
-
     CUdeviceptr pointer = 0;
-
     size_t size = sizeof( float ) * N;
-
     // driver call without access must throw exception
-
     BOOST_CHECK_THROW(
     {
         SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
     },
     scai::common::Exception )
-
     {
         // create an access for CUDA calls
-
         scai::common::CUDAAccess tmpAccess( myCuda );
-
         SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
-
         float* fpointer = reinterpret_cast<float*>( pointer );
-
         init( fpointer, N, 3.0 );
-
         float s = sum( fpointer, N );
-
         BOOST_CHECK_CLOSE( 3.0f * N, s, 0.01 );
-
         SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << pointer << " ) failed" )
     }
-
     // checkt that access is released at end of previous scope
-
     BOOST_CHECK_THROW(
     {
         SCAI_CHECK_CUDA_ACCESS
@@ -105,31 +88,24 @@ BOOST_AUTO_TEST_CASE( accessTest )
 BOOST_AUTO_TEST_CASE( getCurrentDeviceTest )
 {
     using namespace scai::common;
-
     int nr = 0;
-
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
-
     CUDACtx myCuda( nr );
-
     BOOST_CHECK_THROW(
     {
         CUDAAccess::getCurrentCUDACtx();
     },
     Exception );
-
     {
         CUDAAccess access( myCuda );
         const CUDACtx& current = CUDAAccess::getCurrentCUDACtx();
         BOOST_CHECK_EQUAL( &myCuda, &current );
     }
-
     BOOST_CHECK_THROW(
     {
         CUDAAccess::getCurrentCUDACtx();
     },
     Exception );
-
 }
 
 /* ------------------------------------------------------------------------- */
@@ -137,31 +113,22 @@ BOOST_AUTO_TEST_CASE( getCurrentDeviceTest )
 BOOST_AUTO_TEST_CASE( stackAccessTest )
 {
     using namespace scai::common;
-
     int nr = 0;
-
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
-
     // create 3 different contexts for one and the same device
-
     CUDACtx myCuda1( nr );
     CUDACtx myCuda2( nr );
     CUDACtx myCuda3( nr );
-
     {
         CUDAAccess access1( myCuda1 );
-
         {
             CUDAAccess access2( myCuda2 );
-
             {
                 CUDAAccess access3( myCuda3 );
             }
-
             const CUDACtx& current = CUDAAccess::getCurrentCUDACtx();
             BOOST_CHECK_EQUAL( &myCuda2, &current );
         }
-
         const CUDACtx& current = CUDAAccess::getCurrentCUDACtx();
         BOOST_CHECK_EQUAL( &myCuda1, &current );
     }

@@ -73,32 +73,23 @@ MICContext::MICContext( int deviceNr )
     : Context( common::context::MIC ), mDeviceNr( deviceNr )
 {
     SCAI_LOG_INFO( logger, "construct MICContext, device nr = = " << deviceNr )
-
     int numDevices = 0;
-
     SCAI_LOG_INFO( logger, "Checking for Intel(R) MIC Architecture (Target CPU) devices" )
-
 #ifdef __INTEL_OFFLOAD
     numDevices = _Offload_number_of_devices();
 #endif
 
-    if( numDevices < 1 )
+    if ( numDevices < 1 )
     {
         COMMON_THROWEXCEPTION( "No mic devices available" )
     }
 
     // ToDo: allow for any device
-
     mDeviceNr = deviceNr;
-
     SCAI_ASSERT_LT( deviceNr, numDevices, "Illegal deviceNr" )
-
     SCAI_LOG_INFO( logger, "Using device " << mDeviceNr << " of " << numDevices << " installed devices" )
-
     bool targetOK = false;
-
     int numCores;
-
 #pragma offload target( mic: mDeviceNr ) out( numCores )
     {
         #pragma omp parallel
@@ -109,9 +100,7 @@ MICContext::MICContext( int deviceNr )
             }
         }
     }
-
     SCAI_LOG_INFO( logger, "Uses " << numCores << " threads for parallel execution" );
-
     mNumThreads = numCores;
 }
 
@@ -155,15 +144,12 @@ bool MICContext::canUseMemory( const Memory& other ) const
     if ( other.getType() == memtype::MICMemory )
     {
         const MICMemory* otherMICMem = dynamic_cast<const MICMemory*>( &other );
-
         SCAI_ASSERT( otherMICMem, "serious type mismatch" )
-
         canUse = otherMICMem->getDeviceNr() == mDeviceNr;
     }
 
     SCAI_LOG_DEBUG( logger, *this << ": " << ( canUse ? "can use " : "can't use " )
                     << other )
-
     return canUse;
 }
 
@@ -199,9 +185,7 @@ tasking::SyncToken* MICContext::getSyncToken() const
 int MICContext::getCurrentDevice()
 {
     // ToDo: get current device, make sure that access has been enabled
-
     SCAI_ASSERT_LE( 0, currentDeviceNr, "MICContext not enabled" )
-
     return currentDeviceNr;
 }
 
@@ -210,9 +194,7 @@ int MICContext::getCurrentDevice()
 static int getDefaultDeviceNr()
 {
     int device = 0;
-
     common::Settings::getEnvironment( device, "SCAI_DEVICE" );
-
     return device;
 }
 
@@ -226,10 +208,9 @@ ContextPtr MICContext::create( int deviceNr )
 {
     int micDeviceNr = deviceNr;
 
-    if( micDeviceNr == SCAI_DEFAULT_DEVICE_NUMBER )
+    if ( micDeviceNr == SCAI_DEFAULT_DEVICE_NUMBER )
     {
         micDeviceNr = getDefaultDeviceNr();
-
         // no need here to check for a good value
     }
     else
@@ -241,20 +222,16 @@ ContextPtr MICContext::create( int deviceNr )
 
     common::shared_ptr<MICContext> context = common::shared_ptr<MICContext>();
 
-    if( mMICContext[micDeviceNr].expired() )
+    if ( mMICContext[micDeviceNr].expired() )
     {
         // create a new context for the device and return the shared pointer
-
         context = common::shared_ptr<MICContext>( new MICContext( micDeviceNr ) );
-
         // we keep a weak pointer so that we can return
-
         mMICContext[micDeviceNr] = context;
     }
     else
     {
         // the weak pointer to the device is still okay, so return a shared pointer for it
-
         context = mMICContext[micDeviceNr].lock();
     }
 

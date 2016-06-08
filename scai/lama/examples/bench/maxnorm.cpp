@@ -57,16 +57,13 @@ template<typename ValueType>
 static void bench( IndexType size )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    DistributionPtr dist( new BlockDistribution( size, comm ));
-
+    DistributionPtr dist( new BlockDistribution( size, comm ) );
     DenseVector<ValueType> x( dist );
-
     x = ValueType( 7 );
-
     double tmpTime = Walltime::get();
     x.maxNorm();
     tmpTime = Walltime::get() - tmpTime;
-    std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision(3) << tmpTime;
+    std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision( 3 ) << tmpTime;
 }
 
 int main()
@@ -77,7 +74,6 @@ int main()
                           8388608, 16777216, 33554432
                         };
     IndexType n = sizeof( sizes ) / sizeof( IndexType );
-
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "Size";
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "float";
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "double";
@@ -86,24 +82,16 @@ int main()
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "ComplexDouble";
     std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << "ComplexLongDouble";
     std::cout << std::endl;
-
     std::cout << std::setw( 110 ) << std::setfill( '-' ) << "-";
     std::cout << std::endl;
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
-
-        std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision(3) << sizes[i];
-
+        std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision( 3 ) << sizes[i];
 #define DO_BENCH( ValueType ) bench<ValueType>( sizes[i] );
-
         // do the benchmark for each supported A type
-
         SCAI_COMMON_LOOP( DO_BENCH, SCAI_ARITHMETIC_HOST )
-
 #undef DO_BENCH
-
         std::cout << std::endl;
     }
-
 }

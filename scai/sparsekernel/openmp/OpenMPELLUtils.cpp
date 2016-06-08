@@ -77,7 +77,6 @@ SCAI_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
 IndexType OpenMPELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows )
 {
     IndexType counter = 0;
-
     #pragma omp parallel for reduction( +:counter )
 
     for ( IndexType i = 0; i < numRows; ++i )
@@ -89,7 +88,6 @@ IndexType OpenMPELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], con
     }
 
     SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
-
     return counter;
 }
 
@@ -115,7 +113,6 @@ void OpenMPELLUtils::setNonEmptyRowsBySizes(
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
-
     SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
 }
 
@@ -131,7 +128,6 @@ bool OpenMPELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const In
     }
 
     bool diagonalProperty = true;
-
     #pragma omp parallel for reduction( && : diagonalProperty )
 
     for ( IndexType i = 0; i < numDiagonals; ++i )
@@ -162,7 +158,6 @@ void OpenMPELLUtils::scaleValue(
 {
     SCAI_LOG_INFO( logger,
                    "scaleValue<" << TypeTraits<ValueType>::id() << ", " << TypeTraits<OtherValueType>::id() << ">" << ", #numRows = " << numRows )
-
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for ( IndexType i = 0; i < numRows; i++ ) //rows
@@ -192,7 +187,6 @@ void OpenMPELLUtils::check(
     {
         bool integrityIA = true;
         bool integrityJA = true;
-
         #pragma omp parallel for reduction( && : integrityIA, integrityJA ) schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -231,11 +225,9 @@ ValueType OpenMPELLUtils::absMaxVal(
     const ValueType values[] )
 {
     ValueType maxValue = static_cast<ValueType>( 0.0 );
-
     #pragma omp parallel
     {
         ValueType threadVal = static_cast<ValueType>( 0.0 );
-
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -264,9 +256,7 @@ ValueType OpenMPELLUtils::absMaxVal(
             }
         }
     }
-
     SCAI_LOG_DEBUG( logger, "absMaxVal, maxVal = " << maxValue )
-
     return maxValue;
 }
 
@@ -284,7 +274,6 @@ void OpenMPELLUtils::getRow(
     const ValueType values[] )
 {
     SCAI_LOG_DEBUG( logger, "get row #i = " << i )
-
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for ( IndexType j = 0; j < numColumns; ++j )
@@ -312,7 +301,6 @@ ValueType OpenMPELLUtils::getValue(
     const ValueType ellValues[] )
 {
     SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
-
     ValueType val = 0.0;
 
     for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
@@ -344,22 +332,17 @@ void OpenMPELLUtils::getCSRValues(
 {
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
-
     // parallelization possible as offset array csrIA is available
-
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL->CSR_values" )
-
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType rowSize = ellSizes[i];
             IndexType offset = csrIA[i];
-
             // just make sure that csrIA and ellSizes really fit with each other
-
             SCAI_ASSERT_EQUAL_DEBUG( csrIA[i] + rowSize, csrIA[i + 1] )
 
             for ( IndexType jj = 0; jj < rowSize; ++jj )
@@ -387,13 +370,10 @@ void OpenMPELLUtils::setCSRValues(
 {
     SCAI_LOG_INFO( logger,
                    "set CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
-
     // parallelization possible as offset array csrIA is available
-
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL<-CSR_values" )
-
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -433,7 +413,6 @@ void OpenMPELLUtils::fillELLValues(
     const IndexType numValuesPerRow )
 {
     SCAI_LOG_INFO( logger, "fill ELLValues<" << TypeTraits<ValueType>::id() )
-
     #pragma omp parallel
     {
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
@@ -441,7 +420,6 @@ void OpenMPELLUtils::fillELLValues(
         for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType rowSize = ellSizes[i];
-
             IndexType j = 0; // will be last column index
 
             if ( rowSize > 0 && rowSize < numValuesPerRow )
@@ -475,7 +453,6 @@ void OpenMPELLUtils::compressIA(
     IndexType newIA[] )
 {
     SCAI_LOG_INFO( logger, "compressIA with eps = " << eps )
-
     #pragma omp parallel
     {
         #pragma omp for
@@ -521,7 +498,6 @@ void OpenMPELLUtils::compressValues(
     SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
                    << ", values/row = " << numValuesPerRow << " / " << newNumValuesPerRow
                    << ") with eps = " << eps )
-
     #pragma omp parallel
     {
         #pragma omp for
@@ -573,7 +549,6 @@ void OpenMPELLUtils::matrixMultiplySizes(
     const IndexType bNumValuesPerRow )
 {
     SCAI_LOG_INFO( logger, "matrixMultiplySizes with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
-
     #pragma omp parallel
     {
         #pragma omp for
@@ -630,7 +605,6 @@ void OpenMPELLUtils::matrixMultiply(
     const IndexType bNumValuesPerRow )
 {
     SCAI_LOG_INFO( logger, "matrix multiply with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
-
     #pragma omp parallel
     {
         #pragma omp for
@@ -666,7 +640,6 @@ void OpenMPELLUtils::matrixMultiply(
 
             std::set<IndexType>::iterator jaIter;
             typename std::map<IndexType, ValueType>::iterator valuesIter;
-
             jaIter = jaRow.begin();
             valuesIter = valuesRow.begin();
 
@@ -707,7 +680,6 @@ void OpenMPELLUtils::matrixAddSizes(
     const IndexType bNumValuesPerRow )
 {
     SCAI_LOG_INFO( logger, "matrixAddSizes A + B, #rows = " << m )
-
     #pragma omp parallel
     {
         #pragma omp for
@@ -764,7 +736,6 @@ void OpenMPELLUtils::matrixAdd(
     const IndexType bNumValuesPerRow )
 {
     SCAI_LOG_INFO( logger, "matrixAdd C = " << alpha << " * A + " << beta << " * B, #rows = " << m )
-
     #pragma omp parallel
     {
         #pragma omp for
@@ -799,7 +770,6 @@ void OpenMPELLUtils::matrixAdd(
 
             std::set<IndexType>::iterator jaIter;
             typename std::map<IndexType, ValueType>::iterator valuesIter;
-
             jaIter = jaRow.begin();
             valuesIter = valuesRow.begin();
 
@@ -841,7 +811,6 @@ void OpenMPELLUtils::jacobi(
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken != NULL )
@@ -908,7 +877,6 @@ void OpenMPELLUtils::jacobiHalo(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL.jacobiHalo" )
-
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
@@ -929,7 +897,6 @@ void OpenMPELLUtils::jacobiHalo(
             }
 
             const ValueType diag = diagonal[i];
-
             solution[i] -= temp * ( omega / diag );
         }
     }
@@ -970,7 +937,6 @@ void OpenMPELLUtils::normalGEMV(
     if ( numValuesPerRow == 0 )
     {
         COMMON_THROWEXCEPTION( "normalGEMV should not have been called, no entries" )
-
         // only compute: result = beta * y
     }
 
@@ -979,7 +945,6 @@ void OpenMPELLUtils::normalGEMV(
     if ( syncToken )
     {
         // combine the vectors with their scaling factors to reduze number of args
-
         syncToken->run( common::bind( normalGEMV_a<ValueType>, result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       std::pair<ValueType, const ValueType*> ( beta, y ),
@@ -990,11 +955,9 @@ void OpenMPELLUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
-
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL.normalGEMV" )
-
         #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -1017,7 +980,6 @@ void OpenMPELLUtils::normalGEMV(
             if ( beta == scai::common::constants::ZERO )
             {
                 // must be handled separately as y[i] might be uninitialized
-
                 result[i] = alpha * temp;
             }
             else if ( alpha == scai::common::constants::ONE )
@@ -1077,17 +1039,14 @@ void OpenMPELLUtils::sparseGEMV(
     SCAI_LOG_INFO( logger,
                    "sparseGEMV<" << TypeTraits<ValueType>::id() << ">, n = " << numRows
                    << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
-
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL.sparseGEMV" )
-
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
             IndexType i = rowIndexes[ii];
-
             //result is not initialized for performance reasons
             ValueType temp = static_cast<ValueType>( 0.0 );
 
@@ -1128,7 +1087,6 @@ void OpenMPELLUtils::normalGEVM(
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -1154,7 +1112,6 @@ void OpenMPELLUtils::normalGEVM(
                         SCAI_LOG_TRACE( logger, "temp += dataAccess[k * numRows + j] * xAccess[j]; j = " << j )
                         SCAI_LOG_TRACE( logger, ", dataAccess[k * numRows + j] = " << ellValues[ k * numRows + j ] )
                         SCAI_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
-
                         temp += ellValues[k * numRows + j] * x[j];
                     }
                 }
@@ -1165,7 +1122,6 @@ void OpenMPELLUtils::normalGEVM(
             if ( beta == scai::common::constants::ZERO )
             {
                 // must be handled separately as y[i] might be uninitialized
-
                 result[i] = alpha * temp;
             }
             else if ( alpha == scai::common::constants::ONE )
@@ -1216,7 +1172,6 @@ void OpenMPELLUtils::sparseGEVM(
     if ( 0 )
     {
         // use this call if the following code does not work correctly
-
         normalGEVM( result, alpha, x, ValueType( 1 ), result, numRows, numColumns, IndexType( 0 ), ellSizes, ellJA, ellValues );
         return;
     }
@@ -1231,7 +1186,6 @@ void OpenMPELLUtils::sparseGEVM(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL.sparseGEVM" )
-
         #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for ( IndexType i = 0; i < numColumns; ++i )
@@ -1250,7 +1204,6 @@ void OpenMPELLUtils::sparseGEVM(
                         SCAI_LOG_TRACE( logger,
                                         ", dataAccess[k * numNonZeroRows + j] = " << ellValues[ k * numNonZeroRows + j ] )
                         SCAI_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
-
                         temp += ellValues[k * numRows + j] * x[j];
                     }
                 }
@@ -1266,16 +1219,12 @@ void OpenMPELLUtils::sparseGEVM(
 void OpenMPELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     common::context::ContextType ctx = common::context::Host;
-
     SCAI_LOG_INFO( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
-
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
-
     KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
 }
@@ -1284,12 +1233,9 @@ template<typename ValueType>
 void OpenMPELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     common::context::ContextType ctx = common::context::Host;
-
     SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
-
     KernelRegistry::set<ELLKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::compressIA<ValueType> >( compressIA, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::compressValues<ValueType> >( compressValues, ctx, flag );
@@ -1309,12 +1255,9 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     common::context::ContextType ctx = common::context::Host;
-
     SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-
     KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
@@ -1328,7 +1271,6 @@ void OpenMPELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
 OpenMPELLUtils::OpenMPELLUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
@@ -1337,7 +1279,6 @@ OpenMPELLUtils::OpenMPELLUtils()
 OpenMPELLUtils::~OpenMPELLUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );

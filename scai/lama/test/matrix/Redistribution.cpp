@@ -99,36 +99,26 @@ typedef boost::mpl::list< CSRStorage<float>,
 BOOST_AUTO_TEST_CASE( buildHaloTest )
 {
     // it should be okay just to test one ValueType
-
     typedef SCAI_TEST_TYPE ValueType;
-
     TypedStorages<ValueType> allMatrixStorages;
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
-
         SCAI_LOG_DEBUG( logger, "buildHaloTest, storage = " << storage << " @ " << *storage.getContextPtr() )
-
         CommunicatorPtr comm = Communicator::getCommunicatorPtr();
         SCAI_LOG_INFO( logger, *comm << ": buildHaloTest" );
         setDenseData( storage );
         CSRStorage<ValueType> compare;
         setDenseData( compare );
-
         const IndexType numRows = storage.getNumRows();
         const IndexType numColumns = storage.getNumColumns();
         DistributionPtr colDist = DistributionPtr( new BlockDistribution( numColumns, comm ) );
-
         // create matrix storage for local and halo part of same type as storage
-
         unique_ptr<MatrixStorage<ValueType> > localStorage ( storage.newMatrixStorage() );
         unique_ptr<MatrixStorage<ValueType> > haloStorage ( storage.newMatrixStorage() );
-
         Halo halo;
-
         SCAI_LOG_INFO( logger, *comm << ", split halo : " << storage )
-
         storage.splitHalo( *localStorage, *haloStorage, halo, *colDist, NULL );
         SCAI_LOG_DEBUG( logger, *comm << ": split done, local = " << *localStorage
                         << ", halo = " << *haloStorage << ", halo exchg = " << halo );
@@ -158,17 +148,13 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
 BOOST_AUTO_TEST_CASE( replicateTest )
 {
     // it should be okay just to test one ValueType
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     typedef SCAI_TEST_TYPE ValueType;
-
     TypedStorages<ValueType> allMatrixStorages;
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
         MatrixStorage<ValueType>& matrixStorage = *allMatrixStorages[s];
-
         SCAI_LOG_INFO( logger, *comm << ": replicateTest" );
         setDenseData( matrixStorage );
         CSRStorage<ValueType> compare;
@@ -183,7 +169,6 @@ BOOST_AUTO_TEST_CASE( replicateTest )
         SCAI_LOG_INFO( logger, matrixStorage << ": is local storage" );
         matrixStorage.replicate( matrixStorage, rowDist );
         SCAI_LOG_INFO( logger, matrixStorage << ": is global/replicated storage" );
-
         BOOST_REQUIRE_EQUAL( matrixStorage.getNumRows(), numRows );
         BOOST_REQUIRE_EQUAL( matrixStorage.getNumColumns(), numColumns );
 
@@ -205,17 +190,13 @@ BOOST_AUTO_TEST_CASE( replicateTest )
 BOOST_AUTO_TEST_CASE( redistributeTest )
 {
     // it should be okay just to test one ValueType
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     typedef SCAI_TEST_TYPE ValueType;
-
     TypedStorages<ValueType> allMatrixStorages;
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
         MatrixStorage<ValueType>& matrixStorage = *allMatrixStorages[s];
-
         SCAI_LOG_INFO( logger, *comm << ": redistributeTest" );
         setDenseData( matrixStorage );
         CSRStorage<ValueType> compare;
@@ -234,12 +215,9 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
         SCAI_LOG_INFO( logger, matrixStorage << ": is redistributed storage" );
         matrixStorage.replicate( matrixStorage, *rowDist2 );
         SCAI_LOG_INFO( logger, matrixStorage << ": is global/replicated storage" );
-
         BOOST_REQUIRE_EQUAL( matrixStorage.getNumRows(), numRows );
         BOOST_REQUIRE_EQUAL( matrixStorage.getNumColumns(), numColumns );
-
         // Now we should have the original matrix
-
         ValueType maxDiff = matrixStorage.maxDiffNorm( compare );
         BOOST_CHECK_EQUAL( 0, maxDiff );
     }
@@ -250,17 +228,13 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 BOOST_AUTO_TEST_CASE( exchangeHaloTest )
 {
     // it should be okay just to test one ValueType
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     typedef SCAI_TEST_TYPE ValueType;
-
     TypedStorages<ValueType> allMatrixStorages;
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
         MatrixStorage<ValueType>& matrixStorage = *allMatrixStorages[s];
-
         SCAI_LOG_INFO( logger, *comm << ": buildHaloTest" );
         setDenseData( matrixStorage );
         CSRStorage<ValueType> compare;
@@ -283,11 +257,8 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
         }
 
         SCAI_LOG_INFO( logger, *comm << ": #required rows = " << requiredIndexes.size() );
-
         HaloBuilder::build( *rowDist, requiredIndexes, halo );
-
-        unique_ptr<MatrixStorage<ValueType> > haloMatrix( matrixStorage.newMatrixStorage());
-
+        unique_ptr<MatrixStorage<ValueType> > haloMatrix( matrixStorage.newMatrixStorage() );
         haloMatrix->exchangeHalo( halo, matrixStorage, *comm );
         SCAI_LOG_INFO( logger, *comm << ": halo matrix = " << *haloMatrix );
         BOOST_REQUIRE_EQUAL( haloMatrix->getNumRows(), static_cast<IndexType>( requiredIndexes.size() ) );

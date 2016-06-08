@@ -66,32 +66,30 @@ const char* UnsupportedException::what() const throw ()
 
 UnsupportedException::UnsupportedType UnsupportedException::getUnsupportedSetting()
 {
-    if( unsupportedSetting == UNSUPPORTED_UNDEFINED )
+    if ( unsupportedSetting == UNSUPPORTED_UNDEFINED )
     {
         std::string val = "WARN";
-
         //bool isSet = Settings::getEnvironment( val, "SCAI_UNSUPPORTED" );
-
         Settings::getEnvironment( val, "SCAI_UNSUPPORTED" );
 
         // transform to uppercase
 
-        for( std::string::iterator p = val.begin(); val.end() != p; ++p )
+        for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
         {
             *p = static_cast<char>( toupper( *p ) );
         }
 
 //        SCAI_LOG_INFO( logger, "SCAI_UNSUPPORTED=" << val << ", setting used for LAMA" )
 
-        if( "IGNORE" == val )
+        if ( "IGNORE" == val )
         {
             unsupportedSetting = UNSUPPORTED_IGNORE;
         }
-        else if( "WARN" == val )
+        else if ( "WARN" == val )
         {
             unsupportedSetting = UNSUPPORTED_WARN;
         }
-        else if( "ERROR" == val )
+        else if ( "ERROR" == val )
         {
             unsupportedSetting = UNSUPPORTED_ERROR;
         }

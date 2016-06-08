@@ -65,7 +65,6 @@ void sub( ContextPtr cudaContext )
     {
         cout << "CUDA host memory for " << *cudaContext << " failed" << endl;
     }
-
 }
 
 int main()
@@ -74,10 +73,9 @@ int main()
     {
         cout << "Factory can create CUDA context, registered" << endl;
     }
-    else 
+    else
     {
         cout << "Factory cannot create CUDA context, not registed" << endl;
-
         exit( -1 );  // continuation makes no sense
     }
 
@@ -85,7 +83,7 @@ int main()
     {
         cout << "try to get " << common::context::CUDA << " context from factory" << endl;
 
-        try 
+        try
         {
             ContextPtr cudaContext = Context::create( common::context::CUDA, deviceNr );
             cout << "cudaContext for device " << deviceNr << " = " << *cudaContext << endl;

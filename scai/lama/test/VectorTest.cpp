@@ -112,7 +112,6 @@ template<typename ValueType>
 void verifyVectorWithScalar( Vector& v, Scalar _s )
 {
     IndexType n = v.size();
-
     ValueType s = _s.getValue<ValueType>();
 
     for ( IndexType i = 0; i < n; ++i )
@@ -159,7 +158,6 @@ void cleanupfiles( std::string filename )
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmetic_test_types )
 {
     // IO for complex values can cause size conflicts, sizeof( double ) == sizeof( ComplexFloat )
-
     scalar::ScalarType stype = TypeTraits<ValueType>::stype;
 
     if ( isComplex( stype ) || ( stype == scalar::LONG_DOUBLE ) )
@@ -182,7 +180,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmeti
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
-
     vector.writeToFile( fileName, File::SAMG_FORMAT, TypeTraits<ValueType>::stype, true );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
     DenseVector<ValueType> vector3( prefix + "/" + testfilename + ".frv" );
@@ -469,7 +466,6 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
 BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     AssignmentOpMatrixExpressionTestmethod< CSRSparseMatrix<ValueType> >( context );
     AssignmentOpMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >( context );
     AssignmentOpMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >( context );
@@ -483,7 +479,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, scai
 BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     IndexType n = 4;
     DenseVector<ValueType> vectorA( n, 3.0 );
     DenseVector<ValueType> vectorB( n, 5.0 );
@@ -542,7 +537,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, scai_a
 BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     IndexType n = 4;
     DenseVector<ValueType> vectorA( n, 3.0 );
     DenseVector<ValueType> vectorB( n, 6.0 );
@@ -578,7 +572,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, scai_arithmetic
 BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     IndexType n = 4;
     DenseVector<ValueType> v1( n, 4.0 );
     DenseVector<ValueType> v2( n, 8.0 );
@@ -597,7 +590,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, scai_arithmeti
 BOOST_AUTO_TEST_CASE_TEMPLATE( MinMaxTest, ValueType, scai_arithmetic_test_types )
 {
     // complex data type has other min, max definition
-
     if ( isComplex( TypeTraits<ValueType>::stype ) )
     {
         return;
@@ -621,12 +613,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MinMaxTest, ValueType, scai_arithmetic_test_types
 BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, ValueType, scai_arithmetic_test_types )
 {
     typedef SCAI_TEST_TYPE OtherType;
-
     DenseVector<ValueType> v1( 4, 0.0 );
     DenseVector<ValueType> v2( 4, 1.0 );
-
     DenseVector<OtherType> v3( 4, 1.0 );
-
     v1.swap( v2 );
 
     for ( IndexType i = 0; i < v1.size(); i++ )
@@ -638,7 +627,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, ValueType, scai_arithmetic_test_types )
     if ( TypeTraits<ValueType>::stype != TypeTraits<OtherType>::stype )
     {
         // Should throw exception, because of different vector types
-
         SCAI_CHECK_THROW( { v1.swap( v3 ); }, Exception );
     }
 }
@@ -648,21 +636,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( AssignTest, ValueType, scai_arithmetic_test_types )
 {
     typedef SCAI_TEST_TYPE OtherType;
-
     DenseVector<ValueType> v1( 4, 0.0 );
     DenseVector<OtherType> v2( 3, 0.0 );
     DenseVector<ValueType> v3( 4, 0.0 );
     DenseVector<OtherType> v4( 4, 1.0 );
     DenseVector<OtherType> v5( 5, 1.0 );
-
     // Should throw exception, because of different vector sizes
-
     SCAI_CHECK_THROW( { v1 += v5; }, Exception );
-
     v3.assign( v4 );
-
     v1 = v2 = v3;
-
     BOOST_REQUIRE_EQUAL( v2.size(), v3.size() );
 
     for ( IndexType i = 0; i < v1.size(); i++ )
@@ -686,7 +668,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( VectorGetValueTypeTest, ValueType, scai_arithmeti
 BOOST_AUTO_TEST_CASE( WriteAtTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
-
     DenseVector<ValueType> v( 4, 0.0 );
     SCAI_COMMON_WRITEAT_TEST( v );
 }
@@ -933,7 +914,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, ValueType, scai_arithmetic_test_types 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
-
     DenseVector<ValueType> vector( 4, 2.0 );
     SCAI_COMMON_WRITEAT_TEST( vector );
 }

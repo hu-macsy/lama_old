@@ -51,17 +51,12 @@ template<typename T>
 T* myAllocate( int N )
 {
     // allocate memory on the accessed device and copy host data to it
-
     CUdeviceptr d_pointer = 0;
-
     size_t size = sizeof( T ) * N;
-
     // allocate memory
     SCAI_CUDA_DRV_CALL( cuMemAlloc( &d_pointer, sizeof( T ) * N ), "cuMemAlloc( size = " << size << " ) failed." )
-
     // initialize data with 0
     SCAI_CUDA_DRV_CALL( cuMemsetD8( d_pointer, 0, size ), "init" )
-
     return reinterpret_cast<T*>( d_pointer );
 }
 
@@ -71,17 +66,12 @@ template<typename T>
 T* myAllocate( const T h_data[], int N )
 {
     // allocate memory on the accessed device and copy host data to it
-
     CUdeviceptr pointer = 0;
-
     size_t size = sizeof( T ) * N;
-
     // allocate memory
     SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, sizeof( T ) * N ), "cuMemAlloc( size = " << size << " ) failed." )
-
     // transfer host data
     SCAI_CUDA_DRV_CALL( cuMemcpyHtoD( pointer, h_data, size ), "tranfer host->device" )
-
     return reinterpret_cast<T*>( pointer );
 }
 
@@ -91,7 +81,6 @@ template<typename T>
 void myFree( const T* d_data )
 {
     CUdeviceptr pointer = reinterpret_cast<CUdeviceptr>( d_data );
-
     SCAI_CUDA_DRV_CALL( cuMemFree( pointer ), "cuMemFree( " << d_data << " ) failed" )
 }
 
@@ -100,13 +89,9 @@ template<typename T>
 void myFree( T h_data[], const T* d_data , int N )
 {
     CUdeviceptr d_pointer = reinterpret_cast<CUdeviceptr>( d_data );
-
     size_t size = sizeof( T ) * N;
-
     // transfer data from device to host
-
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoH( h_data, d_pointer, size  ), "tranfer device->host" )
-
     SCAI_CUDA_DRV_CALL( cuMemFree( d_pointer ), "cuMemFree( " << d_data << " ) failed" )
 }
 
@@ -115,9 +100,7 @@ void myFree( T h_data[], const T* d_data , int N )
 void myCOO2CSR( int* d_csr_ia, const int* d_coo_ia, int numValues, int numRows )
 {
     const CUDACtx& device = CUDAAccess::getCurrentCUDACtx();
-
     std::cout << "cusparseXcoo2csr, #values = " << numValues << ", #rows = " << numRows << std::endl;
-
     SCAI_CUSPARSE_CALL( cusparseXcoo2csr( device.getcuSparseHandle(),
                                           d_coo_ia, numValues, numRows, d_csr_ia,
                                           CUSPARSE_INDEX_BASE_ZERO ),
@@ -131,9 +114,7 @@ void myCSR2CSC( int* d_csc_ia, int* d_csc_ja, float* d_csc_values,
                 int numRows, int numColumns, int numValues )
 {
     const CUDACtx& device = CUDAAccess::getCurrentCUDACtx();
-
     std::cout << "cusparseScsr2csc, size = " << numRows << " x " << numColumns << ", #values = " << numValues << std::endl;
-
     SCAI_CUSPARSE_CALL( cusparseScsr2csc( device.getcuSparseHandle(),
                                           numRows, numColumns, numValues,
                                           d_csr_values, d_csr_ia, d_csr_ja,
@@ -147,15 +128,10 @@ void myCSR2CSC( int* d_csc_ia, int* d_csc_ja, float* d_csc_values,
 int main( int argc, const char** argv )
 {
     // at least --SCAI_DEVICE=id may be specified
-
     Settings::parseArgs( argc, argv );
-
     int nr = 0;   // take this as default
-
     Settings::getEnvironment( nr, "SCAI_DEVICE" );
-
     CUDACtx device( nr );
-
     /***********************************************************************
      *  Definition of input data                                           *
      *                                                                     *
@@ -165,15 +141,12 @@ int main( int argc, const char** argv )
      *     -    7.0   -   8.0                                              *
      *                                                                     *
      **********************************************************************/
-
     int numRows = 4;
     int numColumns = 4;
     int ia[] = { 0, 0, 1, 1, 1, 2, 2, 3, 3 };
     int ja[] = { 0, 1, 0, 1, 2, 2, 3, 1, 3 };
     float values[] = { 1.0, 2.0, 5.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
-
     int numValues  = sizeof( ia ) / sizeof( int );
-
     SCAI_ASSERT_EQUAL( numValues, sizeof( ja ) / sizeof( int ), "COO size mismatch" )
     SCAI_ASSERT_EQUAL( numValues, sizeof( values ) / sizeof( float ), "COO size mismatch" )
 
@@ -195,42 +168,31 @@ int main( int argc, const char** argv )
     }
 
     // not verified here: max( ia ) < numRows, max( ja ) < numColumns
-
     CUDAAccess access( device );
-
     int* d_coo_ia = myAllocate( ia, numValues );
     int* d_coo_ja = myAllocate( ja, numValues );
     float* d_coo_values = myAllocate( values, numValues );
-
     int* d_csr_ia = myAllocate<int>( numRows + 1 );
-    int *d_csr_ja = d_coo_ja;
-    float *d_csr_values = d_coo_values;
-
+    int* d_csr_ja = d_coo_ja;
+    float* d_csr_values = d_coo_values;
     myCOO2CSR( d_csr_ia, d_coo_ia, numValues, numRows );
-
     int* d_csc_ia = myAllocate<int>( numValues );
     int* d_csc_ja = myAllocate<int>( numColumns + 1 );
     float* d_csc_values = myAllocate<float>( numValues );
-
     myCSR2CSC( d_csc_ia, d_csc_ja, d_csc_values,
                d_csr_ia, d_coo_ja, d_coo_values,
                numRows, numColumns, numValues );
-
     // free memory on device and get host data
-
     common::scoped_array<int> csc_ia( new int[numValues] );
     common::scoped_array<int> csc_ja( new int[numColumns + 1] );
     common::scoped_array<float> csc_values( new float[numValues] );
-
     myFree( d_coo_ia );
     myFree( d_csr_values );
     myFree( d_csr_ia );
     myFree( d_csr_ja );
-
     myFree( csc_ia.get(), d_csc_ia, numValues );
     myFree( csc_ja.get(), d_csc_ja, numColumns + 1 );
     myFree( csc_values.get(), d_csc_values, numValues );
-
     /***********************************************************************
      *   CSC ja:  0    2    5     7    9                                   *
      *                                                                     *
@@ -240,7 +202,6 @@ int main( int argc, const char** argv )
      *             -   7.0   -   8.0                                       *
      *                                                                     *
      **********************************************************************/
-
     int   expected_ja[]     = { 0,    2,       5,    7,    9 };
     int   expected_ia[]     = { 0, 1, 0, 1, 3, 1, 2, 2, 3 };
     float expected_values[] = { 1, 5, 2, 3, 7, 4, 5, 6, 8 };
@@ -249,7 +210,7 @@ int main( int argc, const char** argv )
     {
         std::cout << "column[" << j << "] =";
 
-        for ( int k = csc_ja[j]; k < csc_ja[j+1]; ++k )
+        for ( int k = csc_ja[j]; k < csc_ja[j + 1]; ++k )
         {
             std::cout << " " << csc_ia[k] << ":" << csc_values[k];
         }

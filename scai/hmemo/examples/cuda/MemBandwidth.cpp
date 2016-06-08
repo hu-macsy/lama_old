@@ -54,10 +54,8 @@ void bench( HArray<ValueType>& array )
 {
     ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
     ContextPtr hostContext = Context::getContextPtr( common::context::Host );
-
     const IndexType N = 8 * 1024 * 1024;
     const int NITER = 128;
-
     {
         WriteOnlyAccess<ValueType> write( array, N );
         ValueType* data = write.get();
@@ -67,7 +65,6 @@ void bench( HArray<ValueType>& array )
             data[i] = 1.0;
         }
     }
-
     double time = common::Walltime::get();
 
     for ( int iter = 0; iter < NITER; ++iter )
@@ -83,14 +80,11 @@ void bench( HArray<ValueType>& array )
     }
 
     time = common::Walltime::get() - time ;
-
     double bytes = N;
     bytes *= sizeof( ValueType );
     bytes *= NITER;
     double mbytes = bytes / ( 1024.0 * 1024.0 );
-
     double gBytePerSecond = ( mbytes / 1024.0 ) / time;
-
     std::cout << "Transfer " << mbytes << " MBytes in " << time << " seconds." << std::endl;
     std::cout << "This is " << gBytePerSecond << " GByte/s (round trip)" << std::endl;
 }
@@ -100,10 +94,8 @@ int main()
 {
     ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
     ContextPtr hostContext = Context::getContextPtr( common::context::Host );
-
     HArray<float> A1( hostContext );  // same as HArray<float> A1;
     HArray<float> A2( cudaContext );
-
     bench( A1 );
     bench( A2 );
 }

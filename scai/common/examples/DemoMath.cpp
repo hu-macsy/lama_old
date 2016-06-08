@@ -46,15 +46,10 @@ template<typename ValueType>
 void testRoutine( ValueType x )
 {
     ValueType absX = Math::abs( x );
-
     std::cout << "abs ( " << x << " ) = " << absX << std::endl;
-
     ValueType sqrtX = Math::sqrt( x );
-
     std::cout << "sqrt ( " << x << " ) = " << sqrtX << std::endl;
-
     ValueType conjX = Math::conj( x );
-
     std::cout << "conj ( " << x << " ) = " << conjX << std::endl;
 }
 

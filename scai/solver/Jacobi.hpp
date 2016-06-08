@@ -51,8 +51,8 @@ namespace solver
 {
 
 class COMMON_DLL_IMPORTEXPORT Jacobi:
-	public OmegaSolver,
-	public Solver::Register<Jacobi>
+    public OmegaSolver,
+    public Solver::Register<Jacobi>
 {
 public:
     Jacobi( const std::string& id );

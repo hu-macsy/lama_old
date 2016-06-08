@@ -57,7 +57,7 @@ IterationCount::IterationCount( const IndexType iterationExtrema )
     SCAI_LOG_DEBUG( logger, "Creating IterationCount with " << iterationExtrema );
 }
 
-IterationCount::IterationCount( const IterationCount &other )
+IterationCount::IterationCount( const IterationCount& other )
     : Criterion( other ), mIterationExtrema( other.mIterationExtrema )
 
 {
@@ -71,7 +71,6 @@ bool IterationCount::isSatisfied( const IterativeSolver& solver )
 {
     SCAI_LOG_INFO( logger,
                    "Iteration Extrema = " << mIterationExtrema << ", Iteration Count = " << solver.getIterationCount() );
-
     return solver.getIterationCount() >= mIterationExtrema;
 }
 

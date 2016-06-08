@@ -69,7 +69,7 @@ namespace lama
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT ELLStorage:
-    public CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>,
+    public CRTPMatrixStorage<ELLStorage<ValueType>, ValueType>,
     public _MatrixStorage::Register<ELLStorage<ValueType> >    // register at factory
 {
 public:
@@ -92,7 +92,7 @@ public:
      * @param[in] numColumns    the number of columns of the matrix
      * @param[in] context       the context where storage data will be first touched
      */
-    ELLStorage( const IndexType numRows, const IndexType numColumns, 
+    ELLStorage( const IndexType numRows, const IndexType numColumns,
                 const hmemo::ContextPtr context = hmemo::Context::getHostPtr() );
 
     /** Constructor for ELL storage by corresponding arrays.

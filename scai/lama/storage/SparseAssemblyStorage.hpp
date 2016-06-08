@@ -60,7 +60,7 @@ namespace lama
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage:
 
-    public CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>,
+    public CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType>,
     public _MatrixStorage::Register<SparseAssemblyStorage<ValueType> >    // register at factory
 {
 public:
@@ -372,9 +372,9 @@ private:
 
     void print( std::ostream& stream ) const;
 
-    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mDiagonalProperty;
-    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mNumRows;
-    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mNumColumns;
+    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType>::mDiagonalProperty;
+    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType>::mNumRows;
+    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType>::mNumColumns;
 
     struct Row
     {

@@ -57,15 +57,15 @@ namespace solver
 
 /**
  * @brief The class QMR represents a IterativeSolver which uses the krylov subspace stabilized Quasi Minimal Residual method
- *        to solve a system of linear equations iteratively. 
+ *        to solve a system of linear equations iteratively.
  *
- * Remark: 
+ * Remark:
  * The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
 class COMMON_DLL_IMPORTEXPORT QMR:
-        public IterativeSolver,
-        public Solver::Register<QMR>
+    public IterativeSolver,
+    public Solver::Register<QMR>
 {
 public:
     /**
@@ -136,11 +136,11 @@ public:
      * @brief Returns the complete configuration of the derived class
      */
     virtual QMRRuntime& getRuntime();
-    /** 
+    /**
     * @brief Initializes vectors and values of the runtime
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
-    
+
     /**
      * @brief Returns the complete configuration of the derived class
      */

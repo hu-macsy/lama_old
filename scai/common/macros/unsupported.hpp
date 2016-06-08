@@ -47,28 +47,28 @@
  *  will be given. For IGNORE no message is given at all. Otherwise an exception
  *  is thrown.
  */
- 
+
 #define SCAI_UNSUPPORTED( msg )                                                \
-{                                                                              \
-    if ( scai::common::UnsupportedException::getUnsupportedSetting() !=        \
-            scai::common::UnsupportedException::UNSUPPORTED_IGNORE )           \
-    {                                                                          \
-        std::ostringstream errorStr;                                           \
-        errorStr << "Unsupported at line ";                                    \
-        errorStr << __LINE__ << " of file " << __FILE__ << "\n";               \
-        errorStr << "    Message: " << msg << std::endl;                       \
-        errorStr << "Use environment variable SCAI_UNSUPPORTED";               \
-        errorStr << " (WARN or IGNORE) to get rid of this message";            \
-        errorStr << std::endl;                                                 \
-        if ( scai::common::UnsupportedException::getUnsupportedSetting() ==    \
-        		scai::common::UnsupportedException::UNSUPPORTED_ERROR )        \
-        {                                                                      \
-            throw scai::common::UnsupportedException( errorStr.str() );        \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            std::cout << errorStr.str() << std::endl;                          \
-        }                                                                      \
-    }                                                                          \
-}
+    {                                                                              \
+        if ( scai::common::UnsupportedException::getUnsupportedSetting() !=        \
+                scai::common::UnsupportedException::UNSUPPORTED_IGNORE )           \
+        {                                                                          \
+            std::ostringstream errorStr;                                           \
+            errorStr << "Unsupported at line ";                                    \
+            errorStr << __LINE__ << " of file " << __FILE__ << "\n";               \
+            errorStr << "    Message: " << msg << std::endl;                       \
+            errorStr << "Use environment variable SCAI_UNSUPPORTED";               \
+            errorStr << " (WARN or IGNORE) to get rid of this message";            \
+            errorStr << std::endl;                                                 \
+            if ( scai::common::UnsupportedException::getUnsupportedSetting() ==    \
+                    scai::common::UnsupportedException::UNSUPPORTED_ERROR )        \
+            {                                                                      \
+                throw scai::common::UnsupportedException( errorStr.str() );        \
+            }                                                                      \
+            else                                                                   \
+            {                                                                      \
+                std::cout << errorStr.str() << std::endl;                          \
+            }                                                                      \
+        }                                                                          \
+    }
 

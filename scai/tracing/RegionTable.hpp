@@ -120,7 +120,7 @@ private:
 
     /** Map of region strings to region ids that are the indexes to array.
      *
-     *  Timer strings are stored as std::string and not as const char* 
+     *  Timer strings are stored as std::string and not as const char*
      */
 
     MapRegion mapTimer;

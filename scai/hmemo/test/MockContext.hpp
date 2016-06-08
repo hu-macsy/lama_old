@@ -36,7 +36,7 @@
 
 #include <scai/hmemo/Context.hpp>
 #include <scai/hmemo/Memory.hpp>
- 
+
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/bind.hpp>
@@ -48,7 +48,7 @@
 class MockContext: public scai::hmemo::Context, public scai::hmemo::Context::Register<MockContext>
 
 {
-private: 
+private:
 
     // Member variables
 
@@ -95,11 +95,8 @@ public:
         }
 
         const MockMemory* mockMemory = dynamic_cast<const MockMemory*>( &memory );
-
         SCAI_ASSERT( mockMemory, "NULL mock memory" )
-
         return mockMemory->getDeviceNr() == mDeviceNr;
-        
         // return &memory == getMemory().get();
     }
 
@@ -121,7 +118,7 @@ public:
     static scai::hmemo::ContextPtr create( int deviceNr );
 
     static scai::common::context::ContextType createValue()
-    { 
+    {
         return scai::common::context::UserContext;
     }
 
@@ -144,23 +141,19 @@ static std::vector<scai::common::weak_ptr<class MockContext> > contextInstances(
 inline scai::hmemo::ContextPtr MockContext::create( int deviceNr )
 {
     scai::common::shared_ptr<MockContext> context;
-
     SCAI_ASSERT( deviceNr < 6, "number of instances limited" )
 
     // use the last contextInstance if it is still valid
 
-    if( contextInstances[deviceNr].expired() )
+    if ( contextInstances[deviceNr].expired() )
     {
         // create a new instance of MockContext and keep it for further uses
-
         context = scai::common::shared_ptr<MockContext>( new MockContext( deviceNr ) );
-
         contextInstances[deviceNr] = context;
     }
     else
     {
         // the last context instance is still valid, so we return new shared pointer to it
-
         context = contextInstances[deviceNr].lock();
     }
 

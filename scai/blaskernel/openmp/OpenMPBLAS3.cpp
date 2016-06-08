@@ -84,23 +84,23 @@ void OpenMPBLAS3::gemm(
                    << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc
                    << ", alpha = " << alpha << ", beta = " << beta )
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             //'T'
-            if( TransB == CblasNoTrans )
+            if ( TransB == CblasNoTrans )
             {
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int h = 0; h < n; h++ )
+                for ( int h = 0; h < n; h++ )
                 {
-                    for( int i = 0; i < m; i++ )
+                    for ( int i = 0; i < m; i++ )
                     {
-                        temp = static_cast<ValueType>(0.0);
+                        temp = static_cast<ValueType>( 0.0 );
 
-                        for( int j = 0; j < k; j++ )
+                        for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * h + j] * B[ldb * i + j];
                         }
@@ -109,22 +109,22 @@ void OpenMPBLAS3::gemm(
                     }
                 }
             }
-            else if( TransB == CblasConjTrans )
+            else if ( TransB == CblasConjTrans )
             {
                 COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
-            else if( TransB == CblasTrans )
+            else if ( TransB == CblasTrans )
             {
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int h = 0; h < n; h++ )
+                for ( int h = 0; h < n; h++ )
                 {
-                    for( int i = 0; i < m; i++ )
+                    for ( int i = 0; i < m; i++ )
                     {
-                        temp = static_cast<ValueType>(0.0);
+                        temp = static_cast<ValueType>( 0.0 );
 
-                        for( int j = 0; j < k; j++ )
+                        for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * h + j] * B[ldb * j + i];
                         }
@@ -138,11 +138,10 @@ void OpenMPBLAS3::gemm(
                 COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             // Todo: implement
             COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
-
             //'C'
             /*
             if( TransB == CblasNoTrans )
@@ -162,20 +161,20 @@ void OpenMPBLAS3::gemm(
                 COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }*/
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
-            if( TransB == CblasNoTrans )
+            if ( TransB == CblasNoTrans )
             {
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int h = 0; h < n; h++ )
+                for ( int h = 0; h < n; h++ )
                 {
-                    for( int i = 0; i < m; i++ )
+                    for ( int i = 0; i < m; i++ )
                     {
-                        temp = static_cast<ValueType>(0.0);
+                        temp = static_cast<ValueType>( 0.0 );
 
-                        for( int j = 0; j < k; j++ )
+                        for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + h] * B[ldb * i + j];
                         }
@@ -184,22 +183,22 @@ void OpenMPBLAS3::gemm(
                     }
                 }
             }
-            else if( TransB == CblasConjTrans )
+            else if ( TransB == CblasConjTrans )
             {
                 COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
-            else if( TransB == CblasTrans )
+            else if ( TransB == CblasTrans )
             {
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int h = 0; h < n; h++ )
+                for ( int h = 0; h < n; h++ )
                 {
-                    for( int i = 0; i < m; i++ )
+                    for ( int i = 0; i < m; i++ )
                     {
-                        temp = static_cast<ValueType>(0.0);
+                        temp = static_cast<ValueType>( 0.0 );
 
-                        for( int j = 0; j < k; j++ )
+                        for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + h] * B[ldb * j + i];
                         }
@@ -218,22 +217,22 @@ void OpenMPBLAS3::gemm(
             COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
         }
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
-            if( TransB == CblasNoTrans )
+            if ( TransB == CblasNoTrans )
             {
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int h = 0; h < n; h++ )
+                for ( int h = 0; h < n; h++ )
                 {
-                    for( int i = 0; i < m; i++ )
+                    for ( int i = 0; i < m; i++ )
                     {
-                        temp = static_cast<ValueType>(0.0);
+                        temp = static_cast<ValueType>( 0.0 );
 
-                        for( int j = 0; j < k; j++ )
+                        for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + i] * B[ldb * j + h];
                         }
@@ -242,22 +241,22 @@ void OpenMPBLAS3::gemm(
                     }
                 }
             }
-            else if( TransB == CblasConjTrans )
+            else if ( TransB == CblasConjTrans )
             {
                 COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
-            else if( TransB == CblasTrans )
+            else if ( TransB == CblasTrans )
             {
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int h = 0; h < n; h++ )
+                for ( int h = 0; h < n; h++ )
                 {
-                    for( int i = 0; i < m; i++ )
+                    for ( int i = 0; i < m; i++ )
                     {
-                        temp = static_cast<ValueType>(0.0);
+                        temp = static_cast<ValueType>( 0.0 );
 
-                        for( int j = 0; j < k; j++ )
+                        for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + i] * B[ldb * h + j];
                         }
@@ -271,24 +270,23 @@ void OpenMPBLAS3::gemm(
                 COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
-            if( TransB == CblasNoTrans )
+            if ( TransB == CblasNoTrans )
             {
                 // A = 'N'; B = 'N'
                 //std::cout << "lda:" << lda << ", ldb:" << ldb << ", ldc:" << ldc << "\n";
                 //std::cout << "n:" << n << ", m:" << m << ", k:" << k << "\n";
                 ValueType temp;
-
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int h = 0; h < n; h++ )
+                for ( int h = 0; h < n; h++ )
                 {
-                    for( int i = 0; i < m; i++ )
+                    for ( int i = 0; i < m; i++ )
                     {
-                        temp = static_cast<ValueType>(0.0);
+                        temp = static_cast<ValueType>( 0.0 );
 
-                        for( int j = 0; j < k; j++ )
+                        for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * i + j] * B[ldb * j + h];
                         }
@@ -297,18 +295,18 @@ void OpenMPBLAS3::gemm(
                     }
                 }
             }
-            else if( TransB == CblasTrans )
+            else if ( TransB == CblasTrans )
             {
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for( int h = 0; h < n; h++ )
+                for ( int h = 0; h < n; h++ )
                 {
-                    for( int i = 0; i < m; i++ )
+                    for ( int i = 0; i < m; i++ )
                     {
-                        temp = static_cast<ValueType>(0.0);
+                        temp = static_cast<ValueType>( 0.0 );
 
-                        for( int j = 0; j < k; j++ )
+                        for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * i + j] * B[ldb * h + j];
                         }
@@ -317,7 +315,7 @@ void OpenMPBLAS3::gemm(
                     }
                 }
             }
-            else if( TransB == CblasConjTrans )
+            else if ( TransB == CblasConjTrans )
             {
                 COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
@@ -326,11 +324,10 @@ void OpenMPBLAS3::gemm(
                 COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             // Todo: implement
             COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
-
             /*
             if( TransB == CblasNoTrans )
             {
@@ -366,11 +363,8 @@ template<typename ValueType>
 void OpenMPBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::Host;
-
     SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
-
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( OpenMPBLAS3::gemm, ctx, flag );
 }
 

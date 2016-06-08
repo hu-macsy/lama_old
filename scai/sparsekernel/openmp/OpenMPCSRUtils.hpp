@@ -146,7 +146,7 @@ public:
 
     /** Implementation for CSRKernelTrait::Mult::scaleRows  */
 
-    template<typename ValueType1,typename ValueType2>
+    template<typename ValueType1, typename ValueType2>
     static void scaleRows(
         ValueType1 csrValues[],
         const IndexType csrIA[],

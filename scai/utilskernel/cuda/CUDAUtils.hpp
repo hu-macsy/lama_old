@@ -89,7 +89,7 @@ public:
 
     /** CUDA implementation for UtilKernelTrait::setScale. */
 
-    template<typename ValueType,typename otherValueType>
+    template<typename ValueType, typename otherValueType>
     static void setScale(
         ValueType outValues[],
         const ValueType value,
@@ -113,17 +113,17 @@ public:
 
     /** CUDA implementation for UtilKernelTrait::set */
 
-    template<typename ValueType,typename otherValueType>
+    template<typename ValueType, typename otherValueType>
     static void set( ValueType out[], const otherValueType in[], const IndexType n, const reduction::ReductionOp op );
 
     /** CUDA implementation for UtilKernelTrait::setGather, out[i]] = in[ indexes[i] ] */
 
-    template<typename ValueType,typename otherValueType>
+    template<typename ValueType, typename otherValueType>
     static void setGather( ValueType out[], const otherValueType in[], const IndexType indexes[], const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::setScatter, out[ indexes[i] ] = in [i] */
 
-    template<typename ValueType,typename otherValueType>
+    template<typename ValueType, typename otherValueType>
     static void setScatter( ValueType out[], const IndexType indexes[], const otherValueType in[], const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::invert */

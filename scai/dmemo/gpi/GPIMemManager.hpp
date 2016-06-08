@@ -59,14 +59,14 @@ class COMMON_DLL_IMPORTEXPORT GPIMemManager
 
 public:
 
-    /** Get unused segment data for user application. 
+    /** Get unused segment data for user application.
      *
      *  @param[out] id is the identification of GASPI segment
      *  @param[out] ptr is pointer to the segment data
      *  @param[out] offset offset within the used segment
      *  @param[in]  size is the number of bytes required for the segment data
      *
-     *  This routine might assign data of the same segment for two following calls so offset is 
+     *  This routine might assign data of the same segment for two following calls so offset is
      *  used to distinguish between the different data.
      *
      *  NOTE: currently offset is always 0 as otherwise consistency of the argument size between
@@ -76,7 +76,7 @@ public:
     static void getSegmentData( gaspi_segment_id_t& id, gaspi_pointer_t& ptr, gaspi_offset_t& offset, const int size );
 
     /** This method checks for a given pointer in which segment it is available.
-     *  
+     *
      *  @param[out] id is the identification of GASPI segment
      *  @param[out] offset offset within the used segment
      *  @param[in]  ptr is pointer to be searched for

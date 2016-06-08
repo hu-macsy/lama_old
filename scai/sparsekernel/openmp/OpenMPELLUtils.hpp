@@ -80,7 +80,7 @@ private:
         const IndexType i,
         const IndexType jj,
         const IndexType numRows,
-        const IndexType /* numValuesPerRow */)
+        const IndexType /* numValuesPerRow */ )
     {
         return jj * numRows + i; // column major-order
         // return i * numValuesPerRow + jj;    // row major-order
@@ -105,7 +105,7 @@ private:
 
     /** Returns one row of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void getRow(
         OtherValueType row[],
         const IndexType i,
@@ -132,7 +132,7 @@ private:
 
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrJA[] );
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void scaleValue(
         const IndexType numRows,
         const IndexType numValuesPerRow,
@@ -168,7 +168,7 @@ private:
 
     /** Implementation for ELLKernelTrait::getCSRValues */
 
-    template<typename ELLValueType,typename CSRValueType>
+    template<typename ELLValueType, typename CSRValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -189,7 +189,7 @@ private:
 
     /** Implementation for ELLKernelTrait::setCSRValues */
 
-    template<typename ELLValueType,typename CSRValueType>
+    template<typename ELLValueType, typename CSRValueType>
     static void setCSRValues(
         IndexType ellJA[],
         ELLValueType ellValues[],

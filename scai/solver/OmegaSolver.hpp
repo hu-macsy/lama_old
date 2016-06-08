@@ -131,12 +131,12 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual OmegaSolverRuntime& getRuntime() =0;
+    virtual OmegaSolverRuntime& getRuntime() = 0;
 
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const OmegaSolverRuntime& getConstRuntime() const =0;
+    virtual const OmegaSolverRuntime& getConstRuntime() const = 0;
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -144,7 +144,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy() =0;
+    virtual SolverPtr copy() = 0;
 
 protected:
     /**

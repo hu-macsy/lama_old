@@ -80,11 +80,9 @@ void BLAS_BLAS3::gemm(
     const IndexType ldc )
 {
     SCAI_REGION( "BLAS.BLAS3.gemm" )
-
     SCAI_LOG_INFO( logger,
                    "gemm<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n << ", k = " << k
                    << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -94,7 +92,7 @@ void BLAS_BLAS3::gemm(
 
     BLASTrait::BLASTrans ta = '-', tb = '-';
 
-    switch( transA )
+    switch ( transA )
     {
         case CblasNoTrans:
             ta = 'N';
@@ -109,7 +107,7 @@ void BLAS_BLAS3::gemm(
             break;
     }
 
-    switch( transB )
+    switch ( transB )
     {
         case CblasNoTrans:
             tb = 'N';
@@ -124,13 +122,13 @@ void BLAS_BLAS3::gemm(
             break;
     }
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        BLASWrapper<ValueType>::gemm( ta, tb, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, A, static_cast<BLASTrait::BLASIndexType>( lda ), B, static_cast<BLASTrait::BLASIndexType>( ldb ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ));
+        BLASWrapper<ValueType>::gemm( ta, tb, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, A, static_cast<BLASTrait::BLASIndexType>( lda ), B, static_cast<BLASTrait::BLASIndexType>( ldb ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ) );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
-        BLASWrapper<ValueType>::gemm( tb, ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, B, static_cast<BLASTrait::BLASIndexType>( ldb ), A, static_cast<BLASTrait::BLASIndexType>( lda ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ));
+        BLASWrapper<ValueType>::gemm( tb, ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, B, static_cast<BLASTrait::BLASIndexType>( ldb ), A, static_cast<BLASTrait::BLASIndexType>( lda ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ) );
     }
 }
 
@@ -142,20 +140,17 @@ template<typename ValueType>
 void BLAS_BLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::Host;
-
     bool useBLAS = false;
     int level = 0;
-
     useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );
 
-    if( !useBLAS || ( level <= 0 ) )
+    if ( !useBLAS || ( level <= 0 ) )
     {
         SCAI_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS not set or 0)" )
         return;
     }
-    else if( level > 3 )
+    else if ( level > 3 )
     {
         // only level 2 or level 3 wrappers might be used
         SCAI_LOG_INFO( logger,
@@ -164,7 +159,6 @@ void BLAS_BLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
     }
 
     SCAI_LOG_INFO( logger, "register BLAS3 wrapper routines for Host at kernel registry [" << flag << "]" )
-
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( BLAS_BLAS3::gemm, ctx, flag );
 }
 

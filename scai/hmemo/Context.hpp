@@ -55,7 +55,7 @@ namespace scai
 
 namespace tasking
 {
-    class SyncToken;    // forward declaration
+class SyncToken;    // forward declaration
 }
 
 /** Namespace for all data structures of the the heterogeneous memory management. */
@@ -85,8 +85,8 @@ typedef common::shared_ptr<const Context> ContextPtr;
  *
  *  A copy constructor for a context is not provided.
  */
-class COMMON_DLL_IMPORTEXPORT Context: 
-  
+class COMMON_DLL_IMPORTEXPORT Context:
+
     public  common::Factory1<common::context::ContextType, int, ContextPtr>,
     public  common::Printable,
     public  common::context,
@@ -136,7 +136,7 @@ public:
      */
     virtual void disable( const char* file, int line ) const;
 
-    /** This method returns the memory that can be used at this context. 
+    /** This method returns the memory that can be used at this context.
      *
      *  Note: canUseMemory( *getMemory() ) must be true.
      *
@@ -162,11 +162,11 @@ public:
     MemoryPtr getMemoryPtr() const;
 
     /** If zero copy is enabled, the default memory is not the local memory
-     *  but the host memory so Host and this context can work on the same memory. 
+     *  but the host memory so Host and this context can work on the same memory.
      */
 
     virtual void enableZeroCopy( bool flag ) const;
- 
+
     /** @brief Get a context of a certain type from the Context factory.
      *
      *  Note: This is the same as Factory::create but with default values.
@@ -183,7 +183,7 @@ public:
      */
     static ContextPtr getContextPtr( const ContextType type, int deviceNr = -1 );
 
-    /** @brief get context as set by SCAI_CONTEXT and SCAI_DEVICE 
+    /** @brief get context as set by SCAI_CONTEXT and SCAI_DEVICE
      *
      *  @return             a context of the type as set by environment variable SCAI_CONTEXT (Host if not set)
      *  @throws Exception if the context set by SCAI_CONTEXT is not available or unknown

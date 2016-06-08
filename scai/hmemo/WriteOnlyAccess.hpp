@@ -101,7 +101,6 @@ public:
     {
         this->resize( 0 );      // invalidates all data before resize
         this->resize( size );   // now resize
-
         SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
@@ -110,7 +109,6 @@ public:
     {
         this->resize( 0 );      // invalidates all data before resize
         this->resize( size );   // now resize
-
         SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 

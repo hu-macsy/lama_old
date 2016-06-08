@@ -50,11 +50,10 @@ int main( int argc, char** argv )
     {
         std::cerr << "Missing filename for input matrix" << std::endl;
         std::cerr << "spy matrix_filename [ width [ height [ scale ] ] ]" << std::endl;
-        exit(1);
+        exit( 1 );
     }
 
     const char* filename = argv[1];
-
     int nRows = 800;
 
     if ( argc > 2 )
@@ -77,27 +76,18 @@ int main( int argc, char** argv )
     }
 
     matrix.readFromFile( filename );
-
     const HArray<IndexType>& ia = matrix.getIA();
     const HArray<IndexType>& ja = matrix.getJA();
     const HArray<ValueType>& values = matrix.getValues();
-
     ReadAccess<IndexType> csrIA( ia );
     ReadAccess<IndexType> csrJA( ja );
     ReadAccess<ValueType> csrValues( values );
-
     std::cout << "Write png of size " << nRows << " x " << nColumns << ", zoom = " << nZoom << std::endl;
-
     Bitmap pic( nRows, nColumns, nZoom );
-
     pic.setColor( 240, 120, 0 );  // color for smallest value
     // pic.setColor( 0, 0, 255 );    // color for largetst value
-
     pic.drawCSR( matrix.getNumRows(), matrix.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
-
     const std::string out_filename = "lama.png";
-
     pic.write_png_file( out_filename.c_str() );
-
     std::cout << "png files has been written as " << out_filename << std::endl;
 }

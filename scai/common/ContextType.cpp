@@ -86,7 +86,7 @@ std::ostream& operator<<( std::ostream& stream, const context::AccessKind& kind 
             break;
 
         default:
-            stream << "AccessKind_" << (int) kind;
+            stream << "AccessKind_" << ( int ) kind;
     }
 
     return stream;

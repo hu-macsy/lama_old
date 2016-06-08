@@ -49,13 +49,9 @@ using namespace tasking;
 float sum( const float array[], const int n )
 {
     thrust::device_ptr<float> data( const_cast<float*>( array ) );
-
     float zero = static_cast<float>( 0 );
-
     float result = thrust::reduce( data, data + n, zero, thrust::plus<float>() );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     return result;
 }
 
@@ -73,23 +69,18 @@ void initKernel( float* out, const int n, const float value )
 void init( float array[], const int n, const float value )
 {
     SCAI_CHECK_CUDA_ACCESS
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
-
     cudaStream_t stream = 0;
 
     if ( syncToken )
     {
         // asynchronous execution takes other stream and will not synchronize later
-
         stream = syncToken->getCUDAStream();
     }
 
     const int blockSize = common::CUDASettings::getBlockSize( n );
-
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-
     initKernel <<< dimGrid, dimBlock, 0, stream>>>( array, n, value );
 }
 

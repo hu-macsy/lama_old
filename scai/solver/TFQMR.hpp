@@ -50,17 +50,17 @@ namespace scai
 namespace solver
 {
 /**
- * @brief The class TFQMR represents a IterativeSolver which uses the krylov subspace Transpose Free 
+ * @brief The class TFQMR represents a IterativeSolver which uses the krylov subspace Transpose Free
  *        Quasi Minimal Residual (TFQMR) method to solve a system of linear equations iteratively.
  *
- * Remark: 
+ * Remark:
  * The scalars in the algorithm are set to zero if they are smaller then machine
  * precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
 
  */
 class COMMON_DLL_IMPORTEXPORT TFQMR:
-		public IterativeSolver,
-		public Solver::Register<TFQMR>
+    public IterativeSolver,
+    public Solver::Register<TFQMR>
 {
 public:
     /**
@@ -97,31 +97,31 @@ public:
     struct TFQMRRuntime: IterativeSolverRuntime
     {
         TFQMRRuntime();
-        virtual ~TFQMRRuntime();        
+        virtual ~TFQMRRuntime();
 
-	common::shared_ptr<lama::Vector> mVecD;
-	common::shared_ptr<lama::Vector> mInitialR;
-	common::shared_ptr<lama::Vector> mVecVEven;
-	common::shared_ptr<lama::Vector> mVecVOdd;
-    common::shared_ptr<lama::Vector> mVecVT;
-	common::shared_ptr<lama::Vector> mVecW;
-	common::shared_ptr<lama::Vector> mVecZ;
+        common::shared_ptr<lama::Vector> mVecD;
+        common::shared_ptr<lama::Vector> mInitialR;
+        common::shared_ptr<lama::Vector> mVecVEven;
+        common::shared_ptr<lama::Vector> mVecVOdd;
+        common::shared_ptr<lama::Vector> mVecVT;
+        common::shared_ptr<lama::Vector> mVecW;
+        common::shared_ptr<lama::Vector> mVecZ;
 
-    lama::Scalar mEps;
-	lama::Scalar mAlpha;
-	lama::Scalar mBeta;
-	lama::Scalar mC;
-	lama::Scalar mEta;
-	lama::Scalar mTheta;
-	lama::Scalar mTau;
-	lama::Scalar mRhoNew;
-	lama::Scalar mRhoOld;
+        lama::Scalar mEps;
+        lama::Scalar mAlpha;
+        lama::Scalar mBeta;
+        lama::Scalar mC;
+        lama::Scalar mEta;
+        lama::Scalar mTheta;
+        lama::Scalar mTau;
+        lama::Scalar mRhoNew;
+        lama::Scalar mRhoOld;
     };
     /**
     * @brief Returns the complete configuration of the derived class
     */
     virtual TFQMRRuntime& getRuntime();
-    /** 
+    /**
     * @brief Initializes vectors and values of the runtime
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
@@ -130,7 +130,7 @@ public:
     * @brief Returns the complete const configuration of the derived class
     */
     virtual const TFQMRRuntime& getConstRuntime() const;
-    
+
     static std::string createValue();
     static Solver* create( const std::string name );
 
@@ -138,7 +138,7 @@ protected:
 
     TFQMRRuntime mTFQMRRuntime;
     /**
-     * @brief Performs one TFQMR iteration based on Matrix/Vector operations. 
+     * @brief Performs one TFQMR iteration based on Matrix/Vector operations.
      * iterationOdd() and iterationEven() is some update for iterate() based on
      * the number of iterations (even, odd).
      */

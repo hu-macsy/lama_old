@@ -46,7 +46,7 @@ namespace scai
 {
 
 /** Namespace for all kernel implementations of BLAS routines. */
- 
+
 namespace blaskernel
 {
 
@@ -252,7 +252,7 @@ struct BLASKernelTrait
          * @brief axpy multiplies scalar alpha by vector x and
          * adds the result to vector y.
          *
-         *            y = y + alpha * x 
+         *            y = y + alpha * x
          *
          * @param[in] n      number of considered elements in input vectors.
          * @param[in] alpha  scalar multiplier
@@ -468,7 +468,7 @@ struct BLASKernelTrait
          * @param[in] ldc     leading dimension of two-dimensional array used to store matrix C.
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER order,
             const CBLAS_TRANSPOSE transA,
             const CBLAS_TRANSPOSE transB,

@@ -54,14 +54,14 @@ namespace scai
 
 namespace tasking
 {
-	class SyncToken;
+class SyncToken;
 }
 
 namespace dmemo
 {
-    class Distribution;
-    class Halo;
-    class Redistributor;
+class Distribution;
+class Halo;
+class Redistributor;
 }
 
 namespace lama
@@ -77,17 +77,17 @@ template<typename ValueType> class DenseStorageView;
 struct Format
 {
 
-typedef enum
-{
-    DENSE,    //!< Dense, all elements are stored
-    CSR,      //!< Compressed Sparse Row
-    ELL,      //!< ELLPack
-    DIA,      //!< Diagonal
-    JDS,      //!< Jagged Diagonal Storage
-    COO,      //!< Coordinate list
-    ASSEMBLY, //!<  Matrix storage used for assembling of values
-    UNDEFINED //!<  Default value
-} MatrixStorageFormat;
+    typedef enum
+    {
+        DENSE,    //!< Dense, all elements are stored
+        CSR,      //!< Compressed Sparse Row
+        ELL,      //!< ELLPack
+        DIA,      //!< Diagonal
+        JDS,      //!< Jagged Diagonal Storage
+        COO,      //!< Coordinate list
+        ASSEMBLY, //!<  Matrix storage used for assembling of values
+        UNDEFINED //!<  Default value
+    } MatrixStorageFormat;
 
 }; /* end struct Format */
 
@@ -183,7 +183,7 @@ public:
      *        So allocation of a much smaller matrix compared to the existing
      *        one might result in some waste of memory.
      *
-     *  Note: For dense matrices all values are set to zero; for sparse matrices 
+     *  Note: For dense matrices all values are set to zero; for sparse matrices
      *        zero values are usually not stored and no initialization is done.
      *
      *  Note: Operations are done on the context set for the matrix storage.
@@ -525,7 +525,7 @@ protected:
      *        arrays have more memory reserved than needed for its current size.
      */
 
-    virtual size_t getMemoryUsageImpl() const =0;
+    virtual size_t getMemoryUsageImpl() const = 0;
 
     IndexType mNumRows; //!< numbers of matrix rows
 
@@ -932,7 +932,7 @@ public:
         const ValueType beta,
         const MatrixStorage<ValueType>& b );
 
-	/**
+    /**
      * @brief Returns the L1 norm of this.
      *
      * @return the L1 norm of this.
@@ -1129,13 +1129,10 @@ void MatrixStorage<ValueType>::setRawCSRData(
     const OtherValueType* const values )
 {
     // wrap the pointer data into LAMA arrays ( without copies )
-
     hmemo::HArrayRef<IndexType> csrIA( numRows + 1, ia );
     hmemo::HArrayRef<IndexType> csrJA( numValues, ja );
     hmemo::HArrayRef<OtherValueType> csrValues( numValues, values );
-
     // now set the data on the context of this storage via virtual method
-
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
 

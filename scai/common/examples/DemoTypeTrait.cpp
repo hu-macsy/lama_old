@@ -41,7 +41,6 @@ template<typename ValueType>
 void testRoutine()
 {
     std::cout << "TypeTraits<...>::id() = " << TypeTraits<ValueType>::id() << std::endl;
-
     scai::common::scalar::ScalarType x = TypeTraits<ValueType>::stype;
     std::cout << "TypeTraits<...>::stype = " << x << std::endl;
 }
@@ -50,9 +49,7 @@ int main()
 {
     testRoutine<float>();
     testRoutine<double>();
-
 #ifdef SCAI_COMPLEX_SUPPORTED
     testRoutine<ComplexFloat>();
 #endif
-
 }

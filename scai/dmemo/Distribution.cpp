@@ -174,42 +174,29 @@ template<typename T1, typename T2>
 void Distribution::replicate( T1* allValues, const T2* localValues ) const
 {
     SCAI_REGION( "Distribution.replicate" )
-
     const Communicator& comm = getCommunicator();
     IndexType currentSize = getLocalSize();
     // Implemenation via cyclic shifting of the vector data and distribution
     IndexType maxLocalSize = comm.max( currentSize );
-
     SCAI_LOG_INFO( logger,
                    comm << ": replicate localValues<" << TypeTraits<T2>::id() << ">[ " << currentSize
                    << ", max = " << maxLocalSize << " ] " << " to allValues<" << TypeTraits<T1>::id() << ">[ " << getGlobalSize() << " ]" )
-
     // Only allocate the needed size of the Arrays
-
     HArray<T1> valuesSend;
     HArray<T1> valuesReceive;
     HArray<IndexType> indexesSend;
     HArray<IndexType> indexesReceive;
-
     IndexType countValues = 0; // count values set in the global vector
-
     // set my owned indexes and my values
-
     ContextPtr commContext = comm.getCommunicationContext( valuesSend );
-
     // capacity of send arrays should also be sufficient for receiving data
-
     indexesSend.reserve( commContext, maxLocalSize );
     valuesSend.reserve( commContext, maxLocalSize );
-
     SCAI_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
-
     {
         WriteOnlyAccess<IndexType> wIndexesSend( indexesSend, commContext, currentSize );
         WriteOnlyAccess<T1> wValuesSend( valuesSend, commContext, currentSize );
-
         // current workaround as commContext works like HostContext
-
         IndexType* pIndexesSend = wIndexesSend.get();
         T1* pValuesSend = wValuesSend.get();
 
@@ -222,12 +209,9 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
             allValues[globalIndex] = static_cast<T1>( localValues[i] ); // type conversion here
         }
     }
-
     // capacity of receive arrays should be sufficient for receiving data to avoid reallocations
-
     indexesReceive.reserve( commContext, maxLocalSize );
     valuesReceive.reserve( commContext, maxLocalSize );
-
     countValues += currentSize;
     // now nproc - 1 steps for cyclic shifting
     PartitionId np = comm.getSize(); // number partitions
@@ -236,19 +220,13 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     {
         comm.shiftArray( indexesReceive, indexesSend, 1 );
         comm.shiftArray( valuesReceive, valuesSend, 1 );
-
         SCAI_ASSERT_EQ_DEBUG( valuesReceive.size(), indexesReceive.size(), "size mismatch" )
-
         currentSize = valuesReceive.size();
-
         // sort in the received values
-
         {
             ReadAccess<IndexType> readIndexesReceive( indexesReceive, commContext );
             ReadAccess<T1> readValuesReceive( valuesReceive, commContext );
-
             // current workaround as commContext works like HostContext
-
             const IndexType* rIndexesReceive = readIndexesReceive.get();
             const T1* rValuesReceive = readValuesReceive.get();
 
@@ -260,14 +238,12 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
                 allValues[globalIndex] = rValuesReceive[i]; // implicit type conversion done here
             }
         }
-
         countValues += currentSize;
         indexesReceive.swap( indexesSend );
         valuesReceive.swap( valuesSend );
     }
 
     SCAI_LOG_INFO( logger, "replicated by " << ( np - 1 ) << " array shifts" )
-
     // # globalSize values must have been counted
     SCAI_ASSERT_EQ_DEBUG( countValues, getGlobalSize(), "" )
 }
@@ -278,43 +254,28 @@ template<typename T1, typename T2>
 void Distribution::replicateN( T1* allValues, const T2* localValues, const IndexType n ) const
 {
     SCAI_REGION( "Distribution.replicateN" )
-
     const Communicator& comm = getCommunicator();
-
     // Implemenation via cyclic shifting of the vector data and distribution
-
     // maximal number of elements needed to allocate sufficient receive buffer but also to avoid reallocations
-
     IndexType currentSize = getLocalSize();
     IndexType maxLocalSize = comm.max( currentSize );
-
     SCAI_LOG_INFO( logger,
                    comm << ": replicateN, n = " << n << ", localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
-
     // Only allocate the needed size of the Arrays
-
     HArray<T1> valuesSend;
     HArray<T1> valuesReceive;
     HArray<IndexType> indexesSend;
     HArray<IndexType> indexesReceive;
-
     // set my owned indexes and my values
-
     ContextPtr commContext = comm.getCommunicationContext( valuesSend );
-
     // capacity of send arrays should also be sufficient for receiving data
-
     indexesSend.reserve( commContext, maxLocalSize );
     valuesSend.reserve( commContext, maxLocalSize * n );
-
     SCAI_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
-
     {
         WriteOnlyAccess<IndexType> wIndexesSend( indexesSend, commContext, currentSize );
         WriteOnlyAccess<T1> wValuesSend( valuesSend, commContext, currentSize * n );
-
         // current workaround as commContext works like HostContext
-
         IndexType* pIndexesSend = wIndexesSend.get();
         T1* pValuesSend = wValuesSend.get();
 
@@ -334,35 +295,24 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
             allValues[globalIndex] = static_cast<T1>( localValues[i] ); // type conversion here
         }
     }
-
     IndexType countLines = currentSize; // count values set in the global vector, currentSize has been done
-
     // capacity of receive arrays should be sufficient for receiving data to avoid reallocations
-
     indexesReceive.reserve( commContext, maxLocalSize );
     valuesReceive.reserve( commContext, maxLocalSize * n );
-
     // now nproc - 1 steps for cyclic shifting
-
     PartitionId np = comm.getSize(); // number partitions
 
     for ( PartitionId ip = 0; ip < np - 1; ++ip )
     {
         comm.shiftArray( indexesReceive, indexesSend, 1 );
         currentSize = indexesReceive.size(); // next numbe of lines to deal with
-
         comm.shiftArray( valuesReceive, valuesSend, 1 );
-
         SCAI_ASSERT_EQ_DEBUG( currentSize * n, valuesReceive.size(), "size mismatch for replicate n = " << n )
-
         // sort in the received values
-
         {
             ReadAccess<IndexType> readIndexesReceive( indexesReceive, commContext );
             ReadAccess<T1> readValuesReceive( valuesReceive, commContext );
-
             // current workaround as commContext works like HostContext
-
             const IndexType* rIndexesReceive = readIndexesReceive.get();
             const T1* rValuesReceive = readValuesReceive.get();
 
@@ -378,7 +328,6 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
                 }
             }
         }
-
         countLines += currentSize;
         indexesReceive.swap( indexesSend );
         valuesReceive.swap( valuesSend );
@@ -432,25 +381,17 @@ void Distribution::replicateRagged(
 {
     IndexType currentElemSize = getLocalSize();
     const Communicator& comm = getCommunicator();
-
     // we need the offsets for allValues to store directly the values
     IndexType maxLocalSize = comm.max( currentElemSize );
-
     HArray<IndexType> indexesSend;
     HArray<IndexType> indexesReceive;
-
     ContextPtr commContext = comm.getCommunicationContext( indexesSend );
-
     indexesReceive.reserve( commContext, maxLocalSize );
     indexesSend.reserve( commContext, maxLocalSize );
-
     IndexType currentDataSize = 0;
-
     {
         // due to currentElemSize <= maxLocalSize
-
         WriteOnlyAccess<IndexType> wIndexesSend( indexesSend, commContext, currentElemSize );
-
         IndexType* pIndexesSend = wIndexesSend.get(); // is a HostContext
 
         // pack my indexes, work as global indexes for allValues
@@ -463,26 +404,20 @@ void Distribution::replicateRagged(
         // fill my local values in all values
         currentDataSize = fillGlobal( allValues, allOffsets, pIndexesSend, currentElemSize, localValues );
     }
-
     SCAI_LOG_DEBUG( logger,
                     comm << ": filled my local data: " << currentElemSize << " buckets with " << currentDataSize << " values" )
     // get maximal size of data values and allocate send buffer
     IndexType maxLocalDataSize = comm.max( currentDataSize );
     // Implemenation via cyclic shifting of the vector data and distribution
     SCAI_LOG_DEBUG( logger, "maximal data size for exchange = " << maxLocalDataSize )
-
     SCAI_LOG_INFO( logger,
                    comm << ": replicateRagged<" << common::getScalarType<ValueType>() << ">, localValues[ " << currentDataSize << ", max = " << maxLocalDataSize << " ] " << " to allValues [ allOffsets[ " << getGlobalSize() << " ] ]" )
-
     HArray<ValueType> valuesSend;
     HArray<ValueType> valuesReceive;
-
     valuesSend.reserve( commContext, maxLocalDataSize );
     valuesReceive.reserve( commContext, maxLocalDataSize );
-
     {
         WriteOnlyAccess<ValueType> wValuesSend( valuesSend, commContext, currentDataSize );
-
         ValueType* pValuesSend = wValuesSend.get();
 
         // fill my local values in send buffer
@@ -492,7 +427,6 @@ void Distribution::replicateRagged(
             pValuesSend[i] = localValues[i];
         }
     }
-
     // Define counters for exchanged values
     IndexType countElemValues = currentElemSize;
     IndexType countDataValues = currentDataSize;
@@ -503,23 +437,18 @@ void Distribution::replicateRagged(
     {
         comm.shiftArray( indexesReceive, indexesSend, 1 );
         comm.shiftArray( valuesReceive, valuesSend, 1 );
-
         IndexType newSize1 = indexesReceive.size();
         IndexType newSize2 = valuesReceive.size();
-
         // copy the received values in allValues at the right place
-
         {
             ReadAccess<IndexType> rIndexesReceive( indexesReceive, commContext );
             ReadAccess<ValueType> rValuesReceive( valuesReceive, commContext );
-
             IndexType size = -1;
             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );
             SCAI_LOG_DEBUG( logger,
                             comm << ": filled received data: " << newSize1 << " buckets with " << size << " values" )
             SCAI_ASSERT_EQ_DEBUG( size, newSize2, "size mismatch" )
         }
-
         currentElemSize = newSize1;
         currentDataSize = newSize2;
         countElemValues += currentElemSize;
@@ -530,7 +459,6 @@ void Distribution::replicateRagged(
     }
 
     // verify that all values are available
-
     SCAI_ASSERT_EQ_DEBUG( countElemValues, getGlobalSize(), "not all elems seen" )
     SCAI_ASSERT_EQ_DEBUG( countDataValues, allOffsets[getGlobalSize()], "not all data seen" )
 }
@@ -553,7 +481,6 @@ Distribution* Distribution::getDistributionPtr(
     const float weight )
 {
     IndexType globalSize = matrix.getDistribution().getGlobalSize();
-
     return Distribution::create( kind, DistributionArguments( comm, globalSize, &matrix, weight ) );
 }
 

@@ -47,7 +47,7 @@ namespace common
 {
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-    template<typename ValueType> class Complex;
+template<typename ValueType> class Complex;
 #endif
 
 /** Structure (instead of namespace) that contains the required mathematical functions

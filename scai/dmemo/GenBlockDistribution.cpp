@@ -76,7 +76,6 @@ void GenBlockDistribution::setOffsets(
     }
 
     SCAI_ASSERT_EQUAL( sumSizes, getGlobalSize(), "sum over local sizes must be global size" )
-
     mUB = mOffsets[rank] - 1;
     mLB = mOffsets[rank] - localSizes[rank];
 }
@@ -84,13 +83,10 @@ void GenBlockDistribution::setOffsets(
 void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType mySize )
 {
     common::scoped_array<IndexType> localSizes( new IndexType[numPartitions] );
-
     // rank 0 is root
     mCommunicator->gather( localSizes.get(), 1, 0, &mySize );
     mCommunicator->bcast( localSizes.get(), numPartitions, 0 );
-
     SCAI_ASSERT_EQ_DEBUG( localSizes[rank], mySize, "wrongly gathered values" )
-
     setOffsets( rank, numPartitions, localSizes.get() );
 }
 
@@ -103,13 +99,9 @@ GenBlockDistribution::GenBlockDistribution(
 {
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
-
     SCAI_LOG_INFO( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" )
-
     SCAI_ASSERT_EQ_ERROR( size, static_cast<PartitionId>( localSizes.size() ), "size mismatch" )
-
     setOffsets( rank, size, &localSizes[0] );
-
     SCAI_LOG_INFO( logger, *this << ": constructed by local sizes" )
 }
 
@@ -123,12 +115,9 @@ GenBlockDistribution::GenBlockDistribution(
 {
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
-
     setOffsets( rank, size, lastGlobalIdx - firstGlobalIdx + 1 );
-
     SCAI_ASSERT_EQUAL( mLB, firstGlobalIdx, "serious mismatch in index range" )
     SCAI_ASSERT_EQUAL( mUB, lastGlobalIdx, "serious mismatch in index range" )
-
     SCAI_LOG_INFO( logger, *this << ": constructed by local range " << firstGlobalIdx << ":" << lastGlobalIdx )
 }
 
@@ -140,7 +129,6 @@ GenBlockDistribution::GenBlockDistribution(
 {
     int size = mCommunicator->getSize();
     int rank = mCommunicator->getRank();
-
     setOffsets( rank, size, localSize );
 }
 
@@ -153,13 +141,9 @@ GenBlockDistribution::GenBlockDistribution(
 {
     int size = mCommunicator->getSize();
     int rank = mCommunicator->getRank();
-
     SCAI_LOG_DEBUG( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" << ", my weight = " << weight )
-
     std::vector<float> allWeights( size );
-
     communicator->allgather( &allWeights[0], 1, &weight );
-
     float totalWeight = 0;
 
     for ( PartitionId p = 0; p < size; p++ )

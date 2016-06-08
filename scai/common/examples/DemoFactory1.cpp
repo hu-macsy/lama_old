@@ -101,7 +101,7 @@ public:
 
     static Base* create( int val )
     {
-        return new Derived2( val);
+        return new Derived2( val );
     }
 
 private:
@@ -119,7 +119,6 @@ template Base::Register<Derived2>::RegisterGuard Base::Register<Derived2>::regis
 int main()
 {
     std::vector<Kind> values;
-
     Base::getCreateValues( values );
 
     for ( size_t i = 0; i < values.size(); ++i )
@@ -127,9 +126,8 @@ int main()
         std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
     }
 
-    Base* obj1 = Base::create(D1, 15);
-    Base* obj2 = Base::create(D2, -5);
-
+    Base* obj1 = Base::create( D1, 15 );
+    Base* obj2 = Base::create( D2, -5 );
     std::cout << "obj1 is " << *obj1 << std::endl;
     std::cout << "obj2 is " << *obj2 << std::endl;
 }

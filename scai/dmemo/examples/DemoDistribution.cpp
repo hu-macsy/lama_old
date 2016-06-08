@@ -39,18 +39,11 @@ using namespace scai::dmemo;
 int main()
 {
     SCAI_LOG_THREAD( "Main" )
-
     // get the default communicator (usually MPI if it has been enabled, or set by SCAI_COMMUNICATOR
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     IndexType size = 71;
-
     float weight = 1.0;
-
     DistributionPtr dist ( Distribution::getDistributionPtr( "CYCLIC", comm, size, weight ) );
-
     // Note: distribution pointers are always const pointers, so distributions can never be changed
-
     std::cout << *comm << ", dist = " << *dist << std::endl;
 }

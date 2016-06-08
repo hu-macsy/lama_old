@@ -56,7 +56,7 @@ namespace scai
 namespace blaskernel
 {
 
-/** Static class that provides CUDA implementaions for the BLAS2 routines as specified in BLASKernelTrait. 
+/** Static class that provides CUDA implementaions for the BLAS2 routines as specified in BLASKernelTrait.
  *
  */
 

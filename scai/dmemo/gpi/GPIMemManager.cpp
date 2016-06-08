@@ -59,11 +59,8 @@ namespace dmemo
 static size_t getSegmentSize()
 {
     size_t size = 1024 * 1024;   // MB
-
     std::cout << "getSegmentSize -> " << size << " * nMB " << std::endl;
-
     int nMB = 256;   // default 256 MB
-
     const char* sizeString = getenv( "SCAI_GPI_SEGMENT_SIZE" );
 
     if ( sizeString  )
@@ -78,11 +75,8 @@ static size_t getSegmentSize()
     }
 
     std::cout << "getSegmentSize -> " << size << " * " << nMB << std::endl;
-
     size *= nMB;
-
     std::cout << "getSegmentSize -> " << size << std::endl;
-
     return size;
 }
 
@@ -104,21 +98,13 @@ public:
     ManagedSegmentMemory( gaspi_segment_id_t id, std::size_t size )
     {
         mId = id;
-
         // allocate GASPI segment
-
         SCAI_GASPI_CALL( gaspi_segment_create ( mId, size, GASPI_GROUP_ALL, GASPI_BLOCK, GASPI_ALLOC_DEFAULT ) )
-
         gaspi_pointer_t ptr = NULL;
-
         SCAI_GASPI_CALL( gaspi_segment_ptr ( mId, &ptr ) )
-
         SCAI_GASPI_CALL( gaspi_barrier( GASPI_GROUP_ALL, GASPI_BLOCK ) )
-
         base_t::create_impl( ptr, size );
-
         mPtr = static_cast<char*>( ptr );
-
         mSize = size;
     }
 
@@ -134,9 +120,7 @@ public:
     IndexType getOffset( void* ptr )
     {
         char* dataPtr = static_cast<char*>( ptr );
-
         IndexType offset = dataPtr - mPtr;
-
         return offset;
     }
 
@@ -157,7 +141,6 @@ public:
         }
 
         offset = dataPtr - mPtr;
-
         return true;
     }
 
@@ -177,14 +160,11 @@ void GPIMemManager::getSegmentData( gaspi_segment_id_t& id, gaspi_pointer_t& ptr
     if ( theSegmentManager == NULL )
     {
         size_t segmentSize = getSegmentSize();
-
         SCAI_LOG_WARN( logger, "Create GASPI segment of size " << segmentSize )
-
         theSegmentManager = new ManagedSegmentMemory( theSegId, segmentSize );
     }
 
     id = theSegId;
-
     ptr = 0;
 
     try
@@ -202,7 +182,6 @@ void GPIMemManager::getSegmentData( gaspi_segment_id_t& id, gaspi_pointer_t& ptr
     }
 
     offset = theSegmentManager->getOffset( ptr );
-
     SCAI_LOG_DEBUG( logger, "getSegmentData( size = " << size << " ) =>, offset = " << offset << ", ptr = " << ptr )
 }
 
@@ -214,18 +193,14 @@ bool GPIMemManager::findSegment( gaspi_segment_id_t& id, gaspi_offset_t& offset,
     }
 
     id = theSegId;
-
     return theSegmentManager->getOffset( offset, ptr );
 }
 
 void GPIMemManager::releaseSegmentData( const gaspi_segment_id_t id, const gaspi_offset_t offset )
 {
     SCAI_ASSERT_ERROR( theSegmentManager != NULL, "release segment data, but no manager" )
-
     char* dataPtr = theSegmentManager->get() + offset;
-
     SCAI_LOG_DEBUG( logger, "releaseSegmentData, id = " << static_cast<int>( id ) << ", offset = " << offset )
-
     theSegmentManager->deallocate( dataPtr );
 }
 
@@ -237,7 +212,6 @@ void GPIMemManager::freeAll( )
     }
 
     delete theSegmentManager;
-
     theSegmentManager = NULL;
 }
 

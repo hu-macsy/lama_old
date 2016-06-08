@@ -52,13 +52,13 @@ namespace common
 struct constants
 {
 
-/** Enumeration type for constants for which type-specific values are provided */
+    /** Enumeration type for constants for which type-specific values are provided */
 
-typedef enum
-{
-    ONE,   //!< stands for value 1
-    ZERO   //!< stands for value 0
-} ConstantType;
+    typedef enum
+    {
+        ONE,   //!< stands for value 1
+        ZERO   //!< stands for value 0
+    } ConstantType;
 
 }; /* struct constants */
 
@@ -69,15 +69,17 @@ inline ValueType getConstant( const constants::ConstantType& c )
 {
     ValueType val( 0 );
 
-    switch( c )
+    switch ( c )
     {
         case constants::ONE:
             val = ValueType( 1 );
             break;
+
         case constants::ZERO:
             val = ValueType( 0 );
             break;
     }
+
     return val;
 }
 

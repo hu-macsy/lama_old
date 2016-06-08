@@ -58,17 +58,13 @@ CUstream CUDAStreamPool::reserveStream( const StreamType type )
     if ( type == ComputeStream )
     {
         mComputeReservations++;
-
         SCAI_LOG_INFO( logger, "reserved computed stream " << mComputeStream << ", #reservations = " << mComputeReservations )
-
         return mComputeStream;
     }
     else
     {
         mTransferReservations++;
-
         SCAI_LOG_INFO( logger, "reserved transfer stream " << mTransferStream << ", #reservations = " << mTransferReservations )
-
         return mTransferStream;
     }
 }
@@ -80,17 +76,13 @@ void CUDAStreamPool::releaseStream( CUstream stream )
     if ( stream == mComputeStream )
     {
         SCAI_ASSERT_GT( mComputeReservations, 0, "Compute stream not reserved" )
-
         mComputeReservations--;
-
         SCAI_LOG_INFO( logger, "released computed stream " << mComputeStream << ", #reservations = " << mComputeReservations )
     }
     else if ( stream == mTransferStream )
     {
         SCAI_ASSERT_GT( mTransferReservations, 0, "Memory transfer stream not reserved" )
-
         mTransferReservations--;
-
         SCAI_LOG_INFO( logger, "released transfer stream " << mTransferStream << ", #reservations = " << mTransferReservations )
     }
     else
@@ -104,14 +96,10 @@ void CUDAStreamPool::releaseStream( CUstream stream )
 CUDAStreamPool::CUDAStreamPool( const common::CUDACtx& cuda ) : mCUDA( cuda )
 {
     SCAI_LOG_INFO( logger, "CUDAStreamPool( device = " << mCUDA.getDeviceNr() << " )" )
-
     common::CUDAAccess tmpAccess( mCUDA );
-
     int flags = 0; // must be 0 by specification of CUDA driver API
-
     SCAI_CUDA_DRV_CALL( cuStreamCreate( &mTransferStream, flags ), "cuStreamCreate for transfer failed" )
     SCAI_CUDA_DRV_CALL( cuStreamCreate( &mComputeStream, flags ), "cuStreamCreate for compute failed" );
-
     mComputeReservations = 0;
     mTransferReservations = 0;
 }
@@ -121,14 +109,10 @@ CUDAStreamPool::CUDAStreamPool( const common::CUDACtx& cuda ) : mCUDA( cuda )
 CUDAStreamPool::~CUDAStreamPool()
 {
     SCAI_LOG_INFO( logger, "~CUDAStreamPool( device = " << mCUDA.getDeviceNr() << " )" )
-
     common::CUDAAccess tmpAccess( mCUDA );
-
     // No exceptions in destructor !!
-
     SCAI_ASSERT_EQUAL( mComputeReservations, 0, "Not all compute streams released" )
     SCAI_ASSERT_EQUAL( mTransferReservations, 0, "Not all transfer streams released" )
-
     SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mComputeStream ), "cuStreamSynchronize for compute failed" )
     SCAI_CUDA_DRV_CALL( cuStreamDestroy( mComputeStream ), "cuStreamDestroy for compute failed" )
     SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mTransferStream ), "cuStreamSynchronize for transfer failed" )
@@ -156,25 +140,18 @@ static PoolMap& getPoolMap()
 CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDACtx& cuda )
 {
     PoolMap& poolMap = getPoolMap();
-
     PoolMap::iterator it = poolMap.find( cuda.getCUcontext() );
 
     if ( it == poolMap.end() )
     {
         CUDAStreamPool* pool = new CUDAStreamPool( cuda );
-
         // map takes ownership of pool
-
-        poolMap.insert( std::pair<CUcontext, CUDAStreamPool*>( cuda.getCUcontext(), pool) );
-
+        poolMap.insert( std::pair<CUcontext, CUDAStreamPool*>( cuda.getCUcontext(), pool ) );
         // ATTENTION / pitfall
         // Pool must be freed before cuda is destroyed
         // solution: Add shutdown routine to the CUDA device
-
         common::CUDACtx& cuda1 = const_cast< common::CUDACtx& >( cuda );
-
         cuda1.addShutdown( common::bind( &CUDAStreamPool::freePool, common::cref( cuda ) ) );
-
         return *pool;
     }
     else
@@ -188,15 +165,12 @@ CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDACtx& cuda )
 void CUDAStreamPool::freePool( const common::CUDACtx& cuda )
 {
     SCAI_LOG_INFO( logger, "freePool: pool for CUDA device " << cuda.getDeviceNr() )
-
     PoolMap& poolMap = getPoolMap();
-
     PoolMap::iterator it = poolMap.find( cuda.getCUcontext() );
 
     if ( it != poolMap.end() )
     {
         delete it->second;
-
         poolMap.erase( it );
     }
     else

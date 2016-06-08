@@ -37,24 +37,26 @@
 // macros
 #define CUBLAS_BLAS_NAME( name, prefix ) cublas##prefix##name
 
-#define CUBLAS_BLAS_DEF( name, prefix, retType, definition ) 			\
-        retType CUBLAS_BLAS_NAME( name, prefix )( definition );
+#define CUBLAS_BLAS_DEF( name, prefix, retType, definition )            \
+    retType CUBLAS_BLAS_NAME( name, prefix )( definition );
 
-#define CUBLAS_BLAS_CALL( name, prefix, ... )	\
-		SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( name, prefix ), __VAR_ARGS__ )
+#define CUBLAS_BLAS_CALL( name, prefix, ... )   \
+    SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( name, prefix ), __VAR_ARGS__ )
 
 // external
 #include <cublas_v2.h>
 
-namespace scai {
+namespace scai
+{
 
-namespace blaskernel {
+namespace blaskernel
+{
 
 class COMMON_DLL_IMPORTEXPORT CUBLASTrait
 {
 public:
-	typedef int BLASIndexType;
-	typedef cublasOperation_t BLASTrans;
+    typedef int BLASIndexType;
+    typedef cublasOperation_t BLASTrans;
 };
 
 } /* end namespace blaskernel */

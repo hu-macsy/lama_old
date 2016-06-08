@@ -72,7 +72,7 @@ public:
 
     /** MIC implementation for DIAKernelTrait::getCSRValues.  */
 
-    template<typename DIAValueType,typename CSRValueType>
+    template<typename DIAValueType, typename CSRValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -148,7 +148,7 @@ private:
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
-   */
+    */
 
     static bool initialized;
 

@@ -44,5 +44,4 @@ int main()
     SCAI_LOG_WARN( logger, "warn message" )
     SCAI_LOG_ERROR( logger, "error message" )
     SCAI_LOG_FATAL( logger, "fatal message" )
-
 }

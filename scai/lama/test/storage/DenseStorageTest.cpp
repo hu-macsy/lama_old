@@ -56,9 +56,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     SCAI_LOG_INFO( logger, "setZeroTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
-
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
     static ValueType values[] =
@@ -68,12 +66,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, ValueType, scai_arithmetic_test_type
         0.0, 0.0, 9.0, 4.0,
         2.0, 5.0, 0.0, 3.0
     };
-
     ValueType eps = static_cast<ValueType>( 1E-5 );
-
     DenseStorage<ValueType> denseStorage;
     denseStorage.setContextPtr( context );
-
     denseStorage.setRawDenseData( numRows, numColumns, values, eps );
     denseStorage.setZero();
 
@@ -91,16 +86,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, ValueType, scai_arithmetic_test_type
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr context = Context::getContextPtr();
-
     SCAI_LOG_INFO( logger, "constructorTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
-
     const IndexType numRows = 4;
     const IndexType numColumns = 2;
-
     DenseStorage<ValueType> denseStorage( numRows, numColumns );
     denseStorage.setContextPtr( context );
     denseStorage.setZero();
-
     BOOST_REQUIRE_EQUAL( numRows, denseStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, denseStorage.getNumColumns() );
 
@@ -118,9 +109,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "swapTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
     // use template storage test
-
     storageSwapTest<DenseStorage<ValueType> >();
 }
 
@@ -129,7 +118,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
     storageTypeNameTest<DenseStorage<ValueType> >( "Dense" );
 }
 
@@ -138,7 +126,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE( DenseCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-
     copyStorageTest<DenseStorage<ValueType> >();
 }
 

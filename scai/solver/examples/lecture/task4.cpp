@@ -67,11 +67,9 @@ int main( int argc, char* argv[] )
     CSRSparseMatrix<ValueType> m( argv[1] );
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
-
     CommunicatorPtr comm( Communicator::getCommunicatorPtr() );
     DistributionPtr dist( new BlockDistribution( size, comm ) );
     m.redistribute( dist, dist );
-
     DenseVector<ValueType> rhs( size , 0.0 );
     WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
 
@@ -91,7 +89,6 @@ int main( int argc, char* argv[] )
     cgSolver.setStoppingCriterion( criterion );
     cgSolver.initialize( m );
     cgSolver.solve( solution, rhs );
-
     std::cout << "The solution is: ";
 
     for ( int i = 0; i < solution.size(); ++i )

@@ -48,15 +48,15 @@
  *
  *************************************************************************************/
 
-static texture<int4,1> texVectorZXref;
+static texture<int4, 1> texVectorZXref;
 
-static texture<float2,1> texVectorCXref;
+static texture<float2, 1> texVectorCXref;
 
-static texture<float,1> texVectorSXref;
+static texture<float, 1> texVectorSXref;
 
-static texture<int2,1> texVectorDXref;
+static texture<int2, 1> texVectorDXref;
 
-static texture<int,1> texVectorIref;
+static texture<int, 1> texVectorIref;
 
 __inline__ static void vectorBindTexture( const float* vector )
 {
@@ -80,7 +80,7 @@ __inline__ static void vectorBindTexture( const ComplexDouble* vector )
     SCAI_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorZXref, vector ), "bind ComplexDouble vector x to texture" )
 }
 
-#endif 
+#endif
 
 __inline__ static void vectorBindTexture( const int* vector )
 {
@@ -152,7 +152,7 @@ __inline__ __device__
 ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const int i )
 {
     float2 v = tex1Dfetch( texVectorCXref, i );
-    return ComplexFloat(v.x, v.y);
+    return ComplexFloat( v.x, v.y );
 }
 
 template<>
@@ -160,7 +160,7 @@ __inline__ __device__
 ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, const int i )
 {
     int4 u = tex1Dfetch( texVectorZXref, i );
-    return ComplexDouble( __hiloint2double( u.y, u.x ), __hiloint2double( u.w, u.z));
+    return ComplexDouble( __hiloint2double( u.y, u.x ), __hiloint2double( u.w, u.z ) );
 }
 
 #endif

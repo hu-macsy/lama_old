@@ -90,7 +90,6 @@ void GPISyncToken::wait()
     if ( isSynchronized() )
     {
         SCAI_LOG_WARN( logger, *this << ": waiting twice" )
-
         return; // do not wait twice, especially do not clean-up twice
     }
 
@@ -98,22 +97,19 @@ void GPISyncToken::wait()
     {
         gaspi_notification_id_t waitNotId = mNotifications[i];
         gaspi_notification_id_t gotNotId;
-        SCAI_GASPI_CALL ( gaspi_notify_waitsome( mSegId, waitNotId, 1 , &gotNotId, GASPI_BLOCK) );
+        SCAI_GASPI_CALL ( gaspi_notify_waitsome( mSegId, waitNotId, 1 , &gotNotId, GASPI_BLOCK ) );
         gaspi_notification_t notifyVal;
-        SCAI_GASPI_CALL( gaspi_notify_reset( mSegId, gotNotId, &notifyVal) );
+        SCAI_GASPI_CALL( gaspi_notify_reset( mSegId, gotNotId, &notifyVal ) );
     }
 
     mNotifications.clear();
-
     SCAI_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" )
-
     setSynchronized();
 }
 
 bool GPISyncToken::probe() const
 {
     // no accurate functionality in GPI
-
     return false;
 }
 

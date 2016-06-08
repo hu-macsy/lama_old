@@ -45,7 +45,7 @@
  *  \endcode
  */
 
-class LamaTiming 
+class LamaTiming
 {
 
 public:
@@ -66,7 +66,7 @@ private:
 };
 
 /* ---------------------------------------------------------------------------- */
-  
+
 LamaTiming::LamaTiming( const scai::dmemo::Communicator& comm, const char* name ) :
     mComm( comm ),
     mName( name )
@@ -77,9 +77,7 @@ LamaTiming::LamaTiming( const scai::dmemo::Communicator& comm, const char* name 
 LamaTiming::~LamaTiming()
 {
     double myTime = scai::common::Walltime::get() - mStart;
-
     // can be that max is not available if double is not supported
-
     double maxTime = static_cast<double>( mComm.max( RealType( myTime ) ) );
 
     if ( mComm.getRank() == 0 )

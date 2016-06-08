@@ -61,9 +61,9 @@ namespace hmemo
  * @brief MICContext initializes the MIC device with the given number.
  *
  */
-class COMMON_DLL_IMPORTEXPORT MICContext: 
+class COMMON_DLL_IMPORTEXPORT MICContext:
 
-    public Context, 
+    public Context,
     public Context::Register<MICContext>,
     public common::enable_shared_from_this<MICContext>
 {
@@ -113,8 +113,8 @@ public:
      */
     virtual MemoryPtr getLocalMemoryPtr() const;
 
-    /** 
-     *  @brief Implementation of Context::canUseMemory for this class. 
+    /**
+     *  @brief Implementation of Context::canUseMemory for this class.
      */
 
     virtual bool canUseMemory( const Memory& other ) const;

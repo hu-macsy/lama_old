@@ -61,7 +61,6 @@ SyncToken::CGuard::~CGuard()
 {
     // this destructor is called at the end of the program
     // Give an error message if not all SyncTokens have been deleted
-
     if ( countSyncToken )
     {
         SCAI_LOG_ERROR( logger, "Remaining SyncToken (undeleted) = " << countSyncToken );
@@ -80,7 +79,6 @@ SyncToken::SyncToken()
     : mSynchronized( false )
 {
     SCAI_LOG_DEBUG( logger, "SyncToken constructed" )
-
     countSyncToken++;
 }
 
@@ -116,9 +114,7 @@ void SyncToken::pushToken( shared_ptr<SyncTokenMember> member )
     else
     {
         SCAI_LOG_INFO( logger, *this << ": push token, will be freed at synchronization" )
-
         // take ownership of the token so it is not deleted before synchronization
-
         mTokens.push_back( member );
     }
 }
@@ -148,11 +144,8 @@ void SyncToken::setSynchronized()
 
     SCAI_LOG_INFO( logger, "setSynchronized, free " << mTokens.size() << " SyncTokenMember "
                    << " and call " << mSynchronizedFunctions.size() << " clean functions" )
-
     mSynchronized = true;
-
     // after synchronization we can give up ownership of tokens
-
     mTokens.clear();
 
     for ( size_t i = 0; i < mSynchronizedFunctions.size(); ++i )

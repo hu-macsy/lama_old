@@ -47,8 +47,8 @@ namespace solver
 {
 
 class COMMON_DLL_IMPORTEXPORT TrivialPreconditioner:
-		public Solver,
-		public Solver::Register<TrivialPreconditioner>
+    public Solver,
+    public Solver::Register<TrivialPreconditioner>
 {
 public:
     TrivialPreconditioner( const std::string& id );

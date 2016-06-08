@@ -106,7 +106,6 @@ BOOST_AUTO_TEST_CASE( runTest )
         for ( int j = 0; j < thread_configs; ++j )
         {
             std::vector<int> x ( ntasks );
-
             {
                 ThreadPool pool( thread_sizes[j] );
 
@@ -169,22 +168,18 @@ BOOST_AUTO_TEST_CASE( waitTest )
 BOOST_AUTO_TEST_CASE( singleTest )
 {
     SCAI_LOG_THREAD( "main:singleTest" )
-
     SCAI_LOG_INFO( logger, "singleTest" );
     // Extensive test of a thread pool with one thread
     // Should verify that master never misses a notify at wait
     ThreadPool pool( 1 );
     int rnd = 15;
-
     const int NTIMES = 100;
 
     for ( int i = 0; i < NTIMES; ++i )
     {
         int resultThread;
         int resultMaster;
-
         shared_ptr<ThreadPoolTask> task = pool.schedule( bind( &work, i, ref( resultThread ) ) );
-
         // Master thread does something and then waits
         rnd = ( rnd + 19 ) % 17;
         work( i + rnd, ref( resultMaster ) );

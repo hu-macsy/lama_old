@@ -53,15 +53,10 @@ template<typename ValueType>
 ValueType sum( const ValueType array[], const IndexType n )
 {
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
     ValueType zero = static_cast<ValueType>( 0 );
-
     ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
     SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
-
     return result;
 }
 
@@ -70,7 +65,6 @@ __global__
 void add_kernel( ValueType* array, IndexType n )
 {
     const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
-
     ValueType one = 1;
 
     if ( i < n )
@@ -84,12 +78,9 @@ void add( ValueType array[], const IndexType n )
 {
     const int blockSize = 256;
     const int nblocks   = ( n + blockSize - 1 ) / blockSize;
-
     dim3 block( blockSize, 1, 1 );
     dim3 grid( nblocks, 1, 1 );
-
-    add_kernel<<<grid, block>>>( array, n );
- 
+    add_kernel <<< grid, block>>>( array, n );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cuda failure" );
 }
 
@@ -98,7 +89,7 @@ void addHost( ValueType array[], const IndexType n )
 {
     for ( IndexType i = 0; i < n; ++i )
     {
-       array[i] += 1;
+        array[i] += 1;
     }
 }
 
@@ -107,18 +98,15 @@ void doBench( HArray<ValueType>& array, const IndexType N )
 {
     ContextPtr hostContext = Context::getContextPtr( common::context::Host );
     ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
-
     int nhost = 1;
     int ncuda = 1;
     int niter = 50;
-
     double time = common::Walltime::get();
-
     // init on host
-
     {
         WriteOnlyAccess<double> write( array, hostContext, N );
         double* v = write.get();
+
         for ( IndexType i = 0; i < N; ++i )
         {
             v[i] = 0.0;
@@ -128,7 +116,6 @@ void doBench( HArray<ValueType>& array, const IndexType N )
     for ( int iter = 0; iter < niter; ++iter )
     {
         // do some work on cuda
-
         for ( int k = 0; k < ncuda; ++k )
         {
             WriteAccess<double> write( array, cudaContext );
@@ -146,47 +133,33 @@ void doBench( HArray<ValueType>& array, const IndexType N )
     }
 
     // compute result
-
     double res = 0.0;
-
     {
         ReadAccess<double> read( array, cudaContext );
         SCAI_CONTEXT_ACCESS( cudaContext )
         res = sum( read.get(), N );
     }
-
     double resExpected = N;
     resExpected *= double ( niter * ( ncuda + nhost ) );
-
-    SCAI_ASSERT_EQUAL( res, resExpected, "wrong result, N = " << N 
-        << ", niter = " << niter << ", ncuda = " << ncuda << ", nhost = " << nhost )
-
+    SCAI_ASSERT_EQUAL( res, resExpected, "wrong result, N = " << N
+                       << ", niter = " << niter << ", ncuda = " << ncuda << ", nhost = " << nhost )
     time = common::Walltime::get() - time;
-
     std::cout << "Time = " << time << " seconds" << std::endl;
 }
 
 int main()
 {
     const IndexType N = 8 * 1024 * 1024;  // 8 MB data
-
     ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
     ContextPtr cudaContextPtr = Context::getContextPtr( common::context::CUDA );
-
     // First touch on host memory, never uses CUDA host memory
-
     std::cout << "Benchmark for array, first touch on host memory" << std::endl;
-
     HArray<double> data1( hostContextPtr->getMemoryPtr() );
     doBench( data1, N );
-
     std::cout << "Benchmark for array, first touch on cuda memory" << std::endl;
- 
     HArray<double> data2( cudaContextPtr->getMemoryPtr() );
     doBench( data2, N );
-
     std::cout << "Benchmark for array, first touch on cuda host memory" << std::endl;
- 
     HArray<double> data3( cudaContextPtr->getHostMemoryPtr() );
     doBench( data3, N );
 }

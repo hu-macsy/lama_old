@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief vector.cpp
- * @author 
+ * @author
  * @date 17.05.2013
  */
 
@@ -47,35 +47,26 @@ int main()
 
 {
     /** Take default real type for this example. */
-
     typedef RealType ValueType;
-
     Scalar singleValue( 2.0 );
-
     //
     // Create a DenseVector out of a simple c array
     //
     const ValueType inputData[] = { 1.0, 2.0, 3.0, 4.0 };
-
     DenseVector<ValueType> sequenceOfValues( 4, inputData );
-
     //
     // scale vector
     //
     sequenceOfValues = singleValue * sequenceOfValues;
-
     //
     // print vector to file vector.frm/.vec (SAMG format)
     //
     sequenceOfValues.writeToFile( "vector", File::SAMG_FORMAT );
-
     std::cout << "DenseVector is written to 'vector.frm/.vec'" << std::endl;
-
     //
     //  That's it.
     //
     std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
-
     return EXIT_SUCCESS;
 }
 

@@ -81,11 +81,8 @@ typedef RealType ValueType;
 int main( int argc, char* argv[] )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     int myRank = comm->getRank();
-
     std::string filename;
-
     IndexType dimension = 1;
     IndexType stencilType = 3;
     IndexType dimX = 1;
@@ -99,9 +96,15 @@ int main( int argc, char* argv[] )
         sscanf( argv[3], "%d", &stencilType );
         sscanf( argv[4], "%d", &dimX );
 
-        if ( argc >= 6 ) sscanf( argv[5], "%d", &dimY );
+        if ( argc >= 6 )
+        {
+            sscanf( argv[5], "%d", &dimY );
+        }
 
-        if ( argc >= 7 ) sscanf( argv[6], "%d", &dimZ );
+        if ( argc >= 7 )
+        {
+            sscanf( argv[6], "%d", &dimZ );
+        }
     }
     else
     {
@@ -138,9 +141,7 @@ int main( int argc, char* argv[] )
     }
 
     // Generate name for the stencil
-
     ostringstream stencilName;
-
     stencilName << dimension << "D" << stencilType << "P_" << dimX;
 
     if ( dimension > 1 )
@@ -154,23 +155,16 @@ int main( int argc, char* argv[] )
     }
 
     cout << "Stencil is : " << stencilName.str() << endl;
-
     // replace %s in filename with stencil description
-
     replaceStencil( filename, stencilName.str() );
-
     CSRSparseMatrix<ValueType> m;
-
     MatrixCreator<ValueType>::buildPoisson( m, dimension, stencilType, dimX, dimY, dimZ );
-
     DenseVector<ValueType> lhs( m.getRowDistributionPtr(), 1.0 );
     DenseVector<ValueType> rhs( m * lhs );
-
     cout << "m = " << m << endl;
     cout << "m has diagonal property = " << m.hasDiagonalProperty() << endl;
     cout << "lhs = " << lhs << endl;
     cout << "rhs = " << rhs << endl;
-
     cout << endl;
     cout << "Solution vector x = ( 1.0, ..., 1.0 ) assumed" << endl;
     cout << "Write matrix and rhs vector to file" << endl;
@@ -178,14 +172,10 @@ int main( int argc, char* argv[] )
     if ( _StorageIO::hasSuffix( filename, ".mtx" ) )
     {
         std::string vectorFilename = filename;
-
         // replace . with _v.
-
         vectorFilename.replace( vectorFilename.length() - 4, 1, "_v." );
-
         m.writeToFile( filename, File::MATRIX_MARKET );
         rhs.writeToFile( vectorFilename, File::MATRIX_MARKET );
-
         cout << "Written matrix to matrix market file " << filename  << endl;
         cout << "Written rhs vector to matrix market file " << vectorFilename << endl;
     }
@@ -193,7 +183,6 @@ int main( int argc, char* argv[] )
     {
         m.writeToFile( filename, File::SAMG_FORMAT, common::scalar::INTERNAL, common::scalar::INDEX_TYPE, common::scalar::INDEX_TYPE, true );
         rhs.writeToFile( filename, File::SAMG_FORMAT, common::scalar::INTERNAL, true );
-
         cout << "Written matrix to header file " << filename << ".frm and binary file " << filename << ".amg" << endl;
         cout << "Written rhs vector to header file " << filename << ".frv and binary file " << filename << ".vec" << endl;
     }

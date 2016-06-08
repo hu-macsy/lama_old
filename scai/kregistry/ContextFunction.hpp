@@ -53,7 +53,7 @@ namespace kregistry
 
 typedef void ( *VoidFunction )();
 
-/** Common base class for template class ContextFunction 
+/** Common base class for template class ContextFunction
  *
  *  An object of _ContextFunction contains a function pointer for each context
  *  where the function pointer might be NULL for unsupported context
@@ -85,17 +85,18 @@ public:
 
     inline bool isEmpty() const
     {
-    	bool status = true;
-    	for(IndexType i = 0; i < common::context::MaxContext; ++i)
-    	{
-    		if ( mContextFuncArray[i] != NULL )
-    		{
-    			status = false;
-    			break;
-    		}
-    	}
+        bool status = true;
 
-    	return status;
+        for ( IndexType i = 0; i < common::context::MaxContext; ++i )
+        {
+            if ( mContextFuncArray[i] != NULL )
+            {
+                status = false;
+                break;
+            }
+        }
+
+        return status;
     }
 
     std::string printIt() const;
@@ -104,9 +105,9 @@ public:
 
     ContextType validContext( const _ContextFunction& other, ContextType preferedCtx ) const;
 
-    ContextType validContext( const _ContextFunction& other1, 
-                                      const _ContextFunction& other2, 
-                                      ContextType preferedCtx ) const;
+    ContextType validContext( const _ContextFunction& other1,
+                              const _ContextFunction& other2,
+                              ContextType preferedCtx ) const;
 
 protected:
 

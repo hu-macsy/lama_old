@@ -37,21 +37,23 @@
 // macros
 #define MIC_BLAS_NAME( name, prefix ) prefix##name
 
-#define MIC_BLAS_CALL( name, prefix, ... )	\
-		SCAI_MIC_CALL( CUBLAS_BLAS_NAME( name, prefix ), __VAR_ARGS__ )
+#define MIC_BLAS_CALL( name, prefix, ... )  \
+    SCAI_MIC_CALL( CUBLAS_BLAS_NAME( name, prefix ), __VAR_ARGS__ )
 
 // external
 #include <mkl_blas.h>
 
-namespace scai {
+namespace scai
+{
 
-namespace blaskernel {
+namespace blaskernel
+{
 
 class COMMON_DLL_IMPORTEXPORT MICBLASTrait
 {
 public:
-	typedef int BLASIndexType;
-	typedef char BLASTrans;
+    typedef int BLASIndexType;
+    typedef char BLASTrans;
 };
 
 } /* end namespace blaskernel */

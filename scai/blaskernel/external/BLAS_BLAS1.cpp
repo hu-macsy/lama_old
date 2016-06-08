@@ -74,16 +74,14 @@ void BLAS_BLAS1::scal(
     ValueType* x,
     const IndexType incX )
 {
-    if( incX <= 0 )
+    if ( incX <= 0 )
     {
         return;
     }
 
     SCAI_REGION( "BLAS.BLAS1.scal" )
-
     SCAI_LOG_DEBUG( logger,
                     "scal<" << TypeTraits<ValueType>::id() << " n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -92,7 +90,7 @@ void BLAS_BLAS1::scal(
     }
 
     BLASWrapper<ValueType>::scal( static_cast<BLASTrait::BLASIndexType>( n ), alpha, x,
-                                  static_cast<BLASTrait::BLASIndexType>( incX ));
+                                  static_cast<BLASTrait::BLASIndexType>( incX ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -102,24 +100,22 @@ void BLAS_BLAS1::scal(
 template<typename ValueType>
 ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX )
 {
-    if( incX <= 0 )
+    if ( incX <= 0 )
     {
-        return static_cast<ValueType>(0.0);
+        return static_cast<ValueType>( 0.0 );
     }
 
     SCAI_REGION( "BLAS.BLAS1.nrm2" )
-
     SCAI_LOG_DEBUG( logger,
                     "nrm2<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return BLASWrapper<ValueType>::nrm2( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::nrm2( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -130,23 +126,21 @@ template<typename ValueType>
 ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "BLAS.BLAS1.asum" )
-
     SCAI_LOG_DEBUG( logger,
                     "asum<" << TypeTraits<ValueType>::id() << ">,  n = " << n << ", x = " << x << ", incX = " << incX )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "asynchronous execution of BLAS1:asum not supported, do it synchronously." )
     }
 
-    if( incX <= 0 )
+    if ( incX <= 0 )
     {
-        return static_cast<ValueType>(0.0);
+        return static_cast<ValueType>( 0.0 );
     }
 
-    return BLASWrapper<ValueType>::asum( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::asum( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -157,23 +151,22 @@ template<typename ValueType>
 IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "BLAS.BLAS1.iamax" )
-
     SCAI_LOG_INFO( logger,
                    "iamax<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if( ( n <= 0 ) || ( incX <= 0 ) )
+    if ( ( n <= 0 ) || ( incX <= 0 ) )
     {
         return 0;
     }
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return BLASWrapper<ValueType>::iamax( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX )) - 1;
+    return BLASWrapper<ValueType>::iamax( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ) ) - 1;
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -189,23 +182,22 @@ void BLAS_BLAS1::swap(
     const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS1.swap" )
-
     SCAI_LOG_DEBUG( logger,
                     "iamax<" << TypeTraits<ValueType>::id() << ">" << ", n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    BLASWrapper<ValueType>::swap( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ));
+    BLASWrapper<ValueType>::swap( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -221,25 +213,23 @@ void BLAS_BLAS1::copy(
     const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS1.copy" )
-
     SCAI_LOG_DEBUG( logger,
                     "copy<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     // wrapper: uses overloading and converts arguments if required
-
-    BLASWrapper<ValueType>::copy( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ));
+    BLASWrapper<ValueType>::copy( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -256,11 +246,10 @@ void BLAS_BLAS1::axpy(
     const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS1.axpy" )
-
     SCAI_LOG_DEBUG( logger,
                     "axpy<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
@@ -270,12 +259,11 @@ void BLAS_BLAS1::axpy(
     if ( syncToken )
     {
         // just set call to this routine as task to be executed; new thread will have syncToken == NULL
-
         syncToken->run( common::bind( BLASWrapper<ValueType>::axpy, n, alpha, x, incX, y, incY ) );
     }
     else
     {
-        BLASWrapper<ValueType>::axpy( static_cast<BLASTrait::BLASIndexType>( n ), alpha, x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ));
+        BLASWrapper<ValueType>::axpy( static_cast<BLASTrait::BLASIndexType>( n ), alpha, x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ) );
     }
 }
 
@@ -292,25 +280,24 @@ ValueType BLAS_BLAS1::dot(
     const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS1.dot" )
-
     SCAI_LOG_DEBUG( logger,
                     "dot<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
-        return static_cast<ValueType>(0.0);
+        return static_cast<ValueType>( 0.0 );
     }
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     ValueType res = BLASWrapper<ValueType>::dot( static_cast<BLASTrait::BLASIndexType>( n ), x,
                     static_cast<BLASTrait::BLASIndexType>( incX ), y,
-                    static_cast<BLASTrait::BLASIndexType>( incY ));
+                    static_cast<BLASTrait::BLASIndexType>( incY ) );
     return res;
 }
 
@@ -322,20 +309,17 @@ template<typename ValueType>
 void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::Host;
-
     bool useBLAS = false;
     int level = 0;
-
     useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );
 
-    if( !useBLAS || ( level <= 0 ) )
+    if ( !useBLAS || ( level <= 0 ) )
     {
         SCAI_LOG_INFO( logger, "BLAS1 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS not set or 0)" )
         return;
     }
-    else if( level > 1 )
+    else if ( level > 1 )
     {
         // only level 2 or level 3 wrappers might be used
         SCAI_LOG_INFO( logger,
@@ -344,7 +328,6 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
     }
 
     SCAI_LOG_INFO( logger, "register BLAS1 wrapper routines for Host at kernel registry" )
-
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( BLAS_BLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( BLAS_BLAS1::nrm2, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( BLAS_BLAS1::asum, ctx, flag );
@@ -353,7 +336,7 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
     KernelRegistry::set<BLASKernelTrait::copy<ValueType> >( BLAS_BLAS1::copy, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::axpy<ValueType> >( BLAS_BLAS1::axpy, ctx, flag );
 
-    if( common::isComplex( common::TypeTraits<ValueType>::stype ) )
+    if ( common::isComplex( common::TypeTraits<ValueType>::stype ) )
     {
         /*
          * don't register dot-product due to different fortran ABSs the handling of returning

@@ -62,15 +62,11 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.COOStorageTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
-
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
-
     // constructor doesn't exist with other location
-
     COOStorage<ValueType> cooStorage( numRows, numColumns );
     cooStorage.prefetch( loc );
-
     BOOST_REQUIRE_EQUAL( numRows, cooStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, cooStorage.getNumColumns() );
 
@@ -89,7 +85,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
-
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType ia[] =
@@ -192,7 +187,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     // use template storage test
-
     storageSwapTest<COOStorage<ValueType> >();
 }
 
@@ -201,7 +195,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for COOStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
     storageTypeNameTest<COOStorage<ValueType> >( "COO" );
 }
 
@@ -210,7 +203,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE( COOCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-
     copyStorageTest<COOStorage<ValueType> >();
 }
 

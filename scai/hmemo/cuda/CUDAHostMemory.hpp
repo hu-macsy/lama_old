@@ -62,13 +62,13 @@ namespace hmemo
  *  and requires CUDA initialization, we will store also a shared pointer to the
  *  corresponding CUDA context.
  *
- *  Note: copy routines between CUDA Host and CUDA device are already provided 
+ *  Note: copy routines between CUDA Host and CUDA device are already provided
  *        by CUDA memory class and are not required here.
  */
 
-class COMMON_DLL_IMPORTEXPORT CUDAHostMemory: 
+class COMMON_DLL_IMPORTEXPORT CUDAHostMemory:
 
-    public Memory 
+    public Memory
 {
 
 public:
@@ -99,7 +99,10 @@ public:
 
     virtual ContextPtr getContextPtr() const;
 
-    const CUDAContext& getCUDAContext() const { return *mCUDAContext; }
+    const CUDAContext& getCUDAContext() const
+    {
+        return *mCUDAContext;
+    }
 
 protected:
 

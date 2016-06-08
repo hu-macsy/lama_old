@@ -84,7 +84,7 @@ const char* cusparseErrorString( cusparseStatus_t res );
     }
 
 #define SCAI_CUDA_DRV_CALL( call, msg )                                                 \
-    SCAI_CUDA_DRV_CALL_EXCEPTION( call, msg, scai::common::Exception )                  
+    SCAI_CUDA_DRV_CALL_EXCEPTION( call, msg, scai::common::Exception )
 
 #define SCAI_CUDA_RT_CALL(call, msg)                                                    \
     {                                                                                   \

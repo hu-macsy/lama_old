@@ -84,7 +84,6 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.P_DenseMatrixTest" );
 BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
 {
     using scai::common::TypeTraits;
-
     PartitionId size = comm->getSize();
     int numRows = 3 * size;
     int numCols = 5 * size;

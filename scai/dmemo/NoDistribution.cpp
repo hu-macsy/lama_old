@@ -85,7 +85,6 @@ bool NoDistribution::isEqual( const Distribution& other ) const
 void NoDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-
     stream << "NoDistribution( size = " << mGlobalSize << " )";
 }
 
@@ -116,7 +115,6 @@ Distribution* NoDistribution::create( const DistributionArguments arg )
 {
     // Note: weight argument is not used here
     //       same is true for matrix, commonunicationPtr
-
     return new NoDistribution( arg.globalSize );
 }
 

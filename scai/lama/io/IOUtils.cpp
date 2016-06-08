@@ -50,10 +50,9 @@ namespace lama
 IOUtils::file_size_t IOUtils::getFileSize( const char* filename )
 {
     FILE* pFile = fopen( filename, "rb" );
-
     file_size_t size = 0;
 
-    if( pFile == NULL )
+    if ( pFile == NULL )
     {
         COMMON_THROWEXCEPTION( "File " << filename << " could not be opened" )
     }

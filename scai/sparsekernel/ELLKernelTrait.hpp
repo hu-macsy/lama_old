@@ -74,7 +74,10 @@ struct ELLKernelTrait
             const ValueType rhs[],
             const ValueType omega );
 
-        static const char* getId() { return "ELL.jacobi"; }
+        static const char* getId()
+        {
+            return "ELL.jacobi";
+        }
     };
 
     template<typename ValueType>
@@ -93,7 +96,10 @@ struct ELLKernelTrait
             const ValueType oldSolution[],
             const ValueType omega );
 
-        static const char* getId() { return "ELL.jacobiHalo"; }
+        static const char* getId()
+        {
+            return "ELL.jacobiHalo";
+        }
     };
 
     template<typename ValueType>
@@ -117,7 +123,10 @@ struct ELLKernelTrait
             const IndexType numRows,
             const IndexType numValuesPerRow );
 
-        static const char* getId() { return "ELL.fillELLValues"; }
+        static const char* getId()
+        {
+            return "ELL.fillELLValues";
+        }
     };
 
     /** Conversion routines between ELL and CSR storage format. */
@@ -135,7 +144,7 @@ struct ELLKernelTrait
          *  @param[in]  ellJA are the column indexes for ELL format
          *  @param[in]  ellValues are the stored matrix values for ELL format
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             IndexType csrJA[],
             CSRValueType csrValues[],
             const IndexType csrIA[],
@@ -145,7 +154,10 @@ struct ELLKernelTrait
             const IndexType ellJA[],
             const ELLValueType ellValues[] );
 
-        static const char* getId() { return "ELL.getCSRValues"; }
+        static const char* getId()
+        {
+            return "ELL.getCSRValues";
+        }
     };
 
     template<typename ELLValueType, typename CSRValueType>
@@ -153,7 +165,7 @@ struct ELLKernelTrait
     {
         /** Conversion from CSR data to ELL data      */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             IndexType ellJA[],
             ELLValueType ellValues[],
             const IndexType ellSizes[],
@@ -163,7 +175,10 @@ struct ELLKernelTrait
             const IndexType csrJA[],
             const CSRValueType csrValues[] );
 
-        static const char* getId() { return "ELL.setCSRValues"; }
+        static const char* getId()
+        {
+            return "ELL.setCSRValues";
+        }
     };
 
     template<typename ValueType>
@@ -178,7 +193,7 @@ struct ELLKernelTrait
          * @param[in]  epsilon
          * @param[out] new created IA
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             const IndexType ellSizes[],
             const IndexType ellJA[],
             const ValueType ellValues[],
@@ -187,7 +202,10 @@ struct ELLKernelTrait
             const ValueType eps,
             IndexType newIA[] );
 
-        static const char* getId() { return "ELL.compressIA"; }
+        static const char* getId()
+        {
+            return "ELL.compressIA";
+        }
     };
 
     template<typename ValueType>
@@ -203,7 +221,7 @@ struct ELLKernelTrait
          * @param[out] new created JA
          * @param[out] new created values
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             const IndexType ellSizes[],
             const IndexType ellJA[],
             const ValueType ellValues[],
@@ -214,7 +232,10 @@ struct ELLKernelTrait
             IndexType newJA[],
             ValueType newValues[] );
 
-        static const char* getId() { return "ELL.compressValues"; }
+        static const char* getId()
+        {
+            return "ELL.compressValues";
+        }
     };
 
     template<typename ValueType, typename OtherValueType>
@@ -231,7 +252,7 @@ struct ELLKernelTrait
          *  @param[in]  values is the ELL values array
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             OtherValueType row[],
             const IndexType i,
             const IndexType numRows,
@@ -241,7 +262,10 @@ struct ELLKernelTrait
             const IndexType ellJA[],
             const ValueType ellValues[] );
 
-        static const char* getId() { return "ELL.compressValues"; }
+        static const char* getId()
+        {
+            return "ELL.compressValues";
+        }
     };
 
     template<typename ValueType>
@@ -257,7 +281,7 @@ struct ELLKernelTrait
          *  @param[in] ellValues is the ELL values array
          */
 
-        typedef ValueType ( *FuncType ) ( 
+        typedef ValueType ( *FuncType ) (
             const IndexType i,
             const IndexType j,
             const IndexType numRows,
@@ -265,42 +289,54 @@ struct ELLKernelTrait
             const IndexType ellSizes[],
             const IndexType ellJA[],
             const ValueType ellValues[] );
-        
-        static const char* getId() { return "ELL.getValue"; }
+
+        static const char* getId()
+        {
+            return "ELL.getValue";
+        }
     };
 
     struct countNonEmptyRowsBySizes
     {
-        typedef IndexType ( *FuncType ) ( 
+        typedef IndexType ( *FuncType ) (
             const IndexType ellSizes[],
             const IndexType numRows );
 
-        static const char* getId() { return "ELL.countNonEmptyRowsBySizes"; }
+        static const char* getId()
+        {
+            return "ELL.countNonEmptyRowsBySizes";
+        }
     };
 
     struct setNonEmptyRowsBySizes
     {
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             IndexType rowIndexes[],
             const IndexType numNonEmptyRows,
             const IndexType ellSizes[],
             const IndexType numRows );
 
-        static const char* getId() { return "ELL.setNonEmptyRowsBySizes"; }
+        static const char* getId()
+        {
+            return "ELL.setNonEmptyRowsBySizes";
+        }
     };
 
     struct hasDiagonalProperty
     {
-        typedef bool ( *FuncType ) ( 
+        typedef bool ( *FuncType ) (
             const IndexType numDiagonals,
             const IndexType ellJA[] );
 
-        static const char* getId() { return "ELL.hasDiagonalProperty"; }
+        static const char* getId()
+        {
+            return "ELL.hasDiagonalProperty";
+        }
     };
 
     struct check
     {
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             const IndexType mNumRows,
             const IndexType mNumValuesPerRow,
             const IndexType mNumColumns,
@@ -308,7 +344,10 @@ struct ELLKernelTrait
             const IndexType ellJA[],
             const char* msg );
 
-        static const char* getId() { return "ELL.check"; }
+        static const char* getId()
+        {
+            return "ELL.check";
+        }
     };
 
     /** Define structure for multiplication routines.  */
@@ -327,7 +366,7 @@ struct ELLKernelTrait
          *  @param ellIA, ellJA, csrValues are arrays of ELL storage
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -339,7 +378,10 @@ struct ELLKernelTrait
             const IndexType ellJA[],
             const ValueType ellValues[] );
 
-        static const char* getId() { return "ELL.normalGEMV"; }
+        static const char* getId()
+        {
+            return "ELL.normalGEMV";
+        }
     };
 
     template<typename ValueType>
@@ -358,7 +400,7 @@ struct ELLKernelTrait
          *        to run over the full result vector
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -370,7 +412,10 @@ struct ELLKernelTrait
             const IndexType ellJA[],
             const ValueType ellValues[] );
 
-        static const char* getId() { return "ELL.sparseGEMV"; }
+        static const char* getId()
+        {
+            return "ELL.sparseGEMV";
+        }
     };
 
     template<typename ValueType>
@@ -378,7 +423,7 @@ struct ELLKernelTrait
     {
         /** Matrix vector multiplication for ELL format */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -391,7 +436,10 @@ struct ELLKernelTrait
             const IndexType ellJA[],
             const ValueType ellValues[] );
 
-        static const char* getId() { return "ELL.normalGEVM"; }
+        static const char* getId()
+        {
+            return "ELL.normalGEVM";
+        }
     };
 
     template<typename ValueType>
@@ -399,7 +447,7 @@ struct ELLKernelTrait
     {
         /** Matrix vector multiplication for ELL format, sparse rows */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
@@ -412,7 +460,10 @@ struct ELLKernelTrait
             const IndexType ellJA[],
             const ValueType ellValues[] );
 
-        static const char* getId() { return "ELL.sparseGEVM"; }
+        static const char* getId()
+        {
+            return "ELL.sparseGEVM";
+        }
     };
 
     /** Structure with type definitions for reduction routines */
@@ -422,27 +473,33 @@ struct ELLKernelTrait
     {
         /** This method returns the maximal absolute value of an ELLPACK matrix. */
 
-        typedef ValueType ( *FuncType ) ( 
+        typedef ValueType ( *FuncType ) (
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
             const ValueType ellValues[]
         );
 
-        static const char* getId() { return "ELL.absMaxVal"; }
+        static const char* getId()
+        {
+            return "ELL.absMaxVal";
+        }
     };
 
     template<typename ValueType, typename OtherValueType>
     struct scaleValue
     {
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
             ValueType ellValues[],
             const OtherValueType values[] );
 
-        static const char* getId() { return "ELL.scaleValue"; }
+        static const char* getId()
+        {
+            return "ELL.scaleValue";
+        }
     };
 
     struct matrixMultiplySizes
@@ -465,18 +522,21 @@ struct ELLKernelTrait
          */
 
         typedef void ( *FuncType ) ( IndexType cSizes[],
-                        const IndexType m,
-                        const IndexType n,
-                        const IndexType k,
-                        const bool diagonalProperty,
-                        const IndexType aSizes[],
-                        const IndexType aJA[],
-                        const IndexType aNumValuesPerRow,
-                        const IndexType bSizes[],
-                        const IndexType bJA[],
-                        const IndexType bNumValuesPerRow );
+                                     const IndexType m,
+                                     const IndexType n,
+                                     const IndexType k,
+                                     const bool diagonalProperty,
+                                     const IndexType aSizes[],
+                                     const IndexType aJA[],
+                                     const IndexType aNumValuesPerRow,
+                                     const IndexType bSizes[],
+                                     const IndexType bJA[],
+                                     const IndexType bNumValuesPerRow );
 
-        static const char* getId() { return "ELL.matrixMultiplySizes"; }
+        static const char* getId()
+        {
+            return "ELL.matrixMultiplySizes";
+        }
     };
 
     struct matrixAddSizes
@@ -497,17 +557,20 @@ struct ELLKernelTrait
          *  Note: this routines does not need any value array as only structure is computed
          */
         typedef void ( *FuncType ) ( IndexType cSizes[],
-                        const IndexType m,
-                        const IndexType n,
-                        const bool diagonalProperty,
-                        const IndexType aSizes[],
-                        const IndexType aJA[],
-                        const IndexType aNumValuesPerRow,
-                        const IndexType bSizes[],
-                        const IndexType bJA[],
-                        const IndexType bNumValuesPerRow );
+                                     const IndexType m,
+                                     const IndexType n,
+                                     const bool diagonalProperty,
+                                     const IndexType aSizes[],
+                                     const IndexType aJA[],
+                                     const IndexType aNumValuesPerRow,
+                                     const IndexType bSizes[],
+                                     const IndexType bJA[],
+                                     const IndexType bNumValuesPerRow );
 
-        static const char* getId() { return "ELL.matrixAddSizes"; }
+        static const char* getId()
+        {
+            return "ELL.matrixAddSizes";
+        }
     };
 
     template<typename ValueType>
@@ -528,7 +591,7 @@ struct ELLKernelTrait
          * Note: the size array cValues and cNumValuePerRow must already be available.
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             IndexType cJA[],
             ValueType cValues[],
             const IndexType cSizes[],
@@ -547,7 +610,10 @@ struct ELLKernelTrait
             const ValueType bValues[],
             const IndexType bNumValuesPerRow );
 
-        static const char* getId() { return "ELL.matrixAdd"; }
+        static const char* getId()
+        {
+            return "ELL.matrixAdd";
+        }
     };
 
     template<typename ValueType>
@@ -568,7 +634,7 @@ struct ELLKernelTrait
          * Note: the size array cValues and cNumValuePerRow must already be available.
          */
 
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             IndexType cJA[],
             ValueType cValues[],
             const IndexType cSizes[],
@@ -587,7 +653,10 @@ struct ELLKernelTrait
             const ValueType bValues[],
             const IndexType bNumValuesPerRow );
 
-        static const char* getId() { return "ELL.matrixMultiply"; }
+        static const char* getId()
+        {
+            return "ELL.matrixMultiply";
+        }
     };
 };
 

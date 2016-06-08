@@ -81,7 +81,7 @@ namespace lama
  * following relation must / should  hold:
  *
  * \code
- *    ARITHEMTIC_TYPE( ScalarRepType( x ) ) == x  
+ *    ARITHEMTIC_TYPE( ScalarRepType( x ) ) == x
  * \endcode
  */
 class COMMON_DLL_IMPORTEXPORT Scalar: public common::Printable
@@ -308,7 +308,7 @@ inline bool operator==( const Scalar& a, const Scalar& b )
 {
     return a.getValue<ScalarRepType>() == b.getValue<ScalarRepType>();
 }
- 
+
 /**
  * @brief Check inequality of a and b.
  *
@@ -344,7 +344,6 @@ inline bool operator>( const Scalar& a, const Scalar& b )
 inline Scalar sqrt( const Scalar scalar )
 {
     // call sqrt for ScalarRepType
-
     return Scalar( common::Math::sqrt( scalar.getValue<ScalarRepType>() ) );
 }
 
@@ -355,7 +354,6 @@ inline Scalar sqrt( const Scalar scalar )
 inline Scalar abs( const Scalar scalar )
 {
     // call abs for ScalarRepType
-
     return Scalar( common::Math::abs( scalar.getValue<ScalarRepType>() ) );
 }
 
@@ -370,29 +368,29 @@ inline Scalar conj( const Scalar scalar )
 
 inline Scalar max( const Scalar a, const Scalar b )
 {
-    if( a.hasComplexValue() || b.hasComplexValue() )
+    if ( a.hasComplexValue() || b.hasComplexValue() )
     {
         return Scalar( common::Math::max( a.getValue<ScalarRepType>(), b.getValue<ScalarRepType>() ) );
     }
     else
     {
         return Scalar( common::Math::max(
-            common::Math::real( a.getValue<ScalarRepType>() ),
-            common::Math::real( b.getValue<ScalarRepType>() ) ) );
+                           common::Math::real( a.getValue<ScalarRepType>() ),
+                           common::Math::real( b.getValue<ScalarRepType>() ) ) );
     }
 }
 
 inline Scalar min( const Scalar a, const Scalar b )
 {
-    if( a.hasComplexValue() || b.hasComplexValue() )
+    if ( a.hasComplexValue() || b.hasComplexValue() )
     {
         return Scalar( common::Math::min( a.getValue<ScalarRepType>(), b.getValue<ScalarRepType>() ) );
     }
     else
     {
         return Scalar( common::Math::min(
-            common::Math::real( a.getValue<ScalarRepType>() ),
-            common::Math::real( b.getValue<ScalarRepType>() ) ) );
+                           common::Math::real( a.getValue<ScalarRepType>() ),
+                           common::Math::real( b.getValue<ScalarRepType>() ) ) );
     }
 }
 

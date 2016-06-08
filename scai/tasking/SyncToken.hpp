@@ -144,13 +144,13 @@ public:
 
     void pushRoutine( common::function<void()> routine );
 
-    /** 
+    /**
      *  Set this SyncToken as the current one of this thread.
      *
      *  Only one SyncToken can be the current one.
      *
      *  Global access to the current sync token makes design easier
-     *  as it can be decided locally where and how to start an 
+     *  as it can be decided locally where and how to start an
      *  asynchronous operation.
      *
      *  Be careful: SyncToken is not current for the executing thread
@@ -168,7 +168,7 @@ public:
      *  Get the current sync token of this thread.
      */
     static SyncToken* getCurrentSyncToken();
- 
+
 protected:
 
     /** Default constructor can only be called by derived classes. */
@@ -219,8 +219,8 @@ private:
     std::vector< common::function<void()> > mSynchronizedFunctions;
 
 public:
- 
-    class ScopedAsynchronous 
+
+    class ScopedAsynchronous
     {
     public:
 
@@ -228,7 +228,7 @@ public:
         {
             mToken->setCurrent();
         }
-    
+
         ScopedAsynchronous( SyncToken* token ) : mToken( token )
         {
             if ( mToken != NULL )
@@ -236,7 +236,7 @@ public:
                 mToken->setCurrent();
             }
         }
-    
+
         ~ScopedAsynchronous()
         {
             if ( mToken != NULL )
@@ -246,7 +246,7 @@ public:
         }
 
     private:
-  
+
         SyncToken* mToken;
     };
 };

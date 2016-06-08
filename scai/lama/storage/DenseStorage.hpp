@@ -58,7 +58,7 @@ template<typename ValueType> class DenseStorage;
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseStorageView:
-    public CRTPMatrixStorage<DenseStorageView<ValueType>,ValueType>
+    public CRTPMatrixStorage<DenseStorageView<ValueType>, ValueType>
 {
 public:
 
@@ -106,7 +106,7 @@ public:
     virtual void assign( const _MatrixStorage& other );
 
     void transposeImpl();
-    
+
     /** Getter routine for the data type of the elements. */
 
     virtual common::scalar::ScalarType getValueType() const;
@@ -392,8 +392,8 @@ public:
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseStorage:
-        public DenseStorageView<ValueType>,
-        public _MatrixStorage::Register<DenseStorage<ValueType> >    // register at factory
+    public DenseStorageView<ValueType>,
+    public _MatrixStorage::Register<DenseStorage<ValueType> >    // register at factory
 {
 public:
 

@@ -50,14 +50,10 @@ BOOST_AUTO_TEST_SUITE( TypeListTest )
 BOOST_AUTO_TEST_CASE( containsTest )
 {
 #define TEST_LIST SCAI_TYPELIST( int, float, double )
-
     bool r = mepr::TypeListUtilsV<int, TEST_LIST>::contains;
-
     BOOST_CHECK( r );
-
     r = mepr::TypeListUtilsV<long long, TEST_LIST>::contains;
     BOOST_CHECK( !r );
-
 #undef TEST_LIST
 }
 
@@ -66,11 +62,8 @@ BOOST_AUTO_TEST_CASE( containsTest )
 BOOST_AUTO_TEST_CASE( sizeTest )
 {
 #define TEST_LIST SCAI_TYPELIST( int, float, double )
-
     IndexType size = mepr::TypeListUtils<TEST_LIST>::size;
-
     BOOST_CHECK( 3 == size );
-
 #undef TEST_LIST
 }
 
@@ -79,13 +72,9 @@ BOOST_AUTO_TEST_CASE( sizeTest )
 BOOST_AUTO_TEST_CASE( indexTest )
 {
 #define TEST_LIST SCAI_TYPELIST( int, float, double )
-
     IndexType index = mepr::TypeListUtilsV<float, TEST_LIST>::index;
-
     BOOST_CHECK( 1 == index );
-
     index = mepr::TypeListUtilsV<size_t, TEST_LIST>::index;
-
     BOOST_CHECK( -1 == index );
 #undef TEST_LIST
 }

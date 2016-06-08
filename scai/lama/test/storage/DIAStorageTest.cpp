@@ -57,7 +57,6 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
 {
     // Test the full DIAStorge constructor and the individual getter routines of DIA storage
-
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType offsets[] =
@@ -68,9 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
     const IndexType numDiagonals = sizeof( offsets ) / sizeof( IndexType );
     LArray<IndexType> diaOffsets( 2, offsets );
     LArray<ValueType> diaValues( numValues, values );
-
     DIAStorage<ValueType> diaStorage( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
-
     BOOST_REQUIRE_EQUAL( numRows, diaStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, diaStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numDiagonals, diaStorage.getNumDiagonals() );
@@ -145,7 +142,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 {
     // use template storage test
-
     storageSwapTest<DIAStorage<ValueType> >();
 }
 
@@ -154,7 +150,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for DIAStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-
     storageTypeNameTest<DIAStorage<ValueType> >( "DIA" );
 }
 
@@ -163,7 +158,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_typ
 BOOST_AUTO_TEST_CASE( DIACopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-
     copyStorageTest<DIAStorage<ValueType> >();
 }
 

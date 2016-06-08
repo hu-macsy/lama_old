@@ -65,7 +65,7 @@ class COMMON_DLL_IMPORTEXPORT HostMemory: public Memory
 
 public:
 
-    HostMemory( common::shared_ptr<const class HostContext> hostContext );   
+    HostMemory( common::shared_ptr<const class HostContext> hostContext );
 
     virtual ~HostMemory();
 

@@ -95,9 +95,9 @@ public:
 
 protected:
 
-    std::string mMessage;  //!< message for this exception 
+    std::string mMessage;  //!< message for this exception
 
-    /** Help routine that demangles the C++ function names of the call stack. 
+    /** Help routine that demangles the C++ function names of the call stack.
      *
      *  @param[in] string name of the C++ function
      *  @return demangled name as a string

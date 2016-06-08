@@ -43,7 +43,7 @@
 #define omp_get_thread_num() 0
 #define omp_get_num_threads() 1
 #define omp_get_max_threads() 1
-#define omp_set_num_threads( x ) 
+#define omp_set_num_threads( x )
 
 #if defined( WIN32 )
 
@@ -63,13 +63,10 @@ inline double omp_get_wtime( void )
 
 inline double omp_get_wtime( void )
 {
-
     struct timeval tp;
     struct timezone tzp;
-
     gettimeofday( &tp, &tzp );
-
-    return (double) tp.tv_sec + tp.tv_usec * 0.000001;
+    return ( double ) tp.tv_sec + tp.tv_usec * 0.000001;
 }
 
 #endif

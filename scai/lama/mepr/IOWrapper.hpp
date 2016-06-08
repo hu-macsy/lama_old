@@ -41,11 +41,14 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace lama {
+namespace lama
+{
 
-namespace mepr {
+namespace mepr
+{
 
 /*
  * Forward declaration
@@ -58,14 +61,26 @@ template<typename ValueType, typename TList> struct IOWrapper;
 template<typename ValueType>
 struct IOWrapper<ValueType, common::mepr::NullType>
 {
-    static bool readBinary( const common::scalar::ScalarType, std::fstream&, ValueType*, const IndexType ) { return false; }
-    static bool writeBinary( const common::scalar::ScalarType, std::fstream&, const ValueType*, const IndexType, const IndexType ) { return false; }
+    static bool readBinary( const common::scalar::ScalarType, std::fstream&, ValueType*, const IndexType )
+    {
+        return false;
+    }
+    static bool writeBinary( const common::scalar::ScalarType, std::fstream&, const ValueType*, const IndexType, const IndexType )
+    {
+        return false;
+    }
 
     /*
      *
      */
-    static bool readBinary( const long, std::fstream&, ValueType*, const IndexType, const IndexType ){ return false; }
-    static bool writeBinary( const long, std::fstream&, const ValueType*, const IndexType, const IndexType ){ return false; }
+    static bool readBinary( const long, std::fstream&, ValueType*, const IndexType, const IndexType )
+    {
+        return false;
+    }
+    static bool writeBinary( const long, std::fstream&, const ValueType*, const IndexType, const IndexType )
+    {
+        return false;
+    }
 
 };
 
@@ -73,11 +88,11 @@ struct IOWrapper<ValueType, common::mepr::NullType>
  * Step n
  */
 template<typename ValueType, typename H, typename T>
-struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
+struct IOWrapper<ValueType, common::mepr::TypeList<H, T> >
 {
     static bool readBinary( const common::scalar::ScalarType dataType, std::fstream& in, ValueType* data, const IndexType n )
     {
-        if( dataType == common::getScalarType<H>() )
+        if ( dataType == common::getScalarType<H>() )
         {
             IOUtils::readBinaryData<H, ValueType>( in, data, n );
             return true;
@@ -90,9 +105,9 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
 
     static bool writeBinary( const common::scalar::ScalarType dataType, std::fstream& out, const ValueType* data, const IndexType n, const IndexType offset = 0 )
     {
-        if( dataType == common::getScalarType<H>() )
+        if ( dataType == common::getScalarType<H>() )
         {
-            IOUtils::writeBinary<H,ValueType>( out, data, n, offset );
+            IOUtils::writeBinary<H, ValueType>( out, data, n, offset );
             return true;
         }
         else
@@ -106,7 +121,7 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
      */
     static bool readBinary( const long expectedSize, std::fstream& in, ValueType* data, const IndexType n, const IndexType offset = 0 )
     {
-        if( expectedSize == sizeof( H ) )
+        if ( expectedSize == sizeof( H ) )
         {
             IOUtils::readBinaryData<H, ValueType>( in, data, n, offset );
             return true;
@@ -119,7 +134,7 @@ struct IOWrapper<ValueType, common::mepr::TypeList<H,T> >
 
     static bool writeBinary( const long dataTypeSize, std::fstream& out, const ValueType* data, const IndexType n, const IndexType offset = 0 )
     {
-        if( dataTypeSize == sizeof( H ) )
+        if ( dataTypeSize == sizeof( H ) )
         {
             IOUtils::writeBinary<H, ValueType>( out, data, n, offset );
             return true;

@@ -65,22 +65,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS3Test" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
     //  input
     //                            (  2.0 3.0 )
     // 17.0 * ( 1.0  2.0 -3.0 ) * ( -1.0 1.0 ) - 13.0 * ( 15.0 13.0 ) =  (-9.0 -1.0)
     //        ( 4.0  5.0 -6.0 )   (  4.0 5.0 )          ( 27.0 17.0 )    (-6.0  0.0)
-
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::gemm<ValueType> > gemm;
-
     ContextPtr loc = Context::getContextPtr( gemm.validContext( testContext->getType() ) );
-
     // give warning if routine is not available at testContext
-
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
     SCAI_LOG_INFO( logger, "gemm< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-
     const ValueType alpha = 17.0;
     const ValueType beta = 13.0;
     const ValueType resultRowMajor[] =
@@ -95,19 +88,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
         const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
         ValueType matrixC[]       = { 15.0, 13.0, 27.0, 17.0 };
-
         const IndexType lda = 3;
         const IndexType ldb = 2;
         const IndexType ldc = 2;
-
         const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
         const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
         const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-
         HArray<ValueType> AmA( nA, matrixA, testContext );
         HArray<ValueType> AmB( nB, matrixB, testContext );
         HArray<ValueType> AmC( nC, matrixC, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -136,15 +125,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
         const IndexType lda = 2;
         const IndexType ldb = 3;
         const IndexType ldc = 2;
-
         const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
         const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
         const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-
         HArray<ValueType> AmA( nA, matrixA, testContext );
         HArray<ValueType> AmB( nB, matrixB, testContext );
         HArray<ValueType> AmC( nC, matrixC, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -167,19 +153,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
         const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         const ValueType matrixB[] = { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
         ValueType matrixC[]       = { 15.0, 13.0, 27.0, 17.0 };
-
         const IndexType lda = 3;
         const IndexType ldb = 3;
         const IndexType ldc = 2;
-
         const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
         const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
         const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-
         HArray<ValueType> AmA( nA, matrixA, testContext );
         HArray<ValueType> AmB( nB, matrixB, testContext );
         HArray<ValueType> AmC( nC, matrixC, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -202,19 +184,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
         const ValueType matrixA[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
         const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
         const ValueType matrixC[] = { 15.0, 27.0, 13.0, 17.0 };
-
         const IndexType lda = 2;
         const IndexType ldb = 2;
         const IndexType ldc = 2;
-
         const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
         const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
         const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-
         HArray<ValueType> AmA( nA, matrixA, testContext );
         HArray<ValueType> AmB( nB, matrixB, testContext );
         HArray<ValueType> AmC( nC, matrixC, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -265,25 +243,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
         const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         const ValueType matrixB[] = { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
         ValueType matrixC[]       = { 15.0, 27.0, 13.0, 17.0 };
-
         const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
         const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
         const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-
         const IndexType lda = 3;
         const IndexType ldb = 3;
         const IndexType ldc = 2;
-
         HArray<ValueType> AmA( nA, matrixA, testContext );
         HArray<ValueType> AmB( nB, matrixB, testContext );
         HArray<ValueType> AmC( nC, matrixC, testContext );
-
         // check for correct sizes, terminate to avoid memory access violations
-
         BOOST_REQUIRE_EQUAL( nA, m * k );
         BOOST_REQUIRE_EQUAL( nB, n * k );
         BOOST_REQUIRE_EQUAL( nC, m * n );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -298,7 +270,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             for ( int i = 0; i < 4; ++i )
             {
                 BOOST_CHECK_EQUAL( resultColMajor[i], rAmC[i] );
-
             }
         }
         // CblasRowMajor, CblasTrans for A and CblasTrans for B
@@ -312,15 +283,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             const IndexType lda = 2;
             const IndexType ldb = 3;
             const IndexType ldc = 2;
-
             const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
             const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
             const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-
             HArray<ValueType> AmA( nA, matrixA, testContext );
             HArray<ValueType> AmB( nB, matrixB, testContext );
             HArray<ValueType> AmC( nC, matrixC, testContext );
-
             {
                 SCAI_CONTEXT_ACCESS( loc );
                 ReadAccess<ValueType> rAmA( AmA, loc );
@@ -344,19 +312,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
         const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
         ValueType matrixC[]       = { 15.0, 27.0, 13.0, 17.0 };
-
         const IndexType lda = 3;
         const IndexType ldb = 2;
         const IndexType ldc = 2;
-
         const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
         const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
         const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-
         HArray<ValueType> AmA( nA, matrixA, testContext );
         HArray<ValueType> AmB( nB, matrixB, testContext );
         HArray<ValueType> AmC( nC, matrixC, testContext );
-
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -374,7 +338,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             }
         }
     }
-
 } // gemmTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -54,7 +54,7 @@ namespace scai
 namespace kregistry
 {
 
-/** Defintion of key type used in the map of the kernel registry. 
+/** Defintion of key type used in the map of the kernel registry.
  *
  *  An entry is identified by the type of the funciton (returned by type_info)
  *  and by its name.
@@ -71,14 +71,14 @@ inline std::ostream& operator<<( std::ostream& stream, const KernelRegistryKey& 
 }
 
 /**
- *  @brief Static class where all kernel routines are registered and can be accessed. 
+ *  @brief Static class where all kernel routines are registered and can be accessed.
  */
 
 class KernelRegistry
 {
 private:
 
-    /** Method that registers a function pointer for a given context in the registry.  
+    /** Method that registers a function pointer for a given context in the registry.
      *
      *  @param[in] key is key ( pair of name and function type )
      *  @param[in] ctx is the context for which fn is implemented
@@ -88,7 +88,7 @@ private:
 
     static void registerContextFunction( const KernelRegistryKey& key, common::context::ContextType ctx, VoidFunction fn, bool replace );
 
-    /** Method that unregisters a function pointer for a given context in the registry.  
+    /** Method that unregisters a function pointer for a given context in the registry.
      *
      *  @param[in] key is key ( pair of name and function type )
      *  @param[in] ctx is the context for which fn has been registered
@@ -113,7 +113,7 @@ public:
         KERNEL_REPLACE   //!< Kernel routine will be added and will replace an existing one
     };
 
-    /** This method registers a kernel routine for a given context by its name and signature.  
+    /** This method registers a kernel routine for a given context by its name and signature.
      *
      *  @tparam    FunctionType specifies the signature of the function
      *  @param[in] fn is the function to register
@@ -127,6 +127,7 @@ public:
     static void set( FunctionType fn, const char* name, const common::context::ContextType ctx, const KernelRegistryFlag flag )
     {
         KernelRegistryKey key( typeid( FunctionType ), name );
+
         if ( flag == KERNEL_ERASE )
         {
             unregisterContextFunction( key, ctx, ( VoidFunction ) fn );
@@ -159,13 +160,10 @@ public:
     static void get( FunctionType& fn, const char* name, common::context::ContextType ctx )
     {
         KernelRegistry& kreg = getInstance();
-
         KernelRegistryKey key( typeid( FunctionType ), name );
-
-        SCAI_LOG_INFO( logger, "get function pointer for kregistry routine " 
-                                << ", key = " << key 
-                                << ", context = " << ctx  )
-
+        SCAI_LOG_INFO( logger, "get function pointer for kregistry routine "
+                       << ", key = " << key
+                       << ", context = " << ctx  )
         typename KernelMap::const_iterator it = kreg.theKernelMap.find( key );
 
         if ( it != kreg.theKernelMap.end() )
@@ -179,7 +177,7 @@ public:
         }
     }
 
-    /** Get for one specific routines the function pointers for all supported contexts. 
+    /** Get for one specific routines the function pointers for all supported contexts.
      *
      *  @tparam    FunctionType is the function type of queried kernel routine
      *  @param[out] contextFunction function pointer for each context
@@ -190,25 +188,19 @@ public:
     static void get( ContextFunction<FunctionType>& contextFunction, const char* name )
     {
         KernelRegistry& kreg = getInstance();
-
         KernelRegistryKey key( typeid( FunctionType ), name );
-
         SCAI_LOG_INFO( logger, "get all function pointers for kernel routine by " << key )
-
         typename KernelMap::const_iterator it = kreg.theKernelMap.find( key );
 
         if ( it != kreg.theKernelMap.end() )
         {
             SCAI_LOG_DEBUG( logger, "entry found in kernel registry" )
-
             contextFunction.assign( it->second );
         }
         else
         {
             SCAI_LOG_DEBUG( logger, "entry not found in kernel registry, set function pointers for each ctxt to NULL" )
-
             contextFunction.clear();   // just for safety
-
             SCAI_THROWEXCEPTION( KernelRegistryException, "No context function registered, " << key )
         }
     }
@@ -224,9 +216,9 @@ protected:
 
 private:
 
-    KernelRegistry(){}
+    KernelRegistry() {}
     KernelRegistry( const KernelRegistry& );
-    ~KernelRegistry(){}
+    ~KernelRegistry() {}
 
     class Compare
     {
@@ -236,22 +228,20 @@ private:
 
         bool operator()( const KernelRegistryKey& x, const KernelRegistryKey& y ) const
         {
-             // first compare the id of the routine (is second key argument)
-
+            // first compare the id of the routine (is second key argument)
             int compareName = std::strcmp( x.second, y.second );
 
             if ( compareName < 0 )
             {
-                 return true;
+                return true;
             }
 
             if ( compareName > 0 )
             {
-                 return false;
+                return false;
             }
 
             // both have same id, so take typename to distinguish
-
             return x.first.name() > y.first.name();
         }
 
@@ -267,12 +257,11 @@ private:
     {
         if ( !KernelRegistry::mInstance )
         {
-             SCAI_LOG_INFO( KernelRegistry::logger, "Guardian --> create Instance")
-             mInstance = new KernelRegistry();
+            SCAI_LOG_INFO( KernelRegistry::logger, "Guardian --> create Instance" )
+            mInstance = new KernelRegistry();
         }
 
         return *mInstance;
-
         // Note: the registry map itself is never deleted as destructor of registrators
         //       try to delete entries in this map at exit of program
     }

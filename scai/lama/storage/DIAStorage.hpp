@@ -60,7 +60,7 @@ namespace lama
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DIAStorage:
-    public CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>,
+    public CRTPMatrixStorage<DIAStorage<ValueType>, ValueType>,
     public _MatrixStorage::Register<DIAStorage<ValueType> >    // register at factory
 {
 public:
@@ -388,7 +388,6 @@ private:
         SCAI_ASSERT_ERROR( irow < numRows, "irow = " << irow << " out of range, numRows = " << numRows );
         SCAI_ASSERT_ERROR( idiag < numDiagonals,
                            "idiag = " << idiag << " out of range, numDiagonals = " << numDiagonals );
-
         return idiag * numRows + irow;
     }
 

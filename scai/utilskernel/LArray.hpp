@@ -157,7 +157,6 @@ public:
                      hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
         // SCAI_ASSERT( context.get(), "NULL context" )
-
         this->resize( n );  // size of the array must be known before a value can be assigned
 
         // context == NULL might happen by DenseVector
@@ -279,7 +278,6 @@ public:
     LArray& operator= ( const ValueType val )
     {
         //  assignment is done on the first touch memory/context
-
         hmemo::ContextPtr context = this->getFirstTouchContextPtr();
         SCAI_ASSERT( context.get(), "No first touch context" )
         HArrayUtils::setScalar( *this, val, reduction::COPY, this->getFirstTouchContextPtr() );

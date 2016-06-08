@@ -55,7 +55,7 @@ namespace level
 /** @brief Enumeration type for different logging levels.
  *
  *  The values are ordered. Setting a lower level also enables all
- *  higher levels. 
+ *  higher levels.
  */
 typedef enum
 {

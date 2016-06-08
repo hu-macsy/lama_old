@@ -51,13 +51,13 @@ namespace solver
  * @brief The class CG represents a IterativeSolver which uses the krylov subspace CG method
  *        to solve a system of linear equations iteratively.
  *
- * Remark: 
+ * Remark:
  * The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
 class COMMON_DLL_IMPORTEXPORT CG:
-	public IterativeSolver,
-	public Solver::Register<CG>
+    public IterativeSolver,
+    public Solver::Register<CG>
 {
 public:
     /**

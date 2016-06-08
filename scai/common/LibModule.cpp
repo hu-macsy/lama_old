@@ -58,16 +58,16 @@ namespace common
 
 #if defined(WIN32)
 // TODO: needs to be tested
-static bool isDirectory(const char* dir)
+static bool isDirectory( const char* dir )
 {
-    DWORD ftyp = GetFileAttributesA(dir);
+    DWORD ftyp = GetFileAttributesA( dir );
 
-    if (ftyp == INVALID_FILE_ATTRIBUTES)
+    if ( ftyp == INVALID_FILE_ATTRIBUTES )
     {
         return false;
     }
 
-    if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+    if ( ftyp & FILE_ATTRIBUTE_DIRECTORY )
     {
         return true;
     }
@@ -77,22 +77,21 @@ static bool isDirectory(const char* dir)
 
 /* -------------------------------------------------------------------------- */
 
-static void getFilesFromDirectory(const char* dir, const char* suffix, std::vector<std::string>& files)
+static void getFilesFromDirectory( const char* dir, const char* suffix, std::vector<std::string>& files )
 {
     WIN32_FIND_DATA ffd;
     HANDLE dp = INVALID_HANDLE_VALUE;
-    dp = FindFirstFile(dir, &ffd);
+    dp = FindFirstFile( dir, &ffd );
 
-    if (dp == INVALID_HANDLE_VALUE)
+    if ( dp == INVALID_HANDLE_VALUE )
     {
-        COMMON_THROWEXCEPTION("Error (" /* << errno */ << " ) opening directory " << dir)
+        COMMON_THROWEXCEPTION( "Error (" /* << errno */ << " ) opening directory " << dir )
     }
 
-    const std::string directory(dir);
-
+    const std::string directory( dir );
     std::string slash;
 
-    if (*directory.rbegin() != '/')
+    if ( *directory.rbegin() != '/' )
     {
         slash = "/";
     }
@@ -105,7 +104,7 @@ static void getFilesFromDirectory(const char* dir, const char* suffix, std::vect
     {
         std::string filename;
 
-        if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        if ( ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
         {
             // todo: should we do something here?
         }
@@ -118,25 +117,25 @@ static void getFilesFromDirectory(const char* dir, const char* suffix, std::vect
         std::cout << "File in dir " << dir << ": " << filename << std::endl;
 #endif
 
-        if (filename.substr(filename.find_last_of(".") + 1) == suffix)
+        if ( filename.substr( filename.find_last_of( "." ) + 1 ) == suffix )
         {
-            files.push_back(directory + slash + filename);
+            files.push_back( directory + slash + filename );
         }
     }
-    while ( FindNextFile(dp, &ffd) != 0);
+    while ( FindNextFile( dp, &ffd ) != 0 );
 
-    FindClose(dp);
+    FindClose( dp );
 }
 
 /* -------------------------------------------------------------------------- */
 
-LibModule::LibHandle LibModule::loadLib(const char* filename)
+LibModule::LibHandle LibModule::loadLib( const char* filename )
 {
-    HINSTANCE handle = LoadLibrary(filename);
+    HINSTANCE handle = LoadLibrary( filename );
 
-    if (handle == NULL)
+    if ( handle == NULL )
     {
-        COMMON_THROWEXCEPTION("Cannot load library " << filename ) //<< ", " << dlerror())
+        COMMON_THROWEXCEPTION( "Cannot load library " << filename ) //<< ", " << dlerror())
     }
 
     return handle;
@@ -144,20 +143,20 @@ LibModule::LibHandle LibModule::loadLib(const char* filename)
 
 /* -------------------------------------------------------------------------- */
 
-void LibModule::freeLib(LibHandle handle)
+void LibModule::freeLib( LibHandle handle )
 {
-    int rc = FreeLibrary(handle);
+    int rc = FreeLibrary( handle );
 
-    if (rc)
+    if ( rc )
     {
-        COMMON_THROWEXCEPTION("Unload library failed " ) // << dlerror())
+        COMMON_THROWEXCEPTION( "Unload library failed " ) // << dlerror())
     }
 }
 
 #else
 static bool isDirectory( const char* dir )
 {
-    DIR *dp = opendir( dir );
+    DIR* dp = opendir( dir );
 
     if ( dp == NULL )
     {
@@ -165,7 +164,6 @@ static bool isDirectory( const char* dir )
     }
 
     closedir( dp );
-
     return true;
 }
 
@@ -176,8 +174,7 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
 #ifdef DEBUG_HERE
     std::cout << "getFilesfromDirectory " << dir << std::endl;
 #endif
-
-    DIR *dp = opendir( dir );
+    DIR* dp = opendir( dir );
 
     if ( dp == NULL )
     {
@@ -185,7 +182,6 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
     }
 
     const std::string directory( dir );
-
     std::string slash;
 
     if ( *directory.rbegin() != '/' )
@@ -197,9 +193,9 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
         slash = "";
     }
 
-    for (;;)
+    for ( ;; )
     {
-        struct dirent *dirp = readdir( dp );
+        struct dirent* dirp = readdir( dp );
 
         if ( dirp == NULL )
         {
@@ -207,7 +203,6 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
         }
 
         std::string filename = dirp->d_name;
-
 #ifdef DEBUG_HERE
         std::cout << "File in dir " << dir << ": " << filename << std::endl;
 #endif
@@ -225,7 +220,7 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
 
 LibModule::LibHandle LibModule::loadLib( const char* filename )
 {
-    LibHandle handle = dlopen( filename,RTLD_LAZY|RTLD_GLOBAL );
+    LibHandle handle = dlopen( filename, RTLD_LAZY | RTLD_GLOBAL );
 
     if ( !handle )
     {
@@ -254,12 +249,10 @@ void LibModule::freeLib( LibHandle handle )
 void LibModule::loadLibsInDir( const char* dir )
 {
     std::vector<std::string> moduleNames;
-
     getFilesFromDirectory( dir, SUFFIX, moduleNames );
 
     for ( size_t i = 0; i < moduleNames.size(); ++i )
     {
-
 #ifdef DEBUG_HERE
         std::cout << "try to load module " << moduleNames[i] << std::endl;
 #endif
@@ -282,7 +275,7 @@ void LibModule::loadLibsInDir( const char* dir )
 
 static void tokenize( std::vector<std::string>& tokens,
                       const std::string& str,
-                      const std::string& delimiters = " ")
+                      const std::string& delimiters = " " )
 {
     // Skip delimiters at beginning.
     std::string::size_type lastPos = str.find_first_not_of( delimiters, 0 );
@@ -292,7 +285,7 @@ static void tokenize( std::vector<std::string>& tokens,
     while ( std::string::npos != pos || std::string::npos != lastPos )
     {
         // Found a token, add it to the vector.
-        tokens.push_back(str.substr( lastPos, pos - lastPos ) );
+        tokens.push_back( str.substr( lastPos, pos - lastPos ) );
         // Skip delimiters.  Note the "not_of"
         lastPos = str.find_first_not_of( delimiters, pos );
         // Find next "non-delimiter"
@@ -302,12 +295,10 @@ static void tokenize( std::vector<std::string>& tokens,
 
 /* -------------------------------------------------------------------------- */
 
-void LibModule::loadLibsByPath( const char *path )
+void LibModule::loadLibsByPath( const char* path )
 {
     std::vector<std::string> tokens;
-
     std::string input = path;
-
     tokenize( tokens, input, ":" );
 
     for ( size_t i = 0; i < tokens.size(); ++i )

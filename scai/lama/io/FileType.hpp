@@ -68,7 +68,7 @@ enum FileType
     MATRIX_MARKET,
 
     /**
-     * @brief unspecified, used internally 
+     * @brief unspecified, used internally
      */
     DEFAULT
 };
@@ -79,18 +79,21 @@ enum FileType
 
 static inline std::ostream& operator<<( std::ostream& stream, const FileType& object )
 {
-    switch ( object ) 
+    switch ( object )
     {
         case SAMG_FORMAT:
             stream << "SAMG";
             break;
+
         case MATRIX_MARKET:
             stream << "MATRIX_MARKET";
             break;
+
         default:
             stream << "<unknown_file_type>";
-     }
-     return stream;
+    }
+
+    return stream;
 }
 
 }  // namespace File

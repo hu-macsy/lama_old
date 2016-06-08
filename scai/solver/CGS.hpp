@@ -59,8 +59,8 @@ namespace solver
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
 class COMMON_DLL_IMPORTEXPORT CGS:
-		public IterativeSolver,
-		public Solver::Register<CGS>
+    public IterativeSolver,
+    public Solver::Register<CGS>
 {
 public:
     /**
@@ -118,11 +118,11 @@ public:
      * @brief Returns the complete configuration of the derived class
      */
     virtual CGSRuntime& getRuntime();
-    /** 
+    /**
     * @brief Initializes vectors and values of the runtime
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
-    
+
     /**
      * @brief Returns the complete configuration of the derived class
      */

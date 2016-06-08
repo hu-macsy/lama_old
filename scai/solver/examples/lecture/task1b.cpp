@@ -48,7 +48,6 @@ typedef RealType ValueType;
 int main()
 {
     IndexType size = 4;
-
     SparseAssemblyStorage<ValueType> sas( size, size, 10 );
 
     for ( IndexType i = 0; i < size; i++ )
@@ -67,7 +66,6 @@ int main()
     }
 
     CSRSparseMatrix<ValueType> m ( sas );
-
     DenseVector<ValueType> rhs( size , 0.0 );
     WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
 
@@ -77,9 +75,7 @@ int main()
     }
 
     hwarhs.release();
-
     DenseVector<ValueType> solution( size , 0.0 );
-
     return 0;
 }
 

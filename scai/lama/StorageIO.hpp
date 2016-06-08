@@ -85,20 +85,20 @@ public:
         const PartitionId rank );
 
     static void writeMMHeader(
-    	const bool& vector,
-		const IndexType& numRows,
-		const IndexType& numColumns,
-		const IndexType& numValues,
-		FileStream& fileName,
-		const common::scalar::ScalarType& dataType);
+        const bool& vector,
+        const IndexType& numRows,
+        const IndexType& numColumns,
+        const IndexType& numValues,
+        FileStream& fileName,
+        const common::scalar::ScalarType& dataType );
 
     static void readMMHeader(
-		IndexType& numRows,
-		IndexType& numColumns,
-		IndexType& numValues,
-		bool& isPattern,
-		bool& isSymmetric,
-		FileStream& inFile	);
+        IndexType& numRows,
+        IndexType& numColumns,
+        IndexType& numValues,
+        bool& isPattern,
+        bool& isSymmetric,
+        FileStream& inFile  );
 
 
     /** Help routine that determines the availability of a given file by its name. */
@@ -106,7 +106,7 @@ public:
     static bool fileExists( const std::string& fileName );
 
     static bool hasSuffix( const std::string& fileName, const std::string& suffix );
-   
+
 protected:
 
     /** Logger for this class */

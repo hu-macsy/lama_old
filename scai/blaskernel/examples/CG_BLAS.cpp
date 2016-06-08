@@ -53,28 +53,24 @@ using scai::kregistry::KernelTraitContextFunction;
 using scai::blaskernel::BLASKernelTrait;
 
 template<typename ValueType>
-void cg(const IndexType m, const IndexType n, const IndexType lda,
-        HArray<ValueType>& x, HArray<ValueType>& A, const HArray<ValueType>& b,
-        const ValueType tol, const IndexType max_iter, const context::ContextType loc)
+void cg( const IndexType m, const IndexType n, const IndexType lda,
+         HArray<ValueType>& x, HArray<ValueType>& A, const HArray<ValueType>& b,
+         const ValueType tol, const IndexType max_iter, const context::ContextType loc )
 {
     // Needed temporary vectors
-    HArray<ValueType> r(n);
-    HArray<ValueType> d(n);
-    HArray<ValueType> z(n);
-
+    HArray<ValueType> r( n );
+    HArray<ValueType> d( n );
+    HArray<ValueType> z( n );
     // Needed temporary scalars
     ValueType rOld, rNew, alpha, beta, norm;
-
-    ContextPtr ctx = Context::getContextPtr(loc);
-
+    ContextPtr ctx = Context::getContextPtr( loc );
     // Access to vectors on used device
-    ReadAccess<ValueType> A_(A, ctx);
-    ReadAccess<ValueType> b_(b, ctx);
-    WriteAccess<ValueType> r_(r, ctx);
-    WriteAccess<ValueType> d_(d, ctx);
-    WriteAccess<ValueType> z_(z, ctx);
-    WriteAccess<ValueType> x_(x, ctx);
-
+    ReadAccess<ValueType> A_( A, ctx );
+    ReadAccess<ValueType> b_( b, ctx );
+    WriteAccess<ValueType> r_( r, ctx );
+    WriteAccess<ValueType> d_( d, ctx );
+    WriteAccess<ValueType> z_( z, ctx );
+    WriteAccess<ValueType> x_( x, ctx );
     // Used blas functions
     static KernelTraitContextFunction<BLASKernelTrait::gemv<ValueType> > gemv;
     static KernelTraitContextFunction<BLASKernelTrait::axpy<ValueType> > axpy;
@@ -82,60 +78,45 @@ void cg(const IndexType m, const IndexType n, const IndexType lda,
     static KernelTraitContextFunction<BLASKernelTrait::nrm2<ValueType> > nrm2;
     static KernelTraitContextFunction<BLASKernelTrait::scal<ValueType> > scal;
     static KernelTraitContextFunction<BLASKernelTrait::dot<ValueType> > dot;
-
-
     // CG init
-
     // r = -1 * A * x
-    gemv[loc](CblasRowMajor, CblasNoTrans, m, n, -1.0, A_.get(), lda, x_.get(),
-              1, 0.0, r_.get(), 1);
-
+    gemv[loc]( CblasRowMajor, CblasNoTrans, m, n, -1.0, A_.get(), lda, x_.get(),
+               1, 0.0, r_.get(), 1 );
     // r = b + r
-    axpy[loc](m, 1.0, b_.get(), 1, r_.get(), 1);
-
+    axpy[loc]( m, 1.0, b_.get(), 1, r_.get(), 1 );
     // d = r
-    copy[loc](m, r_.get(), 1, d_.get(), 1);
-
+    copy[loc]( m, r_.get(), 1, d_.get(), 1 );
     // rOld = r * r
-    rOld = dot[loc](m, r_.get(), 1, r_.get(), 1);
-
+    rOld = dot[loc]( m, r_.get(), 1, r_.get(), 1 );
     // norm = ||r||2
-    norm = nrm2[loc](m, r_.get(), 1);
+    norm = nrm2[loc]( m, r_.get(), 1 );
 
     // CG iterations
-    for (IndexType k = 0; norm > tol && k < max_iter; ++k)
+    for ( IndexType k = 0; norm > tol && k < max_iter; ++k )
     {
         // z = A * d
-        gemv[loc](CblasRowMajor, CblasNoTrans, m, n, 1.0, A_.get(), lda,
-                  d_.get(), 1, 0.0, z_.get(), 1);
-
+        gemv[loc]( CblasRowMajor, CblasNoTrans, m, n, 1.0, A_.get(), lda,
+                   d_.get(), 1, 0.0, z_.get(), 1 );
         // alpha = rOld / d * z
-        alpha = dot[loc](m, d_.get(), 1, z_.get(), 1);
+        alpha = dot[loc]( m, d_.get(), 1, z_.get(), 1 );
         alpha = rOld / alpha;
-
         // x = alpha * d + x
-        axpy[loc](m, alpha, d_.get(), 1, x_.get(), 1);
-
+        axpy[loc]( m, alpha, d_.get(), 1, x_.get(), 1 );
         // r = -alpha * z + r
-        axpy[loc](m, -alpha, z_.get(), 1, r_.get(), 1);
-
+        axpy[loc]( m, -alpha, z_.get(), 1, r_.get(), 1 );
         // rNew = r * r
-        rNew = dot[loc](m, r_.get(), 1, r_.get(), 1);
-
+        rNew = dot[loc]( m, r_.get(), 1, r_.get(), 1 );
         beta = rNew / rOld;
-
         // d = r + beta * d
         //     d = beta * d
-        scal[loc](m, beta, d_.get(), 1);
+        scal[loc]( m, beta, d_.get(), 1 );
         //     d = r + d
-        axpy[loc](m, 1.0, r_.get(), 1, d_.get(), 1);
-
+        axpy[loc]( m, 1.0, r_.get(), 1, d_.get(), 1 );
         rOld = rNew;
-
         // norm = ||r||2
-        norm = nrm2[loc](m, r_.get(), 1);
+        norm = nrm2[loc]( m, r_.get(), 1 );
 
-        if (k >= 10)
+        if ( k >= 10 )
         {
             break;
         }
@@ -146,51 +127,42 @@ int main()
 {
     typedef double ValueType;
     const IndexType m = 2;
-
     // Maximum number of iterations for solver
     const IndexType max_iter = 20;
-
     // Pointer used for initializing data structures
-    ContextPtr host = Context::getContextPtr(scai::common::context::Host);
-
+    ContextPtr host = Context::getContextPtr( scai::common::context::Host );
     // Context used for computation
     context::ContextType loc = context::Host;
-
-    HArray<ValueType> A(m * m);
+    HArray<ValueType> A( m * m );
     {
         // Init Matrix
-        WriteOnlyAccess<ValueType> A_(A, host);
+        WriteOnlyAccess<ValueType> A_( A, host );
         A_[0 * m + 0] = -2;
         A_[0 * m + 1] = 1;
         A_[1 * m + 0] = 1;
         A_[1 * m + 1] = 12;
     }
-
-    HArray<ValueType> b(m);
+    HArray<ValueType> b( m );
     {
         // Init right hand side
-        WriteOnlyAccess<ValueType> b_(b, host);
+        WriteOnlyAccess<ValueType> b_( b, host );
         b_[0] = 19;
         b_[1] = 19.017;
     }
-
-    HArray<ValueType> x(m);
+    HArray<ValueType> x( m );
     {
         // Init solution vector with zero
-        WriteOnlyAccess<ValueType> x_(x, host);
+        WriteOnlyAccess<ValueType> x_( x, host );
         x_[0] = 0;
         x_[1] = 0;
     }
-
     // Call CG
-    cg(m, m, m, x, A, b, 1e-7, max_iter, loc);
-
-
+    cg( m, m, m, x, A, b, 1e-7, max_iter, loc );
     {
         // Output result vector
-        ReadAccess<ValueType> x_(x);
+        ReadAccess<ValueType> x_( x );
 
-        for (IndexType i = 0; i < m; ++i)
+        for ( IndexType i = 0; i < m; ++i )
         {
             std::cout << x_[i] << std::endl;
         }

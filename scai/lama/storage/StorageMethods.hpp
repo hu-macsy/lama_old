@@ -46,10 +46,10 @@ namespace scai
 
 namespace dmemo
 {
-    class Communicator;
-    class Halo;
-    class Distribution;
-    class Redistributor;
+class Communicator;
+class Halo;
+class Distribution;
+class Redistributor;
 }
 
 namespace lama

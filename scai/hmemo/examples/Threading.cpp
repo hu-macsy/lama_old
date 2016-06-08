@@ -52,7 +52,6 @@ using namespace scai::hmemo;
 void readJob( HArray<double>& X )
 {
     ContextPtr contextPtr = Context::getHostPtr();
-
     ReadAccess<double> read( X, contextPtr );
     const double* data = read.get();
     double s = data[0];
@@ -81,13 +80,9 @@ void readJob( HArray<double>& X )
 void writeJob( HArray<double>& X )
 {
     // Note: different thread on same context will wait until other access is released
-
     ContextPtr contextPtr = Context::getHostPtr();
-
     WriteAccess<double> write( X, contextPtr );
-
     double* data = write.get();
-
     SCAI_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << data[0] )
 
     for ( IndexType i = 0; i < write.size(); ++i )
@@ -135,8 +130,6 @@ int main()
     }
 
     SCAI_LOG_INFO( logger, "synchronize" )
-
     // Wait on pool until all tasks are finished
-
     pool.shutdown();  // otherwise
 }

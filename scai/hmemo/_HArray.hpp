@@ -76,12 +76,12 @@ class ReadAccess;
 template<typename ValueType>
 class WriteAccess;
 
-/** Common base class for typed HArray. 
- * 
+/** Common base class for typed HArray.
+ *
  *  Base class provides also a factory for creating arrays.
  */
 
-class COMMON_DLL_IMPORTEXPORT _HArray: 
+class COMMON_DLL_IMPORTEXPORT _HArray:
 
     public common::Printable,
     public tasking::SyncTokenMember,
@@ -91,7 +91,7 @@ class COMMON_DLL_IMPORTEXPORT _HArray:
 
 protected:
 
-	// use of 64bit unsigned datatype instead of IndexType (32bit signed)
+    // use of 64bit unsigned datatype instead of IndexType (32bit signed)
     size_t mSize;        //!< number of entries for the context array, common for all contexts
     size_t mValueSize;   //!< number of bytes needed for one data element
 
@@ -134,12 +134,12 @@ public:
     /**
      * @brief Gets the first context where the data of this HArray is available.
      *
-     * An argument can be passed to give a preferred context if the data is available 
+     * An argument can be passed to give a preferred context if the data is available
      * at multiple locations.
      *
      * @param[in] prefContext the preferred context to look for valid data
      * @return                a context there the data of this HArray is valid.
-     * 
+     *
      * Note: if the array has never been written to, no valid context is available.
      *       In this case this method returns getFirstTouchContextPtr()
      */
@@ -180,7 +180,7 @@ public:
      * @brief Query the capacity ( in number of elements ) at a certain context.
      */
     IndexType capacity( ContextPtr context ) const;
-    
+
     /**
      * @brief Query if data is valid in a certain context
      */
@@ -188,14 +188,14 @@ public:
 
     /**
      * @brief resize the array
-     * 
+     *
      * Changes the size of the array. No memory is freed if the size becomes smaller.
      * Reserves additional memory on all valid locations.
      */
     void resize( IndexType size );
 
     /**
-     * @brief clear of an array is the same as resize 0 
+     * @brief clear of an array is the same as resize 0
      *
      * \code
      *   _HArray& array = ...
@@ -212,8 +212,8 @@ protected:
 
     explicit _HArray( const IndexType n, const IndexType size ) :
 
-        mSize( n ), 
-        mValueSize( size ), 
+        mSize( n ),
+        mValueSize( size ),
         constFlag( false )
     {
     }
@@ -226,7 +226,7 @@ public:
      *
      *  @param[in] context is the context where the read access is needed
      *
-     *  For a read access it will be always guaranteed that a valid copy of the 
+     *  For a read access it will be always guaranteed that a valid copy of the
      *  data is available at the context.
      *
      * \returns index of context data array that contains the valid entry.
@@ -252,7 +252,7 @@ public:
 
     void releaseWriteAccess( ContextDataIndex );
 
-    /** Query the capacity for a certain access. 
+    /** Query the capacity for a certain access.
      *
      *  @param[in] index is the reference to the context data as the result of an acquired access.
      */
@@ -294,10 +294,8 @@ inline bool _HArray::isValid( ContextPtr context ) const
 inline void _HArray::resize( IndexType size )
 {
     // resize on all valid locations
-
     mContextDataManager.resize( size * mValueSize, mSize * mValueSize );
-
-    mSize = size;   
+    mSize = size;
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -305,7 +303,6 @@ inline void _HArray::resize( IndexType size )
 inline void _HArray::clear()
 {
     SCAI_ASSERT( !mContextDataManager.locked(), "Tried to clear a locked HArray " << *this )
-
     mSize = 0;
 }
 
@@ -314,7 +311,6 @@ inline void _HArray::clear()
 inline IndexType _HArray::capacity( ContextPtr context ) const
 {
     // will return 0 if no data is available at the specified context
-
     return mContextDataManager.capacity( context ) / mValueSize;
 }
 
@@ -323,7 +319,6 @@ inline IndexType _HArray::capacity( ContextPtr context ) const
 inline IndexType _HArray::capacity( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
-
     return static_cast<IndexType>( entry.capacity() / mValueSize );
 }
 
@@ -354,7 +349,6 @@ inline ContextDataIndex _HArray::acquireReadAccess( ContextPtr context ) const
 {
     size_t allocSize = mSize * mValueSize;
     size_t validSize = allocSize;                   // read access needs valid data in any case
-
     return mContextDataManager.acquireAccess( context, common::context::Read, allocSize, validSize );
 }
 
@@ -371,7 +365,6 @@ inline ContextDataIndex _HArray::acquireWriteAccess( ContextPtr context, bool ke
 {
     size_t allocSize = mSize * mValueSize;
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
-
     return mContextDataManager.acquireAccess( context, common::context::Write, allocSize, validSize );
 }
 

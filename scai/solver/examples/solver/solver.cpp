@@ -67,14 +67,10 @@ typedef RealType ValueType;
 int main( int argc, char* argv[] )
 {
     LamaConfig lamaconf;
-
     // Get (default) communicator, will be MPI if available
-
     const Communicator& comm = lamaconf.getCommunicator();
-
     int myRank   = comm.getRank();
     int numProcs = comm.getSize();
-
     const char* filename;
 
     if ( argc < 2 )
@@ -97,26 +93,17 @@ int main( int argc, char* argv[] )
     }
 
     // use auto pointer so that matrix will be deleted at program exit
-
     scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
     scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
-
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
-
     CSRSparseMatrix<ValueType> inMatrix;
-
     // Each processor should print its configuration
-
     cout << lamaconf << endl;
-
     {
         LamaTiming timer( comm, "Loading data" );
-
         // read matrix + rhs from disk
-
         inMatrix.readFromFile( filename );
-
         std::cout << "Matrix from file " << filename << " : " << inMatrix << std::endl;
 
         try
@@ -126,7 +113,6 @@ int main( int argc, char* argv[] )
         catch ( const std::exception& )
         {
             std::cout << "reading vector from file " << filename << " failed, take sum( Matrix, 2 ) " << std::endl;
-
             {
                 scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
@@ -138,20 +124,14 @@ int main( int argc, char* argv[] )
         }
 
         // only square matrices are accetpted
-
         SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns(), "size mismatch" )
         SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size(), "size mismatch" )
     }
-
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
-
     scai::common::unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
     Vector& solution = *solutionPtr;
-
     int numRows = inMatrix.getNumRows();
-
     solution.allocate( inMatrix.getColDistributionPtr() );
-
     solution = 0.0;   // intialize of a vector
 
     // distribute data (trivial block partitioning)
@@ -159,11 +139,8 @@ int main( int argc, char* argv[] )
     if ( numProcs > 1 )
     {
         LamaTiming timer( comm, "Redistribution" );
-
         // determine a new distribution so that each processor gets part of the matrix according to its weight
-
         float weight = lamaconf.getWeight();
-
         DistributionPtr dist;
 
         if ( lamaconf.useMetis() )
@@ -179,7 +156,6 @@ int main( int argc, char* argv[] )
         inMatrix.redistribute( dist, dist );
         rhs.redistribute ( dist );
         solution.redistribute ( dist );
-
         cout << comm << ": matrix = " << inMatrix ;
     }
 
@@ -189,7 +165,6 @@ int main( int argc, char* argv[] )
     }
 
     inMatrix.clear();
-
     double matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
 
     if ( myRank == 0 )
@@ -199,12 +174,10 @@ int main( int argc, char* argv[] )
 
     {
         LamaTiming timer( comm, "Prefetching" );
-
         matrix.setCommunicationKind( lamaconf.getCommunicationKind() );
         matrix.setContextPtr( lamaconf.getContextPtr() );
         rhs.setContextPtr( lamaconf.getContextPtr() );
         solution.setContextPtr( lamaconf.getContextPtr() );
-
         rhs.prefetch();
         matrix.prefetch();
         matrix.wait();
@@ -212,64 +185,44 @@ int main( int argc, char* argv[] )
     }
 
     // setting up solver from file "solveconfig.txt"
-
     std::ostringstream solverName;
-
     solverName << "<" << lamaconf.getSolverName() << ">";
-
     std::ostringstream loggerName;
-
     loggerName << solverName.str() << ", " << lamaconf.getCommunicator() << ": ";
-
     LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                          lamaconf.getLogLevel(),
                                          LoggerWriteBehaviour::toConsoleOnly ) );
-
     scai::common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName.str() ) );
-
     IterativeSolver* itSolver = dynamic_cast<IterativeSolver*>( mySolver.get() );
-
     SCAI_ASSERT( itSolver, "Not an iterative solver: " << *mySolver )
-
     mySolver->setLogger( logger );
-
     Scalar eps = 0.001;
     NormPtr norm = NormPtr( new L2Norm() );
-
     CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
 
     if ( lamaconf.hasMaxIter() )
     {
         CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
-
         // stop if iteration count reached OR residual threshold is reached
-
         rt.reset( new Criterion ( it, rt, Criterion::OR ) );
     }
 
     itSolver->setStoppingCriterion( rt );
-
     // SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     // mySolver.setPreconditioner( preconditioner );
-
     {
         LamaTiming timer( comm, "Solver setup" );
-
         mySolver->initialize( matrix );
     }
-
     {
         LamaTiming timer( comm, "Solver solve" );
-
         mySolver->solve( solution, rhs );
     }
-
     bool writeFlag = false;
 
     if ( writeFlag )
     {
         LamaTiming timer( comm, "Writing solution" );
-
         solution.writeToFile( "CG_solution" );
     }
 }

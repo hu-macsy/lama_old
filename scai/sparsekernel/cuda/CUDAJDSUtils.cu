@@ -159,30 +159,21 @@ void CUDAJDSUtils::getRow(
     const ValueType values[] )
 {
     SCAI_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
-
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<OtherValueType> rowPtr( row );
     thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
-
     thrust::fill( rowPtr, rowPtr + numColumns, static_cast<OtherValueType>( 0.0 ) );
-
     thrust::counting_iterator<IndexType> sequence( 0 );
-
     // correct index with permutation array
     IndexType ii = thrust::transform_reduce(
                        thrust::make_zip_iterator( thrust::make_tuple( permPtr, sequence ) ),
                        thrust::make_zip_iterator( thrust::make_tuple( permPtr + numRows, sequence + numRows ) ),
                        identity<IndexType>( i ), 0, thrust::plus<IndexType>() );
-
     const int blockSize = CUDASettings::getBlockSize();
-
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( 1, dimBlock.x );
-
     //TODO: find better CUDA / Thrust implementation
     getRowKernel <<< dimGrid, dimBlock>>>( row, ii, ilg, dlg, ja, values );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:getRowKernel FAILED" )
 }
 
@@ -252,19 +243,14 @@ ValueType CUDAJDSUtils::getValue(
     const ValueType* values )
 {
     SCAI_CHECK_CUDA_ACCESS
-
     thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc < ValueType > ( 1 );
     ValueType* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
-
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( 1, dimBlock.x );
-
     //TODO: find better CUDA / Thrust implementation
     getValueKernel <<< dimGrid, dimBlock>>>( i, j, numRows, dlg, ilg, perm, ja, values, resultRawPtr );
-
     thrust::host_vector<ValueType> resultHost( resultPtr, resultPtr + 1 );
-
     return resultHost[0];
 }
 
@@ -307,15 +293,11 @@ void CUDAJDSUtils::scaleValue(
     const OtherValueType values[] )
 {
     SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
-
     SCAI_CHECK_CUDA_ACCESS
-
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
     scaleValueKernel <<< dimGrid, dimBlock>>>( numRows, perm, ilg, dlg, mValues, values );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleValueKernel FAILED" )
 }
 
@@ -344,14 +326,12 @@ void checkDiagonalPropertyKernel(
     if ( iRow >= numColumns )
     {
         // row does not count for diagonal
-
         return;
     }
 
     if ( i >= nonEmptyRows )
     {
         // iRow has no entries at all, ilg[i] is 0
-
         result[0] = false;
     }
     else if ( ja[i] != iRow )
@@ -370,7 +350,6 @@ bool CUDAJDSUtils::checkDiagonalProperty(
 {
     SCAI_LOG_INFO( logger, "checkDiagonalProperty with numDiagonals = " << numDiagonals
                    << ", numRows = " << numRows << " and numColumns = " << numColumns )
-
     SCAI_CHECK_CUDA_ACCESS
 
     if ( numRows <= 0 )
@@ -384,11 +363,8 @@ bool CUDAJDSUtils::checkDiagonalProperty(
     }
 
     // now it is sure that dlg, perm and ja are not empty
-
     const IndexType diagSize = std::min( numRows, numColumns );
-
     IndexType nonEmptyRows = 0;
-
     SCAI_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &dlg[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
                        "get number of non-zero rows from dlg" );
 
@@ -400,31 +376,22 @@ bool CUDAJDSUtils::checkDiagonalProperty(
     }
 
     bool* d_hasProperty; // will be ptr to device version of hasProperty
-
     bool hasProperty = true;
-
     SCAI_CUDA_RT_CALL( cudaMalloc( ( void** ) &d_hasProperty, sizeof( bool ) ),
                        "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
-
     SCAI_CUDA_RT_CALL( cudaMemcpy( d_hasProperty, &hasProperty, sizeof( bool ), cudaMemcpyHostToDevice ),
                        "copy flag for diagonalProperty to device" )
-
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
     checkDiagonalPropertyKernel <<< dimGrid, dimBlock>>>( d_hasProperty,
             numRows, numColumns, nonEmptyRows,
             perm, ja );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:checkDiagonalPropertyKernel FAILED" )
-
     SCAI_CUDA_RT_CALL( cudaMemcpy( &hasProperty, d_hasProperty, sizeof( bool ), cudaMemcpyDeviceToHost ),
                        "copy flag for diagonalProperty to host" )
-
     SCAI_CUDA_RT_CALL( cudaFree( d_hasProperty ),
                        "free result var for diagonal property" )
-
     return hasProperty;
 }
 
@@ -445,7 +412,6 @@ void ilg2dlgKernel( IndexType* dlg, const IndexType numDiagonals, const IndexTyp
     //             |        |---->       5  5
     //             |------------->             2   2
     // dlg:                           6  5  5  2   2
-
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
@@ -472,9 +438,7 @@ IndexType CUDAJDSUtils::ilg2dlg(
     const IndexType numRows )
 {
     SCAI_REGION( "CUDA.JDS:dlg<-ilg" )
-
     SCAI_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
-
     SCAI_CHECK_CUDA_ACCESS
 
     if ( numDiagonals == 0 )
@@ -483,19 +447,13 @@ IndexType CUDAJDSUtils::ilg2dlg(
     }
 
     // wrap raw pointer ilg to build sum, const_cast required, is safe
-
     thrust::device_ptr<IndexType> ilgPtr( const_cast<IndexType*>( ilg ) );
-
     IndexType sumIlg = thrust::reduce( ilgPtr, ilgPtr + numRows, 0, thrust::plus<IndexType>() );
-
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
     ilg2dlgKernel <<< dimGrid, dimBlock>>>( dlg, numDiagonals, ilg, numRows );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: ilg2dlgKernel FAILED" )
-
     return sumIlg;
 }
 
@@ -506,21 +464,15 @@ IndexType CUDAJDSUtils::ilg2dlg(
 void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexType n )
 {
     SCAI_REGION( "CUDA.JDS:sortRows" )
-
     SCAI_LOG_INFO( logger, "sort " << n << " rows by sizes" )
 
     if ( n > 1 )
     {
-
         SCAI_CHECK_CUDA_ACCESS
-
         thrust::device_ptr<IndexType> array_d( array );
         thrust::device_ptr<IndexType> perm_d( perm );
-    
         // stable sort, descending order, so override default comparison
-
         thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
-
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: synchronize for sortRows FAILED" )
     }
 }
@@ -544,7 +496,6 @@ void csr2jdsKernel(
     const CSRValueType* const csrValues )
 {
     extern __shared__ int dlg[];
-
     const IndexType iJDS = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     // copy DLG array into shared memory for faster access
@@ -565,11 +516,8 @@ void csr2jdsKernel(
     if ( iJDS < nrows )
     {
         const IndexType iCSR = jdsPerm[iJDS]; // row index for CSR data
-
         const IndexType csrOffset = csrIa[iCSR];
-
         IndexType jdsOffset = iJDS;
-
         const IndexType numValuesInRow = jdsILG[iJDS];
 
         for ( IndexType jj = 0; jj < numValuesInRow; ++jj )
@@ -603,19 +551,13 @@ void CUDAJDSUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     // convert CSR data to JDS, ja and values
-
     SCAI_REGION( "CUDA.JDS<-CSR_values" )
-
     SCAI_LOG_INFO( logger, "convert CSR to JDS, #rows = " << numRows )
-
     SCAI_CHECK_CUDA_ACCESS
-
     bool useSharedMem = CUDASettings::useSharedMem();
-
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
     SCAI_LOG_INFO( logger, "Start csr2jds_kernel<" << TypeTraits<JDSValueType>::id()
                    << ", " << TypeTraits<CSRValueType>::id()
                    << ", useSharedMem = " << useSharedMem
@@ -626,9 +568,7 @@ void CUDAJDSUtils::setCSRValues(
         SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>,
                            cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
-
         const int sharedMemSize = ndlg * sizeof( int );
-
         csr2jdsKernel<JDSValueType, CSRValueType, true> <<< dimGrid, dimBlock, sharedMemSize>>>(
             jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
     }
@@ -637,13 +577,11 @@ void CUDAJDSUtils::setCSRValues(
         SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, false>,
                            cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
-
         csr2jdsKernel<JDSValueType, CSRValueType, false> <<< dimGrid, dimBlock, 0>>>(
             jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2jdsKernel failed" );
-
     SCAI_LOG_INFO( logger, "Ready csr2jds_kernel<" << TypeTraits<JDSValueType>::id()
                    << ", " << TypeTraits<CSRValueType>::id() << " )" )
 }
@@ -655,18 +593,14 @@ void CUDAJDSUtils::setCSRValues(
 void CUDAJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
-
     SCAI_CHECK_CUDA_ACCESS
 
     if ( n > 0 )
     {
         thrust::device_ptr<IndexType> inversePermPtr( const_cast<IndexType*>( inversePerm ) );
         thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
-
         thrust::counting_iterator<IndexType> sequence( 0 );
-
         thrust::scatter( sequence, sequence + n, permPtr, inversePermPtr );
-
         SCAI_CHECK_CUDA_ERROR
     }
 }
@@ -693,9 +627,7 @@ void jds2csrKernel(
     if ( i < numRows )
     {
         IndexType ii = jdsInversePerm[i]; // where to find row i in JDS storage
-
         const IndexType numValuesInRow = jdsILG[ii];
-
         IndexType jdsOffset = ii;// run through input JDS data
         IndexType offset = csrIA[i];// run through output data
 
@@ -705,7 +637,6 @@ void jds2csrKernel(
             csrValues[offset + jj] = static_cast<CSRValueType>( jdsValues[jdsOffset] );
             jdsOffset += jdsDLG[jj];
         }
-
     }
 }
 
@@ -722,7 +653,6 @@ void CUDAJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     SCAI_REGION( "CUDA.JDS->CSR_values" )
-
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
 
@@ -732,14 +662,11 @@ void CUDAJDSUtils::getCSRValues(
     }
 
     SCAI_CHECK_CUDA_ACCESS
-
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
     jds2csrKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows, jdsInversePerm, jdsILG, jdsDLG, jdsJA,
                                             jdsValues );
-
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:jds2csrKernel FAILED" )
 }
 
@@ -809,11 +736,8 @@ void jds_jacobi_kernel(
     if ( i < numRows )
     {
         const int perm = jdsPerm[i];
-
         T temp = rhs[perm];
-
         const T aDiag = jdsValues[i];
-
         int pos = i + fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, 0 );
         const int rowEnd = jdsIlg[i];
 
@@ -835,7 +759,6 @@ void jds_jacobi_kernel(
         {
             solution[perm] = omega * ( temp / aDiag ) + ( 1.0 - omega ) * fetchVectorX<T, useTexture>( oldSolution, perm );
         }
-
     }
 }
 
@@ -854,14 +777,10 @@ void CUDAJDSUtils::jacobi(
     const ValueType omega )
 {
     SCAI_REGION( "CUDA.JDS.jacobi" )
-
     cudaStream_t stream = 0;
-
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
-
     SCAI_CHECK_CUDA_ACCESS
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -870,15 +789,10 @@ void CUDAJDSUtils::jacobi(
     }
 
     const bool useTexture = CUDASettings::useTexture();
-
     const bool useSharedMem = CUDASettings::useSharedMem();
-
     const int blockSize = CUDASettings::getBlockSize( numRows );
-
     dim3 dimBlock( blockSize, 1, 1 );
-
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
     SCAI_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
     if ( useTexture )
@@ -968,10 +882,8 @@ void CUDAJDSUtils::jacobi(
         else
         {
             // synchronize by syncToken, delay unbind texture
-
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-
             syncToken->pushRoutine( common::bind( unbindV, oldSolution ) );
 
             if ( !useSharedMem )
@@ -1001,7 +913,6 @@ void jds_jacobi_halo_kernel(
     const T omega )
 {
     extern __shared__ int dlg[];
-
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
@@ -1031,7 +942,6 @@ void jds_jacobi_halo_kernel(
         }
 
         const T aDiag = diagonal[perm];
-
         solutionLocal[perm] -= temp * omega / aDiag;
     }
 }
@@ -1051,10 +961,8 @@ void CUDAJDSUtils::jacobiHalo(
     const ValueType omega )
 {
     SCAI_REGION( "CUDA.JDS.jacobiHalo" )
-
     SCAI_LOG_INFO( logger, "jacobiHalo<" << TypeTraits<ValueType>::id() << ">"
                    << ", #rows = " << numRows << ", omega = " << omega )
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -1063,14 +971,11 @@ void CUDAJDSUtils::jacobiHalo(
     }
 
     SCAI_CHECK_CUDA_ACCESS
-
     const bool useTexture = CUDASettings::useTexture();
     const bool useSharedMem = CUDASettings::useSharedMem();
     const int blockSize = CUDASettings::getBlockSize( numRows );
-
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x ); // TODO:numRows is too much...
-
     SCAI_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
     if ( useTexture )
@@ -1093,7 +998,6 @@ void CUDAJDSUtils::jacobiHalo(
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, false>,
                                cudaFuncCachePreferL1 ),
                                "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, true, false> failed" )
-
             jds_jacobi_halo_kernel<ValueType, true, false> <<< dimGrid, dimBlock, 0>>>(
                 diagonal, jdsValuesHalo, jdsDLGHalo, ndlg_halo, jdsIlgHalo, jdsJAHalo,
                 jdsPermHalo, solutionLocal, oldSolutionHalo, omega );
@@ -1103,14 +1007,11 @@ void CUDAJDSUtils::jacobiHalo(
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, true>,
                                cudaFuncCachePreferL1 ),
                                "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, true, true> failed" )
-
             const int sharedMemSize = ndlg_halo * sizeof( int );
-
             jds_jacobi_halo_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize>>>(
                 diagonal, jdsValuesHalo, jdsDLGHalo, ndlg_halo, jdsIlgHalo, jdsJAHalo,
                 jdsPermHalo, solutionLocal, oldSolutionHalo, omega );
         }
-
     }
     else
     {
@@ -1119,7 +1020,6 @@ void CUDAJDSUtils::jacobiHalo(
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, false>,
                                cudaFuncCachePreferL1 ),
                                "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, false, false> failed" )
-
             jds_jacobi_halo_kernel<ValueType, false, false> <<< dimGrid, dimBlock>>>(
                 diagonal, jdsValuesHalo, jdsDLGHalo, ndlg_halo, jdsIlgHalo, jdsJAHalo,
                 jdsPermHalo, solutionLocal, oldSolutionHalo, omega );
@@ -1129,9 +1029,7 @@ void CUDAJDSUtils::jacobiHalo(
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, true>,
                                cudaFuncCachePreferL1 ),
                                "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, false, true> failed" )
-
             const int sharedMemSize = ndlg_halo * sizeof( int );
-
             jds_jacobi_halo_kernel<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize>>>(
                 diagonal, jdsValuesHalo, jdsDLGHalo, ndlg_halo, jdsIlgHalo, jdsJAHalo,
                 jdsPermHalo, solutionLocal, oldSolutionHalo, omega );
@@ -1188,13 +1086,9 @@ void normal_gemv_kernel(
     if ( ii < numRows )
     {
         IndexType i = jdsPerm[ii]; // row in matrix
-
         ValueType summand = beta * y_d[i];
-
         ValueType value = 0.0;
-
         int pos = ii;// position in jdsJA, jdsValues
-
         int ni = jdsILG[ii];// number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
@@ -1243,13 +1137,9 @@ void normal_gemv_kernel_alpha_one_beta_one(
     if ( ii < numRows )
     {
         IndexType i = jdsPerm[ii]; // row in matrix
-
         ValueType summand = y_d[i];
-
         ValueType value = 0.0;
-
         int pos = ii;// position in jdsJA, jdsValues
-
         int ni = jdsILG[ii];// number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
@@ -1298,11 +1188,8 @@ void normal_gemv_kernel_alpha_one_beta_zero(
     if ( ii < numRows )
     {
         IndexType i = jdsPerm[ii]; // row in matrix
-
         ValueType value = 0.0;
-
         int pos = ii;// position in jdsJA, jdsValues
-
         int ni = jdsILG[ii];// number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
@@ -1371,13 +1258,9 @@ void normal_gemv_kernel_alpha_one(
     if ( ii < numRows )
     {
         IndexType i = jdsPerm[ii]; // row in matrix
-
         ValueType summand = beta * y_d[i];
-
         ValueType value = 0.0;
-
         int pos = ii;// position in jdsJA, jdsValues
-
         int ni = jdsILG[ii];// number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
@@ -1447,13 +1330,9 @@ void normal_gemv_kernel_beta_one(
     if ( ii < numRows )
     {
         IndexType i = jdsPerm[ii]; // row in matrix
-
         ValueType summand = y_d[i];
-
         ValueType value = 0.0;
-
         int pos = ii;// position in jdsJA, jdsValues
-
         int ni = jdsILG[ii];// number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
@@ -1503,11 +1382,8 @@ void normal_gemv_kernel_beta_zero(
     if ( ii < numRows )
     {
         IndexType i = jdsPerm[ii]; // row in matrix
-
         ValueType value = 0.0;
-
         int pos = ii;// position in jdsJA, jdsValues
-
         int ni = jdsILG[ii];// number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
@@ -1538,7 +1414,6 @@ void sparse_gemv_kernel(
     const IndexType ndlg )
 {
     extern __shared__ IndexType dlg[];
-
     const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
@@ -1557,11 +1432,8 @@ void sparse_gemv_kernel(
     if ( ii < numNonZeroRows )
     {
         IndexType i = jdsPerm[ii]; // row in matrix
-
         ValueType value = 0.0;
-
         int pos = ii;// position in jdsJA, jdsValues
-
         int ni = jdsILG[ii];// number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
@@ -1591,7 +1463,6 @@ void sparse_gemv_kernel_alpha_one(
     const IndexType ndlg )
 {
     extern __shared__ IndexType dlg[];
-
     const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
@@ -1610,11 +1481,8 @@ void sparse_gemv_kernel_alpha_one(
     if ( ii < numNonZeroRows )
     {
         IndexType i = jdsPerm[ii]; // row in matrix
-
         ValueType value = 0.0;
-
         int pos = ii;// position in jdsJA, jdsValues
-
         int ni = jdsILG[ii];// number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
@@ -1645,7 +1513,6 @@ void sparse_gevm_kernel(
     const IndexType ndlg )
 {
     extern __shared__ IndexType dlg[];
-
     const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
@@ -1661,21 +1528,17 @@ void sparse_gevm_kernel(
         __syncthreads();
     }
 
-
     if ( k < numColumns )
     {
         if ( ndlg > 0 )
         {
             ValueType value = 0.0;
-
             int nonEmptyRows = jdsDLG[0];
 
             for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
             {
                 IndexType i = jdsPerm[ii]; // row in matrix
-
                 int off = ii;// position in jdsJA, jdsValues
-
                 int ni = jdsILG[ii];// number entries in row
 
                 for ( int jj = 0; jj < ni; ++jj )
@@ -1716,35 +1579,25 @@ void CUDAJDSUtils::normalGEMV(
     if ( ( beta == scai::common::constants::ONE ) && ( result == y ) )
     {
         // result = alpha * A * x + beta * y ->  result += alpha * A * x
-
         sparseGEMV( result, alpha, x, numRows, jdsPerm, jdsILG, ndlg, jdsDLG, jdsJA, jdsValues );
-
         return;
     }
 
     SCAI_REGION( "CUDA.JDS.normalGEMV" )
-
     SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numRows << "] = " << alpha
                    << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
-
     SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
-
     const bool useTexture = CUDASettings::useTexture();
     const bool useSharedMem = CUDASettings::useSharedMem();
     const int blockSize = CUDASettings::getBlockSize( numRows );
-
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0; // default stream if no SyncToken is available
-
     SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -1855,9 +1708,7 @@ void CUDAJDSUtils::normalGEMV(
         if ( !syncToken )
         {
             // synchronize here and unbind texture
-
             SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
-
             vectorUnbindTexture( x );
 
             if ( !useSharedMem )
@@ -1868,10 +1719,8 @@ void CUDAJDSUtils::normalGEMV(
         else
         {
             // synchronize by syncToken, delay unbind texture
-
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-
             syncToken->pushRoutine( common::bind( unbindV, x ) );
 
             if ( !useSharedMem )
@@ -2027,9 +1876,7 @@ void normal_gevm_kernel(
             for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
             {
                 IndexType i = jdsPerm[ii]; // row in matrix
-
                 int off = ii;// position in jdsJA, jdsValues
-
                 int ni = jdsILG[ii];// number entries in row
 
                 for ( int jj = 0; jj < ni; ++jj )
@@ -2088,15 +1935,12 @@ void normal_gevm_kernel_alpha_one_beta_one(
         {
             ValueType value = 0.0;
             ValueType summand = y_d[k];
-
             int nonEmptyRows = jdsDLG[0];
 
             for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
             {
                 IndexType i = jdsPerm[ii]; // row in matrix
-
                 int off = ii;// position in jdsJA, jdsValues
-
                 int ni = jdsILG[ii];// number entries in row
 
                 for ( int jj = 0; jj < ni; ++jj )
@@ -2154,15 +1998,12 @@ void normal_gevm_kernel_alpha_one_beta_zero(
         if ( ndlg > 0 )
         {
             ValueType value = 0.0;
-
             int nonEmptyRows = jdsDLG[0];
 
             for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
             {
                 IndexType i = jdsPerm[ii]; // row in matrix
-
                 int off = ii;// position in jdsJA, jdsValues
-
                 int ni = jdsILG[ii];// number entries in row
 
                 for ( int jj = 0; jj < ni; ++jj )
@@ -2233,9 +2074,7 @@ void normal_gevm_kernel_alpha_one(
             for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
             {
                 IndexType i = jdsPerm[ii]; // row in matrix
-
                 int off = ii;// position in jdsJA, jdsValues
-
                 int ni = jdsILG[ii];// number entries in row
 
                 for ( int jj = 0; jj < ni; ++jj )
@@ -2295,15 +2134,12 @@ void normal_gevm_kernel_beta_one(
         {
             ValueType value = 0.0;
             ValueType summand = y_d[k];
-
             int nonEmptyRows = jdsDLG[0];
 
             for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
             {
                 IndexType i = jdsPerm[ii]; // row in matrix
-
                 int off = ii;// position in jdsJA, jdsValues
-
                 int ni = jdsILG[ii];// number entries in row
 
                 for ( int jj = 0; jj < ni; ++jj )
@@ -2362,15 +2198,12 @@ void normal_gevm_kernel_beta_zero(
         if ( ndlg > 0 )
         {
             ValueType value = 0.0;
-
             int nonEmptyRows = jdsDLG[0];
 
             for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
             {
                 IndexType i = jdsPerm[ii]; // row in matrix
-
                 int off = ii;// position in jdsJA, jdsValues
-
                 int ni = jdsILG[ii];// number entries in row
 
                 for ( int jj = 0; jj < ni; ++jj )
@@ -2420,30 +2253,21 @@ void CUDAJDSUtils::normalGEVM(
     }
 
     */
-
     SCAI_REGION( "CUDA.JDS.normalGEVM" )
-
     SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numColumns << "] = " << alpha
                    << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
-
     SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
-
     const bool useTexture = CUDASettings::useTexture();
     const bool useSharedMem = CUDASettings::useSharedMem();
     const int blockSize = CUDASettings::getBlockSize( numColumns );
-
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0; // default stream if no SyncToken is available
-
     SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -2554,9 +2378,7 @@ void CUDAJDSUtils::normalGEVM(
         if ( !syncToken )
         {
             // synchronize here and unbind texture
-
             SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gevmKernel FAILED" )
-
             vectorUnbindTexture( x );
 
             if ( !useSharedMem )
@@ -2567,10 +2389,8 @@ void CUDAJDSUtils::normalGEVM(
         else
         {
             // synchronize by syncToken, delay unbind texture
-
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-
             syncToken->pushRoutine( common::bind( unbindV, x ) );
 
             if ( !useSharedMem )
@@ -2691,7 +2511,6 @@ void CUDAJDSUtils::sparseGEMV(
     const ValueType jdsValues[] )
 {
     SCAI_REGION( "CUDA.JDS.sparseGEMV" )
-
     SCAI_LOG_INFO( logger, "sparseGEMV<" << TypeTraits<ValueType>::id() << ">"
                    << ", #rows = " << numRows << ", #diags = " << ndlg )
 
@@ -2701,21 +2520,15 @@ void CUDAJDSUtils::sparseGEMV(
     }
 
     IndexType nonEmptyRows = numRows;
-
     SCAI_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &jdsDLG[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
                        "dlg[0] for number of non-empty rows" )
-
     const bool useTexture = CUDASettings::useTexture();
     const bool useSharedMem = CUDASettings::useSharedMem(); // maybe optimize later
     const int blockSize = CUDASettings::getBlockSize( nonEmptyRows );
-
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( nonEmptyRows, dimBlock.x );
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0;// default stream if no SyncToken is available
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -2734,14 +2547,12 @@ void CUDAJDSUtils::sparseGEMV(
         if ( useSharedMem )
         {
             const int sharedMemSize = ndlg * sizeof( int );
-
             sparse_gemv_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
         else // no sharedMem
         {
             vectorBindTexture( jdsDLG );
-
             sparse_gemv_kernel<ValueType, true, false> <<< dimGrid, dimBlock, 0, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
@@ -2751,7 +2562,6 @@ void CUDAJDSUtils::sparseGEMV(
         if ( !syncToken )
         {
             // synchronize now, then unbind texture
-
             SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
 
             if ( !useSharedMem )
@@ -2764,7 +2574,6 @@ void CUDAJDSUtils::sparseGEMV(
         else
         {
             // synchronize by syncToken, delay unbind texture
-
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
@@ -2781,16 +2590,13 @@ void CUDAJDSUtils::sparseGEMV(
         if ( useSharedMem )
         {
             const int sharedMemSize = ndlg * sizeof( int );
-
             cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false, true>, cudaFuncCachePreferL1 );
-
             sparse_gemv_kernel<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
         else // no use of sharedMem
         {
             cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false, false>, cudaFuncCachePreferL1 );
-
             sparse_gemv_kernel<ValueType, false, false> <<< dimGrid, dimBlock, 0, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
@@ -2818,7 +2624,6 @@ void CUDAJDSUtils::sparseGEVM(
     const ValueType jdsValues[] )
 {
     SCAI_REGION( "CUDA.JDS.sparseGEVM" )
-
     SCAI_LOG_INFO( logger, "sparseGEVM<" << TypeTraits<ValueType>::id() << ">"
                    << ", #rows = " << numRows << ", #diags = " << ndlg )
 
@@ -2828,21 +2633,15 @@ void CUDAJDSUtils::sparseGEVM(
     }
 
     IndexType nonEmptyRows = numRows;
-
     SCAI_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &jdsDLG[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
                        "dlg[0] for number of non-empty rows" )
-
     const bool useTexture = CUDASettings::useTexture();
     const bool useSharedMem = CUDASettings::useSharedMem(); // maybe optimize later
     const int blockSize = CUDASettings::getBlockSize( nonEmptyRows );
-
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( nonEmptyRows, dimBlock.x );
-
     SCAI_CHECK_CUDA_ACCESS
-
     cudaStream_t stream = 0;// default stream if no SyncToken is available
-
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -2861,14 +2660,12 @@ void CUDAJDSUtils::sparseGEVM(
         if ( useSharedMem )
         {
             const int sharedMemSize = ndlg * sizeof( int );
-
             sparse_gevm_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
         else // no sharedMem
         {
             vectorBindTexture( jdsDLG );
-
             sparse_gevm_kernel<ValueType, true, false> <<< dimGrid, dimBlock, 0, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
@@ -2878,7 +2675,6 @@ void CUDAJDSUtils::sparseGEVM(
         if ( !syncToken )
         {
             // synchronize now, then unbind texture
-
             SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
 
             if ( !useSharedMem )
@@ -2891,7 +2687,6 @@ void CUDAJDSUtils::sparseGEVM(
         else
         {
             // synchronize by syncToken, delay unbind texture
-
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
@@ -2908,16 +2703,13 @@ void CUDAJDSUtils::sparseGEVM(
         if ( useSharedMem )
         {
             const int sharedMemSize = ndlg * sizeof( int );
-
             cudaFuncSetCacheConfig( sparse_gevm_kernel<ValueType, false, true>, cudaFuncCachePreferL1 );
-
             sparse_gevm_kernel<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
         else // no use of sharedMem
         {
             cudaFuncSetCacheConfig( sparse_gevm_kernel<ValueType, false, false>, cudaFuncCachePreferL1 );
-
             sparse_gevm_kernel<ValueType, false, false> <<< dimGrid, dimBlock, 0, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
@@ -2934,11 +2726,8 @@ void CUDAJDSUtils::sparseGEVM(
 void CUDAJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
-
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
@@ -2949,12 +2738,9 @@ template<typename ValueType>
 void CUDAJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << "]" )
-
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
@@ -2966,12 +2752,9 @@ template<typename ValueType, typename OtherValueType>
 void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-
     const common::context::ContextType ctx = common::context::CUDA;
-
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
-        << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-
+                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
@@ -2985,7 +2768,6 @@ void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregist
 CUDAJDSUtils::CUDAJDSUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_CUDA_LIST, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
@@ -2994,7 +2776,6 @@ CUDAJDSUtils::CUDAJDSUtils()
 CUDAJDSUtils::~CUDAJDSUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_CUDA_LIST, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );

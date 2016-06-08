@@ -34,7 +34,7 @@
 
 #include <cstdlib>
 
-__declspec( target(mic, host) )
+__declspec( target( mic, host ) )
 void compute( size_t NSIZE )
 {
     double* a = new double[ NSIZE * NSIZE ];

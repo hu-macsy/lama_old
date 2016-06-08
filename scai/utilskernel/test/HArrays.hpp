@@ -38,24 +38,22 @@
 
 typedef scai::common::shared_ptr<scai::hmemo::_HArray> ArrayPtr;
 
-/** Class for a list of matrix storage pointers, one for each supported 
+/** Class for a list of matrix storage pointers, one for each supported
  *  matrix storage format and each supported arithmetic type.
  */
 
-class HArrays : public std::vector<ArrayPtr> 
+class HArrays : public std::vector<ArrayPtr>
 {
 
 public:
 
     /** Constructor creates already the list with all storage pointers. */
 
-    HArrays( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() ) 
+    HArrays( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::common;
         using namespace scai::hmemo;
-
         std::vector<scalar::ScalarType> values;  //  all create values
-
         _HArray::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )

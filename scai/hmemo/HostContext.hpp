@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definition of context class that stands for execution on the host, 
+ * @brief Definition of context class that stands for execution on the host,
  *        i.e. convenctional CPU or multiple CPUs.
  * @author Thomas Brandes
  * @date 10.07.2011
@@ -63,9 +63,9 @@ namespace hmemo
  *  The default host context allocates/frees data in the usual way.
  */
 
-class COMMON_DLL_IMPORTEXPORT HostContext: 
+class COMMON_DLL_IMPORTEXPORT HostContext:
 
-    public Context, 
+    public Context,
     private Context::Register<HostContext>,
     public common::enable_shared_from_this<HostContext>
 {
@@ -101,7 +101,7 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-inline common::context::ContextType HostContext::createValue() 
+inline common::context::ContextType HostContext::createValue()
 {
     return common::context::Host;
 }

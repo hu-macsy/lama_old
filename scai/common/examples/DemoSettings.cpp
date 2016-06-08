@@ -46,23 +46,17 @@ using namespace std;
 int main( int argc, char const* argv[] )
 {
     // print all SCAI values
-
     cout << "SCAI variables of environment:" << endl;
     cout << "==============================" << endl;
     Settings::printEnvironment();
     cout << endl;
-
     Settings::parseArgs( argc, argv );
-
     cout << "SCAI variables of environment (after parsing command line args):" << endl;
     cout << "================================================================" << endl;
     Settings::printEnvironment();
     cout << endl;
-
     // take the 4-th argument for comma separated value lists
-
     Settings::setRank( 3 );
-
     bool useMKL;
 
     if ( Settings::getEnvironment( useMKL, "SCAI_USE_MKL" ) )

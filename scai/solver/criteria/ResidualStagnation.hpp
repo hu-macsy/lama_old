@@ -91,7 +91,7 @@ public:
      *
      * @param[in] other   ResidualStagnation object to be copied.
      */
-    ResidualStagnation( const ResidualStagnation &other );
+    ResidualStagnation( const ResidualStagnation& other );
 
     /** Destructor. */
 

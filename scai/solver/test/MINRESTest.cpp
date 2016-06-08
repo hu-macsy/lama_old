@@ -55,24 +55,18 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MINRESTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     LoggerPtr slogger( new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-
     MINRES MINRESSolver( "MINRESSolver", slogger );
     BOOST_CHECK_EQUAL( MINRESSolver.getId(), "MINRESSolver" );
-
     MINRES MINRESSolver2( "MINRESSolver2" );
     BOOST_CHECK_EQUAL( MINRESSolver2.getId(), "MINRESSolver2" );
-
     MINRES MINRESSolver3( MINRESSolver2 );
     BOOST_CHECK_EQUAL( MINRESSolver3.getId(), "MINRESSolver2" );
     BOOST_CHECK( MINRESSolver3.getPreconditioner() == 0 );
-
     MINRES MINRESSolver4( "MINRESSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     MINRESSolver4.setPreconditioner( preconditioner );
-
     CriterionPtr criterion( new IterationCount( 10 ) );
     MINRESSolver4.setStoppingCriterion( criterion );
-
     MINRES MINRESSolver5( MINRESSolver4 );
     BOOST_CHECK_EQUAL( MINRESSolver5.getId(), MINRESSolver4.getId() );
     BOOST_CHECK_EQUAL( MINRESSolver5.getPreconditioner()->getId(), MINRESSolver4.getPreconditioner()->getId() );

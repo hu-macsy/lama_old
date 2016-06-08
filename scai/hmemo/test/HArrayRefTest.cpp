@@ -70,44 +70,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 {
     ContextPtr mock = Context::create( context::UserContext, 0 );
     ContextPtr host = Context::create( context::Host, -1 );
-
     BOOST_CHECK( mock );
     BOOST_CHECK( host );
-
     const IndexType N = 10;
-
     ValueType myData[ N ] = { 1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
-
     const ValueType* myConstData = myData;
-
     SCAI_LOG_INFO( logger, "myData = " << myData )
-
     {
         // hArray keeps myData on Host
-
         HArrayRef<ValueType> hArray( N, myData );
-
         SCAI_LOG_INFO( logger, "hArray = " << hArray )
-
         {
             // modify the data @ mock
-
             WriteAccess<ValueType> write( hArray, mock );
             update( write.get(), N );
         }
-
         {
             WriteAccess<ValueType> write( hArray, mock );
         }
-
         SCAI_LOG_INFO( logger, "modified at userContext: hArray = " << hArray )
-
         {
             // get valid data back @ host
-
             ReadAccess<ValueType> read( hArray, host );
         }
-
         {
             WriteAccess<ValueType> write( hArray, host );
             BOOST_CHECK_THROW(
@@ -124,14 +109,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 
         {
             // this will create a LAMA array with a const reference,
-
             HArrayRef<ValueType> hArray( N, myConstData );
-
             BOOST_CHECK_EQUAL( hArray.size(), static_cast<IndexType>( N ) );
             // Write access should not be allowed
             BOOST_CHECK_THROW(
             {
-                WriteAccess<ValueType> hArrayWAccess( hArray, host);
+                WriteAccess<ValueType> hArrayWAccess( hArray, host );
             }
             , Exception );
         }
