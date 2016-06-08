@@ -11,7 +11,7 @@ First we need to include the headers for the types and operations we are going t
 use later. **lama.hpp** needs to be included. Always make sure it is included
 first.
 
-.. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
    :lines: 3-18
 
@@ -19,7 +19,7 @@ Next we are reading the input matrix from the file provided via a command line
 argument. The CSRSparseMatrix provides a constructor to read from a matrix
 market file for this.
 
-.. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
    :lines: 20-29
 
@@ -29,7 +29,7 @@ calculating a right hand side from the exact solution. LAMA uses operator
 overloading and proxy objects to support and easy to use and simple interface
 to BLAS functionality, that we are using to calculate the vector **rhs**.
 
-.. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
    :lines: 30-45
 
@@ -52,30 +52,30 @@ ResidualThreshold takes three arguments:
 After we have created the ResidualThreshold object we need to pass it to our
 solver object cgSolver.
 
-.. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
    :lines: 47-52
 
 Finally we need to initialize our solver with the system matrix and solve the
 system.
 
-.. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
    :lines: 54-57
 
 Because we know the exact solution we can calculate the error and the L2-Norm of
 the error.
 
-.. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
    :lines: 59-67
 
 Task 0 and an example input matrix can be found in
 **<project-root>/examples/lecture**.
 
-:download:`Download source file Task 0 <../../../solver/examples/lecture/task0.cpp>`
+:download:`Download source file Task 0 <../../../../solver/examples/lecture/task0.cpp>`
 
-:download:`Download input matrix <../../../solver/examples/lecture/gr_30_30.mtx>`
+:download:`Download input matrix <../../../../solver/examples/lecture/gr_30_30.mtx>`
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"

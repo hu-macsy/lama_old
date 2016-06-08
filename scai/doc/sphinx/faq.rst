@@ -13,7 +13,7 @@ LAMA targets systems that range from desktops and small compute clusters to supe
 
 Thus, special attention is paid to the parallel scalability and the serial performance of LAMA, facilitating an efficient execution on all of these systems. Currently LAMA supports the applications programming interface OpenMP to exploit Multicore Processors, CUDA and OpenCL (in progress) to exploit accelerators like GPUs and MPI to handle distributed memory systems.
 
-Your system does not need to support all these features. Please refer to our :ref:`software prerequisites<installation/requirements>` to find out the required and optional packages for the LAMA installation.
+Your system does not need to support all these features. Please refer to our :ref:`software prerequisites<requirements>` to find out the required and optional packages for the LAMA installation.
 
 **What kind of license is LAMA released under?**
 
@@ -21,26 +21,26 @@ For a straightforward and hassle-free integration into commercial software, LAMA
 
 **How can I contribute to the LAMA development?**
 
-`Contact` us and become a LAMA developer on sourceforge, so you get access to our git reprository.
-
-.. _`Contact`: mailto:lama@scai.fraunhofer.de
+You can contact us via lama[at]scai.fraunhofer.de and confirm our contributor agreement. Then you can send us patches or get access to our git.
 
 **Where can I find documentation?**
 
-We provide two kind of documentation: a user documentation and a developer documentation. This user documentation will be build with the library installation with the property BUILD_DOC=ON (default). The developer documentation can be found `here` or you can build it on your own by calling make doxygen_doc in your build directory.
+We provide two kind of documentation: a user documentation and a developer documentation. This user documentation will be build with the library installation with the property BUILD_DOC=ON (default). The System Documentation can be found |SysDoc| or you can build it on your own by calling make doxygendoc in your build directory.
 
-.. _`here`: www.libama.org/doxygen/
+.. |SysDoc| raw:: html
+
+	<a href="https://test.libama.org/doxygen/index.html" target="_blank"> here </a>
 
 Usage
 -----
 
 **What kind of matrix input/output formats are supported by LAMA?**
 
-LAMA supports four kinds of matrix input/output formats yet: formatted, binary, xdr (SAMG format) and matrix market. For creating a matrix read in from file just give the matrix constructor a string with the path to the file (eg.: matrix.mtx).
+LAMA supports two main kinds of matrix input/output formats yet: matrix market and SAMG format (options: formatted, binary, xdr). For creating a matrix read in from file just give the matrix constructor a string with the path to the file (eg.: matrix.mtx).
 
 **Can I add my own sparse matrix format or solver to LAMA?**
 
-Yes, you can ;-) LAMA can be easily extended with new data structures for sparse matrices if this is needed to achieve optimal performance on special hardware or problems with unique features.
+Yes, you can ;-) LAMA can be easily extended with new data structures for sparse matrices if this is needed to achieve optimal performance on special hardware or problems with unique features. Solvers can be written easyly on your own - mostly you have to implement a new ``iterate`` step in LAMA's text-book-syntax.
 .. An example for creating a new solver is given :ref:`here<scaisolver:solver_writingSolver>`.
 
 Execution

@@ -5,7 +5,7 @@ Solution Task 2
 
 Here is the solution of task 2. The code demonstrate a self-provided CG-Solver. 
 
-.. literalinclude:: ../../../solver/examples/lecture/task2.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task2.cpp 
    :language: c++
    :emphasize-lines: 54,57,70
 
@@ -13,22 +13,22 @@ Here is the solution of task 2. The code demonstrate a self-provided CG-Solver.
 (2) Creation of Vectors, that are needed by your implementation.
 (3) Here is the self-provided algorithm of a CG-Solver.
 
-:download:`Download complete solution Task 2 <../../../solver/examples/lecture/task2.cpp>`
+:download:`Download complete solution Task 2 <../../../../solver/examples/lecture/task2.cpp>`
 
 An alternative solution for task 2 is the CG-class of LAMA, which contains the same calculation.
 
-.. literalinclude:: ../../../solver/examples/lecture/task2a.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task2a.cpp 
    :language: c++
    :lines: 44-50
    
-:download:`Download complete alternative solution Task 2 <../../../solver/examples/lecture/task2a.cpp>`
+:download:`Download complete alternative solution Task 2 <../../../../solver/examples/lecture/task2a.cpp>`
 
 **Excursion:**
 
 To see results, it is possible to print out the values of vectors. By the way, an explicit function to print out results does not exist.
 But it is possible to use a HostReadAccess to get reading access to the values.
 
-.. literalinclude:: ../../../solver/examples/lecture/task2a.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task2a.cpp 
    :language: c++
    :lines: 51-61
 

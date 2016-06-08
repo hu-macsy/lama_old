@@ -1,3 +1,5 @@
+.. _requirements:
+
 Software Prerequisites
 ----------------------
 
@@ -86,6 +88,8 @@ For optional features you may also install the following:
     to be present on the system.
 
 .. _Doxygen: http://www.doxygen.org
+
+.. _supported:
 
 Configurations
 ^^^^^^^^^^^^^^

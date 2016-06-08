@@ -1,4 +1,4 @@
- *** README: LAMA User Guide ***
+*** README: LAMA User Guide ***
 
 Installation:
 	Requirements:
@@ -9,8 +9,7 @@ Installation:
 
 Introduction:
 	"index.rst"  contains the document structure
-	"introduction.rst" or "tutorial/tutorial.rst" contain the real 
-		documentation content
+	"installation.rst" or "tutorial/environmentVariables.rst" contain the real documentation content
 
 Build (local):
 	# make html 
