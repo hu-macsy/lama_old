@@ -36,7 +36,7 @@ import os.path
 
 ##  File with current LAMA license to set in each file
 
-LICENSE_FILE = "/home/brandes/LAMA_License.txt"
+LICENSE_FILE = "LAMA_License.txt"
 
 ##  Files with one of these suffixes will never get a license header
 
@@ -461,7 +461,7 @@ def run_file( filename ):
         print 'INFO: skip file ', filename
     elif ( forceHeaderFile( filename ) or "@license" in fileinfo ):
         print 'OKAY: set new license header', filename
-        # newHeaderFile( filename, fileinfo)
+        newHeaderFile( filename, fileinfo)
     else:
         print 'INFO: skip file without @license', filename
 
