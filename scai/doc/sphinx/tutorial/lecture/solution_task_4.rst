@@ -5,7 +5,7 @@ Solution Task 4
 
 Here is the solution of task 4. The code demonstrate a CG-Solver running with MPI. 
 
-.. literalinclude:: ../../../solver/examples/lecture/task4.cpp 
+.. literalinclude:: ../../../../solver/examples/lecture/task4.cpp 
    :language: c++
    :emphasize-lines: 35,36,37,49
 
@@ -20,7 +20,7 @@ To execute task4 in parallel use mpirun
 
    mpirun -np <num-procs> ./task4 <input-file>
 
-:download:`Download complete solution Task 4 <../../../solver/examples/lecture/task4.cpp>`
+:download:`Download complete solution Task 4 <../../../../solver/examples/lecture/task4.cpp>`
 
 **Excursion 2:**
 

@@ -1,12 +1,7 @@
 Tutorial
 ========
 
-First some simple use cases 
-becoming more and more complex
-
-Links to detailed user guide
-
-Contents:
+First some simple use cases becoming more and more complex.
 
 .. toctree::
    :titlesonly:
@@ -16,3 +11,4 @@ Contents:
    tutorial/firstCompile
    tutorial/example_vector
    tutorial/example_matrix
+   tutorial/lecture

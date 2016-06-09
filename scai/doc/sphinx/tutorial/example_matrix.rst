@@ -8,6 +8,7 @@ In this example we simply multiply a sparse matrix in CSR format and a dense vec
 Our multiplication looks like this:   
 
 .. math::
+
   \left(\begin{matrix} r_0 \\
     r_1 \\
     r_2 \\
@@ -34,6 +35,7 @@ Our multiplication looks like this:
 The result is:
 
 .. math::
+
   \left(\begin{matrix} r_0 \\
     r_1 \\
     r_2 \\
