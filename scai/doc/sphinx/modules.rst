@@ -1,5 +1,8 @@
 .. _modules:
 
+Modules
+=======
+
 .. toctree::
 	:hidden:
    
@@ -8,12 +11,9 @@
 	modules/de
 	modules/lap
 
-Modules
-=======
-
 LAMA is a multi-layer framework ­offering four main modules: The Heterogeneous Computing Development Kit provides the management of heterogeneous memory and compute kernels. Asynchronous executing is a key capability. The Math Kernel Extension gives uniform access to dense and sparse compute kernel´s on all platforms while the Distributed Extension supplies full cluster support for scalability on data ­parallel applications. The Linear Algebra Package enables programming using ­mathematical notation and prepared iterative solvers. The whole framework - as well as each module - is build up of a couple of subproject, depending on each other.
 
-.. figure:: _images/LAMA_Hierarchy2.png
+.. figure:: _images/LAMA_Hierarchy4.png
     :width: 500px
     :align: center
     :alt: LAMA software stack
