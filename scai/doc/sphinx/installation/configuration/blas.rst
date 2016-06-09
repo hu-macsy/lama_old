@@ -1,3 +1,5 @@
+.. _BLAS:
+
 BLAS and LAPACK
 ^^^^^^^^^^^^^^^
 

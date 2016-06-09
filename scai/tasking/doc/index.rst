@@ -43,7 +43,6 @@ MPISyncToken                 Asynchronous execution of a MPI communication.
 GPISyncToken                 Asynchronous execution of a GPI communication.
 ===========================  =========================================================
 
-
 The design of this library is done in such a way that other libraries can define 
 their own derived classes for asynchronous executions. So the classes MPISyncToken
 and GPISyncToken are not part of this library but part of the library dmemo.
@@ -59,11 +58,11 @@ Class                        Description
 :ref:`CUDAStreamPool`        Management of streams on a CUDA device
 ===========================  =========================================================
 
-
 .. toctree::
    :hidden:
 
    SyncToken
+   NoSyncToken
    TaskSyncToken
    CUDAStreamSyncToken
    MICSyncToken

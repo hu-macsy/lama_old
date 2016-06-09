@@ -1,3 +1,5 @@
+.. _MIC:
+
 Using Intel MIC in LAMA
 ^^^^^^^^^^^^^^^^^^^^^^^
 

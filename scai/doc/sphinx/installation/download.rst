@@ -14,8 +14,8 @@ Registration Process
 
 On the portal web page, please register by filling in all mandatory (*) informations and accept our terms of condition.
 
-.. figure:: _images/registration.png
-    :width: 500px
+.. figure:: ../_images/registration.png
+    :width: 350px
     :align: center
     :alt: Registration on LAMA Portal
 
@@ -26,15 +26,14 @@ After confirmation you can login and download a choosen tar ball. Our recent rel
 
 Just login with your email and passwort (choosen at registration).
 
-.. figure:: _images/login.png
-    :width: 500px
+.. figure:: ../_images/login.png
+    :width: 350px
     :align: center
     :alt: Login on LAMA Portal
 
 For the download select a tar ball (libama-2.0.0.tar.gz is the recent one) and the start the download:
 
-.. figure:: _images/download.png
-    :width: 500px
+.. figure:: ../_images/download.png
+    :width: 750px
     :align: center
     :alt: Download on LAMA Portal
-    

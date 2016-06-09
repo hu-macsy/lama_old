@@ -6,7 +6,9 @@ Software Prerequisites
 For the installation of LAMA you will need some general software packages. In the following sections we list the
 :ref:`required <required>`, :ref:`recommended <recommended>` and :ref:`optional <optional>` software for building LAMA.
 
-For installing dependencies please refer to the precise project pages. On linux it is the prefered way to install via the package manager of your system. But also custom build should be no problem. On Windows you need to download the package from the precise page and install it on your machine. You get precise help to explicitly tell LAMA the installation path of the individual packages in seperate chapters if they are not found implicitly.
+For installing dependencies please refer to the precise project pages. On linux it is the prefered way to install via the package manager of your system. But also custom build should be no problem. You get precise help to explicitly tell LAMA the installation path of the individual packages in seperate chapters if they are not found implicitly.
+
+.. On Windows you need to download the package from the precise page and install it on your machine.
 
 At the end of the page, our experience with different :ref:`configurations <supported>` regarding various versions of packages is summarized.
 
@@ -25,33 +27,42 @@ All you need for the LAMA installation are the following software packages:
 
   - Supported Compilers are: GNU, Intel, Clang.
 
-  - optionally: with OpenMP 2.0 capable
+  - Optionally: with OpenMP 2.0 capable
 
-  - recommended but not mandatory: capable of C++11 (e.g. since gcc 4.7 or icc 11.1)
+  - Recommended but not mandatory: capable of C++11 (e.g. since gcc 4.7, icc 11.1, clang 2.9)
 
 - :ref:`Boost <scaicommon:Boost>` (version 1.34 or later)
 
-  - required if C++11 is not supported by the compiler
-  - required if unit tests for the projects should be generated
+  - Required for the core if C++11 is not supported by the compiler
+
+  - Optional for building the unit tests of the projects
 
 - :ref:`PThread <scaicommon:PThread>` (version 1.34 or later)
+  
+  - Required for internal thread handling
 
-  - required if C++11 features are not supported by the C++ compiler
+..  - required if C++11 features are not supported by the C++ compiler
+
+.. toctree::
+   :hidden:
+
+   configuration/cmake
+   configuration/c++
 
 .. _recommended:
 
 Recommended Software
 ^^^^^^^^^^^^^^^^^^^^
 
-The following software packages are not mandatory, but will give you a performance boost through optimized routines from BLAS and accelerator backends (CUDA, MIC) as well as distributed memory support
+The following software packages are not mandatory, but will give you a performance boost through optimized routines from BLAS and accelerator backends (CUDA, MIC) as well as distributed memory support:
 
 - :doc:`BLAS and LAPack <configuration/blas>`
 
   - Needed for the implementation of the dense blas functions. Supported libraries are: Intel MKL, BLAS. 
 
-- :ref:`CUDA (version 4.0 or later) <scaicommon:CUDA>`
+- :ref:`CUDA <scaicommon:CUDA>` (version 4.0 or later)
 
-  - Needed to utilize CUDA capable GPUs from Nvidia.
+  - Needed to utilize CUDA capable GPUs from Nvidia (support for compute capability till cc 1.3).
   
 - :doc:`Intel MIC <configuration/mic>`
 
@@ -64,6 +75,12 @@ The following software packages are not mandatory, but will give you a performan
 - :ref:`GPI-2 <scaidmemo:GPI>`
 
   - Needed for distributed memory parallelism through the Global Address Space Programming Interface.
+
+.. toctree::
+   :hidden:
+
+   configuration/blas
+   MIC <configuration/mic>
 
 .. _optional:
 
@@ -78,16 +95,23 @@ For optional features you may also install the following:
 
 - Sphinx
 
-   `Sphinx`_ is used for this  user documentation. Sphinx offers a wide support of different targets. 
+   |Sphinx| is used for this user documentation.
 
-.. _Sphinx: http://sphinx-doc.org/
+.. |Sphinx| raw:: html
+
+  <a href="http://sphinx-doc.org/" target="_blank">Sphinx</a>
 
 - Doxygen
 
-    For our system documentation we make use of `Doxygen`_. So if API documentation is supposed to be generated Doxygen has
-    to be present on the system.
+    |Doxygen| is used for our system documentation. You can also find it |apidoc|.
+  
+.. |Doxygen| raw:: html
 
-.. _Doxygen: http://www.doxygen.org
+  <a href="http://www.doxygen.org" target="_blank">Doxygen</a>
+
+.. |apidoc| raw:: html
+
+  <a href="https://test.libama.org/doxygen/index.html" target="_blank">here</a>
 
 .. _supported:
 
