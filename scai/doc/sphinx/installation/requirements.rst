@@ -19,11 +19,11 @@ Required Software
 
 All you need for the LAMA installation are the following software packages:
 
-- :doc:`CMake <configuration/cmake>` Version 2.8.8 or later
+- :ref:`cmake` Version 2.8.8 or later
 
   - Needed for creating platform independent makefiles or projects.
 
-- :doc:`C++ Compiler <configuration/c++>`
+- :ref:`Compiler`
 
   - Supported Compilers are: GNU, Intel, Clang.
 
@@ -47,7 +47,7 @@ All you need for the LAMA installation are the following software packages:
    :hidden:
 
    configuration/cmake
-   configuration/c++
+   configuration/compiler
 
 .. _recommended:
 
