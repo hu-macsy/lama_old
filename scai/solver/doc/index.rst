@@ -65,6 +65,15 @@ How to                     Description
 Example
 *******
 
+The following C++ program shows how to use a linear equation solver like the Conjugate Gradient Method.
+The input matrix is read from a file, the rhs vector is set to 1 and the initial solution to 0.
+:ref:`solver-logging` is defined even it it is optional. 
+:ref:`stopping-criteria` is either if a maximal number of iterations is reached or if the L2 norm of the 
+residual is smaller than a given value.
+The solve method requires the two vectors solution and rhs of the
+equation system. Internally the CG calls its iterate method until the defined stopping criterion
+is satisfied.
+
 .. code-block:: c++
 
    #include <scai/lama.hpp>
@@ -77,28 +86,44 @@ Example
    {
       typedef double ValueType;
 
-      IndexType size = 30;
+      const IndexType maxIter = 20;
+      const double eps        = 1e-5;
 
-      DenseVector<ValueType> rhs( size, 1.0 );
-      DenseVector<ValueType> solution( size, 0.0 );
       CSRSparseMatrix<ValueType> csrMatrix( "gr_30_30.mtx" );
 
-      LoggerPtr logger( new CommonLogger ( "myLogger",
+      DenseVector<ValueType> rhs( csrMatrix.getNumRows(), 1.0 );
+      DenseVector<ValueType> solution( csrMatrix.getNumColumns(), 0.0 );
+
+      LoggerPtr logger( new CommonLogger ( "myLogger: ",
                                            LogLevel::convergenceHistory,
                                            LoggerWriteBehaviour::toConsoleOnly ) );
 
-	   CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
-	   CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
-	   CriterionPtr both( new Criterion ( it, rt, Criterion::OR ) );
+      NormPtr norm( new L2Norm() );
 
-	   solver->setLogger( logger );
-	   solver->setStoppingCriterion( rt );
+      CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+      CriterionPtr it( new IterationCount( maxIter ) );
+      CriterionPtr both( new Criterion ( it, rt, Criterion::OR ) );
 
-	   solver->initialize( csrMatrix );
-	   solver->solve( solution, rhs );
+      CG solver( "simpleExampleCG" );
+
+      solver.setLogger( logger );
+      solver.setStoppingCriterion( both );
+
+      solver.initialize( csrMatrix );
+      solver.solve( solution, rhs );
 
       solution.writeToFile( "resultVec.mtx", File::MATRIX_MARKET );
    }
+
+The solver library provides a more complex example program where nearly all parameters
+can be set by command line arguments and/or environment variables. 
+
+See :ref:`solver-example`.
+
+.. toctree::
+   :hidden:
+
+   SolverExample
 
 ************
 Dependencies

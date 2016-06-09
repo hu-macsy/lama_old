@@ -46,6 +46,7 @@
 #include <scai/common/Settings.hpp>
 
 #include <cstring>
+#include <sstream>
 #include <vector>
 #include <locale>
 
@@ -54,20 +55,24 @@
  *  - Communicator for distributions
  *  - Context ( Host, GPU ) for matrices, vectors
  *  - Sparse matrix format ( csr, ell, jds, dia, coo ) + creator for it
- *  - Value type ( sp or float, dp or double )
+ *  - Value type ( float, double, ... )
  *  - number of threads used for CPU computing
  *  - block size: number of threads / block used for GPU computing
  *
  *  Very important: DO NOT USE THIS CLASS for a GLOBAL variable
- *
  *  ( so its constructor might be called before LAMA factories are available )
+ *
+ *  Very important: Call constructor after command line arguments have been parsed
+ *  ( otherwise only envrionment variables will take effect )
  *
  *  \code
  *      LamaConfig lamaconf;    // WRONG: constructur might fail
  *
- *      int main ()
- *      {
- *          LamaConfig lamaconf();   // RIGHT: lama has registered
+ *      int main( int argc, const char* argv[] )
+ *      { 
+ *           common::Settings::parseArgs( argc, argv );
+ *           LamaConfig lamaconf;                        // must be defined after parseArgs
+ *           ....
  *      }
  *  \endcode
  */
@@ -157,6 +162,21 @@ public:
 
     float getWeight() const;
 
+    double getAbsoluteTolerance() const
+    {
+        return mAbsoluteTolerance;
+    }
+
+    double getRelativeTolerance() const
+    {
+        return mRelativeTolerance;
+    }
+
+    double getDivergenceTolerance() const
+    {
+        return mDivergenceTolerance;
+    }
+
     static inline void printHelp( const char* progName );
 
 private:
@@ -173,14 +193,63 @@ private:
 
     scai::dmemo::CommunicatorPtr      mComm;
 
-    mutable IndexType mMaxIter;
+    IndexType mMaxIter;
 
     scai::solver::LogLevel::LogLevel   mLogLevel;
 
-    bool                       mUseMetis;
+    bool mUseMetis;
 
     float mWeight;
+
+    double mRelativeTolerance;
+    double mAbsoluteTolerance;
+    double mDivergenceTolerance;
 };
+
+/* ---------------------------------------------------------------------------- */
+
+#define CONFIG_ERROR( msg )                                    \
+{                                                              \
+    std::ostringstream errorStr;                               \
+    errorStr << msg;                                           \
+    std::cout << "ERROR: " << errorStr.str()  <<  std::endl;   \
+    LamaConfig::printHelp( "<solver>" );                       \
+    exit( 1 );                                                 \
+}
+
+/* ---------------------------------------------------------------------------- */
+
+/** This help routine reads a non-negative double value form an environment variable */
+
+static void getTolerance( double& tolerance, const char* name )
+{
+    tolerance = 0.0;  // as default
+
+    std::string stringVal;
+
+    if ( scai::common::Settings::getEnvironment( stringVal, name ) )
+    {
+        std::istringstream input( stringVal );
+
+        double tol;
+
+        if ( input >> tol )
+        {
+            if ( tol >= 0.0 )
+            {
+                tolerance = tol;
+            }
+            else
+            {
+                CONFIG_ERROR( name << "="  << stringVal << " illegal, mus be positive" )
+            }
+        }
+        else
+        {
+            CONFIG_ERROR( name << stringVal << " illegal, no double value" )
+        }
+    }
+}
 
 /* ---------------------------------------------------------------------------- */
 
@@ -188,16 +257,19 @@ LamaConfig::LamaConfig()
 {
     using scai::common::Settings;
 
-    mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
     mComm              = scai::dmemo::Communicator::getCommunicatorPtr();
-    mMaxIter           = nIndex;
-    mValueType         = scai::common::scalar::UNKNOWN;
-    mUseMetis          = false;
-    mWeight            = -1.0f;    // stands for undefined
 
+    // allow settings specified for each process
+    // Be careful: can cause problems, e.g. MAX_ITER, xxx_TOL 
+
+    scai::common::Settings::setRank( mComm->getRank() );
+
+    mValueType         = scai::common::scalar::UNKNOWN;
     mContext           = scai::hmemo::Context::getContextPtr( );
 
     bool isSet;
+
+    mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
 
     if ( Settings::getEnvironment( isSet, "SCAI_ASYNCHRONOUS" ) )
     {
@@ -206,6 +278,8 @@ LamaConfig::LamaConfig()
             mCommunicationKind = scai::lama::Matrix::ASYNCHRONOUS;
         }
     }
+
+    mUseMetis = false;  // default
 
     if ( Settings::getEnvironment( isSet, "SCAI_USE_METIS" ) )
     {
@@ -226,6 +300,7 @@ LamaConfig::LamaConfig()
     if ( scai::common::Settings::getEnvironment( val, "SCAI_WEIGHT" ) )
     {
         float weight;
+
         int narg = sscanf( val.c_str(), "%f", &weight );
 
         if ( narg > 0 && weight >= 0.0f )
@@ -234,9 +309,19 @@ LamaConfig::LamaConfig()
         }
         else
         {
-            std::cout << "SCAI_WEIGHT=" << val << " illegal" <<  std::endl;
+            CONFIG_ERROR( "SCAI_WEIGHT=" << val << " illegal" )
         }
     }
+
+    getTolerance( mRelativeTolerance, "SCAI_REL_TOL" );
+    getTolerance( mAbsoluteTolerance, "SCAI_ABS_TOL" );
+    getTolerance( mDivergenceTolerance, "SCAI_DIV_TOL" );
+
+    mMaxIter = nIndex;
+
+    scai::common::Settings::getEnvironment( mMaxIter, "SCAI_MAX_ITER" );
+
+    // ValueType to be used for vector/matrix
 
     mValueType = scai::common::TypeTraits<RealType>::stype;
 
@@ -244,10 +329,9 @@ LamaConfig::LamaConfig()
     {
         scai::common::scalar::ScalarType type = scai::common::str2ScalarType( val.c_str() );
 
-
         if ( type == scai::common::scalar::UNKNOWN )
         {
-            std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
+            CONFIG_ERROR( "SCAI_TYPE=" << val << " illegal, is not a scalar type" )
         }
         else if ( scai::lama::Vector::canCreate( scai::lama::VectorCreateKeyType( scai::lama::Vector::DENSE, type ) ) )
         {
@@ -255,7 +339,7 @@ LamaConfig::LamaConfig()
         }
         else
         {
-            std::cout << "SCAI_TYPE=" << val << " known, but not supported for matrix/vector" << std::endl;
+            CONFIG_ERROR( "SCAI_TYPE=" << val << " known, but not supported for matrix/vector" )
         }
     }
 
@@ -288,7 +372,7 @@ LamaConfig::LamaConfig()
 
         if ( !scai::solver::Solver::canCreate( val ) )
         {
-            std::cout << "ATTENTION: solver " << val << " not available" << std::endl;
+            CONFIG_ERROR( "solver " << val << " not available" )
         }
         else
         {
@@ -306,7 +390,7 @@ LamaConfig::LamaConfig()
 
         if ( level == scai::solver::LogLevel::UNKNOWN )
         {
-            std::cout << "SCAI_SOLVER_LOG: " << val << " is not a logging level" << std::endl;
+            CONFIG_ERROR( "SCAI_SOLVER_LOG: " << val << " is not a logging level" )
         }
         else
         {
@@ -358,6 +442,25 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     {
         stream << "Max iter          = " << mMaxIter << std::endl;
     }
+
+    stream << "Tolerances        =";
+
+    if ( mRelativeTolerance > 0.0 )
+    {
+        stream << " " << mRelativeTolerance << "(relative)";
+    }
+
+    if ( mAbsoluteTolerance > 0.0 )
+    {
+        stream << " " << mAbsoluteTolerance << "(absolute)";
+    }
+
+    if ( mDivergenceTolerance > 0.0 )
+    {
+        stream << " " << mDivergenceTolerance << "(divergence)";
+    }
+
+    stream << std::endl;
 }
 
 scai::lama::Matrix::MatrixStorageFormat LamaConfig::getFormat( ) const
@@ -387,18 +490,6 @@ float LamaConfig::getWeight() const
 
 IndexType LamaConfig::getMaxIter() const
 {
-    if ( mMaxIter == nIndex )
-    {
-        // not defined yet
-
-        IndexType iter;
-
-        if ( scai::common::Settings::getEnvironment( iter, "SCAI_MAX_ITER" ) )
-        {
-            mMaxIter = iter;
-        }
-    }
-
     return mMaxIter;
 }
 
@@ -417,6 +508,9 @@ void LamaConfig::printHelp( const char* progName )
     cout << "         --SCAI_SOLVER=[CG|BiCG|...]" << endl;
     cout << "         --SCAI_SOLVER_LOG=[noLogging|convergenceHistory|solverInformation|advancedInformation|completeInformation]" << endl;
     cout << "         --SCAI_MAX_ITER=<int_val>" << endl;
+    cout << "         --SCAI_REL_TOL=<val>" << endl;
+    cout << "         --SCAI_ABS_TOL=<val>" << endl;
+    cout << "         --SCAI_DIV_TOL=<val>" << endl;
     cout << "         --SCAI_FORMAT=[CSR|ELL|JDS|DIA|COO]" << endl;
     cout << "         --SCAI_TYPE=[float|double|LongDouble|ComplexFloat|ComplexDouble|ComplexLongDouble]" << endl;
     cout << "         --SCAI_NUM_THREADS=..." << endl;

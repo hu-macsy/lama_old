@@ -42,7 +42,7 @@
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/solver/GMRES.hpp>
-#include <scai/solver/TrivialPreconditioner.hpp>
+#include <scai/solver/SimpleAMG.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
@@ -57,6 +57,22 @@ using namespace solver;
 
 typedef RealType ValueType;
 
+/** Help routine to combine criterions. */
+
+static void orCriterion( CriterionPtr& crit, const CriterionPtr& add )
+{
+    if ( crit )
+    { 
+        // combine current one with the new one by an OR
+
+        crit.reset( new Criterion ( crit, add, Criterion::OR ) );
+    }
+    else
+    { 
+        crit = add;
+    }
+}
+
 /**
  *  Main program
  *
@@ -70,48 +86,50 @@ int main( int argc, const char* argv[] )
 
     LamaConfig lamaconf;   // must be defined after parseArgs
 
-    // Get (default) communicator, will be MPI if available
-
     const Communicator& comm = lamaconf.getCommunicator();
+
     int myRank   = comm.getRank();
     int numProcs = comm.getSize();
-    const char* filename;
 
     // only one argument for the filename should remain
 
-    if ( argc != 2 )
+    if ( argc < 1 || argc > 3 )
     {
         if ( myRank == 0 )
         {
-            LamaConfig::printHelp( argv[0] );
+            CONFIG_ERROR( "Illegal number of arguments" )
         }
 
         exit( 1 );
     }
 
-    filename = argv[1];
+    const char* matrix_filename = argv[1];
+    const char* vector_filename = argc <= 2 ? argv[1] : argv[2];
 
     // use auto pointer so that matrix will be deleted at program exit
+
     scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
     scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
+
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
+
     CSRSparseMatrix<ValueType> inMatrix;
     // Each processor should print its configuration
     cout << lamaconf << endl;
     {
         LamaTiming timer( comm, "Loading data" );
         // read matrix + rhs from disk
-        inMatrix.readFromFile( filename );
-        std::cout << "Matrix from file " << filename << " : " << inMatrix << std::endl;
+        inMatrix.readFromFile( matrix_filename );
+        std::cout << "Matrix from file " << matrix_filename << " : " << inMatrix << std::endl;
 
         try
         {
-            rhs.readFromFile( filename );
+            rhs.readFromFile( vector_filename );
         }
         catch ( const std::exception& )
         {
-            std::cout << "reading vector from file " << filename << " failed, take sum( Matrix, 2 ) " << std::endl;
+            std::cout << "reading vector from file " << vector_filename << " failed, take sum( Matrix, 2 ) " << std::endl;
             {
                 scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
@@ -194,21 +212,84 @@ int main( int argc, const char* argv[] )
     scai::common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName.str() ) );
     IterativeSolver* itSolver = dynamic_cast<IterativeSolver*>( mySolver.get() );
     SCAI_ASSERT( itSolver, "Not an iterative solver: " << *mySolver )
+
     mySolver->setLogger( logger );
-    Scalar eps = 0.001;
-    NormPtr norm = NormPtr( new L2Norm() );
-    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+
+    CriterionPtr crit;
+
+    NormPtr norm( new L2Norm() );
+
+    double eps = lamaconf.getAbsoluteTolerance();
+
+    if ( eps > 0.0 )
+    {
+        crit.reset( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+    }
+
+    eps = lamaconf.getRelativeTolerance();
+
+    if ( eps > 0.0 )
+    {
+        CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Relative ) );
+
+        orCriterion( crit, rt );
+    }
+
+    eps = lamaconf.getDivergenceTolerance();
+
+    if ( eps > 0.0 )
+    {
+        CriterionPtr dt( new ResidualThreshold( norm, eps, ResidualThreshold::Divergence ) );
+
+        orCriterion( crit, dt );
+    }
 
     if ( lamaconf.hasMaxIter() )
     {
         CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
-        // stop if iteration count reached OR residual threshold is reached
-        rt.reset( new Criterion ( it, rt, Criterion::OR ) );
+
+        orCriterion( crit, it );
     }
 
-    itSolver->setStoppingCriterion( rt );
+    if ( !crit )
+    {
+        std::cout << "No criterion set, take default" << std::endl;
+
+        eps = 0.001;
+
+        crit.reset( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+    }
+
+    itSolver->setStoppingCriterion( crit );
+
+    GMRES* gmresSolver = dynamic_cast<GMRES*>( mySolver.get() );
+
+    if ( gmresSolver )
+    {
+        // here is the possibility to set solver specific values
+
+        int dim = 5;
+ 
+        common::Settings::getEnvironment( dim, "SCAI_KRYLOV_DIM" );
+
+        std::cout << "GMRES solver, krylov dim = " << dim << std::endl;
+
+        gmresSolver->setKrylovDim( dim );
+    }
+
+    SimpleAMG* amgSolver = dynamic_cast<SimpleAMG*>( mySolver.get() );
+
+    if ( amgSolver )
+    {
+        amgSolver->setHostOnlyLevel( 4 );
+        amgSolver->setReplicatedLevel( 5 );
+        amgSolver->setMaxLevels( 25 );
+        amgSolver->setMinVarsCoarseLevel( 200 );
+    }
+
     // SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     // mySolver.setPreconditioner( preconditioner );
+
     {
         LamaTiming timer( comm, "Solver setup" );
         mySolver->initialize( matrix );
@@ -225,4 +306,3 @@ int main( int argc, const char* argv[] )
         solution.writeToFile( "CG_solution" );
     }
 }
-
