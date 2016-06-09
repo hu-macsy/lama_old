@@ -1,0 +1,176 @@
+.. _solver-example:
+
+Solver Example
+==============
+
+In the example directory a solver example program can be found.
+
+.. code-block:: bash
+
+    solver.exe [options] <matrix_filename> [ <vector_filename> ]
+
+The name of the file that contains the matrix is a mandatory argument. The name
+of the file that contains the right-hand-side is optional; if not specified the
+right hand side is a vector initialized with one.
+
+These are the supported options:
+
+.. code-block:: bash
+
+         --SCAI_SOLVER=[CG|BiCG|...]
+         --SCAI_SOLVER_LOG=[noLogging|convergenceHistory|solverInformation|advancedInformation|completeInformation]
+         --SCAI_MAX_ITER=<int_val>
+         --SCAI_REL_TOL=<val>
+         --SCAI_ABS_TOL=<val>
+         --SCAI_DIV_TOL=<val>
+         --SCAI_FORMAT=[CSR|ELL|JDS|DIA|COO]
+         --SCAI_TYPE=[float|double|LongDouble|ComplexFloat|ComplexDouble|ComplexLongDouble]
+         --SCAI_NUM_THREADS=...
+         --SCAI_USE_METIS=<flag>
+         --SCAI_ASYNCHRONOUS=<flag>
+         or general options:
+         --SCAI_COMMUNICATOR=[MPI|GPI|NO]
+         --SCAI_CONTEXT=[Host|CUDA|MIC]
+         --SCAI_DEVICE=[0|1|...]
+         --SCAI_CUDA_USE_TEXTURE=[0|1]
+         --SCAI_CUDA_USE_SHARED_MEM=[0|1]
+         --SCAI_CUDA_BLOCK_SIZE=[64|128|...]
+
+Before the solve method is called, a summary of the whole configuration is given. Without any arguments
+specified, it will print all the default settings.
+
+.. code-block:: bash
+
+    Solver            = CG
+    Solver Logging    = convergenceHistory
+    Context           = HostContext( #Threads = 8 )
+    Communicator      = MPI(0:1)
+    Matrix format     = CSR
+    CommKind          = SYNCHRONOUS
+    ValueType         = double
+    #Threads/CPU      = 8
+    weight            = 1
+    Tolerances        = 0.00001(relative)
+
+Input Matrices
+--------------
+
+.. code-block:: bash
+
+   matrix_generator.exe <filename> <dim> <stencilType> <dimX> [ <dimY> [ <dimZ> ] ]
+
+The `filename` specifies the name of the output file for the matrix and the vector.
+
+* filename = <id>.mtx -> generates matrix market format, <id>_v.mtx for vector
+* filename = <id>     -> generates binary format, <id>.frm for matrix, <id>.frv for vector
+
+``%s`` in filename is replaced with stencil values, e.g. 2D5P_100_100
+
+The following stencil types are supported:
+
+* dim = 1: stencilType = 3 
+* dim = 2: stencilType = 5, 9
+* dim = 3: stencilType = 7, 19, 27 
+
+.. code-block:: bash
+
+   marix_generator matrix_%s 3 27 50 50 50 
+
+A Python script is provided that can be used to generate a lot of input sets for different 
+sizes.
+
+.. code-block:: bash
+
+   python GenMatrices.py
+   ./GenMatrices.py
+
+   ls data
+
+Storage and Value Type
+----------------------
+
+You can run the solver with different value types. But be careful when reading binary data as in this
+case the value type should match the type of the input data.
+
+
+
+Solver Configuration
+--------------------
+
+The solver can be chosen by its name. The name is exactly the name that has been used
+by a solver class when it has registered for the factory.
+
+The example program `lama_info.exe` prints all registered solvers.
+
+.. code-block:: bash
+
+    lama_info.exe 
+
+The :ref:`solver-logging` can be defined via ``SCAI_SOLVER_LOG``. By default, there is only
+logging for the convergence history.
+
+Every iterative solver needs a stopping criterion to define how exact the solution should be or how
+many iterations the solver should run through. These criteria are connectable by using logical
+connectives. For more information see :ref:`stopping-criteria`.
+
+The example program combines the stopping criterias defined a logical ``or``, i.e. the solver 
+stops if one of the criteria is fulfilled.
+
+Parallel Execution
+------------------
+
+By default, all cores of a node are used via OpenMP parallelization in all the
+matrix-vector operations used by the solver.
+
+.. code-block:: bash
+
+    solver.exe 3D27P_50.frm 3D27P_50.frv --SCAI_NUM_THREADS=1
+
+On a serial machine, MPI parallelization can also be used to keep multiple cores busy.
+
+.. code-block:: bash
+
+    mpirun -np 2 solver.exe 3D27P_50.frm 3D27P_50.frv
+
+As one process already uses by default all cores via OpenMP parallelization, you should
+decrease the number of cores.
+
+.. code-block:: bash
+
+    mpirun -np 1 solver.exe 3D27P_50.frm 3D27P_50.frv --SCAI_NUM_THREADS=4
+    mpirun -np 2 solver.exe 3D27P_50.frm 3D27P_50.frv --SCAI_NUM_THREADS=2
+    mpirun -np 4 solver.exe 3D27P_50.frm 3D27P_50.frv --SCAI_NUM_THREADS=1
+
+Number of threads for one process times number of processes should not be higher
+than the actual number of cores available.
+
+Of course MPI can also be used to solve a matrix on multiple nodes by using the MPI
+parallelization of the matrix-vector operations.
+Running MPI applications on your cluster is usually done in the following way:
+
+.. code-block:: bash
+
+    mpirun -machine_file machines 3D27P_50.frm 3D27P_50.frv 
+
+Where ``machines`` is a file that contains all machines on which an MPI process is 
+started.
+
+.. code-block:: bash
+
+    drachenfels-001
+    drachenfels-002
+    drachenfels-004
+    drachenfels-006
+
+When running multiple processes it can be very convenient to specifiy different configuration values
+for each process:
+
+* context, device id
+* weight to indicate that load distribution should be different on the processes
+* matrix storage format
+
+.. code-block:: bash
+
+    mpirun -machine_file machines 3D27P_50.frm 3D27P_50.frv --SCAI_WEIGHT=1,2,1,3 --SCAI_CONTEXT=Host,CUDA,Host,CUDA --SCAI_DEVICE=0,1,0,2
+
+

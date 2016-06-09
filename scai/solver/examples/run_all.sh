@@ -100,12 +100,10 @@ cd $MYDIR/solver
 RUN 1 solver/matrix_generator.exe example 3 27 100 100 100
 RUN 1 solver/matrix_convert.exe -mm example.frv example.mtx
 RUN 1 solver/vector_generator.exe example2.mtx 1000 1
-RUN 1 solver/cg_solver.exe example.frm
-RUN 1 solver/gmres_solver.exe example.frm
-RUN 1 solver/amg_solver.exe example --SCAI_MAX_ITER=3
 RUN 1 solver/solver.exe example.frm
 RUN 0 solver/solver.exe example.frm --SCAI_SOLVER=Jacobi --SCAI_MAX_ITER=10
 RUN 0 solver/solver.exe example.frm --SCAI_SOLVER=GMRES --SCAI_MAX_ITER=3
+RUN 0 solver/solver.exe example.frm --SCAI_SOLVER=CG --SCAI_REL_TOL=0.0001
 RUN 1 solver/lama_info.exe 
 
 # check if there are unkown examples
