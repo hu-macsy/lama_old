@@ -1,12 +1,18 @@
 Installation
 ============
 
-The following description will guide you through the installation process, starting on how to obtain the sources (:doc:`download <installation/download>`) and needed :doc:`requirements <installation/requirements>`. There are a few mandatory requirements and other optional dependencies, you can skip if you are not interested in the given feature. It is described how to :doc:`configure <installation/configuration>` and :doc:`build and install<installation/build>` LAMA. The you are able to test your installation with the first :doc:`examples <installation/examples>`.
-Additionally you can get some tips for the installation on :doc:`windows <installation/windowsTipps>`, which is not fully tested yet.
+This description will guide you through the installation process. You find informations about:
+
+* :doc:`installation/download`: How to obtain the sources via our download portal
+* :doc:`installation/requirements`: An overview of needed software (mandatory and optional)
+* :doc:`installation/configuration`: CMake Configuration Details
+* :doc:`installation/build`: Build (and install) step
+* :doc:`installation/examples`: First Steps
+
+.. Additionally you can get some tips for the installation on :doc:`windows <installation/windowsTipps>`, which is not fully tested yet.
 
 .. toctree::
-   :titlesonly:
-   :maxdepth: 2
+   :hidden:
 
    installation/download
    installation/requirements
@@ -14,3 +20,14 @@ Additionally you can get some tips for the installation on :doc:`windows <instal
    installation/build
    installation/examples
    installation/windowsTipps
+
+If your are familiar with CMake and your systems has all mandatory software prerequesites installed, all you have to do is:
+
+.. code-block:: bash
+
+   tar -xzvf libama-x.x.x.tar.gz
+   cd libama-x.x.x
+   mkdir build
+   cd build
+   cmake -DCMAKE_INSTALL_PREFIX=<path/to/install/dir> [options] ../scai
+   make [-j <number-of-build-processes>]
