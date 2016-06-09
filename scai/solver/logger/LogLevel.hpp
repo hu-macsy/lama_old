@@ -35,6 +35,7 @@
 #pragma once
 
 #include <iostream>
+#include <cstring>
 
 namespace scai
 {
@@ -51,7 +52,7 @@ namespace LogLevel
 /**
  * @brief The different logLevels for loggers.
  */
-enum LogLevel
+typedef enum
 {
 
     /**
@@ -80,9 +81,44 @@ enum LogLevel
     /**
      * @brief Logs every log message of the solver.
      */
-    completeInformation = 4
-};
+    completeInformation = 4,
 
+    /**
+     * @brief unspecified
+     */
+    UNKNOWN = 5
+
+} LogLevel;
+
+
+} /* end namespace LogLevel */
+
+inline const char* logLevel2str( const LogLevel::LogLevel level )
+{
+    switch ( level )
+    {
+        case LogLevel::noLogging:
+            return "noLogging";
+
+        case LogLevel::convergenceHistory:
+            return "convergenceHistory";
+
+        case LogLevel::solverInformation:
+            return "solverInformation";
+
+        case LogLevel::advancedInformation:
+            return "advancedInformation";
+
+        case LogLevel::completeInformation:
+            return "completeInformation";
+
+        default:
+            return "Unknown";
+    }
+}
+
+namespace LogLevel
+{
 /*
  * Output of ScalarType in stream by writing strings instead of numbers
  *
@@ -90,36 +126,24 @@ enum LogLevel
 
 inline std::ostream& operator<<( std::ostream& stream, const LogLevel& object )
 {
-    switch ( object )
-    {
-        case noLogging:
-            stream << "noLogging";
-            break;
-
-        case convergenceHistory:
-            stream << "convergenceHistory";
-            break;
-
-        case solverInformation:
-            stream << "solverInformation";
-            break;
-
-        case advancedInformation:
-            stream << "advancedInformation";
-            break;
-
-        case completeInformation:
-            stream << "completeInformation";
-            break;
-
-        default:
-            stream << "unknown_LogLevel";
-    }
-
+    stream << logLevel2str( object );
     return stream;
 }
 
-} /* end namespace LogLevel */
+}
+
+inline LogLevel::LogLevel str2LogLevel( const char* str )
+{
+    for ( int level = LogLevel::noLogging; level < LogLevel::UNKNOWN; ++level )
+    {
+        if ( strcmp( logLevel2str( LogLevel::LogLevel( level ) ), str ) == 0 )
+        {
+            return LogLevel::LogLevel( level );
+        }
+    }
+
+    return LogLevel::UNKNOWN;
+}
 
 } /* end namespace solver */
 
