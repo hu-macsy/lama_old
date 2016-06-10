@@ -5,7 +5,19 @@ C++ Compiler
 
 LAMA is written in C++, therefore a C++ compiler is mandatory.
 
-On Linux systems, the use of the GNU C++ compiler or the Intel C++ compiler is recommended. We also support Clang/LLVM (especially for suporting MAC).
+On Linux systems, the use of the |GNU| C++ compiler or the |Intel| C++ compiler is recommended. We also support |LLVM| (especially to support MAC).
+
+.. |GNU| raw:: html
+
+  <a href="https://gcc.gnu.org/" target="_blank">GNU</a>
+
+.. |Intel| raw:: html
+
+  <a href="https://software.intel.com/en-us/c-compilers" target="_blank">Intel</a>
+
+.. |LLVM| raw:: html
+
+  <a href="http://llvm.org/" target="_blank">Clang/LLVM</a>
 
 .. On Window systems, the use of Visual Studio is recommended.
 

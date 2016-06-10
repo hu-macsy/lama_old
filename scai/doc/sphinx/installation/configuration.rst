@@ -103,11 +103,11 @@ Required dependencies:
 Optional dependencies:
 
 * :ref:`BLAS`
-* :ref:`CUDA <scaicommon:CUDA>` for all projects that provide separate CUDA functionality (common, tasking, blaskernel,  utilskernel, sparsekernel)
+* :ref:`CUDA <scaicommon:CUDA>`
 * :ref:`MIC`
-* :ref:`MPI <scaidmemo:MPI>` for the Distributed Memory project
-* :ref:`GPI-2 <scaidmemo:GPI>` for the Distributed Memory project 
-* :ref:`(Par)Metis <scaidmemo:Metis>` for the Distributed Memory project
+* :ref:`MPI <scaidmemo:MPI>`
+* :ref:`GPI-2 <scaidmemo:GPI>`
+* :ref:`(Par)Metis <scaidmemo:Metis>`
 
 A summary of possible hint-variables for the packages are given in the following table. For advanced help refer to the separate section.
 
@@ -140,7 +140,7 @@ The mkl library from '/opt/intel/mkl' will be used (instead of the libraries in 
 Check
 """""
 
-If no fatal cmake errors occured during the configuration in the end we print a full summary of the configuration. It should look slightly the same as this:
+If no fatal cmake errors occured during the configuration in the end we print a full summary of the configuration. It should look slightly the same as this and give you an overview of all used libraries and all set options:
 
 .. code-block:: bash
 
@@ -230,7 +230,9 @@ You may also change some of the configuration by calling ``ccmake`` in the build
 
 It will show you the advanced LAMA configuration definitions first, after toggeling (t) you can view all settings.
 
-Alternatively you can do your changes working with the cmake curses gui.
+Alternatively you can do your changes working with the cmake curses gui or by a second cmake-call. 
+
+NOTE: For changing the C++ compiler start with an empty (!) build directory, otherwise CMake would skip essential tests.
 
 Additional Information
 ^^^^^^^^^^^^^^^^^^^^^^

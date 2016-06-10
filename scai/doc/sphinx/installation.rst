@@ -7,7 +7,6 @@ This description will guide you through the installation process. You find infor
 * :doc:`installation/requirements`: An overview of needed software (mandatory and optional)
 * :doc:`installation/configuration`: CMake Configuration Details
 * :doc:`installation/build`: Build (and install) step
-* :doc:`installation/examples`: First Steps
 
 .. Additionally you can get some tips for the installation on :doc:`windows <installation/windowsTipps>`, which is not fully tested yet.
 
@@ -18,7 +17,6 @@ This description will guide you through the installation process. You find infor
    installation/requirements
    installation/configuration
    installation/build
-   installation/examples
    installation/windowsTipps
 
 If your are familiar with CMake and your systems has all mandatory software prerequesites installed, all you have to do is:

@@ -8,10 +8,7 @@ SCAI BLASKernel
 Description
 ***********
 
-The BLASKernel library is a wrapper for various blas and lapack implementations. Lots of vendors provide optimized implementations
-for their hardware. For example the MKL is optimized for execution on Intel processors. This library can be used with different
-libraries. If no library is found a integrated implementation is used. Currently not all blas and lapack calls are wrapped, but the
-extension is very easy. 
+The BLASKernel library is a wrapper for various BLAS and LAPACK implementations. Lots of vendors provide optimized implementations for their hardware. For example Intels MKL is optimized for execution on Intel processors. This library can be used with different libraries. If no library is found a integrated implementation is used. Currently not all BLAS and LAPACK calls are wrapped, but the extension is very easy. 
    
 ********
 Contents
@@ -27,8 +24,7 @@ Contents
 Relations
 *********
 
-The provided functions for the different back-ends register theirselfs in the KernelRegistry through the
-BLASKernelTrait. 
+The provided functions for the different back-ends register theirselfs in the KernelRegistry through the BLASKernelTrait. 
 
 *******
 Example

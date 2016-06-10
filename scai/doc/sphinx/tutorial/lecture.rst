@@ -1,8 +1,7 @@
 Lecture
 =======
 
-This lecture gives an insight into the Library for Accelerated Math
-Applications(LAMA) and its concepts. It guides you through the LAMA-architecture
+This lecture gives an insight into LAMA and its concepts. It guides you through the LAMA-architecture
 and the most important classes, and offers tasks for practical experience. The
 practical parts of this lecture illustrate step by step how to create an equation
 system, how to solve it and how to run it on different devices. The concepts of 

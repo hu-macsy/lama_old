@@ -56,13 +56,13 @@ Recommended Software
 
 The following software packages are not mandatory, but will give you a performance boost through optimized routines from BLAS and accelerator backends (CUDA, MIC) as well as distributed memory support:
 
-- :doc:`BLAS and LAPack <configuration/blas>`
+- :ref:`scaiblaskernel:BLAS`
 
   - Needed for the implementation of the dense blas functions. Supported libraries are: Intel MKL, BLAS. 
 
 - :ref:`CUDA <scaicommon:CUDA>` (version 4.0 or later)
 
-  - Needed to utilize CUDA capable GPUs from Nvidia (support for compute capability till cc 1.3).
+  - Needed to utilize CUDA capable GPUs from Nvidia (support for compute capability since cc 1.3).
   
 - :doc:`Intel MIC <configuration/mic>`
 
@@ -79,7 +79,6 @@ The following software packages are not mandatory, but will give you a performan
 .. toctree::
    :hidden:
 
-   configuration/blas
    MIC <configuration/mic>
 
 .. _optional:

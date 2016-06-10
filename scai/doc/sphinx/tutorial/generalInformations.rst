@@ -1,0 +1,1 @@
+generalInformations.rst

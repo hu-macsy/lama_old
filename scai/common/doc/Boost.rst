@@ -10,25 +10,24 @@ Boost
   <a href="http://www.boost.org" target="_blank"> Boost </a>
 
 LAMA uses some Boost libraries and therefore you must have an actual version (1.34 or later) installed on your machine.
-The amount of used Boost libraries dependens on the compiler. If the compiler provides support for C++11 fewer parts of Boost
-will be used. 
+If the compiler provides support for C++11 only Boost's unit test framework will be used.
 
-The following only header libraries are used by LAMA (obsolete by using a C++11 compiler):
+The following header-only libraries are used by LAMA (obsolete by using a compiler supporting C++11):
 
   - **Smart pointers**: avoid to keep track of ownership of dynamically allocated memory
   - **Function**: object wrappers for deferred calls or callbacks.
   - **Bind**: allows to bind arguments for new function pointers
 
-Beside some only header libraries, the following *compiled* libraries are used by LAMA:
+As *compiled* libraries LAMA only uses:
 
-  - **unit_test_framework** and **regex** (program and full unit testing, recommended)
+  - **unit_test_framework**: for LAMA's unit tests (recommended)
 
 Many linux installations provide an actual release of Boost and if Boost is installed, the LAMA configuration should
 have no problems to find it.
 
 If for any reasons no actual Boost installation is available, you must download and install it. 
 Please make sure that you build also the dynamic library versions. After installation of Boost you can tell cmake 
-the location of installation by the variable BOOST_ROOT or by setting an environment variable
+the location of your installation by the variable BOOST_ROOT or by setting an environment variable
 
 .. code-block:: bash
 

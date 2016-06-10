@@ -1,7 +1,13 @@
-:orphan:
+.. _includes:
 
-Include
--------
+Includes
+--------
+
+The include file lama.hpp contains some definitions how far assertions, logging and tracing statements
+are compiled into your code. The definitions will be the same as used for the installation.
+
+Usually you have to include the class definition file for each LAMA class that you are
+using. As we use objects of class DenseVector and Scalar, we have to include the corresponding files.
 
 .. TODO Explain directory structure
 
@@ -20,7 +26,7 @@ Data container related:
    #include <scai/lama/expression/...>      // Vector-Vector, Matrix-Vector or Matrix-Matrix expressions 
    #include <scai/lama/distribution/...>    // assigned to matrices and vectors for distributed use of data container
    #include <scai/lama/io/...>              // reading from / writing to container files
-   #inclue  <lama/norm/...>            // L1Norm, L2Norm, MaxNorm
+   #inclue  <lama/norm/...>                 // L1Norm, L2Norm, MaxNorm
 
 Linear equation solvers:
 
