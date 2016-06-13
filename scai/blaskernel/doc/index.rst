@@ -8,8 +8,24 @@ SCAI BLASKernel
 Description
 ***********
 
-The BLASKernel library is a wrapper for various BLAS and LAPACK implementations. Lots of vendors provide optimized implementations for their hardware. For example Intels MKL is optimized for execution on Intel processors. This library can be used with different libraries. If no library is found a integrated implementation is used. Currently not all BLAS and LAPACK calls are wrapped, but the extension is very easy. 
-   
+The BLASKernel library provides wrapper for various BLAS and LAPACK routines in such a way that these routines can 
+be called as kernel functions on different devices with the same signature.
+
+The BLASKernel library supports both approaches: either the BLAS or LAPACK routine is implemented by the library
+itself (internal version) or the BLAS or LAPACK routine of an efficient vendor library is wrapped (external version).
+The latter approach is usually the more efficient one as vendors provide optimized implementations on their
+hardware. This is not only the case for usual host CPUs but also for CUDA or Intel MIC devices, where libraries 
+like cuBLAS or the Intel MKL are available.
+
+The internal version of the BLAS and LAPACK routines is a fallback implementation on Host CPUs if no external BLAS or
+LAPACK library is available. In contrary to most vendor libraries the routines can be instantiated for any arithmetic value
+type, i.e. also for long or long complex value types. All routines of the internal version will be registered in 
+the kernel registry, but will be replaced with wrapper routines to external vendor libraries if available.
+
+The current version of the BLASKernel library supports only a subset of the BLAS and LAPACK routines that are available.
+This subset contains all routines that are currently used in other libraries like the LAMA and solver library. 
+But it is easy to extend the BLASKernel library for further routines.
+
 ********
 Contents
 ********
@@ -18,6 +34,8 @@ Contents
    :titlesonly:
    :maxdepth: 1
    
+   Kernels
+   Supported
    Wrapping
    
 *********
@@ -72,33 +90,26 @@ Environment-Variables
 Dependencies
 ************
 
-- Internal:
+Internal dependencies:
 
-  - :ref:`SCAI Common - Basic Concepts <scaicommon:main-page_common>`
+- :ref:`SCAI Common - Basic Concepts <scaicommon:main-page_common>`
+- :ref:`SCAI Logging - Logging Macros <scailogging:main-page_logging>`
+- :ref:`SCAI Tracing - Tracing Macros <scaitracing:main-page_tracing>`
+- :ref:`SCAI Tasking - Asynchronous Tasks <scaitasking:main-page_tasking>`
+- :ref:`SCAI Hmemo - Heterogeneous Memory Architecture <scaihmemo:main-page_hmemo>` (currently just used in testing)
+- :ref:`SCAI Kregistry - Generic Kernel Registry <scaikregistry:main-page_kregistry>`
 
-  - :ref:`SCAI Logging - Logging Macros <scailogging:main-page_logging>`
+External dependencies:
 
-  - :ref:`SCAI Tracing - Tracing Macros <scaitracing:main-page_tracing>`
-
-  - :ref:`SCAI Tasking - Asynchronous Tasks <scaitasking:main-page_tasking>`
-
-  - :ref:`SCAI Hmemo - Heterogeneous Memory Architecture <scaihmemo:main-page_hmemo>` (currently just used in testing)
-
-  - :ref:`SCAI Kregistry - Generic Kernel Registry <scaikregistry:main-page_kregistry>`
-
-- External:
-
-  - CUBLAS
-   
-  - Intel MKL
+- :ref:`BLAS`
+- :ref:`CUBLAS as part of the CUDA SDK toolkit <scaicommon:CUDA>`
 
 Tested versions of external dependencies
 
 .. toctree::
-   :titlesonly:
-   :maxdepth: 1
+   :hidden:
    
-   Tested_Versions
+   blas
 
 ************
 Related Work
@@ -143,25 +154,34 @@ Related Work
   
 .. |MKL| raw:: html
 
-		 <a href="https://software.intel.com/en-us/intel-mkl" target="_blank">MKL</a>
-		 
+    <a href="https://software.intel.com/en-us/intel-mkl" target="_blank">MKL</a>
+    
 .. |CUBLAS| raw:: html
 
-        <a href="http://docs.nvidia.com/cuda/cublas/" target="_blank">CUBLAS</a>   
+    <a href="http://docs.nvidia.com/cuda/cublas/" target="_blank">CUBLAS</a>   
    
 .. |clBLAS| raw:: html
 
-		 <a href="https://github.com/clMathLibraries/clBLAS" target="_blank">clBLAS</a>
+    <a href="https://github.com/clMathLibraries/clBLAS" target="_blank">clBLAS</a>
 
 .. |OpenBLAS| raw:: html
 
-		 <a href="http://www.openblas.net/" target="_blank">OpenBLAS</a>
+    <a href="http://www.openblas.net/" target="_blank">OpenBLAS</a>
 
 .. |NetLibBLAS| raw:: html
 
-		 <a href="http://www.netlib.org/blas/index.html" target="_blank">NetLib BLAS</a>
+    <a href="http://www.netlib.org/blas/index.html" target="_blank">NetLib BLAS</a>
 
 .. |NetLibLAPACK| raw:: html
 
-		 <a href="http://www.netlib.org/lapack/index.html" target="_blank">NetLib LAPACK</a>
+    <a href="http://www.netlib.org/lapack/index.html" target="_blank">NetLib LAPACK</a>
 
+
+.. |GOTOBLAS| raw:: html
+
+    <a href="http://c2.com/cgi/wiki?GotoBlas" target="_blank">Goto BLAS</a>
+
+
+.. |ATLAS| raw:: html
+
+    <a href="http://math-atlas.sourceforge.net/" target="_blank">ATLAS</a>

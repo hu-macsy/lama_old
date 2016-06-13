@@ -74,3 +74,34 @@ If CMake does not find a generic BLAS library on its own, you can give hints by 
 .. |NetLibLAPACK| raw:: html
 
 		 <a href="http://www.netlib.org/lapack/index.html" target="_blank">NetLib LAPACK</a>
+
+.. _blaskernel-tested-versions:
+
+Tested BLAS Libraries
+"""""""""""""""""""""
+
+The following blas libraries has been tested. The blaskernel library contains a own implementation of the blas function
+which is called OpenMP-BLAS. 
+
+==============    ================   ===========================================================================   ======================================
+BLAS-library      Backend            Supported ValueTypes                                                          Status 
+==============    ================   ===========================================================================   ======================================
+Fortran-BLAS      Host               float, double, ComplexFloat, ComplexDouble                                    successfully tested
+MKL               Host/MIC           float, double, ComplexFloat, ComplexDouble                                    successfully tested
+OpenMP-BLAS       Host               float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble    successfully tested
+cuBLAS            CUDA               float, double, ComplexFloat, ComplexDouble                                    successfully tested
+==============    ================   ===========================================================================   ======================================
+
+Tested LAPACK Libraries
+"""""""""""""""""""""""
+
+The following lapack libraries has been tested. The blaskernel library contains a own implementation of the lapack function
+which is called OpenMP-LAPACK. 
+
+===============    ================   ===========================================================================   ======================================
+LAPACK-library      Backend            Supported ValueTypes                                                          Status 
+===============    ================   ===========================================================================   ======================================
+Fortran-LAPACK      Host               float, double, ComplexFloat, ComplexDouble                                    successfully tested
+MKL                 Host               float, double, ComplexFloat, ComplexDouble                                    successfully tested
+OpenMP-LAPACK       Host               float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble    successfully tested
+===============    ================   ===========================================================================   ======================================

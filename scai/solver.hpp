@@ -49,3 +49,9 @@
 #include <scai/solver/SimpleAMG.hpp>
 #include <scai/solver/TFQMR.hpp>
 #include <scai/solver/TrivialPreconditioner.hpp>
+
+#include <scai/solver/logger/CommonLogger.hpp>
+
+#include <scai/solver/criteria/IterationCount.hpp>
+#include <scai/solver/criteria/ResidualThreshold.hpp>
+
