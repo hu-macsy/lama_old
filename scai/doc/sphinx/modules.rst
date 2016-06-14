@@ -11,7 +11,7 @@ Modules
 	modules/de
 	modules/lap
 
-LAMA is a multi-layer framework ­offering four main modules: The Heterogeneous Computing Development Kit provides the management of heterogeneous memory and compute kernels. Asynchronous executing is a key capability. The Math Kernel Extension gives uniform access to dense and sparse compute kernel´s on all platforms while the Distributed Extension supplies full cluster support for scalability on data ­parallel applications. The Linear Algebra Package enables programming using ­mathematical notation and prepared iterative solvers. The whole framework - as well as each module - is build up of a couple of subproject, depending on each other.
+LAMA is a multi-layer framework offering four main modules: The Heterogeneous Computing Development Kit provides the management of heterogeneous memory and compute kernels. Asynchronous executing is a key capability. The Math Kernel Extension gives uniform access to dense and sparse compute kernel´s on all platforms while the Distributed Extension supplies full cluster support for scalability on data parallel applications. The Linear Algebra Package enables programming using mathematical notation and prepared iterative solvers. The whole framework - as well as each module - is build up of a couple of subproject, depending on each other.
 
 .. figure:: _images/LAMA_Hierarchy4.png
     :width: 500px
@@ -31,7 +31,8 @@ LAMA's base module facilitates three issues:
 
 * A consistent data usage on heterogeneous devices via dedicated read and write accesses within the memory management.
 * Decisions about the execution context in the application are separated from implementing the kernels by the kernel management. 
-* Asynchronous execution of these ­kernels, memory transfer and communication is handled by the tasking layer. This ­combination leads to a clean software development, accomplishing a good ­maintainability on the user's side with minimal runtime overhead.
+* Asynchronous execution of these kernels, memory transfer and communication is handled by the tasking layer. This combination leads to a clean software development, 
+  accomplishing a good maintainability on the user's side with minimal runtime overhead.
 
 The Heterogeneous Computing Development Kit contains the subprojects:
 
@@ -45,7 +46,7 @@ The Heterogeneous Computing Development Kit contains the subprojects:
 Math Kernel Extension
 ---------------------
 
-The Math Kernel Extension provides access to hardware independent kernel routines for multiple purposes: basic utility ­functionality on arrays, dense and sparse BLAS operations as well as sparse ­conversion routines encapsulating MKL (BLAS), cuBLAS and cuSPARSE or own optimized kernels. Different sparse matrix formats are available to facilitate the application in various use cases and target architectures.
+The Math Kernel Extension provides access to hardware independent kernel routines for multiple purposes: basic utility functionality on arrays, dense and sparse BLAS operations as well as sparse conversion routines encapsulating MKL (BLAS), cuBLAS and cuSPARSE or own optimized kernels. Different sparse matrix formats are available to facilitate the application in various use cases and target architectures.
 
 The Math Kernel Extension contains the subprojects:
 
@@ -56,7 +57,7 @@ The Math Kernel Extension contains the subprojects:
 Distributed Extension
 ---------------------
 
-The Distributed Extension realises ­strategies for the distribution of data among processes and handles the communication between those. LAMA is compliant to MPI or GPI, giving the developer both options.
+The Distributed Extension realises strategies for the distribution of data among processes and handles the communication between those. LAMA is compliant to MPI or GPI, giving the developer both options.
 
 The Distributed Extension contains the subproject:
 
@@ -71,8 +72,8 @@ The Linear Algebra Package facilitates the development of (sparse) numerical alg
 
 	y = A * x
 
-(where x and y are vectors and A is a ­matrix). Due to the underlying layers, the problem formulation is handled independently of the implementation details regardless of the target architecture and distribution strategy as memory management and communication is processed internally. Furthermore, with load balancing between different components and asynchronous execution, full system performance can be obtained.
-In addition, LAMA offers various iterative solvers like Jacobi or CG methods, that can be used directly or preconditioned, with a combination of several user-definable ­stopping criteria. Furthermore, the integration of a custom-built solver is straightforward.
+(where x and y are vectors and A is a matrix). Due to the underlying layers, the problem formulation is handled independently of the implementation details regardless of the target architecture and distribution strategy as memory management and communication is processed internally. Furthermore, with load balancing between different components and asynchronous execution, full system performance can be obtained.
+In addition, LAMA offers various iterative solvers like Jacobi or CG methods, that can be used directly or preconditioned, with a combination of several user-definable stopping criteria. Furthermore, the integration of a custom-built solver is straightforward.
 
 The Linear Algebra Package contains the subprojects:
 
