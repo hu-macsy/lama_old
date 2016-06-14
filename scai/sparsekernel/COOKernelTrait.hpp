@@ -283,31 +283,6 @@ struct COOKernelTrait
             return "COO.jacobi";
         }
     };
-
-    template<typename ValueType>
-    struct jacobiHalo
-    {
-        /** Method to compute one iteration step in Jacobi method
-         *
-         *  solution -= omega * ( B(halo) * oldSolution) * dinv
-         *
-         */
-        typedef void ( *FuncType ) (
-            ValueType solution[],
-            const ValueType diaValues[],
-            const IndexType haloIA[],
-            const IndexType haloJA[],
-            const ValueType haloValues[],
-            const IndexType haloRowIndexes[],
-            const ValueType oldSolution[],
-            const ValueType omega,
-            const IndexType numNonEmptyRows );
-
-        static const char* getId()
-        {
-            return "COO.jacobiHalo";
-        }
-    };
 };
 
 } /* end namespace sparsekernel */

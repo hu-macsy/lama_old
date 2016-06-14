@@ -8,17 +8,26 @@ SCAI SparseKernel
 Description
 ***********
 
-The SparseKernel library is used to group functionality for different sparse matrix formats.
+The SparseKernel library provides kernel routines for different sparse matrix formats.
 Currently the COO, CSR, DIA, ELL and JDS formats are supported. The best supported format is 
-the CSR format. Every of the other formats contains operations to copy to and from CSR. 
-They are additional provided for dense storage. Besides operations for conversion, operations 
-for calculations and property checking are included. The functions are 
-provided for different backends. Every format supports the matrix-vector multiplication. 
-The matrix-matrix multiplication is currently just supported by CSR and ELL. 
+the CSR format. For each other format there are routines to convert to and from CSR, 
+this is also supported for the dense format.
+Besides operations for conversion, operations 
+for matrix-vector and matrix-matrix computations and for property checkings are included.
+Every format supports the matrix-vector multiplication. 
+The matrix-matrix multiplication is currently only supported for the CSR, ELL, and dense format.
 
-*********
-Contents:
-*********
+Like all other kernel routines in the LAMA framework, the sparse matrix kernels are registered 
+in the kernel registry and are always implemented on the Host device but also on all other backends wherever possible. 
+For every sparse format and for the dense format a corresponding KernelTrait structure groups the
+supported routines of the format and specifies name and signature of each routine. Within the library,
+these KernelTraits are used for the registration of the implementations. When using the SparseKernel library,
+these KernelTraits are used to access the different kernel implementations on the supported backends.
+
+
+********
+Contents
+********
 
 .. toctree::
    :titlesonly:
@@ -30,14 +39,6 @@ Contents:
    DIAKernelTrait
    ELLKernelTrait
    JDSKernelTrait
-
-*********
-Relations
-*********
-
-To avoid code duplications some operations rely on code provided by the
-UtilsKernel-library. For every format a corresponding KernelTrait exists. Through this the
-functions are registered in the KernelRegistry. 
 
 *******
 Example
@@ -58,43 +59,56 @@ Calculate matrix-vector multiplication with given ELL input-set on host.
 Environment-Variables
 *********************
 
-- SCAI_CUDA_USE_CUSPARSE=[0|1]
+- ``SCAI_CUDA_USE_CUSPARSE [bool, default = 1]``
 
-  - used to turn on/off the usage of cusparse for the csr format on cuda
+  - if enabled, wrapped routines of the cuSPARSE library are taken for CSR kernel routines
+    on the CUDA device wherever possible
+  - if disabled, own CUDA kernel implementations are taken for CSR kernel routines
+
+- ``SCAI_USE_MKL [:bool, default = 1]``
+
+  - if enabled, wrapped routines of the MKL library are taken for CSR kernel routines
+    on the Host or MIC device wherever possible
+  - if disabled, own OpenMP implementations are taken for CSR kernel routines
+
+The environment variable ``SCAI_USE_MKL`` has no effect for the selection of BLAS or LAPACK kernels.
+
   
-  - default value: off 
-
-- SCAI_USE_MKL=[0|1]
-
-  - used to turn on/off the usage of mkl for the csr format on host and mic
-  
-  - default value: off
-
 ************
 Dependencies
 ************
 
-- Internal:
+Internal dependencies:
 
-  - :ref:`SCAI Common - Basic Concepts <scaicommon:main-page_common>`
+- :ref:`SCAI Common - Basic Concepts <scaicommon:main-page_common>`
 
-  - :ref:`SCAI Logging - Logging Macros <scailogging:main-page_logging>`
+- :ref:`SCAI Logging - Logging Macros <scailogging:main-page_logging>`:
+  The logging features of the LAMA framework is used in all subprojects and also here. The general
+  strategy of logging is here to have at least one INFO logging message for each kernel routine.
 
-  - :ref:`SCAI Tracing - Tracing Macros <scaitracing:main-page_tracing>`
+- :ref:`SCAI Tracing - Tracing Macros <scaitracing:main-page_tracing>`:
+  Each of the kernels is traced as a region.
 
-  - :ref:`SCAI Tasking - Asynchronous Tasks <scaitasking:main-page_tasking>`
+- :ref:`SCAI Tasking - Asynchronous Tasks <scaitasking:main-page_tasking>`:
+  Most of the computational kernels  of the SparseKernel library can run asynchronously.
 
-  - :ref:`SCAI Hmemo - Heterogeneous Memory Architecture <scaihmemo:main-page_hmemo>` (currently just used in testing)
+- :ref:`SCAI Hmemo - Heterogeneous Memory Architecture <scaihmemo:main-page_hmemo>` (currently just used in testing)
 
-  - :ref:`SCAI Kregistry - Generic Kernel Registry <scaikregistry:main-page_kregistry>`
+- :ref:`SCAI Kregistry - Generic Kernel Registry <scaikregistry:main-page_kregistry>`:
+  All kernels  of the SparseKernel library are registered in the kernel registry.
 
-  - :ref:`SCAI UtilsKernel - Utils Kernel <scaiutilskernel:main-page_utilskernel>`
+- :ref:`SCAI UtilsKernel - Utils Kernel <scaiutilskernel:main-page_utilskernel>`:
+  Some kernels of the SparseKernel library use for their implementation kernels of the UtilsKernel library
+  (e.g. running sums of arrays). 
 
-- External:
+External dependencies:
 
-  - Intel MKL
+- The :ref:`Intel MKL <scaiblaskernel:BLAS>` does not only provide implementations for BLAS and LAPACK
+  routines but also routines for the CSR storage format. If the MKL is not available, own OpenMP implementations
+  are used. The MKL can be used on Host and MIC devices.
 
-  - CUSPARSE
+- :ref:`cuSPARSE library of the CUDA toolkit <scaicommon:CUDA>` is used for the implementation of CSR kernel
+  routines on NVidia GPU devices.
 
 ************
 Related Work
@@ -127,7 +141,7 @@ inside of SparseKernel.
  
     - BSR, COO, CSC, CSR, DIA, SKY
   
-    - provides just functions on x86 CPUs 
+    - provides just functions on x86 CPUs where most of the functions are OpenMP parallelized.
 
 - Papers / Books
 
@@ -155,5 +169,4 @@ inside of SparseKernel.
 .. |SAAD| raw:: html
 
 		 <a href="http://www-users.cs.umn.edu/~saad/books.html" target="_blank">Iterative Methods for Sparse Linear Systems</a>
-		 
 		 

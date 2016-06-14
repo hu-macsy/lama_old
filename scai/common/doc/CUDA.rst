@@ -36,11 +36,11 @@ For the implementation of LAMA kernel routines on a GPU, any of the following po
 
 .. |cuSPARSE| raw:: html
 
-  <a href="https://developer.nvidia.com/cusparse" target="_blank">cuSPARSE</a>
+  <a href="https://developer.nvidia.com/cuparse" target="_blank">cuSPARSE</a>
 
 .. |cuBLAS| raw:: html
 
-  <a href="https://developer.nvidia.com/cusparse" target="_blank">cuBLAS</a>
+  <a href="https://developer.nvidia.com/cublas" target="_blank">cuBLAS</a>
 
 Due to the interoperability of all these possibilities with CUDA, the CUDA approach provides
 higher functionality and higher performance for GPU devices than an approach based on OpenCL does.
@@ -76,6 +76,13 @@ The CUDA runtime is part the CUDA toolkit and used for the compilation of CUDA c
 
 Note: Due to the multi-threaded execution model supported by LAMA, the CUDA driver API is used
 as only this API provides sufficient control over one CUDA context used by multiple threads.
+
+CUDA Libraries cuBLAS and cuSPARSE
+----------------------------------
+
+As mentioned above, the |cuBLAS| and |cuSPARSE| library are exploited in LAMA for the implementation
+of some kernel routines by wrapping corresponding routines of these libraries. Regarding configuration
+with CMake these libraries will be detected automatically and linked correctly.
 
 Compute Capability
 ------------------
