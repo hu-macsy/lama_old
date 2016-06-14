@@ -17,7 +17,7 @@ This description will guide you through the installation process. You find infor
    installation/requirements
    installation/configuration
    installation/build
-   installation/windowsTipps
+..   installation/windowsTipps
 
 If your are familiar with CMake and your systems has all mandatory software prerequesites installed, all you have to do is:
 
