@@ -8,7 +8,7 @@ VERSION 2.0.0 (15.06.2016):
 
  * switch to AGPL license
  * new project structure with well-designed subprojects.
-   Seperated:
+   Separated:
      * logging and tracing libraries
      * heterogeneous memory and kernel management
      * tasking model
@@ -18,9 +18,9 @@ VERSION 2.0.0 (15.06.2016):
    * backend: Intel Xeon Phi
    * distributed: GPI-2 (one-sided asynchronous communication)
    * various new linear iterative solvers
-   * suported data types:
-     * complex data type (ComplexFloat, ComplexDouble)
-     * long double (not supported on GPU)
+   * supported data types:
+     * complex data type (ComplexFloat, ComplexDouble, ComplexLongDouble)
+     * long double (only on CPU)
 
 VERSION 1.0.1 (20.06.2013):
 
