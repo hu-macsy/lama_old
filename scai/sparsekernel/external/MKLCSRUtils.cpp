@@ -180,7 +180,7 @@ MKLCSRUtils::MKLCSRUtils()
 {
     bool useMKL = true;  // by default: use MKL for CSR utils
 
-    common::Settings::getEnvironment( level, "SCAI_USE_MKL" );
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
 
     if ( !useMKL )
     {
