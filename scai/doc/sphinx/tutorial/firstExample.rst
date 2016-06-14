@@ -7,18 +7,19 @@ The following code shows a very simple LAMA example program creating a vector of
    :language: c++
    :lines: 34-
 
-You can :download:`download <../../../lama/examples/tutorial/simple.cpp>` the source file for the next compilation and installation steps (sorry, the instructions are only for unix systems).
+You can :download:`download <../../../lama/examples/tutorial/simple.cpp>` the source file for the next compilation and installation steps (sorry, the instructions are only for Unix systems).
 
 Compilation
 ^^^^^^^^^^^
 
-You always will need to refer to the LAMA installation directory (**SCAI_ROOT**) for the include and library path, so you should set an environment variable as abbreviation for this:
+You always will need to refer to the LAMA installation directory (``SCAI_ROOT``) for the include and library path, so you should set an environment variable as abbreviation for this:
 
 .. code-block:: bash
 
     export SCAI_ROOT=<installation/directory>
 
-For the compilation of an LAMA application you need to declare the LAMA defines for assertion, logging and tracing as well as the include (-I${SCAI_ROOT}/include) and library (-L${SCAI_ROOT}/lib) path and the the highest used scai_lib (in this case: scai_lama).
+For the compilation of an LAMA application you have to specify
+the include (``-I${SCAI_ROOT}/include``) and library (``-L${SCAI_ROOT}/lib``) path and the the highest used scai_lib (in this case: scai_lama).
 
 If you have compiled LAMA with C++11 you have to add ``-std=c++11`` as compile flag.
 Otherwise boost is used and if your Boost installation is not in the system path you also have to add also the corresponding include directory to the include paths:
@@ -27,19 +28,19 @@ So the full command for compiling and linking your example program simple.cpp lo
 
 .. code-block:: bash
 
-    g++ -o simple simple.cpp DSCAI_ASSERT_LEVEL_ERROR -DSCAI_LOG_LEVEL_ERROR -DSCAI_TRACE_OFF -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama 
+    g++ -o simple simple.cpp -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama 
 
 for a C++11 capable compiler:
 
 .. code-block:: bash
 
-    g++ -std=c++11 -o simple simple.cpp -DSCAI_ASSERT_LEVEL_ERROR -DSCAI_LOG_LEVEL_ERROR -DSCAI_TRACE_OFF -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama 
+    g++ -std=c++11 -o simple simple.cpp -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama 
 
 for a non C++11 capable compiler with a boost installation not in the system path:
 
 .. code-block:: bash
 
-    g++ -o simple simple.cpp -DSCAI_ASSERT_LEVEL_ERROR -DSCAI_LOG_LEVEL_ERROR -DSCAI_TRACE_OFF -I${SCAI_ROOT}/include -I${BOOST_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama
+    g++ -o simple simple.cpp -I${SCAI_ROOT}/include -I${BOOST_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama
 
 Execution
 ^^^^^^^^^

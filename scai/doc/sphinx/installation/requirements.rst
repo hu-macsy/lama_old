@@ -3,12 +3,16 @@
 Software Prerequisites
 ----------------------
 
-For the installation of LAMA you will need some general software packages. In the following sections we list the
-:ref:`required <required>`, :ref:`recommended <recommended>` and :ref:`optional <optional>` software for building LAMA.
+For the installation of LAMA you will need some software packages that are used by LAMA but not part of it. 
+In the following sections we list the
+:ref:`required <required>`, :ref:`recommended <recommended>` and :ref:`optional <optional>` software packages for building LAMA.
 
-For installing dependencies please refer to the precise project pages. On linux it is the prefered way to install via the package manager of your system. But also custom build should be no problem. You get precise help to explicitly tell LAMA the installation path of the individual packages in seperate chapters if they are not found implicitly.
-
-.. On Windows you need to download the package from the precise page and install it on your machine.
+Some software packages used by LAMA might already be available on your system, otherwise they have to be installed.
+On Linux it is the prefered way to install the additional software packages via the package manager of your system. 
+But also custom-built installations should cause no problems as far as the installation path is known during the
+configuration.
+You get precise help to explicitly tell LAMA during the configuration the installation path of the individual packages;
+this help you will find in the corresponding section for each software package that describe its use in LAMA.
 
 At the end of the page, our experience with different :ref:`configurations <supported>` regarding various versions of packages is summarized.
 
@@ -27,21 +31,24 @@ All you need for the LAMA installation are the following software packages:
 
   - Supported Compilers are: GNU, Intel, Clang.
 
-  - Optionally: with OpenMP 2.0 capable
+  - Optional: implementation of the |OpenMP_API|, version 2.0 or higher
 
-  - Recommended but not mandatory: capable of C++11 (e.g. since gcc 4.7, icc 11.1, clang 2.9)
+  - Recommended but not mandatory: support of the ISO-C++ standard C++11 (e.g. since gcc 4.7, icc 11.1, clang 2.9)
 
 - :ref:`Boost <scaicommon:Boost>` (version 1.34 or later)
 
-  - Required for the core if C++11 is not supported by the compiler
+  - Required if the C++11 standard is not supported by the C++ compiler
 
-  - Optional for building the unit tests of the projects
+  - Required if unit tests of the projects should be built
 
 - :ref:`PThread <scaicommon:PThread>` (version 1.34 or later)
   
   - Required for internal thread handling
 
-..  - required if C++11 features are not supported by the C++ compiler
+
+.. |OpenMP_API| raw:: html
+
+  <a href="http://www.openmp.org/wp/openmp-compilers/" target="_blank"> OpenMP API </a>
 
 .. toctree::
    :hidden:

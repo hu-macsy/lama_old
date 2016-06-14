@@ -54,7 +54,7 @@ Alternatively, you can pass the compiler executable path with -D as any other op
 
 .. code-block:: bash
 
-   cmake -DCMAKE_CXX_COMPILER=[path-to-cxx-compiler] -DCMAKE_C_COMPILER=[path-to-c-compiler] ...
+   cmake -DCMAKE_CXX_COMPILER=icpc -DCMAKE_C_COMPILER=/opt/intel/bin/icc ...
 
 Dependencies with Other Packages
 --------------------------------

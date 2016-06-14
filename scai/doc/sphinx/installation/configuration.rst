@@ -59,31 +59,31 @@ Build Specific Options
 
 All relevant LAMA options and their significations are listed in the table below. 
 
-=====================      ======================================================================================
-CMake variable             Signification
-=====================      ======================================================================================
-CMAKE_BUILD_TYPE           Debug (build with debug flag) or Release (build with optimization flags)
-CMAKE_INSTALL_PREFIX       Installation path of LAMA library
-BUILD_DOC                  ON or OFF, explicitly enable/disable building the user doc
-BUILD_EXAMPLES             ON or OFF, explicitly enable/disable building the examples
-BUILD_TEST                 ON or OFF, explicitly enable/disable building the tests
-SCAI_ASSERT_LEVEL          ERROR (recommended) or DEBUG (adds much more assertions into the code)
-SCAI_BLAS_LIBRARY          Select a BLAS library: auto, MKL, BLAS, INTERNALBLAS
-SCAI_CMAKE_VERBOSE         Set to TRUE for more detailed informations about the configuration
-SCAI_HOST_TYPES_LIST       Set data types for instatitions
-                           (default: float;double;long double;ComplexFloat;ComplexDouble;ComplexLongDouble (all))
-SCAI_LIBRARY_TYPE          SHARED (default) or STATIC
-SCAI_LOGGING_LEVEL         INFO recommended, alternatively DEBUG or even more detailed TRACE
-SCAI_TRACING               ON or OFF, enable/disable region tracing
-USE_CODE_COVERAGE          ON or OFF, explicitly enable/disable use of Code Coverage
-USE_CUDA                   ON or OFF, explicitly enable/disable use of CUDA
-USE_GPI                    ON or OFF, explicitly enable/disable use of GPI
-USE_GRAPHPARTITIONING      ON or OFF, explicitly enable/disable use of graph partitioning with Metis
-USE_JAVA                   ON or OFF, explicitly enable/disable use of Java for tracing Gui
-USE_MIC                    ON or OFF, explicitly enable/disable use of MIC
-USE_MPI                    ON or OFF, explicitly enable/disable use of MPI
-USE_OPENMP                 ON or OFF, explicitly enable/disable use of OpenMP
-=====================      ======================================================================================
+=========================      ======================================================================================
+CMake variable                 Signification
+=========================      ======================================================================================
+``CMAKE_BUILD_TYPE``           Debug (build with debug flag) or Release (build with optimization flags)
+``CMAKE_INSTALL_PREFIX``       Installation path of LAMA library
+``BUILD_DOC``                  ON or OFF, explicitly enable/disable building the user doc
+``BUILD_EXAMPLES``             ON or OFF, explicitly enable/disable building the examples
+``BUILD_TEST``                 ON or OFF, explicitly enable/disable building the tests
+``SCAI_ASSERT_LEVEL``          ERROR (recommended) or DEBUG (adds much more assertions into the code)
+``SCAI_BLAS_LIBRARY``          Select a BLAS library: auto, MKL, BLAS, INTERNALBLAS
+``SCAI_CMAKE_VERBOSE``         Set to TRUE for more detailed informations about the configuration
+``SCAI_HOST_TYPES_LIST``       Set data types for instatitions
+                               (default: float;double;long double;ComplexFloat;ComplexDouble;ComplexLongDouble (all))
+``SCAI_LIBRARY_TYPE``          SHARED (default) or STATIC
+``SCAI_LOGGING_LEVEL``         INFO recommended, alternatively DEBUG or even more detailed TRACE
+``SCAI_TRACING``               ON or OFF, enable/disable region tracing
+``USE_CODE_COVERAGE``          ON or OFF, explicitly enable/disable use of Code Coverage
+``USE_CUDA``                   ON or OFF, explicitly enable/disable use of CUDA
+``USE_GPI``                    ON or OFF, explicitly enable/disable use of GPI
+``USE_GRAPHPARTITIONING``      ON or OFF, explicitly enable/disable use of graph partitioning with Metis
+``USE_JAVA``                   ON or OFF, explicitly enable/disable use of Java for tracing Gui
+``USE_MIC``                    ON or OFF, explicitly enable/disable use of MIC
+``USE_MPI``                    ON or OFF, explicitly enable/disable use of MPI
+``USE_OPENMP``                 ON or OFF, explicitly enable/disable use of OpenMP
+=========================      ======================================================================================
 
 .. USE_SCALAPACK            "ON or OFF, explicitly enable/disable use of SCALAPACK"
 .. SCAI_ADDITIONAL_LINK_LIBRARIES "Paths to libraries that should be linked to lama, separated by ;"

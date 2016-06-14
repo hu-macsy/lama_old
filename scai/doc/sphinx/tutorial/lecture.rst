@@ -41,7 +41,7 @@ follows:
 
 .. code-block:: bash
 
-   g++ -I $SCAI_ROOT/include -L $SCAI_ROOT/lib -lama -llog4lama -o simple simple.cpp
+   g++ -I $SCAI_ROOT/include -L $SCAI_ROOT/lib -lscai_lama -o simple simple.cpp
 
 For running the executable, it is necessary to include the lib directory of LAMA
 into your library path.

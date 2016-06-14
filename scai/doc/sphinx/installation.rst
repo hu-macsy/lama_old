@@ -1,7 +1,7 @@
 Installation
 ============
 
-This description will guide you through the installation process. You find informations about:
+This description will guide you through the installation process. You find information about:
 
 * :doc:`installation/download`: How to obtain the sources via our download portal
 * :doc:`installation/requirements`: An overview of needed software (mandatory and optional)

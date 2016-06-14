@@ -22,7 +22,7 @@ On the portal web page, please register by filling in all mandatory (*) informat
 Downloading Tar Ball
 ^^^^^^^^^^^^^^^^^^^^
 
-After confirmation you can login and download a choosen tar ball. Our recent release is LAMA 2.0.0.
+After confirmation you can login and download a tar ball. Our current release is LAMA 2.0.0.
 
 Just login with your email and passwort (choosen at registration).
 
@@ -31,7 +31,7 @@ Just login with your email and passwort (choosen at registration).
     :align: center
     :alt: Login on LAMA Portal
 
-For the download select a tar ball (libama-2.0.0.tar.gz is the recent one) and the start the download:
+For the download select a tar ball (libama-2.0.0.tar.gz is the current one) and start the download:
 
 .. figure:: ../_images/download.png
     :width: 750px
