@@ -384,6 +384,8 @@ CUSparseCSRUtils::CUSparseCSRUtils()
     bool useCUSparse = true;
     common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
 
+    // replace the own CUDA kernels as cuSPARSE library might be more efficient 
+
     if ( useCUSparse )
     {
         Registrator::initAndReg( flag );
