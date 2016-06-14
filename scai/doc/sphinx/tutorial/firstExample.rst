@@ -27,7 +27,7 @@ So the full command for compiling and linking your example program simple.cpp lo
 
 .. code-block:: bash
 
-    g++ -o simple simple.cpp DSCAI_ASSERT_LEVEL_ERROR -DSCAI_LOG_LEVEL_ERROR -DSCAI_TRACE_OFF -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama 
+    g++ -o simple simple.cpp -DSCAI_ASSERT_LEVEL_ERROR -DSCAI_LOG_LEVEL_ERROR -DSCAI_TRACE_OFF -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama 
 
 for a C++11 capable compiler:
 

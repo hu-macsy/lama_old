@@ -1,1 +1,3 @@
-generalInformations.rst
+General Informations
+====================
+
