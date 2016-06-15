@@ -133,8 +133,9 @@ static inline void unused( const ValueType1&, const ValueType2& )
  * Check if ASSERT_LEVEL is set, if not print warning and use default ASSERT_LEVEL (ERROR)
  */
 #if !defined( SCAI_ASSERT_LEVEL_OFF ) && !defined( SCAI_ASSERT_LEVEL_DEBUG ) && !defined( SCAI_ASSERT_LEVEL_ERROR )
-#pragma message( "Please specify SCAI_ASSERT_LEVEL_xxx with xxx = DEBUG, ERROR, or OFF" )
-#pragma message( "Will use SCAI_ASSERT_LEVEL_ERROR by default." )
+// turned off for master branch
+// #pragma message( "Please specify SCAI_ASSERT_LEVEL_xxx with xxx = DEBUG, ERROR, or OFF" )
+// #pragma message( "Will use SCAI_ASSERT_LEVEL_ERROR by default." )
 
 #define SCAI_ASSERT_LEVEL_ERROR
 #endif
