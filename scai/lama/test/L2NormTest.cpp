@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class L2NormTest
- * @author Alexander Büchel, Micha
+ * @brief Contains specific tests for derived norm class L2Norm
+ * @author Thomas Brandes
  * @date 03.02.2012
  */
 
@@ -39,7 +39,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/test/NormTest.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -64,6 +64,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_arithmetic_tes
     L2Norm l2norm;
     ValueType expected = common::Math::sqrt( n * val * val );
     BOOST_CHECK_EQUAL( expected, l2norm( vec ) );
+    BOOST_CHECK_EQUAL( vec.l2Norm(), l2norm( vec ) );
     WriteAccess<ValueType> hwa( vec.getLocalValues() );
     hwa[0] = 1.0;
     hwa[1] = -2.0;
@@ -73,6 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_arithmetic_tes
     expected = static_cast<ValueType>( 5.47722 );
     Scalar s = l2norm( vec );
     SCAI_CHECK_CLOSE( expected, s.getValue<ValueType>(), 1 );
+    BOOST_CHECK_EQUAL( vec.l2Norm(), l2norm( vec ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -84,23 +86,6 @@ BOOST_AUTO_TEST_CASE( L2NormScalarTests )
     BOOST_CHECK_EQUAL( Scalar( 4.0 ), l2norm( scalar ) );
 }
 
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( commonTestCases )
-{
-    L2Norm l2norm;
-    NormTest normtest( l2norm );
-
-    if ( base_test_case )
-    {
-        SCAI_LOG_INFO( logger, "Run method " << testcase << " in L2NormTest." );
-        NORMTEST_COMMONTESTCASES( normtest );
-    }
-    else
-    {
-        normtest.runTests();
-    }
-}
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

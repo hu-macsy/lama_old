@@ -390,24 +390,11 @@ LamaConfig::LamaConfig()
 
     mNorm = "L1";
 
-    if ( scai::common::Settings::getEnvironment( val, "SCAI_NORM" ) )
+    scai::common::Settings::getEnvironment( mNorm, "SCAI_NORM" );
+
+    if ( ! scai::lama::Norm::canCreate( mNorm ) )
     {
-        if ( val == "L2" )
-        {
-            mNorm = "L2";
-        }
-        else if ( val == "L1" ) 
-        {
-            mNorm = "L1";
-        }
-        else if ( val == "Max" ) 
-        {
-            mNorm = "Max";
-        }
-        else
-        {
-            CONFIG_ERROR( "norm " << val << " not available" )
-        }
+        CONFIG_ERROR( "norm " << mNorm << " not available" )
     }
   
     // solver log level, default is convergence History

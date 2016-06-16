@@ -39,7 +39,6 @@ scai_project (
     CLASSES
 
        # Configuration
-        NormTest
         SparseMatrixHelper
         SparseMatrixTest
     
@@ -64,6 +63,7 @@ scai_project (
         L2NormTest
         MatrixTest
         MaxNormTest
+        NormTest
         ScalarTest
         StorageIOTest
         VectorTest

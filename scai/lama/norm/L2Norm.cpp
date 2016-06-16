@@ -35,6 +35,9 @@
 // hpp
 #include <scai/lama/norm/L2Norm.hpp>
 
+template scai::lama::Norm::Register<scai::lama::L2Norm>::RegisterGuard
+scai::lama::Norm::Register<scai::lama::L2Norm>::registerGuard;
+
 namespace scai
 {
 
@@ -47,6 +50,21 @@ L2Norm::L2Norm()
 
 L2Norm::~L2Norm()
 {
+}
+
+std::string L2Norm::createValue()
+{
+   return "L2";
+}
+
+Norm* L2Norm::create()
+{
+   return new L2Norm();
+}
+
+void L2Norm::writeAt( std::ostream& stream ) const
+{   
+    stream << "L2Norm";
 }
 
 Scalar L2Norm::apply( const Scalar& scalar ) const

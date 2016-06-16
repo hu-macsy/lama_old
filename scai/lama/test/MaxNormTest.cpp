@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class MaxNormTest
- * @author Alexander Büchel
+ * @brief Contains specific tests for derived norm class MaxNorm
+ * @author Thomas Brandes
  * @date 21.02.2012
  */
 
@@ -39,7 +39,6 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
-#include <scai/lama/test/NormTest.hpp>
 #include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
@@ -64,6 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, scai_arithmetic_te
     MaxNorm maxnorm;
     ValueType expected = 5.0;
     BOOST_CHECK_EQUAL( expected, maxnorm( vec ) );
+    BOOST_CHECK_EQUAL( vec.maxNorm(), maxnorm( vec ) );
     WriteAccess<ValueType> hwa( vec.getLocalValues() );
     hwa[0] = 1.0;
     hwa[1] = -2.0;
@@ -72,6 +72,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, scai_arithmetic_te
     hwa.release();
     expected = 4.5;
     BOOST_CHECK_EQUAL( expected, maxnorm( vec ) );
+    BOOST_CHECK_EQUAL( vec.maxNorm(), maxnorm( vec ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -83,23 +84,6 @@ BOOST_AUTO_TEST_CASE( MaxNormScalarTests )
     BOOST_CHECK_EQUAL( Scalar( 4.0 ), maxnorm( scalar ) );
 }
 
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( commonTestCases )
-{
-    MaxNorm maxnorm;
-    NormTest normtest( maxnorm );
-
-    if ( base_test_case )
-    {
-        SCAI_LOG_INFO( logger, "Run test method " << testcase << " in MaxNormTest." );
-        NORMTEST_COMMONTESTCASES( normtest );
-    }
-    else
-    {
-        normtest.runTests();
-    }
-}
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

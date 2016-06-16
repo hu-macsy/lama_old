@@ -234,20 +234,7 @@ int main( int argc, const char* argv[] )
 
     CriterionPtr crit;
 
-    NormPtr norm;
-
-    if ( lamaconf.getNorm() == "L1" )
-    {
-        norm.reset( new L1Norm() );
-    }
-    else if ( lamaconf.getNorm() == "Max" )
-    {
-        norm.reset( new MaxNorm() );
-    }
-    else
-    {
-        norm.reset( new L2Norm() );
-    }
+    NormPtr norm( Norm::create( lamaconf.getNorm() ) );
 
     double eps = lamaconf.getAbsoluteTolerance();
 

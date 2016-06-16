@@ -41,6 +41,7 @@
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/lama/norm/Norm.hpp>
 
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/AMGSetup.hpp>
@@ -140,6 +141,26 @@ void vectorInfo()
     cout << endl;
 }
 
+void normInfo()
+{
+    using namespace scai::lama;
+    vector<string> values;  // string is create type for the factory
+    Norm::getCreateValues( values );
+    cout << endl;
+    cout << "Factory of Norm: " << values.size() << " entries" << endl;
+    cout << "===========================" << endl;
+    cout << endl;
+
+    for ( size_t i = 0; i < values.size(); ++i )
+    {
+        cout << "   Registered values[" << i << "] = " << values[i] << endl;
+        scai::common::shared_ptr<Norm> norm( Norm::create( values[i] ) );
+        cout << "      Norm: " << *norm << endl;
+    }
+
+    cout << endl;
+}
+
 void solverInfo()
 {
     using namespace scai::solver;
@@ -220,6 +241,7 @@ int main( int /*argc */, char** /*argv*/ )
     vectorInfo();
     communicatorInfo();
     contextInfo();
+    normInfo();
     solverInfo();
     setupInfo();
     distributionInfo();
