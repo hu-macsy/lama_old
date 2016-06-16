@@ -39,7 +39,11 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
+#include <scai/lama/norm/L1Norm.hpp>
+#include <scai/lama/norm/MaxNorm.hpp>
+#include <scai/lama/StorageIO.hpp>
 
 #include <scai/solver/GMRES.hpp>
 #include <scai/solver/SimpleAMG.hpp>
@@ -91,20 +95,21 @@ int main( int argc, const char* argv[] )
     int myRank   = comm.getRank();
     int numProcs = comm.getSize();
 
-    // only one argument for the filename should remain
+    // accept only 2 - 4 arguments
 
-    if ( argc < 1 || argc > 3 )
+    if ( argc < 2  || argc > 4 )
     {
         if ( myRank == 0 )
         {
             CONFIG_ERROR( "Illegal number of arguments" )
         }
 
-        exit( 1 );
+        return -1;
     }
 
     const char* matrix_filename = argv[1];
-    const char* vector_filename = argc <= 2 ? argv[1] : argv[2];
+    const char* rhs_filename    = argc <= 2 ? argv[1] : argv[2];
+    const char* sol_filename    = argc <= 3 ? NULL : argv[3];
 
     // use auto pointer so that matrix will be deleted at program exit
 
@@ -114,28 +119,36 @@ int main( int argc, const char* argv[] )
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
 
-    CSRSparseMatrix<ValueType> inMatrix;
+    // input matrix will be CSR format
+
+    scai::common::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
+    Matrix& inMatrix = *inMatrixPtr;
+
     // Each processor should print its configuration
+
     cout << lamaconf << endl;
+
     {
         LamaTiming timer( comm, "Loading data" );
+
         // read matrix + rhs from disk
+
         inMatrix.readFromFile( matrix_filename );
-        std::cout << "Matrix from file " << matrix_filename << " : " << inMatrix << std::endl;
+        cout << "Matrix from file " << matrix_filename << " : " << inMatrix << endl;
 
         try
         {
-            rhs.readFromFile( vector_filename );
+            rhs.readFromFile( rhs_filename );
+            cout << "rhs from file " << rhs_filename << " : " << rhs << endl;
         }
-        catch ( const std::exception& )
+        catch ( const exception& )
         {
-            std::cout << "reading vector from file " << vector_filename << " failed, take sum( Matrix, 2 ) " << std::endl;
+            cout << "reading vector from file " << rhs_filename << " failed, take sum( Matrix, 2 ) " << endl;
             {
                 scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
                 x.allocate( inMatrix.getColDistributionPtr() );
                 x = Scalar( 1 );
-                rhs.allocate( inMatrix.getRowDistributionPtr() );
                 rhs = inMatrix * x;
             }
         }
@@ -144,7 +157,9 @@ int main( int argc, const char* argv[] )
         SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns(), "size mismatch" )
         SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size(), "size mismatch" )
     }
-    // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
+
+    // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
+
     scai::common::unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
     Vector& solution = *solutionPtr;
     int numRows = inMatrix.getNumRows();
@@ -181,6 +196,8 @@ int main( int argc, const char* argv[] )
         matrix = inMatrix;
     }
 
+    cout << "matrix = " << matrix << endl;
+
     inMatrix.clear();
     double matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
 
@@ -202,9 +219,9 @@ int main( int argc, const char* argv[] )
     }
 
     // setting up solver from file "solveconfig.txt"
-    std::ostringstream solverName;
+    ostringstream solverName;
     solverName << "<" << lamaconf.getSolverName() << ">";
-    std::ostringstream loggerName;
+    ostringstream loggerName;
     loggerName << solverName.str() << ", " << lamaconf.getCommunicator() << ": ";
     LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                          lamaconf.getLogLevel(),
@@ -217,7 +234,20 @@ int main( int argc, const char* argv[] )
 
     CriterionPtr crit;
 
-    NormPtr norm( new L2Norm() );
+    NormPtr norm;
+
+    if ( lamaconf.getNorm() == "L1" )
+    {
+        norm.reset( new L1Norm() );
+    }
+    else if ( lamaconf.getNorm() == "Max" )
+    {
+        norm.reset( new MaxNorm() );
+    }
+    else
+    {
+        norm.reset( new L2Norm() );
+    }
 
     double eps = lamaconf.getAbsoluteTolerance();
 
@@ -253,7 +283,7 @@ int main( int argc, const char* argv[] )
 
     if ( !crit )
     {
-        std::cout << "No criterion set, take default" << std::endl;
+        cout << "No criterion set, take default" << endl;
 
         eps = 0.001;
 
@@ -272,7 +302,7 @@ int main( int argc, const char* argv[] )
  
         common::Settings::getEnvironment( dim, "SCAI_KRYLOV_DIM" );
 
-        std::cout << "GMRES solver, krylov dim = " << dim << std::endl;
+        cout << "GMRES solver, krylov dim = " << dim << endl;
 
         gmresSolver->setKrylovDim( dim );
     }
@@ -287,9 +317,6 @@ int main( int argc, const char* argv[] )
         amgSolver->setMinVarsCoarseLevel( 200 );
     }
 
-    // SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    // mySolver.setPreconditioner( preconditioner );
-
     {
         LamaTiming timer( comm, "Solver setup" );
         mySolver->initialize( matrix );
@@ -298,11 +325,34 @@ int main( int argc, const char* argv[] )
         LamaTiming timer( comm, "Solver solve" );
         mySolver->solve( solution, rhs );
     }
-    bool writeFlag = false;
 
-    if ( writeFlag )
+    // if 3rd argument for solution file is specified, write it or compare it
+
+    if ( sol_filename != NULL )
     {
-        LamaTiming timer( comm, "Writing solution" );
-        solution.writeToFile( "CG_solution" );
+        if ( _StorageIO::fileExists( sol_filename ) )
+        {
+            cout << "Compare solution with vector in " << sol_filename << endl;
+            LamaTiming timer( comm, "Comparing solution" );
+            scai::common::unique_ptr<Vector> compSolutionPtr( Vector::create( rhs.getCreateValue() ) );
+            Vector& compSolution = *compSolutionPtr;
+            compSolution.readFromFile( sol_filename );
+            compSolution.redistribute( solution.getDistributionPtr() );
+            compSolution -= solution;
+            Scalar maxDiff = compSolution.maxNorm();
+            cout << "Maximal difference between solution in " << sol_filename << ": " << maxDiff << endl;
+        }
+        else
+        {
+            cout << "Write solution to output file " << sol_filename << ".mtx (Matrix Market)" << endl;
+            LamaTiming timer( comm, "Writing solution" );
+            // replicate solution on all processors
+            DistributionPtr repDist( new NoDistribution( solution.size() ) );
+            solution.redistribute( repDist );
+            if ( myRank == 0 )
+            {
+                solution.writeToFile( sol_filename, File::MATRIX_MARKET );
+            }
+        }
     }
 }

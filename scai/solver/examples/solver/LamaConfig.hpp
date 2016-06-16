@@ -100,7 +100,11 @@ public:
 
     /** Getter for the solver id */
 
-    const char* getSolverName( ) const;
+    const std::string& getSolverName( ) const;
+
+    /** Getter for the norm id */
+
+    const std::string& getNorm( ) const;
 
     /** get a new matrix of the specified matrix format and value type. */
 
@@ -182,6 +186,7 @@ public:
 private:
 
     std::string mSolverName;   // name of solver, used for factory
+    std::string mNorm;         // name of norm, not yet factory
 
     scai::lama::Matrix::MatrixStorageFormat mMatrixFormat;
 
@@ -256,16 +261,19 @@ static void getTolerance( double& tolerance, const char* name )
 LamaConfig::LamaConfig()
 {
     using scai::common::Settings;
+ 
+    // take default communicator, can be set by SCAI_COMMUNICATOR
 
-    mComm              = scai::dmemo::Communicator::getCommunicatorPtr();
+    mComm = scai::dmemo::Communicator::getCommunicatorPtr();
 
     // allow settings specified for each process
     // Be careful: can cause problems, e.g. MAX_ITER, xxx_TOL 
 
     scai::common::Settings::setRank( mComm->getRank() );
 
-    mValueType         = scai::common::scalar::UNKNOWN;
-    mContext           = scai::hmemo::Context::getContextPtr( );
+    // take default context, can be set by SCAI_CONTEXT
+
+    mContext = scai::hmemo::Context::getContextPtr( );
 
     bool isSet;
 
@@ -380,6 +388,28 @@ LamaConfig::LamaConfig()
         }
     }
 
+    mNorm = "L1";
+
+    if ( scai::common::Settings::getEnvironment( val, "SCAI_NORM" ) )
+    {
+        if ( val == "L2" )
+        {
+            mNorm = "L2";
+        }
+        else if ( val == "L1" ) 
+        {
+            mNorm = "L1";
+        }
+        else if ( val == "Max" ) 
+        {
+            mNorm = "Max";
+        }
+        else
+        {
+            CONFIG_ERROR( "norm " << val << " not available" )
+        }
+    }
+  
     // solver log level, default is convergence History
 
     mLogLevel = scai::solver::LogLevel::convergenceHistory;
@@ -461,6 +491,8 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     }
 
     stream << std::endl;
+
+    stream << "Norm              = " << getNorm() << std::endl;
 }
 
 scai::lama::Matrix::MatrixStorageFormat LamaConfig::getFormat( ) const
@@ -478,9 +510,14 @@ scai::solver::LogLevel::LogLevel LamaConfig::getLogLevel() const
     return mLogLevel;
 }
 
-const char* LamaConfig::getSolverName( ) const
+const std::string& LamaConfig::getSolverName( ) const
 {
-    return mSolverName.c_str();
+    return mSolverName;
+}
+
+const std::string& LamaConfig::getNorm( ) const
+{
+    return mNorm;
 }
 
 float LamaConfig::getWeight() const
@@ -503,11 +540,12 @@ void LamaConfig::printHelp( const char* progName )
     using std::cout;
     using std::endl;
 
-    cout << "Usage: " << progName << " <filename> [ options ][ T<num_threads> ] " << endl;
+    cout << "Usage: " << progName << " <matrix_filename> [ rhs_filename ] [ sol_filename ] [ options ] " << endl;
     cout << "         solver specific options:" << endl;
     cout << "         --SCAI_SOLVER=[CG|BiCG|...]" << endl;
     cout << "         --SCAI_SOLVER_LOG=[noLogging|convergenceHistory|solverInformation|advancedInformation|completeInformation]" << endl;
     cout << "         --SCAI_MAX_ITER=<int_val>" << endl;
+    cout << "         --SCAI_NORM=L1|L2|Max" << endl;
     cout << "         --SCAI_REL_TOL=<val>" << endl;
     cout << "         --SCAI_ABS_TOL=<val>" << endl;
     cout << "         --SCAI_DIV_TOL=<val>" << endl;
