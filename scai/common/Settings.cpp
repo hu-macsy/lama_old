@@ -52,6 +52,13 @@ namespace common
 
 /* ----------------------------------------------------------------------------- */
 
+const char* Settings::RANK_DELIMITER()
+{
+    return ",";
+}
+
+/* ----------------------------------------------------------------------------- */
+
 void Settings::parseArgs( int& argc, const char* argv[] )
 {
     const bool replace = true;   // command line args overwrite environment settings
@@ -194,11 +201,11 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
 
     val = env;
 
-    if ( std::string::npos != val.find_first_of( RANK_SEPARATOR_CHAR, 0 ) )
+    if ( std::string::npos != val.find_first_of( RANK_DELIMITER(), 0 ) )
     {
         // val = val_1,val_2,val_3
         std::vector<std::string> values;
-        tokenize( values, env, RANK_SEPARATOR_CHAR );
+        tokenize( values, env, RANK_DELIMITER() );
         int pos = sRank % static_cast<int>( values.size() );
         val = values[pos];
     }
@@ -208,28 +215,34 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
 
 /* ----------------------------------------------------------------------------- */
 
-void Settings::tokenize( std::vector<std::string>& values, const std::string& input, const char seperator )
+void Settings::tokenize( std::vector<std::string>& tokens, const std::string& input, const std::string& delimiters )
 {
-    values.clear();
-    size_t found = std::string::npos;
+    tokens.clear();  
 
-    do
+    // Skip delimiters at beginning.
+    std::string::size_type lastPos = input.find_first_not_of( delimiters, 0 );
+    // Find first "non-delimiter".
+    std::string::size_type pos     = input.find_first_of( delimiters, lastPos );
+
+    while ( std::string::npos != pos || std::string::npos != lastPos )
     {
-        const size_t prevFound = found + 1;
-        found = input.find( seperator, prevFound );
-        values.push_back( input.substr( prevFound, found - prevFound ) );
+        // Found a token, add it to the vector.
+        tokens.push_back( input.substr( lastPos, pos - lastPos ) );
+        // Skip delimiters.  Note the "not_of"
+        lastPos = input.find_first_not_of( delimiters, pos );
+        // Find next "non-delimiter"
+        pos = input.find_first_of( delimiters, lastPos );
     }
-    while ( found != std::string::npos );
 }
 
-bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char separator )
+bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char* delimiters )
 {
     std::string val;
     bool found = getEnvironment( val, envVarName );
 
     if ( found )
     {
-        tokenize( vals, val, separator );
+        tokenize( vals, val, delimiters );
     }
 
     return found;

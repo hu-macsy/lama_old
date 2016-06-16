@@ -164,7 +164,7 @@ TraceConfig::TraceConfig()
 
     // get all values separated by :
 
-    if ( scai::common::Settings::getEnvironment( values, SCAI_ENV_TRACE_CONFIG, ':' ) )
+    if ( scai::common::Settings::getEnvironment( values, SCAI_ENV_TRACE_CONFIG, ":" ) )
     {
         // SCAI_TRACE=key1:key2:key3=val3:key4
         if ( values.size() != 1 || values[0] != "OFF" )
@@ -174,7 +174,7 @@ TraceConfig::TraceConfig()
             for ( size_t i = 0; i < values.size(); ++i )
             {
                 std::vector<std::string> keys;
-                scai::common::Settings::tokenize( keys, values[i], '=' );
+                scai::common::Settings::tokenize( keys, values[i], "=" );
                 std::string& key = keys[0];
 
                 // make upper case of key

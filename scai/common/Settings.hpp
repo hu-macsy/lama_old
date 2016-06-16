@@ -103,19 +103,19 @@ public:
      *
      *  @param[out] vals is a vector of separated strings from the environment varialbe
      *  @param[in]  envVarName is name of the environment variable
-     *  @param[in]  separator is the character used to separate
+     *  @param[in]  delimiters contains characters used for splitting
      *  @return     true if environment variable was set
      */
-    static bool getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char separator );
+    static bool getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char* delimiters );
 
     /** Help routine to tokenize a string by a given separator
      *
-     *  @param[out] values is a vector of separated strings from the input string
+     *  @param[out] tokens is a vector of separated strings from the input string
      *  @param[in]  input is a string that will be tokenized
-     *  @param[in]  seperator is the character used to separate
+     *  @param[in]  delimiters contains all characters used for separation
      *
      */
-    static void tokenize( std::vector<std::string>& values, const std::string& input, const char seperator );
+    static void tokenize( std::vector<std::string>& tokens, const std::string& input, const std::string& delimiters = " " );
 
     /** This method sets globally the number of argument that is taken by a comma separated value list. */
 
@@ -149,7 +149,7 @@ private:
 
     static int sRank;  //<!  specifies pos to take from comma separated values
 
-    static const char RANK_SEPARATOR_CHAR = ',';
+    static const char* RANK_DELIMITER(); 
 };
 
 } /* end namespace common */
