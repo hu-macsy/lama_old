@@ -43,3 +43,4 @@ VERSION 1.0.0 (22.05.2013 - Alpamayo):
      * Nvidia GPU (CUDA)
    * distributed support via MPI
    * various linear iterative solvers
+
