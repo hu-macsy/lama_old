@@ -38,6 +38,7 @@ scai_project(
 
         AssertException
         Exception
+        IOException
         NotSupportedValueTypeException
         UnsupportedException
 
