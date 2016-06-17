@@ -388,7 +388,7 @@ LamaConfig::LamaConfig()
         }
     }
 
-    mNorm = "L1";
+    mNorm = "L2";
 
     scai::common::Settings::getEnvironment( mNorm, "SCAI_NORM" );
 
@@ -522,6 +522,38 @@ scai::lama::Matrix* LamaConfig::getMatrix()
     return scai::lama::Matrix::getMatrix( mMatrixFormat, mValueType );
 }
 
+static std::string getLoggers()
+{
+    std::ostringstream loggerNames;
+
+    std::vector<std::string> vals;
+    scai::solver::Solver::getCreateValues( vals );
+    for ( size_t i = 0; i< vals.size(); ++i )
+    {
+       if ( i > 0 )
+       {
+           loggerNames << "|";
+       }
+       loggerNames << vals[i];
+    }
+    return loggerNames.str();
+}
+
+static std::string getLogLevels()
+{
+    std::ostringstream levelNames;
+
+    for ( int i = 0; i < scai::solver::LogLevel::UNKNOWN; ++i )
+    {
+       if ( i > 0 )
+       {
+           levelNames << "|";
+       }
+       levelNames << scai::solver::LogLevel::LogLevel( i );
+    }
+    return levelNames.str();
+}
+
 void LamaConfig::printHelp( const char* progName )
 {
     using std::cout;
@@ -529,8 +561,8 @@ void LamaConfig::printHelp( const char* progName )
 
     cout << "Usage: " << progName << " <matrix_filename> [ rhs_filename ] [ sol_filename ] [ options ] " << endl;
     cout << "         solver specific options:" << endl;
-    cout << "         --SCAI_SOLVER=[CG|BiCG|...]" << endl;
-    cout << "         --SCAI_SOLVER_LOG=[noLogging|convergenceHistory|solverInformation|advancedInformation|completeInformation]" << endl;
+    cout << "         --SCAI_SOLVER=[" << getLoggers() << "]" << endl;
+    cout << "         --SCAI_SOLVER_LOG=[" << getLogLevels() << "]" << endl;
     cout << "         --SCAI_MAX_ITER=<int_val>" << endl;
     cout << "         --SCAI_NORM=L1|L2|Max" << endl;
     cout << "         --SCAI_REL_TOL=<val>" << endl;

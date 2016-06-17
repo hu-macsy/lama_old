@@ -46,6 +46,14 @@ using namespace hmemo;
 using namespace lama;
 using namespace utilskernel;
 
+/** Method to count number of lines of a text file and the maximal number of entries in one line 
+ *
+ *  @param[out]  number of lines the file has
+ *  @param[out]  nEntries is maximal number of entries
+ *  @param[in]   fileName is the name of the file
+ *
+ *  Note: it might be possible that one line contains less than 'nEntries' entries
+ */
 void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
 {
     nLines   = 0;
@@ -72,27 +80,47 @@ void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName
         if ( nTokens > nEntries )
         {
             nEntries = nTokens;
-            cout << "max tokens = " << nEntries << " at line " << nLines << endl;
+            // LOG_DEBUG: cout << "max tokens = " << nEntries << " at line " << nLines << endl;
         }
     }
 }
 
 template<typename ValueType>
-void readVal( ValueType& val, std::istringstream& input )
+bool readVal( ValueType& val, std::istringstream& input )
 {
-    input >> val;
+    return input >> val;
 }
 
 template<>
-void readVal( IndexType& val, std::istringstream& input )
+bool readVal( IndexType& val, std::istringstream& input )
 {
+    // int can als be represented as "1.4280000e+03" 
+
     double x;
-    input >> x;
-    val = static_cast<IndexType>( x );
+
+    bool ok = input >> x;
+
+    if ( ok ) 
+    {
+        val = static_cast<IndexType>( x );
+        // do not accept e.g. 1.53
+        ok  = static_cast<double>( val ) == x;
+    }
+    else
+    {
+        val = 0;
+    }
+
+    return ok;
 }
 
-/** Read in a complex matrix of size n x n and nnz non-zero vals in double array of size 2 * n
- *  Each row in input file contains row index, column index, real part, imag part
+/** Read in a set of arrays from a file, one entry for each array in a line
+ *
+ *  @param[out] val1 val2 val3 are the arrays whose values are read, size will be nlines
+ *  @param[in]  nlines is number of lines
+ *  @param[in]  fileName is the name of the input file
+ *
+ *  Be careful: if ValueType is complex, two entries must be in the input file
  */
 
 template<typename ValueType1, typename ValueType2, typename ValueType3>
@@ -119,6 +147,8 @@ void readTextFile( HArray<ValueType1>& val1,
     WriteOnlyAccess<ValueType2> wVal2( val2, ctx, nlines );
     WriteOnlyAccess<ValueType3> wVal3( val3, ctx, nlines );
 
+    bool error = false;
+
     std::string line;
 
     for ( IndexType k = 0; k < nlines; ++k )
@@ -132,9 +162,22 @@ void readTextFile( HArray<ValueType1>& val1,
 
         std::istringstream iss( line );
 
-        readVal( wVal1[k], iss );
-        readVal( wVal2[k], iss );
-        readVal( wVal3[k], iss );
+        if ( readVal( wVal1[k], iss ) && 
+             readVal( wVal2[k], iss ) && 
+             readVal( wVal3[k], iss ) )
+        {
+            // okay
+        }
+        else
+        {
+            std::cout << "ERROR in " << fileName << ": Missed or wrong values in line " << k << std::endl;
+            error = true;
+        }
+    }
+
+    if ( error )
+    {
+        COMMON_THROWEXCEPTION( "File " << fileName << " contains errors" )
     }
 }
 
