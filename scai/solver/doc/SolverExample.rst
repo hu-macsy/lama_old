@@ -3,23 +3,31 @@
 Solver Example
 ==============
 
-In the example directory a solver example program can be found.
+In the example directory a solver example program ``solver.exe`` can be found.
+This executable can be used to test all available solvers with any input matrices.
+Nearly all settings can be specified by command line arguments.
+
+Command Line Arguments
+----------------------
 
 .. code-block:: bash
 
-    solver.exe [options] <matrix_filename> [ <vector_filename> ]
+    solver.exe [options] <matrix_filename> [ <rhs_filename> [ solution_filename ] ]
 
 The name of the file that contains the matrix is a mandatory argument. The name
 of the file that contains the right-hand-side is optional; if not specified the
-right hand side is a vector initialized with one.
+right hand side is sum( matrix, dim = 2 ), i.e. each entry is the sum of the corresponding
+row. If a solution filename is specified, the solution is either written into this
+file (file does not exist) or it is compared with the vector in the file (file exists).
 
 These are the supported options:
 
 .. code-block:: bash
 
-         --SCAI_SOLVER=[CG|BiCG|...]
+         --SCAI_SOLVER=[BiCG|BiCGstab|CG|CGNE|CGNR|CGS|GMRES|InverseSolver|Jacobi|MINRES|QMR|Richardson|SimpleAMG|TFQMR]
          --SCAI_SOLVER_LOG=[noLogging|convergenceHistory|solverInformation|advancedInformation|completeInformation]
          --SCAI_MAX_ITER=<int_val>
+         --SCAI_NORM=L1|L2|Max
          --SCAI_REL_TOL=<val>
          --SCAI_ABS_TOL=<val>
          --SCAI_DIV_TOL=<val>
@@ -51,6 +59,7 @@ specified, it will print all the default settings.
     #Threads/CPU      = 8
     weight            = 1
     Tolerances        = 0.00001(relative)
+    Norm              = L2
 
 Input Matrices
 --------------
@@ -59,7 +68,7 @@ Input Matrices
 
    matrix_generator.exe <filename> <dim> <stencilType> <dimX> [ <dimY> [ <dimZ> ] ]
 
-The `filename` specifies the name of the output file for the matrix and the vector.
+The ``filename`` specifies the name of the output file for the matrix and the vector.
 
 * filename = <id>.mtx -> generates matrix market format, <id>_v.mtx for vector
 * filename = <id>     -> generates binary format, <id>.frm for matrix, <id>.frv for vector
@@ -74,15 +83,15 @@ The following stencil types are supported:
 
 .. code-block:: bash
 
-   marix_generator matrix_%s 3 27 50 50 50 
+   matrix_generator matrix.mtx 3 27 50 50 50 
 
 A Python script is provided that can be used to generate a lot of input sets for different 
 sizes.
 
 .. code-block:: bash
 
-   python GenMatrices.py
-   ./GenMatrices.py
+   python GenMatrices.py         
+   ./GenMatrices.py         ! or script call
 
    ls data
 
@@ -92,7 +101,16 @@ Storage and Value Type
 You can run the solver with different value types. But be careful when reading binary data as in this
 case the value type should match the type of the input data.
 
+.. code-block:: bash
 
+    matrix_generator.exe matrix 3 27 10 10 10           ! generates binary double data
+    solver.exe matrix.frm matrix.frv                    ! okay
+    solver.exe matrix.frm matrix.frv --SCAI_TYPE=float  ! not possible, binary mismatch
+
+.. code-block:: bash
+
+    matrix_generator matrix.mtx 3 27 10 10 10             ! generates formatted data
+    solver.exe matrix.mtx matrix_v.mtx --SCAI_TYPE=float  ! okay
 
 Solver Configuration
 --------------------
