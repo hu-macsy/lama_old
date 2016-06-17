@@ -4,9 +4,9 @@ import MultiBench
 
 # Important: log_complete must be switched on for Logger fo Solver
 
-cmd     = "cg_solver.exe data/2D5P_500 --SCAI_FORMAT=%x --SCAI_CONTEXT=%y log_complete"
+cmd     = "solver.exe data/3D27P_100.frm --SCAI_FORMAT=%x --SCAI_CONTEXT=%y --SCAI_SOLVER_LOG=completeInformation"
 
-xlabels = ( "CSR", "DIA", "ELL", "JDS" )
+xlabels = ( "CSR", "ELL", "JDS", "DIA" )
 ylabels = ( "Host", "CUDA" )
 
 # Just final results
@@ -15,11 +15,11 @@ ylabels = ( "Host", "CUDA" )
 
 # One figure for each x label, plot iterations
 
-kind = 1
+# kind = 1
 
 # One figure for each x label, plot residual
 
-# kind = 2
+kind = 2
 
 title = "CG solver of 2D5P stencil 500 x 500 - different sparse matrix formats"
 
