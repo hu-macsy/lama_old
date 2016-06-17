@@ -396,7 +396,7 @@ public:
     virtual void redistribute( dmemo::DistributionPtr distribution );
 
     /**
-     * @brief Implementatio of pure method, see Vector::writeToFile
+     * @brief Implementation of pure method, see Vector::writeToFile
      *
      */
     virtual void writeToFile(

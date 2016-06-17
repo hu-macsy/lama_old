@@ -37,6 +37,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
+#include <scai/lama/StorageIO.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
@@ -144,17 +145,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-void cleanupfiles( std::string filename )
-{
-    std::string prefix = scai::test::Configuration::getPath();
-    std::string s = prefix + "/" + filename;
-    SCAI_LOG_INFO( logger, "Deleting " << s << " .vec/.frv ." );
-    std::remove( ( s + ".vec" ).c_str() );
-    std::remove( ( s + ".frv" ).c_str() );
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmetic_test_types )
 {
     // IO for complex values can cause size conflicts, sizeof( double ) == sizeof( ComplexFloat )
@@ -171,28 +161,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmeti
     std::string prefix = scai::test::Configuration::getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
-    vector.writeToFile( prefix + "/" + testfilename, File::SAMG_FORMAT, TypeTraits<ValueType>::stype );
+    vector.writeToFile( prefix + "/" + testfilename + ".frv", File::SAMG_FORMAT, TypeTraits<ValueType>::stype );
     DenseVector<ValueType> vector2( prefix + "/" + testfilename + ".frv" );
     // replicate vector2 as it is only on first processor
     vector2.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector2, result );
-    cleanupfiles( testfilename );
+    _StorageIO::removeFile( prefix + "/" + testfilename + ".frv" );
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
-    vector.writeToFile( fileName, File::SAMG_FORMAT, TypeTraits<ValueType>::stype, true );
+    vector.writeToFile( fileName + ".frv", File::SAMG_FORMAT, TypeTraits<ValueType>::stype, true );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
     DenseVector<ValueType> vector3( prefix + "/" + testfilename + ".frv" );
     vector3.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector3, result );
-    cleanupfiles( testfilename );
+    _StorageIO::removeFile( prefix + "/" + testfilename + ".frv" );
     // write and read mtx
-    vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET );
+    vector.writeToFile( prefix + "/" + testfilename + ".mtx", File::MATRIX_MARKET );
     DenseVector<ValueType> vector6( prefix + "/" + testfilename + ".mtx" );
     vector6.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector6, result );
-    //cleanupfiles( testfilename + ".mtx" );
-    std::remove( ( prefix + "/" + testfilename + ".mtx" ).c_str() );
+    _StorageIO::removeFile( prefix + "/" + testfilename + ".mtx" );
 }
 
 /* ------------------------------------------------------------------------- */

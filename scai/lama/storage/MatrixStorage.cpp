@@ -1272,7 +1272,7 @@ void MatrixStorage<ValueType>::writeToFile(
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
-// TODO Do not build CSR if this matrix is CSR storage
+    // TODO Do not build CSR if this matrix is CSR storage
     buildCSRData( csrIA, csrJA, csrValues );
     StorageIO<ValueType>::writeCSRToFile( size, rank, csrIA, mNumColumns, csrJA, csrValues, fileName, fileType,
                                           dataType, iaType, jaType, writeBinary );

@@ -528,7 +528,7 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 
 void Matrix::writeToFile(
     const std::string& fileName,
-    const File::FileType fileType /* = UNFORMATTED */,
+    const File::FileType fileType /* = DEFAULT */,
     const common::scalar::ScalarType valuesType /* = INTERNAL */,
     const common::scalar::ScalarType iaType /* = INDEX_TYPE */,
     const common::scalar::ScalarType jaType /* = INDEX_TYPE */,

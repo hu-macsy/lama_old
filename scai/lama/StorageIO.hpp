@@ -107,6 +107,13 @@ public:
 
     static bool hasSuffix( const std::string& fileName, const std::string& suffix );
 
+    /** Help routine to remove file and maybe joint files 
+     *
+     *  @param[in] fileName file to delete
+     *  @returns   0 on success
+     */
+    static int removeFile( const std::string& fileName );
+
 protected:
 
     /** Logger for this class */

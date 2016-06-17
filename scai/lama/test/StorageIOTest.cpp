@@ -84,9 +84,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, scai_arithmetic_te
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
-    std::string filename = "out_formatted";
+    std::string filename = "out_formatted.frm";
     csrMatrix.writeToFile( filename, File::SAMG_FORMAT );
-    readMatrix.readFromFile( filename + ".frm" );
+    readMatrix.readFromFile( filename );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
 
@@ -99,8 +99,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, scai_arithmetic_te
         }
     }
 
-    std::remove( ( filename + ".amg" ).c_str() );
-    std::remove( ( filename + ".frm" ).c_str() );
+    int rc = _StorageIO::removeFile( filename );
+    BOOST_CHECK_EQUAL( rc, 0 );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -117,9 +117,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, scai_arithmetic
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
-    std::string filename = "out_matrix_market";
+    std::string filename = "out_matrix_market.mtx";
     csrMatrix.writeToFile( filename, File::MATRIX_MARKET );
-    readMatrix.readFromFile( filename + ".mtx" );
+    readMatrix.readFromFile( filename );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
 
@@ -131,7 +131,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, scai_arithmetic
         }
     }
 
-    std::remove( filename.c_str() );
+    int rc = _StorageIO::removeFile( filename );
+    BOOST_CHECK_EQUAL( rc, 0 );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -146,13 +147,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, scai_arithmetic_test_
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
-    std::string filename = "out_binary";
-    csrMatrix.writeToFile( filename, File::SAMG_FORMAT, TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, TypeTraits<IndexType>::stype, true );
-    readMatrix.readFromFile( filename + ".frm" );
+    std::string filename = "out_binary.frm";
+    bool binary = true;
+    csrMatrix.writeToFile( filename, File::SAMG_FORMAT, TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, TypeTraits<IndexType>::stype, binary );
+    readMatrix.readFromFile( filename );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
 
-// Binary data has no lost of accuracy, so we compare for equality here
+    // Binary data has no lost of accuracy, so we compare for equality here
 
     for ( IndexType i = 0; i < csrMatrix.getNumRows(); ++i )
     {
@@ -163,9 +165,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, scai_arithmetic_test_
         }
     }
 
-    // TODO: uncomment
-//    std::remove( ( filename + ".amg" ).c_str() );
-//    std::remove( ( filename + ".frm" ).c_str() );
+    int rc = _StorageIO::removeFile( filename );
+    BOOST_CHECK_EQUAL( rc, 0 );
 }
 
 /* ------------------------------------------------------------------------- */

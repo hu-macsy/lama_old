@@ -296,14 +296,14 @@ public:
     /**
      * @brief write the vector to an output file
      *
-     * @param[in] fileName is the name of the output file (suffix might be added according to the file type)
-     * @param[in] fileType format of the output file, default is binary
+     * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
+     * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
      * @param[in] dataType representation type for output values, default is same type as vector
-     * @param[in] writeBinary whether the data should be write binary
+     * @param[in] writeBinary whether the data should be written binary
      */
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
+        const File::FileType fileType = File::DEFAULT,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const bool writeBinary = false ) const = 0;
 

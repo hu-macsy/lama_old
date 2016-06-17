@@ -114,9 +114,20 @@ public:
 
     virtual IndexType getCSRGraphSize() const;
 
+    /**
+     * @brief write the matrix to an output file
+     *
+     * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
+     * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
+     * @param[in] valuesType representation type for output values, default is same type as matrix values
+     * @param[in] iaType representation type for row index values
+     * @param[in] jaType representation type for col index values
+     * @param[in] writeBinary whether the data should be written binary
+     */
+
     void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
+        const File::FileType fileType = File::DEFAULT,
         const common::scalar::ScalarType valuesType = common::scalar::INTERNAL,
         const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
         const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,

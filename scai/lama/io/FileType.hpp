@@ -68,7 +68,7 @@ enum FileType
     MATRIX_MARKET,
 
     /**
-     * @brief unspecified, used internally
+     * @brief unspecified, used internally to decide by suffix
      */
     DEFAULT
 };
@@ -89,8 +89,12 @@ static inline std::ostream& operator<<( std::ostream& stream, const FileType& ob
             stream << "MATRIX_MARKET";
             break;
 
+        case DEFAULT:
+            stream << "DEFAULT";
+            break;
+
         default:
-            stream << "<unknown_file_type>";
+            stream << "unknown";
     }
 
     return stream;
