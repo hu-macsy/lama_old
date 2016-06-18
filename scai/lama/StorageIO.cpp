@@ -72,6 +72,42 @@ using sparsekernel::OpenMPCSRUtils;
 namespace lama
 {
 
+/** Constant string for Matrix Market Suffix */
+
+static std::string MM_SUFFIX = ".mtx";
+
+/** SAMG file suffixes */
+
+static std::string SAMG_MAT_HEADER_SUFFIX = ".frm";
+static std::string SAMG_MAT_DATA_SUFFIX   = ".amg";
+static std::string SAMG_VEC_HEADER_SUFFIX = ".frv";
+static std::string SAMG_VEC_DATA_SUFFIX   = ".vec";
+
+/** Help routine to get data file name by header file name 
+ *
+ *  @param[in] headerFileName is the file name of header file
+ *  @return    name of the data file
+ *
+ *  Note: returns same name if no distinction between header and data 
+ */
+static std::string getDataFileName( const std::string& headerFileName )
+{
+    std::string result = headerFileName;
+
+    if ( _StorageIO::hasSuffix( headerFileName, SAMG_MAT_HEADER_SUFFIX) )
+    {
+        size_t len = SAMG_MAT_HEADER_SUFFIX.length();
+        result.replace( result.length() - len, len, SAMG_MAT_DATA_SUFFIX );
+    }
+    else if ( _StorageIO::hasSuffix( headerFileName, SAMG_VEC_HEADER_SUFFIX ) )
+    {
+        size_t len = SAMG_VEC_HEADER_SUFFIX.length();
+        result.replace( result.length() - len, len, SAMG_VEC_DATA_SUFFIX );
+    }
+
+    return result;   // same name if no distinction between header and data
+}
+
 #define VERSION_ID 22
 
 /* -------------------------------------------------------------------------- */
@@ -92,8 +128,8 @@ void StorageIO<ValueType>::readCSRFromSAMGFile(
     IndexType& numColumns,
     const std::string& headerFileName )
 {
-    SCAI_ASSERT_ERROR( hasSuffix( headerFileName, ".frm" ), 
-                       "SAMG matrix file name '" << headerFileName << "' illegal, must have suffix .frm" )
+    SCAI_ASSERT_ERROR( hasSuffix( headerFileName, SAMG_MAT_HEADER_SUFFIX ), 
+                       "SAMG matrix file name '" << headerFileName << "' illegal, must have suffix " << SAMG_MAT_HEADER_SUFFIX )
 
     SCAI_REGION( "StorageIO.readCSRFromSAMGFile" )
     // start with reading the header
@@ -131,7 +167,7 @@ void StorageIO<ValueType>::readCSRFromSAMGFile(
         flags |= std::ios::binary;
     }
 
-    std::string dataFileName = headerFileName.substr( 0, headerFileName.size() - 4 ) + ".amg";
+    std::string dataFileName = getDataFileName( headerFileName );
     inFile.open( dataFileName, flags );
     //TODO: allow different type to be read?
     inFile.read( csrIA, numRows + 1, -1, common::TypeTraits<IndexType>::stype, '\n' );
@@ -155,20 +191,12 @@ void StorageIO<ValueType>::writeCSRToSAMGFile(
     const common::scalar::ScalarType valuesType,
     const bool writeBinary )
 {
-    SCAI_ASSERT_ERROR( hasSuffix( headerFileName, ".frm" ), 
-                       "SAMG matrix file name '" << headerFileName << "' illegal, must have suffix .frm" )
+    SCAI_ASSERT_ERROR( hasSuffix( headerFileName, SAMG_MAT_HEADER_SUFFIX ), 
+                       "SAMG matrix file name '" << headerFileName << "' illegal, must have suffix " << SAMG_MAT_HEADER_SUFFIX )
 
-    SCAI_REGION( "StorageIO.writeCSRToBinaryFile " )
-    char fileType;
+    SCAI_REGION( "StorageIO.writeCSRToBinaryFile " ) 
 
-    if ( writeBinary )
-    {
-        fileType = 'b';
-    }
-    else
-    {
-        fileType = 'f';
-    }
+    char fileType = writeBinary ? 'b' : 'f';
 
     const IndexType numRows = csrIA.size() - 1;
     const IndexType numValues = csrJA.size();
@@ -187,7 +215,7 @@ void StorageIO<ValueType>::writeCSRToSAMGFile(
         flags |= std::ios::binary;
     }
 
-    std::string dataFileName = headerFileName.substr( 0, headerFileName.size() - 4 ) + ".amg";
+    std::string dataFileName = getDataFileName( headerFileName );
 
     outFile.open( dataFileName, flags );
     outFile.write<IndexType>( csrIA, 1, jaType, '\n' );
@@ -207,8 +235,8 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     const std::string& mmFileName,
     const common::scalar::ScalarType& dataType )
 {
-    SCAI_ASSERT_ERROR( hasSuffix( mmFileName, ".mtx" ), 
-                       "MatrixMarket file name '" << mmFileName << "' illegal, must have suffix .mtx" )
+    SCAI_ASSERT_ERROR( hasSuffix( mmFileName, MM_SUFFIX ), 
+                       "MatrixMarket file name '" << mmFileName << "' illegal, must have suffix " << MM_SUFFIX )
 
     SCAI_REGION( "StorageIO.writeCSRToMMFile" )
     // TODO: different output type possible?
@@ -277,8 +305,8 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     HArray<ValueType>& csrValues,
     const std::string& mmFileName )
 {
-    SCAI_ASSERT_ERROR( hasSuffix( mmFileName, ".mtx" ), 
-                       "MatrixMarket file name '" << mmFileName << "' illegal, must have suffix .mtx" )
+    SCAI_ASSERT_ERROR( hasSuffix( mmFileName, MM_SUFFIX ), 
+                       "MatrixMarket file name '" << mmFileName << "' illegal, must have suffix " << MM_SUFFIX )
 
     bool isSymmetric, isPattern;
     IndexType numRows, numValues, numValuesFile;
@@ -430,14 +458,10 @@ int _StorageIO::removeFile( const std::string& fileName )
 
     // delete data files in case of SAMG header files
 
-    if ( hasSuffix( fileName, ".frm" ) )
+    std::string dataFileName = getDataFileName( fileName );
+
+    if ( dataFileName != fileName )
     {
-        std::string dataFileName = fileName.substr( 0, fileName.size() - 4 ) + ".amg";
-        rc = std::remove( dataFileName.c_str() );
-    }
-    else if ( hasSuffix( fileName, ".frv" ) )
-    {
-        std::string dataFileName = fileName.substr( 0, fileName.size() - 4 ) + ".vec";
         rc = std::remove( dataFileName.c_str() );
     }
 
@@ -642,17 +666,17 @@ void StorageIO<ValueType>::writeCSRToFile(
     SCAI_REGION( "StorageIO.writeCSRToFile " )
 
     File::FileType myFileType = fileType;
-    std::string    myFileName = fileName;
+    std::string    myFileName = fileName;   // might be updated for xxx.<rank>.<suffix>
 
     if ( myFileType == File::DEFAULT )
     {
         // take decision by suffix
         
-        if ( hasSuffix( fileName, ".frm" ) )
+        if ( hasSuffix( fileName, SAMG_MAT_HEADER_SUFFIX ) )
         {
             myFileType = File::SAMG_FORMAT;
         }
-        else if ( hasSuffix( fileName, ".mtx" ) )
+        else if ( hasSuffix( fileName, MM_SUFFIX ) )
         {
             myFileType = File::MATRIX_MARKET;
         }
@@ -666,7 +690,7 @@ void StorageIO<ValueType>::writeCSRToFile(
 
     if ( size > 1 )
     {
-        // ToDo outfile.frm  -> outfile.frm.1, better is outfile.1.frm
+        // ToDo outfile.xxx  -> outfile.xxx.1, better is outfile.1.xxx
         char rankstr[10];
         sprintf( rankstr, ".%d", rank );
         myFileName += rankstr;
@@ -696,20 +720,24 @@ void StorageIO<ValueType>::readCSRFromFile(
     const std::string& fileName )
 {
     SCAI_LOG_INFO( logger, "read CSR matrix data from file: '" << fileName << "'." )
+
     SCAI_REGION( "StorageIO.readCSRFromFile" )
-    std::string suffix;
-    std::string baseFileName = fileName;
-    std::string amgFileName;
 
     File::FileType fileType = File::DEFAULT;   // only chose by suffix
 
-    if ( hasSuffix( fileName, ".frm" ) )
+    if ( hasSuffix( fileName, SAMG_MAT_HEADER_SUFFIX ) )
     {
         fileType = File::SAMG_FORMAT;
     }
-    else if ( hasSuffix( fileName, ".mtx" ) )
+    else if ( hasSuffix( fileName, MM_SUFFIX ) )
     {
         fileType = File::MATRIX_MARKET;
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Cannot determine file type for dense vector/matrix from " << fileName
+                               << ", must have suffix " << SAMG_MAT_HEADER_SUFFIX << " or " << MM_SUFFIX )
+
     }
 
     switch ( fileType )
@@ -735,18 +763,18 @@ void StorageIO<ValueType>::readDenseFromFile(
 {
     File::FileType fileType = File::DEFAULT;  // type chosen by name
 
-    if ( hasSuffix( fileName, ".frv" ) )
+    if ( hasSuffix( fileName, SAMG_VEC_HEADER_SUFFIX ) )
     {
         fileType = File::SAMG_FORMAT;
     }
-    else if ( hasSuffix( fileName, ".mtx" ) )
+    else if ( hasSuffix( fileName, MM_SUFFIX ) )
     {
         fileType = File::MATRIX_MARKET;
     }
     else
     {
         COMMON_THROWEXCEPTION( "Cannot determine file type for dense vector/matrix from " << fileName 
-                               << ", must have suffix .frv or .mtx" )
+                               << ", must have suffix " << SAMG_VEC_HEADER_SUFFIX << " or " << MM_SUFFIX )
     }
 
     switch ( fileType )
@@ -779,11 +807,12 @@ void StorageIO<ValueType>::writeDenseToFile(
     {
         // take decision by suffix
 
-        if ( hasSuffix( fileName, ".frm" ) || hasSuffix( fileName, ".frv" ) )
+        if ( hasSuffix( fileName, SAMG_MAT_HEADER_SUFFIX ) || 
+             hasSuffix( fileName, SAMG_VEC_HEADER_SUFFIX )  )
         {
             myFileType = File::SAMG_FORMAT;
         }
-        else if ( hasSuffix( fileName, ".mtx" ) )
+        else if ( hasSuffix( fileName, MM_SUFFIX ) )
         {
             myFileType = File::MATRIX_MARKET;
         }
@@ -814,12 +843,13 @@ void StorageIO<ValueType>::readDenseFromSAMGFile(
     IndexType& numColumns,
     const std::string& headerFileName )
 {
-    SCAI_ASSERT_ERROR( hasSuffix( headerFileName, ".frv" ), 
-                       "SAMG vector file name '" << headerFileName << "' illegal, must have suffix .frv" )
+    SCAI_ASSERT_ERROR( hasSuffix( headerFileName, SAMG_VEC_HEADER_SUFFIX ), 
+                       "SAMG vector file name '" << headerFileName << "' illegal, must have suffix " << SAMG_VEC_HEADER_SUFFIX )
 
     SCAI_LOG_INFO( logger, "read DenseVector from file '" << headerFileName << "'" )
-    char fileType;
-    int dataTypeSize;
+
+    char fileType = ' ';
+    int dataTypeSize = 0;
     IndexType numRows;
     // start with reading the *.frv header file
     FileStream inFile( headerFileName, std::ios::in );
@@ -832,7 +862,8 @@ void StorageIO<ValueType>::readDenseFromSAMGFile(
 
     if ( fileType != 'b' && fileType != 'f' )
     {
-        COMMON_THROWEXCEPTION( "Invalid header file." )
+        COMMON_THROWEXCEPTION( "Invalid SAMG vector header file: " << headerFileName 
+                               << ", fileType = " << fileType << " illegal" )
     }
 
     // now read *.vec file in correct mode
@@ -843,7 +874,7 @@ void StorageIO<ValueType>::readDenseFromSAMGFile(
         flags |= std::ios::binary;
     }
 
-    std::string dataFileName = headerFileName.substr( 0, headerFileName.size() - 4 ) + ".vec";
+    std::string dataFileName = getDataFileName( headerFileName );
 
     inFile.open( dataFileName, flags );
     common::scalar::ScalarType dataType;
@@ -878,10 +909,10 @@ void StorageIO<ValueType>::writeDenseToSAMGFile(
 {
     SCAI_ASSERT_ERROR( numColumns == 1, "SAMG format can only store dense vectors" )
 
-    SCAI_ASSERT_ERROR( hasSuffix( headerFileName, ".frv" ), 
-                       "SAMG vector file name '" << headerFileName << "' illegal, must have suffix .frv" )
+    SCAI_ASSERT_ERROR( hasSuffix( headerFileName, SAMG_VEC_HEADER_SUFFIX ), 
+                       "SAMG vector file name '" << headerFileName << "' illegal, must have suffix " << SAMG_VEC_HEADER_SUFFIX )
 
-    // start by writing the *.frv header file
+    // start by writing the SAMG Vector header file
 
     char fileType = writeBinary ? 'b' : 'f';
 
@@ -908,7 +939,9 @@ void StorageIO<ValueType>::writeDenseToSAMGFile(
     outFile << data.size() << std::endl;
     outFile << typeSize;
     outFile.close();
-    // write data into *.vec file
+
+    // write data into SAMG vector data file
+
     std::ios::openmode flags = std::ios::out | std::ios::trunc;
 
     if ( writeBinary )
@@ -916,7 +949,7 @@ void StorageIO<ValueType>::writeDenseToSAMGFile(
         flags |= std::ios::binary;
     }
 
-    std::string dataFileName = headerFileName.substr( 0, headerFileName.size() - 4 ) + ".vec";
+    std::string dataFileName = getDataFileName( headerFileName );
 
     outFile.open( dataFileName, flags );
     outFile.write<ValueType>( data, 0, dataType, '\n' );
@@ -930,8 +963,8 @@ void StorageIO<ValueType>::readDenseFromMMFile(
     const std::string& mmFileName )
 
 {
-    SCAI_ASSERT_ERROR( hasSuffix( mmFileName, ".mtx" ), 
-                       "MatrixMarket file name '" << mmFileName << "' illegal, must have suffix .mtx" )
+    SCAI_ASSERT_ERROR( hasSuffix( mmFileName, MM_SUFFIX ), 
+                       "MatrixMarket file name '" << mmFileName << "' illegal, must have suffix " << MM_SUFFIX )
 
     bool isSymmetric, isPattern;
     IndexType numRows, numValues, i;
@@ -986,8 +1019,8 @@ void StorageIO<ValueType>::writeDenseToMMFile( const HArray<ValueType>& data,
         const common::scalar::ScalarType dataType,
         const bool writeBinary /* = false */ )
 {
-    SCAI_ASSERT_ERROR( hasSuffix( mmFileName, ".mtx" ), 
-                       "MatrixMarket file name '" << mmFileName << "' illegal, must have suffix .mtx" )
+    SCAI_ASSERT_ERROR( hasSuffix( mmFileName, MM_SUFFIX ), 
+                       "MatrixMarket file name '" << mmFileName << "' illegal, must have suffix " << MM_SUFFIX )
 
     SCAI_ASSERT_ERROR( ! writeBinary, "Matrix market format can not be written binary" );
 
