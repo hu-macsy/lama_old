@@ -487,6 +487,14 @@ public:
         const IndexType* globalRowIndexes ) const;
 
     /**
+     * @brief read the matrix storage from an input file
+     *
+     * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
+     */
+
+    virtual void readFromFile( const std::string& fileName ) const = 0;
+
+    /**
      * @brief write the matrix storage to an output file
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
