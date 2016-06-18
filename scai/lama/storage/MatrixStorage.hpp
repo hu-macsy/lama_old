@@ -492,7 +492,7 @@ public:
      * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
      */
 
-    virtual void readFromFile( const std::string& fileName ) const = 0;
+    virtual void readFromFile( const std::string& fileName ) = 0;
 
     /**
      * @brief write the matrix storage to an output file
