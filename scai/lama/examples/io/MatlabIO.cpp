@@ -51,7 +51,10 @@ template<typename ValueType>
 bool readVal( ValueType& val, std::istringstream& input )
 {
     input >> val;
-    return true;
+
+    bool ok = !input.fail();
+
+    return ok;
 }
 
 template<>
@@ -61,9 +64,9 @@ bool readVal( IndexType& val, std::istringstream& input )
 
     double x;
 
-    bool ok = true;
-
     input >> x;
+
+    bool ok = !input.fail();
 
     if ( ok )
     {

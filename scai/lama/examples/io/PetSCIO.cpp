@@ -36,6 +36,7 @@
 #include "PetSCIO.hpp"
 
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/io/FileStream.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -47,6 +48,12 @@ using namespace hmemo;
 
 namespace lama
 {
+
+static int MAT_FILE_CLASSID = 1211216;  //<! internal id as specified by PetSC
+
+static int VEC_FILE_CLASSID = 1211214;  //<! internal id as specified by PetSC
+
+/* --------------------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_LOGGER( PetSCIO::logger, "PetSCIO" )
 
@@ -82,6 +89,32 @@ void PetSCIO::writeArrayBinary(
     const std::string& fileName,
     const common::scalar::ScalarType valuesType) 
 {
+    // int    VEC_FILE_CLASSID
+    // int    number of rows
+    // type   values
+
+    int nrows = array.size();
+
+    std::ios::openmode flags = std::ios::out | std::ios::app | std::ios::binary;
+
+    FileStream outFile( fileName, flags, FileStream::BIG );
+
+    std::cout << "File " << fileName << " now open for binary write" << std::endl;
+
+    utilskernel::LArray<int> headValues( 2 );
+
+    headValues[0] = VEC_FILE_CLASSID;
+    headValues[1] = nrows;
+
+    outFile.write<int>( headValues, 0, scai::common::scalar::INT, '\n' );
+    outFile.write<ValueType>( array, 0, valuesType, '\n' );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void PetSCIO::readStorageTyped(
+    MatrixStorage<ValueType>& storage,
     COMMON_THROWEXCEPTION( "writeArrayBinary " << array << " to file "
                             << fileName << ", type = " << valuesType << " unsupported" )
 }
@@ -135,7 +168,6 @@ void PetSCIO::writeStorageBinary(
     storage.buildCSRData( csrIA, csrJA, csrValues );
 
     int nnz = csrJA.size();
-    int MAT_FILE_CLASSID = 0;
 
     // we need the CSR sizes, not the offsets
 
@@ -151,19 +183,20 @@ void PetSCIO::writeStorageBinary(
 
     std::ios::openmode flags = std::ios::out | std::ios::trunc | std::ios::binary;
 
-    FileStream outFile( fileName, flags );
+    FileStream outFile( fileName, flags, FileStream::BIG );
 
     std::cout << "File " << fileName << " now open for binary write" << std::endl;
 
     // Note: PetSC starts indexing with 0
 
-    std::fstream& f = outFile;   // avoid conflicts for method write on base class fstream
+    utilskernel::LArray<int> headValues( 4 );
 
-    f.write( reinterpret_cast<const char*>( &MAT_FILE_CLASSID ), sizeof( IndexType ) );
-    f.write( reinterpret_cast<const char*>( &nrows ), sizeof( IndexType ) );
-    f.write( reinterpret_cast<const char*>( &ncols ), sizeof( IndexType ) );
-    f.write( reinterpret_cast<const char*>( &nnz ), sizeof( IndexType ) );
+    headValues[0] = MAT_FILE_CLASSID;
+    headValues[1] = nrows;
+    headValues[2] = ncols;
+    headValues[3] = nnz;
 
+    outFile.write<int>( headValues, 0, scai::common::scalar::INT, '\n' );
     outFile.write<IndexType>( csrSizes, 0, iaType, '\n' );
     outFile.write<IndexType>( csrJA , 0, jaType, '\n' ); 
     outFile.write<ValueType>( csrValues, 0, valuesType, '\n' );
@@ -187,22 +220,21 @@ void PetSCIO::readStorageTyped(
 
     std::cout << "Read from file " << fileName << std::endl;
 
-    FileStream inFile( fileName, flags );
+    FileStream inFile( fileName, flags, FileStream::BIG );
 
-    std::fstream& f = inFile;   // avoid conflicts for method write on base class fstream
+    utilskernel::LArray<int> headerVals;
 
-    int MAT_FILE_CLASSID;
-    int nrows;
-    int ncols;
-    int nnz;
+    inFile.read( headerVals, 4, 0, common::TypeTraits<IndexType>::stype, '\n' );
 
-    f.read( reinterpret_cast<char*>( &MAT_FILE_CLASSID ), sizeof( IndexType ) );
-    f.read( reinterpret_cast<char*>( &nrows ), sizeof( IndexType ) );
-    f.read( reinterpret_cast<char*>( &ncols ), sizeof( IndexType ) );
-    f.read( reinterpret_cast<char*>( &nnz ), sizeof( IndexType ) );
+    int classid = headerVals[0];
+    int nrows = headerVals[1];
+    int ncols = headerVals[2];
+    int nnz = headerVals[3];
 
     std::cout << "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << nrows 
               << ", #cols = " << ncols << ", #nnz = " << nnz << std::endl;
+
+    SCAI_ASSERT_EQUAL( MAT_FILE_CLASSID, classid, "illegal MAT_FILE_CLASSID" )
 
     HArray<IndexType> csrSizes;
     HArray<IndexType> csrJA;

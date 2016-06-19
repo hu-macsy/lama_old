@@ -128,6 +128,13 @@ public:
      */
 
     virtual bool isSupported( const bool binary ) const = 0;
+
+    /** Help routine to delete file and maybe joint files 
+     *
+     *  @param[in] fileName file to delete
+     *  @returns   0 on success
+     */
+    virtual int deleteFile( const std::string& fileName ) = 0;
 };
 
 }

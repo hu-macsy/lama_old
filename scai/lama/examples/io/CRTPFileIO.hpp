@@ -36,6 +36,8 @@
 
 #include "FileIO.hpp"
 
+#include <scai/lama/StorageIO.hpp>
+
 namespace scai
 {
 
@@ -87,6 +89,10 @@ public:
     virtual void readArray(
         hmemo::_HArray& array,
         const std::string& fileName ) const;
+
+    /** Default implementation for removeFile */
+
+    virtual int deleteFile( const std::string& fileName );
 };
 
 /* --------------------------------------------------------------------------------- */
@@ -253,6 +259,11 @@ void CRTPFileIO<Derived>::writeStorage(
     const common::scalar::ScalarType jaType,
     const common::scalar::ScalarType valueType) const
 {
+    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
+
+    SCAI_ASSERT( _StorageIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
+                 fileName << " illegal file name for storage, must have suffix " << getMatrixFileSuffix() )
+
     bool checkedBinary = binary;
 
     // if binary / formatted is unsupported give a warning and take the other one
@@ -294,6 +305,11 @@ void CRTPFileIO<Derived>::readStorage(
     _MatrixStorage& storage,
     const std::string& fileName ) const
 {
+    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
+
+    SCAI_ASSERT( _StorageIO::hasSuffix( fileName, getMatrixFileSuffix() ),
+                 fileName << " illegal, must have suffix " << getMatrixFileSuffix() )
+
     // just call the corresponding typed routine 
 
     FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::readStorageTyped( storage, fileName );
@@ -308,6 +324,11 @@ void CRTPFileIO<Derived>::writeArray(
     const bool binary,
     const common::scalar::ScalarType valueType ) const
 {
+    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
+
+    SCAI_ASSERT( _StorageIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
+                 fileName << " illegal file name for storage, must have suffix " << getMatrixFileSuffix() )
+
     bool checkedBinary = binary;
     
     // if binary / formatted is unsupported give a warning and take the other one
@@ -349,9 +370,37 @@ void CRTPFileIO<Derived>::readArray(
     hmemo::_HArray& array,
     const std::string& fileName ) const
 {
+    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
+
+    SCAI_ASSERT( _StorageIO::hasSuffix( fileName, this->getVectorFileSuffix() ),
+                 fileName << " illegal file name for array, must have suffix " << this->getVectorFileSuffix() )
+
     // just call the corresponding typed routine 
 
     FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::readArrayTyped( array, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<class Derived>
+int CRTPFileIO<Derived>::deleteFile( const std::string& fileName )
+{
+    int rc = -1;
+
+    if ( _StorageIO::hasSuffix( fileName, this->getMatrixFileSuffix() ) )
+    {
+        rc = std::remove( fileName.c_str() );
+    }
+    else if ( _StorageIO::hasSuffix( fileName, this->getVectorFileSuffix() ) )
+    {
+        rc = std::remove( fileName.c_str() );
+    }
+    else
+    {
+        SCAI_LOG_WARN( Derived::logger, "do not delete file with unknown suffix" )
+    }
+
+    return rc;
 }
 
 /* --------------------------------------------------------------------------------- */

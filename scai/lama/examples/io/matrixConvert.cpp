@@ -74,6 +74,7 @@ int main( int argc, const char* argv[] )
     {
         cout << "Usage: convert infile_name outfile_name" << endl;
         cout << "   file type is chosen by suffix"  << endl;
+        exit( -1 );
     }
 
     // take double as default 
