@@ -401,7 +401,7 @@ public:
      */
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
+        const File::FileType fileType = File::DEFAULT,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const bool writeBinary = false ) const;
 
