@@ -864,7 +864,12 @@
         ValueType real = 0;
         ValueType imag = 0;
         input >> real;
-        input >> imag;
+        if ( !input.fail() )
+        {
+            input >> imag;
+            // a fail on second argument is ignored
+            input.clear();
+        }
         x.real( real );
         x.imag( imag );
         return input;
