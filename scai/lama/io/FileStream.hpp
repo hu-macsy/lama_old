@@ -62,6 +62,50 @@
 // TODO: remove
 #include <iostream>
 
+static inline void endian_convert( char* out, const char* in, const int n, const int size )
+{
+    std::cout << "endian_convert, n = " << n << ", size = " << size << std::endl;
+
+    size_t offs = 0;
+
+    for ( int i = 0; i < n; ++i )
+    {
+        char* out_s = out + offs;
+        const char* in_s = in + offs;
+        if ( size == 1 )
+        {
+            out_s[0] = in_s[0];
+        }
+        else if ( size == 2 )
+        {
+            out_s[0] = in_s[1];
+            out_s[1] = in_s[0];
+        }
+        if ( size == 4 )
+        {
+            out_s[0] = in_s[3];
+            out_s[1] = in_s[2];
+            out_s[2] = in_s[1];
+            out_s[3] = in_s[0];
+        }
+        else if ( size == 8 )
+        {
+            out_s[0] = in_s[7];
+            out_s[1] = in_s[6];
+            out_s[2] = in_s[5];
+            out_s[3] = in_s[4];
+            out_s[4] = in_s[3];
+            out_s[5] = in_s[2];
+            out_s[6] = in_s[1];
+            out_s[7] = in_s[0];
+        }
+        else
+        {
+             COMMON_THROWEXCEPTION( "unsupported size" )
+        }
+        offs += size;
+    }
+}
 
 // TODO: do initialization of all arrays using set() (correct first touch)
 namespace scai
@@ -277,11 +321,17 @@ inline void FileStream::_write( const hmemo::HArray<DataType>& data,
             {
                 if ( mUsedEndian == mMachineEndian )
                 {
-                    std::fstream::write( reinterpret_cast<const char*>( dataRead.get() ), sizeof( DataType )*data.size() );
+                    std::fstream::write( reinterpret_cast<const char*>( dataRead.get() ), sizeof( DataType ) * data.size() );
                 }
                 else
                 {
-                    COMMON_THROWEXCEPTION( "Error, wrong Endian!!!" )
+                    scai::common::scoped_array<DataType> tmp( new DataType[ data.size() ] );
+
+                    endian_convert( reinterpret_cast<char*>( tmp.get() ), 
+                                    reinterpret_cast<const char*>( dataRead.get() ), 
+                                    data.size(), sizeof( DataType ) );
+
+                    std::fstream::write( reinterpret_cast<const char*>( tmp.get() ), sizeof( DataType ) * data.size() );
                 }
 
                 break;
@@ -357,7 +407,22 @@ inline void FileStream::_read( hmemo::HArray<DataType>& data,
         {
             case BINARY:
             {
-                std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), sizeof( DataType )*size );
+                if ( mUsedEndian == mMachineEndian )
+                {
+                    std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), sizeof( DataType ) * size );
+                }
+                else
+                {
+                    scai::common::scoped_array<DataType> tmp( new DataType[ data.size() ] );
+
+                    std::fstream::read( reinterpret_cast<char*>( tmp.get() ), sizeof( DataType ) * size );
+
+                    endian_convert( reinterpret_cast<char*>( dataWrite.get() ), 
+                                    reinterpret_cast<const char*>( tmp.get() ), 
+                                    size, sizeof( DataType ) );
+
+                }
+
 
                 if ( !*this )
                 {
