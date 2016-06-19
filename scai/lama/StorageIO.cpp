@@ -312,6 +312,10 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     IndexType numRows, numValues, numValuesFile;
     FileStream inFile( mmFileName, std::ios::in );
     readMMHeader( numRows, numColumns, numValuesFile, isPattern, isSymmetric, inFile );
+
+    SCAI_LOG_DEBUG( logger, "from header: nrows = " << numRows << ", ncols = " << numColumns << ", nnz = " << numValuesFile 
+                            << ", isPattern = " << isPattern << ", isSymmetric = " << isSymmetric )
+
     ContextPtr host = Context::getHostPtr();
     WriteOnlyAccess<IndexType> ia( csrIA, host, numRows + 1 );
     static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<IndexType> > setVal;
@@ -340,6 +344,9 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     for ( int l = 0; l < numValuesFile && !inFile.eof(); ++l )
     {
         std::getline( inFile, line );
+
+        SCAI_LOG_TRACE( logger, "Line " << l << " of " << numValuesFile << " : " << line )
+
         std::istringstream reader( line );
         reader >> val.i;
         reader >> val.j;
@@ -367,9 +374,9 @@ void StorageIO<ValueType>::readCSRFromMMFile(
             }
         }
 
-        // TODO: do this in parallel after reading is finsihed?
         val.i--;
         val.j--;
+
         values.push_back( val );
     }
 
@@ -387,6 +394,9 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     }
 
     inFile.close();
+
+    SCAI_ASSERT_EQUAL( numValues, (IndexType) values.size(), "size mismatch" )
+
     // Create csrJA, csrValues
     WriteOnlyAccess<IndexType> ja( csrJA, numValues );
     WriteOnlyAccess<ValueType> data( csrValues, numValues );
@@ -394,7 +404,8 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::scan<IndexType> > scan;
     scan.getSupportedContext( host );
     // convert sizes to offset array
-    scan[host]( ia, numRows + 1 );
+    IndexType ntotal = scan[host]( ia, numRows );
+    SCAI_ASSERT_EQUAL( ntotal, numValues, "size mismatch" )
     //initialize ia and data
     static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<ValueType> > setValValues;
     setValValues.getSupportedContext( host );
