@@ -98,7 +98,6 @@ i=0
 # run examples solver/*
 cd $MYDIR/solver
 RUN 1 solver/matrix_generator.exe example 3 27 100 100 100
-RUN 1 solver/matrix_convert.exe -mm example.frv example.mtx
 RUN 1 solver/vector_generator.exe example2.mtx 1000 1
 RUN 1 solver/solver.exe example.frm
 RUN 0 solver/solver.exe example.frm --SCAI_SOLVER=Jacobi --SCAI_MAX_ITER=10

@@ -34,7 +34,7 @@
 
 set ( HEADER LamaConfig.hpp LamaTiming.hpp )
 
-foreach ( executable solver lama_info matrix_generator matrix_convert vector_generator )
+foreach ( executable solver lama_info matrix_generator vector_generator )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
