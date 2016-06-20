@@ -91,6 +91,37 @@ using namespace utilskernel;
 namespace lama
 {
 
+static std::string MATLAB_SUFFIX   = ".txt";
+
+std::string MatlabIO::getVectorFileSuffix() const
+{
+    return MATLAB_SUFFIX;
+}
+
+std::string MatlabIO::getMatrixFileSuffix() const
+{
+    return MATLAB_SUFFIX;
+}
+
+/* --------------------------------------------------------------------------------- */
+/*    Implementation of Factory methods                                              */
+/* --------------------------------------------------------------------------------- */
+
+FileIO* MatlabIO::create()
+{
+    return new MatlabIO();
+}
+
+std::string MatlabIO::createValue()
+{
+    return MATLAB_SUFFIX;
+}
+
+void MatlabIO::writeAt( std::ostream& stream ) const
+{
+    stream << "MatlabIO (only formatted)";
+}
+
 /** Method to count number of lines of a text file and the maximal number of entries in one line 
  *
  *  @param[out]  number of lines the file has
@@ -351,30 +382,19 @@ bool MatlabIO::isSupported( const bool binary ) const
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeArrayFormatted(
+void MatlabIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    // COMMON_THROWEXCEPTION( "writeArrayFormatted " << array << " to file " << fileName << " unsupported" )
+    SCAI_ASSERT( !mBinary, "Binary mode not supported for MatlabIO" )
+
     writeTextFile( array, fileName.c_str() );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeArrayBinary(
-    const hmemo::HArray<ValueType>& array,
-    const std::string& fileName,
-    const common::scalar::ScalarType )
-{
-    COMMON_THROWEXCEPTION( "writeArrayBinary< " << common::TypeTraits<ValueType>::id() << "> "
-                           ", binary format not supported, array = " << array << ", filename = " << fileName )
-}
-
-/* --------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void MatlabIO::readArrayTyped(
+void MatlabIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName ) 
 {
@@ -395,10 +415,12 @@ void MatlabIO::readArrayTyped(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeStorageFormatted(
+void MatlabIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
+    SCAI_ASSERT( !mBinary, "Binary mode not supported for MatlabIO" )
+
     COOStorage<ValueType> coo( storage );
 
     HArray<IndexType> cooIA = coo.getIA();
@@ -411,24 +433,12 @@ void MatlabIO::writeStorageFormatted(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeStorageBinary(
-    const MatrixStorage<ValueType>& storage,
-    const std::string& fileName,
-    const common::scalar::ScalarType,
-    const common::scalar::ScalarType,
-    const common::scalar::ScalarType )
-{
-    COMMON_THROWEXCEPTION( "writeStorageBinary< " << common::TypeTraits<ValueType>::id() << "> "
-                           ", binary format not supported, storage = " << storage << ", filename = " << fileName )
-}
-
-/* --------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void MatlabIO::readStorageTyped(
+void MatlabIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
     const std::string& fileName )
 {
+    // binary mode does not matter as we have always formatted output
+
     // read coo entries lines by line, similiar to MatrixMarket
     // i , j, val     
 

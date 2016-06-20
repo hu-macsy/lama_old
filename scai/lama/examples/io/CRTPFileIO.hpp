@@ -62,33 +62,19 @@ public:
 
     /** Implementation of pure virtual method FileIO::writeStorage for all derived classes */
 
-    void writeStorage(
-        const _MatrixStorage& storage,
-        const std::string& fileName,
-        const bool binary = false,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType valuesType = common::scalar::INTERNAL ) const;
+    void writeStorage( const _MatrixStorage& storage, const std::string& fileName );
 
     /** Implementation of pure virtual method FileIO::readStorage  */
 
-    void readStorage(
-        _MatrixStorage& storage,
-        const std::string& fileName ) const;
+    void readStorage( _MatrixStorage& storage, const std::string& fileName );
 
     /** Implementation of pure virtual method FileIO::writeArray  */
 
-    virtual void writeArray(
-        const hmemo::_HArray& array,
-        const std::string& fileName,
-        const bool binary = false,
-        const common::scalar::ScalarType valuesType = common::scalar::INTERNAL ) const;
+    virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName );
 
     /** Implementation of pure virtual method FileIO::readArray  */
 
-    virtual void readArray(
-        hmemo::_HArray& array,
-        const std::string& fileName ) const;
+    virtual void readArray( hmemo::_HArray& array, const std::string& fileName );
 
     /** Default implementation for removeFile */
 
@@ -110,43 +96,19 @@ struct FileIOWrapper;
 template<class Derived>
 struct FileIOWrapper<Derived, common::mepr::NullType>
 {
-    static void writeStorageFormatted(
-        const _MatrixStorage&,
-        const std::string& )
+    static void writeStorageImpl( Derived&, const _MatrixStorage&, const std::string& )
     {
     }
 
-    static void writeStorageBinary(
-        const _MatrixStorage&,
-        const std::string&,
-        const common::scalar::ScalarType,
-        const common::scalar::ScalarType,
-        const common::scalar::ScalarType )
+    static void readStorageImpl( Derived&, _MatrixStorage&, const std::string& )
     {
     }
 
-    static void readStorageTyped(
-        _MatrixStorage&,
-        const std::string& )
+    static void writeArrayImpl( Derived&, const hmemo::_HArray&, const std::string& )
     {
     }
 
-    static void writeArrayFormatted(
-        const hmemo::_HArray&,
-        const std::string& )
-    {
-    }
-
-    static void writeArrayBinary(
-        const hmemo::_HArray&,
-        const std::string&,
-        const common::scalar::ScalarType )
-    {
-    }
-
-    static void readArrayTyped(
-        hmemo::_HArray&,
-        const std::string& )
+    static void readArrayImpl( Derived&, hmemo::_HArray&, const std::string& )
     {
     }
 };
@@ -157,91 +119,51 @@ struct FileIOWrapper<Derived, common::mepr::NullType>
 template<class Derived, typename ValueType, typename TailTypes>
 struct FileIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
 {
-    static void writeStorageFormatted(
-        const _MatrixStorage& storage,
-        const std::string& fileName )
+    static void writeStorageImpl( Derived& io, const _MatrixStorage& storage, const std::string& fileName )
     {
         if ( storage.getValueType() == common::getScalarType<ValueType>() )
         {
-            Derived::writeStorageFormatted( reinterpret_cast<const MatrixStorage<ValueType>& >( storage ), fileName );
+            io.writeStorageImpl( reinterpret_cast<const MatrixStorage<ValueType>& >( storage ), fileName );
         }
         else
         {
-            FileIOWrapper<Derived, TailTypes>::writeStorageFormatted( storage, fileName );
+            FileIOWrapper<Derived, TailTypes>::writeStorageImpl( io, storage, fileName );
         }
     }
 
-    static void writeStorageBinary(
-        const _MatrixStorage& storage,
-        const std::string& fileName,
-        const common::scalar::ScalarType iaType,
-        const common::scalar::ScalarType jaType,
-        const common::scalar::ScalarType valueType )
-    {
-        if ( storage.getValueType() == common::getScalarType<ValueType>() )
-        {   
-            Derived::writeStorageBinary( reinterpret_cast<const MatrixStorage<ValueType>& >( storage ), fileName, iaType, jaType, valueType );
-        }
-        else
-        {   
-            FileIOWrapper<Derived, TailTypes>::writeStorageBinary( storage, fileName, iaType, jaType, valueType );
-        }
-    }
-
-    static void readStorageTyped(
-        _MatrixStorage& storage,
-        const std::string& fileName )
+    static void readStorageImpl( Derived& io, _MatrixStorage& storage, const std::string& fileName )
     {
         if ( storage.getValueType() == common::getScalarType<ValueType>() )
         {
-            Derived::readStorageTyped( reinterpret_cast< MatrixStorage<ValueType>& >( storage ), fileName );
+            io.readStorageImpl( reinterpret_cast< MatrixStorage<ValueType>& >( storage ), fileName );
         }
         else
         {
-            FileIOWrapper<Derived, TailTypes>::readStorageTyped( storage, fileName );
+            FileIOWrapper<Derived, TailTypes>::readStorageImpl( io, storage, fileName );
         }
     }
 
-    static void writeArrayFormatted(
-        const hmemo::_HArray& array,
-        const std::string& fileName )
+    static void writeArrayImpl( Derived& io, const hmemo::_HArray& array, const std::string& fileName )
     {
         if ( array.getValueType() == common::getScalarType<ValueType>() )
         {
-            Derived::writeArrayFormatted( reinterpret_cast<const hmemo::HArray<ValueType>& >( array ), fileName );
+            io.writeArrayImpl( reinterpret_cast<const hmemo::HArray<ValueType>& >( array ), fileName );
         }
         else
         {
-            FileIOWrapper<Derived, TailTypes>::writeArrayFormatted( array, fileName );
+            FileIOWrapper<Derived, TailTypes>::writeArrayImpl( io, array, fileName );
         }
     }
 
-    static void writeArrayBinary(
-        const hmemo::_HArray& array,
-        const std::string& fileName,
-        const common::scalar::ScalarType valueType )
-    {   
-        if ( array.getValueType() == common::getScalarType<ValueType>() )
-        {   
-            Derived::writeArrayBinary( reinterpret_cast<const hmemo::HArray<ValueType>& >( array ), fileName, valueType );
-        }
-        else
-        {   
-            FileIOWrapper<Derived, TailTypes>::writeArrayBinary( array, fileName, valueType );
-        }
-    }
-
-    static void readArrayTyped(
-        hmemo::_HArray& array,
-        const std::string& fileName )
+    static void readArrayImpl( Derived& io, hmemo::_HArray& array, const std::string& fileName )
     {
         if ( array.getValueType() == common::getScalarType<ValueType>() )
         {
-            Derived::readArrayTyped( reinterpret_cast< hmemo::HArray<ValueType>& >( array ), fileName );
+            io.readArrayImpl( reinterpret_cast< hmemo::HArray<ValueType>& >( array ), fileName );
         }
         else
         {
-            FileIOWrapper<Derived, TailTypes>::readArrayTyped( array, fileName );
+            FileIOWrapper<Derived, TailTypes>::readArrayImpl( io, array, fileName );
         }
     }
 };
@@ -251,59 +173,20 @@ struct FileIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
-void CRTPFileIO<Derived>::writeStorage(
-    const _MatrixStorage& storage,
-    const std::string& fileName,
-    const bool binary,
-    const common::scalar::ScalarType iaType,
-    const common::scalar::ScalarType jaType,
-    const common::scalar::ScalarType valueType) const
+void CRTPFileIO<Derived>::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 
     SCAI_ASSERT( _StorageIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
                  fileName << " illegal file name for storage, must have suffix " << getMatrixFileSuffix() )
 
-    bool checkedBinary = binary;
-
-    // if binary / formatted is unsupported give a warning and take the other one
-    // otherwise the unimplemented versions will throw Exception
-
-    if ( binary )
-    {
-        if ( ! this->isSupported( binary ) )
-        {
-            SCAI_LOG_WARN( Derived::logger, "binary unsupported, will write formatted" )
-            checkedBinary = false;
-        }
-    }
-    else
-    {
-        if ( ! this->isSupported( binary ) )
-        {
-            SCAI_LOG_WARN( Derived::logger, "formatted unsupported, will write binary" )
-            checkedBinary = true;
-        }
-    }
-
-    // now call the corresponding typed routine, use meta-programming to get the correct type
-
-    if ( checkedBinary )
-    {
-        FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::writeStorageBinary( storage, fileName, iaType, jaType, valueType );
-    }
-    else
-    {
-        FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::writeStorageFormatted( storage, fileName );
-    }
+    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::writeStorageImpl( ( Derived& ) *this, storage, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
-void CRTPFileIO<Derived>::readStorage(
-    _MatrixStorage& storage,
-    const std::string& fileName ) const
+void CRTPFileIO<Derived>::readStorage( _MatrixStorage& storage, const std::string& fileName )
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 
@@ -312,63 +195,28 @@ void CRTPFileIO<Derived>::readStorage(
 
     // just call the corresponding typed routine 
 
-    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::readStorageTyped( storage, fileName );
+    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
-void CRTPFileIO<Derived>::writeArray(
-    const hmemo::_HArray& array,
-    const std::string& fileName,
-    const bool binary,
-    const common::scalar::ScalarType valueType ) const
+void CRTPFileIO<Derived>::writeArray( const hmemo::_HArray& array, const std::string& fileName )
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 
     SCAI_ASSERT( _StorageIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
-                 fileName << " illegal file name for storage, must have suffix " << getMatrixFileSuffix() )
+                 fileName << " illegal file name for storage, must have suffix " << getVectorFileSuffix() )
 
-    bool checkedBinary = binary;
-    
-    // if binary / formatted is unsupported give a warning and take the other one
-    // otherwise the unimplemented versions will throw Exception
-    
-    if ( binary )
-    {   
-        if ( ! this->isSupported( binary ) )
-        {   
-            SCAI_LOG_WARN( Derived::logger, "binary unsupported, will write formatted" )
-            checkedBinary = false;
-        }
-    }
-    else
-    {   
-        if ( ! this->isSupported( binary ) )
-        {   
-            SCAI_LOG_WARN( Derived::logger, "formatted unsupported, will write binary" )
-            checkedBinary = true;
-        }
-    }
-    
     // now call the corresponding typed routine, use meta-programming to get the correct type
     
-    if ( checkedBinary )
-    {   
-        FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::writeArrayBinary( array, fileName, valueType );
-    }
-    else
-    {   
-        FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::writeArrayFormatted( array, fileName );
-    }
+    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::writeArrayImpl( ( Derived& ) *this, array, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
-void CRTPFileIO<Derived>::readArray(
-    hmemo::_HArray& array,
-    const std::string& fileName ) const
+void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& fileName ) 
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 
@@ -377,7 +225,7 @@ void CRTPFileIO<Derived>::readArray(
 
     // just call the corresponding typed routine 
 
-    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::readArrayTyped( array, fileName );
+    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */

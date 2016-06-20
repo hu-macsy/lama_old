@@ -39,7 +39,9 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/io/FileStream.hpp>
+
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Settings.hpp>
 
 namespace scai
 {
@@ -59,6 +61,60 @@ SCAI_LOG_DEF_LOGGER( PetSCIO::logger, "PetSCIO" )
 
 /* --------------------------------------------------------------------------------- */
 
+static std::string PETSC_SUFFIX   = ".psc";
+
+std::string PetSCIO::getVectorFileSuffix() const
+{
+    return PETSC_SUFFIX;
+}
+
+std::string PetSCIO::getMatrixFileSuffix() const
+{   
+    return PETSC_SUFFIX;
+}
+
+/* --------------------------------------------------------------------------------- */
+/*    Implementation of Factory methods                                              */
+/* --------------------------------------------------------------------------------- */
+
+FileIO* PetSCIO::create()
+{
+    return new PetSCIO();
+}   
+
+std::string PetSCIO::createValue()
+{
+    return PETSC_SUFFIX;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PetSCIO::writeAt( std::ostream& stream ) const
+{
+    stream << "PetSCIO (only binary)";
+}
+
+/* --------------------------------------------------------------------------------- */
+
+PetSCIO::PetSCIO() 
+{
+    mBinary = true;    // writes binary as default    
+
+    // be careful if PetSC has been configured with -int64
+    // the setIAType( common::scalar::LONG ), setJAType( common::scalar::LONG )
+
+    mIAType   = common::scalar::INDEX_TYPE;
+    mJAType   = common::scalar::INDEX_TYPE;
+
+    mDataType = common::scalar::DOUBLE;
+
+    // overwrite default if enviroment variable is set
+
+    common::Settings::getEnvironment( mAppendMode, "SCAI_IO_APPEND" );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 bool PetSCIO::isSupported( const bool binary ) const
 {
     if ( binary )
@@ -74,20 +130,9 @@ bool PetSCIO::isSupported( const bool binary ) const
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PetSCIO::writeArrayFormatted(
+void PetSCIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
-{
-    COMMON_THROWEXCEPTION( "writeArrayFormatted " << array << " to file " << fileName << " unsupported" )
-}
-
-/* --------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void PetSCIO::writeArrayBinary(
-    const hmemo::HArray<ValueType>& array,
-    const std::string& fileName,
-    const common::scalar::ScalarType valuesType) 
 {
     // int    VEC_FILE_CLASSID
     // int    number of rows
@@ -95,11 +140,20 @@ void PetSCIO::writeArrayBinary(
 
     int nrows = array.size();
 
-    std::ios::openmode flags = std::ios::out | std::ios::app | std::ios::binary;
+    std::ios::openmode flags = std::ios::out | std::ios::binary;
+
+    if ( mAppendMode )
+    {
+        flags |= std::ios::app;
+    }
+    else
+    {
+        flags |= std::ios::trunc;
+    }
 
     FileStream outFile( fileName, flags, FileStream::BIG );
 
-    std::cout << "File " << fileName << " now open for binary write" << std::endl;
+    std::cout << "File " << fileName << " now open for binary write, append = " << mAppendMode << std::endl;
 
     utilskernel::LArray<int> headValues( 2 );
 
@@ -107,49 +161,28 @@ void PetSCIO::writeArrayBinary(
     headValues[1] = nrows;
 
     outFile.write<int>( headValues, 0, scai::common::scalar::INT, '\n' );
-    outFile.write<ValueType>( array, 0, valuesType, '\n' );
+    outFile.write<ValueType>( array, 0, mDataType, '\n' );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PetSCIO::readStorageTyped(
-    MatrixStorage<ValueType>& storage,
-    COMMON_THROWEXCEPTION( "writeArrayBinary " << array << " to file "
-                            << fileName << ", type = " << valuesType << " unsupported" )
-}
-
-/* --------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void PetSCIO::readArrayTyped(
+void PetSCIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    COMMON_THROWEXCEPTION( "readArrayTyped " << array << " from file " << fileName << " unsupported" )
+    COMMON_THROWEXCEPTION( "readArray " << array << " from file " << fileName << " unsupported" )
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PetSCIO::writeStorageFormatted(
+void PetSCIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName )
 {
-    COMMON_THROWEXCEPTION( "writeStorageFormatted< " << common::TypeTraits<ValueType>::id() << "> "
-                           ", formatted not supported, storage = " << storage << ", filename = " << fileName )
-}
+    SCAI_ASSERT( mBinary, "Formatted output not available for MatlabIO" )
 
-/* --------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void PetSCIO::writeStorageBinary(
-    const MatrixStorage<ValueType>& storage,
-    const std::string& fileName,
-    const common::scalar::ScalarType iaType,
-    const common::scalar::ScalarType jaType,
-    const common::scalar::ScalarType valuesType ) 
-{
     // int    MAT_FILE_CLASSID
     // int    number of rows
     // int    number of columns
@@ -160,8 +193,7 @@ void PetSCIO::writeStorageBinary(
     int nrows = storage.getNumRows();
     int ncols = storage.getNumColumns();
 
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrSizes;
+    HArray<IndexType> csrIA;    // first offsets, later sizes
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
@@ -171,21 +203,22 @@ void PetSCIO::writeStorageBinary(
 
     // we need the CSR sizes, not the offsets
 
-    {
-        ContextPtr loc = hmemo::Context::getHostPtr();
-        static utilskernel::LAMAKernel<sparsekernel::CSRKernelTrait::offsets2sizes > offsets2sizes;
-        offsets2sizes.getSupportedContext( loc );
-        ReadAccess<IndexType> rOffsets( csrIA, loc );
-        WriteOnlyAccess<IndexType> wSizes( csrSizes, loc, nrows );
-        SCAI_CONTEXT_ACCESS( loc )
-        offsets2sizes[ loc ]( wSizes.get(), rOffsets.get(), nrows );
-    }
+    utilskernel::HArrayUtils::unscan( csrIA );
 
-    std::ios::openmode flags = std::ios::out | std::ios::trunc | std::ios::binary;
+    std::ios::openmode flags = std::ios::out | std::ios::binary;
+
+    if ( mAppendMode )
+    {
+        flags |= std::ios::app;
+    }
+    else
+    {
+        flags |= std::ios::trunc;
+    }
 
     FileStream outFile( fileName, flags, FileStream::BIG );
 
-    std::cout << "File " << fileName << " now open for binary write" << std::endl;
+    std::cout << "File " << fileName << " now open for binary write, append = " << mAppendMode << std::endl;
 
     // Note: PetSC starts indexing with 0
 
@@ -196,16 +229,18 @@ void PetSCIO::writeStorageBinary(
     headValues[2] = ncols;
     headValues[3] = nnz;
 
+    // for binary output we make conversions to mIAType, mJAType, mDdataType 
+
     outFile.write<int>( headValues, 0, scai::common::scalar::INT, '\n' );
-    outFile.write<IndexType>( csrSizes, 0, iaType, '\n' );
-    outFile.write<IndexType>( csrJA , 0, jaType, '\n' ); 
-    outFile.write<ValueType>( csrValues, 0, valuesType, '\n' );
+    outFile.write<IndexType>( csrIA, 0, mIAType, '\n' );
+    outFile.write<IndexType>( csrJA , 0, mJAType, '\n' ); 
+    outFile.write<ValueType>( csrValues, 0, mDataType, '\n' );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PetSCIO::readStorageTyped(
+void PetSCIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {

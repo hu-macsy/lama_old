@@ -33,8 +33,7 @@
  */
 
 
-#include "PetSCIO.hpp"
-#include "MatlabIO.hpp"
+#include "FileIO.hpp"
 
 #include <scai/lama.hpp>
 
@@ -69,6 +68,8 @@ static common::scalar::ScalarType getType()
 
 int main( int argc, const char* argv[] )
 {
+    common::Settings::parseArgs( argc, argv );
+
     if ( argc != 3 )
     {
         cout << "Usage: convert infile_name outfile_name" << endl;
@@ -83,10 +84,6 @@ int main( int argc, const char* argv[] )
 
     common::Settings::getEnvironment( binary, "SCAI_BINARY" );
 
-    PetSCIO petsc_io;
-
-    MatlabIO matlab_io;
-
     // oops, no factory for storage, only for matrix
 
     common::unique_ptr<Vector> vectorPtr( Vector::getVector( Vector::DENSE, type ) );
@@ -96,15 +93,19 @@ int main( int argc, const char* argv[] )
 
     std::string inFileName = argv[1];
 
-    if ( _StorageIO::hasSuffix( inFileName, petsc_io.getVectorFileSuffix() ) )
+    // Note: reading does not care about binary argument, just read as it is
+
+    std::string suffix = _StorageIO::getSuffix( inFileName );
+
+    if ( FileIO::canCreate( suffix ) )
     {
-        // use added file format
-        petsc_io.readArray( array, inFileName );
-    }
-    else if ( _StorageIO::hasSuffix( inFileName, matlab_io.getVectorFileSuffix() ) )
-    {
-        // use added file format
-        matlab_io.readArray( array, inFileName );
+        // okay, we can use FileIO class from factory
+
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        std::cout << "Got from factory: " << *fileIO << std::endl;
+
+        fileIO->readArray( array, inFileName );
     }
     else
     {
@@ -112,20 +113,21 @@ int main( int argc, const char* argv[] )
         vector.readFromFile( argv[1] );
     }
 
-
     cout << "read array : " << array << endl;
 
     std::string outFileName = argv[2];
 
-    if ( _StorageIO::hasSuffix( outFileName, petsc_io.getVectorFileSuffix() ) )
+    suffix = _StorageIO::getSuffix( outFileName );
+
+    if ( FileIO::canCreate( suffix ) )
     {
-        // use added file format
-        petsc_io.writeArray( array, outFileName, binary );
-    }
-    else if ( _StorageIO::hasSuffix( outFileName, matlab_io.getVectorFileSuffix() ) )
-    {
-        // use added file format
-        matlab_io.writeArray( array, outFileName, binary );
+        // okay, we can use FileIO class from factory
+
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        std::cout << "Got from factory: " << *fileIO << std::endl;
+
+        fileIO->writeArray( array, outFileName );
     }
     else
     {

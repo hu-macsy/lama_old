@@ -42,22 +42,24 @@ namespace scai
 namespace lama
 {
 
-class PetSCIO : public CRTPFileIO<PetSCIO>
+class PetSCIO : 
+
+    public CRTPFileIO<PetSCIO>,         // use type conversions
+    public FileIO::Register<PetSCIO>    // register at factory
+
 {
 
 public:
 
+    /** Constructor might reset default values */
+
+    PetSCIO();
+
     /** File suffix is used to decide about choice of output class */
 
-    virtual std::string getVectorFileSuffix() const
-    {
-        return ".psc";
-    }
+    virtual std::string getVectorFileSuffix() const;
 
-    virtual std::string getMatrixFileSuffix() const
-    {
-        return ".psc";
-    }
+    virtual std::string getMatrixFileSuffix() const;
 
     /** Query if formatted or binary IO is supported 
      *
@@ -66,66 +68,49 @@ public:
 
     virtual bool isSupported( const bool binary ) const;
 
+    /** Implementation for Printable.:writeAt */
+
+    virtual void writeAt( std::ostream& stream ) const;
+
+    // static method to create an FileIO object for this derived class
+
+    static FileIO* create();
+
+    // registration key for factory
+
+    static std::string createValue();
+
 public:
  
-    /** Typed version of writeStorage (formatted)
+    /** Typed version of writeStorage
      *
      *  This method must be available for implementation of
      *  CRTPFileIO::writeStorage
      */
 
     template<typename ValueType>
-    static void writeStorageFormatted(
-        const MatrixStorage<ValueType>& storage,
-        const std::string& fileName )
-    __attribute( ( noinline ) );
-
-    /** Typed version of the writeStorage (binary) */
-
-    template<typename ValueType>
-    static void writeStorageBinary(
-        const MatrixStorage<ValueType>& storage,
-        const std::string& fileName,
-        const common::scalar::ScalarType dataType,
-        const common::scalar::ScalarType iaType,
-        const common::scalar::ScalarType jaType )
+    void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName )
     __attribute( ( noinline ) );
 
     /** Typed version of readStorage */
 
     template<typename ValueType>
-    static void readStorageTyped(
-        MatrixStorage<ValueType>& storage,
-        const std::string& fileName )
+    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName )
     __attribute( ( noinline ) );
 
-    /** Typed version of the writeArray (binary) */
+    /** Typed version of the writeArray */
 
     template<typename ValueType>
-    static void writeArrayBinary(
-        const hmemo::HArray<ValueType>& array,
-        const std::string& fileName,
-        const common::scalar::ScalarType dataType )
-    __attribute( ( noinline ) );
-
-    /** Typed version of writeArray (formatted) */
-
-    template<typename ValueType>
-    static void writeArrayFormatted(
-        const hmemo::HArray<ValueType>& array,
-        const std::string& fileName )
+    void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName )
     __attribute( ( noinline ) );
 
     /** Typed version of readArray */
 
     template<typename ValueType>
-    static void readArrayTyped(
-        hmemo::HArray<ValueType>& array,
-        const std::string& fileName )
+    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName )
     __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
-
 };
 
 }
