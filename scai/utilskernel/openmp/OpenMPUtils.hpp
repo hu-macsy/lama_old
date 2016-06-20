@@ -134,6 +134,11 @@ public:
     template<typename ValueType>
     static ValueType scan( ValueType array[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::unscan */
+
+    template<typename ValueType>
+    static ValueType unscan( ValueType array[], const IndexType n );
+
     /** OpenMP implementation for UtilKernelTrait::sort, uses bucket sort */
 
     template<typename ValueType>

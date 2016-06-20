@@ -300,6 +300,21 @@ public:
     template<typename ValueType>
     static ValueType scan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Build the differences, opposite to scan, especially used to convert offsets to sizes
+     *
+     *  @param[in,out]  array contains values for which differences are built
+     *  @param[in]      prefLoc optional the context where computation should be done
+     *  @returns        value of the first element
+     *
+     *  \code
+     *       array( in ) = { 0, 3, 8, 15, 17 }, array( out ) = { 3, 5, 7, 2 }, returns 0
+     *       array( in ) = { 1, 3, 8, 15, 17 }, array( out ) = { 2, 5, 7, 2 }, returns 1
+     *  \endcode
+     */
+
+    template<typename ValueType>
+    static ValueType unscan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     template<typename ValueType>
     static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 

@@ -758,6 +758,41 @@ ValueType HArrayUtils::scan(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+ValueType HArrayUtils::unscan(
+    hmemo::HArray<ValueType>& array,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    if ( n < 1 )
+    {
+        return ValueType( 0 );
+    }
+
+    static LAMAKernel<UtilKernelTrait::unscan<ValueType> > unscan;
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    unscan.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    WriteAccess<ValueType> wValues( array, loc );
+    ValueType first = unscan[loc]( wValues.get(), n );
+
+    // One additional element will be removed from end
+    wValues.resize( n - 1 );
+
+    return first;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void HArrayUtils::sort(
     hmemo::HArray<ValueType>& array,
     hmemo::HArray<IndexType>& perm,
@@ -862,7 +897,7 @@ void HArrayUtils::buildDenseArray(
     template ValueType HArrayUtils::getVal<ValueType>( const hmemo::_HArray&, const IndexType );                                  \
     template ValueType HArrayUtils::getValImpl<ValueType>( const hmemo::HArray<ValueType>&, const IndexType );                    \
     template void HArrayUtils::setScalar<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                                  \
-            const reduction::ReductionOp, hmemo::ContextPtr);                    \
+                                                     const reduction::ReductionOp, hmemo::ContextPtr);                            \
     template void HArrayUtils::assignScaled<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                               \
             const hmemo::HArray<ValueType>&, hmemo::ContextPtr);                      \
     template void HArrayUtils::scale<ValueType>( hmemo::HArray<ValueType>&, const ValueType, hmemo::ContextPtr );                 \
@@ -883,6 +918,7 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::invert<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                 \
     template bool HArrayUtils::isSorted<ValueType>( const hmemo::HArray<ValueType>&, const bool, hmemo::ContextPtr );             \
     template ValueType HArrayUtils::scan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                              \
+    template ValueType HArrayUtils::unscan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                             \
     template void HArrayUtils::sort<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&, hmemo::ContextPtr );        \
     template void HArrayUtils::setRandom<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );            \
     template void HArrayUtils::buildSparseArray<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,                 \

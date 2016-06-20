@@ -323,8 +323,8 @@ struct UtilKernelTrait
          *  @returns      the total sum of values
          *
          *  \code
-         *    array  :    3    7   8   4   2  x
-         *    array  :    0   10  15  12  16  18  -> returns 18
+         *    array  :    3   7   8   4   2  x
+         *    array  :    0   3  10  18  22  24      -> returns 24
          *  \endcode
          *
          *  Important: sizes must have numRows + 1 allocated entries.
@@ -336,6 +336,32 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Util.scan";
+        }
+    };
+
+    template<typename ValueType>
+    struct unscan
+    {
+        /** This method computes differences of values, array[i] = array[i+1] - array[i]
+         *
+         *  @param[in,out]array contains  values and later the differences
+         *  @param[in]    n is the number of values, array must contain at least this number of vales
+         *  @returns      0
+         *
+         *  \code
+         *    array  :    0   3  10  18  22  24  
+         *    array  :    3   7   8   4   2  x   -> returns 0
+         *  \endcode
+         *
+         *  Important: sizes must have numRows + 1 allocated entries.
+         *
+         */
+
+        typedef ValueType ( *FuncType ) ( ValueType array[], const IndexType n );
+
+        static const char* getId()
+        {
+            return "Util.unscan";
         }
     };
 

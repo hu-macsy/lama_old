@@ -735,6 +735,31 @@ ValueType OpenMPUtils::scan( ValueType array[], const IndexType n )
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+ValueType OpenMPUtils::unscan( ValueType array[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.unscan" )
+    SCAI_LOG_INFO( logger, "unscan array[ " << n << " ]" )
+
+    if ( n == 0 )
+    {
+        return 0;
+    }
+
+    ValueType first = array[0];
+
+    // due to anti-dependencies we do it serial, otherwise temporary required
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+         array[i] = array[i + 1] - array[i];
+    }
+
+    return first;
+}
+
+/* --------------------------------------------------------------------------- */
+
 static void* ptr = NULL;
 
 template<typename ValueType>
@@ -845,6 +870,7 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::unscan<ValueType> >( unscan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::compress<ValueType> >( compress, ctx, flag );
