@@ -271,6 +271,31 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+    ValueType vals[]     = { 0, 4, 7, 11, 15 };
+    const IndexType n = sizeof( vals ) / sizeof( ValueType );
+    scoped_array<ValueType> unscans( new ValueType[n - 1] );
+    unscans[0] = 0;
+    for ( IndexType i = 0; i < n- 1; ++i )
+    {
+        unscans[i] = vals[i + 1] - vals[i];
+    }
+
+    LArray<ValueType> array( n, vals, loc );
+    LArray<ValueType> correct( n - 1, unscans.get(), loc );
+
+    ValueType firstVal  = array[0];
+    ValueType returnVal = HArrayUtils::unscan( array );
+
+    BOOST_REQUIRE_EQUAL( array.size(), n - 1 );
+    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), 0 );
+    BOOST_CHECK_EQUAL( firstVal, returnVal );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
