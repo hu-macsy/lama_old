@@ -107,6 +107,10 @@ public:
 
     static bool hasSuffix( const std::string& fileName, const std::string& suffix );
 
+    /** Return the suffix of a filename, with point, e.g. ".mtx" for "a.mtx" */
+
+    static std::string getSuffix( const std::string& fileName );
+
     /** Help routine to remove file and maybe joint files 
      *
      *  @param[in] fileName file to delete

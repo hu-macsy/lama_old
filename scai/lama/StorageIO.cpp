@@ -458,6 +458,20 @@ bool _StorageIO::hasSuffix( const std::string& fileName, const std::string& suff
 
 /* -------------------------------------------------------------------------- */
 
+std::string _StorageIO::getSuffix( const std::string& fileName )
+{
+    size_t pos = fileName.find_last_of( "." );
+
+    if ( pos == std::string::npos )
+    {
+        return "";
+    }
+
+    return fileName.substr( pos );
+}
+
+/* -------------------------------------------------------------------------- */
+
 int _StorageIO::removeFile( const std::string& fileName )
 {
     int rc = std::remove( fileName.c_str() );
