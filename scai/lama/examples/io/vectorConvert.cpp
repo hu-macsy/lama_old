@@ -82,7 +82,7 @@ int main( int argc, const char* argv[] )
 
     bool binary = false;   // can be set by environment variable
 
-    common::Settings::getEnvironment( binary, "SCAI_BINARY" );
+    common::Settings::getEnvironment( binary, "SCAI_IO_BINARY" );
 
     // oops, no factory for storage, only for matrix
 

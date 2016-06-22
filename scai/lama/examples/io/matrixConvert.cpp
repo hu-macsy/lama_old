@@ -73,6 +73,7 @@ int main( int argc, const char* argv[] )
     {
         cout << "Usage: convert infile_name outfile_name" << endl;
         cout << "   file type is chosen by suffix"  << endl;
+        cout << "   --SCAI_IO_BINARY=0|1 formatted or binary write" << endl;
         exit( -1 );
     }
 
@@ -82,7 +83,7 @@ int main( int argc, const char* argv[] )
 
     bool binary = false;   // can be set by environment variable
 
-    common::Settings::getEnvironment( binary, "SCAI_BINARY" );
+    common::Settings::getEnvironment( binary, "SCAI_IO_BINARY" );
 
     // oops, no factory for storage, only for matrix
 

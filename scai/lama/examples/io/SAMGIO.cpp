@@ -364,7 +364,8 @@ void SAMGIO::readStorageImpl(
 
     if ( fileType != 'f' && fileType != 'b' )
     {   
-        COMMON_THROWEXCEPTION( "Invalid file type" )
+        COMMON_THROWEXCEPTION( "Invalid file type = " << fileType << " in  SAMG header file " 
+                                << fileName << ", must be either f or b" )
     }
 
     SCAI_ASSERT_EQUAL( SAMG_IVERSION, iversion, "SAMG version mismatch" )
@@ -377,24 +378,32 @@ void SAMGIO::readStorageImpl(
     inFile >> size;
     inFile >> rank; 
     inFile.close(); // explicitly, otherwise done by destructor
-    // now read *.amg file in correct mode
+
+    SCAI_LOG_INFO( logger, "Info from header file " << fileName << ": #rows = " << numRows
+                           << ", #values = " << numValues << ", type = " << fileType  )
+
+    // now open the associated data file in correct mode
+
     std::ios::openmode flags = std::ios::in;
+
+    bool binary = false;     // Note: mBinary only used for output
 
     if ( fileType == 'b' )
     {
         flags |= std::ios::binary;
+        binary = true;
     }
 
     std::string dataFileName = getDataFileName( fileName );
 
     inFile.open( dataFileName, flags );
 
-    if ( mBinary )
+    if ( binary )
     {
         // Note: read operations can deal with scalar::INTERNAL
 
         inFile.readBinary( csrIA, numRows + 1, mScalarTypeIndex );
-        inFile.readBinary( csrJA, numValues, mScalarTypeData );
+        inFile.readBinary( csrJA, numValues, mScalarTypeIndex );
         inFile.readBinary( csrValues, numValues, mScalarTypeData );
     }
     else
@@ -410,6 +419,8 @@ void SAMGIO::readStorageImpl(
 
     csrIA -= 1;
     csrJA -= 1;
+
+    SCAI_LOG_INFO( logger, "CSR data: ia = " << csrIA << ", ja = " << csrJA << ", valaues = " << csrValues )
 
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }

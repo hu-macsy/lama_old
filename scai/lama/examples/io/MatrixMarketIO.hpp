@@ -35,6 +35,7 @@
 #pragma once
 
 #include "CRTPFileIO.hpp"
+#include "IOStream.hpp"
 
 namespace scai
 {
@@ -106,6 +107,24 @@ public:
     __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
+ 
+private:
+
+    void writeMMHeader(
+        const bool& vector,
+        const IndexType& numRows,
+        const IndexType& numColumns,
+        const IndexType& numValues,
+        IOStream& outFile,
+        const common::scalar::ScalarType& dataType );
+
+    void readMMHeader(
+        IndexType& numRows,
+        IndexType& numColumns,
+        IndexType& numValues,
+        bool& isPattern,
+        bool& isSymmetric,
+        IOStream& inFile );
 
 };
 

@@ -93,7 +93,7 @@ void MatrixMarketIO::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
-static void writeMMHeader(
+void MatrixMarketIO::writeMMHeader(
     const bool& vector,
     const IndexType& numRows,
     const IndexType& numColumns,
@@ -135,7 +135,7 @@ static void writeMMHeader(
             break;
 
         default:
-            COMMON_THROWEXCEPTION( "_StorageIO::writeMMHeader: " "unknown datatype." << dataType )
+            COMMON_THROWEXCEPTION( *this << ": writeMMHeader: " << dataType << " unspported type" )
     }
 
     // TODO: Add support for symmetric matrices
@@ -154,7 +154,7 @@ static void writeMMHeader(
 
 /* --------------------------------------------------------------------------------- */
 
-static void readMMHeader(
+void MatrixMarketIO::readMMHeader(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValues,

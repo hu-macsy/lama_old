@@ -132,14 +132,23 @@ public:
                         const IndexType nlines );
 private:
 
+    /** Write binary array without conversion */
+
     template<typename FileType>
-    inline void writeImpl( const hmemo::HArray<FileType>& data );
+    inline void writeBinDirect( const hmemo::HArray<FileType>& data );
+
+    /** Write binary array with conversion 
+     *
+     * @param data is array to be written, will be converted to FileType before
+     * @tparam FileType is type used in file
+     * @tparam Dataype is type of the array to be written
+     */
 
     template<typename FileType, typename DataType>
     inline void writeBinConverted( const hmemo::HArray<DataType>& data );
 
     template<typename FileType>
-    inline void readImpl( hmemo::HArray<FileType>& data, const IndexType size );
+    inline void readBinDirect( hmemo::HArray<FileType>& data, const IndexType size );
 
     template<typename FileType, typename DataType>
     inline void readBinConverted(  hmemo::HArray<DataType>& data, const IndexType size );
@@ -218,7 +227,7 @@ inline void IOStream::writeBinary( const hmemo::HArray<ValueType>& data,
     {
         // no type conversion needed
 
-        writeImpl<ValueType>( data );
+        writeBinDirect<ValueType>( data );
     }
     else
     {
@@ -237,7 +246,7 @@ inline void IOStream::readBinary( hmemo::HArray<ValueType>& data,
     {
         // no type conversion needed
 
-        readImpl<ValueType>( data, size );
+        readBinDirect<ValueType>( data, size );
     }
     else
     {
@@ -248,7 +257,7 @@ inline void IOStream::readBinary( hmemo::HArray<ValueType>& data,
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-inline void IOStream::writeImpl( const hmemo::HArray<ValueType>& data )
+inline void IOStream::writeBinDirect( const hmemo::HArray<ValueType>& data )
 {
     hmemo::ReadAccess<ValueType> dataRead( data );
 
@@ -280,12 +289,12 @@ inline void IOStream::writeBinConverted( const hmemo::HArray<DataType>& data )
 
     if ( typeid( FileType ) == typeid( DataType ) )
     {
-        writeImpl( data );
+        writeBinDirect( data );
     }
     else
     {
         utilskernel::LArray<FileType> buffer( data );
-        writeImpl( buffer );
+        writeBinDirect( buffer );
     }
 
     std::fstream::flush();
@@ -294,10 +303,10 @@ inline void IOStream::writeBinConverted( const hmemo::HArray<DataType>& data )
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-inline void IOStream::readImpl( hmemo::HArray<ValueType>& data,
+inline void IOStream::readBinDirect( hmemo::HArray<ValueType>& data,
                                 const IndexType size )
 {
-    SCAI_LOG_INFO( logger, "readImpl<" << common::TypeTraits<ValueType>::id() << ">, size = " << size )
+    SCAI_LOG_INFO( logger, "readBinDirect<" << common::TypeTraits<ValueType>::id() << ">, size = " << size )
 
     hmemo::WriteOnlyAccess<ValueType> dataWrite( data, size );
 
@@ -331,12 +340,12 @@ inline void IOStream::readBinConverted( hmemo::HArray<DataType>& data,
 
     if ( typeid( FileType ) == typeid( DataType ) )
     {
-        readImpl( data, size );
+        readBinDirect( data, size );
     }
     else
     {
         hmemo::HArray<FileType> buffer;
-        readImpl( buffer, size );
+        readBinDirect( buffer, size );
         utilskernel::LArray<DataType>& lData = reinterpret_cast<utilskernel::LArray<DataType>& >( data );
         lData = buffer;
     }
@@ -421,7 +430,10 @@ void IOStream::readFormatted( hmemo::HArray<ValueType>& val,
 
         if ( this->fail() )
         {
-            SCAI_THROWEXCEPTION( common::IOException, "Error reading file " << mFileName )
+            SCAI_THROWEXCEPTION( common::IOException, 
+                                 "readFormatted<" << common::TypeTraits<ValueType>::id() 
+                                 << "> from " << mFileName 
+                                 << " at entry line " << k << " of " << nlines )
         }
 
         std::istringstream iss( line );
@@ -452,7 +464,12 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
 
         if ( this->fail() )
         {
-            SCAI_THROWEXCEPTION( common::IOException, "Error reading file " << mFileName )
+            SCAI_THROWEXCEPTION( common::IOException, 
+                                 "readFormatted<" << common::TypeTraits<ValueType1>::id() 
+                                 << ", " << common::TypeTraits<ValueType2>::id() 
+                                 << ", " << common::TypeTraits<ValueType3>::id() 
+                                 << "> from " << mFileName 
+                                 << " at entry line " << k << " of " << nlines )
         }
 
         std::istringstream iss( line );
