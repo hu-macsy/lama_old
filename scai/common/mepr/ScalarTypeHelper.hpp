@@ -37,6 +37,7 @@
 #include <scai/common/mepr/TypeList.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <typeinfo>
 
 namespace scai
 {
@@ -60,7 +61,7 @@ struct ScalarTypeHelper;
 template<>
 struct ScalarTypeHelper<NullType>
 {
-    static long sizeOf( const scalar::ScalarType& )
+    static size_t sizeOf( const scalar::ScalarType& )
     {
         return 0;
     }
@@ -68,6 +69,16 @@ struct ScalarTypeHelper<NullType>
     static scalar::ScalarType getBySize( const long )
     {
         return scalar::UNKNOWN;
+    }
+
+    static int precision( const scalar::ScalarType )
+    {
+        return 0;
+    }
+
+    static bool isComplex( const scalar::ScalarType )
+    {
+        return false;
     }
 };
 
@@ -77,7 +88,7 @@ struct ScalarTypeHelper<NullType>
 template<typename H, typename T>
 struct ScalarTypeHelper< TypeList<H, T> >
 {
-    static long sizeOf( const scalar::ScalarType& s )
+    static size_t sizeOf( const scalar::ScalarType& s )
     {
         if ( s == common::getScalarType<H>() )
         {
@@ -98,6 +109,42 @@ struct ScalarTypeHelper< TypeList<H, T> >
         else
         {
             return ScalarTypeHelper< T >::getBySize( size );
+        }
+    }
+
+    static int precision( const scalar::ScalarType stype )
+    {
+        if ( stype == TypeTraits<H>::stype )
+        {
+            return TypeTraits<H>::precision();
+        }
+        else
+        {
+            return ScalarTypeHelper<T>::precision( stype );
+        }
+    }
+
+    static bool isComplex( const scalar::ScalarType stype )
+    {
+        if ( stype == TypeTraits<H>::stype )
+        {
+            // a type is complex if its AbsType is not the same
+
+            typedef typename TypeTraits<H>::AbsType AbsType;
+
+            if ( typeid( H ) == typeid( AbsType ) )
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+
+        }
+        else
+        {
+            return ScalarTypeHelper<T>::isComplex( stype );
         }
     }
 };

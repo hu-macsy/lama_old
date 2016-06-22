@@ -35,20 +35,31 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/ScalarType.hpp>
 
+#include<iostream>
+#include<iomanip>
+
 using scai::common::TypeTraits;
 
 template<typename ValueType>
 void testRoutine()
 {
     std::cout << "TypeTraits<...>::id() = " << TypeTraits<ValueType>::id() << std::endl;
-    scai::common::scalar::ScalarType x = TypeTraits<ValueType>::stype;
-    std::cout << "TypeTraits<...>::stype = " << x << std::endl;
+    scai::common::scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    std::cout << "TypeTraits<...>::stype = " << stype << std::endl;
+    std::cout << "isComplex = " << isComplex( stype ) << std::endl;
+
+    ValueType alpha = ValueType( 1 ) / ValueType( 3 );
+    int precision = TypeTraits<ValueType>::precision();
+    std::cout << "Output alpha: precision = " << precision;
+    std::cout << std::setprecision( precision ) << " alpha = " << alpha << std::endl;
+  
 }
 
 int main()
 {
     testRoutine<float>();
     testRoutine<double>();
+    testRoutine<long double>();
 #ifdef SCAI_COMPLEX_SUPPORTED
     testRoutine<ComplexFloat>();
 #endif

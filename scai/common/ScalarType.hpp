@@ -88,7 +88,15 @@ struct scalar
 
 /** Query an enum value whether it is complex or not. */
 
-COMMON_DLL_IMPORTEXPORT bool isComplex( const scalar::ScalarType t );
+COMMON_DLL_IMPORTEXPORT bool isComplex( const scalar::ScalarType stype );
+
+/** Query an enum value about the precision used in output */
+
+COMMON_DLL_IMPORTEXPORT int precision( const scalar::ScalarType stype );
+
+/** Query sizeof( ScalarType stype ) same as sizeof( type ) for which stype stands for */
+
+COMMON_DLL_IMPORTEXPORT size_t typeSize( const scalar::ScalarType stype );
 
 /*
  * Output of ScalarType in stream by writing strings instead of numbers

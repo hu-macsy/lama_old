@@ -40,6 +40,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <limits>
 
 namespace scai
 {
@@ -57,7 +58,10 @@ class TypeTraits
 {
 public:
 
-    /** Return type of function abs( ValueType ) */
+    /** Return type of function abs( ValueType )
+     *
+     *  Note: ValueType != TypeTraits<ValueType>::AbsType <=> ValueType is complex
+     */
 
     typedef ValueType AbsType;
 
@@ -80,6 +84,13 @@ public:
     static inline ValueType getMax()
     {
         return std::numeric_limits<ValueType>::max();
+    }
+
+    /** Get number of digits to be used as default precision for formatted ouptut */
+
+    static inline int precision()
+    {
+        return std::numeric_limits<ValueType>::digits * std::log10( 2 ) + 2;
     }
 
     /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
@@ -128,6 +139,11 @@ public:
         return std::numeric_limits<IndexType>::max();
     }
 
+    static inline int precision()
+    {
+        return 0;
+    }
+
     static inline IndexType getMin()
     {
         return - std::numeric_limits<IndexType>::max();
@@ -162,6 +178,11 @@ public:
     static inline long double getMax()
     {
         return std::numeric_limits<long double>::max();
+    }
+
+    static inline int precision()
+    {
+        return std::numeric_limits<long double>::digits * std::log10( 2 ) + 2;
     }
 
     static inline long double getMin()
@@ -199,6 +220,12 @@ public:
     {
         return std::numeric_limits<double>::max();
     }
+
+    static inline int precision()
+    {
+        return std::numeric_limits<double>::digits * std::log10( 2 ) + 2;
+    }
+
     static inline double getMin()
     {
         return - std::numeric_limits<double>::max();
@@ -228,6 +255,11 @@ public:
     static inline float small()
     {
         return 1e-3f;
+    }
+
+    static inline int precision()
+    {
+        return std::numeric_limits<float>::digits * std::log10( 2 ) + 2;
     }
 
     static inline float getMax()
@@ -267,6 +299,11 @@ public:
         return ComplexFloat( 1e-3f );
     }
 
+    static inline int precision()
+    {
+        return std::numeric_limits<float>::digits * std::log10( 2 ) + 2;
+    }
+
     static inline ComplexFloat getMax()
     {
         return std::numeric_limits<float>::max();
@@ -300,6 +337,11 @@ public:
     static inline ComplexDouble small()
     {
         return ComplexDouble( 1e-5 );
+    }
+
+    static inline int precision()
+    {
+        return std::numeric_limits<double>::digits * std::log10( 2 ) + 2;
     }
 
     static inline ComplexDouble getMax()
@@ -336,6 +378,11 @@ public:
     static inline ComplexLongDouble small()
     {
         return ComplexLongDouble( 1e-8L );
+    }
+
+    static inline int precision()
+    {
+        return std::numeric_limits<long double>::digits * std::log10( 2 ) + 2;
     }
 
     static inline ComplexLongDouble getMax()
