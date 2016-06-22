@@ -380,6 +380,18 @@ public:
      */
     void swap( COOStorage<ValueType>& other );
 
+    /**
+     * @brief Swap the COO arrays with new arrays.
+     *
+     * This routine is helpful to get temporay write access to COO arrays. 
+     *
+     * This routine can be used to build a COO storage with new values. Other member variables
+     * will be defined correctly.
+     *
+     * It is also useful to work on with COO data when COO storage is no more needed.
+     */
+    void swap( hmemo::HArray<IndexType>& ia, hmemo::HArray<IndexType>& ja, hmemo::HArray<ValueType>& values );
+
     virtual size_t getMemoryUsageImpl() const;
 
     using MatrixStorage<ValueType>::assign;

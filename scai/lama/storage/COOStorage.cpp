@@ -465,6 +465,26 @@ void COOStorage<ValueType>::swap( COOStorage<ValueType>& other )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void COOStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, HArray<ValueType>& values )
+{
+    IndexType numValues = ia.size();
+
+    SCAI_ASSERT_EQUAL( numValues, ja.size(), "mismatch of coo IA and JA array" );
+    SCAI_ASSERT_EQUAL( numValues, values.size(), "mismatch of coo IA and Values array" );
+
+    mIA.swap( ia );
+    mJA.swap( ja );
+    mValues.swap( values );
+
+    // guarantee consistency of the new array
+
+    mNumValues = numValues;
+    mDiagonalProperty = checkDiagonalProperty();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType COOStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
