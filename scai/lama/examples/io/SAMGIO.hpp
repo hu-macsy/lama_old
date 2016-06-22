@@ -117,6 +117,20 @@ public:
     __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
+
+private:
+
+    /** Guard class for an additional registration with the vector file suffix. */
+
+    class Guard
+    {
+    public:
+
+        Guard();
+        ~Guard();
+    };
+
+    static Guard mGuard;
 };
 
 }

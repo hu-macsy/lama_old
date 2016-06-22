@@ -89,6 +89,7 @@ std::string SAMGIO::createValue()
 void SAMGIO::writeAt( std::ostream& stream ) const
 {
     stream << "SAMGIO ( ";
+    stream << "suffix = " << getMatrixFileSuffix() << "|" << getVectorFileSuffix() << ", ";
     writeMode( stream );
     stream << " )";
 }
@@ -266,7 +267,8 @@ void SAMGIO::readArrayImpl(
     {
         inFile.readFormatted( array, numRows );
     }
-    inFile.close();
+
+    inFile.closeCheck();
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -400,6 +402,26 @@ void SAMGIO::readStorageImpl(
 
     if ( binary )
     {
+        size_t expectedSize = ( numRows + 1 + numValues ) * common::typeSize( mScalarTypeIndex );
+
+        if ( mScalarTypeData == common::scalar::INTERNAL )
+        {
+            expectedSize += numValues * sizeof( ValueType );
+        }
+        else
+        {
+            expectedSize += numValues * common::typeSize( mScalarTypeData ) ;
+        }
+
+        inFile.seekg( 0, std::ios::end );
+        size_t realSize = inFile.tellg();
+        inFile.seekg( 0, std::ios::beg );
+
+        if ( expectedSize != realSize )
+        {
+            SCAI_LOG_WARN( logger, "Binary file: real size = " << realSize << ", expected size = " << expectedSize )
+        }
+
         // Note: read operations can deal with scalar::INTERNAL
 
         inFile.readBinary( csrIA, numRows + 1, mScalarTypeIndex );
@@ -415,7 +437,7 @@ void SAMGIO::readStorageImpl(
         inFile.readFormatted( csrValues, numValues );
     }
 
-    inFile.close();
+    inFile.closeCheck();   // gives a warning if not complete file has been read
 
     csrIA -= 1;
     csrJA -= 1;
@@ -423,6 +445,20 @@ void SAMGIO::readStorageImpl(
     SCAI_LOG_INFO( logger, "CSR data: ia = " << csrIA << ", ja = " << csrJA << ", valaues = " << csrValues )
 
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+SAMGIO::Guard SAMGIO::mGuard;
+
+SAMGIO::Guard::Guard()
+{
+    addCreator( SAMG_VEC_HEADER_SUFFIX, &SAMGIO::create );
+}
+
+SAMGIO::Guard::~Guard()
+{
+    removeCreator( SAMG_VEC_HEADER_SUFFIX );
 }
 
 /* --------------------------------------------------------------------------------- */

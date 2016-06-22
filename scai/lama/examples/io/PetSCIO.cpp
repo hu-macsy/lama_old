@@ -63,16 +63,6 @@ SCAI_LOG_DEF_LOGGER( PetSCIO::logger, "FileIO.PetSCIO" )
 
 static std::string PETSC_SUFFIX   = ".psc";
 
-std::string PetSCIO::getVectorFileSuffix() const
-{
-    return PETSC_SUFFIX;
-}
-
-std::string PetSCIO::getMatrixFileSuffix() const
-{   
-    return PETSC_SUFFIX;
-}
-
 /* --------------------------------------------------------------------------------- */
 /*    Implementation of Factory methods                                              */
 /* --------------------------------------------------------------------------------- */
@@ -92,8 +82,9 @@ std::string PetSCIO::createValue()
 void PetSCIO::writeAt( std::ostream& stream ) const
 {
     stream << "PetSCIO ( ";
+    stream << "suffix = " << PETSC_SUFFIX << ", ";
     writeMode( stream );
-    stream << ", only binary )";
+    stream << ", only binary, BIG Endian )";
 }
 
 /* --------------------------------------------------------------------------------- */

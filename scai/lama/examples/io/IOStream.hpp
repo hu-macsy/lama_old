@@ -130,6 +130,11 @@ public:
                         hmemo::HArray<ValueType2>& val2,
                         hmemo::HArray<ValueType3>& val3,
                         const IndexType nlines );
+
+    /** Same as close but gives a warning if not all data has been read */
+
+    void closeCheck();
+    
 private:
 
     /** Write binary array without conversion */
@@ -231,7 +236,7 @@ inline void IOStream::writeBinary( const hmemo::HArray<ValueType>& data,
     }
     else
     {
-        Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARITHMETIC_HOST ) >::writeBinResolved( *this, data, type );
+        Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_HOST ) >::writeBinResolved( *this, data, type );
     }
 }
 
@@ -250,7 +255,7 @@ inline void IOStream::readBinary( hmemo::HArray<ValueType>& data,
     }
     else
     {
-        Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARITHMETIC_HOST ) >::readBinResolved( *this, data, size, type );
+        Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_HOST ) >::readBinResolved( *this, data, size, type );
     }
 }
 
@@ -304,21 +309,33 @@ inline void IOStream::writeBinConverted( const hmemo::HArray<DataType>& data )
 
 template<typename ValueType>
 inline void IOStream::readBinDirect( hmemo::HArray<ValueType>& data,
-                                const IndexType size )
+                                     const IndexType size )
 {
     SCAI_LOG_INFO( logger, "readBinDirect<" << common::TypeTraits<ValueType>::id() << ">, size = " << size )
+
+    size_t ndata = sizeof( ValueType ) * size;
 
     hmemo::WriteOnlyAccess<ValueType> dataWrite( data, size );
 
     if ( mUsedEndian == MACHINE_ENDIAN || ( mUsedEndian == mMachineEndian ) )
     {
-        std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), sizeof( ValueType ) * size );
+        std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), ndata);
+
+        if ( this->fail() )
+        {
+            SCAI_THROWEXCEPTION( common::IOException, "binary read: could not read " << ndata << " bytes" )
+        }
     }
     else
     {
         scai::common::scoped_array<ValueType> tmp( new ValueType[ data.size() ] );
 
-        std::fstream::read( reinterpret_cast<char*>( tmp.get() ), sizeof( ValueType ) * size );
+        std::fstream::read( reinterpret_cast<char*>( tmp.get() ), ndata );
+
+        if ( this->fail() )
+        {
+            SCAI_THROWEXCEPTION( common::IOException, "binary read: could not read " << ndata << " bytes" )
+        }
 
         endianConvert( reinterpret_cast<char*>( dataWrite.get() ),
                        reinterpret_cast<const char*>( tmp.get() ),
@@ -335,8 +352,6 @@ inline void IOStream::readBinConverted( hmemo::HArray<DataType>& data,
 {
     SCAI_LOG_INFO( logger, "read array data <" << common::TypeTraits<FileType>::id() << "> to <"
                    << common::TypeTraits<DataType>::id() << ">, size = " << size )
-
-    hmemo::WriteOnlyAccess<DataType> dataWrite( data, size );
 
     if ( typeid( FileType ) == typeid( DataType ) )
     {

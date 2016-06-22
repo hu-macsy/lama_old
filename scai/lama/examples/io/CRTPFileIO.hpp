@@ -84,11 +84,11 @@ public:
 
     /** Default implementation for query matrix file suffix, is createValue of derived class */
 
-    virtual std::string getMatrixFileSuffix();
+    virtual std::string getMatrixFileSuffix() const;
 
     /** Default implementation for query vector file suffix, is createValue of derived class */
 
-    virtual std::string getVectorFileSuffix();
+    virtual std::string getVectorFileSuffix() const;
 };
 
 /* --------------------------------------------------------------------------------- */
@@ -215,8 +215,8 @@ void CRTPFileIO<Derived>::writeArray( const hmemo::_HArray& array, const std::st
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 
-    SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
-                 fileName << " illegal file name for storage, must have suffix " << getVectorFileSuffix() )
+    SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ),
+                 fileName << " illegal file name for array, must have suffix " << this->getVectorFileSuffix() )
 
     // now call the corresponding typed routine, use meta-programming to get the correct type
     
@@ -264,7 +264,7 @@ int CRTPFileIO<Derived>::deleteFile( const std::string& fileName )
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
-std::string CRTPFileIO<Derived>::getMatrixFileSuffix()
+std::string CRTPFileIO<Derived>::getMatrixFileSuffix() const
 {
     return Derived::createValue();
 }
@@ -272,7 +272,7 @@ std::string CRTPFileIO<Derived>::getMatrixFileSuffix()
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
-std::string CRTPFileIO<Derived>::getVectorFileSuffix()
+std::string CRTPFileIO<Derived>::getVectorFileSuffix() const
 {
     return Derived::createValue();
 }

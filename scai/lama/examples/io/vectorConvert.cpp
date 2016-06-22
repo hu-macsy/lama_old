@@ -103,7 +103,7 @@ int main( int argc, const char* argv[] )
 
         common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        std::cout << "Got from factory: " << *fileIO << std::endl;
+        std::cout << "Got from factory ( suffix = " << suffix << " ): " << *fileIO << std::endl;
 
         fileIO->readArray( array, inFileName );
     }
@@ -131,6 +131,8 @@ int main( int argc, const char* argv[] )
     }
     else
     {
+        std::cout << "Write with old LAMA write routine" << std::endl;
+
         // use supported file format
         vector.writeToFile( outFileName, File::DEFAULT, common::scalar::INTERNAL, binary );
     }

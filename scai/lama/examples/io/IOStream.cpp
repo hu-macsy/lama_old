@@ -49,6 +49,20 @@ IOStream::IOStream( const std::string& filename, ios_base::openmode mode, Endian
     open( filename, mode, usedEndian );
 }
 
+void IOStream::closeCheck()
+{
+    std::streampos fsize = tellg();
+    seekg( 0, std::ios::end );
+    fsize = tellg() - fsize;
+
+    if ( fsize > 0 )
+    {
+        SCAI_LOG_WARN( logger, "close " << mFileName << ", but remain " << fsize << " unread bytes" )
+    }
+
+    close();
+}
+
 void IOStream::open( const std::string& filename, ios_base::openmode mode, Endian usedEndian )
 {
     mFileName = filename;

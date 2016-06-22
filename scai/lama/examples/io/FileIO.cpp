@@ -62,15 +62,24 @@ FileIO::FileIO() :
 
     if ( common::Settings::getEnvironment( datatype, "SCAI_IO_TYPE_DATA" ) )
     {
-        mScalarTypeData = scai::common::str2ScalarType( datatype.c_str() );
+        mScalarTypeData = common::str2ScalarType( datatype.c_str() );
+        
+        if ( common::scalar::UNKNOWN == mScalarTypeData )
+        {
+            COMMON_THROWEXCEPTION( "Not a known value type: SCAI_IO_TYPE_DATA="  << datatype )
+        }
     }
 
     if ( common::Settings::getEnvironment( datatype, "SCAI_IO_TYPE_INDEX" ) )
     {
-        mScalarTypeIndex = scai::common::str2ScalarType( datatype.c_str() );
+        mScalarTypeIndex = common::str2ScalarType( datatype.c_str() );
+
+        if ( common::scalar::UNKNOWN == mScalarTypeIndex )
+        {
+            COMMON_THROWEXCEPTION( "Not a known value type: SCAI_IO_TYPE_INDEX="  << datatype )
+        }
     }
 
-    std::cout << "constructed FileIO" << std::endl;
     SCAI_LOG_DEBUG( logger, "Constructed FileIO" )
 }
 

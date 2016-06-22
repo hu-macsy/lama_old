@@ -55,12 +55,6 @@ public:
 
     PetSCIO();
 
-    /** File suffix is used to decide about choice of output class */
-
-    virtual std::string getVectorFileSuffix() const;
-
-    virtual std::string getMatrixFileSuffix() const;
-
     /** Query if formatted or binary IO is supported 
      *
      *  @param[in] binary if true query support for binary, if false query support for formatted
