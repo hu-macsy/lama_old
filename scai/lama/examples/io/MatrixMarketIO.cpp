@@ -32,18 +32,18 @@
  * @date 10.06.2016
  */
 
-
 #include "MatrixMarketIO.hpp"
+#include "IOStream.hpp"
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/lama/io/FileStream.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -82,57 +82,13 @@ std::string MatrixMarketIO::createValue()
     return MM_SUFFIX;
 }
 
-void MatrixMarketIO::writeAt( std::ostream& stream ) const
-{
-    stream << "MatrixMarketIO (only formatted)";
-}
-
 /* --------------------------------------------------------------------------------- */
 
-template<typename ValueType1, typename ValueType2, typename ValueType3>
-static void readTextFile( 
-    HArray<ValueType1>& val1,
-    HArray<ValueType2>& val2,
-    HArray<ValueType3>& val3,
-    const IndexType nlines,
-    FileStream& inFile )
+void MatrixMarketIO::writeAt( std::ostream& stream ) const
 {
-    ContextPtr ctx = Context::getHostPtr();
-
-    WriteOnlyAccess<ValueType1> wVal1( val1, ctx, nlines );
-    WriteOnlyAccess<ValueType2> wVal2( val2, ctx, nlines );
-    WriteOnlyAccess<ValueType3> wVal3( val3, ctx, nlines );
-
-    bool error = false;
-
-    std::string line;
-
-    for ( IndexType k = 0; k < nlines; ++k )
-    {
-        std::getline( inFile, line );
-
-        if ( inFile.fail() )
-        {   
-            COMMON_THROWEXCEPTION( "Line mismatch at line " << k << ", expected " << nlines << " lines" )
-        }
-
-        std::istringstream iss( line );
-
-        iss >> wVal1[k];
-        iss >> wVal2[k];
-        iss >> wVal3[k];
-
-        if ( iss.fail() )
-        {
-            std::cout << "error reading entry " << k << std::endl;
-            error = true;
-        }
-    }
-
-    if ( error )
-    {
-        COMMON_THROWEXCEPTION( "File contains errors" )
-    }
+    stream << "MatrixMarketIO ( ";
+    writeMode( stream );
+    stream << ", only formatted )";
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -142,7 +98,7 @@ static void writeMMHeader(
     const IndexType& numRows,
     const IndexType& numColumns,
     const IndexType& numValues,
-    FileStream& outFile,
+    IOStream& outFile,
     const common::scalar::ScalarType& dataType )
 {
     outFile << "%%matrixmarket ";
@@ -160,6 +116,7 @@ static void writeMMHeader(
     {
         case common::scalar::DOUBLE:
         case common::scalar::FLOAT:
+        case common::scalar::LONG_DOUBLE:
             outFile << "real ";
             break;
 
@@ -203,7 +160,7 @@ static void readMMHeader(
     IndexType& numValues,
     bool& isPattern,
     bool& isSymmetric,
-    FileStream& inFile )
+    IOStream& inFile )
 {
     std::string buffer;
     // read %%MatrixMarket
@@ -373,7 +330,7 @@ static void addSymmetricEntries(
 
 /* --------------------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( MatrixMarketIO::logger, "MatrixMarketIO" )
+SCAI_LOG_DEF_LOGGER( MatrixMarketIO::logger, "FileIO.MatrixMarketIO" )
 
 /* --------------------------------------------------------------------------------- */
 
@@ -398,9 +355,9 @@ void MatrixMarketIO::writeArrayImpl(
 {
     SCAI_ASSERT_ERROR( !mBinary, "Matrix market format can not be written binary" );
 
-    FileStream outFile( fileName, std::ios::out | std::ios::trunc );
+    IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
-    common::scalar::ScalarType dataType = mDataType;
+    common::scalar::ScalarType dataType = mScalarTypeData;
 
     if ( dataType == common::scalar::INTERNAL )
     {
@@ -442,7 +399,7 @@ void MatrixMarketIO::readArrayImpl(
 
     ValueType val;
     std::string line;
-    FileStream inFile( fileName, std::ios::in );
+    IOStream inFile( fileName, std::ios::in );
     readMMHeader( numRows, numColumns, numValues, isPattern, isSymmetric, inFile );
 
     if ( numColumns != 1 )
@@ -508,20 +465,29 @@ void MatrixMarketIO::writeStorageImpl(
     int numRows = coo.getNumRows();
     int numCols = coo.getNumColumns();
 
-    const HArray<IndexType>& cooIA = coo.getIA();
-    const HArray<IndexType>& cooJA = coo.getJA();
-    const HArray<ValueType>& cooValues = coo.getValues();
+    // define empty array that will be swapped with the COOStorage
+
+    LArray<IndexType> cooIA;
+    LArray<IndexType> cooJA;
+    LArray<ValueType> cooValues;
+
+    coo.swap( cooIA, cooJA, cooValues );
+
+    // Attention: indexing in MatrixMarket starts with 1 and not with 0 as in LAMA
+
+    cooIA += 1;
+    cooJA += 1;
 
     int numValues = cooIA.size();
 
-    common::scalar::ScalarType dataType = mDataType;
+    common::scalar::ScalarType dataType = mScalarTypeData;
 
     if ( dataType == common::scalar::INTERNAL )
     {
         dataType = common::TypeTraits<ValueType>::stype;
     }
 
-    FileStream outFile( fileName, std::ios::out | std::ios::trunc );
+    IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
     writeMMHeader( false, numRows, numCols, numValues, outFile, dataType );
 
@@ -533,12 +499,10 @@ void MatrixMarketIO::writeStorageImpl(
     ReadAccess<IndexType> ja( cooJA, host );
     ReadAccess<ValueType> data( cooValues, host );
 
-    // Attention: indexing in MatrixMarket starts with 1 and not with 0 as in LAMA
+    int precIndex = 0;
+    int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
-    for ( IndexType i = 0; i < numValues; ++i )
-    {
-        outFile << ( ia[i] + 1 ) << " " << ( ja[i] + 1 ) << " " << data[i] << std::endl;
-    }
+    outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
 
     outFile.close();
 }
@@ -557,7 +521,7 @@ void MatrixMarketIO::readStorageImpl(
     IndexType numColumns;
     IndexType numValuesFile;
 
-    FileStream inFile( fileName, std::ios::in );
+    IOStream inFile( fileName, std::ios::in );
 
     readMMHeader( numRows, numColumns, numValuesFile, isPattern, isSymmetric, inFile );
 
@@ -572,7 +536,7 @@ void MatrixMarketIO::readStorageImpl(
 
     SCAI_LOG_DEBUG( logger, "read in" )
     
-    readTextFile( ia, ja, val, numValuesFile, inFile );
+    inFile.readFormatted( ia, ja, val, numValuesFile );
 
     SCAI_LOG_DEBUG( logger, "read ia  : " << ia  )
     SCAI_LOG_DEBUG( logger, "read ja  : " << ja  )

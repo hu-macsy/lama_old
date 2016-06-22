@@ -34,11 +34,11 @@
 
 
 #include "PetSCIO.hpp"
+#include "IOStream.hpp"
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/lama/io/FileStream.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
@@ -57,7 +57,7 @@ static int VEC_FILE_CLASSID = 1211214;  //<! internal id as specified by PetSC
 
 /* --------------------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( PetSCIO::logger, "PetSCIO" )
+SCAI_LOG_DEF_LOGGER( PetSCIO::logger, "FileIO.PetSCIO" )
 
 /* --------------------------------------------------------------------------------- */
 
@@ -91,26 +91,16 @@ std::string PetSCIO::createValue()
 
 void PetSCIO::writeAt( std::ostream& stream ) const
 {
-    stream << "PetSCIO (only binary)";
+    stream << "PetSCIO ( ";
+    writeMode( stream );
+    stream << ", only binary )";
 }
 
 /* --------------------------------------------------------------------------------- */
 
 PetSCIO::PetSCIO() 
 {
-    mBinary = true;    // writes binary as default    
-
-    // be careful if PetSC has been configured with -int64
-    // the setIAType( common::scalar::LONG ), setJAType( common::scalar::LONG )
-
-    mIAType   = common::scalar::INDEX_TYPE;
-    mJAType   = common::scalar::INDEX_TYPE;
-
-    mDataType = common::scalar::DOUBLE;
-
-    // overwrite default if enviroment variable is set
-
-    common::Settings::getEnvironment( mAppendMode, "SCAI_IO_APPEND" );
+    mBinary = true;  // writes binary as default    
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -151,7 +141,7 @@ void PetSCIO::writeArrayImpl(
         flags |= std::ios::trunc;
     }
 
-    FileStream outFile( fileName, flags, FileStream::BIG );
+    IOStream outFile( fileName, flags, IOStream::BIG );
 
     std::cout << "File " << fileName << " now open for binary write, append = " << mAppendMode << std::endl;
 
@@ -160,8 +150,8 @@ void PetSCIO::writeArrayImpl(
     headValues[0] = VEC_FILE_CLASSID;
     headValues[1] = nrows;
 
-    outFile.write<int>( headValues, 0, scai::common::scalar::INT, '\n' );
-    outFile.write<ValueType>( array, 0, mDataType, '\n' );
+    outFile.writeBinary( headValues, scai::common::scalar::INT );
+    outFile.writeBinary( array, mScalarTypeData );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -216,7 +206,7 @@ void PetSCIO::writeStorageImpl(
         flags |= std::ios::trunc;
     }
 
-    FileStream outFile( fileName, flags, FileStream::BIG );
+    IOStream outFile( fileName, flags, IOStream::BIG );
 
     std::cout << "File " << fileName << " now open for binary write, append = " << mAppendMode << std::endl;
 
@@ -229,12 +219,12 @@ void PetSCIO::writeStorageImpl(
     headValues[2] = ncols;
     headValues[3] = nnz;
 
-    // for binary output we make conversions to mIAType, mJAType, mDdataType 
+    // for binary output we make conversions to mScalarTypeData, mScalarTypeIndex
 
-    outFile.write<int>( headValues, 0, scai::common::scalar::INT, '\n' );
-    outFile.write<IndexType>( csrIA, 0, mIAType, '\n' );
-    outFile.write<IndexType>( csrJA , 0, mJAType, '\n' ); 
-    outFile.write<ValueType>( csrValues, 0, mDataType, '\n' );
+    outFile.writeBinary( headValues, scai::common::scalar::INT );
+    outFile.writeBinary( csrIA, mScalarTypeIndex );
+    outFile.writeBinary( csrJA , mScalarTypeIndex ); 
+    outFile.writeBinary( csrValues, mScalarTypeData );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -255,11 +245,11 @@ void PetSCIO::readStorageImpl(
 
     std::cout << "Read from file " << fileName << std::endl;
 
-    FileStream inFile( fileName, flags, FileStream::BIG );
+    IOStream inFile( fileName, flags, IOStream::BIG );
 
     utilskernel::LArray<int> headerVals;
 
-    inFile.read( headerVals, 4, 0, common::TypeTraits<IndexType>::stype, '\n' );
+    inFile.readBinary( headerVals, 4, common::TypeTraits<int>::stype );
 
     int classid = headerVals[0];
     int nrows = headerVals[1];
@@ -275,11 +265,9 @@ void PetSCIO::readStorageImpl(
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
-    ValueType valAdjust = 0;
-
-    inFile.read( csrSizes, nrows, 0, common::TypeTraits<IndexType>::stype, '\n' );
-    inFile.read( csrJA, nnz, 0, common::TypeTraits<IndexType>::stype, '\n' );
-    inFile.read( csrValues, nnz, valAdjust, common::TypeTraits<ValueType>::stype, '\n' );
+    inFile.readBinary( csrSizes, nrows, mScalarTypeIndex );
+    inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
+    inFile.readBinary( csrValues, nnz, mScalarTypeIndex );
 
     storage.setCSRData( nrows, ncols, nnz, csrSizes, csrJA, csrValues );
 }

@@ -32,10 +32,16 @@
  # @date 02.12.2015
 ###
 
-set ( EXAMPLE_FILES matrixConvert.cpp vectorConvert.cpp PetSCIO.cpp PetSCIO.hpp MatlabIO.cpp MatlabIO.hpp FileIO.hpp )
+set ( EXAMPLE_FILES matrixConvert.cpp vectorConvert.cpp 
+          PetSCIO.cpp PetSCIO.hpp 
+          MatlabIO.cpp MatlabIO.hpp 
+          MatrixMarketIO.cpp MatrixMarketIO.hpp 
+          SAMGIO.cpp SAMGIO.hpp 
+          FileIO.cpp FileIO.hpp 
+          IOStream.cpp IOStream.hpp )
 
-add_executable( matrixConvert.exe matrixConvert.cpp PetSCIO.cpp MatlabIO.cpp )
-add_executable( vectorConvert.exe vectorConvert.cpp PetSCIO.cpp MatlabIO.cpp )
+add_executable( matrixConvert.exe matrixConvert.cpp PetSCIO.cpp MatlabIO.cpp MatrixMarketIO.cpp SAMGIO.cpp FileIO.cpp IOStream.cpp )
+add_executable( vectorConvert.exe vectorConvert.cpp PetSCIO.cpp MatlabIO.cpp MatrixMarketIO.cpp SAMGIO.cpp FileIO.cpp IOStream.cpp )
 target_link_libraries( matrixConvert.exe ${PROJECT_NAME} )
 target_link_libraries( vectorConvert.exe ${PROJECT_NAME} )
 

@@ -34,53 +34,19 @@
 
 
 #include "MatlabIO.hpp"
+#include "IOStream.hpp"
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/lama/io/FileStream.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/exception/IOException.hpp>
 
 #include <sstream>
 
 using namespace std;
-
-template<typename ValueType>
-bool readVal( ValueType& val, std::istringstream& input )
-{
-    input >> val;
-
-    bool ok = !input.fail();
-
-    return ok;
-}
-
-template<>
-bool readVal( IndexType& val, std::istringstream& input )
-{
-    // int can als be represented as "1.4280000e+03" 
-
-    double x;
-
-    input >> x;
-
-    bool ok = !input.fail();
-
-    if ( ok )
-    {
-        val = static_cast<IndexType>( x );
-        // do not accept e.g. 1.53
-        ok  = static_cast<double>( val ) == x;
-    }
-    else
-    {
-        val = 0;
-    }
-
-    return ok;
-}
 
 namespace scai
 {
@@ -119,7 +85,9 @@ std::string MatlabIO::createValue()
 
 void MatlabIO::writeAt( std::ostream& stream ) const
 {
-    stream << "MatlabIO (only formatted)";
+    stream << "MatlabIO ( ";
+    writeMode( stream );
+    stream << " )";
 }
 
 /** Method to count number of lines of a text file and the maximal number of entries in one line 
@@ -161,209 +129,9 @@ void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName
     }
 }
 
-
 /* --------------------------------------------------------------------------------- */
 
-/** Read in a set of arrays from a file, one entry for each array in a line
- *
- *  @param[out] val1 val2 val3 are the arrays whose values are read, size will be nlines
- *  @param[in]  nlines is number of lines
- *  @param[in]  fileName is the name of the input file
- *
- *  Be careful: if ValueType is complex, two entries must be in the input file
- */
-
-template<typename ValueType1, typename ValueType2, typename ValueType3>
-void readTextFile( HArray<ValueType1>& val1,
-                   HArray<ValueType2>& val2,
-                   HArray<ValueType3>& val3,
-                   const IndexType nlines,
-                   const char* fileName )
-{
-    std::ifstream infile( fileName, std::ios::in );
-
-    if ( infile.fail() )
-    {
-        COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
-    }
-
-    ContextPtr ctx = Context::getHostPtr();
-
-    // use two times the size if Value type is not complex
-
-    std::cout << "Read " << fileName << ", nlines = " << nlines << std::endl;
-
-    WriteOnlyAccess<ValueType1> wVal1( val1, ctx, nlines );
-    WriteOnlyAccess<ValueType2> wVal2( val2, ctx, nlines );
-    WriteOnlyAccess<ValueType3> wVal3( val3, ctx, nlines );
-
-    bool error = false;
-
-    std::string line;
-
-    for ( IndexType k = 0; k < nlines; ++k )
-    {
-        std::getline( infile, line );
-
-        if ( infile.fail() )
-        {
-            COMMON_THROWEXCEPTION( "Line mismatch at line " << k << ", expected " << nlines << " lines" )
-        }
-
-        std::istringstream iss( line );
-
-        if ( readVal( wVal1[k], iss ) &&
-             readVal( wVal2[k], iss ) &&
-             readVal( wVal3[k], iss ) )
-        {
-            // okay
-        }
-        else
-        {
-            std::cout << "ERROR in " << fileName << ": Missed or wrong values in line " << k << std::endl;
-            error = true;
-        }
-    }
-
-    if ( error )
-    {
-        COMMON_THROWEXCEPTION( "File " << fileName << " contains errors" )
-    }
-}
-
-/* --------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void readTextFile( HArray<ValueType>& val,
-                   const IndexType nlines,
-                   const char* fileName )
-{   
-    std::ifstream infile( fileName, ios::in );
-    
-    if ( infile.fail() )
-    {   
-        COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
-    }
-    
-    ContextPtr ctx = Context::getHostPtr();
-    
-    // use two times the size if Value type is not complex
-    
-    std::cout << "Read " << fileName << ", nlines = " << nlines << std::endl;
-    
-    WriteOnlyAccess<ValueType> wVal( val, ctx, nlines );
-    
-    std::string line;
-    
-    for ( IndexType k = 0; k < nlines; ++k )
-    {   
-        std::getline( infile, line );
-        
-        if ( infile.fail() )
-        {   
-            COMMON_THROWEXCEPTION( "Line mismatch at line " << k << ", expected " << nlines << " lines" )
-        }
-        
-        std::istringstream iss( line );
-        
-        readVal( wVal[k], iss );
-    }
-}
-
-/* --------------------------------------------------------------------------------- */
-
-
-/** write a set of arrays from a file, one entry for each array in a line
- *
- *  Be careful: if ValueType is complex, two entries must be in the output file
- */
-
-template<typename ValueType1, typename ValueType2, typename ValueType3>
-void writeTextFile( const HArray<ValueType1>& val1,
-                    const HArray<ValueType2>& val2,
-                    const HArray<ValueType3>& val3,
-                    const char* fileName )
-{
-    int n = val1.size();
-
-    SCAI_ASSERT_EQUAL( n, val2.size(), "size mismatch" );
-    SCAI_ASSERT_EQUAL( n, val3.size(), "size mismatch" );
-
-    std::fstream outfile( fileName, std::ios::out );
-
-    if ( outfile.fail() )
-    {
-        COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
-    }
-
-    ContextPtr ctx = Context::getHostPtr();
-
-    // use two times the size if Value type is not complex
-
-    ReadAccess<ValueType1> rVal1( val1, ctx );
-    ReadAccess<ValueType2> rVal2( val2, ctx );
-    ReadAccess<ValueType3> rVal3( val3, ctx );
-
-    bool error = false;
-
-    for ( IndexType k = 0; k < n; ++k )
-    {
-        outfile << rVal1[k] << ' ' << rVal2[k] << ' ' << rVal3[k] << std::endl;
-
-        if ( outfile.fail() )
-        {
-            error = true;
-        }
-    }
-
-    if ( error )
-    {
-        COMMON_THROWEXCEPTION( "File " << fileName << " could not be written completely" )
-    }
-}
-
-/* --------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void writeTextFile( const HArray<ValueType>& val,
-                    const char* fileName )
-{
-    int n = val.size();
-
-    std::fstream outfile( fileName, std::ios::out );
-
-    if ( outfile.fail() )
-    {
-        COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
-    }
-
-    ContextPtr ctx = Context::getHostPtr();
-
-    // use two times the size if Value type is not complex
-
-    ReadAccess<ValueType> rVal( val, ctx );
-
-    bool error = false;
-
-    for ( IndexType k = 0; k < n; ++k )
-    {
-        outfile << rVal[k] << std::endl;
-
-        if ( outfile.fail() )
-        {
-            error = true;
-        }
-    }
-
-    if ( error )
-    {
-        COMMON_THROWEXCEPTION( "File " << fileName << " could not be written completely" )
-    }
-}
-
-/* --------------------------------------------------------------------------------- */
-
-SCAI_LOG_DEF_LOGGER( MatlabIO::logger, "MatlabIO" )
+SCAI_LOG_DEF_LOGGER( MatlabIO::logger, "FileIO.MatlabIO" )
 
 /* --------------------------------------------------------------------------------- */
 
@@ -388,7 +156,11 @@ void MatlabIO::writeArrayImpl(
 {
     SCAI_ASSERT( !mBinary, "Binary mode not supported for MatlabIO" )
 
-    writeTextFile( array, fileName.c_str() );
+    IOStream outFile( fileName, std::ios::out );
+
+    int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
+
+    outFile.writeFormatted( array, precData );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -409,7 +181,9 @@ void MatlabIO::readArrayImpl(
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
-    readTextFile( array, n, fileName.c_str() );
+    IOStream inFile( fileName, std::ios::in );
+
+    inFile.readFormatted( array, n );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -427,7 +201,12 @@ void MatlabIO::writeStorageImpl(
     HArray<IndexType> cooJA = coo.getJA();
     HArray<ValueType> cooValues = coo.getValues();
 
-    writeTextFile( cooIA, cooJA, cooValues, fileName.c_str() );
+    IOStream outFile( fileName, std::ios::out );
+
+    int precIndex = 0;
+    int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
+
+    outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -453,11 +232,16 @@ void MatlabIO::readStorageImpl(
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
-    LArray<IndexType> ia;
-    LArray<IndexType> ja;
+    LArray<double> dIA;
+    LArray<double> dJA;
     LArray<ValueType> val;
 
-    readTextFile( ia, ja, val, nnz, fileName.c_str() );
+    IOStream inFile( fileName, std::ios::in );
+
+    inFile.readFormatted( dIA, dJA, val, nnz );
+
+    LArray<IndexType> ia( dIA );
+    LArray<IndexType> ja( dJA );
 
     SCAI_LOG_DEBUG( logger, "read ia  : " << ia  )
     SCAI_LOG_DEBUG( logger, "read ja  : " << ja  )

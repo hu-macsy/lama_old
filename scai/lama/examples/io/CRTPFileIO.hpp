@@ -36,7 +36,7 @@
 
 #include "FileIO.hpp"
 
-#include <scai/lama/StorageIO.hpp>
+#include <cstdio>
 
 namespace scai
 {
@@ -50,10 +50,12 @@ namespace lama
  *  methods that are implemented in the same way. 
  *
  *  - call typed version of writeStorage and readStorage
+ *  - get default routines for file suffixes
  *
- *  @param<tparam> Derived must be a class that is derived from this CRTP class.
+ *  @tparam Derived must be a class that is derived from this CRTP class.
+ *
+ *  By this way, implementation of new FileIO classes is very simple.
  */
-
 template<class Derived>
 class CRTPFileIO : public FileIO
 {
@@ -79,6 +81,14 @@ public:
     /** Default implementation for removeFile */
 
     virtual int deleteFile( const std::string& fileName );
+
+    /** Default implementation for query matrix file suffix, is createValue of derived class */
+
+    virtual std::string getMatrixFileSuffix();
+
+    /** Default implementation for query vector file suffix, is createValue of derived class */
+
+    virtual std::string getVectorFileSuffix();
 };
 
 /* --------------------------------------------------------------------------------- */
@@ -177,7 +187,7 @@ void CRTPFileIO<Derived>::writeStorage( const _MatrixStorage& storage, const std
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 
-    SCAI_ASSERT( _StorageIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
+    SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
                  fileName << " illegal file name for storage, must have suffix " << getMatrixFileSuffix() )
 
     FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::writeStorageImpl( ( Derived& ) *this, storage, fileName );
@@ -190,7 +200,7 @@ void CRTPFileIO<Derived>::readStorage( _MatrixStorage& storage, const std::strin
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 
-    SCAI_ASSERT( _StorageIO::hasSuffix( fileName, getMatrixFileSuffix() ),
+    SCAI_ASSERT( FileIO::hasSuffix( fileName, getMatrixFileSuffix() ),
                  fileName << " illegal, must have suffix " << getMatrixFileSuffix() )
 
     // just call the corresponding typed routine 
@@ -205,7 +215,7 @@ void CRTPFileIO<Derived>::writeArray( const hmemo::_HArray& array, const std::st
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 
-    SCAI_ASSERT( _StorageIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
+    SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
                  fileName << " illegal file name for storage, must have suffix " << getVectorFileSuffix() )
 
     // now call the corresponding typed routine, use meta-programming to get the correct type
@@ -220,7 +230,7 @@ void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& f
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 
-    SCAI_ASSERT( _StorageIO::hasSuffix( fileName, this->getVectorFileSuffix() ),
+    SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ),
                  fileName << " illegal file name for array, must have suffix " << this->getVectorFileSuffix() )
 
     // just call the corresponding typed routine 
@@ -235,11 +245,11 @@ int CRTPFileIO<Derived>::deleteFile( const std::string& fileName )
 {
     int rc = -1;
 
-    if ( _StorageIO::hasSuffix( fileName, this->getMatrixFileSuffix() ) )
+    if ( FileIO::hasSuffix( fileName, this->getMatrixFileSuffix() ) )
     {
         rc = std::remove( fileName.c_str() );
     }
-    else if ( _StorageIO::hasSuffix( fileName, this->getVectorFileSuffix() ) )
+    else if ( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ) )
     {
         rc = std::remove( fileName.c_str() );
     }
@@ -249,6 +259,22 @@ int CRTPFileIO<Derived>::deleteFile( const std::string& fileName )
     }
 
     return rc;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<class Derived>
+std::string CRTPFileIO<Derived>::getMatrixFileSuffix()
+{
+    return Derived::createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<class Derived>
+std::string CRTPFileIO<Derived>::getVectorFileSuffix()
+{
+    return Derived::createValue();
 }
 
 /* --------------------------------------------------------------------------------- */

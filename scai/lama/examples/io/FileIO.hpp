@@ -40,6 +40,8 @@
 #include <scai/common/Factory.hpp>
 #include <scai/common/Printable.hpp>
 
+#include <scai/logging.hpp>
+
 #include <string>
 
 namespace scai
@@ -87,9 +89,8 @@ public:
      *  are needed for each entry, for a storage with float values 4 bytes.
      * 
      *  - mBinary if true data is written binary
-     *  - mIAType output format used for row indexes
-     *  - mJAType output format used for column indexes
-     *  - mDataType output format used for non-zero values
+     *  - mScalarTypeIndex representation type used for row/column indexes (e.g. INT, LONG, ... ) within file
+     *  - mScalarTypeData  representation type used for data within file
      */
 
     virtual void writeStorage( const _MatrixStorage& storage, const std::string& fileName ) = 0;
@@ -128,8 +129,12 @@ public:
      */
     virtual int deleteFile( const std::string& fileName ) = 0;
 
-    void setIAType( common::scalar::ScalarType type );
-    void setJAType( common::scalar::ScalarType type );
+    /** Setter for representation type used for indexes in file. */
+
+    void setIndexType( common::scalar::ScalarType type );
+
+    /** Setter for representation type used for data values in file. */
+
     void setDataType( common::scalar::ScalarType type );
 
     /** Enable/Disable binary mode. */
@@ -142,58 +147,43 @@ public:
      */
     void enableAppendMode( bool flag );
 
+    /** Help routine that determines the availability of a given file by its name. */
+
+    static bool fileExists( const std::string& fileName );
+
+    /** Query if a file has a certain suffix */
+
+    static bool hasSuffix( const std::string& fileName, const std::string& suffix );
+
+    /** Return the suffix of a filename, with point, e.g. ".mtx" for "a.mtx" */
+
+    static std::string getSuffix( const std::string& fileName );
+
 protected:
+
+    void writeAt( std::ostream& stream ) const;
+
+    /** write the global settings in the stream, useful for derived classes */
+
+    void writeMode( std::ostream& stream ) const;
+
+    /** get precision used for formatted output of values
+     *
+     *  @param[in] valueType is the actual type of values to be printed
+     */
+
+    int getDataPrecision( common::scalar::ScalarType valueType );
 
     bool mBinary;                           //!< if true binary I/O is used
     bool mAppendMode;                       //!< if true output is appended to existing files
 
-    common::scalar::ScalarType mIAType;     //!< Format of row indexes
-    common::scalar::ScalarType mJAType;     //!< Format of column indexes
-    common::scalar::ScalarType mDataType;   //!< Format of array/matrix value entries
+    common::scalar::ScalarType mScalarTypeIndex; //!< representation type of row indexes
+    common::scalar::ScalarType mScalarTypeData;  //!< representation type of array/matrix value entries
+
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 };
-
-/* --------------------------------------------------------------------------------- */
-
-inline FileIO::FileIO() :
-
-    mBinary( false ),                        // default is formatted output
-    mAppendMode( false ),                    // default is to write each output file new
-    mIAType( common::scalar::INDEX_TYPE ),   // default is as used in LAMA
-    mJAType( common::scalar::INDEX_TYPE ),   // default is as used in LAMA
-    mDataType( common::scalar::INTERNAL )    // default is same type 
-{
-}
-
-inline FileIO::~FileIO()
-{
-}
-
-/* --------------------------------------------------------------------------------- */
-
-inline void FileIO::setIAType( common::scalar::ScalarType type ) 
-{
-    mIAType = type;
-}
-
-inline void FileIO::setJAType( common::scalar::ScalarType type ) 
-{
-    mJAType = type;
-}
-
-inline void FileIO::setDataType( common::scalar::ScalarType type ) 
-{
-    mDataType = type;
-}
-
-inline void FileIO::enableBinary( bool flag ) 
-{
-    mBinary = flag;
-}
-
-inline void FileIO::enableAppendMode( bool flag ) 
-{
-    mAppendMode = flag;
-}
 
 /* --------------------------------------------------------------------------------- */
 

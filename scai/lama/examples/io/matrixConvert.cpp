@@ -94,7 +94,7 @@ int main( int argc, const char* argv[] )
 
     // Note: reading does not care about binary argument, just read as it is
 
-    std::string suffix = _StorageIO::getSuffix( inFileName );
+    std::string suffix = FileIO::getSuffix( inFileName );
 
     if ( FileIO::canCreate( suffix ) )
     {
@@ -116,7 +116,7 @@ int main( int argc, const char* argv[] )
 
     std::string outFileName = argv[2];
 
-    suffix = _StorageIO::getSuffix( outFileName );
+    suffix = FileIO::getSuffix( outFileName );
 
     if ( FileIO::canCreate( suffix ) )
     {

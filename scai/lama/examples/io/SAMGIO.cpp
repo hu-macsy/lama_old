@@ -32,12 +32,12 @@
  * @date 20.06.2016
  */
 
+#include "IOStream.hpp"
 #include "SAMGIO.hpp"
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/lama/io/FileStream.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
@@ -88,7 +88,9 @@ std::string SAMGIO::createValue()
 
 void SAMGIO::writeAt( std::ostream& stream ) const
 {
-    stream << "SAMGIO (binary/formatted)";
+    stream << "SAMGIO ( ";
+    writeMode( stream );
+    stream << " )";
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -104,12 +106,12 @@ static std::string getDataFileName( const std::string& headerFileName )
 {
     std::string result = headerFileName;
 
-    if ( _StorageIO::hasSuffix( headerFileName, SAMG_MAT_HEADER_SUFFIX) )
+    if ( FileIO::hasSuffix( headerFileName, SAMG_MAT_HEADER_SUFFIX) )
     {
         size_t len = SAMG_MAT_HEADER_SUFFIX.length();
         result.replace( result.length() - len, len, SAMG_MAT_DATA_SUFFIX );
     }
-    else if ( _StorageIO::hasSuffix( headerFileName, SAMG_VEC_HEADER_SUFFIX ) )
+    else if ( FileIO::hasSuffix( headerFileName, SAMG_VEC_HEADER_SUFFIX ) )
     {
         size_t len = SAMG_VEC_HEADER_SUFFIX.length();
         result.replace( result.length() - len, len, SAMG_VEC_DATA_SUFFIX );
@@ -120,7 +122,7 @@ static std::string getDataFileName( const std::string& headerFileName )
 
 /* --------------------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( SAMGIO::logger, "SAMGIO" )
+SCAI_LOG_DEF_LOGGER( SAMGIO::logger, "FileIO.SAMGIO" )
 
 /* --------------------------------------------------------------------------------- */
 
@@ -160,25 +162,16 @@ void SAMGIO::writeArrayImpl(
 
     char fileType = mBinary ? 'b' : 'f';
 
-    // ToDo: conversion not supported here
+    // type size is size of data type used in output 
 
     int typeSize = sizeof( ValueType );
 
-    if ( typeSize == 0 )
+    if ( mScalarTypeData != common::scalar::INTERNAL )
     {
-        switch ( mDataType )
-        {
-            case common::scalar::INTERNAL:
-                typeSize = sizeof( ValueType );
-                break;
-
-            default:
-                SCAI_LOG_ERROR( logger, "Encountered invalid scalar type " << mDataType )
-                break;
-        }
+        typeSize = common::typeSize( mScalarTypeData );
     }
 
-    FileStream outFile( fileName, std::ios::out );
+    IOStream outFile( fileName, std::ios::out );
     outFile << fileType << std::endl;
     outFile << array.size() << std::endl;
     outFile << typeSize;
@@ -194,9 +187,18 @@ void SAMGIO::writeArrayImpl(
     }
 
     std::string dataFileName = getDataFileName( fileName );
-
     outFile.open( dataFileName, flags );
-    outFile.write<ValueType>( array, 0, mDataType, '\n' );
+ 
+    if ( mBinary )
+    {
+        outFile.writeBinary( array, mScalarTypeData );
+    }
+    else
+    {
+        int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
+
+        outFile.writeFormatted( array, precData );
+    }
     outFile.close();
 }
 
@@ -211,7 +213,7 @@ void SAMGIO::readArrayImpl(
     int dataTypeSize = 0;
     IndexType numRows;
     // start with reading the *.frv header file
-    FileStream inFile( fileName, std::ios::in );
+    IOStream inFile( fileName, std::ios::in );
     inFile >> fileType;
     inFile >> numRows;
     inFile >> dataTypeSize;
@@ -227,9 +229,12 @@ void SAMGIO::readArrayImpl(
     // now read *.vec file in correct mode
     std::ios::openmode flags = std::ios::in;
 
+    bool binary = false;
+
     if ( fileType == 'b' )
     {
         flags |= std::ios::binary;
+        binary = true;
     }
 
     std::string dataFileName = getDataFileName( fileName );
@@ -253,7 +258,14 @@ void SAMGIO::readArrayImpl(
             SCAI_LOG_ERROR( logger, "Encountered invalid type size " << dataTypeSize )
     }
 
-    inFile.read( array, numRows, ValueType( 0 ), dataType, '\n' );
+    if ( binary )
+    {
+        inFile.readBinary( array, numRows, dataType );
+    }
+    else
+    {
+        inFile.readFormatted( array, numRows );
+    }
     inFile.close();
 }
 
@@ -264,27 +276,39 @@ void SAMGIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName )
 {
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
+    utilskernel::LArray<IndexType> csrIA;
+    utilskernel::LArray<IndexType> csrJA;
+    utilskernel::LArray<ValueType> csrValues;
 
     storage.buildCSRData( csrIA, csrJA, csrValues );
+
+    // SAMG format starts indexing with 1
 
     char fileType = mBinary ? 'b' : 'f';
 
     const IndexType numRows = csrIA.size() - 1;
     const IndexType numValues = csrJA.size();
 
-    FileStream outFile( fileName, std::ios::out | std::ios::trunc );
+    csrIA += 1;    
+    csrJA += 1;     
+
+    IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
     IndexType size = 1;
     IndexType rank = 0;
 
-    outFile << fileType << " \t" << SAMG_IVERSION << "\n";
-    outFile << "\t\t" << numValues << "\t" << numRows << "\t" << SAMG_VERSION_ID << "\t" << size << "\t" << rank;
+    outFile << fileType ;
+    outFile << " \t" << SAMG_IVERSION << "\n";
+    outFile << "\t\t" << numValues;
+    outFile << "\t" << numRows;
+    outFile << "\t" << SAMG_VERSION_ID;
+    outFile << "\t" << size;
+    outFile << "\t" << rank;
     outFile.close();
-    SCAI_LOG_INFO( logger, "writeCSRToBinaryFile ( " << fileName << ")" << ", #rows = " << csrIA.size() - 1
-                   << ", #values = " << csrJA.size() )
+
+    SCAI_LOG_INFO( logger, *this << ": writeCSRData( " << fileName << " )" << ", #rows = " << csrIA.size() - 1
+                            << ", #values = " << csrJA.size() )
+
     std::ios::openmode flags = std::ios::out | std::ios::trunc;
 
     if ( mBinary )
@@ -295,9 +319,27 @@ void SAMGIO::writeStorageImpl(
     std::string dataFileName = getDataFileName( fileName );
 
     outFile.open( dataFileName, flags );
-    outFile.write<IndexType>( csrIA, 1, mIAType, '\n' );
-    outFile.write<IndexType>( csrJA, 1, mJAType, '\n' ); 
-    outFile.write<ValueType>( csrValues, 0, mDataType, '\n' );
+
+    if ( mBinary )
+    {
+        // take care of file type conversions as specified
+
+        outFile.writeBinary( csrIA, mScalarTypeIndex );
+        outFile.writeBinary( csrJA, mScalarTypeIndex ); 
+        outFile.writeBinary( csrValues, mScalarTypeData );
+    }
+    else
+    {
+        int precIndex = 0;  
+        int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
+
+        // no conversions for formmatted write, but take care of precision
+
+        outFile.writeFormatted( csrIA, precIndex );
+        outFile.writeFormatted( csrJA, precIndex );
+        outFile.writeFormatted( csrValues, precData );
+    }
+
     outFile.close();
 }
 
@@ -308,12 +350,12 @@ void SAMGIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
+    utilskernel::LArray<IndexType> csrIA;
+    utilskernel::LArray<IndexType> csrJA;
+    utilskernel::LArray<ValueType> csrValues;
 
     // start with reading the header
-    FileStream inFile( fileName, std::ios::in );
+    IOStream inFile( fileName, std::ios::in );
     int iversion; 
     char fileType = '!'; 
     IndexType numValues, numRows, id, size, rank;
@@ -344,12 +386,30 @@ void SAMGIO::readStorageImpl(
     }
 
     std::string dataFileName = getDataFileName( fileName );
+
     inFile.open( dataFileName, flags );
-    //TODO: allow different type to be read?
-    inFile.read( csrIA, numRows + 1, -1, common::TypeTraits<IndexType>::stype, '\n' );
-    inFile.read( csrJA, numValues, -1, common::TypeTraits<IndexType>::stype, '\n' );
-    inFile.read( csrValues, numValues, ValueType( 0 ), common::TypeTraits<ValueType>::stype, '\n' );
+
+    if ( mBinary )
+    {
+        // Note: read operations can deal with scalar::INTERNAL
+
+        inFile.readBinary( csrIA, numRows + 1, mScalarTypeIndex );
+        inFile.readBinary( csrJA, numValues, mScalarTypeData );
+        inFile.readBinary( csrValues, numValues, mScalarTypeData );
+    }
+    else
+    {
+        // formatted read just takes it as it is
+
+        inFile.readFormatted( csrIA, numRows + 1 );
+        inFile.readFormatted( csrJA, numValues );
+        inFile.readFormatted( csrValues, numValues );
+    }
+
     inFile.close();
+
+    csrIA -= 1;
+    csrJA -= 1;
 
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }

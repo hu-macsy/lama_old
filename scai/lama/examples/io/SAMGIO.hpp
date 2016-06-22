@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Structure that contains IO routines for PETSC
+ * @brief Dervied FileIO class that implements IO routines for the SAMG file format. 
  * @author Thomas Brandes
  * @date 10.06.2016
  */
@@ -41,6 +41,13 @@ namespace scai
 
 namespace lama
 {
+
+/** The SAMG format supports binary and formatted IO.
+ *
+ *  The SAMG format uses two files, one for header information and one with
+ *  the data itself. Only the header file name has to be specified for
+ *  read/write operations.
+ */
 
 class SAMGIO : 
 
