@@ -183,7 +183,7 @@ int main( int argc, const char* argv[] )
 
     // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    scai::common::unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
+    scai::common::unique_ptr<Vector> solutionPtr( rhs.newVector() );
     Vector& solution = *solutionPtr;
     int numRows = inMatrix.getNumRows();
     solution.allocate( inMatrix.getColDistributionPtr() );
@@ -372,7 +372,7 @@ int main( int argc, const char* argv[] )
         {
             HOST_PRINT( myRank, "Compare solution with vector in " << solFilename )
             LamaTiming timer( comm, "Comparing solution" );
-            scai::common::unique_ptr<Vector> compSolutionPtr( Vector::create( rhs.getCreateValue() ) );
+            scai::common::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
             Vector& compSolution = *compSolutionPtr;
             compSolution.readFromFile( solFilename );
             compSolution.redistribute( solution.getDistributionPtr() );

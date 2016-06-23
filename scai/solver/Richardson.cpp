@@ -98,12 +98,16 @@ void Richardson::solveInit( lama::Vector& solution, const lama::Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if ( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution.reset( lama::Vector::create( solution.getCreateValue() ) );
+        // Important: method newVector creates vector with same context as solution
+
+        runtime.mOldSolution.reset( solution.newVector() );
     }
 
     if ( !runtime.mX.get() )
     {
-        runtime.mX.reset( lama::Vector::create( solution.getCreateValue() ) );
+        // Important: method newVector creates vector with same context as solution
+
+        runtime.mX.reset( solution.newVector() );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();

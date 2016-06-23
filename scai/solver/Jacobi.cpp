@@ -145,7 +145,9 @@ void Jacobi::solveInit( Vector& solution, const Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if ( !getConstRuntime().mOldSolution.get() )
     {
-        getRuntime().mOldSolution.reset( Vector::create( solution.getCreateValue() ) );
+        // Important: method newVector creats vector with same context as solution
+
+        getRuntime().mOldSolution.reset( solution.newVector() );
 
         if ( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
         {

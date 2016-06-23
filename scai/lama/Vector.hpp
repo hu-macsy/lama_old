@@ -369,16 +369,51 @@ public:
     virtual Scalar maxNorm() const = 0;
 
     /**
-     *  @brief copy is a virtual call of the copy constructor of the derived classes
+     *  Method to create a new vector of the same kind and same type
+     *   
+     *  /code
+     *    const Vector& old = ...
+     *    Vector* new = Vector::create( old.getCreateValue() );
+     *  /endcode
+     *
+     *  This routine is very important to write code that can deal with arbitrary types
+     *  but does not have a template param for the value type.
      */
-    virtual Vector* copy() const = 0;
+
+    virtual VectorCreateKeyType getCreateValue() const = 0;
 
     /**
-     *  @brief Creates a new Vector of the same type and value type
+     *  @brief Creates a new Vector of the same kind and value type, and same context
+     *
+     *  /code
+     *    const Vector& old = ...
+     *    ....
+     *    Vector* new = old.newVector();
+     *
+     *    // is same as
+     *
+     *    Vector* new = Vector::create( old.getCreateValue() );
+     *    new->setContextPtr( new.getContextPtr() ); 
+     *  /endcode
+     *
+     *  The new vector is a zero vector, not allocated, not initialized.
      */
     virtual Vector* newVector() const = 0;
 
-    virtual VectorCreateKeyType getCreateValue() const = 0;
+    /**
+     *  @brief copy is a virtual call of the copy constructor of the derived classes
+     *
+     *  /code
+     *    const Vector& old = ...
+     *    Vector* new = old.cooy()
+     *
+     *    // is same as
+     *
+     *    Vector* new = Vector::create( old.getCreateValue() );
+     *    *new = old;
+     *  /endcode
+     */
+    virtual Vector* copy() const = 0;
 
     /**
      * @brief Returns the size of the vector.
