@@ -103,7 +103,7 @@ void MatrixMarketIO::writeMMHeader(
     IOStream& outFile,
     const common::scalar::ScalarType& dataType )
 {
-    outFile << "%%matrixmarket ";
+    outFile << "%%MatrixMarket ";
 
     if ( vector )
     {
