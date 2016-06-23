@@ -1,5 +1,5 @@
 /**
- * @file lama_info.cpp
+ * @file lamaInfo.cpp
  *
  * @license
  * Copyright (c) 2009-2016

@@ -1,5 +1,5 @@
 /**
- * @file matrix_generator.cpp
+ * @file matrixGenerator.cpp
  *
  * @license
  * Copyright (c) 2009-2016
