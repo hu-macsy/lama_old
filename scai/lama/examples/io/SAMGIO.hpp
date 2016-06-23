@@ -124,6 +124,17 @@ private:
     };
 
     static Guard mGuard;
+
+    /** Own routines for read/write of the header file, no template parameters required */
+
+    void readMatrixHeader( IndexType& numRows, IndexType& numValues, bool& binary, const std::string& fileName );
+
+    void writeMatrixHeader( const IndexType numRows, const IndexType numValues, const bool binary, const std::string& fileName );
+
+    void readVectorHeader( IndexType& n, IndexType& typeSize, bool& binary, const std::string& fileName );
+
+    void writeVectorHeader( const IndexType n, const IndexType typeSize, const bool binary, const std::string& fileName );
+
 };
 
 }

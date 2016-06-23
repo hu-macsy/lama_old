@@ -383,6 +383,8 @@ bool Matrix::checkSymmetry() const
         return false;
     }
 
+    // Note: this solution is not very efficient
+
     for ( IndexType i = 0; i < n; ++i )
     {
         for ( IndexType j = 0; j < i; ++j )

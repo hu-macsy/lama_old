@@ -269,6 +269,8 @@ inline void IOStream::readBinary( hmemo::HArray<ValueType>& data,
     }
     else
     {
+        // use meta programming to call the template routine belonging to type
+
         Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_HOST ) >::readBinResolved( *this, data, size, type );
     }
 }

@@ -50,6 +50,18 @@ namespace lama
  *   - size of vector is just given by number of lines
  *
  *   It is very useful to read dumped matrices of Matlab.
+ *
+ *   /code
+ *   data_mat = [ia ja,real(val),imag(val)];
+ *   save -ascii dataMatrix.txt data_mat;
+ *   
+ *   data_rhs = [real(b),imag(b)];
+ *   save -ascii datRHS.txt data_rhs;
+ *   /endcode
+ *
+ *   /code
+ *   solver.exe dataMatrix.txt datRHS.txt
+ *   /endcode
  */
 
 class MatlabIO : 
