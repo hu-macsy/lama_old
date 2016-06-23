@@ -280,6 +280,9 @@ inline void IOStream::readBinary( hmemo::HArray<ValueType>& data,
 template<typename ValueType>
 inline void IOStream::writeBinDirect( const hmemo::HArray<ValueType>& data )
 {
+    SCAI_LOG_INFO( logger, "writeBinDirect<" << common::TypeTraits<ValueType>::id() << 
+                            ">, size = " << data.size() << " * " << sizeof( ValueType) ) 
+
     hmemo::ReadAccess<ValueType> dataRead( data );
 
     if ( mUsedEndian == MACHINE_ENDIAN || ( mUsedEndian == mMachineEndian ) )
@@ -494,6 +497,10 @@ template<typename ValueType>
 void IOStream::readFormatted( hmemo::HArray<ValueType>& val,
                               const IndexType nlines )
 {
+    SCAI_LOG_INFO( logger, "readFormatted<" 
+                           << common::TypeTraits<ValueType>::id()
+                           << ">, nlines = " << nlines )
+
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
     hmemo::WriteOnlyAccess<ValueType> wVal( val, ctx, nlines );
@@ -525,6 +532,11 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
                               hmemo::HArray<ValueType2>& val2,
                               const IndexType nlines )
 {
+    SCAI_LOG_INFO( logger, "readFormatted<" 
+                           << common::TypeTraits<ValueType1>::id() 
+                           << common::TypeTraits<ValueType2>::id() 
+                           << ">, nlines = " << nlines )
+
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
     hmemo::WriteOnlyAccess<ValueType1> wVal1( val1, ctx, nlines );
@@ -567,6 +579,12 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
                               hmemo::HArray<ValueType3>& val3,
                               const IndexType nlines )
 {
+    SCAI_LOG_INFO( logger, "readFormatted<" 
+                           << common::TypeTraits<ValueType1>::id() 
+                           << common::TypeTraits<ValueType2>::id() 
+                           << common::TypeTraits<ValueType3>::id() 
+                           << ">, nlines = " << nlines )
+
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
     hmemo::WriteOnlyAccess<ValueType1> wVal1( val1, ctx, nlines );

@@ -35,7 +35,6 @@
 #pragma once
 
 #include "CRTPFileIO.hpp"
-#include "IOStream.hpp"
 
 namespace scai
 {
@@ -118,7 +117,7 @@ private:
         const IndexType& numRows,
         const IndexType& numColumns,
         const IndexType& numValues,
-        IOStream& outFile,
+        class IOStream& outFile,
         const common::scalar::ScalarType& dataType );
 
     void readMMHeader(
@@ -127,7 +126,7 @@ private:
         IndexType& numValues,
         common::scalar::ScalarType& dataType,
         Symmetry& symmetry,
-        IOStream& inFile );
+        class IOStream& inFile );
 
     /** Extend COO data by adding all symmetric data */
 

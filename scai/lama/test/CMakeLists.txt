@@ -58,6 +58,7 @@ scai_project (
         DerivedSparseMatrixTest
         DIASparseMatrixTest
         ELLSparseMatrixTest
+        IOStreamTest
         JDSSparseMatrixTest
         L1NormTest
         L2NormTest

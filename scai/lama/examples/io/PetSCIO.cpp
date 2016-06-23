@@ -34,11 +34,11 @@
 
 
 #include "PetSCIO.hpp"
-#include "IOStream.hpp"
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/lama/io/IOStream.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
