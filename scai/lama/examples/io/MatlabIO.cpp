@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of methods
+ * @brief Implementation of methods for FileIO class MatlabIO
  * @author Thomas Brandes
  * @date 10.06.2016
  */
@@ -59,16 +59,6 @@ namespace lama
 
 static std::string MATLAB_SUFFIX   = ".txt";
 
-std::string MatlabIO::getVectorFileSuffix() const
-{
-    return MATLAB_SUFFIX;
-}
-
-std::string MatlabIO::getMatrixFileSuffix() const
-{
-    return MATLAB_SUFFIX;
-}
-
 /* --------------------------------------------------------------------------------- */
 /*    Implementation of Factory methods                                              */
 /* --------------------------------------------------------------------------------- */
@@ -85,9 +75,9 @@ std::string MatlabIO::createValue()
 
 void MatlabIO::writeAt( std::ostream& stream ) const
 {
-    stream << "MatlabIO ( ";
+    stream << "MatlabIO ( suffix = " << MATLAB_SUFFIX << ", ";
     writeMode( stream );
-    stream << " )";
+    stream << ", only formatted )";
 }
 
 /** Method to count number of lines of a text file and the maximal number of entries in one line 
@@ -135,26 +125,12 @@ SCAI_LOG_DEF_LOGGER( MatlabIO::logger, "FileIO.MatlabIO" )
 
 /* --------------------------------------------------------------------------------- */
 
-bool MatlabIO::isSupported( const bool binary ) const
-{
-    if ( binary )
-    {
-        return false; // binary is not supported
-    }
-    else
-    {
-        return true;  // formatted supported
-    }
-}
-
-/* --------------------------------------------------------------------------------- */
-
 template<typename ValueType>
 void MatlabIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    SCAI_ASSERT( !mBinary, "Binary mode not supported for MatlabIO" )
+    SCAI_ASSERT( !mBinarySet || !mBinary, "Binary mode not supported for " << *this )
 
     IOStream outFile( fileName, std::ios::out );
 
@@ -193,7 +169,7 @@ void MatlabIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
-    SCAI_ASSERT( !mBinary, "Binary mode not supported for MatlabIO" )
+    SCAI_ASSERT( !mBinarySet || !mBinary, "Binary mode not supported for " << *this )
 
     COOStorage<ValueType> coo( storage );
 

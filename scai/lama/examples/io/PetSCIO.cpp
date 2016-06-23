@@ -91,20 +91,9 @@ void PetSCIO::writeAt( std::ostream& stream ) const
 
 PetSCIO::PetSCIO() 
 {
-    mBinary = true;  // writes binary as default    
-}
-
-/* --------------------------------------------------------------------------------- */
-
-bool PetSCIO::isSupported( const bool binary ) const
-{
-    if ( binary )
+    if ( !mBinarySet )
     {
-        return true; // binary is supported
-    }
-    else
-    {
-        return false; // formatted is unsupported
+        mBinary = true;  // writes binary as default    
     }
 }
 
@@ -115,6 +104,8 @@ void PetSCIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
+    SCAI_ASSERT( !mBinarySet || mBinary, "Formatted output not available for MatlabIO" )
+
     // int    VEC_FILE_CLASSID
     // int    number of rows
     // type   values
@@ -134,14 +125,14 @@ void PetSCIO::writeArrayImpl(
 
     IOStream outFile( fileName, flags, IOStream::BIG );
 
-    std::cout << "File " << fileName << " now open for binary write, append = " << mAppendMode << std::endl;
+    SCAI_LOG_INFO( logger, "File " << fileName << " now open for binary write, append = " << mAppendMode )
 
-    utilskernel::LArray<int> headValues( 2 );
+    utilskernel::LArray<IndexType> headValues( 2 );
 
     headValues[0] = VEC_FILE_CLASSID;
     headValues[1] = nrows;
 
-    outFile.writeBinary( headValues, scai::common::scalar::INT );
+    outFile.writeBinary( headValues, mScalarTypeIndex );
     outFile.writeBinary( array, mScalarTypeData );
 }
 
@@ -152,7 +143,31 @@ void PetSCIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    COMMON_THROWEXCEPTION( "readArray " << array << " from file " << fileName << " unsupported" )
+    // int    VEC_FILE_CLASSID
+    // int    number of rows
+    // type   values
+
+    std::ios::openmode flags = std::ios::in | std::ios::binary;
+
+    SCAI_LOG_INFO( logger, "Read array<" << common::TypeTraits<ValueType>::id() 
+                           << "> from file " << fileName << ", type = " << mScalarTypeData )
+
+    IOStream inFile( fileName, flags, IOStream::BIG );
+
+    utilskernel::LArray<int> headerVals;
+
+    inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
+
+    int classid = headerVals[0];
+    int n       = headerVals[1];
+
+    SCAI_LOG_INFO( logger, "Read: id = " << classid << ", #n = " << n )
+
+    SCAI_ASSERT_EQUAL( VEC_FILE_CLASSID, classid, "illegal VEC_FILE_CLASSID" )
+
+    inFile.readBinary( array, n, mScalarTypeData );
+ 
+    inFile.close();
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -162,7 +177,7 @@ void PetSCIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName )
 {
-    SCAI_ASSERT( mBinary, "Formatted output not available for MatlabIO" )
+    SCAI_ASSERT( !mBinarySet || mBinary, "Formatted output not available for MatlabIO" )
 
     // int    MAT_FILE_CLASSID
     // int    number of rows
@@ -199,11 +214,11 @@ void PetSCIO::writeStorageImpl(
 
     IOStream outFile( fileName, flags, IOStream::BIG );
 
-    std::cout << "File " << fileName << " now open for binary write, append = " << mAppendMode << std::endl;
+    SCAI_LOG_INFO( logger, "File " << fileName << " now open for binary write, append = " << mAppendMode )
 
     // Note: PetSC starts indexing with 0
 
-    utilskernel::LArray<int> headValues( 4 );
+    utilskernel::LArray<IndexType> headValues( 4 );
 
     headValues[0] = MAT_FILE_CLASSID;
     headValues[1] = nrows;
@@ -212,7 +227,7 @@ void PetSCIO::writeStorageImpl(
 
     // for binary output we make conversions to mScalarTypeData, mScalarTypeIndex
 
-    outFile.writeBinary( headValues, scai::common::scalar::INT );
+    outFile.writeBinary( headValues, mScalarTypeIndex );
     outFile.writeBinary( csrIA, mScalarTypeIndex );
     outFile.writeBinary( csrJA , mScalarTypeIndex ); 
     outFile.writeBinary( csrValues, mScalarTypeData );
@@ -234,7 +249,7 @@ void PetSCIO::readStorageImpl(
 
     std::ios::openmode flags = std::ios::in | std::ios::binary;
 
-    std::cout << "Read from file " << fileName << std::endl;
+    SCAI_LOG_INFO( logger, "Read storage<" << common::TypeTraits<ValueType>::id() << "> from file " << fileName )
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
@@ -243,12 +258,12 @@ void PetSCIO::readStorageImpl(
     inFile.readBinary( headerVals, 4, common::TypeTraits<int>::stype );
 
     int classid = headerVals[0];
-    int nrows = headerVals[1];
-    int ncols = headerVals[2];
-    int nnz = headerVals[3];
+    int nrows   = headerVals[1];
+    int ncols   = headerVals[2];
+    int nnz     = headerVals[3];
 
-    std::cout << "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << nrows 
-              << ", #cols = " << ncols << ", #nnz = " << nnz << std::endl;
+    SCAI_LOG_INFO( logger, "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << nrows 
+                           << ", #cols = " << ncols << ", #nnz = " << nnz )
 
     SCAI_ASSERT_EQUAL( MAT_FILE_CLASSID, classid, "illegal MAT_FILE_CLASSID" )
 
@@ -258,7 +273,7 @@ void PetSCIO::readStorageImpl(
 
     inFile.readBinary( csrSizes, nrows, mScalarTypeIndex );
     inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
-    inFile.readBinary( csrValues, nnz, mScalarTypeIndex );
+    inFile.readBinary( csrValues, nnz, mScalarTypeData );
 
     storage.setCSRData( nrows, ncols, nnz, csrSizes, csrJA, csrValues );
 }

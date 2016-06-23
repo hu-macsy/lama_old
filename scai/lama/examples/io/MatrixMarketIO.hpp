@@ -57,13 +57,6 @@ public:
 
     virtual std::string getMatrixFileSuffix() const;
 
-    /** Query if formatted or binary IO is supported 
-     *
-     *  @param[in] binary if true query support for binary, if false query support for formatted
-     */
-
-    virtual bool isSupported( const bool binary ) const;
-
     /** Implementation for Printable.:writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;
@@ -110,6 +103,16 @@ public:
  
 private:
 
+    /** Enumeration type for the different symmetry flags in the Matrix Market file */
+
+    typedef enum
+    {
+        GENERAL,
+        SYMMETRIC,
+        HERMITIAN,
+        SKEW_SYMMETRIC
+    } Symmetry;
+
     void writeMMHeader(
         const bool& vector,
         const IndexType& numRows,
@@ -122,10 +125,18 @@ private:
         IndexType& numRows,
         IndexType& numColumns,
         IndexType& numValues,
-        bool& isPattern,
-        bool& isSymmetric,
+        common::scalar::ScalarType& dataType,
+        Symmetry& symmetry,
         IOStream& inFile );
 
+    /** Extend COO data by adding all symmetric data */
+
+    template<typename ValueType>
+    void addSymmetricEntries(
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>& ja,
+        hmemo::HArray<ValueType>& vals, 
+        bool conjFlag );
 };
 
 }

@@ -46,6 +46,7 @@ namespace lama
 
 FileIO::FileIO() :
 
+    mBinarySet( false ),                             // binary mod not explicitly set
     mBinary( false ),                                // default is formatted output
     mAppendMode( false ),                            // default is to write each output file new
     mScalarTypeIndex( common::scalar::INDEX_TYPE ),  // default is as used in LAMA
@@ -53,6 +54,7 @@ FileIO::FileIO() :
 {
     if ( common::Settings::getEnvironment( mBinary, "SCAI_IO_BINARY" ) )
     {
+        mBinarySet = true;
         SCAI_LOG_INFO( logger, "Binary mode set by SCAI_IO_BINARY = " << mBinary )
     }
 
@@ -106,7 +108,20 @@ void FileIO::writeAt( std::ostream& stream ) const
 
 void FileIO::writeMode( std::ostream& stream ) const
 {
-    stream << "binary = " << mBinary;
+    if ( mBinary )
+    {
+        stream << "binary";
+    }
+    else
+    {
+        stream << "formatted";
+    }
+
+    if ( mBinarySet )
+    {
+        stream << "(forced)";
+    }
+
     stream << ", append = " << mAppendMode;
     stream << ", data = " << mScalarTypeData;
     stream << ", index = " << mScalarTypeIndex;
@@ -127,6 +142,7 @@ void FileIO::setDataType( common::scalar::ScalarType type )
 void FileIO::enableBinary( bool flag ) 
 {
     mBinary = flag;
+    mBinarySet = true;
 }
 
 void FileIO::enableAppendMode( bool flag ) 

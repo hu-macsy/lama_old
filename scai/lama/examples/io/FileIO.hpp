@@ -174,6 +174,7 @@ protected:
 
     int getDataPrecision( common::scalar::ScalarType valueType );
 
+    bool mBinarySet;                        //!< if true binary mode must be respected
     bool mBinary;                           //!< if true binary I/O is used
     bool mAppendMode;                       //!< if true output is appended to existing files
 

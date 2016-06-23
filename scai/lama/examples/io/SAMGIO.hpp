@@ -67,13 +67,6 @@ public:
 
     virtual std::string getMatrixFileSuffix() const;
 
-    /** Query if formatted or binary IO is supported 
-     *
-     *  @param[in] binary if true query support for binary, if false query support for formatted
-     */
-
-    virtual bool isSupported( const bool binary ) const;
-
     /** Implementation for Printable.:writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;

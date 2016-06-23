@@ -77,6 +77,13 @@ void IOStream::open( const std::string& filename, ios_base::openmode mode, Endia
     }
 }
 
+const std::string& IOStream::getFileName()
+{
+    SCAI_ASSERT( is_open(), "IOStream not opened" );
+
+    return mFileName;
+}
+
 IOStream::Endian IOStream::_determineMachineEndian()
 {
     int a = 1;

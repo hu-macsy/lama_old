@@ -115,6 +115,11 @@ public:
     template<typename ValueType>
     void writeFormatted( const hmemo::HArray<ValueType>& val, int prec );
 
+    template<typename ValueType1, typename ValueType2>
+    void writeFormatted(
+        const hmemo::HArray<ValueType1>& val1, int prec1,
+        const hmemo::HArray<ValueType2>& val2, int prec2 );
+
     template<typename ValueType1, typename ValueType2, typename ValueType3>
     void writeFormatted(
         const hmemo::HArray<ValueType1>& val1, int prec1,
@@ -123,6 +128,11 @@ public:
 
     template<typename ValueType>
     void readFormatted( hmemo::HArray<ValueType>& val,
+                        const IndexType nlines );
+
+    template<typename ValueType1, typename ValueType2>
+    void readFormatted( hmemo::HArray<ValueType1>& val,
+                        hmemo::HArray<ValueType2>& val2,
                         const IndexType nlines );
 
     template<typename ValueType1, typename ValueType2, typename ValueType3>
@@ -134,6 +144,10 @@ public:
     /** Same as close but gives a warning if not all data has been read */
 
     void closeCheck();
+
+    /** current file name, file must be open. */
+
+    const std::string& getFileName();
     
 private:
 
@@ -373,6 +387,10 @@ void IOStream::writeFormatted( const hmemo::HArray<ValueType>& val, int prec )
 {
     int n = val.size();
 
+    SCAI_LOG_INFO( logger, "writeFormatted<" 
+                           << common::TypeTraits<ValueType>::id() << ":" << prec 
+                           << ">, n = " << n )
+
     if ( n == 0 )
     {  
         return;
@@ -406,6 +424,12 @@ void IOStream::writeFormatted(
     SCAI_ASSERT_EQUAL( n, val2.size(), "size mismatch" );
     SCAI_ASSERT_EQUAL( n, val3.size(), "size mismatch" );
 
+    SCAI_LOG_INFO( logger, "writeFormatted<" 
+                           << common::TypeTraits<ValueType1>::id() << ":" << prec1
+                           << ", " << common::TypeTraits<ValueType2>::id() << ":" << prec2
+                           << ", " << common::TypeTraits<ValueType3>::id() << ":" << prec3
+                           << ">, n = " << n )
+
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
     // use two times the size if Value type is not complex
@@ -419,6 +443,41 @@ void IOStream::writeFormatted(
         *this << std::setprecision( prec1 ) << rVal1[k] << ' ';
         *this << std::setprecision( prec2 ) << rVal2[k] << ' ';
         *this << std::setprecision( prec3 ) << rVal3[k] << std::endl;
+
+        if ( this->fail() )
+        {
+            SCAI_THROWEXCEPTION( common::IOException, "Error reading file " << mFileName )
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType1, typename ValueType2>
+void IOStream::writeFormatted( 
+    const hmemo::HArray<ValueType1>& val1, int prec1,
+    const hmemo::HArray<ValueType2>& val2, int prec2 )
+{
+    int n = val1.size();
+
+    SCAI_ASSERT_EQUAL( n, val2.size(), "size mismatch" );
+
+    SCAI_LOG_INFO( logger, "writeFormatted<" 
+                           << common::TypeTraits<ValueType1>::id() << ":" << prec1
+                           << ", " << common::TypeTraits<ValueType2>::id() << ":" << prec2
+                           << ">, n = " << n )
+
+    hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+
+    // use two times the size if Value type is not complex
+
+    hmemo::ReadAccess<ValueType1> rVal1( val1, ctx );
+    hmemo::ReadAccess<ValueType2> rVal2( val2, ctx );
+
+    for ( IndexType k = 0; k < n; ++k )
+    {
+        *this << std::setprecision( prec1 ) << rVal1[k] << ' ';
+        *this << std::setprecision( prec2 ) << rVal2[k] << std::endl;
 
         if ( this->fail() )
         {
@@ -454,6 +513,47 @@ void IOStream::readFormatted( hmemo::HArray<ValueType>& val,
         std::istringstream iss( line );
 
         iss >> wVal[k];
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType1, typename ValueType2>
+void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
+                              hmemo::HArray<ValueType2>& val2,
+                              const IndexType nlines )
+{
+    hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+
+    hmemo::WriteOnlyAccess<ValueType1> wVal1( val1, ctx, nlines );
+    hmemo::WriteOnlyAccess<ValueType2> wVal2( val2, ctx, nlines );
+
+    std::string line;
+
+    for ( IndexType k = 0; k < nlines; ++k )
+    {
+        std::getline( *this, line );
+
+        if ( this->fail() )
+        {
+            SCAI_THROWEXCEPTION( common::IOException, 
+                                 "readFormatted<" << common::TypeTraits<ValueType1>::id() 
+                                 << ", " << common::TypeTraits<ValueType2>::id() 
+                                 << "> from " << mFileName 
+                                 << " at entry line " << k << " of " << nlines )
+        }
+
+        std::istringstream iss( line );
+
+        iss >> wVal1[k];
+        iss >> wVal2[k];
+
+        if ( iss.fail() )
+        {
+            SCAI_THROWEXCEPTION( common::IOException, "Error reading file " << mFileName 
+                                 << ", entry line " << k << " of " << nlines
+                                 << ", line = " << line )
+        }
     }
 }
 

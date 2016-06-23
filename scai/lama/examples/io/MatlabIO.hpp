@@ -42,6 +42,16 @@ namespace scai
 namespace lama
 {
 
+/** This file format stores just the COO data of a matrix. 
+ *
+ *   - there is not header at all
+ *   - number of non-zero matrix entries is given by number of lines
+ *   - size of matrix is given by maximal values for row and for column indexes
+ *   - size of vector is just given by number of lines
+ *
+ *   It is very useful to read dumped matrices of Matlab.
+ */
+
 class MatlabIO : 
 
     public CRTPFileIO<MatlabIO>,         // use type conversions
@@ -49,17 +59,6 @@ class MatlabIO :
 {
 
 public:
-
-    virtual std::string getVectorFileSuffix() const;
-
-    virtual std::string getMatrixFileSuffix() const;
-
-    /** Query if formatted or binary IO is supported 
-     *
-     *  @param[in] binary if true query support for binary, if false query support for formatted
-     */
-
-    virtual bool isSupported( const bool binary ) const;
 
     /** Implementation for Printable.:writeAt */
 

@@ -42,6 +42,13 @@ namespace scai
 namespace lama
 {
 
+/** This file format supports the binary format used by PetSC. 
+ *
+ *   - header information is just at the beginning of the file
+ *   - uses CSR format, but the sizes array and not the offsets
+ *   - stores data always in BIG endian (x86 has LITTLE endian)
+ */
+
 class PetSCIO : 
 
     public CRTPFileIO<PetSCIO>,         // use type conversions
@@ -54,13 +61,6 @@ public:
     /** Constructor might reset default values */
 
     PetSCIO();
-
-    /** Query if formatted or binary IO is supported 
-     *
-     *  @param[in] binary if true query support for binary, if false query support for formatted
-     */
-
-    virtual bool isSupported( const bool binary ) const;
 
     /** Implementation for Printable.:writeAt */
 

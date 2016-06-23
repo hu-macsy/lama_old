@@ -140,20 +140,6 @@ SAMGIO::SAMGIO()
 
 /* --------------------------------------------------------------------------------- */
 
-bool SAMGIO::isSupported( const bool binary ) const
-{
-    if ( binary )
-    {
-        return true; // binary is supported
-    }
-    else
-    {
-        return binary; // formatted is unsupported
-    }
-}
-
-/* --------------------------------------------------------------------------------- */
-
 template<typename ValueType>
 void SAMGIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
