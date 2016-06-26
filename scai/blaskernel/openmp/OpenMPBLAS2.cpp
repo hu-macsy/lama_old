@@ -284,7 +284,7 @@ void OpenMPBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
+    SCAI_LOG_DEBUG( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( OpenMPBLAS2::gemv, ctx, flag );
 }
 
@@ -294,12 +294,16 @@ void OpenMPBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
 OpenMPBLAS2::OpenMPBLAS2()
 {
+    SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS2::~OpenMPBLAS2()
 {
+    SCAI_LOG_INFO( logger, "unregister BLAS2 routines for OpenMP in Kernel Registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }

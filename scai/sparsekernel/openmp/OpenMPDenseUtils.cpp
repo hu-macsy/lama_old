@@ -394,8 +394,8 @@ void OpenMPDenseUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelReg
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<DenseKernelTrait::nonZeroValues<ValueType> >( nonZeroValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setValue<ValueType> >( setValue, ctx, flag );
@@ -408,8 +408,8 @@ void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kre
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::copyDenseValues<ValueType, OtherValueType> >( copyDenseValues, ctx, flag );
@@ -425,6 +425,8 @@ void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kre
 
 OpenMPDenseUtils::OpenMPDenseUtils()
 {
+    SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
@@ -432,6 +434,8 @@ OpenMPDenseUtils::OpenMPDenseUtils()
 
 OpenMPDenseUtils::~OpenMPDenseUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister DenseUtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );

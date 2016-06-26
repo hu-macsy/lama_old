@@ -119,8 +119,8 @@ template<typename ValueType>
 ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "OpenMP.BLAS1.nrm2" )
-    SCAI_LOG_DEBUG( logger,
-                    "nrm2<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
+    SCAI_LOG_INFO( logger,
+                   "nrm2<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
     ValueType sumOfSquares = 0;  // same as ... = ValueType( 0 )
 
     if ( incX <= 0 )
@@ -171,8 +171,8 @@ template<typename ValueType>
 ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "OpenMP.BLAS1.asum" )
-    SCAI_LOG_DEBUG( logger,
-                    "asum<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
+    SCAI_LOG_INFO( logger,
+                   "asum<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -289,8 +289,8 @@ void OpenMPBLAS1::swap(
     const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.swap" )
-    SCAI_LOG_DEBUG( logger,
-                    "iamax<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+    SCAI_LOG_INFO( logger,
+                   "swap<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -375,7 +375,7 @@ void OpenMPBLAS1::copy(
     const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.copy" )
-    SCAI_LOG_DEBUG( logger,
+    SCAI_LOG_INFO( logger,
                     "copy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -424,9 +424,9 @@ void OpenMPBLAS1::axpy(
     }
 
     SCAI_REGION( "OpenMP.BLAS1.axpy" )
-    SCAI_LOG_DEBUG( logger,
-                    "axpy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha
-                    << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+    SCAI_LOG_INFO( logger,
+                   "axpy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha
+                   << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -463,9 +463,10 @@ ValueType OpenMPBLAS1::dot(
     const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.dot" )
-    SCAI_LOG_DEBUG( logger,
-                    "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n
-                    << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+
+    SCAI_LOG_INFO( logger,
+                   "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n
+                   << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -519,9 +520,10 @@ void OpenMPBLAS1::sum(
     const ValueType* y,
     ValueType* z )
 {
-    SCAI_REGION( "OpenMP.BLAS1.dot" )
-    SCAI_LOG_DEBUG( logger,
-                    "sum<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
+    SCAI_REGION( "OpenMP.BLAS1.sum" )
+
+    SCAI_LOG_INFO( logger,
+                   "sum<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -548,8 +550,8 @@ void OpenMPBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register BLAS1 OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( OpenMPBLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( OpenMPBLAS1::nrm2, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( OpenMPBLAS1::asum, ctx, flag );
@@ -567,12 +569,16 @@ void OpenMPBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
 OpenMPBLAS1::OpenMPBLAS1()
 {
+    SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for Host at kernel registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS1::~OpenMPBLAS1()
 {
+    SCAI_LOG_INFO( logger, "unregister BLAS1 OpenMP-routines for Host at kernel registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }

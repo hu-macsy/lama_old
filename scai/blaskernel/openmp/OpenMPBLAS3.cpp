@@ -364,7 +364,7 @@ void OpenMPBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
+    SCAI_LOG_DEBUG( logger, "set BLAS3 routines for OpenMP in Interface" )
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( OpenMPBLAS3::gemm, ctx, flag );
 }
 
@@ -374,12 +374,16 @@ void OpenMPBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
 OpenMPBLAS3::OpenMPBLAS3()
 {
+    SCAI_LOG_INFO( logger, "register BLAS3 routines for OpenMP in Kernel Registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS3::~OpenMPBLAS3()
 {
+    SCAI_LOG_INFO( logger, "unregister BLAS3 routines for OpenMP in Kernel Registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }

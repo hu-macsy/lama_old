@@ -561,7 +561,7 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 
     for ( IndexType i = 0; i < n; i++ )
     {
-        SCAI_LOG_INFO( logger, "validIndexes, array[ " << i << " ] = " << array[i] )
+        SCAI_LOG_TRACE( logger, "validIndexes, array[ " << i << " ] = " << array[i] )
 
         if ( size <= array[i] || 0 > array[i] )
         {
@@ -858,8 +858,8 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
@@ -881,8 +881,8 @@ void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
@@ -895,6 +895,7 @@ void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
 
 OpenMPUtils::OpenMPUtils()
 {
+    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host" ) 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
@@ -903,6 +904,7 @@ OpenMPUtils::OpenMPUtils()
 
 OpenMPUtils::~OpenMPUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister UtilsKernel OpenMP-routines for Host" ) 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );

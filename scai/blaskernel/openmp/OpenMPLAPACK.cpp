@@ -526,7 +526,7 @@ void OpenMPLAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistr
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register LAPACK OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    SCAI_LOG_DEBUG( logger, "register LAPACK OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( OpenMPLAPACK::getrf, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( OpenMPLAPACK::getri, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( OpenMPLAPACK::getinv, ctx, flag );
@@ -540,12 +540,16 @@ void OpenMPLAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistr
 
 OpenMPLAPACK::OpenMPLAPACK()
 {
+    SCAI_LOG_INFO( logger, "register LAPACK OpenMP-routines for Host at kernel registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPLAPACK::~OpenMPLAPACK()
 {
+    SCAI_LOG_INFO( logger, "unregister LAPACK OpenMP-routines for Host at kernel registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
