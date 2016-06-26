@@ -72,8 +72,12 @@ int main( int argc, const char* argv[] )
     if ( argc != 3 )
     {
         cout << "Usage: convert infile_name outfile_name" << endl;
-        cout << "   file type is chosen by suffix"  << endl;
+        cout << "   file format is chosen by suffix, e.g. frm, mtx, txt, psc"  << endl;
+        cout << "   --SCAI_TYPE=<type> is data type of file input and used for internal data" << endl;
         cout << "   --SCAI_IO_BINARY=0|1 formatted or binary write" << endl;
+        cout << "   --SCAI_IO_TYPE_DATA=<type> is data type used for file output" << endl;
+        cout << "   " << endl;
+        cout << "   Supported data types: float, double, LongDouble, ComplexFloat, ComplexDouble, ComplexLongDouble" << endl;
         exit( -1 );
     }
 
@@ -103,6 +107,11 @@ int main( int argc, const char* argv[] )
 
         common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
+        // For reading we expect here that the file data type matches the storage type
+        // so SCAI_IO_TYPE_DATA should be ignored for reading 
+
+        fileIO->setDataType( common::scalar::INTERNAL );
+
         std::cout << "Got from factory: " << *fileIO << std::endl;
 
         fileIO->readStorage( matrix, inFileName );
@@ -126,6 +135,8 @@ int main( int argc, const char* argv[] )
         common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         std::cout << "Got from factory: " << *fileIO << std::endl;
+
+        // Note. SCAI_IO_TYPE_DATA allows that data is converted
 
         fileIO->writeStorage( matrix, outFileName );
     }

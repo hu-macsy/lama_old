@@ -112,13 +112,18 @@ private:
         SKEW_SYMMETRIC
     } Symmetry;
 
+    /** Conversion of enum value to string */
+
+    const char* symmetry2str( const Symmetry symmetry );
+
     void writeMMHeader(
-        const bool& vector,
-        const IndexType& numRows,
-        const IndexType& numColumns,
-        const IndexType& numValues,
         class IOStream& outFile,
-        const common::scalar::ScalarType& dataType );
+        const bool vector,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValues,
+        const Symmetry symmetry,
+        const common::scalar::ScalarType dataType );
 
     void readMMHeader(
         IndexType& numRows,
@@ -136,6 +141,14 @@ private:
         hmemo::HArray<IndexType>& ja,
         hmemo::HArray<ValueType>& vals, 
         bool conjFlag );
+
+    /** Check for symmetry */
+    template<typename ValueType>
+    Symmetry checkSymmetry( 
+        const hmemo::HArray<IndexType>& cooIA, 
+        const hmemo::HArray<IndexType>& cooJA, 
+        const hmemo::HArray<ValueType>& cooValues );
+
 };
 
 }

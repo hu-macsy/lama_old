@@ -46,6 +46,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 using namespace std;
 
@@ -95,13 +96,37 @@ void MatrixMarketIO::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
+const char* MatrixMarketIO::symmetry2str( const Symmetry symmetry )
+{   
+    switch ( symmetry )
+    {   
+        case GENERAL:
+            return "general";
+        
+        case SYMMETRIC:
+            return "symmetric";
+        
+        case HERMITIAN:
+            return "hermitian";
+
+        case SKEW_SYMMETRIC:
+            return "skew-symmetric";
+
+        default:
+            return "unknown";
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void MatrixMarketIO::writeMMHeader(
-    const bool& vector,
-    const IndexType& numRows,
-    const IndexType& numColumns,
-    const IndexType& numValues,
     IOStream& outFile,
-    const common::scalar::ScalarType& dataType )
+    const bool vector,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numValues,
+    const Symmetry symmetry,
+    const common::scalar::ScalarType dataType )
 {
     outFile << "%%MatrixMarket ";
 
@@ -140,9 +165,7 @@ void MatrixMarketIO::writeMMHeader(
             COMMON_THROWEXCEPTION( *this << ": writeMMHeader: " << dataType << " unspported type" )
     }
 
-    // TODO: Add support for symmetric matrices
-    // currently we can only write non-symmetric
-    outFile << "general" << std::endl;
+    outFile << symmetry2str( symmetry ) << std::endl;
 
     if ( vector )
     {
@@ -251,7 +274,7 @@ void MatrixMarketIO::readMMHeader(
     {
         symmetry = HERMITIAN;
     }
-    else if ( buffer == "symmetric" )
+    else if ( buffer == "skew-symmetric" )
     {
         symmetry = SKEW_SYMMETRIC;
     }
@@ -367,7 +390,10 @@ void MatrixMarketIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    SCAI_ASSERT_ERROR( !mBinary, "Matrix market format can not be written binary" );
+    if ( mBinarySet )
+    {
+        SCAI_ASSERT_ERROR( !mBinary, "Matrix market format can not be written binary" );
+    }
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
@@ -378,10 +404,13 @@ void MatrixMarketIO::writeArrayImpl(
         dataType = common::TypeTraits<ValueType>::stype;
     }
 
+    bool      isVector   = true;
     IndexType numRows    = array.size();
     IndexType numColumns = 1;
+    IndexType numValues  = -1;
+    Symmetry  symmetry   = GENERAL;
 
-    writeMMHeader( true, numRows, numColumns, -1, outFile, dataType );
+    writeMMHeader( outFile, isVector, numRows, numColumns, numValues, symmetry, dataType );
 
     // output code runs only for host context
 
@@ -464,12 +493,170 @@ void MatrixMarketIO::readArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+static void sortIJ( IndexType perm[], const IndexType ia[], const IndexType ja[], IndexType N )
+{
+    for ( IndexType i = 0; i < N; ++ i )
+    {
+        perm[i] = i;
+    }
+
+    // sort using a custom function object
+
+    struct indexLess {
+        const IndexType* ia;
+        const IndexType* ja;
+        bool operator()( int pos1, int pos2 )
+        {   
+            return    ( ia[pos1] < ia[pos2] )
+                   || ( ia[pos1] == ia[pos2] && ja[pos1] < ja[pos2] );
+        }
+    }; 
+
+    indexLess c;
+
+    c.ia = ia;
+    c.ja = ja;
+
+    // std::sort( perm.begin(), perm.end(), c );
+
+    std::sort( perm, perm + N, c );
+}
+ 
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+MatrixMarketIO::Symmetry MatrixMarketIO::checkSymmetry( const HArray<IndexType>& cooIA, const HArray<IndexType>& cooJA, const HArray<ValueType>& cooValues )
+{
+    IndexType n = cooIA.size();
+
+    bool isSym  = true;
+    bool isHerm = true;
+
+    HArray<IndexType> rank1;   // sorted IA, JA
+    HArray<IndexType> rank2;   // sorted JA, IA
+
+    ContextPtr host = Context::getHostPtr();
+
+    ReadAccess<IndexType> ia( cooIA, host );
+    ReadAccess<IndexType> ja( cooJA, host );
+    ReadAccess<ValueType> values( cooValues, host );
+
+    WriteOnlyAccess<IndexType> perm1( rank1, host, n );
+    WriteOnlyAccess<IndexType> perm2( rank2, host, n );
+     
+    sortIJ( perm1, ia, ja, n );
+    sortIJ( perm2, ja, ia, n );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        IndexType i1 = ia[perm1[i]];
+        IndexType i2 = ja[perm2[i]];
+        IndexType j1 = ja[perm1[i]];
+        IndexType j2 = ia[perm2[i]];
+
+        SCAI_LOG_TRACE( logger, "Check: pos1 = " << perm1[i] << ": ( " << i1 << ", " << j1 
+                                 << " ), pos2 = " << perm2[i] << ": ( " << i2 << ", " << j2 << " )" )
+
+        if ( i1 != i2 || j1 != j2 )
+        {
+            isSym  = false;
+            isHerm = false;
+            SCAI_LOG_DEBUG( logger, "entry (" << i1 << ", " << j1 << ") available, "
+                                    << "but not entry (" << j1 << ", " << i1 << ")" )
+            break;
+        }
+       
+        // we have found entry( i1, j1 ) and entry( j1, i1 )
+
+        if ( i1 <= j1 )
+        {
+            // further check only for lower triangular part
+
+            continue;
+        }
+
+        ValueType v1 = values[perm1[i]];
+        ValueType v2 = values[perm2[i]];
+
+        SCAI_LOG_TRACE( logger, "compare mirrored values " << v1 << " " << v2 )
+
+        if ( v1 != v2 )
+        {
+            isSym = false;
+        }
+        if ( common::Math::conj( v1 ) != v2 )
+        {
+            isHerm = false;
+        }
+
+        if ( !isSym && !isHerm )
+        {
+            break;
+        }
+    }
+
+    if ( isSym )
+    {
+        return SYMMETRIC;
+    }
+    else if ( isHerm )
+    {
+        return HERMITIAN;
+    }
+    else
+    {
+        return GENERAL;
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static void removeUpperTriangular( HArray<IndexType>& cooIA, HArray<IndexType>& cooJA, HArray<ValueType>& cooValues )
+{
+    IndexType n = cooIA.size();
+
+    IndexType k = 0;
+
+    // take only entries( i, j ) with i >= j 
+
+    {
+        ContextPtr host = Context::getHostPtr();
+
+        WriteAccess<IndexType> ia( cooIA, host );
+        WriteAccess<IndexType> ja( cooJA, host );
+        WriteAccess<ValueType> values( cooValues, host );
+
+        for ( IndexType pos = 0; pos < n; ++pos )
+        {
+            if ( ia[pos] >= ja[pos] )
+            {
+                ia[k] = ia[pos];
+                ja[k] = ja[pos];
+       
+                k++;
+            }
+        }
+    }
+
+    // WriteAccess should have been free otherwise resize might not be allowed
+
+    cooIA.resize( k );
+    cooJA.resize( k );
+    cooValues.resize( k );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void MatrixMarketIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
-    SCAI_ASSERT( !mBinary, "Binary mode not supported for MatrixMarketIO" )
+    if ( mBinarySet )
+    {
+        SCAI_ASSERT( !mBinary, "Binary mode not supported for MatrixMarketIO" )
+    }
 
     COOStorage<ValueType> coo( storage );
 
@@ -483,6 +670,17 @@ void MatrixMarketIO::writeStorageImpl(
     LArray<ValueType> cooValues;
 
     coo.swap( cooIA, cooJA, cooValues );
+
+    Symmetry symFlag = checkSymmetry( cooIA, cooJA, cooValues );
+
+    SCAI_LOG_ERROR( logger, "symmetry = " << symmetry2str( symFlag ) ) 
+
+    if ( symFlag == SYMMETRIC || symFlag == HERMITIAN )
+    {
+        removeUpperTriangular( cooIA, cooJA, cooValues );
+  
+        SCAI_LOG_ERROR( logger, "#values = " << cooIA.size() << ", due to symmetry " << symmetry2str( symFlag ) )
+    }
 
     // Attention: indexing in MatrixMarket starts with 1 and not with 0 as in LAMA
 
@@ -498,9 +696,18 @@ void MatrixMarketIO::writeStorageImpl(
         dataType = common::TypeTraits<ValueType>::stype;
     }
 
+    // If file type is no more complex, the storage cannot be HERMITIAN any more
+
+    if ( symFlag == HERMITIAN && !isComplex( dataType ) )
+    {
+        symFlag = SYMMETRIC;
+    }
+
+    bool isVector = false;
+
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
-    writeMMHeader( false, numRows, numCols, numValues, outFile, dataType );
+    writeMMHeader( outFile, isVector, numRows, numCols, numValues, symFlag, dataType );
 
     // output code runs only for host context
 
