@@ -293,9 +293,15 @@ inline bool _HArray::isValid( ContextPtr context ) const
 
 inline void _HArray::resize( IndexType size )
 {
+    size_t newSize = size;
+
     // resize on all valid locations
-    mContextDataManager.resize( size * mValueSize, mSize * mValueSize );
-    mSize = size;
+
+    if ( newSize  > mSize )
+    {
+        mContextDataManager.resize( newSize * mValueSize, mSize * mValueSize );
+    }
+    mSize = newSize;
 }
 
 /* ---------------------------------------------------------------------------------*/
