@@ -180,7 +180,7 @@ public:
         return std::numeric_limits<long double>::max();
     }
 
-    static inline int precision()
+    static inline long double precision()
     {
         return std::numeric_limits<long double>::digits * std::log10( 2 ) + 2;
     }
