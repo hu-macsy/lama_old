@@ -90,7 +90,7 @@ public:
 
     static inline int precision()
     {
-        return std::numeric_limits<ValueType>::digits * std::log10( 2 ) + 2;
+        return std::numeric_limits<ValueType>::digits10;
     }
 
     /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
@@ -180,9 +180,9 @@ public:
         return std::numeric_limits<long double>::max();
     }
 
-    static inline long double precision()
+    static inline int precision()
     {
-        return std::numeric_limits<long double>::digits * std::log10( 2 ) + 2;
+        return std::numeric_limits<long double>::digits10;
     }
 
     static inline long double getMin()
@@ -223,7 +223,7 @@ public:
 
     static inline int precision()
     {
-        return std::numeric_limits<double>::digits * std::log10( 2 ) + 2;
+        return std::numeric_limits<double>::digits10;
     }
 
     static inline double getMin()
@@ -259,7 +259,7 @@ public:
 
     static inline int precision()
     {
-        return std::numeric_limits<float>::digits * std::log10( 2 ) + 2;
+        return std::numeric_limits<float>::digits10;
     }
 
     static inline float getMax()
@@ -301,7 +301,7 @@ public:
 
     static inline int precision()
     {
-        return std::numeric_limits<float>::digits * std::log10( 2 ) + 2;
+        return std::numeric_limits<float>::digits10;
     }
 
     static inline ComplexFloat getMax()
@@ -341,7 +341,7 @@ public:
 
     static inline int precision()
     {
-        return std::numeric_limits<double>::digits * std::log10( 2 ) + 2;
+        return std::numeric_limits<double>::digits10;
     }
 
     static inline ComplexDouble getMax()
@@ -382,7 +382,7 @@ public:
 
     static inline int precision()
     {
-        return std::numeric_limits<long double>::digits * std::log10( 2 ) + 2;
+        return std::numeric_limits<long double>::digits10;
     }
 
     static inline ComplexLongDouble getMax()
