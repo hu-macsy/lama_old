@@ -61,7 +61,7 @@ int main()
     //
     // print vector to file vector.frm/.vec (SAMG format)
     //
-    sequenceOfValues.writeToFile( "vector", File::SAMG_FORMAT );
+    sequenceOfValues.writeToFile( "vector.frv" );
     std::cout << "DenseVector is written to 'vector.frm/.vec'" << std::endl;
     //
     //  That's it.

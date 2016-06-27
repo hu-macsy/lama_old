@@ -118,5 +118,5 @@ int main()
 
     std::cout << std::endl;
     std::cout << "Errors = " << errors << std::endl;
-    a.writeToFile( "MatrixA", File::MATRIX_MARKET );
+    a.writeToFile( "MatrixA.mtx" );
 }
