@@ -493,6 +493,18 @@ void MatrixMarketIO::readArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+struct indexLess {
+
+    const IndexType* ia;
+    const IndexType* ja;
+
+    bool operator()( int pos1, int pos2 )
+    {   
+        return    ( ia[pos1] < ia[pos2] )
+               || ( ia[pos1] == ia[pos2] && ja[pos1] < ja[pos2] );
+    }
+}; 
+
 static void sortIJ( IndexType perm[], const IndexType ia[], const IndexType ja[], IndexType N )
 {
     for ( IndexType i = 0; i < N; ++ i )
@@ -500,26 +512,14 @@ static void sortIJ( IndexType perm[], const IndexType ia[], const IndexType ja[]
         perm[i] = i;
     }
 
+    indexLess cmp;
+
+    cmp.ia = ia;
+    cmp.ja = ja;
+
     // sort using a custom function object
 
-    struct indexLess {
-        const IndexType* ia;
-        const IndexType* ja;
-        bool operator()( int pos1, int pos2 )
-        {   
-            return    ( ia[pos1] < ia[pos2] )
-                   || ( ia[pos1] == ia[pos2] && ja[pos1] < ja[pos2] );
-        }
-    }; 
-
-    indexLess c;
-
-    c.ia = ia;
-    c.ja = ja;
-
-    // std::sort( perm.begin(), perm.end(), c );
-
-    std::sort( perm, perm + N, c );
+    std::sort( perm, perm + N, cmp );
 }
  
 /* --------------------------------------------------------------------------------- */
