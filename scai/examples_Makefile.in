@@ -1,3 +1,10 @@
+UNAME := $(shell uname)
+ifdef ($(UNAME),Darwin)
+	DYNLIBEXT=dylib
+else
+	DYNLIBEXT=so
+endif
+
 include make.inc
 
 INCLUDE_FLAGS = -I${SCAI_ROOT}/include
@@ -15,7 +22,7 @@ ifdef ADDITIONAL_EXAMPLE_LINK_LIBRARIES
 endif
 
 ifdef SCAI_LIBS
-	M_SO = $(foreach a, ${SCAI_LIBS}, $(a).so )
+	M_SO = $(foreach a, ${SCAI_LIBS}, $(a).$(DYNLIBEXT) )
 	M_LIBS = $(foreach a, ${SCAI_LIBS}, -l$(a) )
 	MODULE_LIB = -L. ${M_LIBS}
 endif
@@ -29,13 +36,13 @@ All: ${M_SO} ${SCAI_EXECUTABLES} ${SCAI_MODULES}
 .SUFFIXES: .cpp .o
 .SUFFIXES: .cu .o
 .SUFFIXES: .o .exe
-.SUFFIXES: .o .so
+.SUFFIXES: .o .$(DYNLIBEXT)
 
 .o.exe: 
 	${CXX} -o $*.exe $*.o ${MODULE_LIB} ${CXX_FLAGS} ${LD_FLAGS}:$(CURDIR)
 
-.o.so:
-	${CXX} -o lib$*.so $*.o ${LD_FLAGS} -shared
+.o.$(DYNLIBEXT):
+	${CXX} -o lib$*.$(DYNLIBEXT) $*.o ${LD_FLAGS} -shared
 
 .cpp.o:
 	${CXX} -fPIC ${CXX_FLAGS} ${SCAI_DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
