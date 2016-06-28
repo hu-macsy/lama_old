@@ -134,7 +134,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     SCAI_LOG_INFO( logger, "have set " << offset << " halo source indexes" )
     // In contrary to Halo schedules we have here the situation that each non-local
     // index of source should be required by some other processor.
-    SCAI_ASSERT_EQ_ERROR( offset, haloSourceIndexes.size(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( static_cast<MemorySizeType> (offset), haloSourceIndexes.size(), "serious mismatch" )
     SCAI_ASSERT_EQ_ERROR( mNumLocalValues + offset, mSourceSize, "serious mismatch" )
     // Now add the indexes where to scatter the halo into destination
     IndexType haloSize = halo.getHaloSize();

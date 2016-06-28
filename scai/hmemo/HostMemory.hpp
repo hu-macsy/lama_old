@@ -45,6 +45,7 @@
 
 #include <scai/common/Thread.hpp>
 #include <scai/common/shared_ptr.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -71,17 +72,17 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual void* allocate( const size_t size ) const;
+    virtual void* allocate( const MemorySizeType size ) const;
 
-    virtual void free( void* pointer, const size_t size ) const;
+    virtual void free( void* pointer, const MemorySizeType size ) const;
 
-    virtual void memcpy( void* dst, const void* src, const size_t size ) const;
+    virtual void memcpy( void* dst, const void* src, const MemorySizeType size ) const;
 
-    virtual void memset( void* dst, const int val, const size_t size ) const;
+    virtual void memset( void* dst, const int val, const MemorySizeType size ) const;
 
     /** This routine implements Context::memcpyAsync  */
 
-    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
+    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const MemorySizeType size ) const;
 
     virtual ContextPtr getContextPtr() const;
 
@@ -95,9 +96,9 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    mutable size_t mNumberOfAllocates; //!< variable counts allocates
+    mutable MemorySizeType mNumberOfAllocates; //!< variable counts allocates
 
-    mutable size_t mNumberOfAllocatedBytes;//!< variable counts allocated bytes
+    mutable MemorySizeType mNumberOfAllocatedBytes;//!< variable counts allocated bytes
 
     mutable common::Thread::RecursiveMutex allocate_mutex;// needed to make allocate/free thread-safe
 };
