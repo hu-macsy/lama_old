@@ -121,12 +121,12 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         ReadAccess<IndexType> provide( halo.mProvidesIndexes, contextPtr );
         ReadAccess<IndexType> required( halo.mRequiredIndexes, contextPtr );
 
-        for ( int i = 0; i < provide.size(); ++i )
+        for ( MemorySizeType i = 0; i < provide.size(); ++i )
         {
             SCAI_LOG_TRACE( logger, "halo.mProvidesIndexes[" << i << "] " << provide[i] )
         }
 
-        for ( int i = 0; i < required.size(); ++i )
+        for ( MemorySizeType i = 0; i < required.size(); ++i )
         {
             SCAI_LOG_TRACE( logger, "halo.mRequiredIndexes[" << i << "] " << required[i] )
         }

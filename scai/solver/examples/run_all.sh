@@ -36,7 +36,7 @@
 set -e
 
 # Get location of the script to properly call all example scripts
-MYDIR="$(dirname "$(readlink -f "$0")")"
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Function that executes an example and count up a counter
 # Usage: RUN COUNT[0|1] EXECUTABLE
@@ -112,6 +112,7 @@ if [ $count -ne $i ]; then
     exit 1
 fi
 
+cd ..
 
 
 #reset counter
@@ -133,6 +134,7 @@ fi
 i=0
 
 # run examples myJacobi/*
+cd myJacobi
 RUN 1 myJacobi/myJacobi.exe
 
 # check if there are unkown examples
@@ -141,3 +143,5 @@ if [ $count -ne $i ]; then
     echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
     exit 1
 fi
+
+cd ..

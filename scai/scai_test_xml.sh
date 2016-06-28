@@ -78,6 +78,12 @@ echo "### tracingTest"
     cd tracing/test/
     ./test.sh
 )
+# KRegistry tests
+echo "### kregistryTest on ${CTX}"
+(
+    cd kregistry/test/
+    ./kregistryTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest_${CTX}.xml
+)
 	
 for CTX in ${CONTEXTS[*]}
 do
@@ -88,10 +94,6 @@ do
 	# HMemo tests
 	echo "### hmemoTest on ${CTX}"
 	./hmemo/test/hmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	
-	# KRegistry tests
-	echo "### kregistryTest on ${CTX}"
-	./kregistry/test/kregistryTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	
 	# BLASKernel tests
 	echo "### blaskernelTest on ${CTX}"
@@ -157,14 +159,14 @@ do
 	export SCAI_COMMUNICATOR=NO
 	./solver/test/solverTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
 	export SCAI_COMMUNICATOR=NO
-	./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDistTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDistTest_${CTX}.xml #--SCAI_CONTEXT=${CTX}
 	if [ "${MPI_FOUND}" != "" ]
 	then
 	    export SCAI_COMMUNICATOR=MPI
-	    mpirun -np 1 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist1Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	    mpirun -np 2 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist2Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	    mpirun -np 3 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist3Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	    mpirun -np 4 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist4Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	    mpirun -np 1 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist1Test_${CTX}.xml #--SCAI_CONTEXT=${CTX}
+	    mpirun -np 2 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist2Test_${CTX}.xml #--SCAI_CONTEXT=${CTX}
+	    mpirun -np 3 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist3Test_${CTX}.xml #--SCAI_CONTEXT=${CTX}
+	    mpirun -np 4 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist4Test_${CTX}.xml #--SCAI_CONTEXT=${CTX}
 	fi
 done
 

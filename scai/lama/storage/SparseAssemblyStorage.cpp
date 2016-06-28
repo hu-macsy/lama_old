@@ -823,10 +823,10 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseAssemblyStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& diagonal )
 {
-    IndexType n = std::min( mNumRows, diagonal.size() );
+    MemorySizeType n = std::min( static_cast<MemorySizeType>(mNumRows), diagonal.size() );
     ReadAccess<OtherValueType> rDiagonal( diagonal );
 
-    for ( IndexType i = 0; i < n; ++i )
+    for ( MemorySizeType i = 0; i < n; ++i )
     {
         mRows[i].scale( static_cast<ValueType>( rDiagonal[i] ) );
     }

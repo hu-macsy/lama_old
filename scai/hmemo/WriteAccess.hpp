@@ -50,6 +50,7 @@
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -146,14 +147,14 @@ public:
      * for all other locations this is done lazy.
      *
      */
-    void resize( const IndexType newSize );
+    void resize( const MemorySizeType newSize );
 
     /**
      * @brief Reserves storage for the wrapped HArray at the associated location.
      *
      * @param[in] capacity  the number of elements that should fit into the new storage
      */
-    void reserve( const IndexType capacity );
+    void reserve( const MemorySizeType capacity );
 
     /**
      *  @brief Queries the capacity of the array on the reserved context.
@@ -190,7 +191,7 @@ public:
      *
      * @return  the size of the wrapped HArray
      */
-    inline IndexType size() const;
+    inline MemorySizeType size() const;
 
 protected:
 
@@ -265,7 +266,7 @@ WriteAccess<ValueType>::operator ValueType* ()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-inline IndexType WriteAccess<ValueType>::size() const
+inline MemorySizeType WriteAccess<ValueType>::size() const
 {
     if ( mArray )
     {
@@ -291,7 +292,7 @@ void WriteAccess<ValueType>::clear()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void WriteAccess<ValueType>::resize( const IndexType newSize )
+void WriteAccess<ValueType>::resize( const MemorySizeType newSize )
 {
     SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     // do not log before check of mArray
@@ -303,7 +304,7 @@ void WriteAccess<ValueType>::resize( const IndexType newSize )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void WriteAccess<ValueType>::reserve( const IndexType capacity )
+void WriteAccess<ValueType>::reserve( const MemorySizeType capacity )
 {
     SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     SCAI_LOG_DEBUG( logger, "reserve " << *mArray << " to new capacity " << capacity )

@@ -359,9 +359,18 @@ int main( int argc, const char* argv[] )
 
     // Solve system with timing
 
+    double solverTime;   // saves run-time spent in solve
+
     {
         LamaTiming timer( comm, "Solver solve" );
         mySolver->solve( solution, rhs );
+        solverTime = timer.getTime();
+    }
+
+    if ( itSolver != NULL )
+    {
+        double iterTime = solverTime / itSolver->getIterationCount();
+        HOST_PRINT( myRank, "Time per Iteration = " << ( iterTime * 1000.0 ) << " ms" )
     }
 
     // if 3rd argument for solution file is specified, write it or compare it

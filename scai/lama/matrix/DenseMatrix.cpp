@@ -1500,7 +1500,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     }
 
     SCAI_LOG_INFO( logger, comm << ": start pipelined multiplication." )
-    int size = comm.max( localX.size() ); // largest local part of X
+    MemorySizeType size = comm.max( localX.size() ); // largest local part of X
     mSendValues.clear();
     mReceiveValues.clear();
     ContextPtr contextPtr = Context::getHostPtr();
