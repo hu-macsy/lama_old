@@ -66,7 +66,11 @@ i=0
 
 # run examples
 RUN 1 LogLevels.exe
-RUN 1 LogOpenMP.exe
+
+if [ -e LogOpenMP.exe ]
+then
+	RUN 1 LogOpenMP.exe
+fi
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/*.exe | wc -l`
