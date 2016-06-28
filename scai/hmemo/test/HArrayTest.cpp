@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
     {
         ReadAccess<double> read( arr1, hostPtr );
 
-        for ( IndexType i = 0; i < arr1.size(); ++i )
+        for ( MemorySizeType i = 0; i < arr1.size(); ++i )
         {
             BOOST_CHECK_EQUAL( 2, read[i] );
         }
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
     {
         ReadAccess<double> read( arr2, hostPtr );
 
-        for ( IndexType i = 0; i < arr2.size(); ++i )
+        for ( MemorySizeType i = 0; i < arr2.size(); ++i )
         {
             BOOST_CHECK_EQUAL( 1, read[i] );
         }
@@ -244,11 +244,6 @@ BOOST_AUTO_TEST_CASE( createTest )
     HArray<IndexType> C( 10, 5 );
     std::vector<scai::common::scalar::ScalarType> values;
     _HArray::getCreateValues( values );
-
-    for ( size_t i = 0; i < values.size(); ++i )
-    {
-        //std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
-    }
 
     BOOST_CHECK( _HArray::canCreate( scalar::FLOAT ) );
     BOOST_CHECK( _HArray::canCreate( scalar::DOUBLE ) );

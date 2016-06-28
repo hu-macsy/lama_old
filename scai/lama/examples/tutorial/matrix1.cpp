@@ -105,7 +105,7 @@ int main()
     int errors = 0;
     std::cout << "Values = ";
 
-    for ( IndexType j = 0; j < rowRead.size(); ++ j )
+    for ( MemorySizeType j = 0; j < rowRead.size(); ++ j )
     {
         std::cout << " " << rowRead[j];
 

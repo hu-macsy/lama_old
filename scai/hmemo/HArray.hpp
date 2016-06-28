@@ -41,6 +41,7 @@
 // common library
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -92,12 +93,12 @@ public:
     /**
      * @brief Initialize an array with values from host
      */
-    void init( const ValueType src[], const IndexType size );
+    void init( const ValueType src[], const MemorySizeType size );
 
     /**
      * @brief Initialize an array with same value for each entry
      */
-    void init( const ValueType src, const IndexType size );
+    void init( const ValueType src, const MemorySizeType size );
 
     /**
      * @brief Create a Heterogeneous array and give it a first touch on a context
@@ -121,7 +122,7 @@ public:
      *
      * HArray( const IndexType n ) creates a HArray of size n and allocates uninitialized Host memory.
      */
-    explicit HArray( const IndexType n );
+    explicit HArray( const MemorySizeType n );
 
     /**
      * @brief Create a HArray of size n and initialize it with one value.
@@ -133,7 +134,7 @@ public:
      * HArray( const IndexType n ) creates a HArray of size n, allocates Host memory and fills the Host memory with
      * the passed value.
      */
-    HArray( const IndexType n, const ValueType& value, ContextPtr context = Context::getHostPtr() );
+    HArray( const MemorySizeType n, const ValueType& value, ContextPtr context = Context::getHostPtr() );
 
     /**
      * @brief Create a HArray of size n and initialize it with values from Host
@@ -144,7 +145,7 @@ public:
      *
      * Note: the data is directly copied and the array can have no incarnation on Host
      */
-    HArray( const IndexType n, const ValueType[], ContextPtr context = Context::getHostPtr() );
+    HArray( const MemorySizeType n, const ValueType[], ContextPtr context = Context::getHostPtr() );
 
     /**
      * @brief Override the default copy constructor with appropriate version.
@@ -225,7 +226,7 @@ public:
      * @param[in] capacity amount of data to be allocated
      *
      */
-    void reserve( ContextPtr context, const IndexType capacity );
+    void reserve( ContextPtr context, const MemorySizeType capacity );
 
     using _HArray::capacity;
     using _HArray::clear;
@@ -255,11 +256,11 @@ protected:
 
     void clear( ContextDataIndex index );
 
-    void resize( ContextDataIndex index, const IndexType newSize );
+    void resize( ContextDataIndex index, const MemorySizeType newSize );
 
-    void reserve( ContextDataIndex index, const IndexType capacity ) const;
+    void reserve( ContextDataIndex index, const MemorySizeType capacity ) const;
 
-    IndexType capacity( ContextDataIndex index ) const;
+    MemorySizeType capacity( ContextDataIndex index ) const;
 
 };
 
@@ -291,9 +292,7 @@ HArray<ValueType>::HArray( ContextPtr context ) :
 
 template<typename ValueType>
 HArray<ValueType>::HArray( MemoryPtr memory ) :
-
     _HArray( 0, sizeof( ValueType ) )
-
 {
     // just make the first entry for the memory
     /* ContextDataIndex data = */  mContextDataManager.getMemoryData( memory );
@@ -303,10 +302,8 @@ HArray<ValueType>::HArray( MemoryPtr memory ) :
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>::HArray( const IndexType n ) :
-
+HArray<ValueType>::HArray( const MemorySizeType n ) :
     _HArray( n, sizeof( ValueType ) )
-
 {
     // reserves already memory on the host, but this data is not valid
     ContextPtr hostPtr = Context::getHostPtr();
@@ -317,7 +314,7 @@ HArray<ValueType>::HArray( const IndexType n ) :
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr context ) :
+HArray<ValueType>::HArray( const MemorySizeType n, const ValueType& value, ContextPtr context ) :
 
     _HArray( n, sizeof( ValueType ) )
 
@@ -325,7 +322,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr
     mContextDataManager.getContextData( context );  // first touch here
     // In constructor of the HArray lock of accesses is not required
     ContextPtr host = Context::getHostPtr();
-    size_t validSize = 0;   // no valid data availalbe, so even don't search for it
+    MemorySizeType validSize = 0;   // no valid data availalbe, so even don't search for it
     // Use of acquireAccess guarantees allocation of data
     ContextDataIndex index = mContextDataManager.acquireAccess( host, common::context::Write, mSize * mValueSize, validSize );
     ContextData& data = mContextDataManager[index];
@@ -335,7 +332,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr
         ValueType* hostData = static_cast<ValueType*>( data.get() );
         #pragma omp parallel for
 
-        for ( size_t i = 0; i < mSize; ++i )
+        for ( MemorySizeType i = 0; i < mSize; ++i )
         {
             hostData[i] = value;
         }
@@ -355,7 +352,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>::HArray( const IndexType n, const ValueType values[], ContextPtr context ) :
+HArray<ValueType>::HArray( const MemorySizeType n, const ValueType values[], ContextPtr context ) :
 
     _HArray( 0, sizeof( ValueType ) )
 
@@ -412,7 +409,7 @@ common::scalar::ScalarType HArray<ValueType>::getValueType() const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::init( const ValueType src[], const IndexType size )
+void HArray<ValueType>::init( const ValueType src[], const MemorySizeType size )
 {
     // context manager copies the data to the first touch location
     mContextDataManager.init( src, sizeof( ValueType ) * size );
@@ -422,7 +419,7 @@ void HArray<ValueType>::init( const ValueType src[], const IndexType size )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::init( const ValueType value, const IndexType size )
+void HArray<ValueType>::init( const ValueType value, const MemorySizeType size )
 {
     common::scoped_array<ValueType> data( new ValueType[size] );
 
@@ -498,7 +495,7 @@ void HArray<ValueType>::swap( HArray<ValueType>& other )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::reserve( ContextPtr context, const IndexType capacity )
+void HArray<ValueType>::reserve( ContextPtr context, const MemorySizeType capacity )
 {
     mContextDataManager.reserve( context, capacity * mValueSize, mSize * mValueSize );
 }
@@ -544,14 +541,14 @@ void HArray<ValueType>::clear( const ContextDataIndex index )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
+void HArray<ValueType>::resize( ContextDataIndex index, const MemorySizeType size )
 {
     ContextData& entry = mContextDataManager[index];
     bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
     // SCAI_ASSERT( entry.locked( common::context::Write ), "resize illegal here " << entry )
     // static cast to have multiplication with 64 bit values
-    size_t allocSize = static_cast<size_t>( size ) * mValueSize;
-    size_t validSize = static_cast<size_t>( mSize ) * mValueSize;
+    MemorySizeType allocSize = static_cast<MemorySizeType>( size ) * mValueSize;
+    MemorySizeType validSize = static_cast<MemorySizeType>( mSize ) * mValueSize;
 
     if ( validSize > allocSize )
     {
@@ -568,17 +565,17 @@ void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) const
+void HArray<ValueType>::reserve( ContextDataIndex index, const MemorySizeType size ) const
 {
-    if ( static_cast<size_t>( size ) <= mSize )
+    if ( static_cast<MemorySizeType>( size ) <= mSize )
     {
         return;   // nothing to do
     }
 
     bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
     ContextData& entry = mContextDataManager[index];
-    size_t allocSize = size * mValueSize;
-    size_t validSize = mSize * mValueSize;
+    MemorySizeType allocSize = size * mValueSize;
+    MemorySizeType validSize = mSize * mValueSize;
     entry.reserve( allocSize, validSize, inUse );
     // Note: mSize does not change by the reserve
 }
@@ -586,7 +583,7 @@ void HArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-IndexType HArray<ValueType>::capacity( ContextDataIndex index ) const
+MemorySizeType HArray<ValueType>::capacity( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
     return entry.capacity() / mValueSize;
