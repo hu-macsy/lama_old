@@ -851,7 +851,7 @@ template<typename ValueType>
 template<typename OtherValueType>
 void CSRStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& diagonal )
 {
-    MemorySizeType n = std::min( static_cast<MemorySizeType>(mNumRows), diagonal.size() );
+    IndexType n = std::min( mNumRows, diagonal.size() );
     static LAMAKernel<CSRKernelTrait::scaleRows<ValueType, OtherValueType> > scaleRows;
     ContextPtr loc = this->getContextPtr();
     scaleRows.getSupportedContext( loc );

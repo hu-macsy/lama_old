@@ -76,8 +76,6 @@ namespace scai
  */
 typedef int IndexType;
 
-typedef size_t MemorySizeType;
-
 /** Data type long double to have it as one word. Otherwise certain macros
  *  might fail to work correctly.
  */
@@ -114,7 +112,7 @@ MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 /**
  *  List of all supported types (e.g. for communicator methods)
  */
-#define SCAI_ALL_TYPES IndexType, MemorySizeType, SCAI_ARITHMETIC_TYPES
+#define SCAI_ALL_TYPES IndexType, SCAI_ARITHMETIC_TYPES
 
 /*
  * Lists of all used arithmetic types for which matrices, storages might be created

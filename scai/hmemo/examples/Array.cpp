@@ -55,7 +55,7 @@ void sumArray( const HArray<T>& array )
     const T* data = readAccess.get();
     T sum = 0;
 
-    for ( MemorySizeType i = 0; i < array.size(); ++i )
+    for ( IndexType i = 0; i < array.size(); ++i )
     {
         sum += data[i];
     }

@@ -39,7 +39,6 @@
 #include <scai/tasking/ThreadPool.hpp>
 #include <scai/tasking/Task.hpp>
 #include <scai/common/bind.hpp>
-#include <scai/common/SCAITypes.hpp>
 
 using namespace scai::hmemo;
 using namespace scai::tasking;
@@ -61,7 +60,7 @@ void readJob( HArray<double>& X )
 
     for ( int k = 0; k < 100; ++k )
     {
-        for ( MemorySizeType i = 1; i < X.size(); ++i )
+        for ( IndexType i = 1; i < X.size(); ++i )
         {
             double v = data[i];
 
@@ -86,7 +85,7 @@ void writeJob( HArray<double>& X )
     double* data = write.get();
     SCAI_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << data[0] )
 
-    for ( MemorySizeType i = 0; i < write.size(); ++i )
+    for ( IndexType i = 0; i < write.size(); ++i )
     {
         data[i] = data[i] + 1.0;
     }

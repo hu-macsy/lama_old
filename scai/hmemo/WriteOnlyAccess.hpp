@@ -43,7 +43,6 @@
 // logging
 #include <scai/logging.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -97,7 +96,7 @@ public:
      *
      * Attention: this kind of write access assumes that the array is completely new written.
      */
-    WriteOnlyAccess( HArray<ValueType>& array, ContextPtr context, const MemorySizeType size )
+    WriteOnlyAccess( HArray<ValueType>& array, ContextPtr context, const IndexType size )
         : WriteAccess<ValueType>( array, context, false )
     {
         this->resize( 0 );      // invalidates all data before resize
@@ -105,7 +104,7 @@ public:
         SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
-    WriteOnlyAccess( HArray<ValueType>& array, const MemorySizeType size )
+    WriteOnlyAccess( HArray<ValueType>& array, const IndexType size )
         : WriteAccess<ValueType>( array, false )
     {
         this->resize( 0 );      // invalidates all data before resize

@@ -590,6 +590,9 @@ public:
      *                                                                                    *
      *************************************************************************************/
 
+     // Sum of size_t values needed for large quantities like memory usage
+     virtual size_t sum( const size_t value ) const = 0;
+
     // Broadcast of characters needed for strings
 
     virtual void bcast( char val[], const IndexType n, const PartitionId root ) const = 0;

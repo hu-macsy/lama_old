@@ -51,7 +51,6 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/SCAITypes.hpp>
 
 // std
 #include <vector>
@@ -93,8 +92,8 @@ class COMMON_DLL_IMPORTEXPORT _HArray:
 protected:
 
     // use of 64bit unsigned datatype instead of IndexType (32bit signed)
-    MemorySizeType mSize;        //!< number of entries for the context array, common for all contexts
-    MemorySizeType mValueSize;   //!< number of bytes needed for one data element
+    size_t mSize;        //!< number of entries for the context array, common for all contexts
+    size_t mValueSize;   //!< number of bytes needed for one data element
 
     bool constFlag;         //!< if true the array cannot be written
 
@@ -130,7 +129,7 @@ public:
      *
      * @return the number of entries of the array.
      */
-    inline MemorySizeType size() const;
+    inline IndexType size() const;
 
     /**
      * @brief Gets the first context where the data of this HArray is available.
@@ -180,7 +179,7 @@ public:
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
      */
-    MemorySizeType capacity( ContextPtr context ) const;
+    IndexType capacity( ContextPtr context ) const;
 
     /**
      * @brief Query if data is valid in a certain context
@@ -193,7 +192,7 @@ public:
      * Changes the size of the array. No memory is freed if the size becomes smaller.
      * Reserves additional memory on all valid locations.
      */
-    void resize( MemorySizeType size );
+    void resize( IndexType size );
 
     /**
      * @brief clear of an array is the same as resize 0
@@ -211,7 +210,7 @@ public:
 
 protected:
 
-    explicit _HArray( const IndexType n, const MemorySizeType size ) :
+    explicit _HArray( const IndexType n, const IndexType size ) :
 
         mSize( n ),
         mValueSize( size ),
@@ -258,7 +257,7 @@ public:
      *  @param[in] index is the reference to the context data as the result of an acquired access.
      */
 
-    MemorySizeType capacity( ContextDataIndex index ) const;
+    IndexType capacity( ContextDataIndex index ) const;
 
     /** Query the memory for a certain access. */
 
@@ -271,7 +270,7 @@ typedef _HArray _HArray;
 
 /* ---------------------------------------------------------------------------------*/
 
-inline MemorySizeType _HArray::size() const
+inline IndexType _HArray::size() const
 {
     return mSize;
 }
@@ -292,15 +291,17 @@ inline bool _HArray::isValid( ContextPtr context ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void _HArray::resize( MemorySizeType size )
+inline void _HArray::resize( IndexType size )
 {
+    size_t newSize = size;
+
     // resize on all valid locations
 
-    if ( size  > mSize )
+    if ( newSize  > mSize )
     {
-        mContextDataManager.resize( size * mValueSize, mSize * mValueSize );
+        mContextDataManager.resize( newSize * mValueSize, mSize * mValueSize );
     }
-    mSize = size;
+    mSize = newSize;
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -313,7 +314,7 @@ inline void _HArray::clear()
 
 /* ---------------------------------------------------------------------------------*/
 
-inline MemorySizeType _HArray::capacity( ContextPtr context ) const
+inline IndexType _HArray::capacity( ContextPtr context ) const
 {
     // will return 0 if no data is available at the specified context
     return mContextDataManager.capacity( context ) / mValueSize;
@@ -321,7 +322,7 @@ inline MemorySizeType _HArray::capacity( ContextPtr context ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline MemorySizeType _HArray::capacity( ContextDataIndex index ) const
+inline IndexType _HArray::capacity( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
     return static_cast<IndexType>( entry.capacity() / mValueSize );
@@ -352,8 +353,8 @@ inline ContextPtr _HArray::getFirstTouchContextPtr() const
 
 inline ContextDataIndex _HArray::acquireReadAccess( ContextPtr context ) const
 {
-    MemorySizeType allocSize = mSize * mValueSize;
-    MemorySizeType validSize = allocSize;                   // read access needs valid data in any case
+    size_t allocSize = mSize * mValueSize;
+    size_t validSize = allocSize;                   // read access needs valid data in any case
     return mContextDataManager.acquireAccess( context, common::context::Read, allocSize, validSize );
 }
 
@@ -368,8 +369,8 @@ inline void _HArray::releaseReadAccess( ContextDataIndex index ) const
 
 inline ContextDataIndex _HArray::acquireWriteAccess( ContextPtr context, bool keepFlag )
 {
-    MemorySizeType allocSize = mSize * mValueSize;
-    MemorySizeType validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
+    size_t allocSize = mSize * mValueSize;
+    size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
     return mContextDataManager.acquireAccess( context, common::context::Write, allocSize, validSize );
 }
 

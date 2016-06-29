@@ -46,7 +46,6 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
-#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -146,7 +145,7 @@ public:
      *
      * @return  the size of the wrapped HArray
      */
-    MemorySizeType size() const;
+    IndexType size() const;
 
 protected:
 
@@ -244,7 +243,7 @@ void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-MemorySizeType ReadAccess<ValueType>::size() const
+IndexType ReadAccess<ValueType>::size() const
 {
     if ( mArray )
     {

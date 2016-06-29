@@ -230,6 +230,13 @@ public:
         static_cast<const Derived*>( this )->bcastImpl( val, n, root );
     }
 
+    /** Additional methods */
+
+    virtual size_t sum( const size_t value ) const
+    {
+        return static_cast<const Derived*>( this )->sumImpl( value );
+    }
+
 protected:
 
     // Default constructor can only be called by derived classes.

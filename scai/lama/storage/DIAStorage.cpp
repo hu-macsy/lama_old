@@ -269,7 +269,7 @@ template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
-    MemorySizeType numDiagonalElements = static_cast<MemorySizeType>(std::min( mNumColumns, mNumRows ));
+    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
     numDiagonalElements = std::min( numDiagonalElements, diagonal.size() );
     static LAMAKernel<UtilKernelTrait::set<ValueType, OtherType> > set;
     ContextPtr loc = this->getContextPtr();

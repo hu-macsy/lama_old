@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
     {
         ReadAccess<double> read( arr1, hostPtr );
 
-        for ( MemorySizeType i = 0; i < arr1.size(); ++i )
+        for ( IndexType i = 0; i < arr1.size(); ++i )
         {
             BOOST_CHECK_EQUAL( 2, read[i] );
         }
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
     {
         ReadAccess<double> read( arr2, hostPtr );
 
-        for ( MemorySizeType i = 0; i < arr2.size(); ++i )
+        for ( IndexType i = 0; i < arr2.size(); ++i )
         {
             BOOST_CHECK_EQUAL( 1, read[i] );
         }
