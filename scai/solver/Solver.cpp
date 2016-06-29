@@ -160,7 +160,10 @@ const Vector& Solver::getResidual() const
 
         if ( !runtime.mResidual.get() )
         {
-            runtime.mResidual.reset( Vector::create( runtime.mRhs->getCreateValue() ) );
+            // VERY IMPORTANT: newVector makes sure that residual has same context
+            //                 otherwise: many unnecessary data movements !!! 
+
+            runtime.mResidual.reset( runtime.mRhs->newVector() );
         }
 
         //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");
