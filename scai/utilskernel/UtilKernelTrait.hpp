@@ -160,6 +160,18 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
+    struct setSequence
+    {
+        /** Set all elements of a contiguous array with its order number 0, 1, 2, ... */
+
+        typedef void ( *FuncType ) ( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
+        static const char* getId()
+        {
+            return "Util.setSequence";
+        }
+    };
+
+    template<typename ValueType>
     struct getValue
     {
         typedef ValueType ( *FuncType ) ( const ValueType* array, const IndexType i );

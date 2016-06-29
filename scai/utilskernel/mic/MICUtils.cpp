@@ -332,6 +332,27 @@ void MICUtils::setOrder( ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MICUtils::setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger, "setSequence<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = " << startValue
+                            << "..., " << ( startValue + (n-1) * inc ) )
+    
+    void* arrayPtr = array;
+    int device = MICContext::getCurrentDevice();
+#pragma offload target( mic : device), in ( arrayPtr, n )
+    {
+        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        #pragma omp parallel for
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            array[i] = static_cast<ValueType>( startValue + i * inc );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType MICUtils::getValue( const ValueType* array, const IndexType i )
 {
     SCAI_LOG_DEBUG( logger, "getValue<" << common::getScalarType<ValueType>() << ">: i = " << i )
@@ -767,6 +788,7 @@ void MICUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );

@@ -320,14 +320,26 @@ public:
 
     /** Initialize an array with the sequence 0, .., n-1
      *
-     *  @param[out] array will contain the values 0, ..., n-1
-     *  @param[in]  n     becomes size of the array
+     *  @param[out] array   will contain the values 0, ..., n-1
+     *  @param[in]  n       becomes size of the array
      *  @param[in]  prefLoc optional the context where allocation/initialization should be done
      */
 
     static void setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Sete an array with random values.
+    /** Initilize an array with a sequence of values starting with startValue, incrementing by inc
+     *
+     *  @param[out] array       will contain the values startValue, ..., startValue + (n-1)*inc
+     *  @param[in]  startValue  startValue of the sequence
+     *  @param[in]  inc         increment of the sequence
+     *  @param[in]  n           becomes size of the array
+     *  @param[in]  prefLoc     optional the context where allocation/initialization should be done
+     */
+
+    template<typename ValueType>
+    static void setSequence( hmemo::HArray<ValueType>& array, ValueType startValue, ValueType inc, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Set an array with random values.
      *
      *  @param[out] array    will contain random values of its type
      *  @param[in]  n        number of values, becomes size of array

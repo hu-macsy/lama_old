@@ -171,6 +171,34 @@ public:
         }
     }
 
+    /** @brief Construcor with context and size and initial startValue and increment.
+     *
+     *  @param n is the size of the array
+     *  @param startValue is the initial value
+     *  @param inc is the increment for the sequence of values
+     *  @param context is location where initialization is done, if not specified its the host
+     */
+
+    explicit LArray( const IndexType n,
+                     const ValueType startValue,
+                     const ValueType inc,
+                     hmemo::ContextPtr context = hmemo::ContextPtr() )
+    {
+        // SCAI_ASSERT( context.get(), "NULL context" )
+        this->resize( n );  // size of the array must be known before a value can be assigned
+
+        // context == NULL might happen by DenseVector
+
+        if ( context.get() )
+        {
+            HArrayUtils::setSequence( *this, startValue, inc, n, context );
+        }
+        else
+        {
+            HArrayUtils::setSequence( *this, startValue, inc, n, hmemo::Context::getHostPtr() );
+        }
+    }
+
     /** @brief Construcor with size and initial values
      *
      *  @param n is the size of the array

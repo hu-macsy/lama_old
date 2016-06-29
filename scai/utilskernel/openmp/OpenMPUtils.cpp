@@ -389,6 +389,22 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPUtils::setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.setSequence" )
+    SCAI_LOG_DEBUG( logger, "setSequence<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = " << startValue
+                            << "..., " << ( startValue + (n-1) * inc ) )
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        array[i] = static_cast<ValueType>( startValue + i * inc );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 {
     SCAI_LOG_DEBUG( logger, "getValue<" << TypeTraits<ValueType>::id() << ">: i = " << i )
@@ -864,6 +880,7 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );

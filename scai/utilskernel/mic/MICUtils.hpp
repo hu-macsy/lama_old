@@ -87,6 +87,11 @@ public:
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
 
+    /** MIC implementation for UtilKernelTrait::Setter::setSequence */
+
+    template<typename ValueType>
+    static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
+
     /** MIC implementation for UtilKernelTrait::getValue */
 
     template<typename ValueType>

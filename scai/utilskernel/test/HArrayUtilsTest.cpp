@@ -355,6 +355,25 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( setSequenceTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+    const IndexType n = 10;
+    const ValueType start = 5;
+    const ValueType inc = 10;
+    LArray<ValueType> array;
+    HArrayUtils::setSequence( array, start, inc, n, loc );
+    BOOST_CHECK_EQUAL( array.size(), n );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        ValueType elem = array[i];
+        BOOST_CHECK_EQUAL( start + i * inc, elem );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr loc = Context::getContextPtr();

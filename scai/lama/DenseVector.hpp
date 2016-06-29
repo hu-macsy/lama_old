@@ -123,6 +123,28 @@ public:
      */
     DenseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
+    /**
+     * @brief creates a replicated DenseVector of the passed size initilized a sequence of values
+     *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
+     * 
+     * @param[in] size       the size of the new DenseVector.
+     * @param[in] startValue the first value of the new DenseVector
+     * @param[in] inc        the increment for the sequence of values 
+     * @param[in] context    specifies optionally the context where dense vector should reside
+     */
+    DenseVector( const IndexType size, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
+
+    /**
+     * @brief creates a distributed DenseVector of the passed size initilized a sequence of values
+     *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
+     * 
+     * @param[in] distribution  the distribution to use for the new vector.
+     * @param[in] startValue the first value of the new DenseVector
+     * @param[in] inc        the increment for the sequence of values 
+     * @param[in] context    specifies optionally the context where dense vector should reside
+     */
+    DenseVector( dmemo::DistributionPtr distribution, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
+
     /** Constructor of a replicated vector by replicated C++ array. */
 
     /**

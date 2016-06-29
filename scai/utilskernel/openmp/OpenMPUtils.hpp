@@ -91,6 +91,11 @@ public:
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::Setter::setSequence */
+
+    template<typename ValueType>
+    static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
+
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
 

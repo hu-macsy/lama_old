@@ -127,7 +127,22 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
     : Vector( distribution, context ), mLocalValues( distribution->getLocalSize(), value )
 {
     SCAI_LOG_INFO( logger,
-                   "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", init = " << value )
+                   "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", value = " << value )
+}
+
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType startValue, const ValueType inc, ContextPtr context )
+    : Vector( size, context ), mLocalValues( size, startValue, inc, context )
+{
+    SCAI_LOG_INFO( logger, "Construct dense vector, size = " << size << ", startValue =" << startValue << ", inc=" << inc )
+}
+
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType startValue, const ValueType inc, ContextPtr context )
+    : Vector( distribution, context ), mLocalValues( distribution->getLocalSize(), startValue, inc )
+{
+    SCAI_LOG_INFO( logger,
+                   "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", startValue = " << startValue << ", inc=" << inc)
 }
 
 template<typename ValueType>
