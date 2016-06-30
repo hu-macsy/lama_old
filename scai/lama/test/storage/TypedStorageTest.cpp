@@ -925,6 +925,128 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( setDIADataTest )
+{
+    using namespace hmemo;
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+    ContextPtr context = Context::getContextPtr();
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        IndexType numRows = 7; // ^= elements per diagonal
+        IndexType numColumns = 4;
+        IndexType numDiagonals = 8;
+        IndexType totalNumValues = 56;
+        IndexType nonzeroValues = 13; // 12 + 1 explicit '0' on the diagonal
+
+        const ValueType denseValues[] = { 6.0, 0.0, 0.0, 4.0,
+                                          7.0, 0.0, 0.0, 0.0,
+                                          0.0, 0.0, 9.0, 4.0,
+                                          2.0, 5.0, 0.0, 3.0,
+                                          2.0, 0.0, 0.0, 1.0,
+                                          0.0, 0.0, 0.0, 0.0,
+                                          0.0, 1.0, 0.0, 2.0,
+                                        };
+
+        HArray<ValueType> denseArray( context );
+        denseArray.init( denseValues, numRows * numColumns );
+
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        if ( storage.getFormat() != Format::CSR )
+        {
+            continue;
+        }
+
+        common::unique_ptr<MatrixStorage<ValueType> > storageDense( storage.copy() );
+        storageDense->setDenseData( numRows, numColumns, denseArray );
+        SCAI_LOG_DEBUG( logger, "setDIAData for " << storage )
+        storage.clear();
+
+        // with diagonal lement shifting
+        const IndexType offsets[] = { 0, -5, -4, -3, -2, -1, 1, 3 };
+        const ValueType values[] = { 6.0, 0.0, 9.0, 3.0, 0.0, 0.0, 0.0,
+                                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+                                     0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0,
+                                     0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 2.0,
+                                     0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0,
+                                     0.0, 7.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+                                     0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0,
+                                     4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                                   };
+        const IndexType n = sizeof( values ) / sizeof( ValueType );
+        BOOST_CHECK_EQUAL( n, totalNumValues );
+
+        HArray<ValueType> valuesArray( context );
+        valuesArray.init( values, n );
+        HArray<IndexType> offsetsArray( context );
+        offsetsArray.init( offsets, numDiagonals );
+
+        storage.setDIAData( numRows, numColumns, numDiagonals, offsetsArray, valuesArray );
+        SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
+                       << ", nnz = " << nonzeroValues << ") : matrix = " << storage )
+
+        BOOST_CHECK_EQUAL ( nonzeroValues, storage.getNumValues() );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                std::cout << i << ":" << j << " = " << denseValues[i * numColumns + j] << std::endl;
+                BOOST_CHECK_EQUAL( storage.getValue(i,j), storageDense->getValue(i,j) );                
+            }
+        }
+
+        //BOOST_CHECK_EQUAL( 0, storageDense->maxDiffNorm( storage ) );
+
+
+        // // without diagonal lement shifting
+        // MatrixStorage<ValueType>& storage2 = *allMatrixStorages[s];
+        // storage2.clear();
+
+        // const IndexType offsets2[] = { -5, -4, -3, -2, -1, 0, 1, 3 };
+        // const ValueType values2[] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        //                              0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0,
+        //                              0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 2.0,
+        //                              0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0,
+        //                              0.0, 7.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+        //                              6.0, 0.0, 9.0, 3.0, 0.0, 0.0, 0.0,
+        //                              0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0,
+        //                              4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        //                            };
+        // const IndexType n2 = sizeof( values2 ) / sizeof( ValueType );
+        // BOOST_CHECK_EQUAL( n2, totalNumValues );
+
+        // HArray<ValueType> valuesArray2( context );
+        // valuesArray2.init( values2, n2 );
+        // HArray<IndexType> offsetsArray2( context );
+        // offsetsArray2.init( offsets2, numDiagonals );
+
+        // storage.setDIAData( numRows, numColumns, numDiagonals, offsetsArray2, valuesArray2 );
+        // SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
+        //                << ", nnz = " << nonzeroValues << ") : matrix = " << storage2 )
+
+        // BOOST_CHECK_EQUAL ( nonzeroValues, storage2.getNumValues() );
+        // BOOST_CHECK_EQUAL( 0, storageDense->maxDiffNorm( storage2 ) );
+
+        // BOOST_CHECK_EQUAL( 0, storage.maxDiffNorm( storage2 ) );
+
+        // now we make some checks with incorrect DIA data
+        /* not yet
+
+        BOOST_CHECK_THROW(
+        {
+            storage.setDIAData( numRows, numColumns, numDiagonals, offsets, values );
+        },
+        common::Exception );
+
+        */
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( buildCSRDataTest )
 {
     using namespace hmemo;

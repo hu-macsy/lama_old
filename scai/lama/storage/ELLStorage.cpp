@@ -460,6 +460,21 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+template<typename OtherValueType>
+void ELLStorage<ValueType>::setDIADataImpl(
+    const IndexType /*numRows*/,
+    const IndexType /*numColumns*/,
+    const IndexType /*numDiagonals*/,
+    const HArray<IndexType>& /*offsets*/,
+    const HArray<OtherValueType>& /*values*/,
+    const ContextPtr /*prefLoc*/ )
+{
+    COMMON_THROWEXCEPTION( "not yet implemeted" )
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
 void ELLStorage<ValueType>::setELLData(
     const IndexType numRows,
     const IndexType numColumns,

@@ -396,6 +396,22 @@ public:
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::_HArray& csrValues ) = 0;
 
+    /** Each storage class must provide a routine to set DIA storage data.
+     *
+     *  @param[in] numRows number of rows
+     *  @param[in] numColumns number of columns
+     *  @param[in] numDiagonals number of stored diagonals
+     *  @param[in] offsets offsets of the stored diagonals to the main diagonal
+     *  @param[in] values contains the matrix values for each diagonal
+     */
+
+    virtual void setDIAData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::_HArray& values ) = 0;
+
     /** Assign of matrix storage with any format or value type.
      *
      *  Format conversion and type conversion is done implicitly.
@@ -652,6 +668,24 @@ public:
         const IndexType numValues,
         const IndexType* const ia,
         const IndexType* const ja,
+        const OtherValueType* const values );
+
+    /**
+     * @brief fills matrix storage by dia sparse data.
+     *
+     * @param[in] numRows      number of rows
+     * @param[in] numColumns   number of columns
+     * @param[in] numDiagonals the number of stored diagonals
+     * @param[in] offsets      raw pointer of the offset array
+     * @param[in] values       raw pointer of the data array
+     */
+
+    template<typename OtherValueType>
+    void setRawDIAData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const IndexType* const offsets,
         const OtherValueType* const values );
 
     /** Join local and halo storage back into one storage as needed for NoDistribution.
@@ -1148,6 +1182,26 @@ void MatrixStorage<ValueType>::setRawCSRData(
     // now set the data on the context of this storage via virtual method
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void MatrixStorage<ValueType>::setRawDIAData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType* const offsets,
+    const OtherValueType* const values )
+{
+    // wrap the pointer data into LAMA arrays ( without copies )
+    hmemo::HArrayRef<IndexType> diaOffsets( numDiagonals, offsets );
+    hmemo::HArrayRef<OtherValueType> diaValues( numRows * numDiagonals, values );
+    // now set the data on the context of this storage via virtual method
+    setDIAData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
+}
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixStorageCreateKeyType key )

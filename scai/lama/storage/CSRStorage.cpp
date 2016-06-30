@@ -38,7 +38,7 @@
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-
+#include <scai/sparsekernel/DIAKernelTrait.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
@@ -77,6 +77,7 @@ using common::shared_ptr;
 using common::TypeTraits;
 
 using sparsekernel::CSRKernelTrait;
+using sparsekernel::DIAKernelTrait;
 using sparsekernel::OpenMPCSRUtils;
 
 using tasking::SyncToken;
@@ -325,6 +326,56 @@ void CSRStorage<ValueType>::setCSRDataImpl(
      */
     mDiagonalProperty = checkDiagonalProperty();
     buildRowIndexes();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void CSRStorage<ValueType>::setDIADataImpl(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const HArray<IndexType>& offsets,
+    const HArray<OtherValueType>& values,
+    const ContextPtr /* loc */ )
+{
+    SCAI_ASSERT_EQUAL_ERROR( numDiagonals, offsets.size() );
+    SCAI_ASSERT_EQUAL_ERROR( numRows * numDiagonals, values.size() );
+
+    mNumRows = numRows;
+    mNumColumns = numColumns;
+
+    // TODO: check
+    mDiagonalProperty = true;
+
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
+    static LAMAKernel<DIAKernelTrait::getCSRSizes<OtherValueType> > getCSRSizes;
+    static LAMAKernel<DIAKernelTrait::getCSRValues<OtherValueType, ValueType> > getCSRValues;
+
+    // do it where all routines are avaialble
+    ContextPtr loc = this->getContextPtr();
+    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
+    SCAI_LOG_INFO( logger,
+                   "buildTypedCSRData<" << common::getScalarType<OtherValueType>() << ">"
+                   << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
+
+    WriteOnlyAccess<IndexType> csrIA( mIa, loc, mNumRows + 1 );
+    ReadAccess<IndexType> diaOffsets( offsets, loc );
+    ReadAccess<OtherValueType> diaValues( values, loc );
+
+    // In contrary to COO and CSR, the DIA format stores also some ZERO values like Dense
+    ValueType eps = static_cast<ValueType>( 0.0 );
+    getCSRSizes[loc]( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, numDiagonals, diaOffsets.get(),
+                      diaValues.get(), eps );
+
+    mNumValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
+    SCAI_LOG_INFO( logger, "CSR: #non-zero values = " << mNumValues )
+
+    WriteOnlyAccess<IndexType> csrJA( mJa, loc, mNumValues );
+    WriteOnlyAccess<ValueType> csrValues( mValues, loc, mNumValues );
+    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
+                       numDiagonals, diaOffsets.get(), diaValues.get(), eps );
 }
 
 /* --------------------------------------------------------------------------- */

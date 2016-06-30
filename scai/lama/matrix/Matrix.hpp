@@ -265,6 +265,26 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::_HArray& values ) = 0;
 
+    /** This method set a matrix with the values owned by this partition in DIA format
+     *
+     *  @param[in] rowDist distributon of rows for the matrix
+     *  @param[in] colDist distributon of columns for the matrix
+     *  @param[in] numDiagonals number of stored diagonals
+     *  @param[in] offsets offsets of the stored diagonals to the main diagonal
+     *  @param[in] values contains the matrix values for each diagonal
+     *
+     *  Note: only the row distribution decides which data is owned by this processor
+     *
+     *  - numDiagonals == offset.size() must be valid, stands for the number stored diagonals
+     */
+
+    virtual void setDIAData(
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::_HArray& values ) = 0;
+
     /** This method sets raw dense data in the same way as setDenseData but with raw value array */
 
     template<typename ValueType>
@@ -298,6 +318,24 @@ public:
         const hmemo::HArrayRef<IndexType> jaArray( numValues, ja );
         const hmemo::HArrayRef<ValueType> valueArray( numValues, values );
         setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
+    }
+
+    /** This method sets raw DIA data in the same way as setDIAData but with raw value array */
+
+    template<typename ValueType>
+    void setRawDIAData(
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
+        const IndexType numDiagonals,
+        const IndexType* offsets,
+        const ValueType* values )
+    {
+        const IndexType numRows    = rowDist->getLocalSize();
+        const IndexType numColumns = colDist->getLocalSize();
+        // use of HArrayRef instead of HArray avoids additional copying of values
+        const hmemo::HArrayRef<IndexType> offsetArray( numDiagonals, offsets );
+        const hmemo::HArrayRef<ValueType> valueArray( numColumns * numDiagonals, values );
+        setDIAData( rowDist, colDist, numDiagonals, offsetArray, valueArray );
     }
 
     /** Setting raw dense data for a replicated matrix, only for convenience. */

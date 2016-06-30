@@ -830,6 +830,19 @@ void COOStorage<ValueType>::setCSRDataImpl(
 }
 
 template<typename ValueType>
+template<typename OtherValueType>
+void COOStorage<ValueType>::setDIADataImpl(
+    const IndexType /*numRows*/,
+    const IndexType /*numColumns*/,
+    const IndexType /*numDiagonals*/,
+    const HArray<IndexType>& /*offsets*/,
+    const HArray<OtherValueType>& /*values*/,
+    const ContextPtr /*prefLoc*/ )
+{
+    COMMON_THROWEXCEPTION( "not yet implemeted" )
+}
+
+template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherType>& diagonal )
 {

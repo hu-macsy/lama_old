@@ -202,6 +202,15 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::_HArray& values );
 
+    /** Implementation for pure method Matrix::setDIAData. */
+
+    virtual void setDIAData(
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::_HArray& values );
+
     /* Implementation of pure method of class Matrix. */
 
     virtual void clear();

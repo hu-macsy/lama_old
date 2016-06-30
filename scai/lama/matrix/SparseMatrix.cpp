@@ -2009,7 +2009,36 @@ void SparseMatrix<ValueType>::setCSRData(
         mHalo.clear();
     }
 
-    SCAI_LOG_INFO( logger, *this << ": filled by (local) dense data" )
+    SCAI_LOG_INFO( logger, *this << ": filled by (local) csr data" )
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::setDIAData(
+    dmemo::DistributionPtr rowDist,
+    dmemo::DistributionPtr colDist,
+    const IndexType numDiagonals,
+    const hmemo::HArray<IndexType>& offsets,
+    const hmemo::_HArray& values )
+{
+    Matrix::setDistributedMatrix( rowDist, colDist );
+    IndexType localNumRows = rowDist->getLocalSize();
+    IndexType globalNumCols = colDist->getGlobalSize();
+    mLocalData->setDIAData( localNumRows, globalNumCols, numDiagonals, offsets, values );
+
+    if ( !colDist->isReplicated() )
+    {
+        // localize the data according to row distribution, use splitHalo with replicated columns
+        mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
+    }
+    else
+    {
+        mHaloData->allocate( localNumRows, 0 );
+        mHalo.clear();
+    }
+
+    SCAI_LOG_INFO( logger, *this << ": filled by (local) dia data" )
 }
 
 /* ------------------------------------------------------------------------- */
