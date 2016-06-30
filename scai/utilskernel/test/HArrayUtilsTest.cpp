@@ -46,6 +46,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Constants.hpp>
 
 #include <typeinfo>
 
@@ -181,8 +182,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
-    const IndexType n = 5;
-    const ValueType values[] = { 1, 3, 5, 7, 4 };
+    const ValueType values[] = { 1.0, 1.1, 1.3, 1.0 };
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
     HArrayUtils::exp( array, ctx );

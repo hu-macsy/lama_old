@@ -38,7 +38,6 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/StorageIO.hpp>
-#include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
@@ -595,6 +594,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MinMaxTest, ValueType, scai_arithmetic_test_types
     Scalar t = resVector.max();
     BOOST_CHECK_EQUAL( s.getValue<ValueType>(), -2.0 );
     BOOST_CHECK_EQUAL( t.getValue<ValueType>(), 9.0 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    ValueType values[] = { 1.0, 1.1, 1.3, 1.0 };
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
+    DenseVector<ValueType> vector( n, values );
+    vector.setContextPtr( ctx );
+    vector.exp();
+
+    {
+        ReadAccess<ValueType> read( vector.getLocalValues(), host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            BOOST_CHECK_EQUAL( read[i], common::Math::exp(values[i]) );
+        }
+    }
 }
 
 /* --------------------------------------------------------------------- */
