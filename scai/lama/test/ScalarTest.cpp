@@ -142,10 +142,14 @@ BOOST_AUTO_TEST_CASE( EqualityTest )
     BOOST_CHECK( s != u );
     BOOST_CHECK( s < u );
     BOOST_CHECK( u > s );
-//    BOOST_CHECK( s <= t );
-//    BOOST_CHECK( s <= u );
-//    BOOST_CHECK( u >= s );
-//    BOOST_CHECK( u >= t );
+
+    // negative values
+    Scalar n ( -2.0 );
+    BOOST_CHECK( n < s );
+    BOOST_CHECK( n != s );
+    BOOST_CHECK( s > n );
+    BOOST_CHECK( !( n > s ) );
+    BOOST_CHECK( !( s < n ) );
 }
 
 /* --------------------------------------------------------------------- */
