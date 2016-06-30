@@ -177,6 +177,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_arithmetic_test_typ
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    const IndexType n = 5;
+    const ValueType values[] = { 1, 3, 5, 7, 4 };
+    HArray<ValueType> array( ctx );
+    array.init( values, n );
+    HArrayUtils::exp( array, ctx );
+    {
+        ReadAccess<ValueType> read( array, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            BOOST_CHECK_EQUAL( read[i], common::Math::exp(values[i]) );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_arithmetic_test_types )
 {
     ValueType sourceVals[] = { 3, 1, 4, 2 };

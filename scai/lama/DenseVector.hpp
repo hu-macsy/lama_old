@@ -363,6 +363,8 @@ public:
 
     virtual void conj();
 
+    virtual void exp();
+
     virtual void swap( Vector& other );
 
     virtual void writeAt( std::ostream& stream ) const;

@@ -215,6 +215,12 @@ public:
     template<typename ValueType>
     static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+
+    /** Calculates the exponentional function of the vector elements in place. */
+
+    template<typename ValueType>
+    static void exp( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /*
      * Implementation of functions
      */

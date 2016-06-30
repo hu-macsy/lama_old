@@ -63,6 +63,11 @@ public:
     template<typename ValueType>
     static void conj( ValueType mValues[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::exp */
+
+    template<typename ValueType>
+    static void exp( ValueType mValues[], const IndexType n );
+
     /** OpenMP implementation for UtilKernelTrait::setScale */
 
     template<typename ValueType, typename OtherValueType>

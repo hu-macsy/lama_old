@@ -314,6 +314,24 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
+    struct exp
+    {
+        /** @brief Calculates the exponentional function of the elements
+         *
+         *  @param[in,out]  values is the array with entries to exp
+         *  @param[in]      n      is the number of entries in values
+         */
+        typedef void ( *FuncType ) (
+            ValueType values[],
+            const IndexType n );
+
+        static const char* getId()
+        {
+            return "Util.exp";
+        }
+    };
+
+    template<typename ValueType>
     struct scan
     {
         /** This method computes runnings sums of values

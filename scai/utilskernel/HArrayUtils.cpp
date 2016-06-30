@@ -411,6 +411,25 @@ void HArrayUtils::conj( HArray<ValueType>& array, ContextPtr prefLoc )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void HArrayUtils::exp( HArray<ValueType>& array, ContextPtr prefLoc )
+{
+    IndexType n = array.size();
+
+    if ( n > 0 )
+    {
+        static LAMAKernel<UtilKernelTrait::exp<ValueType> > exp;
+        // preferred location: where valid values of the array are available
+        ContextPtr loc = array.getValidContext( prefLoc);
+        exp.getSupportedContext( loc );
+        SCAI_CONTEXT_ACCESS( loc )
+        WriteAccess<ValueType> values( array, loc );
+        exp[loc]( values.get(), n );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType HArrayUtils::reduce(
     const HArray<ValueType>& array,
     const reduction::ReductionOp redOp,
@@ -902,6 +921,7 @@ void HArrayUtils::buildDenseArray(
             const hmemo::HArray<ValueType>&, hmemo::ContextPtr);                      \
     template void HArrayUtils::scale<ValueType>( hmemo::HArray<ValueType>&, const ValueType, hmemo::ContextPtr );                 \
     template void HArrayUtils::conj<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr);                                    \
+    template void HArrayUtils::exp<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr);                                    \
     template ValueType HArrayUtils::reduce<ValueType>( const hmemo::HArray<ValueType>&,                                           \
             const reduction::ReductionOp, hmemo::ContextPtr );                 \
     template ValueType HArrayUtils::absMaxDiffVal<ValueType>( const hmemo::HArray<ValueType>&,                                    \

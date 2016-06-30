@@ -538,6 +538,11 @@ public:
      */
     virtual void conj() = 0;
 
+    /**
+     *  Calculates the exponentional function of the vector elements in place.
+     */
+    virtual void exp() = 0;
+
 protected:
 
     /**

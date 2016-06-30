@@ -438,6 +438,15 @@ void DenseVector<ValueType>::conj()
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseVector<ValueType>::exp()
+{
+    HArrayUtils::exp( mLocalValues, mContext );
+}
+
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 Scalar DenseVector<ValueType>::l1Norm() const
 {
     ValueType localL1Norm = mLocalValues.l1Norm();

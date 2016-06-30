@@ -129,6 +129,25 @@ struct Math
 #endif
 
     /*
+     * Computes the exponential function of a given value
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int exp( const int& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float exp( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double exp( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double exp( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> exp( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> exp( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> exp( const Complex<long double>& x );
+#endif
+
+    /*
      * Getter for the real part
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const float& x );
@@ -312,6 +331,28 @@ double Math::conj( const double& x )
 long double Math::conj( const long double& x )
 {
     return x;
+}
+
+// -------------------------------- exp -----------------------------
+
+int Math::exp( const int& x )
+{
+    return static_cast<int> ( ::expf( static_cast<float>( x ) ) );
+}
+
+float Math::exp( const float& x )
+{
+    return ::expf(x);
+}
+
+double Math::exp( const double& x )
+{
+    return ::exp(x);
+}
+
+long double Math::exp( const long double& x )
+{
+    return ::expl(x);
 }
 
 // -------------------------------- real -----------------------------
