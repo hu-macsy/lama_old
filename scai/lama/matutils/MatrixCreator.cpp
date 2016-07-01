@@ -298,14 +298,14 @@ void MatrixCreator<ValueType>::buildPoisson(
     }
     else if ( dimension == 2 )
     {
-        comm->factorize2( dimX, dimY, gridSize );
+        comm->factorize2( static_cast<double>( dimX ), static_cast<double>( dimY ), gridSize );
         comm->getGrid2Rank( gridRank, gridSize );
         dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
         dmemo::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
     }
     else if ( dimension == 3 )
     {
-        comm->factorize3( dimX, dimY, dimZ, gridSize );
+        comm->factorize3( static_cast<double>( dimX ), static_cast<double>( dimY ), static_cast<double>( dimZ ), gridSize );
         comm->getGrid3Rank( gridRank, gridSize );
         dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
         dmemo::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );

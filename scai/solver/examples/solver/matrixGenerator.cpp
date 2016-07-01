@@ -45,6 +45,7 @@
 #include <scai/common/mepr/TypeListUtils.hpp>
 
 #include <iostream>
+#include <sstream>
 
 using namespace scai;
 using namespace scai::lama;
@@ -92,18 +93,36 @@ int main( int argc, char* argv[] )
     if ( argc >= 5 )
     {
         matrixFileName = argv[1];
-        sscanf( argv[2], "%d", &dimension );
-        sscanf( argv[3], "%d", &stencilType );
-        sscanf( argv[4], "%d", &dimX );
+        {
+	    std::stringstream ss;
+            ss << argv[2];
+            ss >> dimension;
+	}
+
+	{
+	    std::stringstream ss;
+            ss << argv[3];
+            ss >> stencilType;
+	}
+
+	{
+	    std::stringstream ss;
+            ss << argv[4];
+            ss >> dimX;
+	}
 
         if ( argc >= 6 )
         {
-            sscanf( argv[5], "%d", &dimY );
+	    std::stringstream ss;
+            ss << argv[5];
+	    ss >> dimY;
         }
 
         if ( argc >= 7 )
         {
-            sscanf( argv[6], "%d", &dimZ );
+	    std::stringstream ss;
+	    ss << argv[6];
+	    ss >> dimZ;
         }
     }
     else

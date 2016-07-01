@@ -99,7 +99,7 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
     ContextPtr prefLoc = this->getContextPtr();
     mIlg.clear();
     mIlg.resize( mNumRows );
-    HArrayUtils::setScalar( mIlg, 0, utilskernel::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( mIlg, IndexType( 0 ), utilskernel::reduction::COPY, prefLoc );
     HArrayUtils::setOrder( mPerm, mNumRows, prefLoc );
 }
 
@@ -526,7 +526,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     HArrayUtils::setScalar( mDlg, mNumRows, utilskernel::reduction::COPY, prefLoc );
     mIlg.clear();
     mIlg.resize( mNumRows );
-    HArrayUtils::setScalar( mIlg, 1, utilskernel::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( mIlg, IndexType( 1 ), utilskernel::reduction::COPY, prefLoc );
     mDiagonalProperty = true;
 }
 
