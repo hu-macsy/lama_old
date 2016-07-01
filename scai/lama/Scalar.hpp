@@ -323,12 +323,30 @@ inline bool operator!=( const Scalar& a, const Scalar& b )
 
 inline bool operator<( const Scalar& a, const Scalar& b )
 {
-    return a.getValue<ScalarRepType>() < b.getValue<ScalarRepType>();
+	if( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO && 
+        common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
+	{
+		// no complex number
+		return (a.getValue<ScalarRepType>()).real() < (b.getValue<ScalarRepType>()).real();
+	}
+	else
+	{
+	    return a.getValue<ScalarRepType>() < b.getValue<ScalarRepType>();
+	}
 }
 
 inline bool operator>( const Scalar& a, const Scalar& b )
 {
-    return a.getValue<ScalarRepType>() > b.getValue<ScalarRepType>();
+	if( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO && 
+        common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
+	{
+		// no complex number
+		return (a.getValue<ScalarRepType>()).real() > (b.getValue<ScalarRepType>()).real();
+	}
+	else
+	{
+	    return a.getValue<ScalarRepType>() > b.getValue<ScalarRepType>();
+	}
 }
 
 //inline bool operator<=( const Scalar& a, const Scalar& b )

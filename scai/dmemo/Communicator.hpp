@@ -590,8 +590,8 @@ public:
      *                                                                                    *
      *************************************************************************************/
 
-    // Sum of size_t values needed for large quantities like memory usage
-    virtual size_t sum( const size_t value ) const = 0;
+     // Sum of size_t values needed for large quantities like memory usage
+     virtual size_t sum( const size_t value ) const = 0;
 
     // Broadcast of characters needed for strings
 

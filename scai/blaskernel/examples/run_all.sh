@@ -36,7 +36,7 @@
 set -e
 
 # Get location of the script to properly call all example scripts
-MYDIR="$(dirname "$(readlink -f "$0")")"
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Function that executes an example and count up a counter
 # Usage: RUN COUNT[0|1] EXECUTABLE

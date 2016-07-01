@@ -36,7 +36,7 @@
 set -e
 
 # Get location of the script to properly call all example scripts
-MYDIR="$(dirname "$(readlink -f "$0")")"
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Function that executes an example and count up a counter
 # Usage: RUN COUNT[0|1] EXECUTABLE
@@ -66,7 +66,11 @@ i=0
 
 # run examples
 RUN 1 LogLevels.exe
-RUN 1 LogOpenMP.exe
+
+if [ -e LogOpenMP.exe ]
+then
+	RUN 1 LogOpenMP.exe
+fi
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/*.exe | wc -l`

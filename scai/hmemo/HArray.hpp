@@ -291,9 +291,7 @@ HArray<ValueType>::HArray( ContextPtr context ) :
 
 template<typename ValueType>
 HArray<ValueType>::HArray( MemoryPtr memory ) :
-
     _HArray( 0, sizeof( ValueType ) )
-
 {
     // just make the first entry for the memory
     /* ContextDataIndex data = */  mContextDataManager.getMemoryData( memory );
@@ -304,9 +302,7 @@ HArray<ValueType>::HArray( MemoryPtr memory ) :
 
 template<typename ValueType>
 HArray<ValueType>::HArray( const IndexType n ) :
-
     _HArray( n, sizeof( ValueType ) )
-
 {
     // reserves already memory on the host, but this data is not valid
     ContextPtr hostPtr = Context::getHostPtr();
@@ -550,7 +546,7 @@ void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
     bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
     // SCAI_ASSERT( entry.locked( common::context::Write ), "resize illegal here " << entry )
     // static cast to have multiplication with 64 bit values
-    size_t allocSize = static_cast<size_t>( size ) * mValueSize;
+    size_t allocSize = static_cast<size_t>( size )  * mValueSize;
     size_t validSize = static_cast<size_t>( mSize ) * mValueSize;
 
     if ( validSize > allocSize )
@@ -577,7 +573,7 @@ void HArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) 
 
     bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
     ContextData& entry = mContextDataManager[index];
-    size_t allocSize = size * mValueSize;
+    size_t allocSize = size  * mValueSize;
     size_t validSize = mSize * mValueSize;
     entry.reserve( allocSize, validSize, inUse );
     // Note: mSize does not change by the reserve

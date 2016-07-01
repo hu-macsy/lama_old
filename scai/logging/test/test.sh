@@ -1,3 +1,11 @@
+#!/bin/bash
+
+if ((BASH_VERSINFO[0] < 4))
+then
+	echo "For testing logging you need bash version 4 or newer"
+	exit
+fi
+
 ###
  # @file scai/logging/test/test.sh
  #
