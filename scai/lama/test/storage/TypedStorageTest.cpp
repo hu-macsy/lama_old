@@ -993,12 +993,18 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         {
             for ( IndexType j = 0; j < numColumns; ++j )
             {
-                std::cout << i << ":" << j << " = " << denseValues[i * numColumns + j] << std::endl;
+                // std::cout << i << ":" << j << " = " << denseValues[i * numColumns + j] << std::endl;
                 BOOST_CHECK_EQUAL( storage.getValue(i,j), storageDense->getValue(i,j) );                
             }
         }
 
-        //BOOST_CHECK_EQUAL( 0, storageDense->maxDiffNorm( storage ) );
+        BOOST_CHECK_EQUAL( 0, storageDense->maxDiffNorm( storage ) );
+
+        // TODO: not preserved? 
+        // exception: Assert exp_1 == exp_2 failed in line 187 of file lama/scai/sparsekernel/openmp/OpenMPDIAUtils.cpp
+        //            Message: 
+        //            exp_1: diaOffsets[0] = -5
+        //            exp_2: 0 = 0
 
 
         // // without diagonal lement shifting
