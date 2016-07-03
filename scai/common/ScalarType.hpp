@@ -109,9 +109,9 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const sc
  *
  */
 
-MIC_CALLABLE_MEMBER const char* scalarType2str( const scalar::ScalarType stype );
+COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER const char* scalarType2str( const scalar::ScalarType stype );
 
-MIC_CALLABLE_MEMBER scalar::ScalarType str2ScalarType( const char* str );
+COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER scalar::ScalarType str2ScalarType( const char* str );
 
 } /* end namespace common */
 

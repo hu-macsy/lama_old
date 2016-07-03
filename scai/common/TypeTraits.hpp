@@ -54,7 +54,7 @@ namespace common
  * @tparam T The type of any arithmetic value type used
  */
 template<typename ValueType>
-class TypeTraits
+class COMMON_DLL_IMPORTEXPORT TypeTraits
 {
 public:
 
