@@ -49,14 +49,22 @@ void testRoutine()
     std::cout << "isComplex = " << isComplex( stype ) << std::endl;
 
     ValueType alpha = ValueType( 1 ) / ValueType( 3 );
+    ValueType beta  = ValueType( 2 ) / ValueType( 3 );
     int precision = TypeTraits<ValueType>::precision();
     std::cout << "Output alpha: precision = " << precision;
     std::cout << std::setprecision( precision ) << " alpha = " << alpha << std::endl;
-  
+    std::cout << std::setprecision( precision ) << " beta  = " << beta  << std::endl;
+
+    std::cout << "eps = " << TypeTraits<ValueType>::getEps() << std::endl;
+    std::cout << "min = " << TypeTraits<ValueType>::getMin() << std::endl;
+    std::cout << "max = " << TypeTraits<ValueType>::getMax() << std::endl;
+    std::cout << "small = " << TypeTraits<ValueType>::small() << std::endl;
+    std::cout << "smallest = " << TypeTraits<ValueType>::smallest() << std::endl;
 }
 
 int main()
 {
+    testRoutine<IndexType>();
     testRoutine<float>();
     testRoutine<double>();
     testRoutine<long double>();

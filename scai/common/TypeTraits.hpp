@@ -65,18 +65,30 @@ public:
 
     typedef ValueType AbsType;
 
-    /** Get value-specific epsilon for comparison. */
+    /** Returns the difference between 1 and the next representable value of the given floating-point type.
+     *  This value might be helpful to identify if a value is close to 1.
+     */
 
     static inline ValueType getEps()
     {
         return std::numeric_limits<ValueType>::epsilon();
     }
 
+
     /** Get type-specific precision to be used for comparison in matrix-vector operations */
 
     static inline ValueType small()
     {
         return getEps();
+    }
+
+    /** Get the smallest finite value of the given type, used to avoid division by zero
+     *  or to decide a value to be considered as zero.
+     */
+
+    static inline ValueType smallest()
+    {
+        return std::numeric_limits<ValueType>::min();
     }
 
     /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
@@ -134,6 +146,11 @@ public:
         return 0;
     }
 
+    static inline IndexType smallest()
+    {
+        return std::numeric_limits<IndexType>::min();
+    }
+
     static inline IndexType getMax()
     {
         return std::numeric_limits<IndexType>::max();
@@ -173,6 +190,11 @@ public:
     static inline long double small()
     {
         return 1e-8L;
+    }
+
+    static inline long double smallest()
+    {
+        return std::numeric_limits<long double>::min();
     }
 
     static inline long double getMax()
@@ -216,6 +238,11 @@ public:
         return 1e-5;
     }
 
+    static inline double smallest()
+    {
+        return std::numeric_limits<double>::min();
+    }
+
     static inline double getMax()
     {
         return std::numeric_limits<double>::max();
@@ -255,6 +282,11 @@ public:
     static inline float small()
     {
         return 1e-3f;
+    }
+
+    static inline float smallest()
+    {
+        return std::numeric_limits<float>::min();
     }
 
     static inline int precision()
@@ -299,6 +331,11 @@ public:
         return ComplexFloat( 1e-3f );
     }
 
+    static inline ComplexFloat smallest()
+    {
+        return std::numeric_limits<float>::min();
+    }
+
     static inline int precision()
     {
         return std::numeric_limits<float>::digits10;
@@ -337,6 +374,11 @@ public:
     static inline ComplexDouble small()
     {
         return ComplexDouble( 1e-5 );
+    }
+
+    static inline ComplexDouble smallest()
+    {
+        return std::numeric_limits<double>::min();
     }
 
     static inline int precision()
@@ -378,6 +420,11 @@ public:
     static inline ComplexLongDouble small()
     {
         return ComplexLongDouble( 1e-8L );
+    }
+
+    static inline ComplexLongDouble smallest()
+    {
+        return std::numeric_limits<long double>::min();
     }
 
     static inline int precision()
