@@ -99,7 +99,7 @@ ELLStorage<ValueType>::ELLStorage(
     // Initialization requires correct values for the IA array with 0
     mIA.resize( mNumRows );
     // ellSizes[] = 0 @ context
-    HArrayUtils::setScalar( mIA, 0, utilskernel::reduction::COPY, context );
+    HArrayUtils::setScalar( mIA, IndexType( 0 ), utilskernel::reduction::COPY, context );
     SCAI_LOG_DEBUG( logger, "ELLStorage for matrix " << mNumRows << " x " << mNumColumns << ", no elements" )
 }
 
@@ -239,7 +239,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
     const ContextPtr loc = this->getContextPtr();
     mIA.clear();
     mIA.resize( mNumRows );
-    HArrayUtils::setScalar( mIA, 1, utilskernel::reduction::COPY, loc );
+    HArrayUtils::setScalar( mIA, IndexType( 1 ), utilskernel::reduction::COPY, loc );
     HArrayUtils::setOrder( mJA, mNumRows );
     mValues.clear();
     mValues.resize( mNumRows );

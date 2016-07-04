@@ -84,7 +84,7 @@ typedef long double LongDouble;
 /** Definition for a constant value that indicates a non-available index.
  */
 
-MIC_CALLABLE_MEMBER extern const IndexType nIndex;
+COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
  *
@@ -93,7 +93,7 @@ typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
+COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 /*
  * Lists of all supported arithmetic types 

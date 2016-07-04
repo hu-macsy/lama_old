@@ -34,6 +34,8 @@
 
 #pragma once
 
+#include <scai/common/config.hpp>
+
 #include <cuda.h>
 
 namespace scai
@@ -53,7 +55,7 @@ class CUDACtx;
  *  that another thread can also use the same device.
  */
 
-class CUDAAccess
+class COMMON_DLL_IMPORTEXPORT CUDAAccess
 {
 
 public:

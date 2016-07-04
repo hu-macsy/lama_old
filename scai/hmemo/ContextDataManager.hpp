@@ -72,7 +72,7 @@ typedef size_t ContextDataIndex;
  *  at different contexts.
  */
 
-class ContextDataManager : private common::NonCopyable, public common::Printable
+class COMMON_DLL_IMPORTEXPORT ContextDataManager : private common::NonCopyable, public common::Printable
 {
 public:
 

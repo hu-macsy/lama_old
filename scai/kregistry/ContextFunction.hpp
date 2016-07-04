@@ -59,7 +59,7 @@ typedef void ( *VoidFunction )();
  *  where the function pointer might be NULL for unsupported context
  */
 
-class _ContextFunction : public common::context
+class COMMON_DLL_IMPORTEXPORT _ContextFunction : public common::context
 {
 public:
 

@@ -74,7 +74,7 @@ inline std::ostream& operator<<( std::ostream& stream, const KernelRegistryKey& 
  *  @brief Static class where all kernel routines are registered and can be accessed.
  */
 
-class KernelRegistry
+class COMMON_DLL_IMPORTEXPORT KernelRegistry
 {
 private:
 

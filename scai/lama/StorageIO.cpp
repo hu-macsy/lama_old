@@ -170,8 +170,8 @@ void StorageIO<ValueType>::readCSRFromSAMGFile(
     std::string dataFileName = getDataFileName( headerFileName );
     inFile.open( dataFileName, flags );
     //TODO: allow different type to be read?
-    inFile.read( csrIA, numRows + 1, -1, common::TypeTraits<IndexType>::stype, '\n' );
-    inFile.read( csrJA, numValues, -1, common::TypeTraits<IndexType>::stype, '\n' );
+    inFile.read( csrIA, numRows + 1, IndexType( -1 ), common::TypeTraits<IndexType>::stype, '\n' );
+    inFile.read( csrJA, numValues, IndexType( -1 ), common::TypeTraits<IndexType>::stype, '\n' );
     inFile.read( csrValues, numValues, ValueType( 0 ), common::TypeTraits<ValueType>::stype, '\n' );
     inFile.close();
 }
@@ -716,9 +716,12 @@ void StorageIO<ValueType>::writeCSRToFile(
     if ( size > 1 )
     {
         // ToDo outfile.xxx  -> outfile.xxx.1, better is outfile.1.xxx
-        char rankstr[10];
-        sprintf( rankstr, ".%d", rank );
-        myFileName += rankstr;
+	std::stringstream ss;
+        ss << rank;
+	myFileName += ss.str();
+//        char rankstr[10];
+//        sprintf( rankstr, ".%d", rank );
+//        myFileName += rankstr;
     }
 
     switch ( myFileType )

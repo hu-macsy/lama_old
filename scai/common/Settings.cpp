@@ -102,6 +102,19 @@ bool Settings::convertValue( int& flag, const char* stringVal )
     return false;
 }
 
+bool Settings::convertValue( long& flag, const char* stringVal )
+{
+    int nread = sscanf( stringVal, "%ld", &flag );
+
+    if ( nread == 1 )
+    {
+        return true;
+    }
+
+    return false;
+}
+
+
 bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 {
     char key = static_cast<char>( toupper( stringVal[0] ) );
@@ -187,6 +200,28 @@ bool Settings::getEnvironment( int& val, const char* envVarName )
 
     return true; // environment variable was available
 }
+
+/* ----------------------------------------------------------------------------- */
+
+bool Settings::getEnvironment( long& val, const char* envVarName )
+{
+    std::string envVal;
+
+    if ( !getEnvironment( envVal, envVarName ) )
+    {
+        return false; // no initialization by environment
+    }
+
+    bool done = convertValue( val, envVal.c_str() );
+
+    if ( !done )
+    {
+        return false;
+    }
+
+    return true; // environment variable was available
+}
+
 
 /* ----------------------------------------------------------------------------- */
 

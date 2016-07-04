@@ -99,7 +99,7 @@ bool ResidualStagnation::isSatisfied( const IterativeSolver& solver )
     return false;
 }
 
-int ResidualStagnation::getLookback() const
+IndexType ResidualStagnation::getLookback() const
 {
     return mLookback;
 }

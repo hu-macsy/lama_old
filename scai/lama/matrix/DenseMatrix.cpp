@@ -452,7 +452,7 @@ void DenseMatrix<ValueType>::setCSRData(
 template<typename ValueType>
 bool DenseMatrix<ValueType>::isConsistent() const
 {
-    int consistencyErrors = 0;
+    IndexType consistencyErrors = 0;
     // ToDo: this implementation should use a corresponding predicate of MatrixStorage
     const IndexType numLocalRows = getRowDistribution().getLocalSize();
 

@@ -213,7 +213,7 @@ void SparseMatrix<ValueType>::checkSettings()
 template<typename ValueType>
 bool SparseMatrix<ValueType>::isConsistent() const
 {
-    int consistencyErrors = 0;
+    IndexType consistencyErrors = 0;
 
     // ToDo: this implementation should use a corresponding predicate of MatrixStorage
 

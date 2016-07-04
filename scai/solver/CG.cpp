@@ -94,7 +94,6 @@ void CG::initialize( const Matrix& coefficients )
     IterativeSolver::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
     runtime.mPScalar = 0.0;
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
     runtime.mP.reset( coefficients.newDenseVector() );
     runtime.mQ.reset( coefficients.newDenseVector() );
     runtime.mZ.reset( coefficients.newDenseVector() );
@@ -106,9 +105,6 @@ void CG::iterate()
     CGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
     Scalar& pScalar = runtime.mPScalar;
-    const Scalar& eps = runtime.mEps;
-    Scalar alpha;
-    Scalar beta;
 
     if ( this->getIterationCount() == 0 )
     {
@@ -149,17 +145,16 @@ void CG::iterate()
     {
         SCAI_REGION( "Solver.CG.setP" )
 
-        if ( lastPScalar.getValue<double>() < eps ) //scalar is small
-        {
-            beta = 0.0;
-        }
-        else
-        {
-            beta = pScalar / lastPScalar;
-        }
+        // Note: lastPScalar can be very close to 0, e.g. 1e-100, is okay if pScalar is 1e-98
 
-        SCAI_LOG_DEBUG( logger, "beta = " << beta )
+        Scalar beta = pScalar / lastPScalar;
+
+        // ToDo: terminate solver if beta = 0
+
+        SCAI_LOG_DEBUG( logger, "beta = " << beta << ", is p = " << pScalar << " / p_old = " << lastPScalar )
+
         p = z + beta * p;
+
         SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
     }
 
@@ -174,16 +169,10 @@ void CG::iterate()
     const Scalar pqProd = q.dotProduct( p );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if ( pqProd.getValue<double>() < eps )  //scalar is small
-    {
-        alpha = 0.0;
-    }
-    else
-    {
-        alpha = pScalar / pqProd;
-    }
+    Scalar alpha = pScalar / pqProd;
 
-    SCAI_LOG_DEBUG( logger, "alpha = " << alpha )
+    SCAI_LOG_DEBUG( logger, "alpha = " << alpha << ", is p = " << pScalar << " / pq = " << pqProd )
+
     {
         SCAI_LOG_INFO( logger, "Calculating x." )
         SCAI_REGION( "Solver.CG.update_x" )

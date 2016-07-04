@@ -68,7 +68,7 @@ struct SolverEps<common::mepr::TypeList<H, T> >
     {
         if ( common::TypeTraits<H>::stype == type )
         {
-            return lama::Scalar( common::TypeTraits<H>::getEps() );
+            return lama::Scalar( common::TypeTraits<H>::smallest() );
         }
         else
         {

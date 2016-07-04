@@ -101,7 +101,6 @@ public:
         lama::VectorPtr mQ;
         lama::VectorPtr mZ;
         lama::Scalar mPScalar;
-        lama::Scalar mEps;
     };
 
     /**
