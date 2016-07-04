@@ -101,7 +101,6 @@ public:
         common::shared_ptr<lama::Vector> mQ2;
         common::shared_ptr<lama::Vector> mZ2;
         lama::Scalar mPScalar2;
-        lama::Scalar mEps;
         mutable common::shared_ptr<lama::Vector> mResidual2;
     };
 

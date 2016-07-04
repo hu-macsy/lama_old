@@ -94,7 +94,6 @@ void BiCG::initialize( const Matrix& coefficients )
     SCAI_REGION( "Solver.BiCG.initialize" )
     CG::initialize( coefficients );
     BiCGRuntime& runtime = getRuntime();
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
     runtime.mPScalar2 = 0.0;
     runtime.mTransposeA.reset( coefficients.newMatrix() );
     common::scalar::ScalarType type = coefficients.getValueType();
@@ -117,7 +116,6 @@ void BiCG::iterate()
     BiCGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
     Scalar& pScalar = runtime.mPScalar;
-    Scalar alpha;
 
     if ( this->getIterationCount() == 0 )
     {
@@ -136,7 +134,6 @@ void BiCG::iterate()
     Vector& q2 = *runtime.mQ2;
     Vector& z = *runtime.mZ;
     Vector& z2 = *runtime.mZ2;
-    Scalar& eps = runtime.mEps;
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
     //BiCG implementation start
@@ -170,14 +167,10 @@ void BiCG::iterate()
     }
     else
     {
-        Scalar beta = Scalar( 0.0 );
+        Scalar beta =  pScalar / lastPScalar;
 
-        if ( abs( lastPScalar ) > eps )
-        {
-            beta = pScalar / lastPScalar;
-        }
+        SCAI_LOG_DEBUG( logger, "beta = " << beta << ", is p = " << pScalar << " / p_old = " << lastPScalar )
 
-        SCAI_LOG_DEBUG( logger, "beta = " << beta << ", conj( beta ) = " << conj( beta ) )
         p = z + beta * p;
         SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
         p2 = z2 + conj( beta ) * p2;
@@ -197,16 +190,11 @@ void BiCG::iterate()
     const Scalar pqProd = p2.dotProduct( q );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if ( abs( pqProd ) < eps )
-    {
-        alpha = Scalar( 0.0 );
-    }
-    else
-    {
-        alpha = pScalar / pqProd;
-    }
+    Scalar alpha = pScalar / pqProd;
 
-    SCAI_LOG_DEBUG( logger, "alpha = " << alpha )
+    SCAI_LOG_DEBUG( logger, "alpha = " << alpha << ", is p = " << pScalar << " / pq = " << pqProd )
+
+
     {
         SCAI_LOG_INFO( logger, "Calculating x." )
         SCAI_REGION( "Solver.BiCG.update_x" )
