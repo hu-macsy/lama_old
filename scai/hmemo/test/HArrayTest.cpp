@@ -42,6 +42,8 @@
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+
 using namespace boost;
 using namespace scai;
 using namespace scai::hmemo;
@@ -247,7 +249,7 @@ BOOST_AUTO_TEST_CASE( createTest )
 
     BOOST_CHECK( _HArray::canCreate( scalar::FLOAT ) );
     BOOST_CHECK( _HArray::canCreate( scalar::DOUBLE ) );
-    BOOST_CHECK( _HArray::canCreate( scalar::INDEX_TYPE ) );
+    BOOST_CHECK( _HArray::canCreate( TypeTraits<IndexType>::stype ) );
     BOOST_CHECK( !_HArray::canCreate( scalar::INTERNAL ) );
     _HArray* ca1 = _HArray::create( scalar::FLOAT );
     BOOST_REQUIRE( ca1 );
