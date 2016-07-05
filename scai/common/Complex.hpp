@@ -707,13 +707,31 @@
     CUDA_CALLABLE_MEMBER
     ValueType Complex<ValueType>::metrikCuda( void ) const
     {
-        return Math::sqrt( real() * real() + imag() * imag() );
+        if( imag() == ValueType( 0 ) )
+        {
+            // saves time and keeps precision, e.g. for eps0
+
+            return Math::abs( real() );
+        }
+        else
+        {
+            return Math::sqrt( real() * real() + imag() * imag() );
+        }
     }
 
     template<typename ValueType>
     ValueType Complex<ValueType>::metrikHost( void ) const
     {
-        return Math::sqrt( real() * real() + imag() * imag() );
+        if ( imag() == ValueType( 0 ) )
+        {
+            // saves time and keeps precision, e.g. for eps0
+
+            return Math::abs( real() );
+        }
+        else
+        {
+            return Math::sqrt( real() * real() + imag() * imag() );
+        }
     }
 
     /*

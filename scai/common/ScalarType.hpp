@@ -70,17 +70,18 @@ struct scalar
 
     typedef enum
     {
-        INDEX_TYPE, //!<  synonymous for IndexType
-        INT,
-        LONG,
-        FLOAT, //!<  synonymous for float
-        DOUBLE, //!<  synonymous for double
-        LONG_DOUBLE, //!<  synonymous for long double
-        COMPLEX, //!<  synonymous for complex
-        DOUBLE_COMPLEX, //!<  synonymous for double complex
+        INT,                 //!<  synonymous for int (signed 32 bit)
+        LONG,                //!<  synonymous for long (signed 64 bit)
+        FLOAT,               //!<  synonymous for float
+        DOUBLE,              //!<  synonymous for double
+        LONG_DOUBLE,         //!<  synonymous for long double
+        COMPLEX,             //!<  synonymous for complex
+        DOUBLE_COMPLEX,      //!<  synonymous for double complex
         LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
-        PATTERN, //!<  dummy type of size 0
-        INTERNAL, //!<  take the type currently in use, getScalarType<ValueType>()
+
+        INDEX_TYPE,          //!<  take the type as defined by INDEX_TYPE
+        PATTERN,             //!<  dummy type of size 0
+        INTERNAL,            //!<  take the type currently in use, getScalarType<ValueType>()
         UNKNOWN
     } ScalarType;
 

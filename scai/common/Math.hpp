@@ -131,6 +131,8 @@ struct Math
     /*
      * Getter for the real part
      */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int real( const int& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double real( const double& x );
@@ -148,6 +150,8 @@ struct Math
     /*
      * Getter for the imag part
      */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int imag( const int& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float imag( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double imag( const double& x );
@@ -316,6 +320,11 @@ long double Math::conj( const long double& x )
 
 // -------------------------------- real -----------------------------
 
+int Math::real( const int& x )
+{
+    return x;
+}
+
 float Math::real( const float& x )
 {
     return x;
@@ -332,6 +341,11 @@ long double Math::real( const long double& x )
 }
 
 // -------------------------------- imag -----------------------------
+
+int Math::imag( const int& )
+{
+    return 0;
+}
 
 float Math::imag( const float& )
 {

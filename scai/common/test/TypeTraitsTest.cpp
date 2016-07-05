@@ -142,18 +142,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_arithmetic_test_ty
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_arithmetic_test_types )
 {
-    ValueType small    = TypeTraits<ValueType>::small();
-    ValueType smallest = TypeTraits<ValueType>::smallest();
-    ValueType min      = TypeTraits<ValueType>::getMin();
-    ValueType max      = TypeTraits<ValueType>::getMax();
-    ValueType eps      = TypeTraits<ValueType>::getEps();
+    ValueType small  = TypeTraits<ValueType>::small();
+    ValueType eps0   = TypeTraits<ValueType>::eps0();
+    ValueType min    = TypeTraits<ValueType>::getMin();
+    ValueType max    = TypeTraits<ValueType>::getMax();
+    ValueType eps1   = TypeTraits<ValueType>::eps1();
 
     // neutral elements for min and max operations
 
     BOOST_CHECK( min < max );
 
     ValueType one = 1;
-    ValueType one1 = one + eps;
+    ValueType one1 = one + eps1;
 
     BOOST_CHECK( one < one1 );
 
@@ -163,10 +163,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_arithmetic_test_types 
 
     BOOST_CHECK( one2 == one1 || one2 == one );
 
-    // compare small, smallest against eps
+    // compare small, eps0 against eps1
 
-    BOOST_CHECK( smallest < eps );
-    BOOST_CHECK( eps < small );
+    BOOST_CHECK( ValueType( 0 ) < eps0 );
+    BOOST_CHECK( eps0 < eps1 );
+    BOOST_CHECK( eps1 < small );
 }
 
 /* -----------------------------------------------------------------------------*/

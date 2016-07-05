@@ -62,11 +62,11 @@ void testRoutine()
     cout << setprecision( precision ) << "  1/3 = " << alpha << endl;
     cout << setprecision( precision ) << "  2/3 = " << beta  << endl;
 
-    cout << "eps" << typeTemplate<< " = " << TypeTraits<ValueType>::getEps() << endl;
+    cout << "eps0" << typeTemplate<< " = " << TypeTraits<ValueType>::eps0() << endl;
+    cout << "eps1" << typeTemplate<< " = " << TypeTraits<ValueType>::eps1() << endl;
     cout << "min" << typeTemplate<< " = " << TypeTraits<ValueType>::getMin() << endl;
     cout << "max" << typeTemplate<< " = " << TypeTraits<ValueType>::getMax() << endl;
     cout << "small" << typeTemplate<< " = " << TypeTraits<ValueType>::small() << endl;
-    cout << "smallest" << typeTemplate<< " = " << TypeTraits<ValueType>::smallest() << std::endl;
 }
 
 int main()
