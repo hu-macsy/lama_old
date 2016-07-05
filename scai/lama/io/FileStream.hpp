@@ -261,6 +261,10 @@ inline void FileStream::write( const hmemo::HArray<ValueType>& data,
                 _write<long, ValueType>( data, offset, delimiter );
                 break;
 
+            case common::scalar::INDEX_TYPE:
+                _write<IndexType, ValueType>( data, offset, delimiter );
+                break;
+
             case common::scalar::INTERNAL:
                 _write<ValueType, ValueType>( data, offset, delimiter );
                 break;
@@ -289,6 +293,10 @@ inline void FileStream::read( hmemo::HArray<ValueType>& data,
 
             case common::scalar::LONG:
                 _read<long, ValueType>( data, size, offset, delimiter );
+                break;
+
+            case common::scalar::INDEX_TYPE:
+                _read<IndexType, ValueType>( data, size, offset, delimiter );
                 break;
 
             case common::scalar::INTERNAL:
