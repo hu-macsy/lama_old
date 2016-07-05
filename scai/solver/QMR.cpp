@@ -99,7 +99,7 @@ void QMR::initialize( const Matrix& coefficients )
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
     QMRRuntime& runtime = getRuntime();
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::eps1( coefficients.getValueType() ) * 3.0;
     runtime.mTransposeA.reset( coefficients.newMatrix() );
     runtime.mTransposeA->assignTranspose( coefficients );
     runtime.mTransposeA->conj();

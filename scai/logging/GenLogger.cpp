@@ -597,7 +597,7 @@ void GenLogger::setFlush( bool flush )
  *  GenLogger::setFormat( formatString )                             *
  ********************************************************************/
 
-static void tokenize( std::vector<std::string>& tokens, const std::string& input )
+static void logTokenize( std::vector<std::string>& tokens, const std::string& input )
 {
     tokens.clear();
     std::string::size_type lastPos = 0;
@@ -624,7 +624,7 @@ static void tokenize( std::vector<std::string>& tokens, const std::string& input
 
 void GenLogger::setFormat( const std::string& format )
 {
-    tokenize( formatTokens, format );
+    logTokenize( formatTokens, format );
 
     // convert all tokens to upper case
 

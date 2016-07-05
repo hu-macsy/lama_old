@@ -149,7 +149,16 @@ void CG::iterate()
 
         Scalar beta = pScalar / lastPScalar;
 
-        // ToDo: terminate solver if beta = 0
+        if ( Scalar( 0 ) == beta )
+        {
+            // ToDo: solver should terminate
+
+            SCAI_LOG_INFO( logger, "beta = 0, can stop" )
+
+            pScalar = lastPScalar;  // restore old value,otherwise division by zero in next step
+
+            return;
+        }
 
         SCAI_LOG_DEBUG( logger, "beta = " << beta << ", is p = " << pScalar << " / p_old = " << lastPScalar )
 

@@ -91,7 +91,7 @@ void TFQMR::initialize( const Matrix& coefficients )
     runtime.mC = 0.0;
     runtime.mEta = 0.0;
     runtime.mTheta = 0.0;
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::eps1( coefficients.getValueType() ) * 3.0;
     // create dense runtime vectors with same row distribution, type, context as coefficients
     runtime.mVecD.reset( coefficients.newDenseVector() );
     runtime.mInitialR.reset( coefficients.newDenseVector() );

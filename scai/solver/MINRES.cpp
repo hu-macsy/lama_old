@@ -99,7 +99,7 @@ void MINRES::initialize( const Matrix& coefficients )
     runtime.mVecP.reset( coefficients.newDenseVector() );
     runtime.mVecPOld.reset( coefficients.newDenseVector() );
     runtime.mVecPNew.reset( coefficients.newDenseVector() );
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::eps1( coefficients.getValueType() ) * 3.0;
 }
 
 void MINRES::solveInit( Vector& solution, const Vector& rhs )

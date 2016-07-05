@@ -55,28 +55,44 @@ struct SolverEps;
 template<>
 struct SolverEps<common::mepr::NullType>
 {
-    static lama::Scalar get( const common::scalar::ScalarType& )
+    static lama::Scalar eps1( const common::scalar::ScalarType& )
     {
-        return lama::Scalar( 0.0 );
+        return lama::Scalar( 0 );
+    }
+ 
+    static lama::Scalar eps0( const common::scalar::ScalarType& )
+    {
+        return lama::Scalar( 0 );
     }
 };
 
 template<typename H, typename T>
 struct SolverEps<common::mepr::TypeList<H, T> >
 {
-    static lama::Scalar get( const common::scalar::ScalarType& type )
+    static lama::Scalar eps1( const common::scalar::ScalarType& type )
     {
         if ( common::TypeTraits<H>::stype == type )
         {
-            return lama::Scalar( common::TypeTraits<H>::smallest() );
+            return lama::Scalar( common::TypeTraits<H>::eps1() );
         }
         else
         {
-            return SolverEps<T>::get( type );
+            return SolverEps<T>::eps1( type );
+        }
+    }
+
+    static lama::Scalar eps0( const common::scalar::ScalarType& type )
+    {
+        if ( common::TypeTraits<H>::stype == type )
+        {
+            return lama::Scalar( common::TypeTraits<H>::eps0() );
+        }
+        else
+        {
+            return SolverEps<T>::eps0( type );
         }
     }
 };
-
 
 } /* end namespace mepr */
 } /* end namespace solver */

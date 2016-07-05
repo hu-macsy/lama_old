@@ -93,7 +93,7 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mOmega = 1.0;
     runtime.mRhoOld = 1.0;
     runtime.mResNorm = 1.0;
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::eps1( coefficients.getValueType() ) * 3.0;
     // get runtime vectors with same row distribution / context / type as cofficients matrix
     runtime.mRes0.reset( coefficients.newDenseVector() );
     runtime.mVecV.reset( coefficients.newDenseVector() );
