@@ -199,6 +199,24 @@ public:
         return common::Math::imag( mValue ) != common::constants::ZERO;
     }
 
+    /** Return a Scalar with the corresponding eps0 value of a type.
+     *
+     *  @param[in] type is the enum value of the required type
+     *
+     *  @returns TypeTraits<ValueType>::eps0() for ValueType with TypeTraits<ValueType>::sid == type
+     */
+
+    static inline Scalar eps0( const common::scalar::ScalarType type );
+
+    /** Return a Scalar with the corresponding eps1 value of a type.
+     *
+     *  @param[in] type is the enum value of the required type
+     *
+     *  @returns TypeTraits<ValueType>::eps1() for ValueType with TypeTraits<ValueType>::sid == type
+     */
+
+    static inline Scalar eps1( const common::scalar::ScalarType type );
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
@@ -410,6 +428,61 @@ inline Scalar min( const Scalar a, const Scalar b )
                            common::Math::real( a.getValue<ScalarRepType>() ),
                            common::Math::real( b.getValue<ScalarRepType>() ) ) );
     }
+}
+
+template<typename TList>
+struct TypeTraitAccess;
+
+template<>
+struct TypeTraitAccess<common::mepr::NullType>
+{
+    static Scalar eps1( const common::scalar::ScalarType& )
+    {
+        return Scalar( 0 );
+    }
+ 
+    static Scalar eps0( const common::scalar::ScalarType& )
+    {
+        return Scalar( 0 );
+    }
+};
+
+template<typename H, typename T>
+struct TypeTraitAccess<common::mepr::TypeList<H, T> >
+{
+    static Scalar eps1( const common::scalar::ScalarType& type )
+    {
+        if ( common::TypeTraits<H>::stype == type )
+        {
+            return Scalar( common::TypeTraits<H>::eps1() );
+        }
+        else
+        {
+            return TypeTraitAccess<T>::eps1( type );
+        }
+    }
+
+    static Scalar eps0( const common::scalar::ScalarType& type )
+    {
+        if ( common::TypeTraits<H>::stype == type )
+        {
+            return Scalar( common::TypeTraits<H>::eps0() );
+        }
+        else
+        {
+            return TypeTraitAccess<T>::eps0( type );
+        }
+    }
+};
+
+Scalar Scalar::eps0( const common::scalar::ScalarType type )
+{
+    return TypeTraitAccess<SCAI_ARITHMETIC_HOST_LIST>::eps0( type );
+}
+
+Scalar Scalar::eps1( const common::scalar::ScalarType type )
+{
+    return TypeTraitAccess<SCAI_ARITHMETIC_HOST_LIST>::eps1( type );
 }
 
 } /* end namespace lama */

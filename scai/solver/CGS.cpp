@@ -35,9 +35,6 @@
 // hpp
 #include <scai/solver/CGS.hpp>
 
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
-
 // internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
@@ -87,7 +84,7 @@ void CGS::initialize( const Matrix& coefficients )
     IterativeSolver::initialize( coefficients );
     CGSRuntime& runtime = getRuntime();
     runtime.mNormRes = 1.0;
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::eps1( coefficients.getValueType() );
+    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     runtime.mRes0.reset( coefficients.newDenseVector() );
     runtime.mVecT.reset( coefficients.newDenseVector() );
     runtime.mVecP.reset( coefficients.newDenseVector() );

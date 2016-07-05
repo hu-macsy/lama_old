@@ -79,7 +79,7 @@ struct scalar
         DOUBLE_COMPLEX,      //!<  synonymous for double complex
         LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
 
-        INDEX_TYPE,          //!<  take the type as defined by INDEX_TYPE
+        INDEX_TYPE,          //!<  take the type as defined for IndexType, getScalarType<IndexType>()
         PATTERN,             //!<  dummy type of size 0
         INTERNAL,            //!<  take the type currently in use, getScalarType<ValueType>()
         UNKNOWN

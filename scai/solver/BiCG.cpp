@@ -35,9 +35,6 @@
 // hpp
 #include <scai/solver/BiCG.hpp>
 
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
-
 // internal scai libraries
 #include <scai/lama/DenseVector.hpp>
 

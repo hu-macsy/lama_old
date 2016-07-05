@@ -35,9 +35,6 @@
 // hpp
 #include <scai/solver/MINRES.hpp>
 
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
-
 // internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
@@ -99,7 +96,7 @@ void MINRES::initialize( const Matrix& coefficients )
     runtime.mVecP.reset( coefficients.newDenseVector() );
     runtime.mVecPOld.reset( coefficients.newDenseVector() );
     runtime.mVecPNew.reset( coefficients.newDenseVector() );
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::eps1( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
 }
 
 void MINRES::solveInit( Vector& solution, const Vector& rhs )

@@ -35,9 +35,6 @@
 // hpp
 #include <scai/solver/CGNR.hpp>
 
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
-
 // internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
@@ -87,7 +84,7 @@ void CGNR::initialize( const Matrix& coefficients )
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
     CGNRRuntime& runtime = getRuntime();
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::eps1( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     runtime.mTransposedMat.reset( coefficients.newMatrix() );
     runtime.mVecD.reset( coefficients.newDenseVector() );
     runtime.mVecW.reset( coefficients.newDenseVector() );
