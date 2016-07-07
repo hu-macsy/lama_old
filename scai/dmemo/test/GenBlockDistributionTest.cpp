@@ -141,10 +141,13 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    DistributionPtr genblockdist1( new GenBlockDistribution( comm->getSize(), 1, comm ) );
+    IndexType globalSize = comm->getSize();
+    IndexType localSize = 1;
+
+    DistributionPtr genblockdist1( new GenBlockDistribution( globalSize, localSize, comm ) );
     DistributionPtr genblockdist2( genblockdist1 );
-    DistributionPtr genblockdist3( new GenBlockDistribution( comm->getSize(), 1, comm ) );
-    DistributionPtr genblockdist4( new GenBlockDistribution( 2 * comm->getSize(), 2, comm ) );
+    DistributionPtr genblockdist3( new GenBlockDistribution( globalSize, localSize, comm ) );
+    DistributionPtr genblockdist4( new GenBlockDistribution( 2 * globalSize, 2 * localSize, comm ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist2 ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist3 ) );
     BOOST_CHECK( !( *genblockdist1 ).isEqual( *genblockdist4 ) );

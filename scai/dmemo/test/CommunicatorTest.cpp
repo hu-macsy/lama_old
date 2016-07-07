@@ -585,9 +585,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_typ
     ValueType dummyVal = 13;
     scoped_array<ValueType> myvals( new ValueType[n + 1] );
     scoped_array<ValueType> allvals( new ValueType[allN] );
-    scoped_array<int> sizes( new int[size] );
+    scoped_array<IndexType> sizes( new IndexType[size] );
 
-    for ( int i = 0; i <= n; i++ )
+    for ( IndexType i = 0; i <= n; i++ )
     {
         myvals[i] = dummyVal;
     }
@@ -595,11 +595,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_typ
     if ( rank == root )
     {
         // fill the send data
-        int offset = 0;
+        IndexType offset = 0;
 
-        for ( int p = 0; p < size; p++ )
+        for ( PartitionId p = 0; p < size; p++ )
         {
-            for ( int i = 0; i < p; i++ )
+            for ( PartitionId i = 0; i < p; i++ )
             {
                 allvals[offset] = dummyVal + i + 1;
                 ++offset;
@@ -612,7 +612,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_typ
     comm->scatterV( myvals.get(), n, root, allvals.get(), sizes.get() );
 
     // also verify that myvals has not been overwritten at end
-    for ( int i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         BOOST_CHECK_EQUAL( myvals[i], dummyVal + i + 1 );
     }
@@ -626,8 +626,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_arithmetic_test_types
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
-    IndexType rank = comm->getRank();
-    IndexType size = comm->getSize();
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
     const PartitionId root = 0;
     IndexType allN = 0; // only root will have full size
 
@@ -683,9 +683,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_type
     ValueType dummyVal = 13;
     scoped_array<ValueType> myvals( new ValueType[n + 1] );
     scoped_array<ValueType> allvals( new ValueType[allN] );
-    scoped_array<int> sizes( new int[size] );
+    scoped_array<IndexType> sizes( new IndexType[size] );
 
-    for ( int i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         myvals[i] = static_cast<ValueType>( rank );
     }
@@ -695,11 +695,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_type
     if ( rank == root )
     {
         // fill the recv data
-        int offset = 0;
+        IndexType offset = 0;
 
-        for ( int p = 0; p < size; p++ )
+        for ( PartitionId p = 0; p < size; p++ )
         {
-            for ( int i = 0; i < p; i++ )
+            for ( IndexType i = 0; i < p; i++ )
             {
                 allvals[offset] = -1;
                 ++offset;
@@ -713,11 +713,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_type
 
     if ( rank == root )
     {
-        int offset = 0;
+        IndexType offset = 0;
 
-        for ( int p = 0; p < size; ++p )
+        for ( PartitionId p = 0; p < size; ++p )
         {
-            for ( int i = 0; i < p; ++i )
+            for ( PartitionId i = 0; i < p; ++i )
             {
                 BOOST_CHECK_EQUAL( allvals[offset], static_cast<ValueType>( p ) );
                 ++offset;
