@@ -288,4 +288,72 @@ BOOST_AUTO_TEST_CASE( validTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( remoteTest )
+{
+    ContextPtr hostContext = Context::getHostPtr();
+    ContextPtr remoteContext = Context::getContextPtr();
+
+    // Note: in hmemo we can use any value type for HArray
+
+    typedef double ValueType;
+
+    const IndexType Nh = 50;
+    const IndexType N = 2 * Nh;
+
+    HArray<ValueType> hostA( N, 5, hostContext );
+    HArray<ValueType> remA( N, 2, remoteContext );
+
+    // put single values on remote context
+
+    for ( IndexType i = 0; i < N; i+=2 )
+    {
+        ReadAccess<ValueType> readA( hostA, hostContext ); 
+        WriteAccess<ValueType> writeA( remA, remoteContext ); 
+        ValueType elem = readA[i];
+        writeA.putValue( elem, i );
+    }
+
+    IndexType sum = 0;
+
+    {
+        ReadAccess<double> readA( remA, hostContext );
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            sum += readA[i];
+        }
+    }
+
+    {
+        // make incarnation of remA invalid
+        WriteAccess<ValueType> write( remA, remoteContext );
+    }
+ 
+    BOOST_CHECK_EQUAL( 2 * Nh + 5 * Nh, sum );
+
+    // now we read value from remote context
+
+    for ( IndexType i = 1; i < N; i+=2 )
+    {
+        ReadAccess<ValueType> readA( remA, remoteContext );
+        WriteAccess<ValueType> writeA( hostA, hostContext );
+        ValueType elem;
+        readA.getValue( elem, i );
+        writeA[i] = elem;
+    }
+
+    sum = 0;
+
+    {
+        ReadAccess<double> readA( hostA, hostContext );
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            sum += readA[i];
+        }
+    }
+
+    BOOST_CHECK_EQUAL( 2 * Nh + 5 * Nh, sum );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

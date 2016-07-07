@@ -119,6 +119,14 @@ public:
     const Memory& getMemory() const;
 
     /**
+     * @brief Return a single value to host memory.
+     *
+     * @param[out] val will contain value from array[pos]
+     * @param[in] pos is the position of array to read from, 0 <= pos < size()
+     */
+    void getValue( ValueType& val, const IndexType pos );
+
+    /**
      * @brief Releases the acquired ReadAccess.
      *
      * Release is mandatory to unlock the array so that it might be
@@ -208,6 +216,18 @@ const Memory& ReadAccess<ValueType>::getMemory() const
 {
     SCAI_ASSERT( mArray, "ReadAccess has already been released." )
     return mArray->getMemory( mContextDataIndex );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ReadAccess<ValueType>::getValue( ValueType& val, const IndexType pos )
+{
+    SCAI_ASSERT_ERROR( 0 <= pos && pos < mArray->size(), "Index " << pos << " out of range" )
+
+    const Memory& mem = mArray->getMemory( mContextDataIndex );
+    const Memory& hostMem = *Context::getHostPtr()->getLocalMemoryPtr();
+    mem.memcpyTo( hostMem, &val, mData + pos, sizeof( ValueType ) );
 }
 
 /* ---------------------------------------------------------------------------------*/

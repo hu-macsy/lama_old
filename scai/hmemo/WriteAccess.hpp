@@ -167,6 +167,23 @@ public:
     const Memory& getMemory() const;
 
     /**
+     * @brief This method writes just one value at a certain position 
+     *
+     * @param[in] val is the value to write
+     * @param[in] pos is the position where to write 0 <= pos < capacity()
+     */
+
+    void putValue( const ValueType val, const IndexType pos );
+
+    /**
+     * @brief Return a single value to host memory.
+     *
+     * @param[out] val will contain value from array[pos]
+     * @param[in] pos is the position of array to read from, 0 <= pos < size()
+     */
+    void getValue( ValueType& val, const IndexType pos );
+
+    /**
      * @brief Releases the WriteAccess on the associated HArray.
      */
     virtual void release();
@@ -240,8 +257,32 @@ WriteAccess<ValueType>::~WriteAccess()
 template<typename ValueType>
 const Memory& WriteAccess<ValueType>::getMemory() const
 {
-    SCAI_ASSERT( mArray, "ReadAccess has already been released." )
+    SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     return mArray->getMemory( mContextDataIndex );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void WriteAccess<ValueType>::putValue( const ValueType val, const IndexType pos )
+{
+    SCAI_ASSERT_ERROR( 0 <= pos && pos < mArray->size(), "Index out of range" )
+
+    const Memory& mem = mArray->getMemory( mContextDataIndex );
+    const Memory& hostMem = *Context::getHostPtr()->getLocalMemoryPtr();
+    mem.memcpyFrom( mData + pos, hostMem, &val, sizeof( ValueType ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void WriteAccess<ValueType>::getValue( ValueType& val, const IndexType pos )
+{
+    SCAI_ASSERT_ERROR( 0 <= pos && pos < mArray->size(), "Index " << pos << " out of range" )
+
+    const Memory& mem = mArray->getMemory( mContextDataIndex );
+    const Memory& hostMem = *Context::getHostPtr()->getLocalMemoryPtr();
+    mem.memcpyTo( hostMem, &val, mData + pos, sizeof( ValueType ) );
 }
 
 /* --------------------------------------------------------------------------- */
