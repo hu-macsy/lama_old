@@ -79,6 +79,16 @@ public:
         const std::vector<IndexType>& myGlobalIndexes,
         const CommunicatorPtr communicator );
 
+    /** This constructor creates a general distribution by a mapping of rows to partition ids.
+     *
+     *  @param[in] row2Partition has globalSize entries, row2Partition[i] specifies owner of i
+     *  @param[in] globalSize is the number of distributed elements
+     *  @param[in] communicator that specifies the processor array for distribution
+     *
+     *  Note:  0 <= row2Partion[i] < communicator->size() for 0 <= i < globalSize
+     *  Note:  Only the master process has to provide the mapping row2Partition.
+     */
+
     GeneralDistribution(
         const std::vector<IndexType>& row2Partition,
         const IndexType globalSize,

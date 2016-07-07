@@ -396,10 +396,7 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     if ( localIndex != nIndex )
     {
-        ContextPtr contextPtr = Context::getHostPtr();
-        ReadAccess<ValueType> localAccess( mLocalValues, contextPtr );
-        SCAI_LOG_TRACE( logger, "index " << globalIndex << " is local " << localIndex )
-        myValue = localAccess[localIndex];
+        myValue = mLocalValues[localIndex];
     }
 
     ValueType allValue = getDistribution().getCommunicator().sum( myValue );
