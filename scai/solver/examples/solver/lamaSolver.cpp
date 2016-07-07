@@ -398,7 +398,7 @@ int main( int argc, const char* argv[] )
             solution.redistribute( repDist );
             if ( myRank == 0 )
             {
-                solution.writeToFile( solFilename, File::MATRIX_MARKET );
+                solution.writeToFile( solFilename );
             }
         }
     }

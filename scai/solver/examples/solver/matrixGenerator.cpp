@@ -188,13 +188,13 @@ int main( int argc, char* argv[] )
     cout << "Solution vector x = ( 1.0, ..., 1.0 ) assumed" << endl;
     cout << "Write matrix and rhs vector to file " << matrixFileName << endl;
 
-    if ( _StorageIO::hasSuffix( matrixFileName, ".mtx" ) )
+    if ( FileIO::hasSuffix( matrixFileName, ".mtx" ) )
     {
         std::string vectorFileName = matrixFileName;
         // replace . with _v.
         vectorFileName.replace( vectorFileName.length() - 4, 1, "_v." );
-        m.writeToFile( matrixFileName, File::MATRIX_MARKET );
-        rhs.writeToFile( vectorFileName, File::MATRIX_MARKET );
+        m.writeToFile( matrixFileName );
+        rhs.writeToFile( vectorFileName );
         cout << "Written matrix to matrix market file " << matrixFileName  << endl;
         cout << "Written rhs vector to matrix market file " << vectorFileName << endl;
         return 0;
@@ -219,8 +219,8 @@ int main( int argc, char* argv[] )
             vectorFileName += ".frv";
         }
 
-        m.writeToFile( matrixFileName, File::SAMG_FORMAT, common::scalar::INTERNAL, common::scalar::INDEX_TYPE, common::scalar::INDEX_TYPE, true );
-        rhs.writeToFile( vectorFileName, File::SAMG_FORMAT, common::scalar::INTERNAL, true );
+        m.writeToFile( matrixFileName, "", common::scalar::UNKNOWN, common::scalar::UNKNOWN, FileIO::BINARY );
+        rhs.writeToFile( vectorFileName, "", common::scalar::UNKNOWN, FileIO::BINARY );
         cout << "Written matrix to SAMG file " << matrixFileName << endl;
         cout << "Written rhs vector to SAMG file " << vectorFileName << endl;
         return 0;

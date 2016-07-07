@@ -93,8 +93,7 @@ struct CommandLineOptions
     string outFileName;
     string matFileName;
 
-    File::FileType outFileType;
-    bool writeBinary;
+    FileIO::FileMode  writeBinary;
     common::scalar::ScalarType outDataType;
 
     Scalar value;   // value for the vector
@@ -107,8 +106,7 @@ struct CommandLineOptions
     {
         outFileName = "";
         matFileName = "";
-        writeBinary = false;
-        outFileType = File::DEFAULT;
+        writeBinary = FileIO::BINARY;
         outDataType = common::scalar::INTERNAL;       // same as input data type
         value       = Scalar( 1 );
         size        = 0;
@@ -117,20 +115,7 @@ struct CommandLineOptions
 
     bool parseOption( const std::string& option )
     {
-        if ( option == "-a" )
-        {
-            outFileType = File::SAMG_FORMAT;
-        }
-        else if ( option == "-mm" )
-        {
-            outFileType = File::MATRIX_MARKET;
-        }
-        else if ( option == "-b" )
-        {
-            outFileType = File::SAMG_FORMAT;
-            writeBinary = true;
-        }
-        else if ( option == "-s" )
+        if ( option == "-s" )
         {
             outDataType = common::scalar::FLOAT;
         }
@@ -192,26 +177,6 @@ struct CommandLineOptions
             cout << "No outfile name specified, take 'vector'" << endl;
             outFileName = "vector";
         }
-    }
-
-    void checkOutFileType()
-    {
-        if ( outFileType != File::DEFAULT )
-        {
-            return;
-        }
-
-        if ( _StorageIO::hasSuffix( outFileName, ".mtx" ) )
-        {
-            outFileType = File::MATRIX_MARKET;
-        }
-        else
-        {
-            outFileType = File::SAMG_FORMAT;
-            writeBinary = true;
-        }
-
-        cout << "No output file type specified, take " << outFileType << endl;
     }
 
     void checkOutDataType()
@@ -277,7 +242,6 @@ int main( int argc, char* argv[] )
     }
 
     options.checkOutFileName();
-    options.checkOutFileType();
     options.checkOutDataType();
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
     // use vector of outDataType so no information is lost
@@ -339,9 +303,8 @@ int main( int argc, char* argv[] )
     }
 
     cout << "write to output file " << options.outFileName;
-    cout << ", format = " << options.outFileType;
     cout << ", data type = " << options.outDataType;
     cout << endl;
-    v->writeToFile( options.outFileName, options.outFileType, common::scalar::INTERNAL, options.writeBinary );
+    v->writeToFile( options.outFileName, "", common::scalar::UNKNOWN, options.writeBinary );
     cout << "Done." << endl;
 }

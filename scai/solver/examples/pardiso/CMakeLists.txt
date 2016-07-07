@@ -1,5 +1,5 @@
 ###
- # @file solver/examples/CMakeLists.txt
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,24 +27,31 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Main specification file for CMake
- # @author Lauretta Schubert
- # @date 25.01.2016
+ # @brief CMake configuration file for scai_lama pardiso example
+ # @author Thomas Brandes
+ # @date 02.12.2015
 ###
 
-add_subdirectory ( lecture )
-if ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
-    add_subdirectory ( myJacobi )
-endif ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
-add_subdirectory ( solver )
-add_subdirectory ( spy )
+foreach ( executable directSolver )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+endforeach ( executable )
 
-## Pardiso example not stable enough but might be switched on by adding subdirectory
-
-# add_subdirectory ( pardiso )
-
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+# configure make.inc for examples
+include ( Functions/prepareExamplesMakeInc )
+prepareExamplesMakeInc()
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
 
 ## install examples
-install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
+
+set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/solver" )
+
+install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
+          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
+install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
+          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
+          RENAME      Makefile  )
+
