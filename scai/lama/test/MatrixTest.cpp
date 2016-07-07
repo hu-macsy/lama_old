@@ -43,7 +43,6 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
-#include <scai/lama/StorageIO.hpp>
 
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
@@ -148,27 +147,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     */
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
     std::string formattedFileName = prefix + "/test_matrix_formatted.tmp.frm";
-    formattedMatrix.writeToFile( formattedFileName, File::SAMG_FORMAT, scai::common::scalar::FLOAT, scai::common::scalar::INT, scai::common::scalar::INT );
+    formattedMatrix.writeToFile( formattedFileName, "", scai::common::scalar::FLOAT, scai::common::scalar::INDEX_TYPE, FileIO::FORMATTED );
     MatrixType readFormattedMatrix( formattedFileName );
     testSameMatrix( formattedMatrix, readFormattedMatrix );
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading binary matrix" );
     std::string binaryFileName = prefix + "/test_matrix_bin.tmp" + ".frm";
     // Be careful: binary read must fit to the format that has been used for the write
-    formattedMatrix.writeToFile( binaryFileName, File::SAMG_FORMAT, scai::common::scalar::INTERNAL, scai::common::scalar::INT, scai::common::scalar::INT, true );
+    formattedMatrix.writeToFile( binaryFileName, "", scai::common::scalar::INTERNAL, scai::common::scalar::INDEX_TYPE, FileIO::BINARY );
     MatrixType readBinaryMatrix( binaryFileName );
     testSameMatrix( formattedMatrix, readBinaryMatrix );
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading Matrix Market matrix" );
     std::string matrixMarketFileName = prefix + "/test_matrix_mm.tmp" + ".mtx";
-    formattedMatrix.writeToFile( matrixMarketFileName, File::MATRIX_MARKET, scai::common::scalar::DOUBLE );
+    formattedMatrix.writeToFile( matrixMarketFileName, "", scai::common::scalar::DOUBLE );
     MatrixType readMarketMatrix( matrixMarketFileName );
     SCAI_LOG_INFO( logger, "mtx matrix: " << readMarketMatrix )
     testSameMatrix( formattedMatrix, readMarketMatrix );
 
     // remove temporarily created matrix files, no more check here
 
-    _StorageIO::removeFile( formattedFileName );
-    _StorageIO::removeFile( binaryFileName );
-    _StorageIO::removeFile( matrixMarketFileName );
+    FileIO::removeFile( formattedFileName );
+    FileIO::removeFile( binaryFileName );
+    FileIO::removeFile( matrixMarketFileName );
 }
 
 /* --------------------------------------------------------------------- */

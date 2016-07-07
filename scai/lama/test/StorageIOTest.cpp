@@ -36,7 +36,6 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
-#include <scai/lama/StorageIO.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
 #include <scai/common/TypeTraits.hpp>
@@ -48,9 +47,9 @@ using namespace scai::hmemo;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( StorageIOTest )
+BOOST_AUTO_TEST_SUITE( FileIOTest )
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.StorageIOTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.FileIOTest" );
 
 /* ------------------------------------------------------------------------- */
 
@@ -74,7 +73,7 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOFormatted, ValueType, scai_arithmetic_test_types )
 {
     if ( isComplex( TypeTraits<ValueType>::stype ) )
     {
@@ -85,7 +84,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, scai_arithmetic_te
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
     std::string filename = "out_formatted.frm";
-    csrMatrix.writeToFile( filename, File::SAMG_FORMAT );
+    csrMatrix.writeToFile( filename, "", TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, FileIO::FORMATTED );
     readMatrix.readFromFile( filename );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
@@ -99,13 +98,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, scai_arithmetic_te
         }
     }
 
-    int rc = _StorageIO::removeFile( filename );
+    int rc = FileIO::removeFile( filename );
     BOOST_CHECK_EQUAL( rc, 0 );
 }
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOmatrixMarket, ValueType, scai_arithmetic_test_types )
 {
     scalar::ScalarType stype = TypeTraits<ValueType>::stype;
 
@@ -117,8 +116,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, scai_arithmetic
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
-    std::string filename = "out_matrix_market.mtx";
-    csrMatrix.writeToFile( filename, File::MATRIX_MARKET );
+    std::string filename = "out_matrix_market.mtx";   
+    csrMatrix.writeToFile( filename );  // will use MatrixMarket format
     readMatrix.readFromFile( filename );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
@@ -131,13 +130,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, scai_arithmetic
         }
     }
 
-    int rc = _StorageIO::removeFile( filename );
+    int rc = FileIO::removeFile( filename );
     BOOST_CHECK_EQUAL( rc, 0 );
 }
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOBinary, ValueType, scai_arithmetic_test_types )
 {
     if ( isComplex( TypeTraits<ValueType>::stype ) )
     {
@@ -148,8 +147,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, scai_arithmetic_test_
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
     std::string filename = "out_binary.frm";
-    bool binary = true;
-    csrMatrix.writeToFile( filename, File::SAMG_FORMAT, TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, TypeTraits<IndexType>::stype, binary );
+    csrMatrix.writeToFile( filename, "", TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, FileIO::BINARY );
     readMatrix.readFromFile( filename );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
@@ -165,7 +163,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, scai_arithmetic_test_
         }
     }
 
-    int rc = _StorageIO::removeFile( filename );
+    int rc = FileIO::removeFile( filename );
     BOOST_CHECK_EQUAL( rc, 0 );
 }
 

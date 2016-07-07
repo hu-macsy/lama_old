@@ -59,7 +59,7 @@ using namespace utilskernel;
 namespace lama
 {
 
-static std::string MM_SUFFIX = ".mm";
+static std::string MM_SUFFIX = ".mtx";
 
 std::string MatrixMarketIO::getVectorFileSuffix() const
 {
@@ -390,10 +390,7 @@ void MatrixMarketIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    if ( mBinarySet )
-    {
-        SCAI_ASSERT_ERROR( !mBinary, "Matrix market format can not be written binary" );
-    }
+    SCAI_ASSERT_ERROR( mFileMode != BINARY, "Matrix market format can not be written binary" );
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
@@ -653,10 +650,7 @@ void MatrixMarketIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
-    if ( mBinarySet )
-    {
-        SCAI_ASSERT( !mBinary, "Binary mode not supported for MatrixMarketIO" )
-    }
+    SCAI_ASSERT_ERROR( mFileMode != BINARY, "Matrix market format can not be written binary" );
 
     COOStorage<ValueType> coo( storage );
 
@@ -673,7 +667,7 @@ void MatrixMarketIO::writeStorageImpl(
 
     Symmetry symFlag = checkSymmetry( cooIA, cooJA, cooValues );
 
-    SCAI_LOG_ERROR( logger, "symmetry = " << symmetry2str( symFlag ) ) 
+    SCAI_LOG_INFO( logger, "symmetry = " << symmetry2str( symFlag ) ) 
 
     if ( symFlag == SYMMETRIC || symFlag == HERMITIAN )
     {

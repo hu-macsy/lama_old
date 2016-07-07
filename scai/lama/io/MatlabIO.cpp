@@ -130,7 +130,7 @@ void MatlabIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    SCAI_ASSERT( !mBinarySet || !mBinary, "Binary mode not supported for " << *this )
+    SCAI_ASSERT( mFileMode != BINARY, "Binary mode not supported for " << *this )
 
     IOStream outFile( fileName, std::ios::out );
 
@@ -169,7 +169,7 @@ void MatlabIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
-    SCAI_ASSERT( !mBinarySet || !mBinary, "Binary mode not supported for " << *this )
+    SCAI_ASSERT( !mFileMode != BINARY, "Binary mode not supported for " << *this )
 
     COOStorage<ValueType> coo( storage );
 

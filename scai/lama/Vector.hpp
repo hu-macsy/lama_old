@@ -43,7 +43,7 @@
 #include <scai/lama/expression/Expression.hpp>
 
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/io/FileType.hpp>
+#include <scai/lama/io/FileIO.hpp>
 
 // others
 #include <scai/hmemo.hpp>
@@ -297,15 +297,15 @@ public:
      * @brief write the vector to an output file
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
-     * @param[in] dataType representation type for output values, default is same type as vector
-     * @param[in] writeBinary whether the data should be written binary
+     * @param[in] fileType format of the output file ("frv" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
+     * @param[in] dataType representation type for output values, if set it overrides IO settings
+     * @param[in] fileMode can be BINARY or FORMATTED, DEFAULT_MODE keeps default/environment settings
      */
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::DEFAULT,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const bool writeBinary = false ) const = 0;
+        const std::string& fileType = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const = 0;
 
     /**
      * @brief get a vector with all local values

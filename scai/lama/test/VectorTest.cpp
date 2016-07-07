@@ -161,27 +161,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmeti
     std::string prefix = scai::test::Configuration::getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
-    vector.writeToFile( prefix + "/" + testfilename + ".frv", File::SAMG_FORMAT, TypeTraits<ValueType>::stype );
+    vector.writeToFile( prefix + "/" + testfilename + ".frv", "", TypeTraits<ValueType>::stype, FileIO::FORMATTED );
     DenseVector<ValueType> vector2( prefix + "/" + testfilename + ".frv" );
     // replicate vector2 as it is only on first processor
     vector2.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector2, result );
-    _StorageIO::removeFile( prefix + "/" + testfilename + ".frv" );
+    FileIO::removeFile( prefix + "/" + testfilename + ".frv" );
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
-    vector.writeToFile( fileName + ".frv", File::SAMG_FORMAT, TypeTraits<ValueType>::stype, true );
+    vector.writeToFile( fileName + ".frv", "", TypeTraits<ValueType>::stype, FileIO::BINARY );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
     DenseVector<ValueType> vector3( prefix + "/" + testfilename + ".frv" );
     vector3.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector3, result );
-    _StorageIO::removeFile( prefix + "/" + testfilename + ".frv" );
+    FileIO::removeFile( prefix + "/" + testfilename + ".frv" );
     // write and read mtx
-    vector.writeToFile( prefix + "/" + testfilename + ".mtx", File::MATRIX_MARKET );
+    vector.writeToFile( prefix + "/" + testfilename + ".mtx" );
     DenseVector<ValueType> vector6( prefix + "/" + testfilename + ".mtx" );
     vector6.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector6, result );
-    _StorageIO::removeFile( prefix + "/" + testfilename + ".mtx" );
+    FileIO::removeFile( prefix + "/" + testfilename + ".mtx" );
 }
 
 /* ------------------------------------------------------------------------- */

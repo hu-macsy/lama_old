@@ -34,7 +34,8 @@
 
 #pragma once
 
-#include "FileIO.hpp"
+#include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/storage/MatrixStorage.hpp>
 
 #include <cstdio>
 

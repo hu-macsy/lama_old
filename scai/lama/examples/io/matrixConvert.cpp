@@ -32,7 +32,7 @@
  * @date 19.06.2016
  */
 
-#include "FileIO.hpp"
+#include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama.hpp>
 
@@ -85,68 +85,27 @@ int main( int argc, const char* argv[] )
 
     common::scalar::ScalarType type = getType();
 
-    bool binary = false;   // can be set by environment variable
-
-    common::Settings::getEnvironment( binary, "SCAI_IO_BINARY" );
-
     // oops, no factory for storage, only for matrix
 
     common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, type ) );
 
-    _MatrixStorage& matrix = const_cast<_MatrixStorage&>( matrixPtr->getLocalStorage() );
+    Matrix& matrix = *matrixPtr;
 
     std::string inFileName = argv[1];
 
-    // Note: reading does not care about binary argument, just read as it is
+    // use supported file format
 
-    std::string suffix = FileIO::getSuffix( inFileName );
+    matrix.readFromFile( inFileName );
 
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
-
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-
-        // For reading we expect here that the file data type matches the storage type
-        // so SCAI_IO_TYPE_DATA should be ignored for reading 
-
-        fileIO->setDataType( common::scalar::INTERNAL );
-
-        std::cout << "Got from factory: " << *fileIO << std::endl;
-
-        fileIO->readStorage( matrix, inFileName );
-    }
-    else
-    {
-        // use supported file format
-        matrix.readFromFile( argv[1] );
-    }
-
-    cout << "read CSR storage : " << matrix << endl;
+    cout << "read CSR matrix : " << matrix << endl;
 
     std::string outFileName = argv[2];
 
-    suffix = FileIO::getSuffix( outFileName );
+    // use supported file format
 
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
+    cout << ": write LAMA default format" << endl;
 
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+    matrix.writeToFile( outFileName );
 
-        std::cout << "Got from factory: " << *fileIO << std::endl;
-
-        // Note. SCAI_IO_TYPE_DATA allows that data is converted
-
-        fileIO->writeStorage( matrix, outFileName );
-    }
-    else
-    {
-        // use supported file format
-        cout << ": write LAMA default format" << endl;
-        matrix.writeToFile( outFileName, File::DEFAULT, common::scalar::INTERNAL, 
-                            common::scalar::INDEX_TYPE, common::scalar::INDEX_TYPE, binary );
-    }
-
-    cout << "written CSR storage to file " << outFileName << endl;
+    cout << "written matrix to file " << outFileName << endl;
 }

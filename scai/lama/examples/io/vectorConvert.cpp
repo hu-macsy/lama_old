@@ -33,7 +33,7 @@
  */
 
 
-#include "FileIO.hpp"
+#include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama.hpp>
 
@@ -134,6 +134,6 @@ int main( int argc, const char* argv[] )
         std::cout << "Write with old LAMA write routine" << std::endl;
 
         // use supported file format
-        vector.writeToFile( outFileName, File::DEFAULT, common::scalar::INTERNAL, binary );
+        vector.writeToFile( outFileName );
     }
 }

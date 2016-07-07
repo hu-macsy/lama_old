@@ -39,6 +39,7 @@ include_directories( "${CMAKE_CURRENT_BINARY_DIR}/../include" )
 add_subdirectory ( bench )
 add_subdirectory ( labelrank )
 add_subdirectory ( tutorial )
+add_subdirectory ( io )
 
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 

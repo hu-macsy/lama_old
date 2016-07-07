@@ -44,8 +44,15 @@ scai_project (
         XDRFileStream
         mmio
 
+        FileIO
+        SAMGIO
+        MatrixMarketIO
+        PETScIO
+        MatlabIO
+
     HEADERS
 
+        CRTPFileIO
         FileType
 
     ADD_PARENT_SCOPE

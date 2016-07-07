@@ -2027,11 +2027,10 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::writeToFile1(
 
     const std::string& fileName,
-    const File::FileType fileType /* = UNFORMATTED */,
-    const common::scalar::ScalarType valuesType /* = INTERNAL */,
-    const common::scalar::ScalarType iaType /* = IndexType */,
-    const common::scalar::ScalarType jaType /* = IndexType */,
-    const bool writeBinary /* = false */ ) const
+    const std::string& fileType /* = UNFORMATTED */,
+    const common::scalar::ScalarType dataType /* = INTERNAL */,
+    const common::scalar::ScalarType indexType /* = IndexType */,
+    const FileIO::FileMode fileMode ) const
 {
     if ( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
@@ -2040,7 +2039,7 @@ void SparseMatrix<ValueType>::writeToFile1(
 
         if ( comm.getRank() == 0 )
         {
-            mLocalData->writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
+            mLocalData->writeToFile( fileName, fileType, dataType, indexType, fileMode );
         }
 
         // synchronization to avoid that other processors start with
@@ -2056,7 +2055,7 @@ void SparseMatrix<ValueType>::writeToFile1(
 
         if ( getColDistribution().isReplicated() )
         {
-            mLocalData->writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, valuesType, iaType, jaType, writeBinary );
+            mLocalData->writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, dataType, indexType, fileMode );
         }
         else
         {
@@ -2064,7 +2063,7 @@ void SparseMatrix<ValueType>::writeToFile1(
             CSRStorage<ValueType> local;
             bool keepDiagonalProperty = true;
             local.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
-            local.writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, valuesType, iaType, jaType, writeBinary );
+            local.writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, dataType, indexType, fileMode );
         }
     }
     else

@@ -351,6 +351,8 @@ public:
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
+    void setValue( const IndexType globalIndex, const Scalar value );
+
     virtual Scalar min() const;
 
     virtual Scalar max() const;
@@ -397,13 +399,12 @@ public:
 
     /**
      * @brief Implementation of pure method, see Vector::writeToFile
-     *
      */
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::DEFAULT,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const bool writeBinary = false ) const;
+        const std::string& fileType = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
 protected:
 

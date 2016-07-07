@@ -530,14 +530,13 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 
 void Matrix::writeToFile(
     const std::string& fileName,
-    const File::FileType fileType /* = DEFAULT */,
-    const common::scalar::ScalarType valuesType /* = INTERNAL */,
-    const common::scalar::ScalarType iaType /* = INDEX_TYPE */,
-    const common::scalar::ScalarType jaType /* = INDEX_TYPE */,
-    const bool writeBinary /* = false */ ) const
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::scalar::ScalarType indexType /* = UNKNOWN for DEFAULT */,
+    const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
 {
     SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << valuesType << " )" )
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
 
     if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
@@ -546,7 +545,7 @@ void Matrix::writeToFile(
 
         if ( comm.getRank() == 0 )
         {
-            getLocalStorage().writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
+            getLocalStorage().writeToFile( fileName, fileType, dataType, indexType, fileMode );
         }
 
         // synchronization to avoid that other processors start with
@@ -558,7 +557,7 @@ void Matrix::writeToFile(
         DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
         common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
-        repM->writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
+        repM->writeToFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
 

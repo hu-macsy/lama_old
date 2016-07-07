@@ -43,7 +43,7 @@
 
 #include <scai/lama/io/FileType.hpp>
 #include <scai/lama/io/IOUtils.hpp>
-#include <scai/lama/io/FileStream.hpp>
+#include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama/mepr/IOWrapper.hpp>
 
@@ -170,9 +170,23 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
     if ( myRank == host )
     {
         // Only host reads the values
-        IndexType numColumns;
-        StorageIO<ValueType>::readDenseFromFile( mLocalValues, numColumns, filename );
-        SCAI_ASSERT_EQ_ERROR( numColumns, 1, "vector must have exact one column in MatrixMarket file" )
+
+        std::string suffix = FileIO::getSuffix( filename );
+
+        if ( FileIO::canCreate( suffix ) )
+        {
+            // okay, we can use FileIO class from factory
+
+            common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+    
+            fileIO->readArray( mLocalValues, filename );
+        }
+        else
+        {
+            // ToDo: readFromFile( filename + ".<suffix>" ) for all known suffixes
+
+            COMMON_THROWEXCEPTION( "File : " << filename << ", unknown file type " << suffix )
+        }
     }
     else
     {
@@ -387,6 +401,8 @@ tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const dmemo::Halo& 
     return getDistribution().getCommunicator().updateHaloAsync( mHaloValues, mLocalValues, halo );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
@@ -402,6 +418,21 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
     ValueType allValue = getDistribution().getCommunicator().sum( myValue );
     SCAI_LOG_TRACE( logger, "myValue = " << myValue << ", allValue = " << allValue )
     return Scalar( allValue );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar value )
+{
+    SCAI_LOG_TRACE( logger, *this << ": setValue( globalIndex = " << globalIndex << " ) = " <<  value )
+
+    const IndexType localIndex = getDistribution().global2local( globalIndex );
+
+    if ( localIndex != nIndex )
+    {
+        mLocalValues[localIndex] = value.getValue<ValueType>();
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -711,12 +742,45 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
 template<typename ValueType>
 void DenseVector<ValueType>::writeToFile(
-    const std::string& fileBaseName,
-    const File::FileType fileType /* = File::SAMG_FORMAT */,
-    const common::scalar::ScalarType dataType /* = DOUBLE */,
-    const bool writeBinary /* = false */ ) const
+    const std::string& fileName,
+    const std::string& fileType,               /* = "", take IO type by suffix   */
+    const common::scalar::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
+    const FileIO::FileMode fileMode            /* = DEFAULT_MODE */ 
+    ) const
 {
-    StorageIO<ValueType>::writeDenseToFile( mLocalValues, 1, fileBaseName, fileType, dataType, writeBinary );
+    std::string suffix = fileType;
+
+    if ( suffix == "" )
+    {
+        suffix = FileIO::getSuffix( fileName );
+    }
+ 
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // okay, we can use FileIO class from factory
+
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        if ( dataType != common::scalar::UNKNOWN )
+        {
+            // overwrite the default settings
+
+            fileIO->setDataType( dataType );
+        }
+
+        if ( fileMode != FileIO::DEFAULT_MODE )
+        {
+            // overwrite the default settings
+
+            fileIO->setMode( fileMode );
+        }
+
+        fileIO->writeArray( mLocalValues, fileName );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "File : " << fileName << ", unknown suffix" )
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/

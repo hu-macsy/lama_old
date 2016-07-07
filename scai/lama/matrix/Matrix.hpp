@@ -42,6 +42,7 @@
 // local library
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/Vector.hpp>
+#include <scai/lama/io/FileIO.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
@@ -120,18 +121,16 @@ public:
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
      * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
      * @param[in] valuesType representation type for output values, default is same type as matrix values
-     * @param[in] iaType representation type for row index values
-     * @param[in] jaType representation type for col index values
-     * @param[in] writeBinary whether the data should be written binary
+     * @param[in] indexType representation type for col/row index values
+     * @param[in] fileMode can be used to forche BINARY or FORMATTED output
      */
 
-    void writeToFile(
+    virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::DEFAULT,
-        const common::scalar::ScalarType valuesType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeBinary = false ) const;
+        const std::string& fileType = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.

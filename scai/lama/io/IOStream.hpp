@@ -242,7 +242,7 @@ template<typename ValueType>
 inline void IOStream::writeBinary( const hmemo::HArray<ValueType>& data,
                                    const common::scalar::ScalarType type )
 {
-    if ( type == common::scalar::INTERNAL || type == common::TypeTraits<ValueType>::stype )
+    if ( type == common::scalar::INTERNAL || common::scalar::INDEX_TYPE == type || type == common::TypeTraits<ValueType>::stype )
     {
         // no type conversion needed
 
@@ -261,7 +261,7 @@ inline void IOStream::readBinary( hmemo::HArray<ValueType>& data,
                                   const IndexType size,
                                   const common::scalar::ScalarType type )
 {
-    if ( common::scalar::INTERNAL == type || type == common::TypeTraits<ValueType>::stype )
+    if ( common::scalar::INTERNAL == type || common::scalar::INDEX_TYPE == type || type == common::TypeTraits<ValueType>::stype )
     {
         // no type conversion needed
 

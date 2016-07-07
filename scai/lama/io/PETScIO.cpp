@@ -1,5 +1,5 @@
 /**
- * @file PetSCIO.cpp
+ * @file PETScIO.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,13 +27,13 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of IO methods for PetSC format
+ * @brief Implementation of IO methods for PETSc format
  * @author Thomas Brandes
  * @date 10.06.2016
  */
 
 
-#include "PetSCIO.hpp"
+#include "PETScIO.hpp"
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
@@ -51,13 +51,13 @@ using namespace hmemo;
 namespace lama
 {
 
-static int MAT_FILE_CLASSID = 1211216;  //<! internal id as specified by PetSC
+static int MAT_FILE_CLASSID = 1211216;  //<! internal id as specified by PETSc
 
-static int VEC_FILE_CLASSID = 1211214;  //<! internal id as specified by PetSC
+static int VEC_FILE_CLASSID = 1211214;  //<! internal id as specified by PETSc
 
 /* --------------------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( PetSCIO::logger, "FileIO.PetSCIO" )
+SCAI_LOG_DEF_LOGGER( PETScIO::logger, "FileIO.PETScIO" )
 
 /* --------------------------------------------------------------------------------- */
 
@@ -67,21 +67,21 @@ static std::string PETSC_SUFFIX   = ".psc";
 /*    Implementation of Factory methods                                              */
 /* --------------------------------------------------------------------------------- */
 
-FileIO* PetSCIO::create()
+FileIO* PETScIO::create()
 {
-    return new PetSCIO();
+    return new PETScIO();
 }   
 
-std::string PetSCIO::createValue()
+std::string PETScIO::createValue()
 {
     return PETSC_SUFFIX;
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PetSCIO::writeAt( std::ostream& stream ) const
+void PETScIO::writeAt( std::ostream& stream ) const
 {
-    stream << "PetSCIO ( ";
+    stream << "PETScIO ( ";
     stream << "suffix = " << PETSC_SUFFIX << ", ";
     writeMode( stream );
     stream << ", only binary, BIG Endian )";
@@ -89,22 +89,18 @@ void PetSCIO::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
-PetSCIO::PetSCIO() 
+PETScIO::PETScIO() 
 {
-    if ( !mBinarySet )
-    {
-        mBinary = true;  // writes binary as default    
-    }
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PetSCIO::writeArrayImpl(
+void PETScIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    SCAI_ASSERT( !mBinarySet || mBinary, "Formatted output not available for MatlabIO" )
+    SCAI_ASSERT( !mFileMode != FORMATTED, "Formatted output not available for MatlabIO" )
 
     // int    VEC_FILE_CLASSID
     // int    number of rows
@@ -139,7 +135,7 @@ void PetSCIO::writeArrayImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PetSCIO::readArrayImpl(
+void PETScIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
@@ -173,11 +169,11 @@ void PetSCIO::readArrayImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PetSCIO::writeStorageImpl(
+void PETScIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName )
 {
-    SCAI_ASSERT( !mBinarySet || mBinary, "Formatted output not available for MatlabIO" )
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for MatlabIO" )
 
     // int    MAT_FILE_CLASSID
     // int    number of rows
@@ -216,7 +212,7 @@ void PetSCIO::writeStorageImpl(
 
     SCAI_LOG_INFO( logger, "File " << fileName << " now open for binary write, append = " << mAppendMode )
 
-    // Note: PetSC starts indexing with 0
+    // Note: PETSc starts indexing with 0
 
     utilskernel::LArray<IndexType> headValues( 4 );
 
@@ -236,7 +232,7 @@ void PetSCIO::writeStorageImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PetSCIO::readStorageImpl(
+void PETScIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {

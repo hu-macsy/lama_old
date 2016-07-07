@@ -55,10 +55,10 @@ static int SAMG_IVERSION   = 4;
 
 /** SAMG file suffixes */
 
-static std::string SAMG_MAT_HEADER_SUFFIX = ".srm";
-static std::string SAMG_MAT_DATA_SUFFIX   = ".samg";
-static std::string SAMG_VEC_HEADER_SUFFIX = ".srv";
-static std::string SAMG_VEC_DATA_SUFFIX   = ".svec";
+static std::string SAMG_MAT_HEADER_SUFFIX = ".frm";
+static std::string SAMG_MAT_DATA_SUFFIX   = ".amg";
+static std::string SAMG_VEC_HEADER_SUFFIX = ".frv";
+static std::string SAMG_VEC_DATA_SUFFIX   = ".vec";
 
 std::string SAMGIO::getVectorFileSuffix() const
 {
@@ -173,13 +173,15 @@ void SAMGIO::writeArrayImpl(
         typeSize = common::typeSize( mScalarTypeData );
     }
 
-    writeVectorHeader( array.size(), typeSize, mBinary, fileName );
+    bool binary = mFileMode != FORMATTED; 
+
+    writeVectorHeader( array.size(), typeSize, binary, fileName );
 
     // write data into SAMG vector data file
 
     std::ios::openmode flags = std::ios::out | std::ios::trunc;
 
-    if ( mBinary )
+    if ( binary )
     {
         flags |= std::ios::binary;
     }
@@ -188,7 +190,7 @@ void SAMGIO::writeArrayImpl(
 
     IOStream outFile( dataFileName, flags );
  
-    if ( mBinary )
+    if ( binary )
     {
         outFile.writeBinary( array, mScalarTypeData );
     }
@@ -335,14 +337,16 @@ void SAMGIO::writeStorageImpl(
     csrIA += 1;    
     csrJA += 1;     
 
-    writeMatrixHeader( numRows, numValues, mBinary, fileName );
+    bool binary = ( mFileMode != FORMATTED );
+
+    writeMatrixHeader( numRows, numValues, binary, fileName );
 
     SCAI_LOG_INFO( logger, *this << ": writeCSRData( " << fileName << " )" << ", #rows = " << csrIA.size() - 1
                             << ", #values = " << csrJA.size() )
 
     std::ios::openmode flags = std::ios::out | std::ios::trunc;
 
-    if ( mBinary )
+    if ( binary )
     {
         flags |= std::ios::binary;
     }
@@ -351,7 +355,7 @@ void SAMGIO::writeStorageImpl(
 
     IOStream outFile( dataFileName, flags );
 
-    if ( mBinary )
+    if ( binary )
     {
         // take care of file type conversions as specified
 

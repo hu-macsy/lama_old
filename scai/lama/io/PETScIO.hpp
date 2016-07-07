@@ -1,5 +1,5 @@
 /**
- * @file PetSCIO.hpp
+ * @file PETScIO.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -49,10 +49,10 @@ namespace lama
  *   - stores data always in BIG endian (x86 has LITTLE endian)
  */
 
-class PetSCIO : 
+class PETScIO : 
 
-    public CRTPFileIO<PetSCIO>,         // use type conversions
-    public FileIO::Register<PetSCIO>    // register at factory
+    public CRTPFileIO<PETScIO>,         // use type conversions
+    public FileIO::Register<PETScIO>    // register at factory
 
 {
 
@@ -60,7 +60,7 @@ public:
 
     /** Constructor might reset default values */
 
-    PetSCIO();
+    PETScIO();
 
     /** Implementation for Printable.:writeAt */
 
