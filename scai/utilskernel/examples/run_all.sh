@@ -66,6 +66,7 @@ i=0
 
 # run examples
 RUN 1 vectorAdd.exe
+RUN 1 SingleAccess.exe
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/*.exe | wc -l`

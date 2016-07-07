@@ -289,14 +289,10 @@ void HArrayUtils::setValImpl(
     const IndexType index,
     const ValueType val )
 {
-    ContextPtr loc = target.getValidContext();   // preferred location where to fill
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    setVal.getSupportedContext( loc );
-    SCAI_LOG_INFO( logger, "setVal<" << common::TypeTraits<ValueType>::id() << ">[" << index
-                   << "] = " << val << " @ " << *loc )
+    // setting single value will directly copy to the device with the valid incarnation
+    ContextPtr loc = target.getValidContext();  
     WriteAccess<ValueType> wTarget( target, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    setVal[loc]( wTarget.get() + index, 1, val, reduction::COPY );
+    wTarget.putValue( val, index );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -320,11 +316,9 @@ ValueType HArrayUtils::getValImpl(
     SCAI_ASSERT_DEBUG( index < array.size(), "index = " << index << " out of range for array = " << array );
     // get the data from a valid context, avoids any memory copy.
     ContextPtr loc = array.getValidContext();
-    static LAMAKernel<UtilKernelTrait::getValue<ValueType> > getValue;
-    getValue.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<ValueType> rArray( array, loc );
-    ValueType val = getValue[loc]( rArray.get(), index );
+    ValueType val;
+    rArray.getValue( val, index );
     return val;
 }
 

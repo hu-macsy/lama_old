@@ -100,8 +100,9 @@ public:
 
         IndexProxy& operator= ( const IndexProxy& other )
         {
-            ValueType tmp = HArrayUtils::getVal<ValueType>( mArray, mIndex );
+            ValueType tmp = HArrayUtils::getVal<ValueType>( other.mArray, other.mIndex );
             HArrayUtils::setVal( mArray, mIndex, tmp );
+            return *this;
         }
 
     private:
