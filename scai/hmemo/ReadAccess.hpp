@@ -124,7 +124,7 @@ public:
      * @param[out] val will contain value from array[pos]
      * @param[in] pos is the position of array to read from, 0 <= pos < size()
      */
-    void getValue( ValueType& val, const IndexType pos );
+    void getValue( ValueType& val, const IndexType pos ) const;
 
     /**
      * @brief Releases the acquired ReadAccess.
@@ -214,16 +214,16 @@ void ReadAccess<ValueType>::release()
 template<typename ValueType>
 const Memory& ReadAccess<ValueType>::getMemory() const
 {
-    SCAI_ASSERT( mArray, "ReadAccess has already been released." )
+    SCAI_ASSERT_ERROR( mArray, "ReadAccess has already been released." )
     return mArray->getMemory( mContextDataIndex );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ReadAccess<ValueType>::getValue( ValueType& val, const IndexType pos )
+void ReadAccess<ValueType>::getValue( ValueType& val, const IndexType pos ) const
 {
-    SCAI_ASSERT_ERROR( 0 <= pos && pos < mArray->size(), "Index " << pos << " out of range" )
+    SCAI_ASSERT_DEBUG( 0 <= pos && pos < mArray->size(), "Index " << pos << " out of range" )
 
     const Memory& mem = mArray->getMemory( mContextDataIndex );
     const Memory& hostMem = *Context::getHostPtr()->getLocalMemoryPtr();

@@ -292,7 +292,7 @@ void HArrayUtils::setValImpl(
     // setting single value will directly copy to the device with the valid incarnation
     ContextPtr loc = target.getValidContext();  
     WriteAccess<ValueType> wTarget( target, loc );
-    wTarget.putValue( val, index );
+    wTarget.setValue( val, index );
 }
 
 /* --------------------------------------------------------------------------- */

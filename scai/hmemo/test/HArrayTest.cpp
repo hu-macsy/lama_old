@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_CASE( remoteTest )
         ReadAccess<ValueType> readA( hostA, hostContext ); 
         WriteAccess<ValueType> writeA( remA, remoteContext ); 
         ValueType elem = readA[i];
-        writeA.putValue( elem, i );
+        writeA.setValue( elem, i );
     }
 
     IndexType sum = 0;

@@ -173,7 +173,7 @@ public:
      * @param[in] pos is the position where to write 0 <= pos < capacity()
      */
 
-    void putValue( const ValueType val, const IndexType pos );
+    void setValue( const ValueType val, const IndexType pos );
 
     /**
      * @brief Return a single value to host memory.
@@ -181,7 +181,7 @@ public:
      * @param[out] val will contain value from array[pos]
      * @param[in] pos is the position of array to read from, 0 <= pos < size()
      */
-    void getValue( ValueType& val, const IndexType pos );
+    void getValue( ValueType& val, const IndexType pos ) const;
 
     /**
      * @brief Releases the WriteAccess on the associated HArray.
@@ -264,7 +264,7 @@ const Memory& WriteAccess<ValueType>::getMemory() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void WriteAccess<ValueType>::putValue( const ValueType val, const IndexType pos )
+void WriteAccess<ValueType>::setValue( const ValueType val, const IndexType pos )
 {
     SCAI_ASSERT_ERROR( 0 <= pos && pos < mArray->size(), "Index out of range" )
 
@@ -276,7 +276,7 @@ void WriteAccess<ValueType>::putValue( const ValueType val, const IndexType pos 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void WriteAccess<ValueType>::getValue( ValueType& val, const IndexType pos )
+void WriteAccess<ValueType>::getValue( ValueType& val, const IndexType pos ) const
 {
     SCAI_ASSERT_ERROR( 0 <= pos && pos < mArray->size(), "Index " << pos << " out of range" )
 

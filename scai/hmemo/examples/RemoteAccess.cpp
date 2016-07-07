@@ -65,7 +65,7 @@ int main()
         ReadAccess<ValueType> readA( hostA, host ); 
         WriteAccess<ValueType> writeA( gpuA, gpu ); 
         ValueType elem = readA[i];
-        writeA.putValue( elem, i );
+        writeA.setValue( elem, i );
     }
 
     IndexType sum = 0;
