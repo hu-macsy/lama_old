@@ -49,6 +49,7 @@ int main()
     if ( ! Context::canCreate( Context::CUDA ) )
     {
         cout << "Example program skipped, no CUDA available." << endl;
+        return 0;
     }
 
     ContextPtr host = Context::getHostPtr();
