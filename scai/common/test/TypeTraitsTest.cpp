@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_arithmetic_test_types 
 
     // there should be no value between one and one1
 
-    ValueType one2 = ( one + one1 ) * 0.5;
+    ValueType one2 = ( one + one1 ) * ValueType( 0.5 );
 
     BOOST_CHECK( one2 == one1 || one2 == one );
 
