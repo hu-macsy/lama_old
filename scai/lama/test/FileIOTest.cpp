@@ -1,5 +1,5 @@
 /**
- * @file StorageIOTest.cpp
+ * @file FileIOTest.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class StorageIOTest
+ * @brief Contains the implementation of the class FileIOTest
  * @author Alexander Büchel
  * @date 02.03.2012
  */
@@ -38,9 +38,12 @@
 #include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
+#include <scai/utilskernel/HArrayUtils.hpp>
+
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
+using namespace scai;
 using namespace scai::common;
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -58,33 +61,33 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 7;
     const IndexType numColumns = 7;
-    static ValueType values[] =
-    {
-        6.0f, 0.0f, 0.0f, 4.0f, 0.0f, 1.0f, -2.11f, 7.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 9.0f, 4.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 3.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.1f, 0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 2.3f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 1.0f, -3.0f
-    };
-    // just make sure that number of entries in values matches the matrix size
-    BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
+
+    // values: take numRows x numColums random numbers of required type
+
+    HArray<ValueType> values;
+    float fillRate = 0.2;    
+    utilskernel::HArrayUtils::setRandom( values, numRows * numColumns, fillRate );
+
     ValueType eps = static_cast<ValueType>( 1E-5 );
+
     // Note: diagonal property of sparse matrices will be set due to square matrix
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+
+    storage.setDenseData( numRows, numColumns, values, eps );
 }
 
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOFormatted, ValueType, scai_arithmetic_test_types )
 {
-    if ( isComplex( TypeTraits<ValueType>::stype ) )
-    {
-        return;
-    }
-
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
+ 
+    SCAI_LOG_INFO( logger, "FileIOFormatted: write SAMG Formatted of this storage: " << csrMatrix )
+
     std::string filename = "out_formatted.frm";
-    csrMatrix.writeToFile( filename, "", TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, FileIO::FORMATTED );
+    csrMatrix.writeToFile( filename, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::FORMATTED );
+    BOOST_CHECK( FileIO::fileExists( filename ) );
     readMatrix.readFromFile( filename );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
@@ -99,26 +102,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOFormatted, ValueType, scai_arithmetic_test_
     }
 
     int rc = FileIO::removeFile( filename );
+
     BOOST_CHECK_EQUAL( rc, 0 );
+    BOOST_CHECK( ! FileIO::fileExists( filename ) );
 }
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOmatrixMarket, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOMatrixMarket, ValueType, scai_arithmetic_test_types )
 {
-    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
-
-    if ( isComplex( stype ) || ( stype == scalar::LONG_DOUBLE ) )
-    {
-        return;
-    }
+    // scalar::ScalarType stype = TypeTraits<ValueType>::stype;
 
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
+
     std::string filename = "out_matrix_market.mtx";   
-    csrMatrix.writeToFile( filename );  // will use MatrixMarket format
+
+    SCAI_LOG_INFO( logger, "FileIOMatrixMarket: write to file " << filename << " this storage: " << csrMatrix )
+
+    // specify all values to ignore any settings
+    csrMatrix.writeToFile( filename, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::FORMATTED );
+
+    BOOST_REQUIRE( FileIO::fileExists( filename ) );
+
     readMatrix.readFromFile( filename );
+
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
 
@@ -131,23 +140,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOmatrixMarket, ValueType, scai_arithmetic_te
     }
 
     int rc = FileIO::removeFile( filename );
+
     BOOST_CHECK_EQUAL( rc, 0 );
+    BOOST_CHECK( ! FileIO::fileExists( filename ) );
+
+    BOOST_CHECK_THROW (
+    {
+        readMatrix.readFromFile( filename );
+    },
+    Exception );
 }
 
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOBinary, ValueType, scai_arithmetic_test_types )
 {
-    if ( isComplex( TypeTraits<ValueType>::stype ) )
-    {
-        return;
-    }
-
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
     setDenseData( csrMatrix );
     std::string filename = "out_binary.frm";
-    csrMatrix.writeToFile( filename, "", TypeTraits<ValueType>::stype, TypeTraits<IndexType>::stype, FileIO::BINARY );
+
+    csrMatrix.writeToFile( filename, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::BINARY );
+
+    BOOST_REQUIRE( FileIO::fileExists( filename ) );
+
     readMatrix.readFromFile( filename );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumRows(), csrMatrix.getNumRows() );
     BOOST_REQUIRE_EQUAL( readMatrix.getNumColumns(), csrMatrix.getNumColumns() );
@@ -164,7 +180,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FileIOBinary, ValueType, scai_arithmetic_test_typ
     }
 
     int rc = FileIO::removeFile( filename );
+
     BOOST_CHECK_EQUAL( rc, 0 );
+    BOOST_CHECK( ! FileIO::fileExists( filename ) );
 }
 
 /* ------------------------------------------------------------------------- */

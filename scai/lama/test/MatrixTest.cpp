@@ -158,16 +158,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     testSameMatrix( formattedMatrix, readBinaryMatrix );
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading Matrix Market matrix" );
     std::string matrixMarketFileName = prefix + "/test_matrix_mm.tmp" + ".mtx";
-    formattedMatrix.writeToFile( matrixMarketFileName, "", scai::common::scalar::DOUBLE );
+    formattedMatrix.writeToFile( matrixMarketFileName, "", scai::common::scalar::DOUBLE, scai::common::scalar::INDEX_TYPE, FileIO::FORMATTED );
     MatrixType readMarketMatrix( matrixMarketFileName );
     SCAI_LOG_INFO( logger, "mtx matrix: " << readMarketMatrix )
     testSameMatrix( formattedMatrix, readMarketMatrix );
 
     // remove temporarily created matrix files, no more check here
 
-    FileIO::removeFile( formattedFileName );
-    FileIO::removeFile( binaryFileName );
-    FileIO::removeFile( matrixMarketFileName );
+    int rc = FileIO::removeFile( formattedFileName );
+    BOOST_CHECK_EQUAL( 0, rc );
+    rc = FileIO::removeFile( binaryFileName );
+    BOOST_CHECK_EQUAL( 0, rc );
+    rc = FileIO::removeFile( matrixMarketFileName );
+    BOOST_CHECK_EQUAL( 0, rc );
 }
 
 /* --------------------------------------------------------------------- */

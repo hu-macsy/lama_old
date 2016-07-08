@@ -1294,6 +1294,8 @@ void MatrixStorage<ValueType>::writeToFile(
             fileIO->setMode( mode );
         }
 
+        SCAI_LOG_INFO( logger, "write matrix storage to file, FileIO = " << *fileIO << ", storage = " << *this )
+
         // Note. SCAI_IO_TYPE_DATA allows that data is converted
 
         fileIO->writeStorage( *this, fileName );

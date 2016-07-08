@@ -228,6 +228,8 @@ int FileIO::removeFile( const std::string& fileName )
     {
         common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
+        SCAI_LOG_INFO( logger, "delete file via " << *fileIO )
+
         return fileIO->deleteFile( fileName );
     }
 

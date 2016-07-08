@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmeti
     verifySameVector<ValueType>( vector3, result );
     FileIO::removeFile( prefix + "/" + testfilename + ".frv" );
     // write and read mtx
-    vector.writeToFile( prefix + "/" + testfilename + ".mtx" );
+    vector.writeToFile( prefix + "/" + testfilename + ".mtx", "", TypeTraits<ValueType>::stype, FileIO::FORMATTED );
     DenseVector<ValueType> vector6( prefix + "/" + testfilename + ".mtx" );
     vector6.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector6, result );

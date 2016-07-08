@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE( remoteTest )
         writeA.setValue( elem, i );
     }
 
-    IndexType sum = 0;
+    ValueType sum = 0;
 
     {
         ReadAccess<double> readA( remA, hostContext );

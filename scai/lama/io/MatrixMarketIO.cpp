@@ -392,7 +392,7 @@ void MatrixMarketIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    SCAI_ASSERT_ERROR( mFileMode != BINARY, "Matrix market format can not be written binary" );
+    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
@@ -652,7 +652,7 @@ void MatrixMarketIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
-    SCAI_ASSERT_ERROR( mFileMode != BINARY, "Matrix market format can not be written binary" );
+    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
     COOStorage<ValueType> coo( storage );
 

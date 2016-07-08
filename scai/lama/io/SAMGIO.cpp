@@ -525,6 +525,37 @@ SAMGIO::Guard::~Guard()
 
 /* --------------------------------------------------------------------------------- */
 
+int SAMGIO::deleteFile( const std::string& fileName )
+{
+    int rc = -1;
+
+    if ( FileIO::hasSuffix( fileName, this->getMatrixFileSuffix() ) )
+    {
+        rc = std::remove( fileName.c_str() );
+    }
+    else if ( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ) )
+    {
+        rc = std::remove( fileName.c_str() );
+    }
+    else
+    {
+        SCAI_LOG_WARN( logger, *this << ", unsupported suffix for file " << fileName )
+    }
+
+    if ( rc != 0 ) 
+    {
+        return rc;
+    }
+
+    std::string dataFileName = getDataFileName( fileName );
+
+    rc = std::remove( dataFileName.c_str() );
+
+    return rc;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 }  // lama
 
 }  // scai
