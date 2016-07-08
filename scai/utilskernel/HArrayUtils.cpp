@@ -112,8 +112,8 @@ void HArrayUtils::setArray(
     const ContextPtr prefLoc )
 {
     // verify that dynamic cast operations went okay before
-    SCAI_ASSERT_ERROR( &target, "NULL target" )
-    SCAI_ASSERT_ERROR( &source, "NULL source" )
+//    SCAI_ASSERT_ERROR( &target, "NULL target" )
+//    SCAI_ASSERT_ERROR( &source, "NULL source" )
     // set should be available on interface for each loc
     static LAMAKernel<UtilKernelTrait::set<TargetValueType, SourceValueType> > set;
     ContextPtr loc = prefLoc;

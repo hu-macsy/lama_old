@@ -709,7 +709,7 @@ template<typename OtherValueType>
 void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>& other )
 {
     // check for valid pointer, might be dynamic cast went wrong somewhere else
-    SCAI_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
+    //SCAI_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
     SCAI_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
     // inherit size and distributions
     Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
