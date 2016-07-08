@@ -68,7 +68,7 @@ int main()
         writeA.setValue( elem, i );
     }
 
-    IndexType sum = 0;
+    ValueType sum = 0;
 
     {
         ReadAccess<double> readA( gpuA, host );
