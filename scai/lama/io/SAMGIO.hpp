@@ -79,6 +79,10 @@ public:
 
     static std::string createValue();
 
+    /** Override default implementation as also data files should be deleted. */
+
+    virtual int deleteFile( const std::string& fileName );
+
 public:
  
     /** Typed version of writeStorage

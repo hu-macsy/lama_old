@@ -499,7 +499,7 @@ public:
      * @brief write the matrix storage to an output file
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
+     * @param[in] fileType format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
      * @param[in] valuesType representation type for output values, default is same type as matrix values
      * @param[in] indexType representation type for row/col index values (default is settings of FileIO)
      * @param[in] mode, use BINARY or FORMATTED to force a certain mode
