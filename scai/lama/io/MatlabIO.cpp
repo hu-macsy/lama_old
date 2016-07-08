@@ -169,7 +169,7 @@ void MatlabIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
-    SCAI_ASSERT( !mFileMode != BINARY, "Binary mode not supported for " << *this )
+    SCAI_ASSERT( mFileMode != BINARY, "Binary mode not supported for " << *this )
 
     COOStorage<ValueType> coo( storage );
 
