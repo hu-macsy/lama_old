@@ -683,11 +683,23 @@ void HArrayUtils::setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo:
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void HArrayUtils::setRandom( hmemo::HArray<ValueType>& array,
+void HArrayUtils::setRandom( hmemo::_HArray& array,
                              const IndexType n,
                              const float fillRate,
                              const hmemo::ContextPtr prefLoc )
+{
+    // use meta-programming to call setRandomImpl<ValueType> with the type of array
+
+    mepr::UtilsWrapper< SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setRandom( array, n, fillRate, prefLoc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::setRandomImpl( hmemo::HArray<ValueType>& array,
+                                 const IndexType n,
+                                 const float fillRate,
+                                 const hmemo::ContextPtr prefLoc )
 {
     ContextPtr loc = Context::getHostPtr();   // currently only available on host
     WriteOnlyAccess<ValueType> wArray( array, loc, n );
@@ -890,6 +902,8 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::setVal<ValueType>( hmemo::_HArray&, const IndexType, const ValueType );                            \
     template ValueType HArrayUtils::getVal<ValueType>( const hmemo::_HArray&, const IndexType );                                  \
     template ValueType HArrayUtils::getValImpl<ValueType>( const hmemo::HArray<ValueType>&, const IndexType );                    \
+    template void HArrayUtils::assignScalar<ValueType>( hmemo::_HArray&, const ValueType,                                         \
+                                                        const reduction::ReductionOp, hmemo::ContextPtr);                         \
     template void HArrayUtils::setScalar<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                                  \
                                                      const reduction::ReductionOp, hmemo::ContextPtr);                            \
     template void HArrayUtils::assignScaled<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                               \
@@ -914,7 +928,7 @@ void HArrayUtils::buildDenseArray(
     template ValueType HArrayUtils::scan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                              \
     template ValueType HArrayUtils::unscan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                             \
     template void HArrayUtils::sort<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&, hmemo::ContextPtr );        \
-    template void HArrayUtils::setRandom<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );            \
+    template void HArrayUtils::setRandomImpl<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );        \
     template void HArrayUtils::buildSparseArray<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,                 \
             const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                 \
     template void HArrayUtils::buildDenseArray<ValueType>( hmemo::HArray<ValueType>&, const IndexType,                            \

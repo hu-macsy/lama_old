@@ -56,6 +56,7 @@ namespace mepr
 /*
  * Forward declartion
  */
+template<typename TList> struct UtilsWrapper;
 template<typename ValueType, typename TList> struct UtilsWrapperT;
 
 template<typename TList1, typename TList2> struct UtilsWrapperTT1;
@@ -64,6 +65,14 @@ template<typename ValueType, typename TList2> struct UtilsWrapperTT2;
 /*
  * Termination
  */
+template<> struct UtilsWrapper<common::mepr::NullType>
+{
+    static void setRandom( hmemo::_HArray& array, IndexType, float, hmemo::ContextPtr )
+    {
+        COMMON_THROWEXCEPTION( "setRandom not instantiated for " << array.getValueType() )
+    }
+};
+
 template<typename ValueType> struct UtilsWrapperT<ValueType, common::mepr::NullType>
 {
     static void setArray( hmemo::HArray<ValueType>&, const hmemo::_HArray&, const reduction::ReductionOp, const hmemo::ContextPtr ) {}
@@ -94,6 +103,23 @@ template<typename ValueType> struct UtilsWrapperTT2<ValueType, common::mepr::Nul
 /*
  * Step n
  */
+
+template<typename H, typename T> 
+struct UtilsWrapper<common::mepr::TypeList<H, T> >
+{
+    static void setRandom( hmemo::_HArray& array, IndexType n, float fillRate, hmemo::ContextPtr loc )
+    {
+        if ( common::getScalarType<H>() ==  array.getValueType() )
+        {
+            HArrayUtils::setRandomImpl( reinterpret_cast<hmemo::HArray<H>&>( array ), n, fillRate, loc );
+        }
+        else
+        {
+            UtilsWrapper<T>::setRandom( array, n, fillRate, loc );
+        }
+    }
+};
+
 template<typename ValueType, typename H, typename T>
 struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
 {
@@ -173,8 +199,6 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         }
     }
 };
-
-
 
 template<typename H, typename T, typename TList2>
 struct UtilsWrapperTT1<common::mepr::TypeList<H, T>, TList2 >

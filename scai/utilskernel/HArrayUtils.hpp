@@ -335,11 +335,24 @@ public:
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
      */
 
-    template<typename ValueType>
-    static void setRandom( hmemo::HArray<ValueType>& array,
+    static void setRandom( hmemo::_HArray& array,
                            IndexType n,
                            float fillRate = 1.0f,
                            hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Sete an array with random values.
+     *
+     *  @param[out] array    will contain random values of its type
+     *  @param[in]  n        number of values, becomes size of array
+     *  @param[in]  fillRate ratio of non-zero values
+     *  @param[in]  prefLoc  optional the context where random numbers should be drawn
+     */
+
+    template<typename ValueType>
+    static void setRandomImpl( hmemo::HArray<ValueType>& array,
+                               IndexType n,
+                               float fillRate = 1.0f,
+                               hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
 

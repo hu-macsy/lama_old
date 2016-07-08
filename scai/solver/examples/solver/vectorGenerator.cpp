@@ -272,22 +272,28 @@ int main( int argc, const char* argv[] )
     }
 
     cout << "Vector (uninitialized): " << *v << endl;
+
     *v = options.value;
 
     if ( options.random )
     {
         using namespace hmemo;
+
         // we know what we do here, so const_cast is okay
 
         _HArray& vLocal = const_cast<_HArray&>( v->getLocalValues() );
 
-        utilskernel::LArray<double> rnd;
-
         IndexType n = vLocal.size();
+
         float fillRate = 1.0f;          // full fill, no zero entries
 
-        utilskernel::HArrayUtils::setRandom( rnd, n, fillRate );
-        utilskernel::HArrayUtils::assignOp( vLocal, rnd, utilskernel::reduction::MULT );
+        utilskernel::HArrayUtils::setRandom( vLocal, n, fillRate );
+        // scale random numbers from -1 .. 1 with options.value
+        utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<ScalarRepType>(), utilskernel::reduction::MULT );
+    }
+    else
+    {
+        *v = options.value;
     }
 
     cout << "Vector generated: " << *v << endl;
