@@ -37,7 +37,6 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/StorageIO.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>

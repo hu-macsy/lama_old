@@ -39,13 +39,8 @@
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
-#include <scai/lama/StorageIO.hpp>
 
-#include <scai/lama/io/FileType.hpp>
-#include <scai/lama/io/IOUtils.hpp>
 #include <scai/lama/io/FileIO.hpp>
-
-#include <scai/lama/mepr/IOWrapper.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/HArrayUtils.hpp>

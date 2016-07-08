@@ -40,10 +40,6 @@
 // base classes
 #include <scai/lama/Vector.hpp>
 
-// local library
-#include <scai/lama/io/mmio.hpp>
-#include <scai/lama/io/FileType.hpp>
-
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/dmemo/Distribution.hpp>

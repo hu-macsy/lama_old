@@ -107,7 +107,6 @@ scai_project (
     CLASSES                  # .cpp, .hpp
 
         DenseVector
-        StorageIO
         Vector
 
     HEADERS                  # .hpp only

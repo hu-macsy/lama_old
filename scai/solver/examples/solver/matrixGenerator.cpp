@@ -39,7 +39,6 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
-#include <scai/lama/StorageIO.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/common/mepr/TypeListUtils.hpp>
@@ -205,11 +204,11 @@ int main( int argc, char* argv[] )
 
         // add suffix frm, frv if not available
 
-        if ( _StorageIO::hasSuffix( matrixFileName, ".frm" ) )
+        if ( FileIO::hasSuffix( matrixFileName, ".frm" ) )
         {
             vectorFileName.replace( vectorFileName.length() - 4, 4, ".frv" );
         }
-        else if ( _StorageIO::hasSuffix( matrixFileName, ".frv" ) )
+        else if ( FileIO::hasSuffix( matrixFileName, ".frv" ) )
         {
             matrixFileName.replace( matrixFileName.length() - 4, 4, ".frm" );
         }

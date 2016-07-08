@@ -38,11 +38,7 @@ scai_project (
 
     CLASSES
         
-        FileStream
         IOStream
-        IOUtils
-        XDRFileStream
-        mmio
 
         FileIO
         SAMGIO
@@ -53,7 +49,6 @@ scai_project (
     HEADERS
 
         CRTPFileIO
-        FileType
 
     ADD_PARENT_SCOPE
 )
