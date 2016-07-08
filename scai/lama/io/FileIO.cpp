@@ -117,6 +117,8 @@ void FileIO::writeAt( std::ostream& stream ) const
 
 void FileIO::writeMode( std::ostream& stream ) const
 {
+    stream << "FileMode = ";
+
     if ( mFileMode == BINARY )
     {
         stream << "binary";

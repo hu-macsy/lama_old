@@ -91,6 +91,7 @@ std::string MatrixMarketIO::createValue()
 void MatrixMarketIO::writeAt( std::ostream& stream ) const
 {
     stream << "MatrixMarketIO ( ";
+    stream << "suffix = " << MM_SUFFIX << ", ";
     writeMode( stream );
     stream << ", only formatted )";
 }
