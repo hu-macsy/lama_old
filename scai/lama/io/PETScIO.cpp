@@ -100,7 +100,7 @@ void PETScIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    SCAI_ASSERT( !mFileMode != FORMATTED, "Formatted output not available for MatlabIO" )
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for MatlabIO" )
 
     // int    VEC_FILE_CLASSID
     // int    number of rows
