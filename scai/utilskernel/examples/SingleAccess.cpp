@@ -64,7 +64,7 @@ int main()
         gpuA[i] = hostA[i];
     }
 
-    IndexType sum = gpuA.sum();
+    ValueType sum = gpuA.sum();
 
     cout << "Sum = " << sum << " should be " << 2 * Nh + 5 * Nh  << endl;
 
