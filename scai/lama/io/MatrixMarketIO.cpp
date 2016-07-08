@@ -38,6 +38,7 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
+#include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/io/IOStream.hpp>
 
 #include <scai/common/TypeTraits.hpp>
@@ -823,9 +824,21 @@ void MatrixMarketIO::readStorageImpl(
     SCAI_ASSERT_GE( numRows, nrows, "found bigger row indexes than " << numRows )
     SCAI_ASSERT_GE( numColumns, ncols, "found bigger col indexes than " << numColumns )
 
-    COOStorage<ValueType> coo( numRows, numColumns, ia, ja, val );
+    // take the COO arrays and build a COO storage that takes ownership of the data
 
-    storage = coo;
+    COOStorage<ValueType> coo( numRows, numColumns );
+
+    coo.swap( ia, ja, val );
+
+    // make CSR data out of it to get it sorted
+
+    CSRStorage<ValueType> csr( coo );  
+
+    bool diagonalProperty = true;
+
+    csr.sortRows( diagonalProperty );
+
+    storage = csr;
 }
 
 /* --------------------------------------------------------------------------------- */
