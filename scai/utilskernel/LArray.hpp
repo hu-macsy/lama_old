@@ -295,9 +295,9 @@ public:
         return HArrayUtils::getVal<ValueType>( *this, i );
     }
 
-    void setRandom( IndexType n, float fillRate = 1.0f )
+    void setRandom( IndexType n, float fillRate = 1.0f, hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
-         HArrayUtils::setRandomImpl( *this, n, fillRate, this->getFirstTouchContextPtr() );
+        HArrayUtils::setRandomImpl( *this, n, fillRate, context );
     }
 
     /** Get the minimal value of an array */
