@@ -201,6 +201,22 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Multiplication of two arrays: result = x * y
+     *
+     *  @param[out] result  output array
+     *  @param[in]  x       source array
+     *  @param[in]  y       source array
+     *  @param[in]  prefLoc location where operation should be done if possible
+     */
+
+    template<typename ValueType>
+    static void arrayTimesArray(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& y,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** scale array in place : array *= beta
      *
      *  Note: scale will be done where array has currently valid values. The preferred
@@ -214,6 +230,12 @@ public:
 
     template<typename ValueType>
     static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+
+    /** Calculates the exponentional function of the vector elements in place. */
+
+    template<typename ValueType>
+    static void exp( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /*
      * Implementation of functions
@@ -320,14 +342,26 @@ public:
 
     /** Initialize an array with the sequence 0, .., n-1
      *
-     *  @param[out] array will contain the values 0, ..., n-1
-     *  @param[in]  n     becomes size of the array
+     *  @param[out] array   will contain the values 0, ..., n-1
+     *  @param[in]  n       becomes size of the array
      *  @param[in]  prefLoc optional the context where allocation/initialization should be done
      */
 
     static void setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Sete an array with random values.
+    /** Initilize an array with a sequence of values starting with startValue, incrementing by inc
+     *
+     *  @param[out] array       will contain the values startValue, ..., startValue + (n-1)*inc
+     *  @param[in]  startValue  startValue of the sequence
+     *  @param[in]  inc         increment of the sequence
+     *  @param[in]  n           becomes size of the array
+     *  @param[in]  prefLoc     optional the context where allocation/initialization should be done
+     */
+
+    template<typename ValueType>
+    static void setSequence( hmemo::HArray<ValueType>& array, ValueType startValue, ValueType inc, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Set an array with random values.
      *
      *  @param[out] array    will contain random values of its type
      *  @param[in]  n        number of values, becomes size of array

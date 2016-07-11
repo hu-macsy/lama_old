@@ -160,6 +160,18 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
+    struct setSequence
+    {
+        /** Set all elements of a contiguous array with its order number 0, 1, 2, ... */
+
+        typedef void ( *FuncType ) ( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
+        static const char* getId()
+        {
+            return "Util.setSequence";
+        }
+    };
+
+    template<typename ValueType>
     struct getValue
     {
         typedef ValueType ( *FuncType ) ( const ValueType* array, const IndexType i );
@@ -178,6 +190,27 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Util.set";
+        }
+    };
+
+    template <typename ValueType>
+    struct vectorScale
+    {
+        /** @brief Building absolute maximum of element-wise difference of vector elements.
+         *
+         *  @param result[out] result array
+         *  @param x[in]       first input array
+         *  @param y[in]       second input array
+         *  @param n           size of all three arrays
+         *  @returns           result[i] = alpha * x[i] * y[i], \f$ 0 \le i < n \f$
+         *
+         *  Function is helpful to compute maximum norm for vectors and matrices
+         */
+
+        typedef void ( *FuncType ) ( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
+        static const char* getId()
+        {
+            return "Util.vectorScale";
         }
     };
 
@@ -310,6 +343,24 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Util.conj";
+        }
+    };
+
+    template<typename ValueType>
+    struct exp
+    {
+        /** @brief Calculates the exponentional function of the elements
+         *
+         *  @param[in,out]  values is the array with entries to exp
+         *  @param[in]      n      is the number of entries in values
+         */
+        typedef void ( *FuncType ) (
+            ValueType values[],
+            const IndexType n );
+
+        static const char* getId()
+        {
+            return "Util.exp";
         }
     };
 

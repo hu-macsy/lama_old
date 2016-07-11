@@ -186,6 +186,14 @@ public:
 
     Vector& operator=( const Expression_SV& expression );
 
+    /** this = x * y */
+
+    Vector& operator=( const Expression_VV );
+
+    /** this = alpha * x * y */
+
+    Vector& operator=( const Expression_SVV );
+
     /** this +=  alpha * A * x */
 
     Vector& operator+=( const Expression_SMV& expression );
@@ -221,6 +229,14 @@ public:
      * @return            a reference to this.
      */
     Vector& operator*=( const Scalar value );
+
+    /**
+     * @brief Multiplies the passed value with all elements of this.
+     *
+     * @param[in] other   the vector to multiply to do the multiplication per element
+     * @return            a reference to this.
+     */
+    Vector& operator*=( const Vector& other );
 
     /**
      * @brief Divides the passed value with all elements of this.
@@ -474,6 +490,8 @@ public:
      */
     virtual void assign( const Expression_SV_SV& expression ) = 0;
 
+    virtual void assign( const Expression_SVV& expression ) = 0;
+
     /**
      * @brief Returns the dot product of this and other.
      *
@@ -481,6 +499,14 @@ public:
      * @return            the dot product of this and other
      */
     virtual Scalar dotProduct( const Vector& other ) const = 0;
+
+    /**
+     *  @brief Scale a Vector with another Vector.
+     *
+     *  @param[in] other   the other vector to scale this with
+     *  @return            reference to the scaled vector
+     */
+    virtual Vector& scale( const Vector& other ) = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
@@ -545,6 +571,11 @@ public:
      *  Build the conjugate vector in place.
      */
     virtual void conj() = 0;
+
+    /**
+     *  Calculates the exponentional function of the vector elements in place.
+     */
+    virtual void exp() = 0;
 
 protected:
 

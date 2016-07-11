@@ -119,6 +119,28 @@ public:
      */
     DenseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
+    /**
+     * @brief creates a replicated DenseVector of the passed size initilized a sequence of values
+     *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
+     * 
+     * @param[in] size       the size of the new DenseVector.
+     * @param[in] startValue the first value of the new DenseVector
+     * @param[in] inc        the increment for the sequence of values 
+     * @param[in] context    specifies optionally the context where dense vector should reside
+     */
+    DenseVector( const IndexType size, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
+
+    /**
+     * @brief creates a distributed DenseVector of the passed size initilized a sequence of values
+     *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
+     * 
+     * @param[in] distribution  the distribution to use for the new vector.
+     * @param[in] startValue the first value of the new DenseVector
+     * @param[in] inc        the increment for the sequence of values 
+     * @param[in] context    specifies optionally the context where dense vector should reside
+     */
+    DenseVector( dmemo::DistributionPtr distribution, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
+
     /** Constructor of a replicated vector by replicated C++ array. */
 
     /**
@@ -183,6 +205,23 @@ public:
      * @param[in] expression    alpha * x
      */
     DenseVector( const Expression_SV& expression );
+
+    /**
+     *  @brief creates a DenseVector with the Expression alpha * x * Y.
+     *
+     * @param[in] expression    x * y
+     */
+
+    DenseVector( const Expression_VV& expression );
+
+
+    /**
+     *  @brief creates a DenseVector with the Expression alpha * x * Y.
+     *
+     * @param[in] expression    alpha * x * y
+     */
+
+    DenseVector( const Expression_SVV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x + beta * y.
@@ -369,11 +408,15 @@ public:
 
     virtual void conj();
 
+    virtual void exp();
+
     virtual void swap( Vector& other );
 
     virtual void writeAt( std::ostream& stream ) const;
 
     virtual void assign( const Expression_SV_SV& expression );
+
+    virtual void assign( const Expression_SVV& expression );
 
     /** Assign this vector with a scalar values, does not change size, distribution. */
 
@@ -388,6 +431,8 @@ public:
     virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;
+
+    virtual DenseVector& scale( const Vector& other );
 
     using Vector::prefetch; // prefetch() with no arguments
 

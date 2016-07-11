@@ -79,6 +79,44 @@ void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void OpenMPUtils::exp( ValueType mValues[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.exp" )
+
+    if ( n > 0 )
+    {
+        SCAI_LOG_INFO( logger, "exp, #n = " << n )
+        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            mValues[i] = common::Math::exp( mValues[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.vectorScale" )
+
+    if ( n > 0  )
+    {
+        SCAI_LOG_INFO( logger, "vectorScale, #n = " << n )
+        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            result[i] = x[i] * y[i];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType, typename OtherValueType>
 void OpenMPUtils::setScale(
     ValueType outValues[],
@@ -383,6 +421,22 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
     for ( IndexType i = 0; i < n; ++i )
     {
         array[i] = static_cast<ValueType>( i );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.setSequence" )
+    SCAI_LOG_DEBUG( logger, "setSequence<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = " << startValue
+                            << "..., " << ( startValue + (n-1) * inc ) )
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        array[i] = static_cast<ValueType>( startValue + i * inc );
     }
 }
 
@@ -862,8 +916,11 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );

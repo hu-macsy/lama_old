@@ -1046,6 +1046,32 @@
         return Complex<long double>( a.real(), -a.imag() );
     }
 
+// ------------------ Math::exp --------------------------------
+    Complex<float> Math::exp( const Complex<float>& a )
+    {
+        float s, c;
+        float e = ::expf( a.real() );
+        s = ::sinf( a.imag() );
+        c = ::cosf( a.imag() );
+        return Complex<float>( c * e, s * e );
+    }
+    Complex<double> Math::exp( const Complex<double>& a )
+    {
+        double s, c;
+        double e = ::exp( a.real() );
+        s = ::sin( a.imag() );
+        c = ::cos( a.imag() );
+        return Complex<double>( c * e, s * e );
+    }
+    Complex<long double> Math::exp( const Complex<long double>& a )
+    {
+        long double s, c;
+        long double e = ::expl( a.real() );
+        s = ::sinl( a.imag() );
+        c = ::cosl( a.imag() );
+        return Complex<long double>( c * e, s * e );
+    }
+
 // ------------------ Math::real --------------------------------
     float Math::real( const Complex<float>& a )
     {

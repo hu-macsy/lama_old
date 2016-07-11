@@ -38,6 +38,9 @@
 // local library
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
@@ -489,12 +492,16 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
     }
 
     const IndexType localRowSize = dist.getLocalSize();
+
     const IndexType colSize = matrix.getNumColumns();
     const IndexType expectedEntries = static_cast<IndexType>( localRowSize * colSize * density + 30.0 );
     std::vector<IndexType> csrIA( localRowSize + 1 );
+
     std::vector<IndexType> csrJA;
+
     std::vector<ValueType> csrValues;
     csrJA.reserve( expectedEntries );
+
     csrValues.reserve( expectedEntries );
     IndexType numValues = 0;
     csrIA[0] = numValues;
@@ -537,6 +544,255 @@ void MatrixCreator<ValueType>::buildRandom(
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( size, comm ) );
     matrix.allocate( dist, dist );
     fillRandom( matrix, density );
+}
+
+/* ------------------------------------------------------------------------- */
+
+/** Help routine to replicate matrix storage in diagonal blocks. */
+
+template<typename ValueType>
+static void replicateStorageDiag( 
+    MatrixStorage<ValueType>& out,
+    const MatrixStorage<ValueType>& in,
+    const IndexType nRepeat )
+{
+    using namespace hmemo;
+
+    // replication is done via CSR storage data, so get it form input storage
+
+    HArray<IndexType> inIA;
+    HArray<IndexType> inJA;
+    HArray<ValueType> inValues;
+
+    in.buildCSRData( inIA, inJA, inValues );
+
+    IndexType nRows   = inIA.size() - 1;
+    IndexType nCols   = in.getNumColumns();
+    IndexType nValues = inJA.size();
+
+    HArray<IndexType> outIA;
+    HArray<IndexType> outJA;
+    HArray<ValueType> outValues;
+
+    // Replication is done at the host
+
+    ContextPtr ctx = Context::getHostPtr();
+
+    {
+        IndexType offset = 0;   // current offset in new JA, Values array
+
+        ReadAccess<IndexType> rIA( inIA, ctx );
+        ReadAccess<IndexType> rJA( inJA, ctx );
+        ReadAccess<ValueType> rValues( inValues, ctx );
+
+        WriteOnlyAccess<IndexType> wIA( outIA, ctx, nRows * nRepeat + 1 );
+        WriteOnlyAccess<IndexType> wJA( outJA, ctx, nValues * nRepeat );
+        WriteOnlyAccess<ValueType> wValues( outValues, ctx, nValues * nRepeat );
+
+        for ( IndexType iRepeat = 0; iRepeat < nRepeat; iRepeat++ )
+        {
+            for ( IndexType i = 0; i < nRows; i++ )
+            {
+                wIA[ iRepeat * nRows + i ] = offset + rIA[i];   // the current row offset
+            }
+
+            IndexType colOffset = iRepeat * nCols;
+
+            for ( IndexType k = 0; k < nValues; ++k )
+            {
+                wJA[ offset ] = rJA[ k ] + colOffset;
+                wValues[ offset ] = rValues[ k ];
+                offset++;
+            }
+        }
+
+        wIA[ nRepeat * nRows ] = offset;  // final offset
+
+        SCAI_ASSERT_EQUAL( offset, nRepeat * nValues, "size mismatch" );
+    }
+
+    out.setCSRData( nRows * nRepeat, nCols * nRepeat, nValues * nRepeat,
+                    outIA, outJA, outValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static void replicateStorage( 
+    MatrixStorage<ValueType>& out,
+    const MatrixStorage<ValueType>& in,
+    const IndexType nRepeatRow,
+    const IndexType nRepeatCol )
+{
+    int nRepeat = nRepeatRow * nRepeatCol;
+
+    using namespace hmemo;
+    HArray<IndexType> inIA;
+    HArray<IndexType> inJA;
+    HArray<ValueType> inValues;
+
+    in.buildCSRData( inIA, inJA, inValues );
+
+    IndexType nRows   = inIA.size() - 1;
+    IndexType nCols   = in.getNumColumns();
+    IndexType nValues = inJA.size();
+
+    HArray<IndexType> outIA;
+    HArray<IndexType> outJA;
+    HArray<ValueType> outValues;
+
+    // Replication is done at the host
+
+    ContextPtr ctx = Context::getHostPtr();
+
+    {
+        IndexType offset = 0;   // current offset in new JA, Values array
+
+        ReadAccess<IndexType> rIA( inIA, ctx );
+        ReadAccess<IndexType> rJA( inJA, ctx );
+        ReadAccess<ValueType> rValues( inValues, ctx );
+
+        WriteOnlyAccess<IndexType> wIA( outIA, ctx, nRows * nRepeatRow + 1 );
+        WriteOnlyAccess<IndexType> wJA( outJA, ctx, nValues * nRepeat );
+        WriteOnlyAccess<ValueType> wValues( outValues, ctx, nValues * nRepeat );
+
+        for ( IndexType iRepeat = 0; iRepeat < nRepeatRow; iRepeat++ )
+        {
+            for ( IndexType i = 0; i < nRows; i++ )
+            {
+                wIA[ iRepeat * nRows + i ] = offset;   // the current row offset
+
+                IndexType rowOffset  = rIA[i];
+                IndexType nRowValues = rIA[i+1] - rIA[i];
+
+                IndexType colOffset = 0;
+
+                for ( IndexType jRepeat = 0; jRepeat < nRepeatCol; jRepeat++ )
+                {
+                    for ( IndexType jj = 0; jj < nRowValues; ++jj )
+                    {
+                        wJA[ offset ] = rJA[ rowOffset + jj ] + colOffset;
+                        wValues[ offset ] = rValues[ rowOffset + jj ];
+                        offset++;
+                    }
+
+                    colOffset += nCols;
+                }
+            }
+        }
+
+        wIA[ nRepeatRow * nRows ] = offset;   // the final offset
+
+        SCAI_ASSERT_EQUAL( offset, nRepeat * nValues, "serious offset/size mismatch" )
+    }
+
+    out.setCSRData( nRows * nRepeatRow, nCols * nRepeatCol, nValues * nRepeat,
+                    outIA, outJA, outValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixCreator<ValueType>::buildReplicatedDiag( 
+    SparseMatrix<ValueType>& matrix,
+    const MatrixStorage<ValueType>& storage,
+    const IndexType nRepeat )
+{
+    using namespace dmemo;
+
+    // create the distribution
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
+
+    IndexType chunkSize = storage.getNumRows();
+    IndexType nGlobal   = storage.getNumRows() * nRepeat;
+
+    IndexType nLocal;   // will be #local chunks * chunkSize
+    IndexType nChunks;  // will be #local chunks * chunkSi
+
+    // bit tricky: use a cyclic( nLocal)  distribution to get the local size of this processor
+
+    {
+        CyclicDistribution cdist( nGlobal, chunkSize, comm );
+        nChunks = cdist.getNumLocalChunks();
+        nLocal  = cdist.getLocalSize();
+
+        SCAI_ASSERT_EQUAL( nLocal, nChunks * chunkSize, "serious mismatch" )
+    }
+
+    // we will take a general block distribution
+
+    dmemo::DistributionPtr dist( new dmemo::GenBlockDistribution( nGlobal, nLocal, comm ) );
+
+    SCAI_LOG_DEBUG( logger, *comm << ": dist = " << *dist )
+
+    // Allocate the correct size
+
+    matrix.allocate( dist, dist );
+
+    // now build the local part
+
+    if ( nChunks >= 1 )
+    {
+        const MatrixStorage<ValueType>& local = matrix.getLocalStorage();
+
+        // we only change the local part, this is safe!
+
+        replicateStorageDiag( const_cast<MatrixStorage<ValueType>& >( local ), storage, nChunks );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixCreator<ValueType>::buildReplicated( SparseMatrix<ValueType>& matrix,
+        const MatrixStorage<ValueType>& storage,
+        const IndexType nRepeatRow,
+        const IndexType nRepeatCol )
+{
+    using namespace dmemo;
+
+    // create the distribution
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
+
+    IndexType chunkSize = storage.getNumRows();
+    IndexType nGlobal   = storage.getNumRows() * nRepeatRow;
+
+    IndexType nLocal;   // will be #local chunks * chunkSize
+    IndexType nChunks;  // will be #local chunks * chunkSi
+
+    // bit tricky: use a cyclic( nLocal)  distribution to get the local size of this processor
+
+    {
+        CyclicDistribution cdist( nGlobal, chunkSize, comm );
+        nChunks = cdist.getNumLocalChunks();
+        nLocal  = cdist.getLocalSize();
+
+        SCAI_ASSERT_EQUAL( nLocal, nChunks * chunkSize, "serious mismatch" )
+    }
+
+    // we will take a general block distribution
+
+    dmemo::DistributionPtr rowDist( new dmemo::GenBlockDistribution( nGlobal, nLocal, comm ) );
+    dmemo::DistributionPtr colDist( new dmemo::NoDistribution( storage.getNumColumns() * nRepeatCol  ) );
+
+    SCAI_LOG_DEBUG( logger, *comm << ": rowDist for replicated matrix = " << *rowDist )
+
+    // Allocate the correct size
+
+    matrix.allocate( rowDist, colDist );
+
+    // now build the local part
+
+    if ( nChunks >= 1 )
+    {
+        const MatrixStorage<ValueType>& local = matrix.getLocalStorage();
+
+        // we only change the local part, this is safe!
+
+        replicateStorage( const_cast<MatrixStorage<ValueType>& >( local ), storage, nChunks, nRepeatCol );
+    }
 }
 
 /* ========================================================================= */

@@ -134,31 +134,67 @@ class Scalar;
 class Vector;
 class Matrix;
 
+// Vector Expressions
+
 /** Symbolic expression 'Scalar * Vector' */
 
 typedef Expression<Scalar, Vector, Times> Expression_SV;
+
+/** Symbolic expression 'Vector * Vector' */
+
+typedef Expression<Vector, Vector, Times> Expression_VV;
+
+/** Symbolic expression 'Scalar * Vector * Vector' */
+
+typedef Expression<Scalar, Expression<Vector, Vector, Times>, Times> Expression_SVV;
 
 /** Symbolic expression 'Scalar * Vector + Scalar * Vector' */
 
 typedef Expression<Expression_SV, Expression_SV, Plus> Expression_SV_SV;
 
-typedef Expression<Matrix, Vector, Times> Expression_MV;
+// Matrix Expression
 
-typedef Expression<Vector, Matrix, Times> Expression_VM;
-
-typedef Expression<Scalar, Expression<Matrix, Vector, Times>, Times> Expression_SMV;
-
-typedef Expression<Scalar, Expression<Vector, Matrix, Times>, Times> Expression_SVM;
-
-typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
-
-typedef Expression<Expression_SVM, Expression_SV, Plus> Expression_SVM_SV;
+/** Symbolic expression 'Scalar * Matrix' */
 
 typedef Expression<Scalar, Matrix, Times> Expression_SM;
 
+// Matrix-Vector Expressions
+
+/** Symbolic expression 'Matrix * Vector' */
+
+typedef Expression<Matrix, Vector, Times> Expression_MV;
+
+/** Symbolic expression 'Vector * Matrix' */
+
+typedef Expression<Vector, Matrix, Times> Expression_VM;
+
+/** Symbolic expression 'Scalar * Matrix * Vector' */
+
+typedef Expression<Scalar, Expression<Matrix, Vector, Times>, Times> Expression_SMV;
+
+/** Symbolic expression 'Scalar * Vector * Matrix' */
+
+typedef Expression<Scalar, Expression<Vector, Matrix, Times>, Times> Expression_SVM;
+
+/** Symbolic expression 'Scalar * Matrix * Vector + Scalar * Vector' */
+
+typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
+
+/** Symbolic expression 'Scalar * Vector * Matrix + Scalar * Vector' */
+
+typedef Expression<Expression_SVM, Expression_SV, Plus> Expression_SVM_SV;
+
+// Matrix-Matrix Expressions
+
+/** Symbolic expression 'Scalar * Matrix * Matrix' */
+
 typedef Expression<Expression_SM, Matrix, Times> Expression_SMM;
 
+/** Symbolic expression 'Scalar * Matrix + Scalar * Matrix' */
+
 typedef Expression<Expression_SM, Expression_SM, Plus> Expression_SM_SM;
+
+/** Symbolic expression 'Scalar * Matrix * Matrix + Scalar * Matrix' */
 
 typedef Expression<Expression_SMM, Expression_SM, Plus> Expression_SMM_SM;
 

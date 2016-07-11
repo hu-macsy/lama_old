@@ -68,6 +68,16 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
         hmemo::ContextPtr )
     {}
 
+    static void setDIADataImpl(
+        Derived*,
+        const IndexType,
+        const IndexType,
+        const IndexType,
+        const hmemo::HArray<IndexType>&,
+        const hmemo::_HArray&,
+        hmemo::ContextPtr )
+    {}
+
     static void buildCSRDataImpl(
         const Derived*,
         hmemo::HArray<IndexType>&,
@@ -80,22 +90,22 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
         const Derived*,
         hmemo::_HArray&,
         const IndexType )
-    { }
+    {}
 
     static void getDiagonalImpl(
         const Derived*,
         hmemo::_HArray& )
-    { }
+    {}
 
     static void setDiagonalVImpl(
         Derived*,
         const hmemo::_HArray& )
-    { }
+    {}
 
     static void scaleRowsImpl(
         Derived*,
         const hmemo::_HArray& )
-    { }
+    {}
 };
 
 /*
@@ -121,6 +131,25 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H, T> >
         else
         {
             CRTPMatrixStorageWrapper<Derived, T>::setCSRDataImpl( obj, numRows, numColumns, numValues, ia, ja, values, ctx );
+        }
+    }
+
+    static void setDIADataImpl(
+        Derived* obj,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::_HArray& values,
+        hmemo::ContextPtr ctx )
+    {
+        if ( values.getValueType() == common::getScalarType<H>() )
+        {
+            obj->setDIADataImpl( numRows, numColumns, numDiagonals, offsets, reinterpret_cast<const hmemo::HArray<H>& >( values ), ctx );
+        }
+        else
+        {
+            CRTPMatrixStorageWrapper<Derived, T>::setDIADataImpl( obj, numRows, numColumns, numDiagonals, offsets, values, ctx );
         }
     }
 
