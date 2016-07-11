@@ -295,6 +295,11 @@ public:
         return HArrayUtils::getVal<ValueType>( *this, i );
     }
 
+    void setRandom( IndexType n, float fillRate = 1.0f )
+    {
+         HArrayUtils::setRandomImpl( *this, n, fillRate, this->getFirstTouchContextPtr() );
+    }
+
     /** Get the minimal value of an array */
 
     ValueType min() const
