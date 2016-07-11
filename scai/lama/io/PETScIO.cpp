@@ -43,6 +43,16 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 
+#define PETSC_SUFFIX ".psc"
+
+/** Internal id as specified by PETSc */
+
+#define MAT_FILE_CLASSID 1211216 
+
+/** Internal id as specified by PETSc */
+
+#define VEC_FILE_CLASSID 1211214
+
 namespace scai
 {
 
@@ -51,17 +61,9 @@ using namespace hmemo;
 namespace lama
 {
 
-static int MAT_FILE_CLASSID = 1211216;  //<! internal id as specified by PETSc
-
-static int VEC_FILE_CLASSID = 1211214;  //<! internal id as specified by PETSc
-
 /* --------------------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_LOGGER( PETScIO::logger, "FileIO.PETScIO" )
-
-/* --------------------------------------------------------------------------------- */
-
-static std::string PETSC_SUFFIX   = ".psc";
 
 /* --------------------------------------------------------------------------------- */
 /*    Implementation of Factory methods                                              */

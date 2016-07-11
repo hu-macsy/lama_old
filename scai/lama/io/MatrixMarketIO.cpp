@@ -51,6 +51,8 @@
 
 using namespace std;
 
+#define MM_SUFFIX ".mtx"
+
 namespace scai
 {
 
@@ -59,8 +61,6 @@ using namespace utilskernel;
 
 namespace lama
 {
-
-static std::string MM_SUFFIX = ".mtx";
 
 std::string MatrixMarketIO::getVectorFileSuffix() const
 {

@@ -46,6 +46,8 @@
 
 #include <sstream>
 
+#define MATLAB_SUFFIX ".txt" 
+
 using namespace std;
 
 namespace scai
@@ -56,8 +58,6 @@ using namespace utilskernel;
 
 namespace lama
 {
-
-static std::string MATLAB_SUFFIX   = ".txt";
 
 /* --------------------------------------------------------------------------------- */
 /*    Implementation of Factory methods                                              */

@@ -42,6 +42,21 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 
+#include <cstring>
+
+/** SAMG file suffixes
+ * 
+ *  Note: static variables can cause problems as values are already needed during static initialization. 
+ */
+
+#define SAMG_MAT_HEADER_SUFFIX ".frm"
+#define SAMG_MAT_DATA_SUFFIX   ".amg"
+#define SAMG_VEC_HEADER_SUFFIX ".frv"
+#define SAMG_VEC_DATA_SUFFIX   ".vec"
+
+#define SAMG_VERSION_ID 22
+#define SAMG_IVERSION   4
+
 namespace scai
 {
 
@@ -50,15 +65,6 @@ using namespace hmemo;
 namespace lama
 {
 
-static int SAMG_VERSION_ID = 22;
-static int SAMG_IVERSION   = 4;
-
-/** SAMG file suffixes */
-
-static std::string SAMG_MAT_HEADER_SUFFIX = ".frm";
-static std::string SAMG_MAT_DATA_SUFFIX   = ".amg";
-static std::string SAMG_VEC_HEADER_SUFFIX = ".frv";
-static std::string SAMG_VEC_DATA_SUFFIX   = ".vec";
 
 std::string SAMGIO::getVectorFileSuffix() const
 {
@@ -118,12 +124,12 @@ static std::string getDataFileName( const std::string& headerFileName )
 
     if ( FileIO::hasSuffix( headerFileName, SAMG_MAT_HEADER_SUFFIX) )
     {
-        size_t len = SAMG_MAT_HEADER_SUFFIX.length();
+        size_t len = strlen( SAMG_MAT_HEADER_SUFFIX );
         result.replace( result.length() - len, len, SAMG_MAT_DATA_SUFFIX );
     }
     else if ( FileIO::hasSuffix( headerFileName, SAMG_VEC_HEADER_SUFFIX ) )
     {
-        size_t len = SAMG_VEC_HEADER_SUFFIX.length();
+        size_t len = strlen( SAMG_VEC_HEADER_SUFFIX );
         result.replace( result.length() - len, len, SAMG_VEC_DATA_SUFFIX );
     }
 
