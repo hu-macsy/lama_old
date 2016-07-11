@@ -71,14 +71,21 @@ int main( int argc, const char* argv[] )
 
     if ( argc != 3 )
     {
-        cout << "Usage: convert infile_name outfile_name" << endl;
+        cout << "Usage: " << argv[0] << " infile_name outfile_name" << endl;
         cout << "   file format is chosen by suffix, e.g. frm, mtx, txt, psc"  << endl;
-        cout << "   --SCAI_TYPE=<type> is data type of file input and used for internal data" << endl;
-        cout << "   --SCAI_IO_BINARY=0|1 formatted or binary write" << endl;
-        cout << "   --SCAI_IO_TYPE_DATA=<type> is data type used for file output" << endl;
+        cout << "   --SCAI_TYPE=<data_type> is data type of input file and used for internal representation" << endl;
+        cout << "   --SCAI_IO_BINARY=0|1 to force formatted or binary output file" << endl;
+        cout << "   --SCAI_IO_TYPE_DATA=<data_type> is data type used for file output" << endl;
         cout << "   " << endl;
-        cout << "   Supported data types: float, double, LongDouble, ComplexFloat, ComplexDouble, ComplexLongDouble" << endl;
-        exit( -1 );
+        cout << "   Supported types: ";
+        vector<common::scalar::ScalarType> dataTypes;
+        hmemo::_HArray::getCreateValues( dataTypes );
+        for ( size_t i = 0; i < dataTypes.size(); ++i )
+        { 
+            cout << dataTypes[i] << " ";
+        }
+        cout << endl;
+        return -1;
     }
 
     // take double as default 

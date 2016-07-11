@@ -72,68 +72,38 @@ int main( int argc, const char* argv[] )
 
     if ( argc != 3 )
     {
-        cout << "Usage: convert infile_name outfile_name" << endl;
-        cout << "   file type is chosen by suffix"  << endl;
+        cout << "Usage: " << argv[0] << " infile_name outfile_name" << endl;
+        cout << "   file format is chosen by suffix, e.g. frv, mtx, txt, psc"  << endl;
+        cout << "   --SCAI_TYPE=<data_type> is data type of input file and used for internal representation" << endl;
+        cout << "   --SCAI_IO_BINARY=0|1 to force formatted or binary output file" << endl;
+        cout << "   --SCAI_IO_TYPE_DATA=<data_type> is data type used for file output" << endl;
+        cout << "   " << endl;
+        cout << "   Supported types: ";
+        vector<common::scalar::ScalarType> dataTypes;
+        hmemo::_HArray::getCreateValues( dataTypes );
+        for ( size_t i = 0; i < dataTypes.size(); ++i )
+        {
+            cout << dataTypes[i] << " ";
+        }
+        cout << endl;
+        return -1;
     }
 
     // take double as default 
 
     common::scalar::ScalarType type = getType();
 
-    bool binary = false;   // can be set by environment variable
-
-    common::Settings::getEnvironment( binary, "SCAI_IO_BINARY" );
-
-    // oops, no factory for storage, only for matrix
-
     common::unique_ptr<Vector> vectorPtr( Vector::getVector( Vector::DENSE, type ) );
 
     Vector& vector = *vectorPtr;
-    _HArray& array = const_cast<_HArray&>( vector.getLocalValues() );
 
     std::string inFileName = argv[1];
 
-    // Note: reading does not care about binary argument, just read as it is
+    vector.readFromFile( argv[1] );
 
-    std::string suffix = FileIO::getSuffix( inFileName );
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
-
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-
-        std::cout << "Got from factory ( suffix = " << suffix << " ): " << *fileIO << std::endl;
-
-        fileIO->readArray( array, inFileName );
-    }
-    else
-    {
-        // use supported file format
-        vector.readFromFile( argv[1] );
-    }
-
-    cout << "read array : " << array << endl;
+    cout << "read vector : " << vector << endl;
 
     std::string outFileName = argv[2];
 
-    suffix = FileIO::getSuffix( outFileName );
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
-
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-
-        std::cout << "Got from factory: " << *fileIO << std::endl;
-
-        fileIO->writeArray( array, outFileName );
-    }
-    else
-    {
-        std::cout << "Write with old LAMA write routine" << std::endl;
-
-        // use supported file format
-        vector.writeToFile( outFileName );
-    }
+    vector.writeToFile( outFileName );
 }
