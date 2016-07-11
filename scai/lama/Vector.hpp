@@ -284,6 +284,14 @@ public:
     virtual void setValues( const hmemo::_HArray& values ) = 0;
 
     /**
+     * This method initializes a (distributed) vector with random numbers. 
+     * 
+     * @param[in] distribution specifies the distribution of the vector
+     * @param[in] fillRate for the number of non-zeros
+     */
+    virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 ) = 0;
+
+    /**
      * @brief Assign this vector with values stored the file with the given filename.
      *
      * @param[in] filename  the name of the file to be read containing vector data.

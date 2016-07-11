@@ -154,6 +154,15 @@ DenseVector<ValueType>::DenseVector( const std::string& filename )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, const float fillRate )
+{
+    allocate( distribution );
+    utilskernel::HArrayUtils::setRandom( mLocalValues, mLocalValues.size(), fillRate, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseVector<ValueType>::readFromFile( const std::string& filename )
 {
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )

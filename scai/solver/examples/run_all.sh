@@ -97,7 +97,8 @@ i=0
 
 # run examples solver/*
 cd $MYDIR/solver
-RUN 1 solver/matrixGenerator.exe example 3 27 100 100 100
+RUN 1 solver/matrixStencilGenerator.exe example 3 27 100 100 100
+RUN 1 solver/matrixRandomGenerator.exe example1.txt 20 20 0.3 --SCAI_TYPE=ComplexDouble
 RUN 1 solver/vectorGenerator.exe example2.mtx 1000 1
 RUN 1 solver/lamaSolver.exe example.frm
 RUN 0 solver/lamaSolver.exe example.frm --SCAI_SOLVER=Jacobi --SCAI_MAX_ITER=10

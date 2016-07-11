@@ -265,6 +265,14 @@ public:
      */
     void readFromFile( const std::string& filename );
 
+    /**
+     * This method initializes a distributed vector with random numbers. 
+     * 
+     * @param[in] distribution specifies the distribution of the vector
+     * @param[in] fillRate for the number of non-zeros
+     */
+    virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 );
+
     virtual common::scalar::ScalarType getValueType() const;
 
     /**
