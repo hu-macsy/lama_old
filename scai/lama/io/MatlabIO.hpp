@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include "CRTPFileIO.hpp"
+#include <scai/lama/io/CRTPFileIO.hpp>
 
 namespace scai
 {
