@@ -62,6 +62,10 @@ public:
 
     PETScIO();
 
+    /** Implementation of pure methdod FileIO::isSupportedMode */
+
+    virtual bool isSupportedMode( const FileMode mode ) const;
+
     /** Implementation for Printable.:writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;

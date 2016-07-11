@@ -61,6 +61,10 @@ public:
 
     SAMGIO();
 
+    /** Implementation of pure methdod FileIO::isSupportedMode */
+
+    virtual bool isSupportedMode( const FileMode mode ) const;
+
     /** File suffix is used to decide about choice of output class */
 
     virtual std::string getVectorFileSuffix() const;

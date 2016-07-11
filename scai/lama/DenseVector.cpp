@@ -157,7 +157,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, const float fillRate )
 {
     allocate( distribution );
-    utilskernel::HArrayUtils::setRandom( mLocalValues, mLocalValues.size(), fillRate, getContextPtr() );
+    mLocalValues.setRandom( mLocalValues.size(), fillRate, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */

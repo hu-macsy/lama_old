@@ -79,6 +79,21 @@ std::string PETScIO::createValue()
 
 /* --------------------------------------------------------------------------------- */
 
+bool PETScIO::isSupportedMode( const FileMode mode ) const
+{
+    // only binary is supported
+
+
+    if ( mode == FORMATTED )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void PETScIO::writeAt( std::ostream& stream ) const
 {
     stream << "PETScIO ( ";

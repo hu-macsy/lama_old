@@ -293,10 +293,22 @@ inline void IOStream::writeBinDirect( const hmemo::HArray<ValueType>& data )
     {
         scai::common::scoped_array<ValueType> tmp( new ValueType[ data.size() ] );
 
-        endianConvert( reinterpret_cast<char*>( tmp.get() ),
-                       reinterpret_cast<const char*>( dataRead.get() ),
-                       data.size(),
-                       sizeof( ValueType ) );
+        if ( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
+        {
+            // consider complex value type as 2 values that must be converted
+
+            endianConvert( reinterpret_cast<char*>( tmp.get() ),
+                           reinterpret_cast<const char*>( dataRead.get() ),
+                           data.size() * 2,
+                           sizeof( ValueType ) / 2 );
+        }
+        else
+        {
+            endianConvert( reinterpret_cast<char*>( tmp.get() ),
+                           reinterpret_cast<const char*>( dataRead.get() ),
+                           data.size(),
+                           sizeof( ValueType ) );
+        }
 
         std::fstream::write( reinterpret_cast<const char*>( tmp.get() ), sizeof( ValueType ) * data.size() );
     }
@@ -356,9 +368,21 @@ inline void IOStream::readBinDirect( hmemo::HArray<ValueType>& data,
             SCAI_THROWEXCEPTION( common::IOException, "binary read: could not read " << ndata << " bytes" )
         }
 
-        endianConvert( reinterpret_cast<char*>( dataWrite.get() ),
-                       reinterpret_cast<const char*>( tmp.get() ),
-                       size, sizeof( ValueType ) );
+
+        if ( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
+        {
+            // consider complex value type as 2 values that must be converted
+
+            endianConvert( reinterpret_cast<char*>( dataWrite.get() ),
+                           reinterpret_cast<const char*>( tmp.get() ),
+                           size * 2, sizeof( ValueType ) / 2 );
+        }
+        else
+        {
+            endianConvert( reinterpret_cast<char*>( dataWrite.get() ),
+                           reinterpret_cast<const char*>( tmp.get() ),
+                           size, sizeof( ValueType ) );
+        }
 
     }
 }

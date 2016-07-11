@@ -73,6 +73,22 @@ std::string MatlabIO::createValue()
     return MATLAB_SUFFIX;
 }
 
+/* --------------------------------------------------------------------------------- */
+
+bool MatlabIO::isSupportedMode( const FileMode mode ) const
+{
+    // binary is not supported
+
+    if ( mode == BINARY )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void MatlabIO::writeAt( std::ostream& stream ) const
 {
     stream << "MatlabIO ( suffix = " << MATLAB_SUFFIX << ", ";

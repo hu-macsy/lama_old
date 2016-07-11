@@ -96,6 +96,15 @@ void SAMGIO::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
+bool SAMGIO::isSupportedMode( const FileMode ) const
+{
+    // all file modes are supported
+
+    return true;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 /** Help routine to get data file name by header file name 
  *
  *  @param[in] headerFileName is the file name of header file

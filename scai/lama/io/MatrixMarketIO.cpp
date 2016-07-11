@@ -88,6 +88,20 @@ std::string MatrixMarketIO::createValue()
 
 /* --------------------------------------------------------------------------------- */
 
+bool MatrixMarketIO::isSupportedMode( const FileMode mode ) const
+{   
+    // binary is not supported
+
+    if ( mode == BINARY )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void MatrixMarketIO::writeAt( std::ostream& stream ) const
 {
     stream << "MatrixMarketIO ( ";

@@ -87,6 +87,14 @@ public:
 
     virtual ~FileIO();
 
+    /** Query if a certain file mode is supported
+     *
+     *  @param[in] mode either FORMATTED or BINARY
+     *  @returns true if the file mode is supported
+     */
+
+    virtual bool isSupportedMode( const FileMode mode ) const = 0;
+
     /** Write matrix storage into a file.
      *
      *  @param[in] storage is the (local) matrix data that is written
