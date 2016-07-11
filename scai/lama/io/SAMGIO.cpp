@@ -462,7 +462,18 @@ void SAMGIO::readStorageImpl(
 
     if ( binary )
     {
-        size_t expectedSize = ( numRows + 1 + numValues ) * common::typeSize( mScalarTypeIndex );
+        // compare expected size with real size and give a warning
+
+        size_t expectedSize = numRows + 1 + numValues;
+
+        if ( mScalarTypeIndex == common::scalar::INDEX_TYPE )
+        {
+            expectedSize *= sizeof( IndexType );
+        }
+        else
+        {
+            expectedSize *= mScalarTypeIndex;
+        }
 
         if ( mScalarTypeData == common::scalar::INTERNAL )
         {
@@ -482,7 +493,7 @@ void SAMGIO::readStorageImpl(
             SCAI_LOG_WARN( logger, "Binary file: real size = " << realSize << ", expected size = " << expectedSize )
         }
 
-        // Note: read operations can deal with scalar::INTERNAL
+        // Note: read operations can deal with scalar::INTERNAL, scalar::INDEX_TYPE
 
         inFile.readBinary( csrIA, numRows + 1, mScalarTypeIndex );
         inFile.readBinary( csrJA, numValues, mScalarTypeIndex );
