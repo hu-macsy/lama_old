@@ -63,6 +63,16 @@ public:
     template<typename ValueType>
     static void conj( ValueType mValues[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::exp */
+
+    template<typename ValueType>
+    static void exp( ValueType mValues[], const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::vectorScale */
+
+    template<typename ValueType>
+    static void vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
+
     /** OpenMP implementation for UtilKernelTrait::setScale */
 
     template<typename ValueType, typename OtherValueType>
@@ -90,6 +100,11 @@ public:
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::Setter::setSequence */
+
+    template<typename ValueType>
+    static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
 
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );

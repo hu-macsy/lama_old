@@ -107,6 +107,23 @@ public:
             numValues, ia, ja, values, this->getContextPtr() );
     }
 
+    /** Implementation of _MatrixStorage::setDIAData for derived class.
+     *
+     *  This routine requires that the derived class provides a corresponding
+     *  routine setDIADataImpl that can deal with a typed version of values.
+     */
+
+    void setDIAData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValues,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::_HArray& values )
+    {
+        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::setDIADataImpl(
+            static_cast<Derived*>( this ), numRows, numColumns, numValues, offsets, values, this->getContextPtr() );
+    }
+
     /** Implementation for _MatrixStorage::buildCSRSizes */
 
     void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const

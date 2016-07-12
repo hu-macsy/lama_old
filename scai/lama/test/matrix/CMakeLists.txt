@@ -44,6 +44,7 @@ scai_project (
 
         AllMatrixTest
         Redistribution
+        Creator
 
         CSRSparseMatrixTest
 

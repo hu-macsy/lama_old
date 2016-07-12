@@ -325,6 +325,21 @@ Vector& Vector::operator=( const Expression_SV& expression )
     return *this;
 }
 
+Vector& Vector::operator=( const Expression_VV expression )
+{
+    SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> x * y" )
+    Expression_SVV tmpExp( Scalar( 1.0 ), expression );
+    assign( tmpExp );
+    return *this;
+}
+
+Vector& Vector::operator=( const Expression_SVV expression )
+{
+    SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> alpha * x * y" )
+    assign( expression );
+    return *this;
+}
+
 Vector& Vector::operator=( const Vector& other )
 {
     Distributed::operator=( other );
@@ -345,6 +360,11 @@ Vector& Vector::operator=( const Scalar value )
 Vector& Vector::operator*=( const Scalar value )
 {
     return operator=( Expression_SV( value, *this ) );
+}
+
+Vector& Vector::operator*=( const Vector& other )
+{
+    return scale( other );
 }
 
 Vector& Vector::operator/=( const Scalar value )

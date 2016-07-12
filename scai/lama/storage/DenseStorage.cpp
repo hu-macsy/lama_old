@@ -463,6 +463,21 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+template<typename OtherValueType>
+void DenseStorageView<ValueType>::setDIADataImpl(
+    const IndexType /*numRows*/,
+    const IndexType /*numColumns*/,
+    const IndexType /*numDiagonals*/,
+    const HArray<IndexType>& /*offsets*/,
+    const HArray<OtherValueType>& /*values*/,
+    const ContextPtr /*prefLoc*/ )
+{
+    COMMON_THROWEXCEPTION( "not yet implemeted" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other )
 {
     SCAI_LOG_INFO( logger, "invert( " << other << ") to a dense storage" )
@@ -1325,6 +1340,8 @@ SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_ARITHMETIC_HOST )
     template void DenseStorageView<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
             const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+    template void DenseStorageView<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
     template void DenseStorageView<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void DenseStorageView<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void DenseStorageView<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \

@@ -204,7 +204,7 @@ void OpenMPDIAUtils::getCSRValues(
 
                 if ( j >= numColumns )
                 {
-                    break;
+                    continue;
                 }
 
                 const DIAValueType value = diaValues[i + ii * numRows];
@@ -263,7 +263,7 @@ void OpenMPDIAUtils::getCSRSizes(
 
             if ( j >= numColumns )
             {
-                break;
+                continue;
             }
 
             bool nonZero = common::Math::abs( diaValues[i + ii * numRows] ) > eps;
