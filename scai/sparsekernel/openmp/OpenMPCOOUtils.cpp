@@ -138,28 +138,23 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
     #pragma omp parallel
     {
         // get thread rank, size
-        PartitionId rank = omp_get_thread_num();
-        PartitionId nthreads = omp_get_num_threads();
-        // compute range for which this thread is responsbile
-        IndexType blockSize = ( numRows + nthreads - 1 ) / nthreads;
-        IndexType lb = rank * blockSize;
-        IndexType ub = ( rank + 1 ) * blockSize - 1;
-        ub = std::min( ub, numRows - 1 );
+
+        IndexType lb, ub;   // range for this thread
+
+        omp_get_my_range( lb, ub, numRows );
 
         for ( IndexType k = 0; k < numValues; k++ )
         {
             IndexType i = cooIA[k];
 
-            if ( i < lb || i > ub )
+            if ( lb <= i && i < ub )
             {
-                continue;
+                IndexType& offset = csrIA[i];
+                csrJA[offset] = cooJA[k];
+                csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
+                SCAI_LOG_TRACE( logger, "row " << i << ": new offset = " << offset )
+                offset++;
             }
-
-            IndexType& offset = csrIA[i];
-            csrJA[offset] = cooJA[k];
-            csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
-            SCAI_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
-            offset++;
         }
     }
 
