@@ -36,7 +36,12 @@
 #include <scai/dmemo/GeneralDistribution.hpp>
 
 // internal scai libraries
+#include <scai/hmemo/WriteAccess.hpp>
+#include <scai/hmemo/ReadAccess.hpp>
 #include <scai/common/macros/assert.hpp>
+
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 // std
 #include <algorithm>
@@ -154,6 +159,122 @@ GeneralDistribution::GeneralDistribution(
         SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
                      *it << " is illegal index for general distribution of size " << mGlobalSize )
         mGlobal2Local[ *it] = i;
+    }
+}
+
+GeneralDistribution::GeneralDistribution(
+    const hmemo::HArray<IndexType>& owners,
+    const CommunicatorPtr communicator ) : 
+
+    Distribution( 0, communicator )
+
+{
+    using namespace hmemo;
+
+    ContextPtr ctx = Context::getHostPtr();
+
+    PartitionId rank = mCommunicator->getRank();
+    PartitionId size = mCommunicator->getSize();
+
+    if ( rank == MASTER )
+    {
+        mGlobalSize = owners.size();
+    }
+
+    mCommunicator->bcast( &mGlobalSize, 1, MASTER );
+
+    SCAI_LOG_DEBUG( logger, *mCommunicator << ": global size = " << mGlobalSize )
+
+    utilskernel::LArray<IndexType> localSizes;
+    utilskernel::LArray<IndexType> localOffsets;
+
+    if ( rank == MASTER )
+    {
+        WriteOnlyAccess<IndexType> wSizes( localSizes, size + 1 );
+    }
+
+    // count in localSizes for each partition the owners
+    // owners = [ 0, 1, 2, 1, 2, 1, 0 ] -> sizes = [2, 3, 2 ]
+    // sizes.sum() == owners.size()
+
+    if ( rank == MASTER )
+    {
+        // reserve one element more, as we do later a scan
+        WriteOnlyAccess<IndexType> wSizes( localSizes, size );
+        ReadAccess<IndexType> rOwners( owners );
+        utilskernel::OpenMPUtils::countBuckets( wSizes.get(), size, rOwners.get(), mGlobalSize );
+    }
+    else
+    { 
+        // all other procs intialize localSizes with a dummy value to avoid read access of uninitialized array
+        utilskernel::HArrayUtils::setOrder( localSizes, 1 );
+    }
+
+    if ( rank == MASTER )
+    {
+        IndexType lsum = localSizes.sum();
+
+        SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
+    }
+    
+    IndexType localSize;  
+
+    // scatter partition sizes
+
+    {
+        SCAI_LOG_DEBUG( logger, *mCommunicator << ": before scatter, localSizes = " << localSizes )
+        ReadAccess<IndexType> rSizes( localSizes );
+        mCommunicator->scatter( &localSize, 1, MASTER, rSizes.get() );
+        SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatter, localSize = " << localSize )
+    }
+
+    SCAI_LOG_DEBUG( logger, *mCommunicator << ": owns " << localSize << " of " << mGlobalSize << " elements" )
+
+    if ( rank == MASTER )
+    {
+        localOffsets.reserve( ctx, size + 1 );
+        localOffsets = localSizes;
+        utilskernel::HArrayUtils::scan( localOffsets );
+        SCAI_LOG_DEBUG( logger, "scan done, sum = " << localOffsets[ size ] )
+    }
+
+    // Now resort 0, ..., n-1 according to the owners
+
+    HArray<IndexType> sortedIndexes;
+
+    if ( rank == MASTER )
+    {
+        SCAI_LOG_DEBUG( logger, "reorder for indexes" )
+
+        WriteOnlyAccess<IndexType> wIndexes( sortedIndexes, mGlobalSize );
+        WriteAccess<IndexType> wOffsets( localOffsets );
+        ReadAccess<IndexType> rOwners( owners );
+
+        utilskernel::OpenMPUtils::sortInBuckets( wIndexes.get(), wOffsets.get(), size, rOwners.get(), mGlobalSize );
+    }
+    else
+    { 
+        SCAI_LOG_DEBUG( logger, *mCommunicator << ": initialize sortedIndexes " )
+
+        // all other procs intialize sortedIndexes with a dummy value to avoid read access of uninitialized array
+        utilskernel::HArrayUtils::setOrder( sortedIndexes, 1 );
+    }
+
+    mLocal2Global.resize( localSize );
+
+    {
+        SCAI_LOG_DEBUG( logger, *mCommunicator << ": before scatterV, sortedIndexes = " << sortedIndexes  )
+        ReadAccess<IndexType> rIndexes( sortedIndexes );
+        ReadAccess<IndexType> rSizes( localSizes );
+        mCommunicator->scatterV( &mLocal2Global[0], localSize, MASTER, rIndexes.get(), rSizes.get() );
+        SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatterV, sortedIndexes = " << sortedIndexes )
+    }
+
+    // Compute Global2Local
+
+    for ( IndexType i = 0; i < localSize; ++i )
+    {
+        mGlobal2Local[ mLocal2Global[i] ] = i;
     }
 }
 

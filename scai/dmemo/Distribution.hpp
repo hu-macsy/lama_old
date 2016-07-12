@@ -44,6 +44,7 @@
 
 // local library
 #include <scai/dmemo/Communicator.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 // internal scai libraries
 #include <scai/logging.hpp>
@@ -235,6 +236,13 @@ public:
      * @param[in] owners            TODO[doxy] Complete Description.
      */
     virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+
+    /** Get the owners for a set of (global) indexes 
+     *
+     * @param[in] indexes is an array with global indexes, 0 <= indexes[i] < getGlobalSize() 
+     * @param[out] owners are the corresponing processors that own the indexes 
+     */
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
     /**
      * TODO[doxy] Complete Description.

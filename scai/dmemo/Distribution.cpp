@@ -170,6 +170,22 @@ void Distribution::computeOwners(
 
 /* ---------------------------------------------------------------------- */
 
+void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
+{
+    // Note: this default implementation requires communication
+
+    ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
+
+    const IndexType n = indexes.size();
+
+    ReadAccess<IndexType> rIndexes( indexes, ctx );
+    WriteOnlyAccess<IndexType> wOwners( owners, ctx, n );
+
+    mCommunicator->computeOwners( wOwners, *this, rIndexes, n );
+}
+
+/* ---------------------------------------------------------------------- */
+
 template<typename T1, typename T2>
 void Distribution::replicate( T1* allValues, const T2* localValues ) const
 {
