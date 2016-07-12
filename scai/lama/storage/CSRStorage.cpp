@@ -365,7 +365,7 @@ void CSRStorage<ValueType>::setDIADataImpl(
     ReadAccess<OtherValueType> diaValues( values, loc );
 
     // In contrary to COO and CSR, the DIA format stores also some ZERO values like Dense
-    ValueType eps = static_cast<ValueType>( 0.0 );
+    OtherValueType eps = static_cast<OtherValueType>( 0.0 );
     getCSRSizes[loc]( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, numDiagonals, diaOffsets.get(),
                       diaValues.get(), eps );
 
