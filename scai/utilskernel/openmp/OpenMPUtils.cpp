@@ -841,6 +841,86 @@ IndexType OpenMPUtils::compress(
 }
 
 /* --------------------------------------------------------------------------- */
+
+void OpenMPUtils::countBuckets(
+    IndexType bucketSizes[],
+    const IndexType nBuckets,
+    const IndexType bucketMap[],
+    const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "countBuckets, #elems = " << n << ", #buckets = " << nBuckets ) 
+
+    // initialize size array for each bucket
+
+    for ( IndexType i = 0; i < nBuckets; i++ )
+    {
+        bucketSizes[i] = 0;
+    }
+
+    // increment size of a bucket for each value mapped to this bucket
+
+    for ( IndexType k = 0; k < n; k++ )
+    {
+        IndexType i = bucketMap[k];
+
+        // No error message here, just count
+
+        if ( i >= 0 && i < nBuckets )
+        {
+            bucketSizes[i]++;
+        }
+    }
+
+    // Note: out of range values if bucketSizes.sum() != n 
+}
+
+/* --------------------------------------------------------------------------- */
+
+void OpenMPUtils::sortInBuckets( IndexType sortedIndexes[],
+                                 IndexType offsets[],           // used as tmp, remains unchanged
+                                 const IndexType nBuckets,
+                                 const IndexType bucketMap[],
+                                 const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "sortInBuckets, #elems = " << n << ", #buckets = " << nBuckets ) 
+
+    #pragma omp parallel
+    {
+        IndexType lb;
+        IndexType ub;
+
+        // each thread takes responsability for a range of buckets
+
+        omp_get_my_range( lb, ub, nBuckets );
+
+        SCAI_LOG_DEBUG( logger, "take care of buckets from " << lb << " - " << ub )
+
+        for ( IndexType k = 0; k < n; k++ )
+        {
+            IndexType i = bucketMap[k];
+
+            if ( lb <= i && i < ub )
+            {
+                IndexType& offset = offsets[i];
+                SCAI_ASSERT_LT_DEBUG( offset, n, "out of range offset" )
+                sortedIndexes[offset] = k;
+                offset++;
+                SCAI_LOG_TRACE( logger, k << " is in bucket " << i << ", offset = " << offsets[i] )
+            }
+        }
+    }
+
+    // set back the old offsets
+
+    for ( IndexType i = nBuckets; i > 0; --i )
+    {
+        offsets[i] = offsets[i - 1];
+    }
+
+    offsets[0] = 0;
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 

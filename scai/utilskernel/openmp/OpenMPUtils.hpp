@@ -148,6 +148,17 @@ public:
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
+    /** Count bucket sizes for values mapped to buckets */
+
+    static void countBuckets( IndexType bucketSizes[], const IndexType nBuckets, const IndexType bucketMap[], const IndexType n );
+
+    /** Resort indexes 0, ..., n-1 according to their mapping to buckets */
+
+    static void sortInBuckets( IndexType sortedIndexes[],
+                               IndexType offsets[],         
+                               const IndexType nBuckets,
+                               const IndexType bucketMap[],
+                               const IndexType n );
 private:
 
     template<typename ValueType>
