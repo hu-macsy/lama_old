@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
         {
-            BOOST_CHECK_EQUAL( read[i], common::Math::exp(values[i]) );
+            BOOST_CHECK_EQUAL( read[i] - common::Math::exp(values[i]), common::constants::ZERO );
         }
     }
 }
