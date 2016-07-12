@@ -911,6 +911,53 @@ void HArrayUtils::sort(
 
 /* --------------------------------------------------------------------------- */
 
+void HArrayUtils::bucketSort(
+    hmemo::HArray<IndexType>& perm,
+    const hmemo::HArray<IndexType>& array,
+    const IndexType nb,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    if ( n == 0 )
+    {
+        perm.clear();
+        return;
+    }
+
+    static LAMAKernel<UtilKernelTrait::countBuckets> countBuckets;
+    static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
+    static LAMAKernel<UtilKernelTrait::sortInBuckets> sortInBuckets;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    hmemo::HArray<IndexType> bucketSizesOffsets;
+
+    countBuckets.getSupportedContext( loc, scan, sortInBuckets );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> bucketMap( array, loc );
+    WriteOnlyAccess<IndexType> sizes( bucketSizesOffsets, loc, nb + 1 );
+    
+    countBuckets[loc]( sizes.get(), nb, bucketMap, n );
+    IndexType total = scan[loc]( sizes.get(), nb );
+
+    // Note: total can be < n if array contains values < 0 or >= nb 
+
+    WriteOnlyAccess<IndexType> wPerm( perm, loc, total );
+    sortInBuckets[loc]( wPerm, sizes, nb, bucketMap, n );
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void HArrayUtils::buildSparseArray(
     hmemo::HArray<ValueType>& sparseArray,

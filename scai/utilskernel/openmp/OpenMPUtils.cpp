@@ -984,7 +984,9 @@ void OpenMPUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegi
     const common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
     // we keep the registrations for IndexType as we do not need conversions
-    kregistry::KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::countBuckets>( countBuckets, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::sortInBuckets>( sortInBuckets, ctx, flag );
 }
 
 template<typename ValueType>

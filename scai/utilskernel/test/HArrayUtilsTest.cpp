@@ -361,6 +361,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( bucketSortTest )
+{
+    ContextPtr loc = Context::getContextPtr();
+    IndexType vals[] = { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 };
+    const IndexType n = sizeof( vals ) / sizeof( IndexType );
+    LArray<IndexType> array( n, vals, loc );
+    IndexType nb = array.max() + 1;
+    LArray<IndexType> perm;
+    HArrayUtils::bucketSort( perm, array, nb, loc );
+    BOOST_CHECK_EQUAL( perm.size(), n );
+    LArray<IndexType> sortedArray;
+    HArrayUtils::gather( sortedArray, array, perm );
+    BOOST_CHECK( HArrayUtils::isSorted( sortedArray, true, loc ) );
+
+    // number of buckets = 1, so only two values array[i] == 0 are taken
+    nb = 1;
+    HArrayUtils::bucketSort( perm, array, nb, loc );
+    BOOST_CHECK_EQUAL( perm.size(), 2 );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( setOrderTest )
 {
     ContextPtr loc = Context::getContextPtr();
