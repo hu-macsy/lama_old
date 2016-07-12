@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
-    const ValueType values[] = { 1.0, 1.1, 1.3, 1.0 };
+    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
@@ -191,7 +191,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
         {
-            BOOST_CHECK_EQUAL( read[i] - common::Math::exp(values[i]), common::constants::ZERO );
+            std::cout << std::setprecision( 20 ) << read[i] << ", " << common::Math::exp(values[i]) << std::endl;
+
+            ValueType x = read[i] - common::Math::exp(values[i]);
+
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+
+            //BOOST_CHECK( read[i] - common::Math::exp(values[i]) <= common::constants::ZERO );
         }
     }
 }
