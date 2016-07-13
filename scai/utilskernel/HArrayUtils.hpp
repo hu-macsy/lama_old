@@ -354,6 +354,7 @@ public:
     /** Bucket sort of an array with integer values
      *
      *  @param[out] perm is permutation to get array sorted
+     *  @param[out] offset is an offset array for perm to sort it bucketwise, size is nb + 1
      *  @param[in] nb is the number of buckets
      *  @param[in] array contains bucket indexes, 0 <= array[i] < nb
      *  @param[in] prefLoc is the preferred context where computation should be done
@@ -365,7 +366,16 @@ public:
      */
 
     static void bucketSort(
+        hmemo::HArray<IndexType>& offsets,
         hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<IndexType>& array,
+        const IndexType nb,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Slighter version of bucketSort, counts only values */
+
+    static void bucketCount(
+        hmemo::HArray<IndexType>& bucketSizes,
         const hmemo::HArray<IndexType>& array,
         const IndexType nb,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
