@@ -141,8 +141,7 @@ endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### set link directories ###
 if ( WIN32 )
-    set ( LAMAPP_LINK_DIRECTORIES ${LAMAPP_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS} )
-	link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
+	link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
 ### add library ###

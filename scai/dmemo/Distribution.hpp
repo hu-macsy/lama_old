@@ -48,7 +48,6 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-// boost
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
 

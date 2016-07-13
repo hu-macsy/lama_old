@@ -72,8 +72,6 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
-// boost
-
 namespace scai
 {
 
