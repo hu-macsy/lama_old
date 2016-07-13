@@ -74,7 +74,7 @@ if ( NOT DEFINED BOOST_TEST_ENABLED AND BUILD_TEST )
     if    ( Boost_INCLUDE_DIR )
         set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
     else  ( Boost_INCLUDE_DIR )
-        message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
+        message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need for includes of unit_test_framework.")
     endif ( Boost_INCLUDE_DIR )
 
     if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND )

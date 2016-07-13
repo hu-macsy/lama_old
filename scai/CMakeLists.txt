@@ -53,9 +53,9 @@ include ( Compiler/SetCPPFlags )
 
 ## maybe boost
 include ( Compiler/CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+if    ( NOT CXX_SUPPORTS_C11 )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+endif ( NOT CXX_SUPPORTS_C11 )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
