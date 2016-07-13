@@ -41,7 +41,7 @@ set ( CXX_SOURCES
       MemoryTest
 ) 
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( hmemoTest ${CXX_SOURCES} )
 

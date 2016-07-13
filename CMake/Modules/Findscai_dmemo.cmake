@@ -66,4 +66,13 @@ if ( SCAI_DMEMO_INCLUDE_DIR )
     endif ( SCAI_DMEMO_LIBRARY )
 endif ( SCAI_DMEMO_INCLUDE_DIR)
 
+# special handling of boost if GPI is enabled
+if    ( SCAI_DMEMO_FOUND )
+    if    ( GPI_ENABLED )
+        # add Boost to SCAI_DMEMO_INCLUDE_DIR
+        include ( Package/Boost )
+        list ( APPEND SCAI_DMEMO_INCLUDE_DIR ${BOOST_INCLUDE_DIR} )
+    endif ( GPI_ENABLED )
+endif ( SCAI_DMEMO_FOUND )
+
 mark_as_advanced ( SCAI_DMEMO_FOUND SCAI_DMEMO_INCLUDE_DIR SCAI_DMEMO_LIBRARY )

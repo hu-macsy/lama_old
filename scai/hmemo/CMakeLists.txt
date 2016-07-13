@@ -72,7 +72,7 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ##  Boost for Test
 if ( BUILD_TEST )
-    include( Package/Boost )
+    include( Package/BoostTest )
 endif ( BUILD_TEST )
 
 ### include all search packages

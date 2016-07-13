@@ -40,7 +40,7 @@ set ( CXX_SOURCES
       LAPACKTest
 ) 
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( blaskernelTest ${CXX_SOURCES} )
 

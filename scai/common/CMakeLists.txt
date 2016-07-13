@@ -72,9 +72,14 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## C++11 or Boost
 include ( Compiler/CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+if    ( NOT CXX_SUPPORTS_C11 )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+endif ( NOT CXX_SUPPORTS_C11 )
+
+## Use Boost if BUILD_TEST is enabled
+if ( BUILD_TEST )
+    include( Package/BoostTest )
+endif ( BUILD_TEST )
 
 ### include all search packages
 addInternalAndExternalPackages()
@@ -95,7 +100,7 @@ set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 addInternalAndExternalIncludes()
 if    ( NOT CXX_SUPPORTS_C11 )
-    include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+    include_directories ( ${BOOST_INCLUDE_DIR} )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )

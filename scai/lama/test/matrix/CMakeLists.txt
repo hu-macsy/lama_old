@@ -57,7 +57,7 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
 ### set include directories ###
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )

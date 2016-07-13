@@ -66,6 +66,11 @@ include ( VersionDefinition )
 include ( SetProjectVariables )
 include ( Functions/scaiFunctions )
 
+## Use Boost if BUILD_TEST is enabled
+if ( BUILD_TEST )
+    include( Package/BoostTest )
+endif ( BUILD_TEST )
+
 include ( Dependencies/external )
 
 foreach    ( module ${LAMA_ALL_EXTERNAL_DEPS} )

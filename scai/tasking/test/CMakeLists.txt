@@ -38,7 +38,7 @@ set ( CXX_SOURCES
       TaskSyncTokenTest  
 ) 
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( taskingTest ${CXX_SOURCES} )
 

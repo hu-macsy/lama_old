@@ -41,7 +41,7 @@ heading3 ( "Examples" "BUILD_EXAMPLES" )
 if    ( NOT ( ( ${PROJECT_NAME} MATCHES "scai_logging" ) OR ( ${PROJECT_NAME} MATCHES "scai_tracing" ) ) )
 
 	heading3 ( "Test" "BOOST_TEST_ENABLED" )
-	    found_message ( "Boost Unit Test" "Boost_UNIT_TEST_FRAMEWORK_FOUND" "OPTIONAL" "Version ${BOOST_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
+	    found_message ( "Boost Unit Test" "Boost_UNIT_TEST_FRAMEWORK_FOUND" "OPTIONAL" "Version ${BOOST_VERSION} at ${BOOSTTEST_INCLUDE_DIR}" )
 
 endif ( NOT ( ( ${PROJECT_NAME} MATCHES "scai_logging" ) OR ( ${PROJECT_NAME} MATCHES "scai_tracing" ) ) )
 
