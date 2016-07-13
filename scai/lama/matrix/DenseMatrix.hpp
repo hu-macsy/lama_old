@@ -585,7 +585,7 @@ public:
     using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistribution;
     using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistributionPtr;
 
-    const std::vector<PartitionId>& getOwners() const
+    const utilskernel::LArray<PartitionId>& getOwners() const
     {
         return mOwners;
     }
@@ -609,7 +609,7 @@ protected:
     using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumRows;
     using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumColumns;
 
-    std::vector<PartitionId> mOwners;
+    utilskernel::LArray<PartitionId> mOwners;
 
     /**
      * @brief Set this matrix = alpha * A + beta * B
@@ -656,7 +656,7 @@ private:
         std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
         const DenseStorage<ValueType>& columnData,
         const PartitionId numChunks,
-        const std::vector<IndexType>& columnOwners );
+        const hmemo::HArray<PartitionId>& columnOwners );
 
     /** Restrict dense storage of a replicated matrix to its local part according to row distribution.
      *
@@ -686,13 +686,7 @@ private:
 
     void    computeOwners();
 
-    /** @brief Predicate to check if SCALapack::inverse routine has been registered in kernel registry. */
-
-    bool hasScalaPack();
-
     /** Special implementation of invert in place for a cyclic distributed matrix. */
-
-    void invertCyclic();
 
     void invertReplicated();
 
