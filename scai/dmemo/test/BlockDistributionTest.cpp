@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
     }
 
     std::vector<PartitionId> owners;
-    dist->computeOwners( nonLocalIndexes, owners );
+    dist->computeOwners1( nonLocalIndexes, owners );
     BOOST_CHECK_EQUAL( ( int ) owners.size(), ( size - 1 ) * blockSize );
     std::vector<PartitionId>::size_type currentIndex = 0;
 

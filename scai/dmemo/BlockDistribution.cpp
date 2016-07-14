@@ -43,6 +43,8 @@
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace dmemo
 {
 
@@ -119,7 +121,7 @@ IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
     return localIndex;
 }
 
-void BlockDistribution::computeOwners(
+void BlockDistribution::computeOwners1(
     const std::vector<IndexType>& requiredIndexes,
     std::vector<PartitionId>& owners ) const
 {
@@ -133,6 +135,27 @@ void BlockDistribution::computeOwners(
         owners.push_back( owner );
     }
 }
+
+/* ---------------------------------------------------------------------- */
+
+void BlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
+{
+    ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
+
+    const IndexType n = indexes.size();
+
+    ReadAccess<IndexType> rIndexes( indexes, ctx );
+    WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
+
+    // ToDo: call a kernel and allow arbitrary context
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        wOwners[i] = rIndexes[i] / mBlockSize;
+    }
+}
+
+/* ---------------------------------------------------------------------- */
 
 bool BlockDistribution::isEqual( const Distribution& other ) const
 {

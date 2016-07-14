@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
     }
 
     std::vector<PartitionId> owners;
-    distribution.computeOwners( indexes, owners );
+    distribution.computeOwners1( indexes, owners );
     BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( owners.size() ) );
     BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
 

@@ -43,6 +43,8 @@
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace dmemo
 {
 
@@ -98,6 +100,13 @@ void NoDistribution::printDistributionVector( std::string name ) const
         file << "No Distribution: all rows are available on all processes." << std::endl;
         file.close();
     }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void NoDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
+{
+    owners.init( 0, indexes.size() );  // set all values to 0
 }
 
 /* ---------------------------------------------------------------------------------*

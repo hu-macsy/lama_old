@@ -43,6 +43,8 @@
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace dmemo
 {
 
@@ -192,7 +194,9 @@ IndexType CyclicDistribution::global2local( const IndexType globalIndex ) const
     }
 }
 
-void CyclicDistribution::computeOwners(
+/* ---------------------------------------------------------------------- */
+
+void CyclicDistribution::computeOwners1(
     const std::vector<IndexType>& requiredIndexes,
     std::vector<PartitionId>& owners ) const
 {
@@ -209,6 +213,28 @@ void CyclicDistribution::computeOwners(
         owners.push_back( owner );
     }
 }
+
+/* ---------------------------------------------------------------------- */
+
+void CyclicDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
+{   
+    ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
+    
+    const IndexType n = indexes.size();
+    const IndexType size = mCommunicator->getSize();
+    
+    ReadAccess<IndexType> rIndexes( indexes, ctx );
+    WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
+    
+    // ToDo: call a kernel and allow arbitrary context
+
+    for ( IndexType i = 0; i < n; i++ )
+    {   
+        wOwners[i] = ( rIndexes[i] / mChunkSize ) % size;
+    }
+}
+
+/* ---------------------------------------------------------------------- */
 
 namespace
 {

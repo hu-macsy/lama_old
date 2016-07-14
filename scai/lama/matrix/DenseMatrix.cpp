@@ -110,7 +110,7 @@ void DenseMatrix<ValueType>::computeOwners()
             SCAI_LOG_TRACE( logger, s );
         }
 
-        colDist.computeOwners( requiredIndexes, mOwners );
+        colDist.computeOwners1( requiredIndexes, mOwners );
     }
 
     if ( SCAI_LOG_TRACE_ON( logger ) )

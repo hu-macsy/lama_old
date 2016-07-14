@@ -157,7 +157,7 @@ void Distribution::writeAt( std::ostream& stream ) const
 
 /* ---------------------------------------------------------------------- */
 
-void Distribution::computeOwners(
+void Distribution::computeOwners1(
     const std::vector<IndexType>& requiredIndexes,
     std::vector<PartitionId>& owners ) const
 {

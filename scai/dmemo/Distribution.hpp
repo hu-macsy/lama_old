@@ -235,7 +235,7 @@ public:
      * @param[in] requiredIndexes   TODO[doxy] Complete Description.
      * @param[in] owners            TODO[doxy] Complete Description.
      */
-    virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+    virtual void computeOwners1( const std::vector<IndexType>&requiredIndexes, std::vector<PartitionId>& owners ) const;
 
     /** Get the owners for a set of (global) indexes 
      *

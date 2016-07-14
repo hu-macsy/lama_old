@@ -153,7 +153,9 @@ public:
      *  Each processor knowns the sizes of each partition and can therefore compute
      *  owners without any communication.
      */
-    virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+    virtual void computeOwners1( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
     void printDistributionVector( std::string name ) const;
 

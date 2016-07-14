@@ -133,7 +133,9 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+    virtual void computeOwners1( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
     /**
      * @brief TODO[doxy] Complete Description.
