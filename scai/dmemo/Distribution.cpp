@@ -157,19 +157,6 @@ void Distribution::writeAt( std::ostream& stream ) const
 
 /* ---------------------------------------------------------------------- */
 
-void Distribution::computeOwners1(
-    const std::vector<IndexType>& requiredIndexes,
-    std::vector<PartitionId>& owners ) const
-{
-    SCAI_LOG_INFO( logger, "compute owners via communicator (default)" )
-    // use communicator to compute ownership on each processor
-    IndexType n = requiredIndexes.size();
-    owners.resize( n );
-    mCommunicator->computeOwners( &owners[0], *this, &requiredIndexes[0], n );
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
     // Note: this default implementation requires communication

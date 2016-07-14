@@ -121,21 +121,6 @@ IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
     return localIndex;
 }
 
-void BlockDistribution::computeOwners1(
-    const std::vector<IndexType>& requiredIndexes,
-    std::vector<PartitionId>& owners ) const
-{
-    owners.clear();
-    owners.reserve( requiredIndexes.size() );
-    SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
-
-    for ( size_t i = 0; i < requiredIndexes.size(); i++ )
-    {
-        PartitionId owner = getOwner( requiredIndexes[i] );
-        owners.push_back( owner );
-    }
-}
-
 /* ---------------------------------------------------------------------- */
 
 void BlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
@@ -151,7 +136,7 @@ void BlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray
 
     for ( IndexType i = 0; i < n; i++ )
     {
-        wOwners[i] = rIndexes[i] / mBlockSize;
+        wOwners[i] = rIndexes[i] / mBlockSize;   // same as getOwner
     }
 }
 

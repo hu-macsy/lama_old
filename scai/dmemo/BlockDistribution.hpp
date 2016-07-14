@@ -99,8 +99,6 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual void computeOwners1( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
-
     /** Override Distribution::computeOwners with more efficient version. */
 
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;

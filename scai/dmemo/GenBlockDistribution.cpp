@@ -282,23 +282,6 @@ void GenBlockDistribution::computeOwners( HArray<PartitionId>& owners, const HAr
 
 /* ---------------------------------------------------------------------- */
 
-void GenBlockDistribution::computeOwners1(
-    const std::vector<IndexType>& requiredIndexes,
-    std::vector<PartitionId>& owners ) const
-{
-    owners.clear();
-    owners.reserve( requiredIndexes.size() );
-    SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
-
-    for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
-    {
-        IndexType requiredIndex = requiredIndexes[i];
-        PartitionId owner = getOwner( requiredIndex );
-        owners.push_back( owner );
-        SCAI_LOG_TRACE( logger, "owner of required index = " << requiredIndex << " is " << owner )
-    }
-}
-
 bool GenBlockDistribution::isEqual( const Distribution& other ) const
 {
     if ( this == &other )

@@ -196,26 +196,6 @@ IndexType CyclicDistribution::global2local( const IndexType globalIndex ) const
 
 /* ---------------------------------------------------------------------- */
 
-void CyclicDistribution::computeOwners1(
-    const std::vector<IndexType>& requiredIndexes,
-    std::vector<PartitionId>& owners ) const
-{
-    IndexType size = mCommunicator->getSize();
-    owners.clear();
-    owners.reserve( requiredIndexes.size() );
-    SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
-
-    for ( size_t i = 0; i < requiredIndexes.size(); i++ )
-    {
-        IndexType globalChunkIndex = requiredIndexes[i] / mChunkSize;
-        IndexType owner = globalChunkIndex % size;
-        SCAI_LOG_TRACE( logger, "owner of global index " << requiredIndexes[i] << " is " << owner )
-        owners.push_back( owner );
-    }
-}
-
-/* ---------------------------------------------------------------------- */
-
 void CyclicDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {   
     ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
@@ -230,7 +210,7 @@ void CyclicDistribution::computeOwners( HArray<PartitionId>& owners, const HArra
 
     for ( IndexType i = 0; i < n; i++ )
     {   
-        wOwners[i] = ( rIndexes[i] / mChunkSize ) % size;
+        wOwners[i] = ( rIndexes[i] / mChunkSize ) % size;   // see getOwner( i )
     }
 }
 
