@@ -32,7 +32,7 @@
  # @date 02.12.2015
 ###
 
-set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp )
+set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp )
 
 add_executable( writeParallel.exe writeParallel.cpp )
 add_executable( readParallel.exe readParallel.cpp )

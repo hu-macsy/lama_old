@@ -43,32 +43,13 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
 
+#include "utility.hpp" 
+
 using namespace std;
 
 using namespace scai;
 using namespace lama;
 using namespace dmemo;
-
-static common::scalar::ScalarType getType() 
-{
-    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
-    
-    std::string val;
-    
-    if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
-    {   
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
-        
-        if ( env_type == scai::common::scalar::UNKNOWN )
-        {   
-            std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
-        }
-        
-        type = env_type;
-    }
-
-    return type;
-}
 
 static void printDistribution( const Distribution& distribution, const std::string& fileName )
 {
@@ -102,14 +83,50 @@ static void printDistribution( const Distribution& distribution, const std::stri
 
     distribution.computeOwners( owners, indexes );
 
+    std::cout << *comm << ", owner computation finished, owners = " << owners << std::endl;
+
     if ( rank == MASTER )
     {
+        std::cout << *comm << ", MASTER, write distribution to " << fileName << std::endl;
+
         FileIO::write( owners, fileName );
     }
 
     // just make sure that no other process starts anything before write is finished
 
     comm->synchronize();
+}
+
+static void printPDistribution( const Distribution& distribution, const std::string& fileName )
+{
+    // each processor writes a file with its global indexes
+
+    using namespace hmemo;
+
+    CommunicatorPtr comm = distribution.getCommunicatorPtr();
+ 
+    const IndexType nLocal = distribution.getLocalSize();
+    const IndexType nGlobal = distribution.getGlobalSize();
+
+    HArray<IndexType> myGlobalIndexes;
+
+    {
+        WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
+
+        IndexType k = 0;
+
+        for ( IndexType i = 0; i < nGlobal; ++i )
+        {
+            if ( distribution.isLocal( i ) )
+            {
+                wGlobalIndexes[k++] = i;
+            }
+        }
+        
+        SCAI_ASSERT_EQ_ERROR( k, nLocal, "serious local mismatch" );
+    }
+
+    FileIO::write( myGlobalIndexes, fileName );
 }
 
 static DistributionPtr readDistribution( const std::string& inFileName )
@@ -120,17 +137,33 @@ static DistributionPtr readDistribution( const std::string& inFileName )
 
     if ( comm->getRank() == 0 )
     {
-         FileIO::read( owners, inFileName );
+        std::cout << *comm << ", MASTER, read distribution from " << inFileName << std::endl;
 
-         IndexType minId = owners.min();
-         IndexType maxId = owners.max();
+        if ( FileIO::fileExists( inFileName ) )
+        {
+            FileIO::read( owners, inFileName );
 
-         // prove:  0 <= minId <= maxId < comm->size() 
+            IndexType minId = owners.min();
+            IndexType maxId = owners.max();
 
-         cout << "owner array, size = " << owners.size() << ", min = " << minId << ", max = " << maxId << endl;
+             // prove:  0 <= minId <= maxId < comm->size() 
+    
+            cout << "owner array, size = " << owners.size() << ", min = " << minId << ", max = " << maxId << endl;
+        }
     }
 
+    IndexType ownersSum = comm->sum( owners.size() );
+
     DistributionPtr dist( new GeneralDistribution( owners, comm ) );
+
+    if ( ownersSum > 0 )
+    {
+        dist.reset( new GeneralDistribution( owners, comm ) );
+    }
+    else
+    {
+        dist.reset( new BlockDistribution( 0, comm ) );
+    }
 
     return dist;
 }
@@ -139,9 +172,9 @@ int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
 
-    if ( argc != 3 )
+    if ( argc < 3 )
     {
-        cout << "Usage: " << argv[0] << " infile_name outfile_name" << endl;
+        cout << "Usage: " << argv[0] << " infile_name outfile_name distfile_name" << endl;
         cout << "   file format is chosen by suffix, e.g. frm, mtx, txt, psc"  << endl;
         cout << "   --SCAI_TYPE=<data_type> is data type of input file and used for internal representation" << endl;
         cout << "   --SCAI_IO_BINARY=0|1 to force formatted or binary output file" << endl;
@@ -182,22 +215,43 @@ int main( int argc, const char* argv[] )
 
     matrix.redistribute( dist, matrix.getColDistributionPtr() );
 
+    std::string outFileName = argv[2];
+
+    bool writePartitions;
+
+    getPartitionFileName( outFileName, writePartitions, *comm );
+
+    if ( !writePartitions )
+    {
+        // write it in one single file 
+
+        matrix.writeToFile( outFileName );
+
+        cout << comm << ": written matrix to file " << outFileName << endl;
+    }
+    else
     { 
-        std::ostringstream outFileName;
+        matrix.getLocalStorage().writeToFile( outFileName );
 
-        outFileName << comm->getRank() << "." << comm->getSize() << "." << argv[2];
-
-        matrix.getLocalStorage().writeToFile( outFileName.str() );
-
-        cout << comm << ": written local part of matrix to file " << outFileName << endl;
+        cout << *comm << ": written local part of matrix to file " << outFileName << endl;
     }
 
+    if ( argc > 3 )
+    {
+        std::string distFileName = argv[3];
 
-    printDistribution( matrix.getRowDistribution(), "owners.mtx" );
+        getPartitionFileName( distFileName, writePartitions, *comm );
 
-    DistributionPtr newDist = readDistribution( "owners.mtx" );
+        if ( writePartitions )
+        {
+            printPDistribution( matrix.getRowDistribution(), distFileName );
+        }
+        else
+        {
+            printDistribution( matrix.getRowDistribution(), distFileName );
+            DistributionPtr newDist = readDistribution( distFileName );
+            SCAI_ASSERT_EQ_ERROR( newDist->getGlobalSize(), matrix.getNumRows(), "mismatch" )
+        }
 
-    std::cout << "read dist = " << *newDist << std::endl;
-
-    // SCAI_ASSERT_EQUAL( matrix.getRowDistribution(), *newDist, "Error" );
+    }
 }
