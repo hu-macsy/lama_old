@@ -38,6 +38,8 @@
 
 using namespace scai;
 
+/** Help routine to read a scalar value type --SCAI_TYPE=... */
+
 static common::scalar::ScalarType getType() 
 {
     common::scalar::ScalarType type = common::TypeTraits<double>::stype;
@@ -58,6 +60,12 @@ static common::scalar::ScalarType getType()
 
     return type;
 }
+
+/** Help routine to get the filename of the partition that is read/written by this processor.
+ *
+ *  @param[in,out] fileName, might contain %r that will be substituted by rank_size
+ *  @param[out] isPartitioned if true data is spread among multiple 'partitoned' files
+ */
 
 static void getPartitionFileName( std::string& fileName, bool& isPartitioned, const dmemo::Communicator& comm )
 {

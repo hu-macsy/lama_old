@@ -32,6 +32,8 @@
  * @date 19.06.2016
  */
 
+#include "PartitionIO.hpp"
+
 #include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama.hpp>
@@ -51,64 +53,6 @@ using namespace std;
 using namespace scai;
 using namespace lama;
 using namespace dmemo;
-
-static DistributionPtr readDistribution( const string& inFileName )
-{
-    utilskernel::LArray<IndexType> owners;
-
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    if ( comm->getRank() == 0 )
-    {
-        cout << *comm << ", MASTER, read distribution from " << inFileName << endl;
-
-        if ( FileIO::fileExists( inFileName ) )
-        {
-            FileIO::read( owners, inFileName );
-
-            IndexType minId = owners.min();
-            IndexType maxId = owners.max();
-
-             // prove:  0 <= minId <= maxId < comm->size() 
-
-            cout << "owner array, size = " << owners.size() << ", min = " << minId << ", max = " << maxId << endl;
-        }
-    }
-
-    IndexType ownersSum = comm->sum( owners.size() );
-
-    DistributionPtr dist( new GeneralDistribution( owners, comm ) );
-
-    if ( ownersSum > 0 )
-    {
-        dist.reset( new GeneralDistribution( owners, comm ) );
-    }
-    else
-    {
-        dist.reset( new BlockDistribution( 0, comm ) );
-    }
-
-    return dist;
-}
-
-static DistributionPtr readPDistribution( const string& inFileName )
-{
-    utilskernel::LArray<IndexType> owners;
-
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    cout << *comm << ", read distribution from " << inFileName << endl;
-
-    hmemo::HArray<IndexType> myIndexes;
-
-    FileIO::read( myIndexes, inFileName );
-
-    IndexType globalSize = comm->sum( myIndexes.size() );
-
-    DistributionPtr dist( new GeneralDistribution( globalSize, myIndexes, comm ) );
-
-    return dist;
-}
 
 int main( int argc, const char* argv[] )
 {
@@ -149,20 +93,7 @@ int main( int argc, const char* argv[] )
 
     if ( argc > 3 )
     {
-        string distFileName = argv[3];
-
-        bool isPartitioned = false;
-
-        getPartitionFileName( distFileName, isPartitioned, *comm );
-
-        if ( isPartitioned )
-        {
-            dist = readPDistribution( distFileName );
-        }
-        else
-        {
-            dist = readDistribution( distFileName );
-        }
+        dist = PartitionIO::readDistribution( argv[3], comm );
     }
 
     string inFileName = argv[1];

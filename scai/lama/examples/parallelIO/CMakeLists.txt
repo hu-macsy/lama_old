@@ -32,10 +32,10 @@
  # @date 02.12.2015
 ###
 
-set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp )
+set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp PartitionIO.cpp PartitionIO.hpp )
 
-add_executable( writeParallel.exe writeParallel.cpp )
-add_executable( readParallel.exe readParallel.cpp )
+add_executable( writeParallel.exe writeParallel.cpp PartitionIO.cpp )
+add_executable( readParallel.exe readParallel.cpp PartitionIO.cpp )
 
 target_link_libraries( writeParallel.exe ${PROJECT_NAME} )
 target_link_libraries( readParallel.exe ${PROJECT_NAME} )
