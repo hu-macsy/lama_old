@@ -1,0 +1,319 @@
+/**
+ * @file PartitionIO.hpp
+ *
+ * @license
+ * Copyright (c) 2009-2016
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the SCAI framework LAMA.
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ * @endlicense
+ *
+ * @brief IO support for partitioned read/write of vectors, matrices, distributions
+ * @author Thomas Brandes
+ * @date 19.06.2016
+ */
+
+#include "PartitionIO.hpp"
+
+#include <scai/lama/io/FileIO.hpp>
+
+#include <scai/utilskernel/LArray.hpp>
+
+#include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+
+#include <iostream>
+
+using namespace std;
+
+namespace scai
+{
+
+using namespace dmemo;
+
+namespace lama
+{
+
+void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, const Communicator& comm )
+{
+    size_t pos = fileName.find( "%r" );
+
+    isPartitioned = false;
+
+    if ( pos == string::npos )
+    {
+        return;
+    }
+    else
+    {
+        ostringstream rankStr;
+
+        if ( comm.getSize() > 1 )
+        {
+            rankStr << comm.getRank() << "." << comm.getSize();
+            isPartitioned = true;
+        }
+
+        fileName.replace( pos, 2, rankStr.str() );
+    }
+}
+
+DistributionPtr PartitionIO::readSDistribution( const string& inFileName, CommunicatorPtr comm )
+{
+    PartitionId MASTER = 0;
+
+    utilskernel::LArray<IndexType> owners;
+    utilskernel::LArray<IndexType> localSizes( 1, 0 );  // at least one entry
+
+    typedef enum {
+       FAIL,    //!< read was not successul, all processes will throw an exception
+       BLOCKED, //!< owners are ascending, a general block distribution is constructed
+       GENERAL, //!< owners are arbitrary, a general distribution is construcuted
+    } Status;
+       
+    Status status = FAIL;
+
+    if ( comm->getRank() == MASTER )
+    {
+        try
+        {
+            FileIO::read( owners, inFileName );
+
+            // Bucketsort of owners gives info about illegal values
+
+            utilskernel::HArrayUtils::bucketCount( localSizes, owners, comm->getSize() ); 
+
+            IndexType nLegalValues = localSizes.sum();
+
+            SCAI_ASSERT_EQ_ERROR( nLegalValues, owners.size(), 
+                                  *comm << ": mapping file " << inFileName << " contains illegal owners" )
+        }
+        catch ( common::Exception& e )
+        {
+            cerr << "Reading distribution from file " << inFileName << " failed" << endl;
+        }
+ 
+        bool isAscending = utilskernel::HArrayUtils::isSorted( owners, true );
+
+        if ( isAscending )
+        {
+            status = BLOCKED;
+        }
+        else
+        {
+            status = GENERAL;
+        }
+    }
+
+    // now broadcast status 
+
+    comm->bcast( reinterpret_cast<int*>( &status ), 1, MASTER );
+
+    if ( status == FAIL )
+    {
+        COMMON_THROWEXCEPTION( "Reading distribution failed" )
+    }
+
+    IndexType globalSize = owners.size();
+    comm->bcast( &globalSize, 1, MASTER );
+
+    DistributionPtr dist;
+
+    if ( status == BLOCKED )
+    {
+        IndexType localSize;
+        hmemo::ReadAccess<IndexType> rSizes( localSizes );
+        comm->scatter( &localSize, 1, MASTER, rSizes );
+        dist.reset( new GenBlockDistribution ( globalSize, localSize, comm ) );
+    }
+    else
+    {
+        // general distribution can be
+
+        dist.reset( new GeneralDistribution( owners, comm ) );
+    }
+
+    return dist;
+}
+
+/** This method reads a distribution from one input file for each partition.
+ *
+ *  @param[in] inFileName is the name of the input file containing the indexes for this partition
+ *  @param[in] comm is the Communicator for which the distribution is determined.
+ *  @returns a new distribution for the mapping specified in the file
+ *
+ *  The global size of the distribution is given by summing up the number of entries in all files.
+ *  Every index between 0 and global size - 1 must appear exactly once in one of the files.
+ */
+DistributionPtr PartitionIO::readPDistribution( const string& inFileName, CommunicatorPtr comm )
+{
+    utilskernel::LArray<IndexType> owners;
+
+    cout << *comm << ", read distribution from " << inFileName << endl;
+
+    hmemo::HArray<IndexType> myIndexes;
+
+    // Some logic needed here to guarantee that all processors will throw an exception
+    // if any read fails
+
+    bool errorFlag = false;
+
+    try 
+    {
+        FileIO::read( myIndexes, inFileName );
+    }
+    catch ( common::Exception& e )
+    {
+        errorFlag = true;
+    }
+
+    errorFlag = comm->any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "Could not read partitioned distribution" )
+    }
+
+    IndexType globalSize = comm->sum( myIndexes.size() );
+
+    DistributionPtr dist( new GeneralDistribution( globalSize, myIndexes, comm ) );
+
+    return dist;
+}
+
+DistributionPtr PartitionIO::readDistribution( const string& inFileName, CommunicatorPtr comm )
+{
+    bool isPartitioned = false;
+
+    string mapFileName = inFileName;
+
+    getPartitionFileName( mapFileName, isPartitioned, *comm );
+ 
+    if ( isPartitioned )
+    {   
+        return readPDistribution( mapFileName, comm );
+    }
+    else
+    {   
+        return readSDistribution( mapFileName, comm );
+    }
+}
+
+void PartitionIO::write( const Distribution& distribution, const string& fileName )
+{
+    string distFileName = fileName;
+
+    bool writePartitions;
+
+    getPartitionFileName( distFileName, writePartitions, distribution.getCommunicator() );
+
+    if ( writePartitions )
+    {
+        writePDistribution( distribution, distFileName );
+    }
+    else
+    {
+        writeSDistribution( distribution, distFileName );
+    }
+}
+
+void PartitionIO::writeSDistribution( const Distribution& distribution, const string& fileName )
+{
+    using namespace hmemo;
+
+    const PartitionId MASTER = 0;
+
+    CommunicatorPtr comm = distribution.getCommunicatorPtr();
+ 
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
+
+    if ( size == 1 )
+    {
+        return;   // do not print a NoDistribution
+    }
+
+    HArray<IndexType> indexes;
+
+    if ( rank == MASTER )
+    {
+        // we need the owners only on the host processor
+        // indexes = 0, 1, 2, ..., globalSize - 1
+
+        utilskernel::HArrayUtils::setOrder( indexes, distribution.getGlobalSize() );
+    }
+
+    HArray<IndexType> owners;
+
+    // Note: only master process asks for owners, other processes have 0 indexes
+
+    distribution.computeOwners( owners, indexes );
+
+    cout << *comm << ", owner computation finished, owners = " << owners << endl;
+
+    if ( rank == MASTER )
+    {
+        cout << *comm << ", MASTER, write distribution to " << fileName << endl;
+
+        FileIO::write( owners, fileName );
+    }
+
+    // just make sure that no other process starts anything before write is finished
+
+    comm->synchronize();
+}
+
+void PartitionIO::writePDistribution( const Distribution& distribution, const string& fileName )
+{
+    // each processor writes a file with its global indexes
+
+    using namespace hmemo;
+
+    CommunicatorPtr comm = distribution.getCommunicatorPtr();
+ 
+    const IndexType nLocal = distribution.getLocalSize();
+    const IndexType nGlobal = distribution.getGlobalSize();
+
+    HArray<IndexType> myGlobalIndexes;
+
+    {
+        WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
+
+        IndexType k = 0;
+
+        for ( IndexType i = 0; i < nGlobal; ++i )
+        {
+            if ( distribution.isLocal( i ) )
+            {
+                wGlobalIndexes[k++] = i;
+            }
+        }
+        
+        SCAI_ASSERT_EQ_ERROR( k, nLocal, "serious local mismatch" );
+    }
+
+    FileIO::write( myGlobalIndexes, fileName );
+}
+
+}  // namespace
+
+}  // namespace

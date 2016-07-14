@@ -84,48 +84,22 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseMatrix<ValueTyp
 template<typename ValueType>
 void DenseMatrix<ValueType>::computeOwners()
 {
-    // build global vector mOwners with mOwners[i] is owner of column i
+    // build vector mOwners with mOwners[i] is owner of column i
+    // Note: this vector is replicated for all processors, has globalSize entries
+
     const Distribution& colDist = getColDistribution();
+
     SCAI_LOG_DEBUG( logger, "computerOwners for col dist = " << colDist )
-    mOwners.resize( mNumColumns );
-    {
-        std::vector<IndexType> requiredIndexes( mNumColumns );
 
-        for ( std::vector<IndexType>::size_type i = 0; i < requiredIndexes.size(); ++i )
-        {
-            requiredIndexes[i] = static_cast<IndexType>( i );
-        }
+    // Note: colDist.globalSize() == mNumColumns 
 
-        if ( SCAI_LOG_TRACE_ON( logger ) )
-        {
-            std::string s = "requiredIndexes{ ";
+    HArray<IndexType> indexes;   // will contain all column indexes to get all owners
 
-            for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
-            {
-                s += " ";
-                s += requiredIndexes[i];
-            }
+    utilskernel::HArrayUtils::setOrder( indexes, mNumColumns );
 
-            s += " }";
-            SCAI_LOG_TRACE( logger, s );
-        }
+    colDist.computeOwners( mOwners, indexes );
 
-        colDist.computeOwners1( requiredIndexes, mOwners );
-    }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        std::string s = "mOwners{ ";
-
-        for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
-        {
-            s += " ";
-            s += mOwners[i];
-        }
-
-        s += " }";
-        SCAI_LOG_TRACE( logger, s );
-    }
+    SCAI_ASSERT_EQ_DEBUG( mNumColumns, mOwners.size(), "Serious mismatch, probably due to wrong distribution" );
 }
 
 /* ========================================================================= */
@@ -321,34 +295,34 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
 {
     const Distribution& dist = getRowDistribution();
     {
-        const int n = dist.getNumPartitions();
+        const int nPartitions = dist.getNumPartitions();
+
         const int numLocalRows = dist.getLocalSize();
+
         computeOwners();
-        scoped_array<int> numCols( new int[n] );
+       
+        utilskernel::LArray<IndexType> numCols;
 
-        for ( int i = 0; i < n; ++i )
-        {
-            numCols[i] = 0;
-        }
+        utilskernel::HArrayUtils::bucketCount( numCols, mOwners, nPartitions );
 
-        for ( unsigned int i = 0; i < mOwners.size(); ++i )
-        {
-            ++numCols[mOwners[i]];
-        }
+        SCAI_ASSERT_EQUAL( numCols.sum(), mOwners.size(), "serious mismatch due to illegal owner" )
 
-        mData.resize( n );
-        SCAI_LOG_DEBUG( logger, "mData.size() = " << mData.size() )
-        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        mData.resize( nPartitions );  
 
-        for ( int i = 0; i < n; ++i )
+        ReadAccess<IndexType> rNumCols( numCols );
+
+        for ( int i = 0; i < nPartitions; ++i )
         {
             //create Storage Vector
-            mData[i].reset( new DenseStorage<ValueType>( numLocalRows, numCols[i] ) );
+
+            mData[i].reset( new DenseStorage<ValueType>( numLocalRows, rNumCols[i] ) );
         }
 
         mData[0]->setDiagonalImpl( ValueType( 1 ) );
+
         SCAI_LOG_DEBUG( logger, "mData[0] : " << *mData[0] << ", with data = " << mData[0]->getData() )
     }
+
     SCAI_LOG_INFO( logger, *this << " constructed" )
 }
 
@@ -522,50 +496,8 @@ void DenseMatrix<ValueType>::invert( const Matrix& other )
     DistributionPtr colDist = other.getColDistributionPtr();
     DistributionPtr tmpColDist( new NoDistribution( other.getNumColumns() ) );
 
-    if ( rowDist->isReplicated() || ( !hasScalaPack() ) )
-    {
-        assign( other );
-        invertReplicated();
-        return;
-    }
-
-    const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( rowDist.get() );
-    DistributionPtr tmpRowDist;
-
-    if ( cyclicDist )
-    {
-        tmpRowDist = rowDist;
-    }
-    else
-    {
-        const IndexType blockSize = 64;
-        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
-        tmpRowDist.reset( new CyclicDistribution( other.getNumRows(), blockSize, comm ) );
-    }
-
     assign( other );
-    redistribute( tmpRowDist, tmpColDist );
-    invertCyclic();
-    redistribute( rowDist, colDist );
-}
-
-/* ------------------------------------------------------------------ */
-
-template<typename ValueType>
-bool DenseMatrix<ValueType>::hasScalaPack()
-{
-    return false;
-    /* Original code:
-
-    // check the Kernel registry if ScalaPack is available ( at least on Host )
-
-    typename blaskernel::BLASKernelTrait::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
-
-    ContextPtr loc = Context::getHostPtr();
-
-    return inverse != NULL;
-
-    */
+    invertReplicated();
 }
 
 /* ------------------------------------------------------------------ */
@@ -582,56 +514,6 @@ void DenseMatrix<ValueType>::invertReplicated()
     // now invert the dense matrix storage
     mData[0]->invert( *mData[0] );
     redistribute( rowDist, colDist );
-}
-
-/* ------------------------------------------------------------------ */
-
-template<typename ValueType>
-void DenseMatrix<ValueType>::invertCyclic()
-{
-    // ToDO: invertCyclic uses function invert from Scalapack, interface should not know Communicator
-//    SCAI_REGION( "Mat.Dense.invertCyclic" )
-//
-//    const Communicator& comm = getRowDistribution().getCommunicator();
-//
-//    const Distribution& rowDist = getRowDistribution();
-//
-//    const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( &rowDist );
-//
-//    SCAI_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << rowDist )
-//
-//    const int nb = cyclicDist->chunkSize(); // blocking factor
-//
-//    static LAMAKernel<blaskernel::BLASKernelTrait::inverse<ValueType> > inverse;
-//
-//    // location where inverse computation will be done
-//    ContextPtr loc = inverse.getValidContext( this->getContextPtr() );
-//
-//    // be careful: loc might have changed to location where 'inverse' is available
-//
-//    const int n = getNumRows();
-//
-//    // assert square matrix
-//
-//    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), n )
-//
-//    DenseStorage<ValueType>& denseStorage = getLocalStorage();
-//
-//    const IndexType localSize = denseStorage.getData().size();
-//
-//    SCAI_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
-//
-//    SCAI_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
-//
-//    WriteAccess<ValueType> localValues( denseStorage.getData(), loc );
-//
-//    ValueType* data = localValues.get();
-//
-//    SCAI_LOG_INFO( logger, "now call inverse" )
-//
-//    SCAI_CONTEXT_ACCESS( loc )
-//
-//    inverse[loc]( n, nb, data, comm );
 }
 
 /* ------------------------------------------------------------------ */
@@ -990,61 +872,58 @@ void DenseMatrix<ValueType>::joinColumnData(
     const IndexType ncol = getNumColumns();
     // make sure that the array mOwners is set correctly
     SCAI_ASSERT_EQUAL_ERROR( static_cast<IndexType>( mOwners.size() ), ncol )
+
     const PartitionId numColPartitions = static_cast<PartitionId>( mData.size() );
-    typedef common::shared_ptr<ReadAccess<ValueType> > ReadAccessPtr;
-    std::vector<ReadAccessPtr> chunkRead( numColPartitions );
-    std::vector<IndexType> chunkOffset( numColPartitions ); // offset for each chunk
+
     ContextPtr hostContext = Context::getHostPtr();
+
     // Get read access to all chunks, make some assertions for each chunk
+
     IndexType numGlobalColumns = 0;
+
+    typedef const ValueType* PtrType;
+
+    common::scoped_array<PtrType> chunkPtr( new PtrType [ numColPartitions ] );
 
     for ( PartitionId p = 0; p < numColPartitions; ++p )
     {
         SCAI_ASSERT_ERROR( mData[p], "no chunk data for partition " << p )
+
         IndexType numLocalColumns = mData[p]->getNumColumns();
-        chunkRead[p].reset( new ReadAccess<ValueType>( mData[p]->getData(), hostContext ) );
-        chunkOffset[p] = numLocalColumns * firstRow;
+
+        ReadAccess<ValueType> chunkRead( mData[p]->getData(), hostContext );
+
+        chunkPtr[p] = chunkRead.get() + numLocalColumns * firstRow;
+
         numGlobalColumns += numLocalColumns;
+
         SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *mData[p] )
     }
 
     SCAI_ASSERT_EQUAL_ERROR( numGlobalColumns, ncol );   // local column sizes must add to global column size
+
     SCAI_LOG_DEBUG( logger, "resize result to " << ncol << " x " << nRows )
-    WriteOnlyAccess<ValueType> resultWrite( result, hostContext, ncol * nRows );
-    IndexType writePos = 0;
+
+    WriteOnlyAccess<ValueType> wResult( result, hostContext, ncol * nRows );
+
+    ReadAccess<PartitionId> rOwners( mOwners, hostContext );
+
+    // gather data of chunks, each chunk data is contiguous
+
+    IndexType pos = 0;
+
+    // No OpenMP parallelization, would require chunkPtr array for each thread
 
     for ( IndexType i = firstRow; i < firstRow + nRows ; ++i )
     {
-        SCAI_LOG_DEBUG( logger, "fill row " << i )
-
         for ( IndexType j = 0; j < ncol; ++j )
         {
-            IndexType chunkId = mOwners[j];
-            SCAI_LOG_DEBUG( logger, "col " << j << " in chunk " << chunkId  )
-            ReadAccess<ValueType>& chunkData = *chunkRead[chunkId];
-            SCAI_LOG_DEBUG( logger, "chunkData has size " << chunkData.size() )
-            IndexType offset = chunkOffset[chunkId]++;
-            SCAI_LOG_DEBUG( logger, "offset " << chunkData.size() )
-            resultWrite[ writePos++ ] = chunkData[offset];
-            SCAI_LOG_DEBUG( logger, "col " << j << " in chunk " << chunkId << ", offset = " << offset << ", val = " << chunkData[offset] )
+            IndexType chunkId = rOwners[j];
+            wResult[ pos++ ] = *chunkPtr[chunkId]++;
         }
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( writePos, ncol * nRows )
-
-    // Verify that last offset for each chunk is equal to the corresponding size
-
-    for ( PartitionId p = 0; p < numColPartitions; ++p )
-    {
-        SCAI_LOG_DEBUG( logger, "Offset chunk " << p << " of " << numColPartitions << " = " << chunkOffset[p]
-                        << ", mData is " << *mData[p] )
-        SCAI_ASSERT_EQUAL_ERROR( chunkOffset[p], mData[p]->getNumColumns() * ( firstRow + nRows ) )
-    }
-
     SCAI_LOG_DEBUG( logger, "ready join column data" )
-    resultWrite.release();
-    SCAI_LOG_DEBUG( logger, "ready join column data, released access" )
-    SCAI_LOG_DEBUG( logger, "ready join column data, result = " << result )
 }
 
 /* ------------------------------------------------------------------ */
@@ -1063,29 +942,29 @@ void DenseMatrix<ValueType>::allocateData()
 
     if ( numChunks == 1 )
     {
-// simple case, no need to count owners for each partition
+        // simple case, no need to count owners for each partition
+
         mData[0].reset( new DenseStorage<ValueType>( numRows, mNumColumns ) );
         return;
     }
 
-    scoped_array<PartitionId> numColsPartition( new PartitionId[numChunks] );
+    utilskernel::LArray<IndexType> numColsPartition;
+ 
+    utilskernel::HArrayUtils::bucketCount( numColsPartition, mOwners, numChunks );
+
+    ContextPtr ctx = Context::getHostPtr();
+
+    ReadAccess<IndexType> rSizes( numColsPartition, ctx );
+
+    IndexType count = 0; // sum up the sizes, verify correct sum
 
     for ( PartitionId p = 0; p < numChunks; ++p )
     {
-        numColsPartition[p] = 0;
+        count += rSizes[p];
+        mData[p].reset( new DenseStorage<ValueType>( numRows, rSizes[p] ) );
     }
 
-    for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
-    {
-        SCAI_ASSERT_DEBUG( mOwners[i] < numChunks,
-                           "column owner [" << i << "] = " << mOwners[i] << " out of range, #chunks = " << numChunks )
-        ++numColsPartition[mOwners[i]];
-    }
-
-    for ( PartitionId p = 0; p < numChunks; ++p )
-    {
-        mData[p].reset( new DenseStorage<ValueType>( numRows, numColsPartition[p] ) );
-    }
+    SCAI_ASSERT_EQ_ERROR( count, mNumColumns, "Illegal owners." )
 }
 
 /* ------------------------------------------------------------------ */
@@ -1094,55 +973,54 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::splitColumnData(
     std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
     const DenseStorage<ValueType>& columnData,
-    const PartitionId numChunks,
-    const std::vector<IndexType>& columnOwners )
+    const PartitionId numPartitions,
+    const HArray<PartitionId>& columnOwners )
 {
-    SCAI_LOG_INFO( logger, "split columns of " << columnData << " into " << numChunks << " chunks" )
-// Note: this is a static method, no member variables are used
+    SCAI_LOG_INFO( logger, "split columns of " << columnData << " into " << numPartitions << " partition chunks" )
+
     const IndexType numColumns = columnData.getNumColumns();
     const IndexType numRows = columnData.getNumRows();
-    SCAI_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColumns )
-    std::vector<PartitionId> numCols( numChunks, 0 );
 
-    for ( std::vector<PartitionId>::size_type i = 0; i < columnOwners.size(); ++i )
-    {
-        SCAI_ASSERT_DEBUG( columnOwners[i] < numChunks, "owner out of range" )
-        ++numCols[columnOwners[i]];
-    }
+    SCAI_ASSERT_EQUAL_ERROR( columnOwners.size(), numColumns )
+
+    utilskernel::LArray<IndexType> offsets;
+    utilskernel::LArray<IndexType> perm;
+
+    utilskernel::HArrayUtils::bucketSort( offsets, perm, columnOwners, numPartitions );
+
+    // offsets array, last entry stands for number of elements sorted into buckets
+
+    SCAI_ASSERT_EQ_DEBUG( numColumns, offsets[numPartitions], "Illegal column owners" )
+    SCAI_ASSERT_EQ_DEBUG( columnOwners.size(), perm.size(), "Illegal column owners" )
 
     chunks.clear();
-    chunks.resize( numChunks );
-    typedef common::shared_ptr<WriteAccess<ValueType> > WriteAccessPtr;
-    std::vector<WriteAccessPtr> chunkWrite( numChunks );
-    // Get write access to all chunks, make some assertions for each chunk
-    ContextPtr contextPtr = Context::getHostPtr();
+    chunks.resize( numPartitions );
+  
+    ContextPtr ctx = Context::getHostPtr();
 
-    for ( PartitionId p = 0; p < numChunks; ++p )
+    ReadAccess<ValueType> columnDataRead( columnData.getData(), ctx );
+    ReadAccess<IndexType> rPerm( perm, ctx );
+    ReadAccess<IndexType> rOffsets( offsets, ctx );
+ 
+    for ( PartitionId p = 0; p < numPartitions; ++p )
     {
-        chunks[p].reset( new DenseStorage<ValueType>( numRows, numCols[p] ) );
-        chunkWrite[p].reset( new WriteAccess<ValueType>( chunks[p]->getData(), contextPtr ) );
-        SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
-    }
+        IndexType lb = rOffsets[p]; 
+        IndexType ub = rOffsets[p+1];
 
-    std::vector<IndexType> chunkOffset( numChunks, 0 ); // offset for each chunk
-    ReadAccess<ValueType> columnDataRead( columnData.getData(), contextPtr );
+        chunks[p].reset( new DenseStorage<ValueType>( numRows, ub - lb ) );
 
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        for ( IndexType j = 0; j < numColumns; ++j )
+        WriteAccess<ValueType> wChunkData( chunks[p]->getData(), ctx );
+   
+        IndexType pos = 0;  // traversing the elements of chunk data for p-th partition
+
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            IndexType chunkId = columnOwners[j];
-            WriteAccess<ValueType>& chunkData = *chunkWrite[chunkId];
-            IndexType idx = chunkOffset[chunkId]++;
-            chunkData[idx] = columnDataRead[i * numColumns + j];
+            for ( IndexType j = lb; j < ub; ++j )
+            {
+                IndexType jj = rPerm[j]; 
+                wChunkData[pos++] = columnDataRead[ i * numColumns + jj ];
+            }
         }
-    }
-
-// Verify that last offset for each chunk is equal to the corresponding size
-
-    for ( PartitionId p = 0; p < numChunks; ++p )
-    {
-        SCAI_ASSERT_EQUAL_ERROR( chunkOffset[p], numCols[p] * numRows )
     }
 }
 

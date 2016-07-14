@@ -32,6 +32,8 @@
  * @date 19.06.2016
  */
 
+#include "PartitionIO.hpp"
+
 #include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama.hpp>
@@ -44,40 +46,21 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
 
+#include "utility.hpp" 
+
 using namespace std;
 
 using namespace scai;
 using namespace lama;
 using namespace dmemo;
 
-static common::scalar::ScalarType getType() 
-{
-    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
-    
-    std::string val;
-    
-    if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
-    {   
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
-        
-        if ( env_type == scai::common::scalar::UNKNOWN )
-        {   
-            std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
-        }
-        
-        type = env_type;
-    }
-
-    return type;
-}
-
 int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
 
-    if ( argc != 3 )
+    if ( argc < 3 )
     {
-        cout << "Usage: " << argv[0] << " infile_name outfile_name" << endl;
+        cout << "Usage: " << argv[0] << " infile_name outfile_name [distfile_name]" << endl;
         cout << "   file format is chosen by suffix, e.g. frm, mtx, txt, psc"  << endl;
         cout << "   --SCAI_TYPE=<data_type> is data type of input file and used for internal representation" << endl;
         cout << "   --SCAI_IO_BINARY=0|1 to force formatted or binary output file" << endl;
@@ -106,22 +89,45 @@ int main( int argc, const char* argv[] )
 
     Matrix& matrix = *matrixPtr;
 
+    dmemo::DistributionPtr dist;
+
+    if ( argc > 3 )
     {
-        std::ostringstream inFileName;
+        dist = PartitionIO::readDistribution( argv[3], comm );
+    }
 
-        inFileName << comm->getRank() << "." << comm->getSize() << "." << argv[1];
+    string inFileName = argv[1];
 
+    bool isPartitioned = false;
+
+    getPartitionFileName( inFileName, isPartitioned, *comm );
+
+    if ( !isPartitioned )
+    {
+        // read it from a single file
+
+        matrix.readFromFile( inFileName );
+
+        cout << comm << ": read matrix from file " << inFileName << endl;
+
+        if ( dist.get() )
+        {
+            matrix.redistribute( dist, dist );
+        }
+    }
+    else
+    {
         _MatrixStorage& m = const_cast<_MatrixStorage&>( matrix.getLocalStorage() );
 
         bool errorFlag = false;
 
         try
         {
-            m.readFromFile( inFileName.str() );
+            m.readFromFile( inFileName );
         }
         catch ( common::Exception& e )
         {
-            cerr << *comm << ": failed to read " << inFileName.str() << endl;
+            cerr << *comm << ": failed to read " << inFileName << endl;
             errorFlag = true;
         }
 
@@ -132,28 +138,43 @@ int main( int argc, const char* argv[] )
             return -1;
         }
 
-        cout << *comm << ": read local part of matrix from file " << inFileName.str() << ": " << m << endl;
+        cout << *comm << ": read local part of matrix from file " << inFileName << ": " << m << endl;
+
+        if ( dist.get() )
+        {
+            // we have read a distribution, so it must match
+
+            if ( dist->getLocalSize() != m.getNumRows() )
+            {
+                errorFlag = true;
+
+                cerr << *comm << ": mismatch distribution and file size" << endl;
+            }
+        }
+        else 
+        {
+            // we have no distribution so assume a general block distribution
+
+            IndexType globalSize = comm->sum( m.getNumRows() );
+
+            dist.reset( new GenBlockDistribution( globalSize, m.getNumRows(), comm ) );
+        }
 
         // build the distribution by the sizes
 
-        IndexType globalSize = comm->sum( m.getNumRows() );
         IndexType numColumns = comm->max( m.getNumColumns() );
 
         // for consistency we have to set the number of columns in each stroage
 
-        dmemo::DistributionPtr rowDist( new dmemo::GenBlockDistribution( globalSize, m.getNumRows(), comm ) );
-        dmemo::DistributionPtr colDist( new dmemo::NoDistribution( numColumns ) );
-
         m.setDimension( m.getNumRows(), numColumns );
-        matrix.assign( m, rowDist, colDist );
+
+        matrix.assign( m, dist, dist );
 
         cout << *comm << ": distributed matrix = " << matrix << endl;
     }
 
-    dmemo::DistributionPtr dist( new dmemo::CyclicDistribution( matrix.getNumRows(), matrix.getNumRows(), comm ) );
-
-    matrix.redistribute( dist, matrix.getColDistributionPtr() );
-
+    // whatever the distribution may be, we write it in a single file
+ 
     matrix.writeToFile( argv[2] );
 
     cout << "written CSR matrix : " << matrix << endl;

@@ -629,7 +629,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
         ReadAccess<ValueType> read( vector.getLocalValues(), host );
         for ( IndexType i = 0; i < n; ++i )
         {
-            BOOST_CHECK_EQUAL( read[i], common::Math::exp(values[i]) );
+            ValueType x = read[i] - common::Math::exp(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
     }
 }

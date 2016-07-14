@@ -912,6 +912,7 @@ void HArrayUtils::sort(
 /* --------------------------------------------------------------------------- */
 
 void HArrayUtils::bucketSort(
+    hmemo::HArray<IndexType>& offsets,
     hmemo::HArray<IndexType>& perm,
     const hmemo::HArray<IndexType>& array,
     const IndexType nb,
@@ -922,6 +923,7 @@ void HArrayUtils::bucketSort(
     if ( n == 0 )
     {
         perm.clear();
+        offsets.init( 0, nb + 1 );  // offsets = { 0, 0, ..., 0 }
         return;
     }
 
@@ -938,14 +940,12 @@ void HArrayUtils::bucketSort(
         loc = array.getValidContext();
     }
 
-    hmemo::HArray<IndexType> bucketSizesOffsets;
-
     countBuckets.getSupportedContext( loc, scan, sortInBuckets );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     ReadAccess<IndexType> bucketMap( array, loc );
-    WriteOnlyAccess<IndexType> sizes( bucketSizesOffsets, loc, nb + 1 );
+    WriteOnlyAccess<IndexType> sizes( offsets, loc, nb + 1 );
     
     countBuckets[loc]( sizes.get(), nb, bucketMap, n );
     IndexType total = scan[loc]( sizes.get(), nb );
@@ -954,6 +954,46 @@ void HArrayUtils::bucketSort(
 
     WriteOnlyAccess<IndexType> wPerm( perm, loc, total );
     sortInBuckets[loc]( wPerm, sizes, nb, bucketMap, n );
+}
+
+/* --------------------------------------------------------------------------- */
+
+void HArrayUtils::bucketCount(
+    hmemo::HArray<IndexType>& sizes,
+    const hmemo::HArray<IndexType>& array,
+    const IndexType nb,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    if ( n == 0 )
+    {
+        sizes.init( 0, nb );
+        return;
+    }
+
+    static LAMAKernel<UtilKernelTrait::countBuckets> countBuckets;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    countBuckets.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> bucketMap( array, loc );
+
+    sizes.reserve( loc, nb + 1 );
+
+    WriteOnlyAccess<IndexType> wSizes( sizes, loc, nb );
+
+    countBuckets[loc]( wSizes, nb, bucketMap, n );
 }
 
 /* --------------------------------------------------------------------------- */

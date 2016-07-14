@@ -62,35 +62,6 @@ namespace sparsekernel
 SCAI_LOG_DEF_LOGGER( OpenMPCOOUtils::logger, "OpenMP.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
-/*     Template implementations                                                */
-/* --------------------------------------------------------------------------- */
-
-void OpenMPCOOUtils::getCSRSizes(
-    IndexType csrSizes[],
-    const IndexType numRows,
-    const IndexType numValues,
-    const IndexType cooIA[] )
-{
-    SCAI_LOG_INFO( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues )
-
-    // initialize size array for each row
-
-    for ( IndexType i = 0; i < numRows; i++ )
-    {
-        csrSizes[i] = 0;
-    }
-
-    // increment size of a row for each used row value
-
-    for ( IndexType k = 0; k < numValues; k++ )
-    {
-        IndexType i = cooIA[k];
-        SCAI_ASSERT_DEBUG( i < numRows, "cooIA[" << k << "] = " << i << " out of range, #rows = " << numRows )
-        csrSizes[i]++;
-    }
-}
-
-/* --------------------------------------------------------------------------- */
 
 bool OpenMPCOOUtils::hasDiagonalProperty(
     const IndexType cooIA[],
@@ -116,57 +87,6 @@ bool OpenMPCOOUtils::hasDiagonalProperty(
     }
 
     return diagonalProperty;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename COOValueType, typename CSRValueType>
-void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
-                                   CSRValueType csrValues[],
-                                   IndexType csrIA[], // used as tmp, remains unchanged
-                                   const IndexType numRows,
-                                   const IndexType numValues,
-                                   const IndexType cooIA[],
-                                   const IndexType cooJA[],
-                                   const COOValueType cooValues[] )
-{
-    SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<COOValueType>::id() << ", "
-                   << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
-    // traverse the non-zero values and put data at the right places
-    // each thread reads all COO indexes but takes care for a certain range of CSR rows
-    #pragma omp parallel
-    {
-        // get thread rank, size
-
-        IndexType lb, ub;   // range for this thread
-
-        omp_get_my_range( lb, ub, numRows );
-
-        for ( IndexType k = 0; k < numValues; k++ )
-        {
-            IndexType i = cooIA[k];
-
-            if ( lb <= i && i < ub )
-            {
-                IndexType& offset = csrIA[i];
-                csrJA[offset] = cooJA[k];
-                csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
-                SCAI_LOG_TRACE( logger, "row " << i << ": new offset = " << offset )
-                offset++;
-            }
-        }
-    }
-
-    // set back the old offsets in csrIA
-
-    for ( IndexType i = numRows; i > 0; --i )
-    {
-        csrIA[i] = csrIA[i - 1];
-    }
-
-    csrIA[0] = 0;
-    SCAI_ASSERT_EQUAL_DEBUG( csrIA[numRows], numValues )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -461,7 +381,6 @@ void OpenMPCOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelR
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( OpenMPCOOUtils::hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<COOKernelTrait::offsets2ia>( OpenMPCOOUtils::offsets2ia, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( OpenMPCOOUtils::getCSRSizes, ctx, flag );
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( OpenMPCOOUtils::setCSRData, ctx, flag );
 }
 
@@ -485,7 +404,6 @@ void OpenMPCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
     KernelRegistry::set<COOKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 

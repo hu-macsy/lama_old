@@ -985,40 +985,41 @@ void COOStorage<ValueType>::jacobiIterate(
                  rOldSolution.get(), rRhs.get(), omega, mNumRows );
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 template<typename OtherValueType>
 void COOStorage<ValueType>::buildCSR(
-    hmemo::HArray<IndexType>& ia,
-    hmemo::HArray<IndexType>* ja,
-    hmemo::HArray<OtherValueType>* values,
+    hmemo::HArray<IndexType>& csrIA,
+    hmemo::HArray<IndexType>* csrJA,
+    hmemo::HArray<OtherValueType>* csrValues,
     const hmemo::ContextPtr preferredLoc ) const
 {
-    // multiple kernel routines needed
-    static utilskernel::LAMAKernel<sparsekernel::CSRKernelTrait::sizes2offsets> sizes2offsets;
-    static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::getCSRSizes> getCSRSizes;
-    static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
-    // do it where all routines are avaialble
-    hmemo::ContextPtr loc = preferredLoc;
-    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
-    SCAI_CONTEXT_ACCESS( loc )
-    hmemo::WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
-    hmemo::ReadAccess<IndexType> cooIA( mIA, loc );
-    getCSRSizes[loc]( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
-
-    if ( ja == NULL || values == NULL )
+    if ( csrJA == NULL || csrValues == NULL )
     {
-        csrIA.resize( mNumRows );
+        // number of entries per row, count with buckets for each row
+
+        SCAI_LOG_INFO( logger, "build CSR sizes from " << *this )
+
+        utilskernel::HArrayUtils::bucketCount( csrIA, mIA, mNumRows, preferredLoc );
         return;
     }
 
-    IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
-    SCAI_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
-    hmemo::ReadAccess<IndexType> cooJA( mJA, loc );
-    hmemo::ReadAccess<ValueType> cooValues( mValues, loc );
-    hmemo::WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
-    hmemo::WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
-    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(),
-                       mNumRows, mNumValues, cooIA.get(), cooJA.get(), cooValues.get() );
+    SCAI_LOG_INFO( logger, "build CSR data from " << *this )
+
+    HArray<IndexType> perm;  // help array for resorting the values
+
+    utilskernel::HArrayUtils::bucketSort( csrIA, perm, mIA, mNumRows );
+
+    SCAI_ASSERT_EQ_DEBUG( mNumRows + 1, csrIA.size(), "serious mismatch, should not happen" )
+    SCAI_ASSERT_EQ_ERROR( perm.size(), mIA.size(), "Illegal entries in mIA of COO storage" )
+
+    // CSR array ja, values are the COO arrays resorted
+
+    utilskernel::HArrayUtils::gather( *csrJA, mJA, perm, preferredLoc );
+    utilskernel::HArrayUtils::gather( *csrValues, mValues, perm, preferredLoc );
+
+    // Note: sort is stable, so diagonal values remain first in each row
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1076,16 +1077,18 @@ const char* COOStorage<ValueType>::typeName()
 
 SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST )
 
-#define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+#define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void COOStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-            hmemo::HArray<OtherValueType>* values,const hmemo::ContextPtr ) const;  \
+            hmemo::HArray<OtherValueType>* values,const hmemo::ContextPtr ) const;                                         \
     template void COOStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-    template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );
+    template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+    template void COOStorage<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define COO_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )

@@ -32,16 +32,19 @@
  * @date 19.06.2016
  */
 
+#include "PartitionIO.hpp"
+
 #include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama.hpp>
 #include <scai/dmemo.hpp>
 
-#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
+
+#include "utility.hpp" 
 
 using namespace std;
 
@@ -49,99 +52,13 @@ using namespace scai;
 using namespace lama;
 using namespace dmemo;
 
-static common::scalar::ScalarType getType() 
-{
-    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
-    
-    std::string val;
-    
-    if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
-    {   
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
-        
-        if ( env_type == scai::common::scalar::UNKNOWN )
-        {   
-            std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
-        }
-        
-        type = env_type;
-    }
-
-    return type;
-}
-
-static void printDistribution( const Distribution& distribution, const std::string& fileName )
-{
-    using namespace hmemo;
-
-    const PartitionId MASTER = 0;
-
-    CommunicatorPtr comm = distribution.getCommunicatorPtr();
- 
-    PartitionId rank = comm->getRank();
-    PartitionId size = comm->getSize();
-
-    if ( size == 1 )
-    {
-        return;   // do not print a NoDistribution
-    }
-
-    HArray<IndexType> indexes;
-
-    if ( rank == MASTER )
-    {
-        // we need the owners only on the host processor
-        // indexes = 0, 1, 2, ..., globalSize - 1
-
-        utilskernel::HArrayUtils::setOrder( indexes, distribution.getGlobalSize() );
-    }
-
-    HArray<IndexType> owners;
-
-    // Note: only master process asks for owners, other processes have 0 indexes
-
-    distribution.computeOwners( owners, indexes );
-
-    if ( rank == MASTER )
-    {
-        FileIO::write( owners, fileName );
-    }
-
-    // just make sure that no other process starts anything before write is finished
-
-    comm->synchronize();
-}
-
-static DistributionPtr readDistribution( const std::string& inFileName )
-{
-    utilskernel::LArray<IndexType> owners;
-
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    if ( comm->getRank() == 0 )
-    {
-         FileIO::read( owners, inFileName );
-
-         IndexType minId = owners.min();
-         IndexType maxId = owners.max();
-
-         // prove:  0 <= minId <= maxId < comm->size() 
-
-         cout << "owner array, size = " << owners.size() << ", min = " << minId << ", max = " << maxId << endl;
-    }
-
-    DistributionPtr dist( new GeneralDistribution( owners, comm ) );
-
-    return dist;
-}
-
 int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
 
-    if ( argc != 3 )
+    if ( argc < 3 )
     {
-        cout << "Usage: " << argv[0] << " infile_name outfile_name" << endl;
+        cout << "Usage: " << argv[0] << " infile_name outfile_name distfile_name" << endl;
         cout << "   file format is chosen by suffix, e.g. frm, mtx, txt, psc"  << endl;
         cout << "   --SCAI_TYPE=<data_type> is data type of input file and used for internal representation" << endl;
         cout << "   --SCAI_IO_BINARY=0|1 to force formatted or binary output file" << endl;
@@ -182,22 +99,37 @@ int main( int argc, const char* argv[] )
 
     matrix.redistribute( dist, matrix.getColDistributionPtr() );
 
+    std::string outFileName = argv[2];
+
+    bool writePartitions;
+
+    getPartitionFileName( outFileName, writePartitions, *comm );
+
+    if ( !writePartitions )
+    {
+        // write it in one single file 
+
+        matrix.writeToFile( outFileName );
+
+        cout << comm << ": written matrix to file " << outFileName << endl;
+    }
+    else
     { 
-        std::ostringstream outFileName;
+        matrix.getLocalStorage().writeToFile( outFileName );
 
-        outFileName << comm->getRank() << "." << comm->getSize() << "." << argv[2];
-
-        matrix.getLocalStorage().writeToFile( outFileName.str() );
-
-        cout << comm << ": written local part of matrix to file " << outFileName << endl;
+        cout << *comm << ": written local part of matrix to file " << outFileName << endl;
     }
 
+    if ( argc > 3 )
+    {
+        std::string distFileName = argv[3];
 
-    printDistribution( matrix.getRowDistribution(), "owners.mtx" );
+        PartitionIO::write( matrix.getRowDistribution(), distFileName );
+ 
+        // just for check
 
-    DistributionPtr newDist = readDistribution( "owners.mtx" );
+        DistributionPtr newDist = PartitionIO::readDistribution( distFileName, comm );
 
-    std::cout << "read dist = " << *newDist << std::endl;
-
-    // SCAI_ASSERT_EQUAL( matrix.getRowDistribution(), *newDist, "Error" );
+        SCAI_ASSERT_EQ_ERROR( newDist->getGlobalSize(), matrix.getNumRows(), "mismatch" )
+    }
 }
