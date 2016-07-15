@@ -85,27 +85,6 @@ public:
         const IndexType cooIA[],
         const IndexType numValues );
 
-    /** OpenMP implementation for COOKernelTrait::getCSRSizes */
-
-    static void getCSRSizes(
-        IndexType csrSizes[],
-        const IndexType numRows,
-        const IndexType numValues,
-        const IndexType cooIA[] );
-
-    /** Serial implementation for COOKernelTrait::getCSRValues */
-
-    template<typename COOValueType, typename CSRValueType>
-    static void getCSRValues(
-        IndexType csrJA[],
-        CSRValueType csrValues[],
-        IndexType csrIA[],
-        const IndexType numRow,
-        const IndexType numValues,
-        const IndexType cooIA[],
-        const IndexType cooJA[],
-        const COOValueType cooValues[] );
-
     /** OpenMP implementation for COOKernelTrait::setCSRData */
 
     template<typename COOValueType, typename CSRValueType>

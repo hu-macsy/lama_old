@@ -49,6 +49,8 @@
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace dmemo
 {
 
@@ -245,6 +247,8 @@ IndexType GenBlockDistribution::local2global( const IndexType localIndex ) const
     return mLB + localIndex;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) const
 {
     IndexType localIndex = nIndex; // default value if globalIndex is not local
@@ -257,22 +261,26 @@ IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) cons
     return localIndex;
 }
 
-void GenBlockDistribution::computeOwners(
-    const std::vector<IndexType>& requiredIndexes,
-    std::vector<PartitionId>& owners ) const
-{
-    owners.clear();
-    owners.reserve( requiredIndexes.size() );
-    SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
+/* ---------------------------------------------------------------------- */
 
-    for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
+void GenBlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
+{
+    ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
+
+    const IndexType n = indexes.size();
+
+    ReadAccess<IndexType> rIndexes( indexes, ctx );
+    WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
+
+    // ToDo: call a kernel and allow arbitrary context
+
+    for ( IndexType i = 0; i < n; i++ )
     {
-        IndexType requiredIndex = requiredIndexes[i];
-        PartitionId owner = getOwner( requiredIndex );
-        owners.push_back( owner );
-        SCAI_LOG_TRACE( logger, "owner of required index = " << requiredIndex << " is " << owner )
+        wOwners[i] = getOwner( rIndexes[i] );
     }
 }
+
+/* ---------------------------------------------------------------------- */
 
 bool GenBlockDistribution::isEqual( const Distribution& other ) const
 {

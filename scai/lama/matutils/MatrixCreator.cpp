@@ -722,13 +722,14 @@ void MatrixCreator<ValueType>::buildReplicatedDiag(
 
     // we will take a general block distribution
 
-    dmemo::DistributionPtr dist( new dmemo::GenBlockDistribution( nGlobal, nLocal, comm ) );
+    dmemo::DistributionPtr rowDist( new dmemo::GenBlockDistribution( nGlobal, nLocal, comm ) );
+    dmemo::DistributionPtr colDist( new dmemo::NoDistribution( storage.getNumColumns() * nRepeat ) );
 
-    SCAI_LOG_DEBUG( logger, *comm << ": dist = " << *dist )
+    SCAI_LOG_DEBUG( logger, *comm << ": row dist = " << *rowDist )
 
     // Allocate the correct size
 
-    matrix.allocate( dist, dist );
+    matrix.allocate( rowDist, colDist );
 
     // now build the local part
 

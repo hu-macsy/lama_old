@@ -99,10 +99,9 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Method to compute directly the owners of global indexes without
-     *  any communication.
-     */
-    virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+    /** Override Distribution::computeOwners with more efficient version. */
+
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
     void printDistributionVector( std::string problem ) const;
 

@@ -432,6 +432,9 @@ struct UtilKernelTrait
          *           array =   8  7   5  4  1  1
          *           perm  =   3  5   4  1  0  2
          *  \endcode
+         *
+         *  Note: if the values to be sorted are int values in a certain range like 0, ..., nb - 1, 
+         *        sorting might be more efficient with countBuckets, sortInBuckets
          */
 
         typedef void ( *FuncType ) ( ValueType array[], IndexType perm[], const IndexType n );
@@ -439,6 +442,61 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Utils.sort";
+        }
+    };
+
+    struct countBuckets
+    {
+        /** Count bucket sizes for values mapped to buckets 
+         *
+         *  @param[in] nBuckets  number of buckets
+         *  @param[in] n number of values to sort in buckets
+         *  @param[in] bucketMap array with n entries, bucketMap[i] is bucket for entry i
+         *  @param[out] bucketSizes array with nBuckets entries, bucketSizes[j] is number of elements mapped to this bucket
+         *
+         *  \code
+         *           bucketMap [n=10]           =  {  0  1  2 0  1  2  1  2  0  0 }
+         *           bucketSizes [nBuckets = 3] =  {  4  3  3 }
+         *  \endcode
+         *
+         *  Note: sum( bucketSizes ) = n implies that all entries in bucketMap were legal buckets between 0 and nBucket-1
+         *        This routine does not throw an exception for illegal entries
+         */
+        typedef void ( *FuncType ) ( IndexType bucketSizes[], const IndexType nBuckets, const IndexType bucketMap[], const IndexType n );
+
+        static const char* getId()
+        {
+            return "Utils.countBuckets";
+        }
+    };
+
+    struct sortInBuckets
+    {
+        /** Resort indexes 0, ..., n-1 according to their mapping to buckets 
+         *
+         *  @param[in] nBuckets  number of buckets
+         *  @param[in] n number of values to sort in buckets
+         *  @param[in] bucketMap array with n entries, bucketMap[i] is bucket for entry i
+         *  @param[in] offsets array with nBuckets + 1 entries, is running sum 
+         *
+         *  \code
+         *           bucketMap [n=10]               =  {  0  1  2  0  1  2  1  2  0  0 }
+         *           bucketSizes [nBuckets = 3]     =  {  4  3  3 }
+         *           offsets     [nBuckets + 1 = 4] =  {  0           4        7        10  }
+         *           sortedIndexes [n=10]           =  {  0  3  8  9  1  4  6  2  5  7 }
+         *  \endcod
+         *
+         */
+
+        typedef void ( *FuncType )( IndexType sortedIndexes[],
+                                    IndexType offsets[],
+                                    const IndexType nBuckets,
+                                    const IndexType bucketMap[],
+                                    const IndexType n );
+
+        static const char* getId()
+        {
+            return "Utils.sortInBuckets";
         }
     };
 

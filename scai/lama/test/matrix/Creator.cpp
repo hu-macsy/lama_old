@@ -45,10 +45,10 @@ using namespace scai::dmemo;
 // This routine fills a matrix storage with some data
 
 template<typename ValueType>
-void setDenseData( MatrixStorage<ValueType>& storage )
+static void setDenseData( MatrixStorage<ValueType>& storage )
 {
-    const IndexType numRows = 2;
-    const IndexType numColumns = 8;
+    const IndexType numRows = 8;
+    const IndexType numColumns = 2;
     static ValueType values[] =
     { 6.0, 0.0, 0.0, 4.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.0, 4.0, 2.0, 5.0, 0.0, 3.0 };
     // just make sure that number of entries in values matches the matrix size
@@ -77,13 +77,16 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
     CSRStorage<ValueType> storage;
     setDenseData( storage );
 
+    SCAI_LOG_DEBUG( logger, "storage to replicate: " << storage )
+
     CSRSparseMatrix<ValueType> matrix;
 
     const IndexType repN = 6;
 
     MatrixCreator<ValueType>::buildReplicatedDiag( matrix, storage, repN );
 
-    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix )
+    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix 
+                           << " from rep = " << repN << " x " << storage )
 
     const IndexType nRows = storage.getNumRows();
     const IndexType nCols = storage.getNumColumns();
@@ -147,7 +150,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedTest )
 
     MatrixCreator<ValueType>::buildReplicated( matrix, storage, repRow, repCol );
 
-    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix )
+    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicated " << matrix )
 
     // first check for correct sizes
 

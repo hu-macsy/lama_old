@@ -169,7 +169,8 @@ void MatrixMarketIO::writeMMHeader(
             outFile << "complex ";
             break;
 
-        case common::scalar::INDEX_TYPE:
+        case common::scalar::INT:
+        case common::scalar::LONG:
             outFile << "integer ";
             break;
 
@@ -406,6 +407,8 @@ void MatrixMarketIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
+    SCAI_LOG_INFO( logger, *this << ": write array " << array << " to " << fileName );
+
     SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );

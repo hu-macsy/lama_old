@@ -35,6 +35,8 @@
 #include "FileIO.hpp"
 
 #include <scai/common/Settings.hpp>
+#include <scai/common/exception/IOException.hpp>
+
 #include <string>
 #include <fstream>
 
@@ -238,6 +240,38 @@ int FileIO::removeFile( const std::string& fileName )
     int rc = std::remove( fileName.c_str() );
 
     return rc;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void FileIO::write( const hmemo::_HArray& array, const std::string& outFileName )
+{
+    std::string suffix = getSuffix( outFileName );
+
+    if ( !canCreate( suffix ) )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
+    }
+
+    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+
+    fileIO->writeArray( array, outFileName );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void FileIO::read( hmemo::_HArray& array, const std::string& inFileName )
+{
+    std::string suffix = getSuffix( inFileName );
+
+    if ( !canCreate( suffix ) )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
+    }
+
+    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+
+    fileIO->readArray( array, inFileName );
 }
 
 }  // namespace lama

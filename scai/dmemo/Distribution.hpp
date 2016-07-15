@@ -44,6 +44,7 @@
 
 // local library
 #include <scai/dmemo/Communicator.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 // internal scai libraries
 #include <scai/logging.hpp>
@@ -223,17 +224,17 @@ public:
      */
     virtual IndexType global2local( const IndexType globalIndex ) const = 0;
 
-    /** Compute ownership for required indexes.
+    /** Get the owners for a set of (global) indexes 
      *
      * The default solution is to communicate required indexes around
      * all partitions and each partition marks indexes with its id
      * if it is local. If ownership can be computed without communication,
      * this routine might be implemented more efficiently.
      *
-     * @param[in] requiredIndexes   TODO[doxy] Complete Description.
-     * @param[in] owners            TODO[doxy] Complete Description.
+     * @param[in] indexes is an array with global indexes, 0 <= indexes[i] < getGlobalSize() 
+     * @param[out] owners are the corresponing processors that own the indexes 
      */
-    virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
     /**
      * TODO[doxy] Complete Description.

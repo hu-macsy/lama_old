@@ -98,3 +98,26 @@ inline void atomicAdd( double& sharedResult, const double& threadResult )
     #pragma omp atomic
     sharedResult += threadResult;
 }
+
+/** This routine computes within a parallel region a contiguous block for each thread
+ *
+ *  @param[in] n the range 0 <= i < n is distributed 
+ *  @param[out] lb, ub is the range belonging to this thread, lb <= i < ub
+ *
+ *  This routine corresponds the static worksharing of a for( i = 0; i < N; ++i ) loop
+ */
+
+template<typename IndexType>
+inline void omp_get_my_range( IndexType& lb, IndexType& ub, const IndexType n )
+{
+    int rank = omp_get_thread_num();
+    int nthreads = omp_get_num_threads();
+    IndexType blockSize = ( n + nthreads - 1 ) / nthreads;
+    lb = rank * blockSize;
+    ub = ( rank + 1 ) * blockSize;
+    if ( ub >= n )
+    { 
+        ub = n;
+    }
+}
+

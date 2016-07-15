@@ -38,6 +38,7 @@
 #include <scai/common/config.hpp>
 
 // local library
+#include <scai/hmemo/HArray.hpp>
 #include <scai/dmemo/Distribution.hpp>
 
 // internal scai libraries
@@ -92,6 +93,18 @@ public:
     GeneralDistribution(
         const std::vector<IndexType>& row2Partition,
         const IndexType globalSize,
+        const CommunicatorPtr communicator );
+
+    /** This constructor creates a general distribution by an array containing the owner for each element
+     *
+     *  @param[in] owners, with 0 <= owners[i] < communicator->size()
+     *  @param[in] communicator that specifies the processor array for distribution
+     *
+     *  // Note: owners must only be valid on host processor
+     */
+
+    GeneralDistribution(
+        const hmemo::HArray<IndexType>& owners,
         const CommunicatorPtr communicator );
 
     explicit GeneralDistribution( const Distribution& other );

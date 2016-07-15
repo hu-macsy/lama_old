@@ -337,8 +337,48 @@ public:
     template<typename ValueType>
     static ValueType unscan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Sort an array of values
+     *
+     *  @param[in,out] is the array of values to be sorted
+     *  @param[out] is the permutation that gives the sorted array
+     *  @param[in] prefLoc is the preferred context where computation should be done
+     * 
+     *  Note: array_out = array_in[ perm ]
+     *
+     *  ToDo: ascending or descending, why no choice
+     */
+
     template<typename ValueType>
     static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Bucket sort of an array with integer values
+     *
+     *  @param[out] perm is permutation to get array sorted
+     *  @param[out] offset is an offset array for perm to sort it bucketwise, size is nb + 1
+     *  @param[in] nb is the number of buckets
+     *  @param[in] array contains bucket indexes, 0 <= array[i] < nb
+     *  @param[in] prefLoc is the preferred context where computation should be done
+     *
+     *  Note: the sorted array is given by array[perm] 
+     *  Note: perm.size() == array.size() if all values of array are correct bucket indexes
+     *        otherwise perm.size() < array.size(), can still be used to get legal sorted buckets
+     *  Note: in contrary to sort the array remains unchanged
+     */
+
+    static void bucketSort(
+        hmemo::HArray<IndexType>& offsets,
+        hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<IndexType>& array,
+        const IndexType nb,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Slighter version of bucketSort, counts only values */
+
+    static void bucketCount(
+        hmemo::HArray<IndexType>& bucketSizes,
+        const hmemo::HArray<IndexType>& array,
+        const IndexType nb,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Initialize an array with the sequence 0, .., n-1
      *

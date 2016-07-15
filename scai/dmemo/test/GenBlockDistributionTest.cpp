@@ -37,8 +37,10 @@
 
 #include <scai/dmemo.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
-using namespace scai::dmemo;
+using namespace scai;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -91,17 +93,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
 
 BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
-    std::vector<IndexType> indexes;
+    utilskernel::LArray<IndexType> indexes;
+    utilskernel::LArray<IndexType> owners;
+  
+    utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 
-    for ( IndexType i = 0; i < globalSize; i++ )
-    {
-        indexes.push_back( i );
-    }
+    dist->computeOwners( owners, indexes );
 
-    std::vector<PartitionId> owners;
-    dist->computeOwners( indexes, owners );
-    BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( owners.size() ) );
-    BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
+    BOOST_REQUIRE_EQUAL( globalSize, owners.size() );
+    BOOST_REQUIRE_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
 
     // now check for correct owners
 

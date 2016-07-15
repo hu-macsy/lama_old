@@ -182,6 +182,10 @@ public:
      */
     static int removeFile( const std::string& fileName );
 
+    static void write( const hmemo::_HArray& array, const std::string& fileName );
+
+    static void read( hmemo::_HArray& array, const std::string& fileName );
+
 protected:
 
     void writeAt( std::ostream& stream ) const;

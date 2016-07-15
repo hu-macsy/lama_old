@@ -361,6 +361,77 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( bucketSortTest )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    LArray<IndexType> emptyArray;
+
+    LArray<IndexType> perm;
+    LArray<IndexType> offsets;
+ 
+    IndexType numBuckets = 5;
+
+    HArrayUtils::bucketSort( offsets, perm, emptyArray, numBuckets, loc );
+
+    BOOST_CHECK_EQUAL( perm.size(), 0 );
+    BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
+
+    IndexType vals[] = { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 };
+    const IndexType n = sizeof( vals ) / sizeof( IndexType );
+    LArray<IndexType> array( n, vals, loc );
+    numBuckets = array.max() + 1;
+
+    HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
+
+    BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
+    BOOST_CHECK_EQUAL( perm.size(), n );
+
+    LArray<IndexType> sortedArray;
+    HArrayUtils::gather( sortedArray, array, perm );
+    BOOST_CHECK( HArrayUtils::isSorted( sortedArray, true, loc ) );
+
+    // number of buckets = 1, so only two values array[i] == 0 are taken
+
+    numBuckets = 1;
+    HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
+    BOOST_CHECK_EQUAL( perm.size(), 2 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( bucketCountTest )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    LArray<IndexType> emptyArray;
+
+    LArray<IndexType> sizes;
+
+    IndexType numBuckets = 5;
+
+    HArrayUtils::bucketCount( sizes, emptyArray, numBuckets, loc );
+
+    BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
+
+    IndexType vals[] = { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 };
+    const IndexType n = sizeof( vals ) / sizeof( IndexType );
+    LArray<IndexType> array( n, vals, loc );
+
+    numBuckets = array.max() + 1;
+    HArrayUtils::bucketCount( sizes, array, numBuckets, loc );
+    BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
+    BOOST_CHECK_EQUAL( sizes.sum(), n );
+
+    BOOST_CHECK_EQUAL( 4, numBuckets );
+    BOOST_CHECK_EQUAL( 2, sizes[0] );
+    BOOST_CHECK_EQUAL( 4, sizes[1] );
+    BOOST_CHECK_EQUAL( 2, sizes[2] );
+    BOOST_CHECK_EQUAL( 2, sizes[3] );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( setOrderTest )
 {
     ContextPtr loc = Context::getContextPtr();
