@@ -368,7 +368,8 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     SCAI_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
     // allocate and fill local part of the distributed matrix
-    dmemo::DistributionPtr distribution( new dmemo::GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
+    hmemo::HArrayRef<IndexType> indexes( static_cast<IndexType>(  myGlobalIndexes.size() ), &myGlobalIndexes[0] );
+    dmemo::DistributionPtr distribution( new dmemo::GeneralDistribution( globalSize, indexes, comm ) );
     SCAI_LOG_INFO( logger, "distribution = " << *distribution )
     // create new local CSR data ( # local rows x # columns )
     scai::lama::CSRStorage<ValueType> localMatrix;

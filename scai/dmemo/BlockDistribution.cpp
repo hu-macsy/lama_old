@@ -142,6 +142,22 @@ void BlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray
 
 /* ---------------------------------------------------------------------- */
 
+void BlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
+{
+    const IndexType nLocal  = getLocalSize();
+
+    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
+
+    WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
+
+    for ( IndexType i = mLB; i <= mUB; ++i )
+    {
+        wGlobalIndexes[ i - mLB ] = i;
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool BlockDistribution::isEqual( const Distribution& other ) const
 {
     if ( this == &other )

@@ -85,12 +85,12 @@ public:
     virtual PartitionId getOwner( const IndexType globalIndex ) const;
 
     /**
-     * @brief TODO[doxy] Complete Description.
+     * @brief Query the number of owned indexes on this processor.
      */
     virtual IndexType getLocalSize() const;
 
     /**
-     * @brief TODO[doxy] Complete Description.
+     * @brief get number of elements nb in chunk as defined by Cyclic( nb )
      */
     inline IndexType chunkSize() const;
 
@@ -134,6 +134,10 @@ public:
     virtual void writeAt( std::ostream& stream ) const;
 
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
+
+    /** Override Distribution::getOwnedIndexes with more efficient version. */
+
+    virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
     /** Static method required for create to use in Distribution::Register */
 

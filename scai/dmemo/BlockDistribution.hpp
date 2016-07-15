@@ -103,6 +103,10 @@ public:
 
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
+    /** Override Distribution::getOwnedIndexes with more efficient version. */
+
+    virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
+
     /** Static method required for create to use in Distribution::Register */
 
     static Distribution* create( const DistributionArguments args );

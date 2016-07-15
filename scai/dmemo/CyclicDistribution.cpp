@@ -182,6 +182,8 @@ IndexType CyclicDistribution::allGlobal2local( const IndexType globalIndex ) con
     return localIndex;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType CyclicDistribution::global2local( const IndexType globalIndex ) const
 {
     if ( isLocal( globalIndex ) )
@@ -203,15 +205,54 @@ void CyclicDistribution::computeOwners( HArray<PartitionId>& owners, const HArra
     const IndexType n = indexes.size();
     const IndexType size = mCommunicator->getSize();
     
+    SCAI_LOG_INFO( logger, *this << ": compute owners, n = " << n << ", size = " << size )
+
     ReadAccess<IndexType> rIndexes( indexes, ctx );
     WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
     
     // ToDo: call a kernel and allow arbitrary context
 
+    #pragma omp parallel for
+
     for ( IndexType i = 0; i < n; i++ )
     {   
         wOwners[i] = ( rIndexes[i] / mChunkSize ) % size;   // see getOwner( i )
     }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void CyclicDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
+{
+    const IndexType nLocal  = getLocalSize();
+
+    const Communicator& comm = getCommunicator();
+
+    const PartitionId rank = comm.getRank();
+    const PartitionId size = comm.getSize();
+
+    SCAI_LOG_INFO( logger, comm << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
+
+    WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
+
+    IndexType pos   = 0;
+
+    // we can directly enumerate the indexes owned by this processor
+
+    for ( IndexType first = rank * mChunkSize; first < mGlobalSize; first += size * mChunkSize )
+    {
+        for ( IndexType j = 0; j < mChunkSize; j++ )
+        {
+            IndexType myIndex = first + j;
+
+            if ( myIndex < mGlobalSize )
+            {
+                wGlobalIndexes[ pos++ ] = myIndex;
+            }
+        }
+    }
+
+    SCAI_ASSERT_EQ_ERROR( pos, nLocal, "count mismatch" )
 }
 
 /* ---------------------------------------------------------------------- */

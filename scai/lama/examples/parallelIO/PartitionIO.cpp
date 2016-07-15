@@ -53,6 +53,12 @@ using namespace dmemo;
 namespace lama
 {
 
+/* --------------------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( PartitionIO::logger, "PartitionIO" )
+
+/* --------------------------------------------------------------------------------- */
+
 void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, const Communicator& comm )
 {
     size_t pos = fileName.find( "%r" );
@@ -77,8 +83,12 @@ void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, c
     }
 }
 
+/* --------------------------------------------------------------------------------- */
+
 DistributionPtr PartitionIO::readSDistribution( const string& inFileName, CommunicatorPtr comm )
 {
+    SCAI_LOG_INFO( logger, "read distribution from one single file " << inFileName )
+
     PartitionId MASTER = 0;
 
     utilskernel::LArray<IndexType> owners;
@@ -104,12 +114,14 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
 
             IndexType nLegalValues = localSizes.sum();
 
+            SCAI_LOG_INFO( logger, *comm << ": read owners = " << owners << ", #legal values = " << nLegalValues )
+
             SCAI_ASSERT_EQ_ERROR( nLegalValues, owners.size(), 
                                   *comm << ": mapping file " << inFileName << " contains illegal owners" )
         }
         catch ( common::Exception& e )
         {
-            cerr << "Reading distribution from file " << inFileName << " failed" << endl;
+            SCAI_LOG_ERROR( logger, "Reading distribution from file " << inFileName << " failed: " << e.what() )
         }
  
         bool isAscending = utilskernel::HArrayUtils::isSorted( owners, true );
@@ -226,6 +238,8 @@ void PartitionIO::write( const Distribution& distribution, const string& fileNam
 
     getPartitionFileName( distFileName, writePartitions, distribution.getCommunicator() );
 
+    SCAI_LOG_ERROR( logger, distribution.getCommunicator() << ": write ( partitioned = " << writePartitions << " ) to " << distFileName )
+
     if ( writePartitions )
     {
         writePDistribution( distribution, distFileName );
@@ -236,6 +250,8 @@ void PartitionIO::write( const Distribution& distribution, const string& fileNam
     }
 }
 
+/* --------------------------------------------------------------------------------- */
+
 void PartitionIO::writeSDistribution( const Distribution& distribution, const string& fileName )
 {
     using namespace hmemo;
@@ -245,12 +261,8 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
     CommunicatorPtr comm = distribution.getCommunicatorPtr();
  
     PartitionId rank = comm->getRank();
-    PartitionId size = comm->getSize();
 
-    if ( size == 1 )
-    {
-        return;   // do not print a NoDistribution
-    }
+    SCAI_LOG_INFO( logger, "write distribution to single file " << fileName )
 
     HArray<IndexType> indexes;
 
@@ -268,7 +280,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 
     distribution.computeOwners( owners, indexes );
 
-    cout << *comm << ", owner computation finished, owners = " << owners << endl;
+    SCAI_LOG_INFO( logger, *comm << ", owner computation for " << distribution << " finished, owners = " << owners )
 
     if ( rank == MASTER )
     {
@@ -284,6 +296,8 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 
 void PartitionIO::writePDistribution( const Distribution& distribution, const string& fileName )
 {
+    SCAI_LOG_INFO( logger, distribution.getCommunicator() << ": write distribution to partition file " << fileName )
+
     // each processor writes a file with its global indexes
 
     using namespace hmemo;

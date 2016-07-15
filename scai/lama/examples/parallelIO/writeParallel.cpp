@@ -126,6 +126,8 @@ int main( int argc, const char* argv[] )
 
         PartitionIO::write( matrix.getRowDistribution(), distFileName );
  
+        cout << *comm << "written " << matrix.getRowDistribution() << " to file " << distFileName << endl;
+
         // just for check
 
         DistributionPtr newDist = PartitionIO::readDistribution( distFileName, comm );

@@ -43,6 +43,7 @@
 
 #include <scai/tasking.hpp>
 #include <scai/hmemo.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/Exception.hpp>
@@ -52,6 +53,7 @@ using namespace scai;
 using namespace hmemo;
 using namespace dmemo;
 using namespace tasking;
+using namespace utilskernel;
 
 using common::Exception;
 using common::unique_ptr;
@@ -88,37 +90,48 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
     IndexType n = 17;
-    std::vector<IndexType> localIndexes;
-    std::vector<IndexType> nonLocalIndexes;
+ 
+    LArray<IndexType> localIndexes;
 
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        localIndexes.push_back( rank * n + i );
-    }
+    HArrayUtils::setSequence( localIndexes, rank * n, 1, n );
 
     GeneralDistribution dist( n * size, localIndexes, comm );
 
-    for ( PartitionId p = 0; p < size; ++p )
+    LArray<IndexType> nonLocalIndexes;
+
+    IndexType pos = 0;
+
     {
-        if ( p == rank )
+        hmemo::WriteOnlyAccess<IndexType> wNonLocalIndexes( nonLocalIndexes, ( size - 1 ) * n );
+
+        for ( PartitionId p = 0; p < size; ++p )
         {
-            for ( IndexType i = 0; i < n; ++i )
+            if ( p == rank )
             {
-                BOOST_CHECK( dist.isLocal( p * n + i ) );
+                for ( IndexType i = 0; i < n; ++i )
+                {
+                    BOOST_CHECK( dist.isLocal( p * n + i ) );
+                }
             }
-        }
-        else
-        {
-            for ( IndexType i = 0; i < n; ++i )
+            else
             {
-                nonLocalIndexes.push_back( p * n + i );
+                for ( IndexType i = 0; i < n; ++i )
+                {
+                    wNonLocalIndexes[pos++] = p * n + i;
+                }
             }
         }
     }
+   
+    BOOST_CHECK_EQUAL( pos, nonLocalIndexes.size() ); 
 
-    std::vector < PartitionId > owners;
-    comm->computeOwners( nonLocalIndexes, dist, owners );
-    std::vector<PartitionId>::size_type currentIndex = 0;
+    LArray<PartitionId> owners;
+
+    comm->computeOwners( owners, dist, nonLocalIndexes );
+
+    pos = 0;
+
+    hmemo::ReadAccess<IndexType> rOwners( owners );
 
     for ( PartitionId p = 0; p < size; ++p )
     {
@@ -126,7 +139,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
         {
             for ( IndexType i = 0; i < n; ++i )
             {
-                BOOST_CHECK_EQUAL( p, owners[currentIndex++] );
+                BOOST_CHECK_EQUAL( p, rOwners[pos++] );
             }
         }
     }

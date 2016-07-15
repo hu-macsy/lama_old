@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -169,6 +170,51 @@ void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<Inde
     WriteOnlyAccess<IndexType> wOwners( owners, ctx, n );
 
     mCommunicator->computeOwners( wOwners, *this, rIndexes, n );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Distribution::allOwners( HArray<PartitionId>& owners, PartitionId root ) const
+{
+    HArray<IndexType> indexes;
+
+    if ( getCommunicator().getRank()  == root )
+    {
+        // we need the owners only on the host processor
+        // indexes = 0, 1, 2, ..., globalSize - 1
+
+        utilskernel::HArrayUtils::setOrder( indexes, getGlobalSize() );
+    }
+
+    // Note: only master process asks for owners, other processes have 0 indexes
+
+    computeOwners( owners, indexes );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
+{
+    const IndexType nLocal  = getLocalSize();
+    const IndexType nGlobal = mGlobalSize;
+
+    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << nGlobal )
+
+    WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
+
+    IndexType k = 0;
+
+    // This routine works for all distributions, but might not be the most efficient one
+
+    for ( IndexType i = 0; i < nGlobal; ++i )
+    {
+        if ( isLocal( i ) )
+        {
+            wGlobalIndexes[k++] = i;
+        }
+    }
+
+    SCAI_ASSERT_EQ_ERROR( k, nLocal, "serious local mismatch" );
 }
 
 /* ---------------------------------------------------------------------- */

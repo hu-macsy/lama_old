@@ -35,6 +35,7 @@
 #pragma once
 
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/logging.hpp>
 
 #include <cstring>
 
@@ -96,6 +97,10 @@ public:
      */
 
     static void getPartitionFileName( std::string& fileName, bool& isPartitioned, const dmemo::Communicator& comm );
+
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for this IO class
 };
 
 }  // namespace lama
