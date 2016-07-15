@@ -85,8 +85,6 @@ public:
 
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
-    void printDistributionVector( std::string name ) const;
-
     /** Static method required for create to use in Distribution::Register */
 
     static Distribution* create( const DistributionArguments args );

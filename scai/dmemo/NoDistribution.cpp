@@ -90,23 +90,11 @@ void NoDistribution::writeAt( std::ostream& stream ) const
     stream << "NoDistribution( size = " << mGlobalSize << " )";
 }
 
-void NoDistribution::printDistributionVector( std::string name ) const
-{
-    if ( mCommunicator->getRank() == MASTER ) // process 0 ist MASTER process
-    {
-        std::ofstream file;
-        file.open( ( name + ".part" ).c_str() );
-        // print row - partition mapping
-        file << "No Distribution: all rows are available on all processes." << std::endl;
-        file.close();
-    }
-}
-
 /* ---------------------------------------------------------------------- */
 
 void NoDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
-    owners.init( 0, indexes.size() );  // set all values to 0
+    owners.init( IndexType( 0 ), indexes.size() );  // set all values to 0
 }
 
 /* ---------------------------------------------------------------------------------*

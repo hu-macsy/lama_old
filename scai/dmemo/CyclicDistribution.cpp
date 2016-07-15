@@ -248,33 +248,6 @@ void CyclicDistribution::writeAt( std::ostream& stream ) const
            << getNumLocalChunks() << ")";
 }
 
-void CyclicDistribution::printDistributionVector( std::string name ) const
-{
-    IndexType myRank = mCommunicator->getRank();
-    IndexType parts = mCommunicator->getSize();
-    IndexType totalNumChunks = getNumTotalChunks();
-
-    if ( myRank == MASTER ) // process 0 is MASTER process
-    {
-        std::ofstream file;
-        file.open( ( name + ".part" ).c_str() );
-        // print row - partition mapping
-        IndexType actualProcess = 0;
-
-        for ( IndexType i = 0; i < totalNumChunks; ++i )
-        {
-            for ( IndexType j = 0; j < mChunkSize; j++ )
-            {
-                file << actualProcess << std::endl;
-            }
-
-            actualProcess = ( actualProcess + 1 ) % parts;
-        }
-
-        file.close();
-    }
-}
-
 /* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/

@@ -297,14 +297,6 @@ public:
     template<typename ValueType>
     void replicateRagged( ValueType allValues[], const ValueType localValues[], const IndexType allOffsets[] ) const;
 
-    /**
-     * Master process prints out the distribution vector to file named "name.part".
-     * Every row contains a single number: the index of the process, where the row is local.
-     *
-     * @param[in] name   output file gets named "name.part".
-     */
-    virtual void printDistributionVector( std::string name ) const = 0;
-
 protected:
 
     IndexType mGlobalSize;

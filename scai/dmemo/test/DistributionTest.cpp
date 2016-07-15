@@ -136,26 +136,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( printDistributionVector )
-{
-    const IndexType globalSize = 17;
-    std::vector<std::string> values;
-    Distribution::getCreateValues( values );
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    for ( size_t i = 0; i < values.size(); ++i )
-    {
-        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
-        // ToDo: does not test the content of these files
-        std::string fileName = "distribution.";
-        fileName += dist->getKind();
-        SCAI_LOG_INFO( logger, *comm << ": printDistributionVector, dist = " << *dist << ", filename = " << fileName )
-        dist->printDistributionVector( fileName );
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_SUITE_END();
 
 /* --------------------------------------------------------------------- */

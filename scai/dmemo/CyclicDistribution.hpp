@@ -135,13 +135,6 @@ public:
 
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
-    /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @param[in] problem TODO[doxy] Complete Description.
-     */
-    void printDistributionVector( std::string problem ) const;
-
     /** Static method required for create to use in Distribution::Register */
 
     static Distribution* create( const DistributionArguments args );

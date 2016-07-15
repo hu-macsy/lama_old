@@ -321,32 +321,6 @@ void GenBlockDistribution::writeAt( std::ostream& stream ) const
     stream << "GenBlockDistribution( gsize = " << mGlobalSize << ", local = " << mLB << ":" << mUB << ")";
 }
 
-void GenBlockDistribution::printDistributionVector( std::string name ) const
-{
-    IndexType myRank = mCommunicator->getRank();
-    IndexType parts = mCommunicator->getSize();
-    IndexType myLocalSize = getLocalSize();
-    std::vector<IndexType> localSizes( parts );
-    mCommunicator->gather( &localSizes[0], 1, MASTER, &myLocalSize );
-
-    if ( myRank == MASTER ) // process 0 is MASTER process
-    {
-        std::ofstream file;
-        file.open( ( name + ".part" ).c_str() );
-
-        // print row - partition mapping
-        for ( IndexType i = 0; i < parts; ++i )
-        {
-            for ( IndexType j = 0; j < localSizes[i]; j++ )
-            {
-                file << i << std::endl;
-            }
-        }
-
-        file.close();
-    }
-}
-
 /* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/

@@ -78,6 +78,30 @@ GeneralDistribution::GeneralDistribution(
 }
 
 GeneralDistribution::GeneralDistribution(
+    const IndexType globalSize,
+    const hmemo::HArray<IndexType>& myIndexes,
+    const CommunicatorPtr communicator )
+
+    : Distribution( globalSize, communicator )
+{
+    hmemo::ReadAccess<IndexType> rIndexes( myIndexes );
+
+    IndexType nLocal = myIndexes.size();
+
+    mLocal2Global.resize( nLocal );
+
+    for ( IndexType localIndex = 0; localIndex < nLocal; ++localIndex )
+    {
+        IndexType globalIndex = rIndexes[ localIndex ];
+
+        SCAI_ASSERT_LT_ERROR( globalIndex, mGlobalSize, "global index out of range" )
+
+        mLocal2Global[ localIndex ]  = globalIndex;
+        mGlobal2Local[ globalIndex ] = localIndex;
+    }
+}
+
+GeneralDistribution::GeneralDistribution(
     const std::vector<IndexType>& row2Partition,
     const IndexType globalSize,
     const CommunicatorPtr communicator )
@@ -93,6 +117,7 @@ GeneralDistribution::GeneralDistribution(
     std::vector<IndexType> displ;
     std::vector<IndexType> curpos;
     std::vector<IndexType> rows;
+
 
     if ( myRank == MASTER )
     {
@@ -188,21 +213,15 @@ GeneralDistribution::GeneralDistribution(
     utilskernel::LArray<IndexType> localSizes;
     utilskernel::LArray<IndexType> localOffsets;
 
-    if ( rank == MASTER )
-    {
-        WriteOnlyAccess<IndexType> wSizes( localSizes, size + 1 );
-    }
-
     // count in localSizes for each partition the owners
     // owners = [ 0, 1, 2, 1, 2, 1, 0 ] -> sizes = [2, 3, 2 ]
     // sizes.sum() == owners.size()
 
     if ( rank == MASTER )
     {
-        // reserve one element more, as we do later a scan
-        WriteOnlyAccess<IndexType> wSizes( localSizes, size );
-        ReadAccess<IndexType> rOwners( owners );
-        utilskernel::OpenMPUtils::countBuckets( wSizes.get(), size, rOwners.get(), mGlobalSize );
+        utilskernel::HArrayUtils::bucketCount( localSizes, owners, size );
+        IndexType lsum = localSizes.sum();
+        SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
     }
     else
     { 
@@ -210,13 +229,6 @@ GeneralDistribution::GeneralDistribution(
         utilskernel::HArrayUtils::setOrder( localSizes, 1 );
     }
 
-    if ( rank == MASTER )
-    {
-        IndexType lsum = localSizes.sum();
-
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
-    }
-    
     IndexType localSize;  
 
     // scatter partition sizes
@@ -278,9 +290,10 @@ GeneralDistribution::GeneralDistribution(
     }
 }
 
-GeneralDistribution::GeneralDistribution( const Distribution& other )
-    : Distribution( other.getGlobalSize(), other.getCommunicatorPtr() ), mLocal2Global(
-          other.getLocalSize() )
+GeneralDistribution::GeneralDistribution( const Distribution& other ) : 
+
+    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() ),
+    mLocal2Global( other.getLocalSize() )
 {
     for ( IndexType i = 0; i < getGlobalSize(); ++i )
     {
@@ -393,37 +406,6 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
             }
         }
     }
-}
-
-void GeneralDistribution::printDistributionVector( std::string /*name*/ ) const
-{
-//    IndexType myRank = mCommunicator->getRank();
-    IndexType parts = mCommunicator->getSize();
-    // gather number of local rows
-    IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
-    std::vector<IndexType> numRows( parts );
-    mCommunicator->gather( &numRows[0], 1, MASTER, &numMyRows );
-    // gather global indices of local rows
-    std::vector<IndexType> rows( mGlobalSize );
-    mCommunicator->gatherV( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
-    std::vector<IndexType> row2Partition( mGlobalSize );
-    getDistributionVector( row2Partition );
-    // build mapping row 2 partition
-//    if(myRank == MASTER)
-//    {
-//
-//        std::ofstream file;
-//        file.open((name + ".part").c_str());
-    // print row - partition mapping
-//        std::cout << "partitionVector ";
-//        for(IndexType i = 0; i < mGlobalSize; ++i)
-//        {
-//            file << row2Partition[ i ] << std::endl;
-//            std::cout << row2Partition[ i ] << " ";
-//        }
-//        std::cout << std::endl;
-//        file.close();
-//    }
 }
 
 } /* end namespace dmemo */
