@@ -143,6 +143,42 @@ BOOST_AUTO_TEST_CASE( initTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( init1Test )
+{
+    const IndexType N = 4;
+    const IndexType val = 1;
+
+    HArray<IndexType> array;
+
+    array.init( val, 0 );  
+    array.init( val, N );
+    
+    BOOST_REQUIRE_EQUAL( array.size(), N );
+
+    ContextPtr hostContext = Context::getHostPtr();
+
+    {
+        ReadAccess<IndexType>read( array, hostContext );
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            BOOST_CHECK_EQUAL( val, read[i] );
+        }
+    }
+    
+    IndexType N2 = N / 2;
+    array.init( val + 1, N2 );
+
+    ReadAccess<IndexType>read( array, hostContext );
+
+    for ( IndexType i = 0; i < N2; ++i )
+    {
+        BOOST_CHECK_EQUAL( val + 1, read[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
     ContextPtr contextPtr = Context::getContextPtr();
@@ -163,6 +199,37 @@ BOOST_AUTO_TEST_CASE( resizeTest )
         // Possible problem: fetch from any location not possible
         writeAccess.resize( N );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( resize1Test )
+{
+    ContextPtr contextPtr = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "resize1Test with context = " << *contextPtr )
+
+    const IndexType N = 5;
+
+    HArray<IndexType> hArray; // default, not allocated at all
+
+    {
+        WriteOnlyAccess<IndexType> writeAccess( hArray, contextPtr, 0 );
+    }
+    {
+        WriteOnlyAccess<IndexType> writeAccess( hArray, contextPtr, N );
+
+        if ( contextPtr->getType() == Context::Host )
+        {
+            for ( IndexType i = 0; i < N; ++i )
+            {
+                writeAccess[i] = 0;
+            }
+        }
+    }
+
+    BOOST_CHECK_EQUAL( hArray.size(), N );
+    BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), N );
 }
 
 /* --------------------------------------------------------------------- */
