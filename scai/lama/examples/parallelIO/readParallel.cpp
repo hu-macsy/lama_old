@@ -32,8 +32,7 @@
  * @date 19.06.2016
  */
 
-#include "PartitionIO.hpp"
-
+#include <scai/lama/io/PartitionIO.hpp>
 #include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama.hpp>

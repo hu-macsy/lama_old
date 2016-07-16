@@ -98,6 +98,8 @@ public:
 
     static void getPartitionFileName( std::string& fileName, bool& isPartitioned, const dmemo::Communicator& comm );
 
+    static const PartitionId MASTER = 0;
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for this IO class

@@ -32,8 +32,7 @@
  * @date 19.06.2016
  */
 
-#include "PartitionIO.hpp"
-
+#include <scai/lama/io/PartitionIO.hpp>
 #include <scai/lama/io/FileIO.hpp>
 
 #include <scai/utilskernel/LArray.hpp>
@@ -88,8 +87,6 @@ void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, c
 DistributionPtr PartitionIO::readSDistribution( const string& inFileName, CommunicatorPtr comm )
 {
     SCAI_LOG_INFO( logger, "read distribution from one single file " << inFileName )
-
-    PartitionId MASTER = 0;
 
     utilskernel::LArray<IndexType> owners;
     utilskernel::LArray<IndexType> localSizes( 1, 0 );  // at least one entry
@@ -167,15 +164,8 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
     return dist;
 }
 
-/** This method reads a distribution from one input file for each partition.
- *
- *  @param[in] inFileName is the name of the input file containing the indexes for this partition
- *  @param[in] comm is the Communicator for which the distribution is determined.
- *  @returns a new distribution for the mapping specified in the file
- *
- *  The global size of the distribution is given by summing up the number of entries in all files.
- *  Every index between 0 and global size - 1 must appear exactly once in one of the files.
- */
+/* --------------------------------------------------------------------------------- */
+
 DistributionPtr PartitionIO::readPDistribution( const string& inFileName, CommunicatorPtr comm )
 {
     utilskernel::LArray<IndexType> owners;
@@ -212,6 +202,8 @@ DistributionPtr PartitionIO::readPDistribution( const string& inFileName, Commun
     return dist;
 }
 
+/* --------------------------------------------------------------------------------- */
+
 DistributionPtr PartitionIO::readDistribution( const string& inFileName, CommunicatorPtr comm )
 {
     bool isPartitioned = false;
@@ -229,6 +221,8 @@ DistributionPtr PartitionIO::readDistribution( const string& inFileName, Communi
         return readSDistribution( mapFileName, comm );
     }
 }
+
+/* --------------------------------------------------------------------------------- */
 
 void PartitionIO::write( const Distribution& distribution, const string& fileName )
 {
@@ -256,8 +250,6 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 {
     using namespace hmemo;
 
-    const PartitionId MASTER = 0;
-
     CommunicatorPtr comm = distribution.getCommunicatorPtr();
  
     PartitionId rank = comm->getRank();
@@ -276,15 +268,15 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 
     HArray<IndexType> owners;
 
-    // Note: only master process asks for owners, other processes have 0 indexes
+    // Note: gather all owners on master process
 
-    distribution.computeOwners( owners, indexes );
+    distribution.allOwners( owners, MASTER );
 
     SCAI_LOG_INFO( logger, *comm << ", owner computation for " << distribution << " finished, owners = " << owners )
 
     if ( rank == MASTER )
     {
-        cout << *comm << ", MASTER, write distribution to " << fileName << endl;
+        SCAI_LOG_INFO( logger, *comm << ", MASTER, write distribution to " << fileName )
 
         FileIO::write( owners, fileName );
     }
@@ -294,6 +286,8 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
     comm->synchronize();
 }
 
+/* --------------------------------------------------------------------------------- */
+
 void PartitionIO::writePDistribution( const Distribution& distribution, const string& fileName )
 {
     SCAI_LOG_INFO( logger, distribution.getCommunicator() << ": write distribution to partition file " << fileName )
@@ -302,31 +296,34 @@ void PartitionIO::writePDistribution( const Distribution& distribution, const st
 
     using namespace hmemo;
 
-    CommunicatorPtr comm = distribution.getCommunicatorPtr();
- 
-    const IndexType nLocal = distribution.getLocalSize();
-    const IndexType nGlobal = distribution.getGlobalSize();
-
     HArray<IndexType> myGlobalIndexes;
 
+    distribution.getOwnedIndexes( myGlobalIndexes );
+
+    bool errorFlag = false;
+
+    try 
     {
-        WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
-
-        IndexType k = 0;
-
-        for ( IndexType i = 0; i < nGlobal; ++i )
-        {
-            if ( distribution.isLocal( i ) )
-            {
-                wGlobalIndexes[k++] = i;
-            }
-        }
-        
-        SCAI_ASSERT_EQ_ERROR( k, nLocal, "serious local mismatch" );
+        FileIO::write( myGlobalIndexes, fileName );
+    }
+    catch ( common::Exception& e )
+    {
+        errorFlag = true;
     }
 
-    FileIO::write( myGlobalIndexes, fileName );
+    // in case of error: all processors should throw an exception 
+
+    const Communicator& comm = distribution.getCommunicator();
+
+    errorFlag = comm.any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "Could not write partitioned distribution" )
+    }
 }
+
+/* --------------------------------------------------------------------------------- */
 
 }  // namespace
 
