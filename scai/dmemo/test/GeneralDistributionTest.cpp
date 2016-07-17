@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     DistributionPtr generaldist4( new GeneralDistribution( size * N, localIndexes, comm ) );
 
     BOOST_CHECK( generaldist1->isEqual( *generaldist2 ) );
-    BOOST_CHECK( !generaldist1->isEqual( *generaldist3 ) );
+    BOOST_CHECK( generaldist1->isEqual( *generaldist3 ) );
     BOOST_CHECK( !generaldist1->isEqual( *generaldist4 ) );
 }
 

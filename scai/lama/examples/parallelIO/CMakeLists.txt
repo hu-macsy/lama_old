@@ -32,7 +32,7 @@
  # @date 03.07.2016
 ###
 
-set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp PartitionIO.cpp PartitionIO.hpp )
+set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp )
 
 add_executable( writeParallel.exe writeParallel.cpp )
 add_executable( readParallel.exe readParallel.cpp )

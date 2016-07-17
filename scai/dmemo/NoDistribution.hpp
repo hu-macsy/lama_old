@@ -91,12 +91,11 @@ public:
 
     /** Static method required for Distribution::Register */
 
-    static std::string createValue();
+    static inline std::string createValue();
 
-    virtual const char* getKind() const
-    {
-        return theCreateValue;
-    }
+    virtual inline const char* getKind() const;
+
+    static inline const char* getId();
 
 private:
 
@@ -104,8 +103,22 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static const char theCreateValue[];
 };
+
+const char* NoDistribution::getKind() const
+{
+    return getId();
+}
+
+std::string NoDistribution::createValue()
+{
+    return getId();
+}
+
+const char* NoDistribution::getId()
+{
+    return "NO";
+}
 
 } /* end namespace dmemo */
 

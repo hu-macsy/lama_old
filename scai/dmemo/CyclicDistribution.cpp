@@ -257,30 +257,28 @@ void CyclicDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInde
 
 /* ---------------------------------------------------------------------- */
 
-namespace
-{
-bool checkChunkSize( const CyclicDistribution& d, IndexType chunkSize )
-{
-    return chunkSize == d.chunkSize();
-}
-}
-
 bool CyclicDistribution::isEqual( const Distribution& other ) const
 {
-    if ( this == &other )
-    {
-        return true;
+    bool isSame = false;
+    
+    bool proven = proveEquality( isSame, other );
+    
+    if ( proven )
+    {   
+        return isSame;
+    }
+    
+    if ( other.getKind() == getKind() )
+    {   
+        const CyclicDistribution& cycOther = reinterpret_cast<const CyclicDistribution&>( other );
+
+        isSame = chunkSize() == cycOther.chunkSize();
     }
 
-    const CyclicDistribution* cycOther = dynamic_cast<const CyclicDistribution*>( &other );
-
-    if ( cycOther )
-    {
-        return ( mGlobalSize == other.getGlobalSize() && checkChunkSize( *cycOther, mChunkSize ) );
-    }
-
-    return false;
+    return isSame;
 }
+
+/* ---------------------------------------------------------------------- */
 
 void CyclicDistribution::writeAt( std::ostream& stream ) const
 {
@@ -295,7 +293,7 @@ void CyclicDistribution::writeAt( std::ostream& stream ) const
 
 std::string CyclicDistribution::createValue()
 {
-    return "CYCLIC";
+    return getId();
 }
 
 Distribution* CyclicDistribution::create( const DistributionArguments arg )

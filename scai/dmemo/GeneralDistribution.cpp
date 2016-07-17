@@ -250,7 +250,40 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 
 bool GeneralDistribution::isEqual( const Distribution& other ) const
 {
-    return this == &other;
+    bool isSame = false;
+
+    bool proven = proveEquality( isSame, other );
+
+    if ( proven )
+    {
+        return isSame;
+    }
+
+    if ( other.getKind() != getKind() )
+    {
+        return false;
+    }
+
+    const GeneralDistribution& otherGen = reinterpret_cast<const GeneralDistribution&>( other );
+
+    bool localSameSize = otherGen.getLocalSize() == getLocalSize();
+    bool allSameSize = mCommunicator->all( localSameSize );
+
+    SCAI_LOG_DEBUG( logger, *this << ": localSameSize = " << localSameSize << ", allSameSize = " << allSameSize )
+ 
+    if ( !allSameSize ) 
+    {
+        return false;
+    }
+
+    // values will only be compared it sizes are same on all processors
+
+    bool localSameVals = mLocal2Global.maxDiffNorm( otherGen.getMyIndexes() ) == 0;
+    bool allSameVals   = mCommunicator->all( localSameVals );
+
+    SCAI_LOG_DEBUG( logger, *this << ": localSameVals = " << localSameVals << ", allSameVals = " << allSameVals )
+
+    return allSameVals;
 }
 
 void GeneralDistribution::writeAt( std::ostream& stream ) const

@@ -160,18 +160,26 @@ void BlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndex
 
 bool BlockDistribution::isEqual( const Distribution& other ) const
 {
-    if ( this == &other )
+    bool isSame = false;
+
+    bool proven = proveEquality( isSame, other );
+
+    if ( proven )
     {
-        return true;
+        return isSame;
     }
 
-    if ( dynamic_cast<const BlockDistribution*>( &other ) )
+    if ( other.getKind() == getKind() )
     {
-        return mGlobalSize == other.getGlobalSize();
+        isSame = true;
     }
 
-    return false;
+    // we know already that global size and communicator are equal 
+
+    return isSame;
 }
+
+/* ---------------------------------------------------------------------- */
 
 void BlockDistribution::writeAt( std::ostream& stream ) const
 {
@@ -184,11 +192,9 @@ void BlockDistribution::writeAt( std::ostream& stream ) const
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-const char BlockDistribution::theCreateValue[] = "BLOCK";
-
 std::string BlockDistribution::createValue()
 {
-    return theCreateValue;
+    return getId();
 }
 
 Distribution* BlockDistribution::create( const DistributionArguments arg )

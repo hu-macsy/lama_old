@@ -117,7 +117,12 @@ public:
 
     virtual const char* getKind() const
     {
-        return theCreateValue;
+        return getId();
+    }
+
+    static const char* getId()
+    {
+        return "BLOCK";    
     }
 
 protected:
@@ -127,8 +132,6 @@ protected:
 private:
 
     BlockDistribution(); // disable default constructor as it has no size
-
-    static const char theCreateValue[];
 
     IndexType mBlockSize;//!< block size of each partition
     IndexType mLB;//!< lower bound value of local range

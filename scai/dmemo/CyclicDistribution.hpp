@@ -149,7 +149,12 @@ public:
 
     virtual const char* getKind() const
     {
-        return createValue().c_str();
+        return getId();
+    }
+
+    static const char* getId() 
+    {
+        return "CYCLIC";
     }
 
 private:

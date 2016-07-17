@@ -139,7 +139,7 @@ public:
 
     /** This method returns the array that contains for this processors all owned indexes. */
 
-    inline const hmemo::HArray<IndexType>& getMyIndexes();
+    inline const hmemo::HArray<IndexType>& getMyIndexes() const;
 
     virtual const char* getKind() const
     {
@@ -169,7 +169,7 @@ private:
 
 typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 
-const hmemo::HArray<IndexType>& GeneralDistribution::getMyIndexes()
+const hmemo::HArray<IndexType>& GeneralDistribution::getMyIndexes() const
 {
     return mLocal2Global;
 }

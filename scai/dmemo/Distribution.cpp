@@ -93,29 +93,50 @@ Distribution::~Distribution()
 
 /* ---------------------------------------------------------------------- */
 
-bool Distribution::operator==( const Distribution& other ) const
+bool Distribution::proveEquality( bool& isSame, const Distribution& other ) const
 {
-    // two distributions are the same if they are both replicated
-    SCAI_LOG_TRACE( logger, "check " << *this << " == " << other )
-    bool isSame = false;
+    // In many cases equality or inequality is given rather straightforward
+
+    bool proved = true;
 
     if ( this == &other )
     {
         isSame = true;
         SCAI_LOG_DEBUG( logger, *this << " == " << other << ": pointer equal" )
     }
+    else if ( getGlobalSize() != other.getGlobalSize() )
+    {
+        isSame = false;
+        SCAI_LOG_DEBUG( logger, *this << " != " << other << ": different global size" )
+    }
     else if ( isReplicated() && other.isReplicated() )
     {
-        isSame = getGlobalSize() == other.getGlobalSize();
+        // on a single processor all distributins are the same
+
+        isSame = true;
         SCAI_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" )
+    }
+    else if ( other.getCommunicator() != getCommunicator() )
+    {
+        isSame = false;
+        SCAI_LOG_DEBUG( logger, *this << " != " << other << ": different communicators" )
     }
     else
     {
-        isSame = isEqual( other );
-        SCAI_LOG_DEBUG( logger, *this << " == " << other << ": " << isSame )
+        // more detailed checks are required, here nothing has been proved
+        proved = false;
     }
 
-    return isSame;
+    return proved;
+}
+
+/* ---------------------------------------------------------------------- */
+
+bool Distribution::operator==( const Distribution& other ) const
+{
+    // call the virtual method of derived class
+
+    return isEqual( other );
 }
 
 /* ---------------------------------------------------------------------- */
