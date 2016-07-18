@@ -66,8 +66,8 @@ CUDACtx::CUDACtx( int deviceNr )
     SCAI_CUBLAS_CALL( cublasCreate( &mcuBLASHandle ), "Initialization of cuBLAS library" );
     SCAI_CUSPARSE_CALL( cusparseCreate( &mcuSparseHandle ), "Initialization of cuSparse library" );
 #if ( CUDART_VERSION >= 7050 )
-    SCAI_CUSPOLVER_CALL( cusolverDnCreate( &mcuSolverDnHandle ), "Initialization of cuSolverDn library" )
-    SCAI_CUSPOLVER_CALL( cusolverSpCreate( &mcuSolverSpHandle ), "Initialization of cuSolverSp library" )
+    SCAI_CUSOLVER_CALL( cusolverDnCreate( &mcuSolverDnHandle ), "Initialization of cuSolverDn library" )
+    SCAI_CUSOLVER_CALL( cusolverSpCreate( &mcuSolverSpHandle ), "Initialization of cuSolverSp library" )
 #endif
     CUcontext tmp; // temporary for last context, not necessary to save it
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
@@ -90,14 +90,14 @@ cublasHandle_t CUDACtx::getcuBLASHandle() const
 /* --------------------------------------------------------------------- */
 #if ( CUDART_VERSION >= 7050 )
 
-cublasHandle_t CUDACtx::getcuSolverDnHandle() const
+cusolverDnHandle_t CUDACtx::getcuSolverDnHandle() const
 {
     return mcuSolverDnHandle;
 }
 
 /* --------------------------------------------------------------------- */
 
-cublasHandle_t CUDACtx::getcuSolverSpHandle() const
+cusolverSpHandle_t CUDACtx::getcuSolverSpHandle() const
 {
     return mcuSolverSpHandle;
 }
@@ -161,7 +161,7 @@ CUDACtx::~CUDACtx()
 
     if ( mcuSolverDnHandle )
     {
-        cusolverStatus_t error = cusolverDnDestroy( mcuSsolverDnHandle );
+        cusolverStatus_t error = cusolverDnDestroy( mcuSolverDnHandle );
 
         if ( error != CUSOLVER_STATUS_SUCCESS )
         {
@@ -175,7 +175,7 @@ CUDACtx::~CUDACtx()
 
     if ( mcuSolverSpHandle )
     {
-        cusolverStatus_t error = cusolverDnDestroy( mcuSsolverSpHandle );
+        cusolverStatus_t error = cusolverSpDestroy( mcuSolverSpHandle );
 
         if ( error != CUSOLVER_STATUS_SUCCESS )
         {

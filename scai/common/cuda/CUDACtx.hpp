@@ -50,6 +50,7 @@
 #ifndef CUDART_VERSION
     #error CUDART_VERSION Undefined!
 #elif ( CUDART_VERSION >= 7050 )
+    #include <cusolverDn.h>
     #include <cusolverSp.h>
 #endif
 
