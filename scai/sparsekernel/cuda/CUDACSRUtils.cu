@@ -1420,6 +1420,43 @@ void CUDACSRUtils::sparseGEVM(
 }
 
 /* --------------------------------------------------------------------------- */
+/*                          LUFactorization (cuSolver)                         */
+/* --------------------------------------------------------------------------- */
+
+#if ( CUDART_VERSION >= 7050 )
+
+template<typename ValueType>
+static void LUfactorization(
+    ValueType* const solution,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const ValueType rhs[],
+    const IndexType numRows )
+{
+
+
+    SCAI_LOG_INFO( logger, "LUFactorization, #rows = " << numRows )
+    SCAI_CHECK_CUDA_ACCESS
+    cudaStream_t stream = 0;
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    // cusolver call
+    //cusolverSpS
+
+    if ( !syncToken )
+    {
+        cudaStreamSynchronize( stream );
+    }
+}
+
+#endif
+
+/* --------------------------------------------------------------------------- */
 /*                          Jacobi                                             */
 /* --------------------------------------------------------------------------- */
 

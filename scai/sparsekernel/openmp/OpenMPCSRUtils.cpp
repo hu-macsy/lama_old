@@ -1055,6 +1055,20 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void OpenMPCSRUtils::LUfactorization(
+    ValueType* solution,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const ValueType rhs[],
+    const IndexType numRows )
+{
+    COMMON_THROWEXCEPTION( "LUfactorization only available with MKL linking yet." )
+}
+
+/* --------------------------------------------------------------------------- */
+
 IndexType OpenMPCSRUtils::matrixAddSizes(
     IndexType cSizes[],
     const IndexType numRows,

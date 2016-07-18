@@ -35,7 +35,7 @@
 ### Add classes and header files ###
 
 if    ( SCAI_BLAS_NAME MATCHES "MKL" )
-	set ( CLASSES ${CLASSES} MKLCSRUtils )
+	set ( CLASSES ${CLASSES} MKLCSRUtils PardisoError )
 	set ( HEADERS ${HEADERS} MKLCSRTrait MKLCSRWrapper )
 endif ( SCAI_BLAS_NAME MATCHES "MKL" )
 

@@ -85,6 +85,17 @@ public:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
+    /** Implementation for CSRKernelTrait::LUfactorization */
+
+    template<typename ValueType>
+    static void LUfactorization(
+        ValueType* const solution,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        const ValueType rhs[],
+        const IndexType numRows );
+    
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

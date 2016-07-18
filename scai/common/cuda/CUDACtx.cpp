@@ -65,6 +65,10 @@ CUDACtx::CUDACtx( int deviceNr )
                         "cuCtxCreate for " << mDeviceNr )
     SCAI_CUBLAS_CALL( cublasCreate( &mcuBLASHandle ), "Initialization of cuBLAS library" );
     SCAI_CUSPARSE_CALL( cusparseCreate( &mcuSparseHandle ), "Initialization of cuSparse library" );
+#if ( CUDART_VERSION >= 7050 )
+    SCAI_CUSPOLVER_CALL( cusolverDnCreate( &mcuSolverDnHandle ), "Initialization of cuSolverDn library" )
+    SCAI_CUSPOLVER_CALL( cusolverSpCreate( &mcuSolverSpHandle ), "Initialization of cuSolverSp library" )
+#endif
     CUcontext tmp; // temporary for last context, not necessary to save it
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
 }
@@ -83,6 +87,22 @@ cublasHandle_t CUDACtx::getcuBLASHandle() const
     return mcuBLASHandle;
 }
 
+/* --------------------------------------------------------------------- */
+#if ( CUDART_VERSION >= 7050 )
+
+cublasHandle_t CUDACtx::getcuSolverDnHandle() const
+{
+    return mcuSolverDnHandle;
+}
+
+/* --------------------------------------------------------------------- */
+
+cublasHandle_t CUDACtx::getcuSolverSpHandle() const
+{
+    return mcuSolverSpHandle;
+}
+
+#endif
 /* --------------------------------------------------------------------- */
 
 CUDACtx::~CUDACtx()
@@ -135,6 +155,36 @@ CUDACtx::~CUDACtx()
 
         mcuSparseHandle = 0;
     }
+
+#if ( CUDART_VERSION >= 7050 )
+    // Be careful: cusolverDnDestroy should be called within the current CUDA context
+
+    if ( mcuSolverDnHandle )
+    {
+        cusolverStatus_t error = cusolverDnDestroy( mcuSsolverDnHandle );
+
+        if ( error != CUSOLVER_STATUS_SUCCESS )
+        {
+            std::cerr << "Warn: could not destroy cusolverDn handle, status = " << error << std::endl;
+        }
+
+        mcuSolverDnHandle = 0;
+    }
+
+    // Be careful: cusolverSpDestroy should be called within the current CUDA context
+
+    if ( mcuSolverSpHandle )
+    {
+        cusolverStatus_t error = cusolverDnDestroy( mcuSsolverSpHandle );
+
+        if ( error != CUSOLVER_STATUS_SUCCESS )
+        {
+            std::cerr << "Warn: could not destroy cusolverSp handle, status = " << error << std::endl;
+        }
+
+        mcuSolverSpHandle = 0;
+    }
+#endif
 
     res = cuCtxDestroy( mCUcontext );
 

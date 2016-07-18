@@ -269,6 +269,17 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
+    /** Implementation for CSRKernelTrait::LUfactorization */
+
+    template<typename ValueType>
+    static void LUfactorization(
+        ValueType* const solution,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        const ValueType rhs[],
+        const IndexType numRows );
+
     /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
 
     static IndexType matrixAddSizes(
