@@ -54,6 +54,7 @@ scai_project(
 
         CUSPARSETrait
         CUSPARSEWrapper
+        CUSOLVERWrapper
 
     ADD_PARENT_SCOPE
 )
