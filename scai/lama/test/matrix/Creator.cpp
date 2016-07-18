@@ -47,8 +47,8 @@ using namespace scai::dmemo;
 template<typename ValueType>
 static void setDenseData( MatrixStorage<ValueType>& storage )
 {
-    const IndexType numRows = 8;
-    const IndexType numColumns = 2;
+    const IndexType numRows = 2;
+    const IndexType numColumns = 8;
     static ValueType values[] =
     { 6.0, 0.0, 0.0, 4.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.0, 4.0, 2.0, 5.0, 0.0, 3.0 };
     // just make sure that number of entries in values matches the matrix size
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
     MatrixCreator<ValueType>::buildReplicatedDiag( matrix, storage, repN );
 
-    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix 
+    SCAI_LOG_ERROR( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix 
                            << " from rep = " << repN << " x " << storage )
 
     const IndexType nRows = storage.getNumRows();
@@ -110,9 +110,14 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
                 {
                     IndexType j = j1 * nCols + j2;
 
+
                     Scalar s = matrix.getValue( i, j );
                     ValueType v = s.getValue<ValueType>();
     
+                    SCAI_LOG_TRACE( logger, "i = " << i << " ( " << i1 << " * " << nRows << " + " << i2 << " )"
+                                           << ", j = " << j << " ( " << j1 << " * " << nCols << " + " << i2 << " )"
+                                           << ", v = " << v )
+
                     if ( i1 != j1 )
                     {
                         // not a diagonal block, so it must be all 0
