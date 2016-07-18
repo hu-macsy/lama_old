@@ -222,41 +222,6 @@ void DenseMatrix<ValueType>::readFromFile( const std::string& fileName )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::writeToFile1(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::scalar::ScalarType dataType,
-    const common::scalar::ScalarType indexType,
-    const FileIO::FileMode fileMode  ) const
-{
-    SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
-
-    if ( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
-    {
-        // make sure that only one processor writes to file
-        const Communicator& comm = getRowDistribution().getCommunicator();
-
-        if ( comm.getRank() == 0 )
-        {
-            getLocalStorage().writeToFile( fileName, fileType, dataType, indexType, fileMode );
-        }
-
-        // synchronization to avoid that other processors start with
-        // something that might depend on the finally written file
-        comm.synchronize();
-    }
-    else
-    {
-        DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
-        DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        DenseMatrix<ValueType> repM( *this, rowDist, colDist );
-        // repM.redistribute( rowDist, colDist );
-        repM.writeToFile1( fileName, fileType, dataType, indexType, fileMode );
-    }
-}
-
-template<typename ValueType>
 DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const DenseMatrix<ValueType>& other )
 {
     // override the default assignment operator

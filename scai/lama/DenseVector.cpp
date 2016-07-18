@@ -41,6 +41,7 @@
 #include <scai/lama/expression/Expression.hpp>
 
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -850,12 +851,11 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
 /* -- IO ------------------------------------------------------------------- */
 
-template<typename ValueType>
-void DenseVector<ValueType>::writeToFile(
+void Vector::writeLocalToFile(
     const std::string& fileName,
-    const std::string& fileType,               /* = "", take IO type by suffix   */
-    const common::scalar::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
-    const FileIO::FileMode fileMode            /* = DEFAULT_MODE */ 
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode
     ) const
 {
     std::string suffix = fileType;
@@ -885,11 +885,103 @@ void DenseVector<ValueType>::writeToFile(
             fileIO->setMode( fileMode );
         }
 
-        fileIO->writeArray( mLocalValues, fileName );
+        fileIO->writeArray( getLocalValues(), fileName );
     }
     else
     {
         COMMON_THROWEXCEPTION( "File : " << fileName << ", unknown suffix" )
+    }
+}
+
+void Vector::writeToSingleFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode
+    ) const
+{
+    if ( getDistribution().isReplicated() )
+    {
+        // make sure that only one processor writes to file
+
+        const Communicator& comm = getDistribution().getCommunicator();
+
+        if ( comm.getRank() == 0 )
+        {
+            writeLocalToFile( fileName, fileType, dataType, fileMode );
+        }
+
+        // synchronization to avoid that other processors start with
+        // something that might depend on the finally written file
+
+        comm.synchronize();
+    }
+    else
+    {
+        // writing a distributed vector into a single file requires redistributon
+
+        DistributionPtr dist( new NoDistribution( size() ) );
+        common::unique_ptr<Vector> repV( copy() );
+        repV->redistribute( dist );
+        repV->writeLocalToFile( fileName, fileType, dataType, fileMode );
+    }
+}
+
+void Vector::writeToPartitionedFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode ) const
+{
+    bool errorFlag = false;
+
+    try
+    {
+        writeLocalToFile( fileName, fileType, dataType, fileMode );
+    }
+    catch ( common::Exception& e )
+    {
+        errorFlag = true;
+    }
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    errorFlag = comm.any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "Partitioned IO of vector failed" )
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Vector::writeToFile(
+    const std::string& fileName,
+    const std::string& fileType,               /* = "", take IO type by suffix   */
+    const common::scalar::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
+    const FileIO::FileMode fileMode            /* = DEFAULT_MODE */ 
+    ) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    std::string newFileName = fileName;
+
+    bool writePartitions;
+
+    const Communicator& comm = getDistribution().getCommunicator(); 
+
+    PartitionIO::getPartitionFileName( newFileName, writePartitions, comm );
+
+    if ( !writePartitions )
+    {
+        writeToSingleFile( newFileName, fileType, dataType, fileMode );
+    }
+    else
+    {
+        // matrix_%r.mtx -> matrix_0.4.mtx,  ..., matrix_3.4.mtxt
+        writeToPartitionedFile( newFileName, fileType, dataType, fileMode );
     }
 }
 
