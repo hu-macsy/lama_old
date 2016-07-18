@@ -1426,7 +1426,7 @@ void CUDACSRUtils::sparseGEVM(
 #if ( CUDART_VERSION >= 7050 )
 
 template<typename ValueType>
-static void LUfactorization(
+void CUDACSRUtils::LUfactorization(
     ValueType* const solution,
     const IndexType csrIA[],
     const IndexType csrJA[],
@@ -1434,8 +1434,6 @@ static void LUfactorization(
     const ValueType rhs[],
     const IndexType numRows )
 {
-
-
     SCAI_LOG_INFO( logger, "LUFactorization, #rows = " << numRows )
     SCAI_CHECK_CUDA_ACCESS
     cudaStream_t stream = 0;
