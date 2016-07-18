@@ -90,7 +90,7 @@ public:
 
         push_back( DistributionPtr( new GeneralDistribution( owners, comm ) ) );
 
-        float weight = comm->getRank() + 1;
+        float weight = static_cast<float>( comm->getRank() + 1 );
 
         push_back( DistributionPtr( new GenBlockDistribution( globalSize, weight, comm ) ) );
     }
