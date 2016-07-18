@@ -74,6 +74,10 @@ public:
 
     HArrayRef( IndexType size, const ValueType* pointer );
 
+    HArrayRef( const std::vector<ValueType>& data );
+
+    HArrayRef( std::vector<ValueType>& data );
+
 protected:
 
     using HArray<ValueType>::mSize;
@@ -103,6 +107,24 @@ HArrayRef<ValueType>::HArrayRef( IndexType size, ValueType* pointer )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+HArrayRef<ValueType>::HArrayRef( std::vector<ValueType>& data )
+    : HArray<ValueType>()
+{
+    mSize = data.size();
+
+    if ( mSize == 0 )
+    {
+        // in this case the HArray behaves like a usual array
+        return;
+    }
+
+    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
+    host.setRef( &data[0], mSize * mValueSize );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 HArrayRef<ValueType>::HArrayRef( IndexType size, const ValueType* pointer )
     : HArray<ValueType>()
 {
@@ -118,6 +140,24 @@ HArrayRef<ValueType>::HArrayRef( IndexType size, const ValueType* pointer )
     // Take care of const awareness by setting a flag
     constFlag = true;
     mSize = size;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+HArrayRef<ValueType>::HArrayRef( const std::vector<ValueType>& data ) : HArray<ValueType>()
+{
+    mSize = data.size();
+
+    if ( mSize == 0 )
+    {
+        // in this case the HArray behaves like a usual array
+        return;
+    }
+
+    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
+    host.setRef( const_cast<ValueType>( &data[0] ), mSize * mValueSize );
+    constFlag = true;
 }
 
 } /* end namespace hmemo */

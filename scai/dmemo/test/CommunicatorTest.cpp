@@ -246,7 +246,9 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
 
     const IndexType noReqIndexes = static_cast<IndexType>( requiredIndexes.size() );
     Halo halo;
-    HaloBuilder::build( distribution, requiredIndexes, halo );
+
+    HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
+    HaloBuilder::build( distribution, arrRequiredIndexes, halo );
     const Halo& haloRef = halo;
     const CommunicationPlan& requiredPlan = haloRef.getRequiredPlan();
     const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
@@ -324,8 +326,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_arithmetic_test_t
     }
 
     SCAI_LOG_INFO( logger, "build the Halo" );
+
     Halo halo;
-    HaloBuilder::build( distribution, requiredIndexes, halo );
+    {
+        HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
+        HaloBuilder::build( distribution, arrRequiredIndexes, halo );
+    }
+
     SCAI_LOG_INFO( logger, "halo is now available: " << halo );
     HArray<ValueType> localData;
     {
@@ -361,7 +368,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_arithmetic_test_t
         requiredIndexes.push_back( i );
     }
 
-    HaloBuilder::build( distribution, requiredIndexes, halo );
+    HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
+    HaloBuilder::build( distribution, arrRequiredIndexes, halo );
     comm->updateHalo( haloData, localData, halo );
     BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
     {
