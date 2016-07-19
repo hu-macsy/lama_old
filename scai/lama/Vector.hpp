@@ -325,11 +325,11 @@ public:
      * @param[in] dataType representation type for output values, if set it overrides IO settings
      * @param[in] fileMode can be BINARY or FORMATTED, DEFAULT_MODE keeps default/environment settings
      */
-    virtual void writeToFile(
+    void writeToFile(
         const std::string& fileName,
         const std::string& fileType = "",
         const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const = 0;
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
      * @brief get a vector with all local values
@@ -609,6 +609,32 @@ protected:
     hmemo::ContextPtr mContext; //!< decides about location of vector operations
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+private:
+
+    /** write only the local data to a file, no communication here */
+
+    void writeLocalToFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const FileIO::FileMode fileMode ) const;
+
+    /** write the whole vector into a single file, can imply redistribution */
+
+    void writeToSingleFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const FileIO::FileMode fileMode ) const;
+
+    /** same as writeLocalToFile but also communication for error handling */
+
+    void writeToPartitionedFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const FileIO::FileMode fileMode ) const;
 };
 
 IndexType Vector::size() const

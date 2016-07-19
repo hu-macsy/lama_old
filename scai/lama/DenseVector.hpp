@@ -446,15 +446,6 @@ public:
 
     virtual void redistribute( dmemo::DistributionPtr distribution );
 
-    /**
-     * @brief Implementation of pure method, see Vector::writeToFile
-     */
-    virtual void writeToFile(
-        const std::string& fileName,
-        const std::string& fileType = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
-
 protected:
 
     using Vector::mContext;

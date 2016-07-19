@@ -52,6 +52,8 @@
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace dmemo
 {
 
@@ -61,109 +63,34 @@ const char GeneralDistribution::theCreateValue[] = "GENERAL";
 
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
-    const std::vector<IndexType>& localIndexes,
+    const HArray<IndexType>& myIndexes,
     const CommunicatorPtr communicator )
-    : Distribution( globalSize, communicator ), mLocal2Global( localIndexes )
-{
-    std::vector<IndexType>::const_iterator end = mLocal2Global.end();
-    std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
 
-    for ( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
-    {
-        IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
-        SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
-                     *it << " is illegal index for general distribution of size " << mGlobalSize )
-        mGlobal2Local[ *it] = i;
-    }
-}
-
-GeneralDistribution::GeneralDistribution(
-    const std::vector<IndexType>& row2Partition,
-    const IndexType globalSize,
-    const CommunicatorPtr communicator )
     : Distribution( globalSize, communicator )
 {
-    IndexType myRank = mCommunicator->getRank();
-    IndexType parts = mCommunicator->getSize();
-    IndexType partSize = row2Partition.size();
-    IndexType numMyRows = 0;
-    // // gather number of local rows
-    // IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
-    // SCAI_ASSERT(mGlobalSize == partSize, "partition size " << partSize << " is not equal to global size " << mGlobalSize);
-    std::vector<IndexType> displ;
-    std::vector<IndexType> curpos;
-    std::vector<IndexType> rows;
+    ReadAccess<IndexType> rIndexes( myIndexes );
 
-    if ( myRank == MASTER )
-    {
-        SCAI_ASSERT( mGlobalSize == partSize,
-                     "partition size " << partSize << " is not equal to global size " << mGlobalSize )
-        displ.resize( parts + 1 );
+    IndexType nLocal = myIndexes.size();
 
-        for ( IndexType i = 0; i < mGlobalSize; ++i )
-        {
-            SCAI_ASSERT( row2Partition[i] < parts, "invalid partition id at position" << i )
-            displ[row2Partition[i] + 1]++;
-        }
-    }
-    else
+    WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, nLocal );
+
+    for ( IndexType localIndex = 0; localIndex < nLocal; ++localIndex )
     {
-        displ.resize( 2 );
+        IndexType globalIndex = rIndexes[ localIndex ];
+
+        SCAI_ASSERT_LT_ERROR( globalIndex, mGlobalSize, "global index out of range" )
+
+        wLocal2Global[ localIndex ]  = globalIndex;
+        mGlobal2Local[ globalIndex ] = localIndex;
     }
 
-    // scatter partition sizes
-    mCommunicator->scatter( &numMyRows, 1, MASTER, &displ[1] );
+    // Note: the constructor is completely local, but make some consistency check now 
 
-    if ( myRank == MASTER )
-    {
-        rows.resize( mGlobalSize );
-        curpos.resize( parts );
-
-        for ( IndexType i = 1; i < parts; i++ )
-        {
-            displ[i + 1] += displ[i];
-            curpos[i] = 0;
-        }
-
-        SCAI_ASSERT( displ[parts] == mGlobalSize, "sum of local rows is not global size" )
-
-        for ( IndexType i = 0; i < mGlobalSize; ++i )
-        {
-            IndexType partition = row2Partition[i];
-            IndexType position = displ[partition] + curpos[partition]++;
-            rows[position] = i;
-        }
-
-        for ( IndexType i = 0; i < parts; ++i )
-        {
-            SCAI_ASSERT( displ[i] + curpos[i] == displ[i + 1],
-                         "partition " << i << "  size mismatch, expected " << displ[i + 1] - displ[i] << " actual " << curpos[i] )
-        }
-    }
-    else
-    {
-        rows.resize( 1 );
-        curpos.resize( 1 );
-    }
-
-    // scatter global indices of local rows
-    mLocal2Global.resize( numMyRows );
-    mCommunicator->scatterV( &mLocal2Global[0], numMyRows, MASTER, &rows[0], &curpos[0] );
-    // Compute Global2Local
-    std::vector<IndexType>::const_iterator end = mLocal2Global.end();
-    std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
-
-    for ( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
-    {
-        IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
-        SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
-                     *it << " is illegal index for general distribution of size " << mGlobalSize )
-        mGlobal2Local[ *it] = i;
-    }
+    SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
 }
 
 GeneralDistribution::GeneralDistribution(
-    const hmemo::HArray<IndexType>& owners,
+    const HArray<IndexType>& owners,
     const CommunicatorPtr communicator ) : 
 
     Distribution( 0, communicator )
@@ -188,21 +115,15 @@ GeneralDistribution::GeneralDistribution(
     utilskernel::LArray<IndexType> localSizes;
     utilskernel::LArray<IndexType> localOffsets;
 
-    if ( rank == MASTER )
-    {
-        WriteOnlyAccess<IndexType> wSizes( localSizes, size + 1 );
-    }
-
     // count in localSizes for each partition the owners
     // owners = [ 0, 1, 2, 1, 2, 1, 0 ] -> sizes = [2, 3, 2 ]
     // sizes.sum() == owners.size()
 
     if ( rank == MASTER )
     {
-        // reserve one element more, as we do later a scan
-        WriteOnlyAccess<IndexType> wSizes( localSizes, size );
-        ReadAccess<IndexType> rOwners( owners );
-        utilskernel::OpenMPUtils::countBuckets( wSizes.get(), size, rOwners.get(), mGlobalSize );
+        utilskernel::HArrayUtils::bucketCount( localSizes, owners, size );
+        IndexType lsum = localSizes.sum();
+        SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
     }
     else
     { 
@@ -210,13 +131,6 @@ GeneralDistribution::GeneralDistribution(
         utilskernel::HArrayUtils::setOrder( localSizes, 1 );
     }
 
-    if ( rank == MASTER )
-    {
-        IndexType lsum = localSizes.sum();
-
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
-    }
-    
     IndexType localSize;  
 
     // scatter partition sizes
@@ -260,13 +174,13 @@ GeneralDistribution::GeneralDistribution(
         utilskernel::HArrayUtils::setOrder( sortedIndexes, 1 );
     }
 
-    mLocal2Global.resize( localSize );
+    WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, localSize );
 
     {
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": before scatterV, sortedIndexes = " << sortedIndexes  )
         ReadAccess<IndexType> rIndexes( sortedIndexes );
         ReadAccess<IndexType> rSizes( localSizes );
-        mCommunicator->scatterV( &mLocal2Global[0], localSize, MASTER, rIndexes.get(), rSizes.get() );
+        mCommunicator->scatterV( wLocal2Global.get(), localSize, MASTER, rIndexes.get(), rSizes.get() );
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatterV, sortedIndexes = " << sortedIndexes )
     }
 
@@ -274,27 +188,31 @@ GeneralDistribution::GeneralDistribution(
 
     for ( IndexType i = 0; i < localSize; ++i )
     {
-        mGlobal2Local[ mLocal2Global[i] ] = i;
+        mGlobal2Local[ wLocal2Global[i] ] = i;
     }
 }
 
-GeneralDistribution::GeneralDistribution( const Distribution& other )
-    : Distribution( other.getGlobalSize(), other.getCommunicatorPtr() ), mLocal2Global(
-          other.getLocalSize() )
+GeneralDistribution::GeneralDistribution( const Distribution& other ) : 
+
+    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
+
 {
+    WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, other.getLocalSize() );
+
     for ( IndexType i = 0; i < getGlobalSize(); ++i )
     {
         if ( other.isLocal( i ) )
         {
             IndexType localIndex = other.global2local( i );
             mGlobal2Local[i] = localIndex;
-            mLocal2Global[localIndex] = i;
+            wLocal2Global[localIndex] = i;
         }
     }
 }
 
-GeneralDistribution::GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator )
-    : Distribution( globalSize, communicator )
+GeneralDistribution::GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator ) : 
+
+    Distribution( globalSize, communicator )
 {
 }
 
@@ -311,11 +229,6 @@ bool GeneralDistribution::isLocal( const IndexType index ) const
 IndexType GeneralDistribution::getLocalSize() const
 {
     return static_cast<IndexType>( mLocal2Global.size() );
-}
-
-std::vector<IndexType>& GeneralDistribution::getLocalRows()
-{
-    return mLocal2Global;
 }
 
 IndexType GeneralDistribution::local2global( const IndexType localIndex ) const
@@ -337,7 +250,40 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 
 bool GeneralDistribution::isEqual( const Distribution& other ) const
 {
-    return this == &other;
+    bool isSame = false;
+
+    bool proven = proveEquality( isSame, other );
+
+    if ( proven )
+    {
+        return isSame;
+    }
+
+    if ( other.getKind() != getKind() )
+    {
+        return false;
+    }
+
+    const GeneralDistribution& otherGen = reinterpret_cast<const GeneralDistribution&>( other );
+
+    bool localSameSize = otherGen.getLocalSize() == getLocalSize();
+    bool allSameSize = mCommunicator->all( localSameSize );
+
+    SCAI_LOG_DEBUG( logger, *this << ": localSameSize = " << localSameSize << ", allSameSize = " << allSameSize )
+ 
+    if ( !allSameSize ) 
+    {
+        return false;
+    }
+
+    // values will only be compared it sizes are same on all processors
+
+    bool localSameVals = mLocal2Global.maxDiffNorm( otherGen.getMyIndexes() ) == 0;
+    bool allSameVals   = mCommunicator->all( localSameVals );
+
+    SCAI_LOG_DEBUG( logger, *this << ": localSameVals = " << localSameVals << ", allSameVals = " << allSameVals )
+
+    return allSameVals;
 }
 
 void GeneralDistribution::writeAt( std::ostream& stream ) const
@@ -347,83 +293,81 @@ void GeneralDistribution::writeAt( std::ostream& stream ) const
            << *mCommunicator << " )";
 }
 
-void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Partition ) const
+static void setOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes, const HArray<IndexType>& offsets )
 {
-    IndexType myRank = mCommunicator->getRank();
-    IndexType parts = mCommunicator->getSize();
-    // gather number of local rows
-    IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
-    std::vector<IndexType> numRows( parts );
-    mCommunicator->gather( &numRows[0], 1, MASTER, &numMyRows );
-    std::vector<IndexType> displ;
+    IndexType globalSize = indexes.size();
+    IndexType nOwners    = offsets.size() - 1;
 
-    if ( myRank == MASTER )
+    WriteOnlyAccess<IndexType> wOwners( owners, indexes.size() );
+    ReadAccess<IndexType> rOffsets( offsets );
+    ReadAccess<IndexType> rIndexes( indexes );
+
+    // for testing: init
+
+    for ( IndexType i = 0; i < globalSize; ++i )
     {
-        displ.reserve( parts + 1 );
-        IndexType displacement = 0;
-
-        for ( IndexType i = 0; i < parts; i++ )
-        {
-            displ[i] = displacement;
-            displacement += numRows[i];
-        }
-
-        displ[parts] = displacement;
-        SCAI_ASSERT( displ[parts] == mGlobalSize, "sum of local rows is not global size" )
+        wOwners[i] = -1;
     }
 
-    // gather global indices of local rows
-    std::vector<IndexType> rows( mGlobalSize );
-    mCommunicator->gatherV( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
-
-    // build mapping row 2 partition
-    if ( myRank == MASTER )
+    for ( IndexType owner = 0; owner < nOwners; ++owner )
     {
-        // for testing: init
-        for ( IndexType i = 0; i < mGlobalSize; ++i )
+        for ( IndexType j = rOffsets[owner]; j < rOffsets[owner + 1]; ++j )
         {
-            row2Partition[i] = -1;
-        }
-
-        for ( IndexType i = 0; i < parts; ++i )
-        {
-            for ( IndexType j = displ[i]; j < displ[i + 1]; ++j )
-            {
-                row2Partition[rows[j]] = i;
-            }
+            wOwners[rIndexes[j]] = owner;
         }
     }
 }
 
-void GeneralDistribution::printDistributionVector( std::string /*name*/ ) const
+void GeneralDistribution::allOwners( HArray<PartitionId>& owners, const PartitionId root ) const
 {
-//    IndexType myRank = mCommunicator->getRank();
+    ContextPtr ctx = Context::getHostPtr();
+
+    IndexType rank  = mCommunicator->getRank();
     IndexType parts = mCommunicator->getSize();
+
+    IndexType localSize = getLocalSize();
+
     // gather number of local rows
-    IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
-    std::vector<IndexType> numRows( parts );
-    mCommunicator->gather( &numRows[0], 1, MASTER, &numMyRows );
+
+    HArray<IndexType> localSizes;
+
+    {
+        WriteOnlyAccess<IndexType> wLocalSizes( localSizes, ctx, parts );
+        mCommunicator->gather( wLocalSizes.get(), 1, root, &localSize );
+    }
+
+    HArray<IndexType> offsets;
+    offsets.reserve( ctx, parts + 1 );;
+
+    if ( rank == root )
+    {
+        utilskernel::HArrayUtils::assign( offsets, localSizes, ctx );
+        IndexType nTotal = utilskernel::HArrayUtils::scan( offsets );
+        SCAI_ASSERT( nTotal == mGlobalSize, "sum of local rows is not global size" )
+    }
+
     // gather global indices of local rows
-    std::vector<IndexType> rows( mGlobalSize );
-    mCommunicator->gatherV( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
-    std::vector<IndexType> row2Partition( mGlobalSize );
-    getDistributionVector( row2Partition );
-    // build mapping row 2 partition
-//    if(myRank == MASTER)
-//    {
-//
-//        std::ofstream file;
-//        file.open((name + ".part").c_str());
-    // print row - partition mapping
-//        std::cout << "partitionVector ";
-//        for(IndexType i = 0; i < mGlobalSize; ++i)
-//        {
-//            file << row2Partition[ i ] << std::endl;
-//            std::cout << row2Partition[ i ] << " ";
-//        }
-//        std::cout << std::endl;
-//        file.close();
-//    }
+
+    HArray<IndexType> allIndexes( rank == root ? mGlobalSize : 2 );
+   
+    {   
+        WriteAccess<IndexType> wAllIndexes( allIndexes );
+        ReadAccess<IndexType> rLocalSizes( localSizes );
+        ReadAccess<IndexType> rIndexes( mLocal2Global );
+        mCommunicator->gatherV( wAllIndexes.get(), localSize, root, rIndexes.get(), rLocalSizes.get() );
+    }
+
+    // now we ca scatter the owner ids in the owner array
+
+    if ( rank == root )
+    {
+        setOwners( owners, allIndexes, offsets );
+    }
+}
+
+void GeneralDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
+{
+    utilskernel::HArrayUtils::assign( myGlobalIndexes, mLocal2Global );
 }
 
 } /* end namespace dmemo */

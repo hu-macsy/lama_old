@@ -1062,7 +1062,8 @@ void OpenMPCSRUtils::LUfactorization(
     const IndexType csrJA[],
     const ValueType csrValues[],
     const ValueType rhs[],
-    const IndexType numRows )
+    const IndexType numRows,
+    const IndexType nnz )
 {
     COMMON_THROWEXCEPTION( "LUfactorization only available with MKL linking yet." )
 }

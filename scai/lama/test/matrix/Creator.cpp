@@ -45,7 +45,7 @@ using namespace scai::dmemo;
 // This routine fills a matrix storage with some data
 
 template<typename ValueType>
-void setDenseData( MatrixStorage<ValueType>& storage )
+static void setDenseData( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 2;
     const IndexType numColumns = 8;
@@ -77,13 +77,16 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
     CSRStorage<ValueType> storage;
     setDenseData( storage );
 
+    SCAI_LOG_DEBUG( logger, "storage to replicate: " << storage )
+
     CSRSparseMatrix<ValueType> matrix;
 
     const IndexType repN = 6;
 
     MatrixCreator<ValueType>::buildReplicatedDiag( matrix, storage, repN );
 
-    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix )
+    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix 
+                           << " from rep = " << repN << " x " << storage )
 
     const IndexType nRows = storage.getNumRows();
     const IndexType nCols = storage.getNumColumns();
@@ -107,9 +110,14 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
                 {
                     IndexType j = j1 * nCols + j2;
 
+
                     Scalar s = matrix.getValue( i, j );
                     ValueType v = s.getValue<ValueType>();
     
+                    SCAI_LOG_TRACE( logger, "i = " << i << " ( " << i1 << " * " << nRows << " + " << i2 << " )"
+                                           << ", j = " << j << " ( " << j1 << " * " << nCols << " + " << i2 << " )"
+                                           << ", v = " << v )
+
                     if ( i1 != j1 )
                     {
                         // not a diagonal block, so it must be all 0
@@ -147,7 +155,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedTest )
 
     MatrixCreator<ValueType>::buildReplicated( matrix, storage, repRow, repCol );
 
-    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix )
+    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicated " << matrix )
 
     // first check for correct sizes
 

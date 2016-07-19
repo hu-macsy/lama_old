@@ -40,6 +40,13 @@ BOOST_AUTO_TEST_CASE( WalltimeTest )
 {
     using scai::common::Walltime;
     using scai::common::INTEGER_8;
+
+    for ( int k = 0; k < 5; ++k )
+    {
+        // get some time stamps to avoid possible initialization overhead
+        Walltime::timestamp();
+    }
+
     INTEGER_8 i0 = Walltime::timestamp();
     double t0 = Walltime::get();
     Walltime::sleep( 1000 );

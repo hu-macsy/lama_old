@@ -106,7 +106,8 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     SCAI_LOG_DEBUG( logger,
                     sourceDist.getCommunicator() << ": target dist has local " << mTargetSize << " vals, " << mNumLocalValues << " are local, " << requiredIndexes.size() << " are remote." )
     // Halo is only for exchange of non-local values
-    HaloBuilder::build( sourceDist, requiredIndexes, mHalo );
+    HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
+    HaloBuilder::build( sourceDist, arrRequiredIndexes, mHalo );
     // Set in the source index vector the values to provide for other processors
     const Halo& halo = mHalo;
     SCAI_LOG_INFO( logger,

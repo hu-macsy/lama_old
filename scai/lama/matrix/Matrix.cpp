@@ -37,6 +37,7 @@
 
 // local library
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 
 // internal scai libraries
@@ -528,7 +529,7 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::writeToFile(
+void Matrix::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
@@ -558,6 +559,62 @@ void Matrix::writeToFile(
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
         common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
         repM->writeToFile( fileName, fileType, dataType, indexType, fileMode );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::writeToPartitionedFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::scalar::ScalarType indexType /* = UNKNOWN for DEFAULT */,
+    const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    if ( getColDistribution().isReplicated() )
+    {
+        // each processor writes its partition to a file with unique name
+
+        getLocalStorage().writeToFile( fileName, fileType, dataType, indexType, fileMode );
+    }
+    else
+    {
+        DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
+        common::unique_ptr<Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
+        repM->writeToPartitionedFile( fileName, fileType, dataType, indexType, fileMode );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::writeToFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::scalar::ScalarType indexType /* = UNKNOWN for DEFAULT */,
+    const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    std::string newFileName = fileName;
+
+    bool writePartitions;
+
+    const Communicator& comm = getRowDistribution().getCommunicator();
+
+    PartitionIO::getPartitionFileName( newFileName, writePartitions, comm );
+
+    if ( !writePartitions )
+    {
+        writeToSingleFile( newFileName, fileType, dataType, indexType, fileMode );
+    }
+    else
+    {
+        writeToPartitionedFile( newFileName, fileType, dataType, indexType, fileMode );
     }
 }
 

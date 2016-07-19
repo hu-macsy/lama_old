@@ -556,15 +556,6 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
-    /** Writes this sparse matrix to a file in CSR format. */
-
-    void writeToFile1(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::scalar::ScalarType dataType,
-        const common::scalar::ScalarType indexType,
-        const FileIO::FileMode fileMode  ) const;
-
     /**
      * @brief Assigns this matrix with a replicated sparse matrix read from file.
      *

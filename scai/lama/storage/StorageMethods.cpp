@@ -419,7 +419,12 @@ void _StorageMethods::buildHalo(
     haloIndexes.resize( it - haloIndexes.begin() );
     SCAI_LOG_DEBUG( logger,
                     "Eliminating multiple global indexes, " << haloNumValues << " are shrinked to " << haloIndexes.size() << " values, is halo size" )
-    HaloBuilder::build( colDist, haloIndexes, halo );
+    
+    {
+        HArrayRef<IndexType> requiredIndexes( haloIndexes );
+        HaloBuilder::build( colDist, requiredIndexes, halo );
+    }
+
     SCAI_LOG_DEBUG( logger, "Halo = " << halo )
     haloSize = static_cast<IndexType>( haloIndexes.size() );
     const std::map<IndexType, IndexType>& table = halo.getMap();

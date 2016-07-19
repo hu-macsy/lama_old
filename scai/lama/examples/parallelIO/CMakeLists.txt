@@ -27,12 +27,12 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama examples
- # @author Jan Ecker
- # @date 02.12.2015
+ # @brief CMake configuration file for lama - parallel I/O examples
+ # @author Thomas Brandes
+ # @date 03.07.2016
 ###
 
-set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp )
+set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp )
 
 add_executable( writeParallel.exe writeParallel.cpp )
 add_executable( readParallel.exe readParallel.cpp )
