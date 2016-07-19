@@ -198,17 +198,18 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
     // scatter local rows
     int numMyRows = 0;
     comm->scatter( &numMyRows, 1, MASTER, &numRowsPerOwner[0] );
-    mLocal2Global.resize( numMyRows );
-    comm->scatterV( &mLocal2Global[0], numMyRows, MASTER, &rows[0], &numRowsPerOwner[0] );
-    std::vector<IndexType>::const_iterator end = mLocal2Global.end();
-    std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
 
-    for ( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
+    hmemo::WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, numMyRows );
+
+    comm->scatterV( wLocal2Global.get(), numMyRows, MASTER, &rows[0], &numRowsPerOwner[0] );
+
+    // Compute Global2Local
+
+    for ( IndexType i = 0; i < numMyRows; ++i )
     {
-        IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
-        SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
-                     *it << " is illegal index for general distribution of size " << mGlobalSize )
-        mGlobal2Local[ *it] = i;
+        IndexType globalIndex = wLocal2Global[i];
+        SCAI_ASSERT_LT_DEBUG( globalIndex, mGlobalSize, "global index out of range" )
+        mGlobal2Local[ globalIndex ] = i;
     }
 }
 
