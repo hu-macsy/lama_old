@@ -308,14 +308,36 @@ public:
     virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 ) = 0;
 
     /**
-     * @brief Assign this vector with values stored the file with the given filename.
+     * This method sets a vector by reading its values from one or multiple files.
      *
-     * @param[in] filename  the name of the file to be read containing vector data.
+     * @param[in] fileName      the filename to read from
+     * @param[in] distribution  optional, if set it is the distribution of the vector 
      *
-     * The implementation of this method in derived classes can make its own
-     * decision what the distribtion of this vector will be.
+     *   \code
+     *      DenseVector<double> vector;
+     *      vector.readFromFile( "vector.mtx" )                    ! vector only on processor 0
+     *      vector.readFromFile( "vector_%r.mtx" )                 ! general block distributed vector, each processor reads it own file
+     *      vector.readFromFile( "vector.mtx", rowDist )           ! each processor gets its local part of the vector in one file
+     *      vector.readFromFile( "vector_%r.mtx", rowDist )        ! read a partitioned vector with the given distribution
+     *   \endcode
      */
-    virtual void readFromFile( const std::string& filename ) = 0;
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr distribution = dmemo::DistributionPtr() );
+
+    /**
+     *  This method sets a vector a reading its values from one or multiple files and also the distribution from a file
+     *
+     * @param[in] vectorFileName the single or partitioned filename to read from
+     * @param[in] distributionFileName the single or partitioned filename with the row distribution of the vector
+     *
+     *   \code
+     *      CSRSparseMatrix<double> vector;
+     *      vector.readFromFile( "vector.mtx", "owners.mtx" )
+     *      vector.readFromFile( "vector_%r.mtx", "owners.mtx" )
+     *      vector.readFromFile( "vector.mtx", "rows%r.mtx" )
+     *      vector.readFromFile( "vector_%r.mtx", "rows%r.mtx" )
+     *   \endcode
+     */
+    void readFromFile( const std::string& vectorFileName, const std::string& distributionFileName );
 
     /**
      * @brief write the vector to an output file
@@ -635,6 +657,10 @@ private:
         const std::string& fileType,
         const common::scalar::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
+
+    void readFromSingleFile( const std::string& fileName );
+
+    void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
 };
 
 IndexType Vector::size() const

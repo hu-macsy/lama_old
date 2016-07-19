@@ -88,88 +88,12 @@ int main( int argc, const char* argv[] )
 
     Matrix& matrix = *matrixPtr;
 
-    dmemo::DistributionPtr dist;
+    string inFileName = argv[1];
 
     if ( argc > 3 )
     {
-        dist = PartitionIO::readDistribution( argv[3], comm );
-    }
-
-    string inFileName = argv[1];
-
-    bool isPartitioned = false;
-
-    getPartitionFileName( inFileName, isPartitioned, *comm );
-
-    if ( !isPartitioned )
-    {
-        // read it from a single file
-
-        matrix.readFromFile( inFileName );
-
-        cout << comm << ": read matrix from file " << inFileName << endl;
-
-        if ( dist.get() )
-        {
-            matrix.redistribute( dist, dist );
-        }
-    }
-    else
-    {
-        _MatrixStorage& m = const_cast<_MatrixStorage&>( matrix.getLocalStorage() );
-
-        bool errorFlag = false;
-
-        try
-        {
-            m.readFromFile( inFileName );
-        }
-        catch ( common::Exception& e )
-        {
-            cerr << *comm << ": failed to read " << inFileName << endl;
-            errorFlag = true;
-        }
-
-        errorFlag = comm->any( errorFlag );
-
-        if ( errorFlag )
-        {
-            return -1;
-        }
-
-        cout << *comm << ": read local part of matrix from file " << inFileName << ": " << m << endl;
-
-        if ( dist.get() )
-        {
-            // we have read a distribution, so it must match
-
-            if ( dist->getLocalSize() != m.getNumRows() )
-            {
-                errorFlag = true;
-
-                cerr << *comm << ": mismatch distribution and file size" << endl;
-            }
-        }
-        else 
-        {
-            // we have no distribution so assume a general block distribution
-
-            IndexType globalSize = comm->sum( m.getNumRows() );
-
-            dist.reset( new GenBlockDistribution( globalSize, m.getNumRows(), comm ) );
-        }
-
-        // build the distribution by the sizes
-
-        IndexType numColumns = comm->max( m.getNumColumns() );
-
-        // for consistency we have to set the number of columns in each stroage
-
-        m.setDimension( m.getNumRows(), numColumns );
-
-        matrix.assign( m, dist, dist );
-
-        cout << *comm << ": distributed matrix = " << matrix << endl;
+        string distributionFileName = argv[3];
+        matrix.readFromFile( inFileName, distributionFileName );
     }
 
     // whatever the distribution may be, we write it in a single file

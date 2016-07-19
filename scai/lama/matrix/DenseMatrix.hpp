@@ -270,11 +270,6 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
 
-    /**
-     *  Implementation for Matrix::readFromFile
-     */
-    virtual void readFromFile( const std::string& filename );
-
     /** Implementation of pure Matrix::setDenseData */
 
     virtual void setDenseData(

@@ -2053,42 +2053,6 @@ size_t SparseMatrix<ValueType>::getMemoryUsage() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
-{
-    SCAI_REGION( "Mat.Sp.readFromFile" )
-    // Take the current default communicator
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    IndexType myRank = comm->getRank();
-    IndexType master = 0; // reading processor
-    IndexType numRows = 0; // will be the size of the vector
-    IndexType numCols = 0; // will be the size of the vector
-
-    if ( myRank == master )
-    {
-        mLocalData->readFromFile( fileName );
-        numRows = mLocalData->getNumRows();
-        numCols = mLocalData->getNumColumns();
-        mHaloData->allocate( numRows, 0 );
-        mHalo.clear();
-    }
-
-    comm->bcast( &numRows, 1, master );
-    comm->bcast( &numCols, 1, master );
-    DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
-    DistributionPtr colDist( new NoDistribution( numCols ) );
-
-    if ( myRank == master )
-    {
-        Matrix::setDistributedMatrix( dist, colDist );
-    }
-    else
-    {
-        allocate( dist, colDist );
-        // other processors have to set sizes of local / halo data
-    }
-}
-
-template<typename ValueType>
 std::string SparseMatrix<ValueType>::initTypeName()
 {
     std::stringstream s;

@@ -100,24 +100,7 @@ int main( int argc, const char* argv[] )
 
     std::string outFileName = argv[2];
 
-    bool writePartitions;
-
-    getPartitionFileName( outFileName, writePartitions, *comm );
-
-    if ( !writePartitions )
-    {
-        // write it in one single file 
-
-        matrix.writeToFile( outFileName );
-
-        cout << comm << ": written matrix to file " << outFileName << endl;
-    }
-    else
-    { 
-        matrix.getLocalStorage().writeToFile( outFileName );
-
-        cout << *comm << ": written local part of matrix to file " << outFileName << endl;
-    }
+    matrix.writeToFile( outFileName );
 
     if ( argc > 3 )
     {
@@ -126,11 +109,5 @@ int main( int argc, const char* argv[] )
         PartitionIO::write( matrix.getRowDistribution(), distFileName );
  
         cout << *comm << "written " << matrix.getRowDistribution() << " to file " << distFileName << endl;
-
-        // just for check
-
-        DistributionPtr newDist = PartitionIO::readDistribution( distFileName, comm );
-
-        SCAI_ASSERT_EQ_ERROR( newDist->getGlobalSize(), matrix.getNumRows(), "mismatch" )
     }
 }

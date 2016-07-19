@@ -179,53 +179,6 @@ void DenseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, con
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::readFromFile( const std::string& filename )
-{
-    SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
-    // Take the current default communicator
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
-    IndexType myRank = comm->getRank();
-    IndexType host = 0; // reading processor
-
-    if ( myRank == host )
-    {
-        // Only host reads the values
-
-        std::string suffix = FileIO::getSuffix( filename );
-
-        if ( FileIO::canCreate( suffix ) )
-        {
-            // okay, we can use FileIO class from factory
-
-            common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-    
-            fileIO->readArray( mLocalValues, filename );
-        }
-        else
-        {
-            // ToDo: readFromFile( filename + ".<suffix>" ) for all known suffixes
-
-            COMMON_THROWEXCEPTION( "File : " << filename << ", unknown file type " << suffix )
-        }
-    }
-    else
-    {
-        // other processors have to clear their local values
-        mLocalValues.clear();
-    }
-
-    IndexType numElements = mLocalValues.size();
-    comm->bcast( &numElements, 1, host );
-    DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
-    SCAI_ASSERT_EQ_DEBUG( dist->getLocalSize(), mLocalValues.size(), "wrong distribution" );
-    SCAI_ASSERT_EQ_DEBUG( dist->getGlobalSize(), numElements, "wrong distribution" );
-    // this is safe, we have allocated it correctly
-    setDistributionPtr( dist );
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const _HArray& localValues, DistributionPtr distribution )
     : Vector( distribution )
 {
