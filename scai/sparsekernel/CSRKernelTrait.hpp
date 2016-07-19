@@ -171,7 +171,8 @@ struct CSRKernelTrait
             const IndexType csrJA[],
             const ValueType csrValues[],
             const ValueType rhs[],
-            const IndexType numRows );
+            const IndexType numRows,
+            const IndexType nnz );
 
         static const char* getId()
         {

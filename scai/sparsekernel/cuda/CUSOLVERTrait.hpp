@@ -1,5 +1,5 @@
 /**
- * @file sparsekernel/cuda/CUSPARSETrait.hpp
+ * @file sparsekernel/cuda/CUSOLVERTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,24 +27,37 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definitions for CUBLAS interface
- * @author Eric Stricker
- * @date 21.01.2016
+ * @brief Definitions for CUSOLVER interface
+ * @author Lauretta Schubert
+ * @date 19.07.2016
  */
 
 #pragma once
 
-// macros
-#define CUSPARSE_BLAS_NAME( name, prefix ) cusparse##prefix##name
-
-#define CUSPARSE_BLAS_DEF( name, prefix, retType, definition )          \
-    retType CUSPARSE_BLAS_NAME( name, prefix )( definition );
-
-#define CUSPARSE_BLAS_CALL( name, prefix, ... ) \
-    SCAI_CUSPARSE_CALL( CUSPARSE_BLAS_NAME( name, prefix ), __VAR_ARGS__ )
-
 // external
-#include <cusparse_v2.h>
+#include <cuda_runtime_api.h>
+
+#ifndef CUDART_VERSION
+    #error CUDART_VERSION Undefined!
+#elif ( CUDART_VERSION >= 7050 )
+    #include <cusolverDn.h>
+    #include <cusolverSp.h>
+
+// macros
+#define CUSOLVER_DN_NAME( name, prefix ) cusolverDn##prefix##name
+#define CUSOLVER_SP_NAME( name, prefix ) cusolverSp##prefix##name
+
+#define CUSOLVER_DN_DEF( name, prefix, retType, definition )          \
+    retType CUSOLVER_DN_NAME( name, prefix )( definition );
+
+#define CUSOLVER_SP_DEF( name, prefix, retType, definition )          \
+    retType CUSOLVER_SP_NAME( name, prefix )( definition );
+
+#define CUSOLVER_DN_CALL( name, prefix, ... ) \
+    SCAI_CUSOLVER_CALL( CUSOLVER_DN_NAME( name, prefix ), __VAR_ARGS__ )
+
+#define CUSOLVER_SP_CALL( name, prefix, ... ) \
+    SCAI_CUSOLVER_CALL( CUSOLVER_SP_NAME( name, prefix ), __VAR_ARGS__ )
 
 namespace scai
 {
@@ -52,18 +65,18 @@ namespace scai
 namespace sparsekernel
 {
 
-class COMMON_DLL_IMPORTEXPORT CUSPARSETrait
+class COMMON_DLL_IMPORTEXPORT CUSOLVERTrait
 {
 public:
     typedef int BLASIndexType;
-    typedef cusparseOperation_t BLASTrans;
-    typedef cusparseStatus_t BLASStatus;
-    typedef cusparseHandle_t BLASHandle;
+    typedef cusolverStatus_t BLASStatus;
+    typedef cusolverDnHandle_t SOLVERDnHandle;
+    typedef cusolverSpHandle_t SOLVERSpHandle;
     typedef cusparseMatDescr_t BLASMatrix;
-    typedef cusparseAction_t BLASOperationType;
-    typedef cusparseIndexBase_t BLASIndexBase;
 };
 
 } /* end namespace sparsekernel */
 
 } /* end namespace scai */
+
+#endif

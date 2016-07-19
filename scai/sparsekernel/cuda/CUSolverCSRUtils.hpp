@@ -1,5 +1,5 @@
 /**
- * @file MKLCSRUtils.hpp
+ * @file CUSolverCSRUtils.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of CSR utilities with MKL for Host
- * @author Thomas Brandes
- * @date 02.07.2012
+ * @brief Provide CSR routines by using CUSolver library
+ * @author Lauretta Schubert
+ * @date 19.07.2016
  */
 
 #pragma once
@@ -39,8 +39,20 @@
 
 // internal scai libraries
 #include <scai/kregistry/mepr/Registrator.hpp>
+
+#include <scai/tasking/SyncToken.hpp>
+
 #include <scai/logging.hpp>
+
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/assert.hpp>
+
+#include <cuda_runtime_api.h>
+
+#ifndef CUDART_VERSION
+    #error CUDART_VERSION Undefined!
+#elif ( CUDART_VERSION >= 7050 )
+    #include <cusolverSp.h>
 
 namespace scai
 {
@@ -48,42 +60,9 @@ namespace scai
 namespace sparsekernel
 {
 
-/** This class provides routines on compressed sparse row data
- */
-
-class COMMON_DLL_IMPORTEXPORT MKLCSRUtils
+class COMMON_DLL_IMPORTEXPORT CUSolverCSRUtils
 {
 public:
-
-    /** Implementation for CSRKernelTrait::Transpose::convertCSR2CSC using MKL */
-
-    template<typename ValueType>
-    static void convertCSR2CSC(
-        IndexType cscIA[],
-        IndexType cscJA[],
-        ValueType cscValues[],
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[],
-        IndexType numRows,
-        IndexType numColumns,
-        IndexType numValues );
-
-    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
-
-    template<typename ValueType>
-    static void normalGEMV(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType nnz,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::LUfactorization */
 
@@ -96,30 +75,33 @@ public:
         const ValueType rhs[],
         const IndexType numRows,
         const IndexType nnz );
-    
-protected:
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
     /** Routine that registers all methods at the kernel registry. */
 
+    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
     SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
 
     /** Constructor for registration. */
 
-    MKLCSRUtils();
+    CUSolverCSRUtils();
 
     /** Destructor for unregistration. */
 
-    ~MKLCSRUtils();
+    ~CUSolverCSRUtils();
 
     /** Static variable for registration at static initialization. */
 
-    static MKLCSRUtils guard;
+    static CUSolverCSRUtils guard;
 };
+
+/* --------------------------------------------------------------------------- */
 
 } /* end namespace sparsekernel */
 
 } /* end namespace scai */
+
+#endif

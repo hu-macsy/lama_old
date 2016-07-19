@@ -153,18 +153,6 @@ public:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
-    /** Implementation for CSRKernelTrait::LUfactorization */
-#if ( CUDART_VERSION >= 7050 )
-    template<typename ValueType>
-    static void LUfactorization(
-        ValueType* const solution,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[],
-        const ValueType rhs[],
-        const IndexType numRows );
-#endif
-
     /** Implementation for CSRKernelTrait::Solver::jacobi  */
 
     template<typename ValueType>

@@ -168,7 +168,8 @@ void OpenMPCSRUtils::LUfactorization(
     const IndexType csrJA[],
     const ValueType csrValues[],
     const ValueType rhs[],
-    const IndexType numRows )
+    const IndexType numRows,
+    const IndexType /*nnz*/ )
 {
     // dummy variables
     ValueType vDum;

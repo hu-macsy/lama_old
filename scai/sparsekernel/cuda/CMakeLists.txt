@@ -45,6 +45,7 @@ scai_project(
         CUDADIAUtils
         CUDAELLUtils
         CUDAJDSUtils
+        CUSolverCSRUtils
         CUSparseCSRUtils
 
     CUDA_SOURCES   # .cu
@@ -54,6 +55,7 @@ scai_project(
 
         CUSPARSETrait
         CUSPARSEWrapper
+        CUSOLVERTrait
         CUSOLVERWrapper
 
     ADD_PARENT_SCOPE

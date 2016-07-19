@@ -34,6 +34,8 @@
 
 #pragma once
 
+#include <scai/sparsekernel/cuda/CUSOLVERTrait.hpp>
+
 #include <scai/common/cuda/CUDAError.hpp>
 
 // CUDA
@@ -45,7 +47,7 @@
     #error CUDART_VERSION Undefined!
 #elif ( CUDART_VERSION >= 7050 )
 
-#include <CUSOLVERSp.h>
+#include <cusolverSp.h>
 
 namespace scai
 {
@@ -56,37 +58,40 @@ namespace sparsekernel
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT CUSOLVERWrapper;
 
-#define CUSOLVERWRAPPER_DEF( ValueType, CUSOLVERValueType, prefix )                                                                 \
-    template<>                                                                                                                      \
-    class COMMON_DLL_IMPORTEXPORT CUSOLVERWrapper<ValueType>                                                                        \
-    {                                                                                                                               \
-    public:                                                                                                                         \
-                                                                                                                                    \
-        static void csrLU(                                                                                                          \
-                SOLVERHandle handle,                                                                                                \
-                IndexType n,                                                                                                        \
-                const BLASMatrix descrA,                                                                                            \
-                const IndexType nnzA,                                                                                               \
-                const ValueType *csrValA,                                                                                           \
-                const IndexType *csrRowPtrA,                                                                                        \
-                const IndexType *csrColIndA,                                                                                        \
-                const ValueType *b,                                                                                                 \
-                ValueType tol,                                                                                                      \
-                IndexType reorder,                                                                                                  \
-                ValueType *x,                                                                                                       \
-                IndexType *singularity )                                                                                            \
-        {                                                                                                                           \
-            SCAI_CUSOLVER_CALL(                                                                                                     \
-                    CUSOLVER_BLAS_NAME( csrlsvlu, prefix )( handle, n, descrA,                                                      \
-                            reinterpret_cast<const CUSOLVERValueType*>( csrValA ),                                                  \
-                            csrRowPtrA, csrColIndA,                                                                                 \
-                            reinterpret_cast<const CUSOLVERValueType*>( b ),                                                        \
-                            tol, reorder,                                                                                           \
-                            reinterpret_cast<CUSOLVERValueType*>( x ),                                                              \
-                            singularity ),                                                                                          \
-                    "CUSOLVERWrapper::csrlsvlu" )                                                                                   \
-        }                                                                                                                           \
-                                                                                                                                    \
+#define CUSOLVERWRAPPER_DEF( ValueType, CUSOLVERValueType, prefix )                                                             \
+    template<>                                                                                                                  \
+    class COMMON_DLL_IMPORTEXPORT CUSOLVERWrapper<ValueType>                                                                    \
+    {                                                                                                                           \
+    public:                                                                                                                     \
+        typedef CUSOLVERTrait::SOLVERDnHandle SOLVERDnHandle;                                                                   \
+        typedef CUSOLVERTrait::SOLVERSpHandle SOLVERSpHandle;                                                                   \
+        typedef CUSOLVERTrait::BLASMatrix BLASMatrix;                                                                           \
+                                                                                                                                \
+        static void csrQR(                                                                                                      \
+                SOLVERSpHandle handle,                                                                                          \
+                IndexType n,                                                                                                    \
+                IndexType nnz,                                                                                                  \
+                const BLASMatrix descrA,                                                                                        \
+                const ValueType *csrValA,                                                                                       \
+                const IndexType *csrRowPtrA,                                                                                    \
+                const IndexType *csrColIndA,                                                                                    \
+                const ValueType *b,                                                                                             \
+                ValueType tol,                                                                                                  \
+                IndexType reorder,                                                                                              \
+                ValueType *x,                                                                                                   \
+                IndexType *singularity )                                                                                        \
+        {                                                                                                                       \
+            SCAI_CUSOLVER_CALL(                                                                                                 \
+                    CUSOLVER_SP_NAME( csrlsvqr, prefix )( handle, n, nnz, descrA,                                               \
+                            reinterpret_cast<const CUSOLVERValueType*>( csrValA ),                                              \
+                            csrRowPtrA, csrColIndA,                                                                             \
+                            reinterpret_cast<const CUSOLVERValueType*>( b ),                                                    \
+                            tol, reorder,                                                                                       \
+                            reinterpret_cast<CUSOLVERValueType*>( x ),                                                          \
+                            singularity ),                                                                                      \
+                    "CUSOLVERWrapper::csrlsvlu" )                                                                               \
+        }                                                                                                                       \
+                                                                                                                                \
     };
 
 CUSOLVERWRAPPER_DEF( float, float, S )
