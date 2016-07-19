@@ -278,7 +278,8 @@ public:
         const IndexType csrJA[],
         const ValueType csrValues[],
         const ValueType rhs[],
-        const IndexType numRows );
+        const IndexType numRows,
+        const IndexType nnz );
 
     /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
 
