@@ -125,7 +125,7 @@ public:
      * @param[in] fileMode can be used to forche BINARY or FORMATTED output
      */
 
-    virtual void writeToFile(
+    void writeToFile(
         const std::string& fileName,
         const std::string& fileType = "",
         const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
@@ -1073,6 +1073,20 @@ private    :
     void setDefaultKind(); // set default values for communication and compute kind
 
     SyncKind mCommunicationKind;//!< synchronous/asynchronous communication
+
+    void writeToSingleFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const common::scalar::ScalarType indexType,
+        const FileIO::FileMode fileMode ) const;
+
+    void writeToPartitionedFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const common::scalar::ScalarType indexType,
+        const FileIO::FileMode fileMode ) const;
 };
 
 /* ======================================================================== */

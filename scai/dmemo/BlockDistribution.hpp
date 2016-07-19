@@ -99,12 +99,13 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Method to compute directly the owners of global indexes without
-     *  any communication.
-     */
-    virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+    /** Override Distribution::computeOwners with more efficient version. */
 
-    void printDistributionVector( std::string problem ) const;
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
+
+    /** Override Distribution::getOwnedIndexes with more efficient version. */
+
+    virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
     /** Static method required for create to use in Distribution::Register */
 
@@ -116,7 +117,12 @@ public:
 
     virtual const char* getKind() const
     {
-        return theCreateValue;
+        return getId();
+    }
+
+    static const char* getId()
+    {
+        return "BLOCK";    
     }
 
 protected:
@@ -126,8 +132,6 @@ protected:
 private:
 
     BlockDistribution(); // disable default constructor as it has no size
-
-    static const char theCreateValue[];
 
     IndexType mBlockSize;//!< block size of each partition
     IndexType mLB;//!< lower bound value of local range

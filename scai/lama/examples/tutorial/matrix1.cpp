@@ -95,7 +95,8 @@ int main()
     }
 
     std::cout << *comm << ": have " << myGlobalIndexes.size() << " indexes" << std::endl;
-    DistributionPtr dist( new GeneralDistribution( N, myGlobalIndexes, comm ) );
+    hmemo::HArrayRef<IndexType> indexes( static_cast<IndexType>( myGlobalIndexes.size() ), &myGlobalIndexes[0] );
+    DistributionPtr dist( new GeneralDistribution( N, indexes, comm ) );
     a.redistribute( dist, dist );
     std::cout << "Communicator = " << *comm << std::endl;
     DenseVector<ValueType> row( dist );     // any type, any distribution

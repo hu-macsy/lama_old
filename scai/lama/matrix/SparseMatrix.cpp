@@ -2053,57 +2053,6 @@ size_t SparseMatrix<ValueType>::getMemoryUsage() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::writeToFile1(
-
-    const std::string& fileName,
-    const std::string& fileType /* = UNFORMATTED */,
-    const common::scalar::ScalarType dataType /* = INTERNAL */,
-    const common::scalar::ScalarType indexType /* = IndexType */,
-    const FileIO::FileMode fileMode ) const
-{
-    if ( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
-    {
-        // make sure that only one processor writes to file
-        const Communicator& comm = getRowDistribution().getCommunicator();
-
-        if ( comm.getRank() == 0 )
-        {
-            mLocalData->writeToFile( fileName, fileType, dataType, indexType, fileMode );
-        }
-
-        // synchronization to avoid that other processors start with
-        // something that might depend on the finally written file
-        comm.synchronize();
-    }
-    else if ( hasDiagonalProperty() )
-    {
-        SCAI_LOG_INFO( logger, "write distributed matrix" )
-        const Communicator& comm = getRowDistribution().getCommunicator();
-
-        // as diagonal element is first one we can identify the global id of each row by the column index
-
-        if ( getColDistribution().isReplicated() )
-        {
-            mLocalData->writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, dataType, indexType, fileMode );
-        }
-        else
-        {
-            // join the local + halo part before writing it
-            CSRStorage<ValueType> local;
-            bool keepDiagonalProperty = true;
-            local.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
-            local.writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, dataType, indexType, fileMode );
-        }
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( *this << ": write to file not supported with distributions" )
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
 {
     SCAI_REGION( "Mat.Sp.readFromFile" )
