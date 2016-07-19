@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
     MatrixCreator<ValueType>::buildReplicatedDiag( matrix, storage, repN );
 
-    SCAI_LOG_ERROR( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix 
+    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix 
                            << " from rep = " << repN << " x " << storage )
 
     const IndexType nRows = storage.getNumRows();
