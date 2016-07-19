@@ -94,7 +94,7 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
     typedef enum {
        FAIL,    //!< read was not successul, all processes will throw an exception
        BLOCKED, //!< owners are ascending, a general block distribution is constructed
-       GENERAL, //!< owners are arbitrary, a general distribution is construcuted
+       GENERAL  //!< owners are arbitrary, a general distribution is construcuted
     } Status;
        
     Status status = FAIL;
