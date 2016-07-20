@@ -80,7 +80,8 @@ void CUSolverCSRUtils::decomposition(
     const ValueType csrValues[],
     const ValueType rhs[],
     const IndexType numRows,
-    const IndexType nnz )
+    const IndexType nnz,
+    const bool isSymmetic )
 {
     SCAI_LOG_INFO( logger,
                    "decomposition<" << common::getScalarType<ValueType>() << ", matrix numRows = "
@@ -99,7 +100,22 @@ void CUSolverCSRUtils::decomposition(
 
 	cusparseMatDescr_t descrA;
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrA ), "cusparseCreateMatDescr" )
-    cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_GENERAL );
+    if( isSymmetric )
+    {
+        if( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
+        {
+            cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_HERMITIAN );
+        }
+        else
+        {
+            cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_SYMMETRIC );
+        }
+    }
+    else
+    {
+        cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_GENERAL );
+    }
+
     cusparseSetMatIndexBase( descrA, CUSPARSE_INDEX_BASE_ZERO );
 
     ValueType tol = 1e-10;

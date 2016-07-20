@@ -1063,7 +1063,8 @@ void OpenMPCSRUtils::decomposition(
     const ValueType csrValues[],
     const ValueType rhs[],
     const IndexType numRows,
-    const IndexType nnz )
+    const IndexType nnz,
+    const bool isSymmetic )
 {
     COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet." )
 }

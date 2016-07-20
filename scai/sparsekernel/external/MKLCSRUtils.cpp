@@ -169,7 +169,8 @@ void MKLCSRUtils::decomposition(
     const ValueType csrValues[],
     const ValueType rhs[],
     const IndexType numRows,
-    const IndexType nnz )
+    const IndexType nnz,
+    const bool isSymmetic )
 {
     SCAI_LOG_INFO( logger, "decomposition of matrix with numRows=" << numRows << ", nnz=" << nnz )
 
@@ -187,7 +188,7 @@ void MKLCSRUtils::decomposition(
         pt[i] = 0;
     }
 
-    // TODO: check matrix type
+    // TODO: check all posibilities of matrix type
 
     //  1: Real structural symmetrix matrix
     //  2: Real symmetric positive definite (spd) matrix
@@ -195,17 +196,33 @@ void MKLCSRUtils::decomposition(
     //  3: Complex structural symmetrix matrix
     //  4: Complex hermitian positive definite matrix
     // -4: Complex hermitian indefinite matrix
-    //  6: Coplex symmetric matrix
+    //  6: Complex symmetric matrix
     // 11: Real unsymmetric matrix
     // 13: Complex unsymmetric matrix
     MKL_INT mtype;
-    if( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
+    if( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) ) // Complex
     {
-        mtype = 13;
+        if( isSymmetic )
+        {
+            mtype = 6;
+            // also may be: 3, 4, -4
+        }
+        else
+        {
+            mtype = 13;
+        }
     }
     else // Real
     {
-        mtype = 11;
+        if ( isSymmetic )
+        {
+            mtype = 1;
+            // also may be: 2, -2
+        }
+        else
+        {
+            mtype = 11;   
+        }
     }
 
     MKL_INT iparm[64];   /* control parameters */

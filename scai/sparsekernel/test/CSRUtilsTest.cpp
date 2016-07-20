@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_ext_test_types
         WriteOnlyAccess<ValueType> wSol( solution, loc, numRows );
         SCAI_CONTEXT_ACCESS( loc );
         decomposition[loc->getType()]( wSol.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
-            rRHS.get(), numRows, nnz );
+            rRHS.get(), numRows, nnz, false );
     }
 
     {

@@ -172,7 +172,8 @@ struct CSRKernelTrait
             const ValueType csrValues[],
             const ValueType rhs[],
             const IndexType numRows,
-            const IndexType nnz );
+            const IndexType nnz,
+            const bool isSymmetic );
 
         static const char* getId()
         {
