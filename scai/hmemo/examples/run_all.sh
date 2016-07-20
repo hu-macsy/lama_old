@@ -71,6 +71,7 @@ RUN 1 BenchArray.exe
 RUN 1 BenchContext.exe
 RUN 1 Create.exe
 RUN 1 Threading.exe
+RUN 1 RemoteAccess.exe
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/*.exe | wc -l`

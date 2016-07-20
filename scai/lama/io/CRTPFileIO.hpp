@@ -34,7 +34,8 @@
 
 #pragma once
 
-#include "FileIO.hpp"
+#include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/storage/MatrixStorage.hpp>
 
 #include <cstdio>
 
@@ -106,20 +107,24 @@ struct FileIOWrapper;
 template<class Derived>
 struct FileIOWrapper<Derived, common::mepr::NullType>
 {
-    static void writeStorageImpl( Derived&, const _MatrixStorage&, const std::string& )
+    static void writeStorageImpl( Derived&, const _MatrixStorage& storage, const std::string& )
     {
+        COMMON_THROWEXCEPTION( "writeStorage " << storage << " unsupported, unknown type." )
     }
 
-    static void readStorageImpl( Derived&, _MatrixStorage&, const std::string& )
+    static void readStorageImpl( Derived&, _MatrixStorage& storage, const std::string& )
     {
+        COMMON_THROWEXCEPTION( "readStorage " << storage << " unsupported, unknown type." )
     }
 
-    static void writeArrayImpl( Derived&, const hmemo::_HArray&, const std::string& )
+    static void writeArrayImpl( Derived&, const hmemo::_HArray& array, const std::string& )
     {
+        COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
     }
 
-    static void readArrayImpl( Derived&, hmemo::_HArray&, const std::string& )
+    static void readArrayImpl( Derived&, hmemo::_HArray& array, const std::string& )
     {
+        COMMON_THROWEXCEPTION( "readArray " << array << " unsupported, unknown type." )
     }
 };
 
@@ -220,7 +225,7 @@ void CRTPFileIO<Derived>::writeArray( const hmemo::_HArray& array, const std::st
 
     // now call the corresponding typed routine, use meta-programming to get the correct type
     
-    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::writeArrayImpl( ( Derived& ) *this, array, fileName );
+    FileIOWrapper<Derived, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::writeArrayImpl( ( Derived& ) *this, array, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -235,7 +240,7 @@ void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& f
 
     // just call the corresponding typed routine 
 
-    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName );
+    FileIOWrapper<Derived, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */

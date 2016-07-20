@@ -159,7 +159,7 @@ int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
     LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order( order );
     LAPACKIndexType info = LAPACKeWrapper<ValueType>::getri( matrix_order,
                            static_cast<LAPACKIndexType>( n ), a,
-                           static_cast<LAPACKIndexType>( lda ), ipiv );
+                           static_cast<LAPACKIndexType>( lda ), reinterpret_cast<LAPACKIndexType*>( ipiv ) );
 
     if ( info < 0 )
     {

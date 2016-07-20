@@ -67,28 +67,6 @@ struct COOKernelTrait
         }
     };
 
-    struct getCSRSizes
-    {
-        /** Helper routine for conversion of COO format to CSR format to get sparse row sizes.
-         *
-         *  @param[out] csrSizes array with number of non-zero entries in each row
-         *  @param[in] numRows number of rows
-         *  @param[in] numValues number of non-zero values
-         *  @param[in] array with row indexes of COO storage (size is numValues)
-         */
-
-        typedef void ( *FuncType )(
-            IndexType csrSizes[],
-            const IndexType numRows,
-            const IndexType numValues,
-            const IndexType cooIA[] );
-
-        static const char* getId()
-        {
-            return "COO.getCSRSizes";
-        }
-    };
-
     struct offsets2ia
     {
         /** Routine for conversion of CSR offset array to COO ia array
@@ -138,37 +116,6 @@ struct COOKernelTrait
         static const char* getId()
         {
             return "COO.scaleRows";
-        }
-    };
-
-    template<typename COOValueType, typename CSRValueType>
-    struct getCSRValues
-    {
-        /** Helper routine for conversion COO to CSR
-         *
-         *  @param[out] csrJA will contain the column indexes
-         *  @param[out] csrValues will contain the matrix elements
-         *  @param[in] csrIA is the array with the offsets (must already be available before)
-         *
-         *   - csrIA has numRows + 1 entries
-         *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
-         *
-         *  Note: this routine preserves the diagonal property of the COO format
-         */
-
-        typedef void ( *FuncType )(
-            IndexType csrJA[],
-            CSRValueType csrValues[],
-            IndexType csrIA[],
-            const IndexType numRow,
-            const IndexType numValues,
-            const IndexType cooIA[],
-            const IndexType cooJA[],
-            const COOValueType cooValues[] );
-
-        static const char* getId()
-        {
-            return "COO.getCSRValues";
         }
     };
 

@@ -38,6 +38,9 @@
 
 #include <scai/dmemo/BlockDistribution.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/unique_ptr.hpp>
+
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
@@ -54,10 +57,11 @@
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
-using namespace scai::hmemo;
-using namespace scai::dmemo;
-using namespace scai::lama;
-using namespace scai::solver;
+using namespace scai;
+using namespace hmemo;
+using namespace dmemo;
+using namespace lama;
+using namespace solver;
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -67,44 +71,94 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.IterativeSolverTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
+/** This routine provides a 2-dim stencil matrix for all tests */
+
+template<typename ValueType>
+static void setupMatrix( CSRSparseMatrix<ValueType>& matrix, const IndexType N1, const IndexType N2 )
+{
+    ContextPtr context   = Context::getContextPtr();
+
+    MatrixCreator<ValueType>::buildPoisson2D( matrix, 9, N1, N2 );
+
+    matrix.setContextPtr( context );
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+
+/** Help class where an object is a vector of all available iterative solvers. */
+
+class IterativeSolvers : public std::vector<SolverPtr>
+{
+
+public:
+
+    /** Constructor creates vector of all available solvers. */
+
+    IterativeSolvers()
+    {   
+        std::vector<std::string> values;
+        Solver::getCreateValues( values );
+
+        for ( size_t i = 0; i < values.size(); i++ )
+        {
+            SolverPtr solver( Solver::create( values[i], "" ) );
+
+            IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver.get() );
+  
+            if ( iterativeSolver == NULL )
+            {
+                continue;
+            }
+
+            push_back( solver );
+        }
+    }
+    
+    // Destructor will free all matrix storages due to use of shared pointers
+
+    IterativeSolver& get( const size_t i )
+    {
+        SCAI_ASSERT_LT( i, size(), "Index out of range" )
+        SolverPtr solver = this->at( i );
+        IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver.get() );
+        SCAI_ASSERT( iterativeSolver, "Not iterative solver" )
+        return *iterativeSolver;
+    }
+};
+
+// ---------------------------------------------------------------------------------------------------------------
+
 BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
-    ContextPtr context   = Context::getContextPtr();
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    const IndexType N1 = 40;
-    const IndexType N2 = 40;
-    CSRSparseMatrix<ValueType> coefficients;
-    coefficients.setContextPtr( context );
-    DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
-    DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
-    coefficients.redistribute( rowDist, colDist );
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N1, N2 );
-    DenseVector<ValueType> rhs( coefficients.getColDistributionPtr(), 1.0 );
-    rhs.setContextPtr( context );
-    DenseVector<ValueType> solution( rhs );
-    solution.setContextPtr( context );
-    solution.redistribute( coefficients.getRowDistributionPtr() );
-    // Get all available solvers
-    std::vector<std::string> values;
-    Solver::getCreateValues( values );
-    const int numSolvers = ( int )values.size();
 
-    for ( int i = 0; i < numSolvers; i++ )
+    CSRSparseMatrix<ValueType> matrix;
+    setupMatrix( matrix, 40, 40 );
+
+    SCAI_LOG_INFO( logger, "DefaultCriterionTest with matrix = " << matrix )
+
+    // setup must deliver a square matrix with same distribution for row and columns
+
+    BOOST_REQUIRE_EQUAL( matrix.getRowDistribution(), matrix.getColDistribution() );
+
+    DenseVector<ValueType> rhs( matrix.getColDistributionPtr(), ValueType( 1 ) );
+    rhs.setContextPtr( matrix.getContextPtr() );
+
+    DenseVector<ValueType> solution( matrix.getRowDistributionPtr(), ValueType( 0 ) );
+    solution.setContextPtr( matrix.getContextPtr() );
+
+    IterativeSolvers solvers;  // All available iterative solvers
+
+    for ( size_t i = 0; i < solvers.size(); i++ )
     {
-        Solver* solver( Solver::create( values[i], "" ) );
-        IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver );
+        IterativeSolver& iterativeSolver = solvers.get( i );
 
-        if ( iterativeSolver == NULL )
-        {
-            SCAI_LOG_INFO( logger, "Skipping solver " << values[i] << ": no iterative Solver" );
-            continue;
-        }
+        SCAI_LOG_INFO( logger, "Testing solver " << iterativeSolver );
 
-        SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        iterativeSolver->initialize( coefficients );
-        iterativeSolver->solve( solution, rhs );
-        BOOST_CHECK_EQUAL( iterativeSolver->getIterationCount(), 1 );
+        iterativeSolver.initialize( matrix );
+        iterativeSolver.solve( solution, rhs );
+
+        BOOST_CHECK_EQUAL( iterativeSolver.getIterationCount(), 1 );
     }
 }
 
@@ -113,53 +167,92 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
 BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
-    ContextPtr context = Context::getContextPtr();
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    const IndexType N1 = 40;
-    const IndexType N2 = 40;
-    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-    CSRSparseMatrix<ValueType> coefficients;
-    coefficients.setContextPtr( context );
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-    SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
-    SCAI_LOG_INFO( logger, "IterativeSolverTest uses context = " << context->getType() );
-    DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
-    DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
-    coefficients.redistribute( rowDist, colDist );
+
+    CSRSparseMatrix<ValueType> matrix;
+    setupMatrix( matrix, 40, 40 );
+
+    SCAI_LOG_INFO( logger, "matrix = " << matrix );
+
     const ValueType solutionInitValue = 1.0;
-    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
+    DenseVector<ValueType> solution( matrix.getColDistributionPtr(), solutionInitValue );
     // TODO: use constructor to set context
-    solution.setContextPtr( context );
-    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue + 1.0 );
+    solution.setContextPtr( matrix.getContextPtr() );
+    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionInitValue + 1.0 );
     // TODO: use constructor to set context
-    exactSolution.setContextPtr( context );
-    DenseVector<ValueType> rhs( coefficients * exactSolution );
+    exactSolution.setContextPtr( matrix.getContextPtr() );
+    DenseVector<ValueType> rhs( matrix * exactSolution );
     IndexType numIterations = 300;
     CriterionPtr criterion( new IterationCount( numIterations ) );
-    // Get all available solvers
-    std::vector<std::string> values;
-    Solver::getCreateValues( values );
-    const int numSolvers = ( int )values.size();
 
-    for ( int i = 0; i < numSolvers; i++ )
+    IterativeSolvers solvers;  // vector with incarnation of each solver
+
+    for ( size_t i = 0; i < solvers.size(); i++ )
     {
-        Solver* solver = Solver::create( values[i], "" );
-        IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver );
+        IterativeSolver& iterativeSolver = solvers.get( i );
 
-        if ( iterativeSolver == NULL )
-        {
-            SCAI_LOG_INFO( logger, "Skipping solver " << values[i] << ": no iterative Solver" );
-            continue;
-        }
+        solution = solutionInitValue;   // reset solution for each solver
 
-        SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
+        SCAI_LOG_INFO( logger, "Testing solver " << iterativeSolver );
+
         // TODO: this should be tested for ALL solvers (not only iterative)
         // Solver has to be initialized before solve is called
         //BOOST_CHECK_THROW ( {iterativeSolver->solve( solution, rhs );}, scai::common::Exception );
-        iterativeSolver->setStoppingCriterion( criterion );
-        iterativeSolver->initialize( coefficients );
-        iterativeSolver->solve( solution, rhs );
-        BOOST_CHECK( numIterations == iterativeSolver->getIterationCount() );
+
+        iterativeSolver.setStoppingCriterion( criterion );
+        iterativeSolver.initialize( matrix );
+        iterativeSolver.solve( solution, rhs );
+
+        BOOST_CHECK_EQUAL( numIterations, iterativeSolver.getIterationCount() );
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE( ConservativeTest )
+{
+    // Idea:  solver.solve( exactSolution, rhs ), 1 step, exactSolution must be the same
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    CSRSparseMatrix<ValueType> matrix;
+    setupMatrix( matrix, 40, 40 );
+
+    SCAI_LOG_INFO( logger, "matrix = " << matrix );
+
+    ValueType solutionValue = 1;
+
+    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionValue );
+    exactSolution.setContextPtr( matrix.getContextPtr() );
+
+    DenseVector<ValueType> solution( exactSolution );
+
+    DenseVector<ValueType> rhs( matrix * exactSolution );
+
+    IndexType numIterations = 1;
+    CriterionPtr criterion( new IterationCount( numIterations ) );
+
+    IterativeSolvers solvers;  // vector with incarnation of each solver
+
+    for ( size_t i = 0; i < solvers.size(); i++ )
+    {
+        IterativeSolver& iterativeSolver = solvers.get( i );
+
+        SCAI_LOG_INFO( logger, "ConservativeTest: solver " << iterativeSolver );
+
+        iterativeSolver.setStoppingCriterion( criterion );
+
+        solution = solutionValue + scai::common::TypeTraits<ValueType>::eps1();
+
+        iterativeSolver.initialize( matrix );
+        iterativeSolver.solve( solution, rhs );
+
+        Scalar res = maxNorm( iterativeSolver.getResidual() );
+
+        ValueType maxDiff = res.getValue<ValueType>();
+
+        SCAI_LOG_INFO( logger, "ConservativeTest: solver " << iterativeSolver << ", maxDiff = " << maxDiff )
+
+        BOOST_CHECK( maxDiff < 1e-5 );
     }
 }
 
@@ -168,50 +261,35 @@ BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest )
 BOOST_AUTO_TEST_CASE( SolveTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
-    ContextPtr context = Context::getContextPtr();
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    const IndexType N1 = 10;
-    const IndexType N2 = 10;
-    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-    CSRSparseMatrix<ValueType> coefficients;
-    coefficients.setContextPtr( context );
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-    SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
-    SCAI_LOG_INFO( logger, "IterativeSolverTest uses context = " << context->getType() );
-    DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
-    DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
-    coefficients.redistribute( rowDist, colDist );
+
+    CSRSparseMatrix<ValueType> matrix;
+    setupMatrix( matrix, 10, 10 );
+
+    SCAI_LOG_INFO( logger, "matrix = " << matrix );
+
     const ValueType solutionInitValue = 1.0;
-    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
+    DenseVector<ValueType> solution( matrix.getColDistributionPtr(), solutionInitValue );
     // TODO: use constructor to set context
-    solution.setContextPtr( context );
-    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue + 1.0 );
+    solution.setContextPtr( matrix.getContextPtr() );
+    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionInitValue + 1.0 );
     // TODO: use constructor to set context
-    exactSolution.setContextPtr( context );
-    DenseVector<ValueType> rhs( coefficients * exactSolution );
+    exactSolution.setContextPtr( matrix.getContextPtr() );
+    DenseVector<ValueType> rhs( matrix * exactSolution );
     IndexType maxExpectedIterations = 3000;
     CriterionPtr criterion( new IterationCount( maxExpectedIterations ) );
-    // Get all available solvers
-    std::vector<std::string> values;
-    Solver::getCreateValues( values );
-    const int numSolvers = ( int )values.size();
 
-    for ( int i = 0; i < numSolvers; i++ )
+    IterativeSolvers solvers;  // vector with incarnation of each solver
+
+    for ( size_t i = 0; i < solvers.size(); i++ )
     {
-        Solver* solver = Solver::create( values[i], "" );
-        IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver );
+        IterativeSolver& iterativeSolver = solvers.get( i );
 
-        if ( iterativeSolver == NULL )
-        {
-            SCAI_LOG_INFO( logger, "Skipping solver " << values[i] << ": no iterative Solver" );
-            continue;
-        }
+        SCAI_LOG_INFO( logger, "Testing solver " << iterativeSolver );
 
-        SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        iterativeSolver->setStoppingCriterion( criterion );
-        iterativeSolver->initialize( coefficients );
+        iterativeSolver.setStoppingCriterion( criterion );
+        iterativeSolver.initialize( matrix );
         solution = solutionInitValue;
-        iterativeSolver->solve( solution, rhs );
+        iterativeSolver.solve( solution, rhs );
         DenseVector<ValueType> diff( solution - exactSolution );
         Scalar s                  = maxNorm( diff );
         ValueType realMaxNorm     = s.getValue<ValueType>();
@@ -220,14 +298,14 @@ BOOST_AUTO_TEST_CASE( SolveTest )
         BOOST_CHECK( realMaxNorm < expectedMaxNorm );
         // Test solve with preconditioner
         SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-        iterativeSolver->setPreconditioner( preconditioner );
+        iterativeSolver.setPreconditioner( preconditioner );
         // TODO: this should be tested for ALL preconditioners
         // Solver has to be initialized AFTER a preconditioner is set
-        //BOOST_CHECK_THROW ( {iterativeSolver->solve( solution, rhs );}, scai::common::Exception );
-        iterativeSolver->initialize( coefficients );
+        //BOOST_CHECK_THROW ( {iterativeSolver.solve( solution, rhs );}, scai::common::Exception );
+        iterativeSolver.initialize( matrix );
         solution = solutionInitValue;
-        iterativeSolver->solve( solution, rhs );
-        BOOST_CHECK( maxExpectedIterations == iterativeSolver->getIterationCount() );
+        iterativeSolver.solve( solution, rhs );
+        BOOST_CHECK( maxExpectedIterations == iterativeSolver.getIterationCount() );
         diff = solution - exactSolution;
         s               = maxNorm( diff );
         realMaxNorm     = s.getValue<ValueType>();

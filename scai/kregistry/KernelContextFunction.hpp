@@ -43,7 +43,7 @@ namespace kregistry
 {
 
 template<typename FunctionType>
-class KernelContextFunction : public ContextFunction<FunctionType>
+class COMMON_DLL_IMPORTEXPORT KernelContextFunction : public ContextFunction<FunctionType>
 {
 public:
 

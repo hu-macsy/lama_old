@@ -37,7 +37,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/StorageIO.hpp>
+#include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
@@ -160,27 +160,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmeti
     std::string prefix = scai::test::Configuration::getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
-    vector.writeToFile( prefix + "/" + testfilename + ".frv", File::SAMG_FORMAT, TypeTraits<ValueType>::stype );
+    vector.writeToFile( prefix + "/" + testfilename + ".frv", "", TypeTraits<ValueType>::stype, FileIO::FORMATTED );
     DenseVector<ValueType> vector2( prefix + "/" + testfilename + ".frv" );
     // replicate vector2 as it is only on first processor
     vector2.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector2, result );
-    _StorageIO::removeFile( prefix + "/" + testfilename + ".frv" );
+    FileIO::removeFile( prefix + "/" + testfilename + ".frv" );
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
-    vector.writeToFile( fileName + ".frv", File::SAMG_FORMAT, TypeTraits<ValueType>::stype, true );
+    vector.writeToFile( fileName + ".frv", "", TypeTraits<ValueType>::stype, FileIO::BINARY );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
     DenseVector<ValueType> vector3( prefix + "/" + testfilename + ".frv" );
     vector3.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector3, result );
-    _StorageIO::removeFile( prefix + "/" + testfilename + ".frv" );
+    FileIO::removeFile( prefix + "/" + testfilename + ".frv" );
     // write and read mtx
-    vector.writeToFile( prefix + "/" + testfilename + ".mtx", File::MATRIX_MARKET );
+    vector.writeToFile( prefix + "/" + testfilename + ".mtx", "", TypeTraits<ValueType>::stype, FileIO::FORMATTED );
     DenseVector<ValueType> vector6( prefix + "/" + testfilename + ".mtx" );
     vector6.redistribute( result.getDistributionPtr() );
     verifySameVector<ValueType>( vector6, result );
-    _StorageIO::removeFile( prefix + "/" + testfilename + ".mtx" );
+    FileIO::removeFile( prefix + "/" + testfilename + ".mtx" );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -309,6 +309,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorVectorExpressionTest, ValueType, scai_arithme
     DenseVector<ValueType> vectorResult8( n , 1.0 );
     DenseVector<ValueType> vectorResult9( n , -7.0 );
     DenseVector<ValueType> vectorResult10( n , -14.0 );
+    DenseVector<ValueType> vectorResult11( n , 15.0 );
+    DenseVector<ValueType> vectorResult12( n , 30.0 );
     Scalar s = 2.0;
     Scalar t = 4.0;
     DenseVector<ValueType> v1( s * vectorA );
@@ -335,6 +337,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorVectorExpressionTest, ValueType, scai_arithme
     verifySameVector<ValueType>( v9, vectorResult9 );
     DenseVector<ValueType> v10 ( s * vectorA - t * vectorB );
     verifySameVector<ValueType>( v10, vectorResult10 );
+    DenseVector<ValueType> v11( vectorA * vectorB );
+    verifySameVector<ValueType>( v11, vectorResult11 );
+    DenseVector<ValueType> v12( s * vectorA * vectorB );
+    verifySameVector<ValueType>( v12, vectorResult12 );
+    /* ************************************************************ */
 }
 
 /* --------------------------------------------------------------------- */
@@ -480,6 +487,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, scai_a
     DenseVector<ValueType> vectorResult8( n, 1.0 );
     DenseVector<ValueType> vectorResult9( n, -7.0 );
     DenseVector<ValueType> vectorResult10( n, -14.0 );
+    DenseVector<ValueType> vectorResult11( n, 15.0 );
+    DenseVector<ValueType> vectorResult12( n, 30.0 );
     vectorA.setContextPtr( context );
     vectorB.setContextPtr( context );
     SCAI_LOG_DEBUG( logger, "Using context vecA = " << vectorA.getContextPtr()->getType() );
@@ -511,6 +520,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, scai_a
     verifySameVector<ValueType>( vector, vectorResult9 );
     vector = s * vectorA - t * vectorB;
     verifySameVector<ValueType>( vector, vectorResult10 );
+    vector = vectorA * vectorB;
+    verifySameVector<ValueType>( vector, vectorResult11 );
+    vector = s * vectorA * vectorB;
+    verifySameVector<ValueType>( vector, vectorResult12 );
     //Exceptiontest
     //Should throw Exception, because of different vector sizes
     DenseVector<ValueType> vec1( 4, 1.0 );
@@ -548,6 +561,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, scai_arithmetic
     verifySameVector<ValueType>( vectorA, vectorB );
     vectorA = 0.0;
     vectorA += 2.0 * vectorB;
+    verifySameVector<ValueType>( vectorA, vectorC );
+    vectorA = 2.0;
+    vectorB = 6.0;
+    vectorA *= vectorB;
     verifySameVector<ValueType>( vectorA, vectorC );
     DenseVector<ValueType> vectorWrong( n + 1, 6 );
     SCAI_LOG_INFO( logger, "vector(4) += vector(5) should fail" );
@@ -612,7 +629,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
         ReadAccess<ValueType> read( vector.getLocalValues(), host );
         for ( IndexType i = 0; i < n; ++i )
         {
-            BOOST_CHECK_EQUAL( read[i], common::Math::exp(values[i]) );
+            ValueType x = read[i] - common::Math::exp(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
     }
 }

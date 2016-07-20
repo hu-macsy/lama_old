@@ -51,7 +51,7 @@ SCAI_LOG_DEF_LOGGER( TraceData::logger, "TraceData" )
 
 void TraceData::enter( const int regionId, RegionEntry& region )
 {
-    SCAI_ASSERT( &region != NULL, "NULL pointer for region" )
+//    SCAI_ASSERT( &region != NULL, "NULL pointer for region" )
     CounterArray enterCounterValues( true );  // get stamp of all counters
     SCAI_LOG_DEBUG( logger, "enter " << regionId << ", region= " << &region )
     // SCAI_LOG_DEBUG( logger, "enter " << regionId << ", " << region << ", counters = " << enterCounterValues )
@@ -83,7 +83,7 @@ void TraceData::enter( const int regionId, RegionEntry& region )
 
 void TraceData::leave( const int regionId, RegionEntry& region )
 {
-    SCAI_ASSERT( &region != NULL, "NULL pointer for region" )
+//    SCAI_ASSERT( &region != NULL, "NULL pointer for region" )
     CounterArray leaveCounterValues( true );  // get stamp of all counters
     SCAI_LOG_DEBUG( logger, "leave " << regionId << ", region = " << &region )
 

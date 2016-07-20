@@ -291,6 +291,47 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( remoteTest, ValueType, ArithmeticRedTypes )
+{
+    testContext = Context::getContextPtr();
+
+    ContextPtr host = Context::getHostPtr();
+
+    SCAI_LOG_INFO( logger, "remoteTest<" << TypeTraits<ValueType>::id() << "> on " << *testContext )
+
+    const IndexType Nh = 50;
+    const IndexType N = 2 * Nh;
+
+    LArray<ValueType> hostA( N, 5, host );
+    LArray<ValueType> remA( N, 2, testContext );
+
+    for ( IndexType i = 0; i < N; i+=2 )
+    {
+        remA[i] = hostA[i];
+    }
+
+    ValueType sum = remA.sum();
+
+    BOOST_CHECK_EQUAL( ValueType( 2 * Nh + 5 * Nh ), sum );
+
+    {
+        // invalidate copy of remA on host
+
+        WriteAccess<ValueType> write( remA, testContext );
+    }
+
+    for ( IndexType i = 1; i < N; i+=2 )
+    {
+        hostA[i] = remA[i];
+    }
+
+    sum = hostA.sum();
+
+    BOOST_CHECK_EQUAL( ValueType( 2 * Nh + 5 * Nh ), sum );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignOperatorTest, ValueType, ArithmeticRedTypes )
 {
     testContext = Context::getContextPtr();

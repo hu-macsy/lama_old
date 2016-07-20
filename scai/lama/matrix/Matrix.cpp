@@ -37,7 +37,10 @@
 
 // local library
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
@@ -528,16 +531,15 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::writeToFile(
+void Matrix::writeToSingleFile(
     const std::string& fileName,
-    const File::FileType fileType /* = DEFAULT */,
-    const common::scalar::ScalarType valuesType /* = INTERNAL */,
-    const common::scalar::ScalarType iaType /* = INDEX_TYPE */,
-    const common::scalar::ScalarType jaType /* = INDEX_TYPE */,
-    const bool writeBinary /* = false */ ) const
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::scalar::ScalarType indexType /* = UNKNOWN for DEFAULT */,
+    const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
 {
     SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << valuesType << " )" )
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
 
     if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
@@ -546,7 +548,7 @@ void Matrix::writeToFile(
 
         if ( comm.getRank() == 0 )
         {
-            getLocalStorage().writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
+            getLocalStorage().writeToFile( fileName, fileType, dataType, indexType, fileMode );
         }
 
         // synchronization to avoid that other processors start with
@@ -558,7 +560,219 @@ void Matrix::writeToFile(
         DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
         common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
-        repM->writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
+        repM->writeToFile( fileName, fileType, dataType, indexType, fileMode );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::writeToPartitionedFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::scalar::ScalarType indexType /* = UNKNOWN for DEFAULT */,
+    const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    if ( getColDistribution().isReplicated() )
+    {
+        // each processor writes its partition to a file with unique name
+
+        getLocalStorage().writeToFile( fileName, fileType, dataType, indexType, fileMode );
+    }
+    else
+    {
+        DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
+        common::unique_ptr<Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
+        repM->writeToPartitionedFile( fileName, fileType, dataType, indexType, fileMode );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::writeToFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const common::scalar::ScalarType indexType,
+    const FileIO::FileMode fileMode ) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    std::string newFileName = fileName;
+
+    bool isPartitioned;
+
+    const Communicator& comm = getRowDistribution().getCommunicator();
+
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, comm );
+
+    if ( !isPartitioned )
+    {
+        writeToSingleFile( newFileName, fileType, dataType, indexType, fileMode );
+    }
+    else
+    {
+        writeToPartitionedFile( newFileName, fileType, dataType, indexType, fileMode );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::readFromSingleFile( const std::string& fileName )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    const PartitionId MASTER = 0;
+    const PartitionId myRank = comm->getRank();
+
+    // this is a bit tricky stuff, but it avoids an additional copy from storage -> matrix
+
+    _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
+
+    IndexType dims[2];
+
+    if ( myRank == MASTER )
+    {
+        localMatrix.readFromFile( fileName );
+
+        dims[0] = localMatrix.getNumRows();
+        dims[1] = localMatrix.getNumColumns();
+    }
+
+    comm->bcast( dims, 2, MASTER );
+
+    if ( myRank != MASTER )
+    {
+        IndexType localNumRows = 0;
+        localMatrix.allocate( localNumRows, dims[1] );
+    }
+
+    DistributionPtr rowDist( new CyclicDistribution( dims[0], dims[0], comm ) );
+    DistributionPtr colDist( new NoDistribution( dims[1] ) );
+
+    // works fine as assign can deal with alias, i.e. localMatrix und getLocalStorage() are same
+
+    SCAI_LOG_DEBUG( logger, *comm << ": assign local storage " << localMatrix );
+
+    assign( localMatrix, rowDist, colDist );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    // this is a bit tricky stuff, but it avoids an additional copy from storage -> matrix
+
+    _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
+
+    bool errorFlag = false;   
+
+    IndexType localSize = 0;
+
+    try
+    {
+        localMatrix.readFromFile( myPartitionFileName );
+
+        localSize = localMatrix.getNumRows();
+
+        if ( dist.get() )
+        {
+            // size of storage must match the local size of distribution
+
+            SCAI_ASSERT_EQUAL( localSize, dist->getLocalSize(), "serious mismatch: local matrix in " << myPartitionFileName << " has illegal local size" )
+        }
+    }
+    catch ( common::Exception& e )
+    {
+        SCAI_LOG_ERROR( logger, *comm << ": failed to read " << myPartitionFileName << ": " << e.what() )
+        errorFlag = true;
+    }
+
+    errorFlag = comm->any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "error reading partitioned matrix" )
+    }
+
+    DistributionPtr rowDist = dist;
+
+    if ( !rowDist.get() )
+    {
+        // we have no distribution so assume a general block distribution
+
+        IndexType globalSize = comm->sum( localSize );
+
+        rowDist.reset( new GenBlockDistribution( globalSize, localSize, comm ) );
+    }
+
+    // make sure that all processors have the same number of columns
+
+    IndexType numColumns = comm->max( localMatrix.getNumColumns() );
+
+    // for consistency we have to set the number of columns in each stroage
+
+    localMatrix.setDimension( localSize, numColumns );
+
+    DistributionPtr colDist( new NoDistribution( numColumns ) );
+
+    assign( localMatrix, rowDist, colDist );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::readFromFile( const std::string& matrixFileName, const std::string& distributionFileName )
+{
+    // read the distribution
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    DistributionPtr rowDist = PartitionIO::readDistribution( distributionFileName, comm );
+ 
+    readFromFile( matrixFileName, rowDist );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist )
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": readFromFile( " << fileName << " )" )
+
+    std::string newFileName = fileName;
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // take default
+
+    if ( rowDist.get() )
+    {
+        comm = rowDist->getCommunicatorPtr();
+    }
+
+    bool isPartitioned;
+
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
+
+    SCAI_LOG_ERROR( logger, *comm << ": Matrix.readFromFile ( " << fileName << " ) -> read " 
+                         << newFileName << ", partitioned = " << isPartitioned );
+
+    if ( !isPartitioned )
+    {
+        readFromSingleFile( newFileName );
+
+        if ( rowDist.get() )
+        {
+            redistribute( rowDist, getColDistributionPtr() );
+        }
+    }
+    else
+    {
+        readFromPartitionedFile( newFileName, rowDist );
     }
 }
 

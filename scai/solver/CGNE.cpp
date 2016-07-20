@@ -35,9 +35,6 @@
 // hpp
 #include <scai/solver/CGNE.hpp>
 
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
-
 // internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
@@ -61,19 +58,29 @@ using lama::Vector;
 using lama::Scalar;
 
 CGNE::CGNE( const std::string& id )
-    : IterativeSolver( id ) {}
+    : IterativeSolver( id )
+{
+}
 
 
 CGNE::CGNE( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id , logger ) {}
+    : IterativeSolver( id , logger )
+{
+}
 
 CGNE::CGNE( const CGNE& other )
-    : IterativeSolver( other ) {}
+    : IterativeSolver( other ) 
+{
+}
 
 CGNE::CGNERuntime::CGNERuntime()
-    : IterativeSolverRuntime() {}
+    : IterativeSolverRuntime() 
+{
+}
 
-CGNE::~CGNE() {}
+CGNE::~CGNE() 
+{
+}
 
 CGNE::CGNERuntime::~CGNERuntime() {}
 
@@ -83,7 +90,7 @@ void CGNE::initialize( const Matrix& coefficients )
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
     CGNERuntime& runtime = getRuntime();
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     runtime.mTransposedMat.reset( coefficients.newMatrix() );
     runtime.mTransposedMat->assignTranspose( coefficients );
     runtime.mTransposedMat->conj();
@@ -136,19 +143,27 @@ void CGNE::iterate()
     Scalar scalarProductP = vecP.dotProduct( vecP );
     Scalar scalarProductZR = vecZ.dotProduct( residual );
 
+    SCAI_LOG_INFO( logger, "scalarProductP = " << scalarProductP << ", scalarProductZR = " << scalarProductZR )
+
     if ( scalarProductP < eps )
     {
         alpha = 0.0;    //norm is small
+
+        SCAI_LOG_INFO( logger, "alpha = 0, as scalarProductP ( " << scalarProductP << " ) < eps ( = " << eps << " )" )
     }
     else
     {
         alpha = scalarProductZR / scalarProductP;
+
+        SCAI_LOG_INFO( logger, "alpha ( = " << alpha << " ) = scalarProductZR ( = " << scalarProductZR 
+                               << " scalarProductP ( = " << scalarProductP << " )" )
     }
 
     solution = solution + alpha * vecP;
     residual = residual - alpha * A * vecP;
 
     // PRECONDITIONING
+
     if ( mPreconditioner != NULL )
     {
         mPreconditioner->solve( vecZ, residual );
@@ -161,14 +176,20 @@ void CGNE::iterate()
     if ( scalarProductZR < eps )
     {
         beta = 0.0;    //norm is small
+
+        SCAI_LOG_INFO( logger, "beta = 0, as scalarProductZR ( " << scalarProductZR << " ) < eps ( = " << eps << " )" )
     }
     else
     {
         beta = vecZ.dotProduct( residual ) / scalarProductZR;
+
+        SCAI_LOG_INFO( logger, "beta = " << beta )
     }
 
     vecP = transposedA * vecZ + beta * vecP;
-    //CGNE Implementation End
+
+    // CGNE Implementation End
+
     mCGNERuntime.mSolution.setDirty( false );
 }
 

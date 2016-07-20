@@ -36,8 +36,10 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
-using namespace scai::dmemo;
+using namespace scai;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -53,10 +55,9 @@ struct GeneralDistributionTestConfig
         elemsPerPartition = 10;
         globalSize = elemsPerPartition * size;
 
-        for ( IndexType k = 0; k < elemsPerPartition; ++k )
-        {
-            localIndexes.push_back( k * size + rank );
-        }
+        // get: rank, rank + size, rank + 2 * size, ...
+
+        utilskernel::HArrayUtils::setSequence( localIndexes, rank, size, elemsPerPartition );
 
         dist = DistributionPtr( new GeneralDistribution( globalSize, localIndexes, comm ) );
     }
@@ -72,7 +73,7 @@ struct GeneralDistributionTestConfig
     IndexType elemsPerPartition;
     IndexType globalSize;
 
-    std::vector<IndexType> localIndexes;
+    hmemo::HArray<IndexType> localIndexes;
 
     DistributionPtr dist;
 };
@@ -94,14 +95,26 @@ BOOST_AUTO_TEST_CASE( generalSizeTest )
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    std::vector<IndexType> localIndexes;
-    DistributionPtr generaldist1( new GeneralDistribution( 1, localIndexes, comm ) );
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
+
+    hmemo::HArray<IndexType> localIndexes;
+
+    IndexType N = 1;
+    utilskernel::HArrayUtils::setSequence( localIndexes, rank * N, 1, N );
+
+    DistributionPtr generaldist1( new GeneralDistribution( size * N, localIndexes, comm ) );
     DistributionPtr generaldist2( generaldist1 );
-    DistributionPtr generaldist3( new GeneralDistribution( 1, localIndexes, comm ) );
-    DistributionPtr generaldist4( new GeneralDistribution( 3, localIndexes, comm ) );
-    BOOST_CHECK( ( *generaldist1 ).isEqual( *generaldist2 ) );
-    BOOST_CHECK( !( *generaldist1 ).isEqual( *generaldist3 ) );
-    BOOST_CHECK( !( *generaldist1 ).isEqual( *generaldist4 ) );
+    DistributionPtr generaldist3( new GeneralDistribution( size * N, localIndexes, comm ) );
+
+    N = 3;
+    utilskernel::HArrayUtils::setSequence( localIndexes, rank * N, 1, N );
+
+    DistributionPtr generaldist4( new GeneralDistribution( size * N, localIndexes, comm ) );
+
+    BOOST_CHECK( generaldist1->isEqual( *generaldist2 ) );
+    BOOST_CHECK( generaldist1->isEqual( *generaldist3 ) );
+    BOOST_CHECK( !generaldist1->isEqual( *generaldist4 ) );
 }
 
 /* --------------------------------------------------------------------- */

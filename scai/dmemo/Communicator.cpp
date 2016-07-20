@@ -544,6 +544,21 @@ SyncToken* Communicator::updateHaloAsync(
 /* -------------------------------------------------------------------------- */
 
 void Communicator::computeOwners(
+    hmemo::HArray<PartitionId>& owners,
+    const Distribution& distribution,
+    const hmemo::HArray<IndexType>& requiredIndexes ) const
+{
+    hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+
+    IndexType nIndexes = requiredIndexes.size();
+
+    hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, ctx, nIndexes );
+    hmemo::ReadAccess<PartitionId> rIndexes( requiredIndexes, ctx );
+
+    computeOwners( wOwners.get(), distribution, rIndexes.get(), nIndexes );
+}
+
+void Communicator::computeOwners(
     PartitionId owners[],
     const Distribution& distribution,
     const IndexType requiredIndexes[],

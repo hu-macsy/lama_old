@@ -504,10 +504,12 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, Context:
     SCAI_ASSERT( context, "NULL pointer for context" )
     lockAccess( kind, context );
     SCAI_LOG_DEBUG( logger, "acquire access on " << *context << ", kind = " << kind
-                    << ", allocSize = " << allocSize << ", validSize = " << validSize )
+                             << ", allocSize = " << allocSize << ", validSize = " << validSize )
     ContextDataIndex index = getContextData( context );
     ContextData& data = ( *this )[index];
     wait();
+
+    SCAI_LOG_DEBUG( logger, "index = " << index << " for data, valid = " << data.isValid() )
 
     // fetch only if size > 0, there might be no valid location for mSize == 0
 
@@ -811,6 +813,7 @@ void ContextDataManager::init( const void* data, const size_t size )
     // make a fictive ContextData entry for host data
     ContextData hostEntry( Context::getHostPtr()->getMemoryPtr() );
     hostEntry.setRef( const_cast<void*>( data ), size );
+    mContextData[index].reserve( size, 0, false );
     // copy the host data to the destination
     mContextData[index].copyFrom( hostEntry, size );
     releaseAccess( index, Context::Write );

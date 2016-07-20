@@ -62,9 +62,6 @@ const char* scalarType2str( const scalar::ScalarType stype )
         case scalar::DOUBLE:
             return "double";
 
-        case scalar::INDEX_TYPE:
-            return "IndexType";
-
         case scalar::LONG_DOUBLE:
             return "LongDouble";
 
@@ -76,6 +73,9 @@ const char* scalarType2str( const scalar::ScalarType stype )
 
         case scalar::LONG_DOUBLE_COMPLEX:
             return "ComplexLongDouble";
+
+        case scalar::INDEX_TYPE:
+            return "IndexType";
 
         case scalar::INTERNAL:
             return "_Internal";
@@ -92,7 +92,7 @@ const char* scalarType2str( const scalar::ScalarType stype )
 
 scalar::ScalarType str2ScalarType( const char* str )
 {
-    for ( int stype = scalar::INDEX_TYPE; stype < scalar::UNKNOWN; ++stype )
+    for ( int stype = scalar::INT; stype < scalar::UNKNOWN; ++stype )
     {
         if ( strcmp( scalarType2str( scalar::ScalarType( stype ) ), str ) == 0 )
         {

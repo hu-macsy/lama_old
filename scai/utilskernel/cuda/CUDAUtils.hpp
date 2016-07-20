@@ -68,6 +68,11 @@ public:
     template<typename ValueType>
     static void conj( ValueType mValues[], const IndexType n );
 
+    /** CUDA implementation for UtilKernelTrait::vectorScale */
+
+    template<typename ValueType>
+    static void vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
+
     /*  CUDA implementation of UtilKernelTrait::validIndexes  */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
@@ -86,6 +91,11 @@ public:
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
+
+    /** CUDA implementation for UtilKernelTrait::Setter::setSequence */
+
+    template<typename ValueType>
+    static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
 
     /*  CUDA implementation of UtilKernelTrait::getValue  */
 

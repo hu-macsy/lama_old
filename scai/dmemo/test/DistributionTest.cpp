@@ -35,8 +35,12 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/dmemo.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/utilskernel.hpp>
 
-using namespace scai::dmemo;
+using namespace scai;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -48,20 +52,73 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DistributionTest" )
 
 /* --------------------------------------------------------------------- */
 
+class AllDistributions : public std::vector<DistributionPtr> 
+{
+public:
+
+    AllDistributions( const IndexType globalSize )
+    {
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+        std::vector<std::string> values;
+
+        Distribution::getCreateValues( values );
+
+        for ( size_t i = 0; i < values.size(); ++i )
+        {
+            DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
+
+            BOOST_CHECK_EQUAL( dist->getKind(), values[i] );
+
+            push_back( dist );
+        } 
+
+        utilskernel::LArray<PartitionId> owners;
+
+        {
+            PartitionId owner = 315;
+            PartitionId nPartitions = comm->getSize();
+
+            hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, globalSize );
+
+            for ( IndexType i = 0; i < globalSize; ++i )
+            {
+                owner = owner * 119 % 185;
+                wOwners[i] = owner % nPartitions;
+            }
+        }
+
+        push_back( DistributionPtr( new GeneralDistribution( owners, comm ) ) );
+
+        float weight = static_cast<float>( comm->getRank() + 1 );
+
+        push_back( DistributionPtr( new GenBlockDistribution( globalSize, weight, comm ) ) );
+    }
+
+private:
+
+    AllDistributions();
+
+};
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( localSizeTest )
 {
-    const IndexType globalSize = 17;
-    std::vector<std::string> values;
-    Distribution::getCreateValues( values );
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    AllDistributions allDist( 17 );
 
-    for ( size_t i = 0; i < values.size(); ++i )
+    for ( size_t i = 0; i < allDist.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
-        BOOST_CHECK_EQUAL( dist->getKind(), values[i] );
-        SCAI_LOG_INFO( logger, *comm << ": localSizeTest, dist = " << *dist )
+        DistributionPtr dist = allDist[i];
+
+        const Communicator& comm = dist->getCommunicator();
+
+        SCAI_LOG_INFO( logger, comm << ": localSizeTest, dist = " << *dist )
+
         // Do not use comm for reductions as NoDistribution has NoCommunicator
+
         IndexType sumLocalSizes = dist->getCommunicator().sum( dist->getLocalSize() );
+
         BOOST_CHECK_EQUAL( dist->getGlobalSize(), sumLocalSizes );
     }
 }
@@ -70,15 +127,13 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
 
 BOOST_AUTO_TEST_CASE( local2GlobalTest )
 {
-    const IndexType globalSize = 17;
-    std::vector<std::string> values;
-    Distribution::getCreateValues( values );
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    AllDistributions allDist( 17 );
 
-    for ( size_t i = 0; i < values.size(); ++i )
+    for ( size_t i = 0; i < allDist.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
-        SCAI_LOG_INFO( logger, *comm << ": local2GlobalTest, dist = " << *dist )
+        DistributionPtr dist = allDist[i];
+
+        SCAI_LOG_INFO( logger, "local2GlobalTest, dist = " << *dist )
 
         for ( IndexType i = 0; i < dist->getGlobalSize(); i++ )
         {
@@ -98,15 +153,15 @@ BOOST_AUTO_TEST_CASE( local2GlobalTest )
 
 BOOST_AUTO_TEST_CASE( global2LocalTest )
 {
-    const IndexType globalSize = 17;
-    std::vector<std::string> values;
-    Distribution::getCreateValues( values );
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    AllDistributions allDist( 17 );
 
-    for ( size_t i = 0; i < values.size(); ++i )
+    for ( size_t i = 0; i < allDist.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
-        SCAI_LOG_INFO( logger, *comm << ": global2LocalTest, dist = " << *dist )
+        DistributionPtr dist = allDist[i];
+
+        const Communicator& comm = dist->getCommunicator();
+
+        SCAI_LOG_INFO( logger, comm << ": global2LocalTest, dist = " << *dist )
 
         for ( IndexType i = 0; i < dist->getLocalSize(); i++ )
         {
@@ -117,17 +172,80 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( ownedIndexesTest )
+{
+    AllDistributions allDist( 17 );
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        DistributionPtr dist = allDist[i];
+
+        utilskernel::LArray<IndexType> myIndexes1;
+        utilskernel::LArray<IndexType> myIndexes2;
+
+        dist->getOwnedIndexes( myIndexes1 );                 // call it for block distribution
+        dist->Distribution::getOwnedIndexes( myIndexes2 );   // call if from base class
+
+        IndexType nLocal = dist->getLocalSize();
+
+        BOOST_REQUIRE_EQUAL( nLocal, myIndexes1.size() );
+        BOOST_REQUIRE_EQUAL( nLocal, myIndexes2.size() );
+
+        hmemo::ReadAccess<IndexType> rIndexes1( myIndexes1 );
+        hmemo::ReadAccess<IndexType> rIndexes2( myIndexes2 );
+
+        for ( IndexType i = 0; i < nLocal; ++i )
+        {
+            BOOST_CHECK_EQUAL( rIndexes1[i], rIndexes2[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( computeOwnersTest )
+{
+    AllDistributions allDist( 17 );
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        DistributionPtr dist = allDist[i];
+
+        IndexType nGlobal = dist->getGlobalSize();
+
+        utilskernel::LArray<PartitionId> indexes;
+        utilskernel::HArrayUtils::setOrder( indexes, nGlobal );
+
+        utilskernel::LArray<PartitionId> owners1;
+        utilskernel::LArray<PartitionId> owners2;
+
+        dist->computeOwners( owners1, indexes );                 // call the efficient derived class method
+        dist->Distribution::computeOwners( owners2, indexes );   // call the straight forw from base class
+
+        BOOST_REQUIRE_EQUAL( nGlobal, owners1.size() );
+        BOOST_REQUIRE_EQUAL( nGlobal, owners2.size() );
+
+        hmemo::ReadAccess<IndexType> rOwners1( owners1 );
+        hmemo::ReadAccess<IndexType> rOwners2( owners2 );
+
+        for ( IndexType i = 0; i < nGlobal; ++i )
+        {
+            BOOST_CHECK_EQUAL( rOwners1[i], rOwners2[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    const IndexType globalSize = 17;
-    std::vector<std::string> values;
-    Distribution::getCreateValues( values );
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    AllDistributions allDist( 17 );
 
-    for ( size_t i = 0; i < values.size(); ++i )
+    for ( size_t i = 0; i < allDist.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
-        SCAI_LOG_INFO( logger, *comm << ": writeAt, dist = " << *dist )
+        DistributionPtr dist = allDist[i];
+
+        SCAI_LOG_INFO( logger, "writeAt, dist = " << *dist )
         std::ostringstream out;
         out << *dist;
         BOOST_CHECK( out.str().length() > 0 );
@@ -136,21 +254,21 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( printDistributionVector )
+BOOST_AUTO_TEST_CASE( equalTest )
 {
-    const IndexType globalSize = 17;
-    std::vector<std::string> values;
-    Distribution::getCreateValues( values );
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    AllDistributions allDist1( 17 );
+    AllDistributions allDist2( 17 );
+    AllDistributions allDist3( 18 );
 
-    for ( size_t i = 0; i < values.size(); ++i )
+    for ( size_t i = 0; i < allDist1.size(); ++i )
     {
-        DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
-        // ToDo: does not test the content of these files
-        std::string fileName = "distribution.";
-        fileName += dist->getKind();
-        SCAI_LOG_INFO( logger, *comm << ": printDistributionVector, dist = " << *dist << ", filename = " << fileName )
-        dist->printDistributionVector( fileName );
+        DistributionPtr dist1 = allDist1[i];
+        DistributionPtr dist2 = allDist2[i];
+        DistributionPtr dist3 = allDist3[i];
+       
+        BOOST_CHECK_EQUAL( *dist1, *dist1 );  // pointer equality
+        BOOST_CHECK_EQUAL( *dist1, *dist2 );  // same distibution
+        BOOST_CHECK( *dist1 != *dist3 );      // must be different due to other global size
     }
 }
 

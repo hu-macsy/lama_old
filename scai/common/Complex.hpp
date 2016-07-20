@@ -707,13 +707,31 @@
     CUDA_CALLABLE_MEMBER
     ValueType Complex<ValueType>::metrikCuda( void ) const
     {
-        return Math::sqrt( real() * real() + imag() * imag() );
+        if( imag() == ValueType( 0 ) )
+        {
+            // saves time and keeps precision, e.g. for eps0
+
+            return Math::abs( real() );
+        }
+        else
+        {
+            return Math::sqrt( real() * real() + imag() * imag() );
+        }
     }
 
     template<typename ValueType>
     ValueType Complex<ValueType>::metrikHost( void ) const
     {
-        return Math::sqrt( real() * real() + imag() * imag() );
+        if ( imag() == ValueType( 0 ) )
+        {
+            // saves time and keeps precision, e.g. for eps0
+
+            return Math::abs( real() );
+        }
+        else
+        {
+            return Math::sqrt( real() * real() + imag() * imag() );
+        }
     }
 
     /*
@@ -1033,21 +1051,24 @@
     {
         float s, c;
         float e = ::expf( a.real() );
-        ::sincosf( a.imag(), &s, &c );
+        s = ::sinf( a.imag() );
+        c = ::cosf( a.imag() );
         return Complex<float>( c * e, s * e );
     }
     Complex<double> Math::exp( const Complex<double>& a )
     {
         double s, c;
         double e = ::exp( a.real() );
-        ::sincos( a.imag(), &s, &c );
+        s = ::sin( a.imag() );
+        c = ::cos( a.imag() );
         return Complex<double>( c * e, s * e );
     }
     Complex<long double> Math::exp( const Complex<long double>& a )
     {
         long double s, c;
         long double e = ::expl( a.real() );
-        ::sincosl( a.imag(), &s, &c );
+        s = ::sinl( a.imag() );
+        c = ::cosl( a.imag() );
         return Complex<long double>( c * e, s * e );
     }
 

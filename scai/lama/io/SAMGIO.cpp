@@ -42,6 +42,21 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 
+#include <cstring>
+
+/** SAMG file suffixes
+ * 
+ *  Note: static variables can cause problems as values are already needed during static initialization. 
+ */
+
+#define SAMG_MAT_HEADER_SUFFIX ".frm"
+#define SAMG_MAT_DATA_SUFFIX   ".amg"
+#define SAMG_VEC_HEADER_SUFFIX ".frv"
+#define SAMG_VEC_DATA_SUFFIX   ".vec"
+
+#define SAMG_VERSION_ID 22
+#define SAMG_IVERSION   4
+
 namespace scai
 {
 
@@ -50,15 +65,6 @@ using namespace hmemo;
 namespace lama
 {
 
-static int SAMG_VERSION_ID = 22;
-static int SAMG_IVERSION   = 4;
-
-/** SAMG file suffixes */
-
-static std::string SAMG_MAT_HEADER_SUFFIX = ".srm";
-static std::string SAMG_MAT_DATA_SUFFIX   = ".samg";
-static std::string SAMG_VEC_HEADER_SUFFIX = ".srv";
-static std::string SAMG_VEC_DATA_SUFFIX   = ".svec";
 
 std::string SAMGIO::getVectorFileSuffix() const
 {
@@ -96,6 +102,15 @@ void SAMGIO::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
+bool SAMGIO::isSupportedMode( const FileMode ) const
+{
+    // all file modes are supported
+
+    return true;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 /** Help routine to get data file name by header file name 
  *
  *  @param[in] headerFileName is the file name of header file
@@ -109,12 +124,12 @@ static std::string getDataFileName( const std::string& headerFileName )
 
     if ( FileIO::hasSuffix( headerFileName, SAMG_MAT_HEADER_SUFFIX) )
     {
-        size_t len = SAMG_MAT_HEADER_SUFFIX.length();
+        size_t len = strlen( SAMG_MAT_HEADER_SUFFIX );
         result.replace( result.length() - len, len, SAMG_MAT_DATA_SUFFIX );
     }
     else if ( FileIO::hasSuffix( headerFileName, SAMG_VEC_HEADER_SUFFIX ) )
     {
-        size_t len = SAMG_VEC_HEADER_SUFFIX.length();
+        size_t len = strlen( SAMG_VEC_HEADER_SUFFIX );
         result.replace( result.length() - len, len, SAMG_VEC_DATA_SUFFIX );
     }
 
@@ -173,13 +188,15 @@ void SAMGIO::writeArrayImpl(
         typeSize = common::typeSize( mScalarTypeData );
     }
 
-    writeVectorHeader( array.size(), typeSize, mBinary, fileName );
+    bool binary = mFileMode != FORMATTED; 
+
+    writeVectorHeader( array.size(), typeSize, binary, fileName );
 
     // write data into SAMG vector data file
 
     std::ios::openmode flags = std::ios::out | std::ios::trunc;
 
-    if ( mBinary )
+    if ( binary )
     {
         flags |= std::ios::binary;
     }
@@ -188,7 +205,7 @@ void SAMGIO::writeArrayImpl(
 
     IOStream outFile( dataFileName, flags );
  
-    if ( mBinary )
+    if ( binary )
     {
         outFile.writeBinary( array, mScalarTypeData );
     }
@@ -335,14 +352,16 @@ void SAMGIO::writeStorageImpl(
     csrIA += 1;    
     csrJA += 1;     
 
-    writeMatrixHeader( numRows, numValues, mBinary, fileName );
+    bool binary = ( mFileMode != FORMATTED );
+
+    writeMatrixHeader( numRows, numValues, binary, fileName );
 
     SCAI_LOG_INFO( logger, *this << ": writeCSRData( " << fileName << " )" << ", #rows = " << csrIA.size() - 1
                             << ", #values = " << csrJA.size() )
 
     std::ios::openmode flags = std::ios::out | std::ios::trunc;
 
-    if ( mBinary )
+    if ( binary )
     {
         flags |= std::ios::binary;
     }
@@ -351,7 +370,7 @@ void SAMGIO::writeStorageImpl(
 
     IOStream outFile( dataFileName, flags );
 
-    if ( mBinary )
+    if ( binary )
     {
         // take care of file type conversions as specified
 
@@ -458,7 +477,18 @@ void SAMGIO::readStorageImpl(
 
     if ( binary )
     {
-        size_t expectedSize = ( numRows + 1 + numValues ) * common::typeSize( mScalarTypeIndex );
+        // compare expected size with real size and give a warning
+
+        size_t expectedSize = numRows + 1 + numValues;
+
+        if ( mScalarTypeIndex == common::scalar::INDEX_TYPE )
+        {
+            expectedSize *= sizeof( IndexType );
+        }
+        else
+        {
+            expectedSize *= mScalarTypeIndex;
+        }
 
         if ( mScalarTypeData == common::scalar::INTERNAL )
         {
@@ -478,7 +508,7 @@ void SAMGIO::readStorageImpl(
             SCAI_LOG_WARN( logger, "Binary file: real size = " << realSize << ", expected size = " << expectedSize )
         }
 
-        // Note: read operations can deal with scalar::INTERNAL
+        // Note: read operations can deal with scalar::INTERNAL, scalar::INDEX_TYPE
 
         inFile.readBinary( csrIA, numRows + 1, mScalarTypeIndex );
         inFile.readBinary( csrJA, numValues, mScalarTypeIndex );
@@ -517,6 +547,37 @@ SAMGIO::Guard::Guard()
 SAMGIO::Guard::~Guard()
 {
     removeCreator( SAMG_VEC_HEADER_SUFFIX );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+int SAMGIO::deleteFile( const std::string& fileName )
+{
+    int rc = -1;
+
+    if ( FileIO::hasSuffix( fileName, this->getMatrixFileSuffix() ) )
+    {
+        rc = std::remove( fileName.c_str() );
+    }
+    else if ( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ) )
+    {
+        rc = std::remove( fileName.c_str() );
+    }
+    else
+    {
+        SCAI_LOG_WARN( logger, *this << ", unsupported suffix for file " << fileName )
+    }
+
+    if ( rc != 0 ) 
+    {
+        return rc;
+    }
+
+    std::string dataFileName = getDataFileName( fileName );
+
+    rc = std::remove( dataFileName.c_str() );
+
+    return rc;
 }
 
 /* --------------------------------------------------------------------------------- */

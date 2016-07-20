@@ -54,6 +54,7 @@
 #include <thrust/fill.h>
 #include <thrust/functional.h>
 #include <thrust/iterator/constant_iterator.h>
+#include <thrust/execution_policy.h>
 #include <thrust/reduce.h>
 #include <thrust/sequence.h>
 #include <thrust/sort.h>
@@ -106,6 +107,22 @@ void conjKernel( ValueType* array, const IndexType n )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+/*                                            vectorScale                                                             */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+__global__
+void vectorScaleKernel( ValueType* result, const ValueType* x, const ValueType* y, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        result[i] = x[i] * y[i];
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 /*   Kernel used for scale, set, setScale                                                                             */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -148,6 +165,23 @@ void CUDAUtils::scale( ValueType* values, const ValueType scale, const IndexType
     // there is no performance loss in using same kernel as setScale
     // kernel fits well even if in and out are aliased
     setScaleKernel <<< dimGrid, dimBlock>>>( values, scale, values, n );
+}
+
+template<typename ValueType>
+void CUDAUtils::vectorScale( ValueType* result, const ValueType* x, const ValueType* y, const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "vectorScale, #n = " << n )
+
+    if ( n == 0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+    vectorScaleKernel <<< dimGrid, dimBlock>>>( result, x, y, n );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -371,6 +405,18 @@ void CUDAUtils::setOrder( ValueType array[], const IndexType n )
     SCAI_CHECK_CUDA_ACCESS
     thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
     thrust::sequence( array_ptr, array_ptr + n );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDAUtils::setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "setSequence # array = " << array << ", n = " << n )
+    SCAI_CHECK_CUDA_ACCESS
+    thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
+    thrust::sequence( thrust::device, array_ptr, array_ptr + n, startValue, inc );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
 
@@ -803,6 +849,7 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
 //    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
@@ -812,6 +859,10 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
+<<<<<<< HEAD
+=======
+    KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
+>>>>>>> develop
 }
 
 template<typename ValueType, typename OtherValueType>

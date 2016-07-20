@@ -205,7 +205,7 @@ void MICDIAUtils::getCSRValues(
 
                 if ( j >= numColumns )
                 {
-                    break;
+                    continue;
                 }
 
                 const DIAValueType value = diaValues[i + ii * numRows];
@@ -265,7 +265,7 @@ void MICDIAUtils::getCSRSizes(
 
             if ( j >= numColumns )
             {
-                break;
+                continue;
             }
 
             bool nonZero = std::abs( diaValues[i + ii * numRows] ) > eps;

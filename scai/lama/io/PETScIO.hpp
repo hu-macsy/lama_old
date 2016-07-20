@@ -1,5 +1,5 @@
 /**
- * @file MatlabIO.hpp
+ * @file PETScIO.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,14 +27,14 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Structure that contains IO routines for Matlab text format
+ * @brief Structure that contains IO routines for PETSC
  * @author Thomas Brandes
  * @date 10.06.2016
  */
 
 #pragma once
 
-#include "CRTPFileIO.hpp"
+#include <scai/lama/io/CRTPFileIO.hpp>
 
 namespace scai
 {
@@ -42,35 +42,29 @@ namespace scai
 namespace lama
 {
 
-/** This file format stores just the COO data of a matrix. 
+/** This file format supports the binary format used by PetSC. 
  *
- *   - there is not header at all
- *   - number of non-zero matrix entries is given by number of lines
- *   - size of matrix is given by maximal values for row and for column indexes
- *   - size of vector is just given by number of lines
- *
- *   It is very useful to read dumped matrices of Matlab.
- *
- *   /code
- *   data_mat = [ia ja,real(val),imag(val)];
- *   save -ascii dataMatrix.txt data_mat;
- *   
- *   data_rhs = [real(b),imag(b)];
- *   save -ascii datRHS.txt data_rhs;
- *   /endcode
- *
- *   /code
- *   solver.exe dataMatrix.txt datRHS.txt
- *   /endcode
+ *   - header information is just at the beginning of the file
+ *   - uses CSR format, but the sizes array and not the offsets
+ *   - stores data always in BIG endian (x86 has LITTLE endian)
  */
 
-class MatlabIO : 
+class PETScIO : 
 
-    public CRTPFileIO<MatlabIO>,         // use type conversions
-    public FileIO::Register<MatlabIO>    // register at factory
+    public CRTPFileIO<PETScIO>,         // use type conversions
+    public FileIO::Register<PETScIO>    // register at factory
+
 {
 
 public:
+
+    /** Constructor might reset default values */
+
+    PETScIO();
+
+    /** Implementation of pure methdod FileIO::isSupportedMode */
+
+    virtual bool isSupportedMode( const FileMode mode ) const;
 
     /** Implementation for Printable.:writeAt */
 
@@ -115,7 +109,6 @@ public:
     __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
-
 };
 
 }
