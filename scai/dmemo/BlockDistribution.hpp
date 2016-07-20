@@ -95,6 +95,10 @@ public:
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
 
+    /** Implementation of pure function Distribution::getBlockDistributionSize, here same as getLocalSize */
+
+    virtual IndexType getBlockDistributionSize() const;
+
     virtual bool isEqual( const Distribution& other ) const;
 
     virtual void writeAt( std::ostream& stream ) const;

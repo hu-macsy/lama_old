@@ -125,6 +125,13 @@ public:
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
 
+    /** Implementation of pure function Distribution::getBlockDistributionSize.
+     *
+     *  Each processor must have a contiguous part of indexes and their order
+     *  must match the rank order of processors.
+     */
+    virtual IndexType getBlockDistributionSize() const;
+
     virtual bool isEqual( const Distribution& other ) const;
 
     virtual void writeAt( std::ostream& stream ) const;

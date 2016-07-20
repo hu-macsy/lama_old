@@ -129,6 +129,13 @@ public:
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
 
+    /** Implementation of pure function Distribution::getBlockDistributionSize.
+     *
+     *  A cyclic distribution Cyclic( globalSize, chunkSize ) is a block distribution 
+     *  iff chunkSize * #partitions <= globalSize, i.e. each processor has maximal one chunk
+     */
+    virtual IndexType getBlockDistributionSize() const;
+
     virtual bool isEqual( const Distribution& other ) const;
 
     virtual void writeAt( std::ostream& stream ) const;

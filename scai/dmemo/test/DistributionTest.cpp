@@ -237,6 +237,53 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
+{
+    // Test of getBlockDistributionSize() can be done by computeOwners on all processor
+    // getBlockDistributionSize() != nIndex iff isAscending( owners( {0, ..., globalSize-1} ) )
+
+    IndexType globalSizes[] = { 0, 1, 2, 3, 7, 16 };
+
+    IndexType nCases = sizeof( globalSizes ) / sizeof( IndexType );
+
+    for ( int k = 0; k < nCases; ++k )
+    {
+        AllDistributions allDist( globalSizes[k] );
+
+        for ( size_t i = 0; i < allDist.size(); ++i )
+        {
+            DistributionPtr dist = allDist[i];
+
+            IndexType nGlobal = dist->getGlobalSize();
+
+            utilskernel::LArray<PartitionId> indexes;
+            utilskernel::HArrayUtils::setOrder( indexes, nGlobal );
+
+            utilskernel::LArray<PartitionId> owners;
+
+            dist->computeOwners( owners, indexes );
+
+            bool ascending = true;
+            bool isSorted = utilskernel::HArrayUtils::isSorted( owners, ascending );
+
+            IndexType bs = dist->getBlockDistributionSize();
+
+            SCAI_LOG_DEBUG( logger, *dist << ", owners sorted = " << isSorted << ", bs = " << bs )
+
+            if ( isSorted )
+            {
+                BOOST_CHECK_EQUAL( bs, dist->getLocalSize() );
+            }
+            else
+            {
+                BOOST_CHECK_EQUAL( bs, nIndex );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     AllDistributions allDist( 17 );
