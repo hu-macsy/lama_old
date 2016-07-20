@@ -1057,16 +1057,24 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
 
 template<typename ValueType>
 void OpenMPCSRUtils::decomposition(
-    ValueType* solution,
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const ValueType csrValues[],
-    const ValueType rhs[],
-    const IndexType numRows,
-    const IndexType nnz,
-    const bool isSymmetic )
+    ValueType* const /*solution*/,
+    const IndexType* /*csrIA*/,
+    const IndexType* /*csrJA*/,
+    const ValueType* /*csrValues*/,
+    const ValueType* /*rhs*/,
+    const IndexType /*numRows*/,
+    const IndexType /*nnz*/,
+    const bool /*isSymmetic*/ )
 {
-    COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet." )
+    if ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::LONG_DOUBLE ||
+         scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::LONG_DOUBLE_COMPLEX )
+    {
+        COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet - not long double or long double complex supported." )
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet." )
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1975,6 +1983,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
     KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::decomposition<ValueType> >( decomposition, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
