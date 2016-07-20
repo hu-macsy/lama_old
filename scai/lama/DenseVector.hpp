@@ -295,16 +295,6 @@ public:
     DenseVector& operator=( const Scalar );
 
     /**
-     * This method implements Vector::readFromFile.
-     *
-     * The distribution of the vector is CYCLIC(n) where n is the size of
-     * the vector. So only the first processor will hold all values.
-     *
-     * Note: Only the first processor will read the matrix file.
-     */
-    void readFromFile( const std::string& filename );
-
-    /**
      * This method initializes a distributed vector with random numbers. 
      * 
      * @param[in] distribution specifies the distribution of the vector
@@ -445,15 +435,6 @@ public:
     virtual size_t getMemoryUsage() const;
 
     virtual void redistribute( dmemo::DistributionPtr distribution );
-
-    /**
-     * @brief Implementation of pure method, see Vector::writeToFile
-     */
-    virtual void writeToFile(
-        const std::string& fileName,
-        const std::string& fileType = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
 protected:
 

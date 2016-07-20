@@ -692,7 +692,7 @@ void MatrixMarketIO::writeStorageImpl(
     {
         removeUpperTriangular( cooIA, cooJA, cooValues );
   
-        SCAI_LOG_ERROR( logger, "#values = " << cooIA.size() << ", due to symmetry " << symmetry2str( symFlag ) )
+        SCAI_LOG_INFO( logger, "#values = " << cooIA.size() << ", due to symmetry " << symmetry2str( symFlag ) )
     }
 
     // Attention: indexing in MatrixMarket starts with 1 and not with 0 as in LAMA

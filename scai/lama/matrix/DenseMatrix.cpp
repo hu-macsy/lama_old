@@ -195,66 +195,16 @@ template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
 {
     SCAI_LOG_INFO( logger, "DenseMatrix( (fileName = " << fileName )
-    common::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
-    denseStorage->readFromFile( fileName );
-    SCAI_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
+
+    // initialize mData, so getLocalStorage() returns valid data
+
     mData.resize( 1 );
-    mData[0] = denseStorage;
-    Matrix::setReplicatedMatrix( denseStorage->getNumRows(), denseStorage->getNumColumns() );
-    computeOwners();
+    mData[0].reset( new DenseStorage<ValueType>( 0, 0 ) );
+
+    this->readFromFile( fileName );
 }
 
 /* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DenseMatrix<ValueType>::readFromFile( const std::string& fileName )
-{
-    SCAI_LOG_INFO( logger, "set dense matrix with values from input file " << fileName )
-    common::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
-    denseStorage->readFromFile( fileName );
-    SCAI_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
-    mData.resize( 1 );
-    mData[0] = denseStorage;
-    Matrix::setReplicatedMatrix( denseStorage->getNumRows(), denseStorage->getNumColumns() );
-    computeOwners();
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DenseMatrix<ValueType>::writeToFile1(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::scalar::ScalarType dataType,
-    const common::scalar::ScalarType indexType,
-    const FileIO::FileMode fileMode  ) const
-{
-    SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
-
-    if ( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
-    {
-        // make sure that only one processor writes to file
-        const Communicator& comm = getRowDistribution().getCommunicator();
-
-        if ( comm.getRank() == 0 )
-        {
-            getLocalStorage().writeToFile( fileName, fileType, dataType, indexType, fileMode );
-        }
-
-        // synchronization to avoid that other processors start with
-        // something that might depend on the finally written file
-        comm.synchronize();
-    }
-    else
-    {
-        DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
-        DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        DenseMatrix<ValueType> repM( *this, rowDist, colDist );
-        // repM.redistribute( rowDist, colDist );
-        repM.writeToFile1( fileName, fileType, dataType, indexType, fileMode );
-    }
-}
 
 template<typename ValueType>
 DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const DenseMatrix<ValueType>& other )
@@ -805,28 +755,32 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distribution
 
     if ( storage.getNumRows() == rowDist->getLocalSize() )
     {
-// only format conversion of the local storage, @todo avoid it if storage is DenseStorage<ValueType>
+        // only format conversion of the local storage, @todo avoid it if storage is DenseStorage<ValueType>
+
         if ( storage.getFormat() == Format::DENSE && storage.getValueType() == getValueType() )
         {
             const DenseStorage<ValueType>* localData = dynamic_cast<const DenseStorage<ValueType>*>( &storage );
             SCAI_ASSERT_ERROR( localData, "dynamic_cast<constDenseStorage<ValueType>*> failed: " << storage )
+
             splitColumnData( mData, *localData, numColPartitions, mOwners );
         }
         else if ( colDist->isReplicated() )
         {
+            common::shared_ptr<DenseStorage<ValueType> > dataPtr( new DenseStorage<ValueType>( storage ) );
+
             mData.resize( 1 );
-            mData[0].reset( new DenseStorage<ValueType>( storage ) );
+            mData[0] = dataPtr;
         }
         else
         {
-            DenseStorage<ValueType> localData;
-            localData.assign( storage );
+            DenseStorage<ValueType> localData( storage );
             splitColumnData( mData, localData, numColPartitions, mOwners );
         }
     }
     else if ( storage.getNumRows() == rowDist->getGlobalSize() )
     {
-// we also localize the rows of the matrix
+        // we also localize the rows of the matrix
+
         DenseStorage<ValueType> localData;
         localData.localize( storage, *rowDist );
         splitColumnData( mData, localData, numColPartitions, mOwners );
@@ -976,6 +930,26 @@ void DenseMatrix<ValueType>::splitColumnData(
     const PartitionId numPartitions,
     const HArray<PartitionId>& columnOwners )
 {
+    if ( numPartitions == 1 )
+    {
+        SCAI_LOG_INFO( logger, "split columns of " << columnData << " unnecessary, #partitions = 1" )
+
+        chunks.resize( 1 );
+
+        if ( !chunks[0].get() ) 
+        {
+            chunks[0].reset( new DenseStorage<ValueType>( columnData ) );
+        }
+        else
+        {
+            // can be aliased here, avoids copy
+
+            *chunks[0] = columnData;
+        }
+
+        return;
+    }
+
     SCAI_LOG_INFO( logger, "split columns of " << columnData << " into " << numPartitions << " partition chunks" )
 
     const IndexType numColumns = columnData.getNumColumns();
@@ -1802,7 +1776,7 @@ void DenseMatrix<ValueType>::wait() const
 template<typename ValueType>
 const DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage() const
 {
-    SCAI_ASSERT_ERROR( mData.size() > 0, "no local values allocated" )
+    SCAI_ASSERT_ERROR( mData.size() > 0, *this << ": no local values allocated" )
 
     if ( mData.size() == 1 )
     {

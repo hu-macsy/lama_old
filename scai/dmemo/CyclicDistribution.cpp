@@ -182,6 +182,8 @@ IndexType CyclicDistribution::allGlobal2local( const IndexType globalIndex ) con
     return localIndex;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType CyclicDistribution::global2local( const IndexType globalIndex ) const
 {
     if ( isLocal( globalIndex ) )
@@ -203,10 +205,14 @@ void CyclicDistribution::computeOwners( HArray<PartitionId>& owners, const HArra
     const IndexType n = indexes.size();
     const IndexType size = mCommunicator->getSize();
     
+    SCAI_LOG_INFO( logger, *this << ": compute owners, n = " << n << ", size = " << size )
+
     ReadAccess<IndexType> rIndexes( indexes, ctx );
     WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
     
     // ToDo: call a kernel and allow arbitrary context
+
+    #pragma omp parallel for
 
     for ( IndexType i = 0; i < n; i++ )
     {   
@@ -216,30 +222,63 @@ void CyclicDistribution::computeOwners( HArray<PartitionId>& owners, const HArra
 
 /* ---------------------------------------------------------------------- */
 
-namespace
+void CyclicDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
 {
-bool checkChunkSize( const CyclicDistribution& d, IndexType chunkSize )
-{
-    return chunkSize == d.chunkSize();
+    const IndexType nLocal  = getLocalSize();
+
+    const Communicator& comm = getCommunicator();
+
+    const PartitionId rank = comm.getRank();
+    const PartitionId size = comm.getSize();
+
+    SCAI_LOG_INFO( logger, comm << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
+
+    WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
+
+    IndexType pos   = 0;
+
+    // we can directly enumerate the indexes owned by this processor
+
+    for ( IndexType first = rank * mChunkSize; first < mGlobalSize; first += size * mChunkSize )
+    {
+        for ( IndexType j = 0; j < mChunkSize; j++ )
+        {
+            IndexType myIndex = first + j;
+
+            if ( myIndex < mGlobalSize )
+            {
+                wGlobalIndexes[ pos++ ] = myIndex;
+            }
+        }
+    }
+
+    SCAI_ASSERT_EQ_ERROR( pos, nLocal, "count mismatch" )
 }
-}
+
+/* ---------------------------------------------------------------------- */
 
 bool CyclicDistribution::isEqual( const Distribution& other ) const
 {
-    if ( this == &other )
-    {
-        return true;
+    bool isSame = false;
+    
+    bool proven = proveEquality( isSame, other );
+    
+    if ( proven )
+    {   
+        return isSame;
+    }
+    
+    if ( other.getKind() == getKind() )
+    {   
+        const CyclicDistribution& cycOther = reinterpret_cast<const CyclicDistribution&>( other );
+
+        isSame = chunkSize() == cycOther.chunkSize();
     }
 
-    const CyclicDistribution* cycOther = dynamic_cast<const CyclicDistribution*>( &other );
-
-    if ( cycOther )
-    {
-        return ( mGlobalSize == other.getGlobalSize() && checkChunkSize( *cycOther, mChunkSize ) );
-    }
-
-    return false;
+    return isSame;
 }
+
+/* ---------------------------------------------------------------------- */
 
 void CyclicDistribution::writeAt( std::ostream& stream ) const
 {
@@ -248,40 +287,13 @@ void CyclicDistribution::writeAt( std::ostream& stream ) const
            << getNumLocalChunks() << ")";
 }
 
-void CyclicDistribution::printDistributionVector( std::string name ) const
-{
-    IndexType myRank = mCommunicator->getRank();
-    IndexType parts = mCommunicator->getSize();
-    IndexType totalNumChunks = getNumTotalChunks();
-
-    if ( myRank == MASTER ) // process 0 is MASTER process
-    {
-        std::ofstream file;
-        file.open( ( name + ".part" ).c_str() );
-        // print row - partition mapping
-        IndexType actualProcess = 0;
-
-        for ( IndexType i = 0; i < totalNumChunks; ++i )
-        {
-            for ( IndexType j = 0; j < mChunkSize; j++ )
-            {
-                file << actualProcess << std::endl;
-            }
-
-            actualProcess = ( actualProcess + 1 ) % parts;
-        }
-
-        file.close();
-    }
-}
-
 /* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
 std::string CyclicDistribution::createValue()
 {
-    return "CYCLIC";
+    return getId();
 }
 
 Distribution* CyclicDistribution::create( const DistributionArguments arg )

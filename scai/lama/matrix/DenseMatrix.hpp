@@ -270,11 +270,6 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
 
-    /**
-     *  Implementation for Matrix::readFromFile
-     */
-    virtual void readFromFile( const std::string& filename );
-
     /** Implementation of pure Matrix::setDenseData */
 
     virtual void setDenseData(
@@ -539,18 +534,6 @@ public:
     virtual common::scalar::ScalarType getValueType() const;
 
     virtual size_t getValueTypeSize() const;
-
-    /** Method writes dense matrix to a file.
-     *
-     *  Writing is only supported for a replicated matrix.
-     */
-
-    virtual void writeToFile1(
-        const std::string& fileName,
-        const std::string& fileType = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
      * @brief Implementation of pure function Matrix::copy with covariant return type.

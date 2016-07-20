@@ -368,7 +368,8 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     SCAI_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
     // allocate and fill local part of the distributed matrix
-    dmemo::DistributionPtr distribution( new dmemo::GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
+    hmemo::HArrayRef<IndexType> indexes( static_cast<IndexType>(  myGlobalIndexes.size() ), &myGlobalIndexes[0] );
+    dmemo::DistributionPtr distribution( new dmemo::GeneralDistribution( globalSize, indexes, comm ) );
     SCAI_LOG_INFO( logger, "distribution = " << *distribution )
     // create new local CSR data ( # local rows x # columns )
     scai::lama::CSRStorage<ValueType> localMatrix;
@@ -704,28 +705,29 @@ void MatrixCreator<ValueType>::buildReplicatedDiag(
 
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
 
-    IndexType chunkSize = storage.getNumRows();
-    IndexType nGlobal   = storage.getNumRows() * nRepeat;
+    IndexType nRows     = storage.getNumRows() * nRepeat;
+    IndexType nCols     = storage.getNumColumns() * nRepeat;
 
-    IndexType nLocal;   // will be #local chunks * chunkSize
-    IndexType nChunks;  // will be #local chunks * chunkSi
+    IndexType nChunks;  // will be number of chunks for this processor
 
-    // bit tricky: use a cyclic( nLocal)  distribution to get the local size of this processor
+    // this replication will never split any of the storages 
+    // bit tricky: use a cyclic( 1 ) distribution of nrepeat to get the local size of this processor
 
     {
-        CyclicDistribution cdist( nGlobal, chunkSize, comm );
+        CyclicDistribution cdist( nRepeat, 1, comm );
         nChunks = cdist.getNumLocalChunks();
-        nLocal  = cdist.getLocalSize();
-
-        SCAI_ASSERT_EQUAL( nLocal, nChunks * chunkSize, "serious mismatch" )
     }
 
-    // we will take a general block distribution
+    // we will take a general block distribution for the rows
 
-    dmemo::DistributionPtr rowDist( new dmemo::GenBlockDistribution( nGlobal, nLocal, comm ) );
-    dmemo::DistributionPtr colDist( new dmemo::NoDistribution( storage.getNumColumns() * nRepeat ) );
+    dmemo::DistributionPtr rowDist( new dmemo::GenBlockDistribution( nRows, nChunks * storage.getNumRows(), comm ) );
+
+    // we will take also a general block distribution for the columns to avoid the translation into global indexes
+
+    dmemo::DistributionPtr colDist( new dmemo::GenBlockDistribution( nCols, nChunks * storage.getNumColumns(), comm ) );
 
     SCAI_LOG_DEBUG( logger, *comm << ": row dist = " << *rowDist )
+    SCAI_LOG_DEBUG( logger, *comm << ": col dist = " << *colDist )
 
     // Allocate the correct size
 
@@ -741,6 +743,8 @@ void MatrixCreator<ValueType>::buildReplicatedDiag(
 
         replicateStorageDiag( const_cast<MatrixStorage<ValueType>& >( local ), storage, nChunks );
     }
+
+    // The halo part remains empty, so we are done
 }
 
 /* ------------------------------------------------------------------------- */

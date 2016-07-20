@@ -50,7 +50,7 @@ namespace dmemo
 class COMMON_DLL_IMPORTEXPORT HaloBuilder
 {
 public:
-    static void build( const Distribution& distribution, const std::vector<IndexType>& requiredIndexes, Halo& halo );
+    static void build( const Distribution& distribution, const hmemo::HArray<IndexType>& requiredIndexes, Halo& halo );
 
 private:
 

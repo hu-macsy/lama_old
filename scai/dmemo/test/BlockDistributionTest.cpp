@@ -134,6 +134,8 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
     LArray<PartitionId> owners;
     dist->computeOwners( owners, indexes );
 
+    LArray<PartitionId> owners1;
+
     BOOST_CHECK_EQUAL( owners.size(), indexes.size() );
 
     hmemo::ReadAccess<PartitionId> rOwners( owners );
@@ -156,6 +158,34 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
                 BOOST_CHECK( !dist->isLocal( pos ) );
             }
         }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( ownedIndexesTest )
+{
+    SCAI_LOG_INFO( logger, "ownedIndexesTest for dist = " << *dist )
+
+    using namespace utilskernel;
+
+    LArray<IndexType> myIndexes1;
+    LArray<IndexType> myIndexes2;
+
+    dist->getOwnedIndexes( myIndexes1 );                 // call it for block distribution
+    dist->Distribution::getOwnedIndexes( myIndexes2 );   // call if from base class
+
+    IndexType nLocal = dist->getLocalSize();
+
+    BOOST_REQUIRE_EQUAL( nLocal, myIndexes1.size() );
+    BOOST_REQUIRE_EQUAL( nLocal, myIndexes2.size() );
+
+    hmemo::ReadAccess<IndexType> rIndexes1( myIndexes1 );
+    hmemo::ReadAccess<IndexType> rIndexes2( myIndexes2 );
+
+    for ( IndexType i = 0; i < nLocal; ++i )
+    {
+        BOOST_CHECK_EQUAL( rIndexes1[i], rIndexes2[i] );
     }
 }
 

@@ -291,7 +291,8 @@ DIASparseMatrix<ValueType>::DIASparseMatrix(
     IndexType numGlobalRows = communicator->sum( numLocalRows );
     mLocalData->setRawCSRData( numLocalRows, numLocalRows, numLocalNonZeros, localIA, localJA, localValues );
     mHaloData->setRawCSRData( numLocalRows, numGlobalRows, numHaloNonZeros, haloIA, haloJA, haloValues );
-    dmemo::DistributionPtr dist( new dmemo::GeneralDistribution( numGlobalRows, ownedIndexes, communicator ) );
+    hmemo::HArrayRef<IndexType> myIndexes( static_cast<IndexType>( ownedIndexes.size() ), &ownedIndexes[0] );
+    dmemo::DistributionPtr dist( new dmemo::GeneralDistribution( numGlobalRows, myIndexes, communicator ) );
     // Halo is already splitted, but still contains the global indexes
     mHaloData->buildHalo( mHalo, *dist ); // build halo, maps global indexes to halo indexes
     Matrix::setDistributedMatrix( dist, dist );

@@ -60,33 +60,3 @@ static common::scalar::ScalarType getType()
 
     return type;
 }
-
-/** Help routine to get the filename of the partition that is read/written by this processor.
- *
- *  @param[in,out] fileName, might contain %r that will be substituted by rank_size
- *  @param[out] isPartitioned if true data is spread among multiple 'partitoned' files
- */
-
-static void getPartitionFileName( std::string& fileName, bool& isPartitioned, const dmemo::Communicator& comm )
-{
-    size_t pos = fileName.find( "%r" );
-
-    isPartitioned = false;
-
-    if ( pos == std::string::npos )
-    {
-        return;
-    }
-    else
-    {
-        std::ostringstream rankStr;
-
-        if ( comm.getSize() > 1 )
-        {
-            rankStr << comm.getRank() << "." << comm.getSize();
-            isPartitioned = true;
-        }
-
-        fileName.replace( pos, 2, rankStr.str() );
-    }
-}

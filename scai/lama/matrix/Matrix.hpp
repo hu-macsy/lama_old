@@ -125,7 +125,7 @@ public:
      * @param[in] fileMode can be used to forche BINARY or FORMATTED output
      */
 
-    virtual void writeToFile(
+    void writeToFile(
         const std::string& fileName,
         const std::string& fileType = "",
         const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
@@ -218,14 +218,36 @@ public:
     void setIdentity( const IndexType n );
 
     /**
-     * This method sets a matrix by reading its values from a file.
+     * This method sets a matrix by reading its values from one or multiple files.
      *
      * @param[in] filename      the filename to read from
+     * @param[in] rowDist       optional, if set it is the distribution of the matrix 
      *
-     * Each matrix class must provide an implementation of this method.
-     * The matrix might have any distribution.
+     *   \code
+     *      CSRSparseMatrix<double> matrix;
+     *      matrix.readFromFile( "matrix.mtx" )                    ! matrix only on processor 0
+     *      matrix.readFromFile( "matrix_%r.mtx" )                 ! general block distributed matrix, each processor reads it own file
+     *      matrix.readFromFile( "matrix.mtx", rowDist )           ! each processor gets its local part of the matrix in one file
+     *      matrix.readFromFile( "matrix_%r.mtx", rowDist )        ! read a partitioned matrix with the given distribution
+     *   \endcode
      */
-    virtual void readFromFile( const std::string& filename ) = 0;
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr rowDist = dmemo::DistributionPtr() );
+
+    /**
+     *  This method sets a matrix a reading its values from one or multiple files and also the distribution from a file
+     *
+     * @param[in] matrixFileName the single or partitioned filename to read from
+     * @param[in] distributionFileName the single or partitioned filename with the row distribution of the matrix
+     *
+     *   \code
+     *      CSRSparseMatrix<double> matrix;
+     *      matrix.readFromFile( "matrix.mtx", "owners.mtx" )
+     *      matrix.readFromFile( "matrix_%r.mtx", "owners.mtx" )
+     *      matrix.readFromFile( "matrix.mtx", "rows%r.mtx" )
+     *      matrix.readFromFile( "matrix_%r.mtx", "rows%r.mtx" )
+     *   \endcode
+     */
+    void readFromFile( const std::string& matrixFileName, const std::string& distributionFileName );
 
     /** This method sets a matrix with the values owned by this partition in dense format
      *
@@ -1044,6 +1066,10 @@ protected:
      */
     void setDistributedMatrix( dmemo::DistributionPtr distribution, dmemo::DistributionPtr colDistribution );
 
+    void readFromSingleFile( const std::string& fileName );
+ 
+    void readFromPartitionedFile( const std::string& fileName, dmemo::DistributionPtr dist );
+
     dmemo::DistributionPtr mColDistribution;
 
     // TODO remove mNumRows and mNumColumns, this value is stored in the distribution
@@ -1073,6 +1099,20 @@ private    :
     void setDefaultKind(); // set default values for communication and compute kind
 
     SyncKind mCommunicationKind;//!< synchronous/asynchronous communication
+
+    void writeToSingleFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const common::scalar::ScalarType indexType,
+        const FileIO::FileMode fileMode ) const;
+
+    void writeToPartitionedFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const common::scalar::ScalarType indexType,
+        const FileIO::FileMode fileMode ) const;
 };
 
 /* ======================================================================== */
