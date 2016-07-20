@@ -162,7 +162,7 @@ void MKLCSRUtils::convertCSR2CSC(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MKLCSRUtils::LUfactorization(
+void MKLCSRUtils::decomposition(
     ValueType* solution,
     const IndexType csrIA[],
     const IndexType csrJA[],
@@ -171,7 +171,7 @@ void MKLCSRUtils::LUfactorization(
     const IndexType numRows,
     const IndexType nnz )
 {
-    SCAI_LOG_INFO( logger, "LUfactorization of matrix with numRows=" << numRows << ", nnz=" << nnz )
+    SCAI_LOG_INFO( logger, "decomposition of matrix with numRows=" << numRows << ", nnz=" << nnz )
 
     // dummy variables
     ValueType vDum;
@@ -270,7 +270,7 @@ void MKLCSRUtils::LUfactorization(
     pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
              &vDum, const_cast<IndexType*> (csrIA), const_cast<IndexType*> (csrJA),
              &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
-    SCAI_LOG_INFO( logger, "LUfactorization completed" )
+    SCAI_LOG_INFO( logger, "decomposition completed" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -286,7 +286,7 @@ void MKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::LUfactorization<ValueType> >( LUfactorization, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::decomposition<ValueType> >( decomposition, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

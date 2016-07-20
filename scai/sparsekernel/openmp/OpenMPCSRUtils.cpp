@@ -1056,7 +1056,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPCSRUtils::LUfactorization(
+void OpenMPCSRUtils::decomposition(
     ValueType* solution,
     const IndexType csrIA[],
     const IndexType csrJA[],
@@ -1065,7 +1065,7 @@ void OpenMPCSRUtils::LUfactorization(
     const IndexType numRows,
     const IndexType nnz )
 {
-    COMMON_THROWEXCEPTION( "LUfactorization only available with MKL linking yet." )
+    COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet." )
 }
 
 /* --------------------------------------------------------------------------- */

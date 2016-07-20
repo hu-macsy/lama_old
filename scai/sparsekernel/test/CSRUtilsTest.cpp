@@ -273,13 +273,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_arithmeti
 
 typedef boost::mpl::list<SCAI_ARITHMETIC_EXT_HOST> scai_ext_test_types;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( LUFactorizationTest, ValueType, scai_ext_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_ext_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::LUfactorization<ValueType> > LUfactorization;
-    ContextPtr loc = Context::getContextPtr( LUfactorization.validContext( testContext->getType() ) );
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::decomposition<ValueType> > decomposition;
+    ContextPtr loc = Context::getContextPtr( decomposition.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-    SCAI_LOG_INFO( logger, "LUFactorization< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "decomposition< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     const IndexType ia[] = { 0, 4, 8, 12, 15 };
     const IndexType ja[] = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3 };
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( LUFactorizationTest, ValueType, scai_ext_test_typ
         ReadAccess<ValueType> rRHS( rhs, loc );
         WriteOnlyAccess<ValueType> wSol( solution, loc, numRows );
         SCAI_CONTEXT_ACCESS( loc );
-        LUfactorization[loc->getType()]( wSol.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
+        decomposition[loc->getType()]( wSol.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
             rRHS.get(), numRows, nnz );
     }
 

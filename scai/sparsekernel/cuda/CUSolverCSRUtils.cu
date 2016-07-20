@@ -68,12 +68,12 @@ namespace sparsekernel
 SCAI_LOG_DEF_LOGGER( CUSolverCSRUtils::logger, "CUDA.CUSolverCSRUtils" )
 
 /* --------------------------------------------------------------------------- */
-/*                          LUFactorization (cuSolver)                         */
+/*                          decomposition (cuSolver)                           */
 /* --------------------------------------------------------------------------- */
 
 
 template<typename ValueType>
-void CUSolverCSRUtils::LUfactorization(
+void CUSolverCSRUtils::decomposition(
     ValueType* const solution,
     const IndexType csrIA[],
     const IndexType csrJA[],
@@ -83,7 +83,7 @@ void CUSolverCSRUtils::LUfactorization(
     const IndexType nnz )
 {
     SCAI_LOG_INFO( logger,
-                   "LUfactorization<" << common::getScalarType<ValueType>() << ", matrix numRows = "
+                   "decomposition<" << common::getScalarType<ValueType>() << ", matrix numRows = "
                    << numRows << ", nnz = " << nnz )
 
     typedef CUSOLVERTrait::BLASIndexType BLASIndexType;
@@ -106,9 +106,10 @@ void CUSolverCSRUtils::LUfactorization(
     IndexType reorder = 0;
     IndexType singularity = 0;
 
+    // call for QR decomposition
     CUSOLVERWrapper<ValueType>::csrQR( handle, numRows, nnz, descrA, csrValues, csrIA, csrJA,
                                        rhs, tol, reorder, solution, &singularity );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "LUfactorization" )
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "decomposition" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -133,7 +134,7 @@ void CUSolverCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelReg
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_INFO( logger, "register CUSolverCSRUtils CUSolver-routines for CUDA at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<CSRKernelTrait::LUfactorization<ValueType> >( LUfactorization, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::decomposition<ValueType> >( decomposition, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -85,10 +85,10 @@ public:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
-    /** Implementation for CSRKernelTrait::LUfactorization */
+    /** Implementation for CSRKernelTrait::decomposition */
 
     template<typename ValueType>
-    static void LUfactorization(
+    static void decomposition(
         ValueType* const solution,
         const IndexType csrIA[],
         const IndexType csrJA[],

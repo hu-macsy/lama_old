@@ -269,10 +269,10 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRKernelTrait::LUfactorization */
+    /** Implementation for CSRKernelTrait::decomposition */
 
     template<typename ValueType>
-    static void LUfactorization(
+    static void decomposition(
         ValueType* const solution,
         const IndexType csrIA[],
         const IndexType csrJA[],

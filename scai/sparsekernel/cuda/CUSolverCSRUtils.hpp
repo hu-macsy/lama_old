@@ -64,10 +64,10 @@ class COMMON_DLL_IMPORTEXPORT CUSolverCSRUtils
 {
 public:
 
-    /** Implementation for CSRKernelTrait::LUfactorization */
+    /** Implementation for CSRKernelTrait::decomposition */
 
     template<typename ValueType>
-    static void LUfactorization(
+    static void decomposition(
         ValueType* const solution,
         const IndexType csrIA[],
         const IndexType csrJA[],

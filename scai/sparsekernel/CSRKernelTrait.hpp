@@ -159,7 +159,7 @@ struct CSRKernelTrait
 
     /* LU factorization with Pardiso(MKL)/cusolver */
     template <typename ValueType>
-    struct LUfactorization
+    struct decomposition
     {
         /** Direct solving of linear equations
          *
@@ -176,7 +176,7 @@ struct CSRKernelTrait
 
         static const char* getId()
         {
-            return "CSR.LUfactorization";
+            return "CSR.decomposition";
         }
     };
 
