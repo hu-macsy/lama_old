@@ -164,13 +164,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     testSameMatrix( formattedMatrix, readMarketMatrix );
 
     // remove temporarily created matrix files, no more check here
-
-    int rc = FileIO::removeFile( formattedFileName );
-    BOOST_CHECK_EQUAL( 0, rc );
-    rc = FileIO::removeFile( binaryFileName );
-    BOOST_CHECK_EQUAL( 0, rc );
-    rc = FileIO::removeFile( matrixMarketFileName );
-    BOOST_CHECK_EQUAL( 0, rc );
+ 
+    if ( comm->getRank() == 0 )
+    {
+        int rc = FileIO::removeFile( formattedFileName );
+        BOOST_CHECK_EQUAL( 0, rc );
+        rc = FileIO::removeFile( binaryFileName );
+        BOOST_CHECK_EQUAL( 0, rc );
+        rc = FileIO::removeFile( matrixMarketFileName );
+        BOOST_CHECK_EQUAL( 0, rc );
+    }
 }
 
 /* --------------------------------------------------------------------- */

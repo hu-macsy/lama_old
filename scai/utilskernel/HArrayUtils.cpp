@@ -72,7 +72,14 @@ SCAI_LOG_DEF_LOGGER( HArrayUtils::logger, "HArrayUtils" )
 
 void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextPtr prefLoc )
 {
-    assignOp( target, source, reduction::COPY, prefLoc );
+    if ( &target == &source )
+    {
+        SCAI_LOG_INFO( logger, "assign skipped, target and source are aliased" )
+    }
+    else
+    {
+        assignOp( target, source, reduction::COPY, prefLoc );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -123,15 +130,15 @@ void HArrayUtils::setArray(
 
     if ( op == reduction::COPY )
     {
-        WriteOnlyAccess<TargetValueType> targetVals( target, loc, n );
         ReadAccess<SourceValueType> sourceVals( source, loc );
+        WriteOnlyAccess<TargetValueType> targetVals( target, loc, n );
         // Implemenation of set @ loc is available
         set[loc]( targetVals.get(), sourceVals.get(), n, op );
     }
     else
     {
-        WriteAccess<TargetValueType> targetVals( target, loc );
         ReadAccess<SourceValueType> sourceVals( source, loc );
+        WriteAccess<TargetValueType> targetVals( target, loc );
         // Implemenation of set @ loc is available
         set[loc]( targetVals.get(), sourceVals.get(), n, op );
     }
