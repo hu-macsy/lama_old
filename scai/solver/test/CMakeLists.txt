@@ -50,6 +50,7 @@ scai_project (
         CGSTest
         CommonLoggerTest
         CriterionTest
+        DecompositionSolverTest
         FileLoggerTest
         GMRESTest
         InverseSolverTest

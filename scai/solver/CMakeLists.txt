@@ -114,6 +114,7 @@ scai_project (
         CGNE
         CGNR
         CGS
+        DecompositionSolver
         GMRES
         InverseSolver
         IterativeSolver

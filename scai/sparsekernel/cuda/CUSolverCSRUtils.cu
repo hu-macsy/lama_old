@@ -161,6 +161,7 @@ CUSolverCSRUtils::CUSolverCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
+    SCAI_LOG_INFO( logger, "Constructor" )
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
 }
