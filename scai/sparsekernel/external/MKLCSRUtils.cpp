@@ -229,12 +229,12 @@ void MKLCSRUtils::decomposition(
     pardisoinit( pt, &mtype, iparm );
     iparm[0]  = 1;  /* No solver default */
 
-    if ( ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::FLOAT ) |
+    if ( ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::FLOAT ) ||
          ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::COMPLEX ) ) 
     {
         iparm[27] = 1;  /* float */
     }
-    else if( ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::DOUBLE ) |
+    else if( ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::DOUBLE ) ||
              ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::DOUBLE_COMPLEX ) )
     {
         iparm[27] = 2;  /* double */
