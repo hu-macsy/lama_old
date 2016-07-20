@@ -97,7 +97,8 @@ void DecompositionSolver::initialize( const lama::Matrix& coefficients )
     SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
     Solver::initialize( coefficients );
     // TODO: check symmetry
-    // set mIsSymmetric
+    DecompositionSolverRuntime& runtime = getRuntime();
+    runtime.mIsSymmetric = false;
 }
 
 /* --------------------------------------------------------------------------- */

@@ -100,7 +100,7 @@ void CUSolverCSRUtils::decomposition(
 
 	cusparseMatDescr_t descrA;
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrA ), "cusparseCreateMatDescr" )
-    if( isSymmetric )
+    if( isSymmetic )
     {
         if( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
         {
