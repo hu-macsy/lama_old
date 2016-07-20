@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( LUFactorizationTest, ValueType, scai_ext_test_typ
     kregistry::KernelTraitContextFunction<CSRKernelTrait::LUfactorization<ValueType> > LUfactorization;
     ContextPtr loc = Context::getContextPtr( LUfactorization.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-    SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "LUFactorization< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
     const IndexType ia[] = { 0, 4, 8, 12, 15 };
     const IndexType ja[] = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3 };

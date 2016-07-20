@@ -162,30 +162,33 @@ void MKLCSRUtils::convertCSR2CSC(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPCSRUtils::LUfactorization(
+void MKLCSRUtils::LUfactorization(
     ValueType* solution,
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
     const ValueType rhs[],
     const IndexType numRows,
-    const IndexType /*nnz*/ )
+    const IndexType nnz )
 {
+    SCAI_LOG_INFO( logger, "LUfactorization of matrix with numRows=" << numRows << ", nnz=" << nnz )
+
     // dummy variables
     ValueType vDum;
     MKL_INT iDum;
 
-    void* pt[64];
     /* -------------------------------------------------------------------- */
     /* .. Initialize the internal solver memory pointer. This is only       */
     /* necessary for the FIRST call of the PARDISO solver.                  */
     /* -------------------------------------------------------------------- */
+    void* pt[64];
     for ( int i = 0; i < 64; ++i )
     {
         pt[i] = 0;
     }
 
     // TODO: check matrix type
+
     //  1: Real structural symmetrix matrix
     //  2: Real symmetric positive definite (spd) matrix
     // -2: Real symmetric indefinite matrix
@@ -196,7 +199,7 @@ void OpenMPCSRUtils::LUfactorization(
     // 11: Real unsymmetric matrix
     // 13: Complex unsymmetric matrix
     MKL_INT mtype;
-    if( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) ) // COmplex
+    if( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
     {
         mtype = 13;
     }
@@ -207,47 +210,67 @@ void OpenMPCSRUtils::LUfactorization(
 
     MKL_INT iparm[64];   /* control parameters */
     pardisoinit( pt, &mtype, iparm );
+    iparm[0]  = 1;  /* No solver default */
 
-    MKL_INT nrhs  = 1;   /* Number of right hand sides */
+    if ( ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::FLOAT ) |
+         ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::COMPLEX ) ) 
+    {
+        iparm[27] = 1;  /* float */
+    }
+    else if( ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::DOUBLE ) |
+             ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::DOUBLE_COMPLEX ) )
+    {
+        iparm[27] = 2;  /* double */
+    }
+    iparm[34] = 1;  /* PARDISO use C-style indexing for ia and ja arrays */
 
-    MKL_INT phase; 
+    MKL_INT phase;
     MKL_INT maxfct = 1;  /* Maximum number of numerical factorizations. */
-    MKL_INT mnum = 1;    /* Which factorization to use. */
-    MKL_INT msglvl = 1;  /* Print statistical information in file */
-    MKL_INT error = 0;   /* Initialize error flag */
+    MKL_INT mnum   = 1;  /* Which factorization to use. */
+    MKL_INT nrhs   = 1;  /* Number of right hand sides */
+    MKL_INT msglvl = 0;  /* no statistics */
+    MKL_INT error  = 0;  /* Initialize error flag */
+
+    SCAI_LOG_INFO( logger, "Initialization completed ... " )
 
     /* -------------------------------------------------------------------- */
     /* .. Reordering and Symbolic Factorization. This step also allocates */
     /* all memory that is necessary for the factorization. */
     /* -------------------------------------------------------------------- */
     phase = 11;
-    pardiso( pt, &maxfct, &mnum, &mtype, &phase, &numRows, csrValues, csrIA, csrJA, &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
+             const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
+             const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
     SCAI_PARDISO_ERROR_CHECK ( error, "ERROR during symbolic factorization" )
     SCAI_LOG_INFO( logger, "Reordering completed ... " )
     SCAI_LOG_DEBUG( logger, "Number of nonzeros in factors = " << iparm[17] );
 
     /* -------------------------------------------------------------------- */
-    /* .. Numerical factorization. */
+    /* .. Numerical factorization.                                          */
     /* -------------------------------------------------------------------- */
     phase = 22;
-    pardiso( pt, &maxfct, &mnum, &mtype, &phase, &numRows, csrValues, csrIA, csrJA, &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
-    SCAI_PARDISO_ERROR_CHECK ( error, "RROR during numerical factorization" )
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
+             const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
+             const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+    SCAI_PARDISO_ERROR_CHECK ( error, "ERROR during numerical factorization" )
     SCAI_LOG_INFO( logger, "Factorization completed ... " )
 
     /* -------------------------------------------------------------------- */
-    /* .. Back substitution and iterative refinement. */
+    /* .. Back substitution and iterative refinement.                       */
     /* -------------------------------------------------------------------- */
     phase = 33;
-
-    //TODO:
-    iparm[7] = 2; /* Max numbers of iterative refinement steps. */
-
-    pardiso( pt, &maxfct, &mnum, &mtype, &phase, &numRows, csrValues, csrIA, csrJA, &iDum, &nrhs, iparm, &msglvl, rhs, solution, &error );
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
+             const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
+             const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl,
+             const_cast<ValueType*> (rhs), solution, &error );
     SCAI_PARDISO_ERROR_CHECK ( error, "ERROR during back substitution" )
     SCAI_LOG_INFO( logger, "Solve completed ... " )
 
     phase = -1; /* Release internal memory. */
-    pardiso( pt, &maxfct, &mnum, &mtype, &phase, &numRows, &vDum, csrIA, csrJA, &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
+             &vDum, const_cast<IndexType*> (csrIA), const_cast<IndexType*> (csrJA),
+             &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+    SCAI_LOG_INFO( logger, "LUfactorization completed" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -262,6 +285,8 @@ void MKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::LUfactorization<ValueType> >( LUfactorization, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
