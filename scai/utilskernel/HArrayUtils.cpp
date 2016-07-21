@@ -769,7 +769,6 @@ void HArrayUtils::setSequence( hmemo::HArray<ValueType>& array, ValueType startV
 
 /* --------------------------------------------------------------------------- */
 
-
 void HArrayUtils::setRandom( hmemo::_HArray& array,
                              const IndexType n,
                              const float fillRate,
