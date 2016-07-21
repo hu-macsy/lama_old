@@ -82,6 +82,24 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 
 /* ------------------------------------------------------------------------- */
 
+template<typename ValueType>
+static void setNonSquareData( MatrixStorage<ValueType>& storage )
+{
+    const IndexType numRows = 4; 
+    const IndexType numColumns = 10;
+    const IndexType ia[] = { 0,    2,       5, 6,    8 };
+    const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
+    const IndexType numValues = ia[numRows];
+
+    LArray<IndexType> csrIA( numRows + 1, ia );
+    LArray<IndexType> csrJA( numValues, ja ); 
+    LArray<ValueType> csrValues( numValues, ValueType( 1 ) );
+
+    storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_arithmetic_test_types )
 {
     std::vector<std::string> supportedSuffixes;
@@ -111,6 +129,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_arithmetic_test
         CSRStorage<ValueType> csrStorage;
         setDenseData( csrStorage );
      
+        BOOST_CHECK( csrStorage.hasDiagonalProperty() );
+
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outStorageFormatted_" + typeName + fileSuffix;
 
@@ -122,6 +142,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_arithmetic_test
 
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
+
+        BOOST_CHECK( readStorage.hasDiagonalProperty() );
 
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
@@ -178,6 +200,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_arithmetic_test_ty
         CSRStorage<ValueType> csrStorage;
         setDenseData( csrStorage );
      
+        BOOST_CHECK( csrStorage.hasDiagonalProperty() );
+
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outStorageBinary" + typeName + fileSuffix;
 
@@ -189,6 +213,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_arithmetic_test_ty
 
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
+        BOOST_CHECK( readStorage.hasDiagonalProperty() );
 
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
@@ -197,6 +222,81 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_arithmetic_test_ty
 
         for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
         {
+            for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
+            {
+                BOOST_CHECK_EQUAL( csrStorage.getValue( i, j ), readStorage.getValue( i, j ) );
+            }
+        }
+
+#ifdef DELETE_OUTPUT_FILES
+        int rc = FileIO::removeFile( fileName );
+    
+        BOOST_CHECK_EQUAL( rc, 0 );
+        BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+#endif
+
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( NonSquareStorage )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    // read / write of matrix storage with size 2 x 8
+    // Note: for partitioned IO the matrices might be no more square
+
+    std::vector<std::string> supportedSuffixes;
+
+    FileIO::getCreateValues( supportedSuffixes );
+
+    // loop over all supported suffixes, got them from FileIO factory
+
+    for ( size_t i = 0; i < supportedSuffixes.size(); ++i )
+    {
+        const std::string& fileSuffix = supportedSuffixes[i];
+
+        unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
+ 
+        if ( fileSuffix != fileIO->getMatrixFileSuffix() )
+        {
+            SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
+            continue;   
+        }
+
+        CSRStorage<ValueType> csrStorage;
+        setNonSquareData( csrStorage );
+
+        LArray<IndexType> firstColIndexes1;
+        csrStorage.getFirstColumnIndexes( firstColIndexes1 );
+     
+        std::string typeName = TypeTraits<ValueType>::id();
+        std::string fileName = "outStorageNonSquare" + typeName + fileSuffix;
+
+        SCAI_LOG_INFO( logger, "FileIO(default): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
+    
+        csrStorage.writeToFile( fileName );
+
+        BOOST_CHECK( FileIO::fileExists( fileName ) );
+
+        CSRStorage<ValueType> readStorage;
+        readStorage.readFromFile( fileName );
+
+        // The storage read can have less columns 
+
+        BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
+        BOOST_REQUIRE( readStorage.getNumColumns() <= csrStorage.getNumColumns() );
+
+        // We verify that the order of the column indexes has not changed
+
+        LArray<IndexType> firstColIndexes2;
+        readStorage.getFirstColumnIndexes( firstColIndexes2 );
+
+        for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
+        {
+            BOOST_CHECK_EQUAL( firstColIndexes1[i], firstColIndexes2[i] );
+
             for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
             {
                 BOOST_CHECK_EQUAL( csrStorage.getValue( i, j ), readStorage.getValue( i, j ) );
