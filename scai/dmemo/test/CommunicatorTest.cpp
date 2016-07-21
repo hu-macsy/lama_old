@@ -48,6 +48,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai;
@@ -687,6 +688,74 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_arithmetic_test_types
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
+{
+    using common::Math;
+
+    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    std::srand( 1751 + comm->getRank() * 17 );
+
+    // test it for each processor to be the root
+
+    for ( PartitionId root = 0; root < comm->getSize(); ++root )
+    {
+        IndexType N = 5;
+        LArray<ValueType> vals;
+        HArrayUtils::setRandom( vals, N, 1.0f );
+        ValueType localMax = vals[0];
+        IndexType localMaxLoc = 0;
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            ValueType v = vals[i];
+
+            if ( v > localMax )
+            {
+                localMax = v;
+                localMaxLoc = i;
+            }
+        }
+    
+        SCAI_LOG_INFO( logger, *comm << ": checkMaxLoc, local " << localMax << " @ " << localMaxLoc )
+
+
+        ValueType globalMax1 = comm->max( localMax );
+
+        BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
+    
+        // some types not supported yet for maxloc
+
+        if ( common::isComplex( stype ) ||  ( stype == common::scalar::LONG_DOUBLE ) )
+        {
+            continue;
+        }
+
+        IndexType globalMaxLoc = localMaxLoc;
+        ValueType globalMax = localMax;
+
+        comm->maxloc( globalMax, globalMaxLoc, root );
+
+        comm->bcast( &globalMax, 1, root );
+        comm->bcast( &globalMaxLoc, 1, root );
+
+        BOOST_CHECK_EQUAL( globalMax1, globalMax );
+
+        SCAI_LOG_INFO( logger, *comm << ": checkMaxLoc, global " << globalMax << " @ " << globalMaxLoc )
+
+        BOOST_CHECK( Math::abs( globalMax ) >= Math::abs( localMax ) );
+
+        bool any = globalMaxLoc == localMaxLoc;
+
+        any = comm->any( any );
+    
+        BOOST_CHECK( any );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -774,6 +843,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
         ValueType value = static_cast<ValueType>( 2 * partner + 3 * i );
         BOOST_CHECK_EQUAL( value, vector[i] );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( nodeTest )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    PartitionId nodeSize = comm->getNodeSize();
+    PartitionId nodeRank = comm->getNodeRank();
+
+    BOOST_CHECK( nodeRank < nodeSize );
+
+    Communicator::ThreadSafetyLevel level = comm->getThreadSafetyLevel();
+
+    BOOST_CHECK( int( level ) > 0 );
 }
 
 /* --------------------------------------------------------------------- */

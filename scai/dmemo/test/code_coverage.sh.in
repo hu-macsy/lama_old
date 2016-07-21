@@ -75,7 +75,7 @@ export SCAI_TRACE=time
 	
 # Running dmemo tests
 echo "Running dmemo tests"
-./dmemoTest >/dev/null
+./dmemoTest --SCAI_COMMUNICATOR=NO >/dev/null
 if [ $? -ne 0 ]
 then
 	echo "ERROR in dmemoTest"
@@ -85,10 +85,10 @@ fi
 if [ -d ../mpi ];
 then
     # Running parallel tests
-    for i in 2 3 4;
+    for i in 1 2 3 4;
     do
-        echo "Running distributed tests with $i processes"
-        mpirun -np $i ./dmemoTest >/dev/null
+        echo "Running distributed tests with $i MPI processes"
+        mpirun -np $i ./dmemoTest --SCAI_COMMUNICATOR=MPI >/dev/null
         if [ $? -ne 0 ]
         then
             echo "ERROR in dmemoTest"
