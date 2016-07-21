@@ -36,6 +36,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/utilskernel/LArray.hpp>
 
 using namespace scai;
@@ -100,21 +101,32 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
 
     hmemo::HArray<IndexType> localIndexes;
 
-    IndexType N = 1;
+    IndexType N = 2;
+
     utilskernel::HArrayUtils::setSequence( localIndexes, rank * N, 1, N );
 
-    DistributionPtr generaldist1( new GeneralDistribution( size * N, localIndexes, comm ) );
-    DistributionPtr generaldist2( generaldist1 );
-    DistributionPtr generaldist3( new GeneralDistribution( size * N, localIndexes, comm ) );
+    GeneralDistribution genDist1( size * N, localIndexes, comm );
+    const GeneralDistribution& genDist2 = genDist1;
+    GeneralDistribution genDist3( size * N, localIndexes, comm );
+    GeneralDistribution genDist4( genDist1 );
+    BlockDistribution bdist( size * N, comm );
+    GeneralDistribution genDist5( bdist );
+    GeneralDistribution genDist6( BlockDistribution( size * ( N + 1 ), comm ) );
 
-    N = 3;
-    utilskernel::HArrayUtils::setSequence( localIndexes, rank * N, 1, N );
+    BOOST_CHECK_EQUAL( genDist1, genDist2 );  // pointer equality
+    BOOST_CHECK_EQUAL( genDist2, genDist1 );  // pointer equality
+    BOOST_CHECK_EQUAL( genDist1, genDist3 );  // same constructor equality
+    BOOST_CHECK_EQUAL( genDist3, genDist1 );  // same constructor equality
+    BOOST_CHECK_EQUAL( genDist1, genDist4 );  // copy equality
+    BOOST_CHECK_EQUAL( genDist4, genDist1 );  // copy equality
 
-    DistributionPtr generaldist4( new GeneralDistribution( size * N, localIndexes, comm ) );
+    if ( size != 1 )
+    {
+        BOOST_CHECK( genDist1 != bdist );         // do not compare block dist and general dist
+    }
 
-    BOOST_CHECK( generaldist1->isEqual( *generaldist2 ) );
-    BOOST_CHECK( generaldist1->isEqual( *generaldist3 ) );
-    BOOST_CHECK( !generaldist1->isEqual( *generaldist4 ) );
+    BOOST_CHECK_EQUAL( genDist1, genDist5 );  // but if block is copied to a general dist
+    BOOST_CHECK( genDist1 != genDist6 );      // different global sizes
 }
 
 /* --------------------------------------------------------------------- */

@@ -111,7 +111,7 @@ bool Distribution::proveEquality( bool& isSame, const Distribution& other ) cons
     }
     else if ( isReplicated() && other.isReplicated() )
     {
-        // on a single processor all distributins are the same
+        // on a single processor all distributions are the same
 
         isSame = true;
         SCAI_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" )

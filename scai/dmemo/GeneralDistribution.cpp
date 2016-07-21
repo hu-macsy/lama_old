@@ -193,6 +193,8 @@ GeneralDistribution::GeneralDistribution(
     }
 }
 
+/* ---------------------------------------------------------------------- */
+
 GeneralDistribution::GeneralDistribution( const Distribution& other ) : 
 
     Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
@@ -211,11 +213,26 @@ GeneralDistribution::GeneralDistribution( const Distribution& other ) :
     }
 }
 
+/* ---------------------------------------------------------------------- */
+
+GeneralDistribution::GeneralDistribution( const GeneralDistribution& other ) :
+
+    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
+
+{
+    mLocal2Global = other.mLocal2Global;
+    mGlobal2Local = other.mGlobal2Local;
+}
+
+/* ---------------------------------------------------------------------- */
+
 GeneralDistribution::GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator ) : 
 
     Distribution( globalSize, communicator )
 {
 }
+
+/* ---------------------------------------------------------------------- */
 
 GeneralDistribution::~GeneralDistribution()
 {

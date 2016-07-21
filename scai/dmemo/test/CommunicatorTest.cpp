@@ -47,6 +47,7 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Settings.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai;
@@ -772,6 +773,65 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
     {
         ValueType value = static_cast<ValueType>( 2 * partner + 3 * i );
         BOOST_CHECK_EQUAL( value, vector[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( procArrayTest )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    PartitionId procArray[3];
+
+    bool replace = true;
+
+    common::Settings::putEnvironment( "SCAI_NP", "1x3x2", replace );
+    
+    Communicator::getUserProcArray( procArray );
+
+    BOOST_CHECK_EQUAL( procArray[0], 1 );
+    BOOST_CHECK_EQUAL( procArray[1], 3 );
+    BOOST_CHECK_EQUAL( procArray[2], 2 );
+
+    common::Settings::putEnvironment( "SCAI_NP", "2", replace );
+    
+    Communicator::getUserProcArray( procArray );
+
+    BOOST_CHECK_EQUAL( procArray[0], 2 );
+    BOOST_CHECK_EQUAL( procArray[1], 0 );
+    BOOST_CHECK_EQUAL( procArray[2], 0 );
+
+    common::Settings::putEnvironment( "SCAI_NP", "5_1", replace );
+    
+    Communicator::getUserProcArray( procArray );
+
+    BOOST_CHECK_EQUAL( procArray[0], 5 );
+    BOOST_CHECK_EQUAL( procArray[1], 1 );
+    BOOST_CHECK_EQUAL( procArray[2], 0 );
+
+    common::Settings::putEnvironment( "SCAI_NP", "", replace );
+
+    comm->factorize2( 16, 1, procArray );
+    
+    BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] );
+
+    if ( comm->getSize() < 5 )
+    {
+        // all processors should be dedicated to 1st factor
+
+        BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] );
+    }
+
+    comm->factorize3( 1, 16, 1, procArray );
+    
+    BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] * procArray[2] );
+
+    if ( comm->getSize() < 5 )
+    {
+        // all processors should be dedicated to 2nd factor
+
+        BOOST_CHECK_EQUAL( comm->getSize(), procArray[1] );
     }
 }
 
