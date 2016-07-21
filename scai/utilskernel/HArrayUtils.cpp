@@ -1093,11 +1093,8 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::arrayPlusArray<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                             \
             const hmemo::HArray<ValueType>&, const ValueType,                                                                     \
             const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                                                 \
-<<<<<<< HEAD
-=======
     template void HArrayUtils::arrayTimesArray<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                            \
             const hmemo::HArray<ValueType>&, const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                \
->>>>>>> develop
     template ValueType HArrayUtils::dotProduct<ValueType>( const hmemo::HArray<ValueType>&,                                       \
             const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                                                 \
     template ValueType HArrayUtils::asum<ValueType>( const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                        \
@@ -1109,11 +1106,7 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::sort<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&, hmemo::ContextPtr );        \
     template void HArrayUtils::setSequence<ValueType>( hmemo::HArray<ValueType>&, ValueType, ValueType, IndexType,                \
             hmemo::ContextPtr );                                                                                                  \
-<<<<<<< HEAD
-    template void HArrayUtils::setRandom<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );            \
-=======
     template void HArrayUtils::setRandomImpl<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );        \
->>>>>>> develop
     template void HArrayUtils::buildSparseArray<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,                 \
             const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                                                 \
     template void HArrayUtils::buildDenseArray<ValueType>( hmemo::HArray<ValueType>&, const IndexType,                            \

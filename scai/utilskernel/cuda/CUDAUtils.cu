@@ -859,10 +859,7 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
-<<<<<<< HEAD
-=======
     KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
->>>>>>> develop
 }
 
 template<typename ValueType, typename OtherValueType>
