@@ -1068,7 +1068,11 @@ protected:
 
     void readFromSingleFile( const std::string& fileName );
  
-    void readFromPartitionedFile( const std::string& fileName, dmemo::DistributionPtr dist );
+    void readFromPartitionedFile( const std::string& fileName );
+
+    void resetRowDistribution( dmemo::DistributionPtr distribution );
+
+    void resetRowDistributionByFirstColumn();
 
     dmemo::DistributionPtr mColDistribution;
 
