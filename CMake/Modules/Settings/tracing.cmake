@@ -38,15 +38,32 @@
 # ignored. Otherwise performance data can be collected
 # where configuration is set at runtime via SCAI_TRACE.
 
-include ( Functions/checkValue )
+if    ( DEFINED SCAI_TRACING )
 
-if    ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-	set ( SCAI_TRACING OFF )
-else  ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-	set ( SCAI_TRACING ON )
-endif ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-checkValue ( ${SCAI_TRACING} "${TRUE_FALSE_CHOICES}" )
-set ( SCAI_TRACING ${SCAI_TRACING} CACHE BOOL "Enable / Disable tracing of regions for performance analysis" )
+    # translate arbitrary bool value to ON / OFF for nice summary
+
+    if ( SCAI_TRACING )
+        set ( SCAI_TRACING ON )
+    else ( SCAI_TRACING )
+        set ( SCAI_TRACING OFF )
+    endif ( SCAI_TRACING )
+
+else  ( DEFINED SCAI_TRACING )
+
+    # Currently SCAI_TRACING disabled in Release mode, but has only minimal overhead
+    # when SCAI_TRACE=OFF is set at runtime
+
+    if    ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+	    set ( SCAI_TRACING OFF )
+    else  ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+	    set ( SCAI_TRACING ON )
+    endif ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+
+endif ( DEFINED SCAI_TRACING )
+
+# SCAI_TRACING in CACHE, force it as value might be modified ( -DSCAI_TRACING=1 -> SCAI_TRACING=ON )
+
+set ( SCAI_TRACING ${SCAI_TRACING} CACHE BOOL "Enable / Disable tracing of regions for performance analysis" FORCE )
 
 if ( SCAI_TRACING )
     set ( SCAI_TRACING_FLAG "SCAI_TRACE_ON" )

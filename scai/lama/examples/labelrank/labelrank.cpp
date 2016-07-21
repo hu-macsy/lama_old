@@ -326,6 +326,6 @@ int main( int argc, char* argv[] )
     }
 
     cout << "saving new labels to hdd..." << endl;
-    labelsMatrix.writeToFile( "labels-new.mtx", File::MATRIX_MARKET );
+    labelsMatrix.writeToFile( "labels-new.mtx" );
     cout << "total run time was " << Walltime::get() - totalStart << " secs." << endl;
 }

@@ -1,0 +1,4 @@
+This directory adds a new (direct) solver to the factory.
+
+Afterwards this solver can be used in any user application.
+

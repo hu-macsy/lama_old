@@ -146,8 +146,19 @@ const std::string& Solver::getId() const
 const Vector& Solver::getResidual() const
 {
     const SolverRuntime& runtime = getConstRuntime();
-    SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", is dirty = " << runtime.mSolution.isDirty()
-                    << ", runtime.mResidual.get() = " << runtime.mResidual.get() )
+
+    if ( runtime.mResidual.get() )
+    {
+        SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", is dirty = " << runtime.mSolution.isDirty()
+                                << ", runtime.mResidual = " << *runtime.mResidual )
+    }
+    else
+    {
+        SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", residual not available yet" )
+    }
+
+    // initialize and solveInit must have been called before 
+
     SCAI_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
     SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
 
@@ -175,7 +186,7 @@ const Vector& Solver::getResidual() const
         runtime.mSolution.setDirty( false );
     }
 
-    return ( *runtime.mResidual );
+    return *runtime.mResidual;
 }
 
 const Matrix& Solver::getCoefficients() const

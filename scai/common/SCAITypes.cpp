@@ -40,4 +40,3 @@ MIC_CALLABLE_MEMBER const IndexType nIndex = std::numeric_limits<IndexType>::max
 
 MIC_CALLABLE_MEMBER const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
-

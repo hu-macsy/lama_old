@@ -63,6 +63,69 @@ SCAI_LOG_DEF_LOGGER( MICUtils::logger, "MIC.Utils" )
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void MICUtils::conj( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger,
+                    "conj<" << common::getScalarType<ValueType>() << ">: " << "n =" << n )
+    void* arrayPtr = array;
+    int device = MICContext::getCurrentDevice();
+#pragma offload target( mic : device), in ( arrayPtr, n )
+    {
+        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        #pragma omp parallel for
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            array[i] = common::Math::conj( array[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MICUtils::exp( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger,
+                    "exp<" << common::getScalarType<ValueType>() << ">: " << "n =" << n )
+    void* arrayPtr = array;
+    int device = MICContext::getCurrentDevice();
+#pragma offload target( mic : device), in ( arrayPtr, n )
+    {
+        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        #pragma omp parallel for
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            array[i] = common::Math::exp( array[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MICUtils::vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger,
+                    "vectorScale<" << common::getScalarType<ValueType>() << ">: " << "n =" << n )
+    void* arrayPtr = array;
+    int device = MICContext::getCurrentDevice();
+#pragma offload target( mic : device), in ( arrayPtr, n )
+    {
+        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        #pragma omp parallel for
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            result[i] = x[i] * y[i];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType, typename OtherValueType>
 void MICUtils::setScale(
     ValueType outValues[],
@@ -325,6 +388,27 @@ void MICUtils::setOrder( ValueType array[], const IndexType n )
         for ( IndexType i = 0; i < n; ++i )
         {
             array[i] = static_cast<ValueType>( i );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MICUtils::setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger, "setSequence<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = " << startValue
+                            << "..., " << ( startValue + (n-1) * inc ) )
+    
+    void* arrayPtr = array;
+    int device = MICContext::getCurrentDevice();
+#pragma offload target( mic : device), in ( arrayPtr, n )
+    {
+        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        #pragma omp parallel for
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            array[i] = static_cast<ValueType>( startValue + i * inc );
         }
     }
 }
@@ -767,11 +851,18 @@ void MICUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
+<<<<<<< HEAD
+=======
+    KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
+>>>>>>> develop
 }
 
 template<typename ValueType, typename OtherValueType>

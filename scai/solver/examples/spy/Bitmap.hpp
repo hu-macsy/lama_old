@@ -131,7 +131,7 @@ public:
     }
 
     template<typename ValueType>
-    void drawCSR( const int nRows, const int nCols, const int ia[], const int ja[], const ValueType values[] )
+    void drawCSR( const IndexType nRows, const IndexType nCols, const IndexType ia[], const IndexType ja[], const ValueType values[] )
     {
         ValueType minval =  10000.0;
         ValueType maxval = -100000.0;
@@ -157,7 +157,7 @@ public:
 
         for ( int i = 0; i < nRows; ++i )
         {
-            for ( int j = ia[i]; j < ia[i + 1]; ++j )
+            for ( int j = static_cast<int>(ia[i]); j < static_cast<int>(ia[i + 1]); ++j )
             {
                 set( static_cast<int>( i * multRow ), static_cast<int>( ja[j] * multCol ), values[j] );
             }
@@ -167,7 +167,7 @@ public:
 
         for ( int i = 0; i < nRows; ++i )
         {
-            for ( int j = ia[i]; j < ia[i + 1]; ++j )
+            for ( int j = static_cast<int>(ia[i]); j < static_cast<int>(ia[i + 1]); ++j )
             {
                 if ( ja[j] == i )
                 {

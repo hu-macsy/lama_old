@@ -1,5 +1,5 @@
 /**
- * @file lama/io/IOUtils.cpp
+ * @file utility.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,45 +27,36 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./lama/io/IOUtils.cpp
- * @author eschricker
- * @date 15.03.2016
+ * @brief Some utilities for parallel I/O
+ * @author Thomas Brandes
+ * @date 13.07.2016
  */
 
-// base class
-#include <scai/lama/io/IOUtils.hpp>
+#include <scai/common/Settings.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
-// scai internal libraries
-#include <scai/common/macros/throw.hpp>
+using namespace scai;
 
-// others
-#include <ostream>
+/** Help routine to read a scalar value type --SCAI_TYPE=... */
 
-namespace scai
+static common::scalar::ScalarType getType() 
 {
-
-namespace lama
-{
-
-IOUtils::file_size_t IOUtils::getFileSize( const char* filename )
-{
-    FILE* pFile = fopen( filename, "rb" );
-    file_size_t size = 0;
-
-    if ( pFile == NULL )
-    {
-        COMMON_THROWEXCEPTION( "File " << filename << " could not be opened" )
-    }
-    else
-    {
-        fseek( pFile, 0, SEEK_END ); // non-portable
-        size = ftell( pFile );
-        fclose( pFile );
+    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
+    
+    std::string val;
+    
+    if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
+    {   
+        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
+        
+        if ( env_type == scai::common::scalar::UNKNOWN )
+        {   
+            std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
+        }
+        
+        type = env_type;
     }
 
-    return size;
+    return type;
 }
-
-} /* end namespace lama */
-
-} /* end namespace scai */

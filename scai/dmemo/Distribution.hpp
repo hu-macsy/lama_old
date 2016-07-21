@@ -44,6 +44,7 @@
 
 // local library
 #include <scai/dmemo/Communicator.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 // internal scai libraries
 #include <scai/logging.hpp>
@@ -66,7 +67,10 @@ typedef common::shared_ptr<const class Distribution> DistributionPtr;
 
 class Distributed;
 
-/** Structure that keeps all kind of arguments used to create a distribution. */
+/** Structure that keeps all kind of arguments used to create a distribution. 
+ *
+ *  An element of this struct is used as an argument of the create method of the factory.
+ */
 
 struct DistributionArguments
 {
@@ -224,24 +228,42 @@ public:
      */
     virtual IndexType global2local( const IndexType globalIndex ) const = 0;
 
-    /** Compute ownership for required indexes.
+    /** Get the owners for a set of (global) indexes 
      *
      * The default solution is to communicate required indexes around
      * all partitions and each partition marks indexes with its id
      * if it is local. If ownership can be computed without communication,
      * this routine might be implemented more efficiently.
      *
-     * @param[in] requiredIndexes   TODO[doxy] Complete Description.
-     * @param[in] owners            TODO[doxy] Complete Description.
+     * @param[in] indexes is an array with global indexes, 0 <= indexes[i] < getGlobalSize() 
+     * @param[out] owners are the corresponing processors that own the indexes 
      */
-    virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
+
+    /** Get the owners of all global indexes. 
+     *
+     *  @param[out] owners owners[i] is owner of element i, 0 <= i < globalSize 
+     *  @param[in]  root   is the processor where the values are needed
+     */
+    virtual void allOwners( hmemo::HArray<PartitionId>& owners, const PartitionId root ) const;
+
+    /** This method returns the owned indexes by this processor. 
+     *
+     *  @param[out] myGlobalIndexes array with localSize 'global' indexes that are owned by this processor
+     */
+    virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
     /**
-     * TODO[doxy] Complete Description.
+     * Virtual method to check two distributions for equality.
      *
-     * @param[in] other   TODO[doxy] Complete Description.
+     * @param[in] other distribution used for comparison with this distribution
+     * @returns true if distributions are proven to be equal, false if equality is not guaranteed
+     *
+     * This method must be implemented by each derived class.
      */
     virtual bool isEqual( const Distribution& other ) const = 0;
+
+    /** Override virtual method Printable::writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -263,18 +285,27 @@ public:
 
     /** Replication of distributed data, one entry for each element of the global range
      *
-     * @tparam     T1           TODO[doxy] Complete Description.
-     * @tparam     T2           TODO[doxy] Complete Description.
+     * @tparam     T1           Value type of output data
+     * @tparam     T2           Value type of input data
      * @param[out] allValues    array over the global range will contain all values
      * @param[in]  localValues  array over the local range has only values for each partition
+     *
+     * \code
+     *   Partitions:          0        1      2
+     *   local indexes:    0, 3, 5    1, 4   2, 6
+     *   local Values:     a, b, c    d, e   f, g
+     *
+     *                     0  1  2  3  4  5  6
+     *   allvalues  :      a, d, f, b, e, c, g
+     * \endcode
      */
     template<typename T1, typename T2>
     void replicate( T1* allValues, const T2* localValues ) const;
 
     /** Replication of distributed data, one line of n entries for each element of the global range
      *
-     * @tparam     T1           TODO[doxy] Complete Description.
-     * @tparam     T2           TODO[doxy] Complete Description.
+     * @tparam     T1           Value type of output data
+     * @tparam     T2           Value type of input data
      * @param[out] allValues    array over the global range will contain all values
      * @param[in]  localValues  array over the local range has only values for each partition
      * @param[in]  n            is number of entries in each line of data
@@ -284,7 +315,7 @@ public:
 
     /** Replication of distributed data, several entries for each element of the global range
      *
-     * @tparam     ValueType             TODO[doxy] Complete Description.
+     * @tparam     ValueType     Value type of input and output data
      * @param[out] allValues     array with all values from all partitions
      * @param[in]  localValues   elements available on this partition
      * @param[in]  allOffsets    contains unique offset for each element of the global range
@@ -295,14 +326,6 @@ public:
      */
     template<typename ValueType>
     void replicateRagged( ValueType allValues[], const ValueType localValues[], const IndexType allOffsets[] ) const;
-
-    /**
-     * Master process prints out the distribution vector to file named "name.part".
-     * Every row contains a single number: the index of the process, where the row is local.
-     *
-     * @param[in] name   output file gets named "name.part".
-     */
-    virtual void printDistributionVector( std::string name ) const = 0;
 
 protected:
 
@@ -333,45 +356,19 @@ protected:
      */
     typedef Distribution* ( *CreateFn2 )( CommunicatorPtr commPtr, const Distributed& matrix, float weight );
 
-    /** This method should be called by distribution classes to register their create operation. */
-
-    // static void addCreator( const std::string& kind, CreateFn1 create1, CreateFn2 create2 );
-
-    /** Common helper function for derived classes to register their static create methods
+    /** Common routine for proving two distributions to be equal
      *
+     *  @param[in,out]  isSame will be set to true or false if one general criterion applies
+     *  @param[in]      other is the distribution compared with this one
+     *  @returns        true if equality or inequality could be proven
+     *
+     *  Note: if this routine returns false ( nothing proven ), the two distributions have at least
+     *        the same global size and the same communicator
      */
-    /*
-    template<typename Derived>
-    static bool registerCreator( const std::string& kind )
-    {
-        // Due to overloading of create we have the create routines by their signature.
 
-        Derived* (*der_create1)(
-            const CommunicatorPtr communicator,
-            const IndexType globalSize,
-            const float weight ) = &Derived::create;
-
-        Derived* (*der_create2)(
-            const CommunicatorPtr communicator,
-            const Distributed& matrix,
-            const float weight ) = &Derived::create;
-
-        // Due to different covariant return type, casting is needed
-
-        CreateFn1 create1 = (Distribution::CreateFn1) der_create1;
-        CreateFn2 create2 = (Distribution::CreateFn2) der_create2;
-
-        Distribution::addCreator( kind, (CreateFn1) create1, (CreateFn2) create2 );
-
-        return true;
-    }
-     */
+     bool proveEquality( bool& isSame, const Distribution& other ) const;
 
 private:
-
-    typedef std::map<std::string, std::pair<CreateFn1, CreateFn2> > CreatorMap;
-
-    static CreatorMap& getFactory();
 
     Distribution(); // disable default constructor
 

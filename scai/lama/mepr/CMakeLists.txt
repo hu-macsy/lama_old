@@ -37,7 +37,6 @@ scai_project(
     HEADERS
 
         CRTPMatrixStorageWrapper
-        IOWrapper
         MatrixStorageWrapper
 
     ADD_PARENT_SCOPE

@@ -556,31 +556,6 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
-    /** Writes this sparse matrix to a file in CSR format. */
-
-    void writeToFile1(
-        const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
-        const common::scalar::ScalarType valuesType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeBinary = false ) const;
-
-    /**
-     * @brief Assigns this matrix with a replicated sparse matrix read from file.
-     *
-     * Creates a replicated sparse matrix read from file. Currently supported is
-     * the matrix market format, XDR, formatted, unformatted, binary.
-     *
-     * TODO: set reference to description in StorageIO.
-     *
-     * @param[in] filename      the filename to read from
-     *
-     * Note: Derived classes might use this routine within a constructor for convenience.
-     *       This class does not support such a constructor as no file format is known.
-     */
-    void readFromFile( const std::string& filename );
-
     using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::operator=; // make overloaded routines visible before overwriting one
 
     using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColDistribution;

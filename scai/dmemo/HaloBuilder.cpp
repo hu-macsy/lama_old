@@ -50,7 +50,7 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( HaloBuilder::logger, "Halo.Builder" )
 
-void HaloBuilder::build( const Distribution& distribution, const std::vector<IndexType>& requiredIndexes, Halo& halo )
+void HaloBuilder::build( const Distribution& distribution, const HArray<IndexType>& requiredIndexes, Halo& halo )
 {
     SCAI_REGION( "HaloBuilder.build" )
     const PartitionId noPartitions = distribution.getNumPartitions();
@@ -58,22 +58,34 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     SCAI_LOG_INFO( logger,
                    communicator << ": building halo for " << noPartitions << " partitions, # requiredIndexes = " << requiredIndexes.size() )
     IndexType nIndexes = requiredIndexes.size();
-    std::vector<PartitionId> owners( nIndexes );
+    HArray<IndexType> owners;
+
     {
         SCAI_REGION( "HaloBuilder.computeOwners" )
-        communicator.computeOwners( &owners[0], distribution, &requiredIndexes[0], nIndexes );
+        distribution.computeOwners( owners, requiredIndexes );
     }
+
 #ifdef SCAI_LOG_TRACE
-
-    for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
     {
-        SCAI_LOG_TRACE( logger, "Index " << requiredIndexes[i] << " belongs to " << owners[i] )
+        ReadAccess<IndexType> rIndexes( requiredIndexes );
+        ReadAccess<PartitionId> rOwners( owners );
+
+        for ( IndexType i = 0; i < nIndexes; ++i )
+        {
+            SCAI_LOG_TRACE( logger, "Index " << rIndexes[i] << " belongs to " << rOwners[i] )
+        }
+    }
+#endif
+
+    CommunicationPlan& requiredPlan = halo.mRequiredPlan;
+
+    //allocate Required plan with the nodes, where we get data from
+
+    {
+        ReadAccess<PartitionId> rOwners( owners );
+        requiredPlan.allocate( noPartitions, rOwners.get(), owners.size() );
     }
 
-#endif
-    CommunicationPlan& requiredPlan = halo.mRequiredPlan;
-    //allocate Required plan with the nodes, where we get data from
-    requiredPlan.allocate( noPartitions, owners.data(), owners.size() );
     SCAI_LOG_INFO( logger,
                    communicator << ": allocated required plan for " << noPartitions << " partitions, size = " << requiredPlan.size() << ", total quantity = " << requiredPlan.totalQuantity() )
     // sort required indexes by the owner and define global->local mapping
@@ -89,20 +101,22 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     ContextPtr contextPtr = Context::getHostPtr();
     // allocate array for the required indexes sorted by owner
     WriteAccess<IndexType> requiredIndexesByOwner( halo.mRequiredIndexes, contextPtr );
+    ReadAccess<PartitionId> rOwners( owners, contextPtr );
+    ReadAccess<PartitionId> rIndexes( requiredIndexes, contextPtr );
     requiredIndexesByOwner.resize( requiredPlan.totalQuantity() );
 
     // Note: size of requiredIndexesByOwner == requiredPlan.totalQuanitity()
 
     for ( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
     {
-        PartitionId owner = owners[jj];
-        SCAI_ASSERT( owner >= 0 && owner < noPartitions, "No owner for required Index " << requiredIndexes[jj] )
+        PartitionId owner = rOwners[jj];
+        SCAI_ASSERT( owner >= 0 && owner < noPartitions, "No owner for required Index " << rIndexes[jj] )
         //The offset for the owner
         IndexType haloIndex = counts[owner];
-        SCAI_ASSERT( haloIndex >= 0, "No offset for owner " << owner << " of required Index " << requiredIndexes[jj] )
-        requiredIndexesByOwner[haloIndex] = requiredIndexes[jj];
+        SCAI_ASSERT( haloIndex >= 0, "No offset for owner " << owner << " of required Index " << rIndexes[jj] )
+        requiredIndexesByOwner[haloIndex] = rIndexes[jj];
         // define the corresponding global->local mapping
-        halo.setGlobal2Halo( requiredIndexes[jj], haloIndex );
+        halo.setGlobal2Halo( rIndexes[jj], haloIndex );
         ++counts[owner];
     }
 

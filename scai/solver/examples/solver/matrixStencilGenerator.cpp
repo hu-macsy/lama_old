@@ -1,5 +1,5 @@
 /**
- * @file matrixGenerator.cpp
+ * @file matrixStencilGenerator.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -39,12 +39,12 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
-#include <scai/lama/StorageIO.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/common/mepr/TypeListUtils.hpp>
 
 #include <iostream>
+#include <sstream>
 
 using namespace scai;
 using namespace scai::lama;
@@ -92,18 +92,36 @@ int main( int argc, char* argv[] )
     if ( argc >= 5 )
     {
         matrixFileName = argv[1];
-        sscanf( argv[2], "%d", &dimension );
-        sscanf( argv[3], "%d", &stencilType );
-        sscanf( argv[4], "%d", &dimX );
+        {
+	    std::stringstream ss;
+            ss << argv[2];
+            ss >> dimension;
+	}
+
+	{
+	    std::stringstream ss;
+            ss << argv[3];
+            ss >> stencilType;
+	}
+
+	{
+	    std::stringstream ss;
+            ss << argv[4];
+            ss >> dimX;
+	}
 
         if ( argc >= 6 )
         {
-            sscanf( argv[5], "%d", &dimY );
+	    std::stringstream ss;
+            ss << argv[5];
+	    ss >> dimY;
         }
 
         if ( argc >= 7 )
         {
-            sscanf( argv[6], "%d", &dimZ );
+	    std::stringstream ss;
+	    ss << argv[6];
+	    ss >> dimZ;
         }
     }
     else
@@ -167,43 +185,47 @@ int main( int argc, char* argv[] )
     cout << "rhs = " << rhs << endl;
     cout << endl;
     cout << "Solution vector x = ( 1.0, ..., 1.0 ) assumed" << endl;
-    cout << "Write matrix and rhs vector to file " << matrixFileName << endl;
 
-    if ( _StorageIO::hasSuffix( matrixFileName, ".mtx" ) )
+    std::string suffix = FileIO::getSuffix( matrixFileName );
+
+    std::string vectorFileName = matrixFileName;
+
+ 
+    if ( FileIO::canCreate( suffix ) )
     {
-        std::string vectorFileName = matrixFileName;
-        // replace . with _v.
-        vectorFileName.replace( vectorFileName.length() - 4, 1, "_v." );
-        m.writeToFile( matrixFileName, File::MATRIX_MARKET );
-        rhs.writeToFile( vectorFileName, File::MATRIX_MARKET );
-        cout << "Written matrix to matrix market file " << matrixFileName  << endl;
-        cout << "Written rhs vector to matrix market file " << vectorFileName << endl;
-        return 0;
+        // known suffix so we can use it directly
+
+        if ( suffix == ".frm" )
+        {
+            // SAMG format uses two different suffixes for matrix and vector
+            // take <filename>.frv instead of <filename>.frm
+
+            vectorFileName.replace( vectorFileName.length() - 4, 4, ".frv" );
+        }
+        else
+        {
+            // take <filename>_v.<suffix> for <filename>.<suffix>
+
+            vectorFileName.replace( vectorFileName.length() - suffix.length(), 1, "_v." );
+        }
     }
     else 
     {
-        std::string vectorFileName = matrixFileName;
-
-        // add suffix frm, frv if not available
-
-        if ( _StorageIO::hasSuffix( matrixFileName, ".frm" ) )
+        if ( suffix.length() > 0 )
         {
-            vectorFileName.replace( vectorFileName.length() - 4, 4, ".frv" );
-        }
-        else if ( _StorageIO::hasSuffix( matrixFileName, ".frv" ) )
-        {
-            matrixFileName.replace( matrixFileName.length() - 4, 4, ".frm" );
-        }
-        else 
-        {
-            matrixFileName += ".frm";
-            vectorFileName += ".frv";
+            cout << "ATTENTION: " << suffix << " is unknown suffix, take SAMG format" << endl;
         }
 
-        m.writeToFile( matrixFileName, File::SAMG_FORMAT, common::scalar::INTERNAL, common::scalar::INDEX_TYPE, common::scalar::INDEX_TYPE, true );
-        rhs.writeToFile( vectorFileName, File::SAMG_FORMAT, common::scalar::INTERNAL, true );
-        cout << "Written matrix to SAMG file " << matrixFileName << endl;
-        cout << "Written rhs vector to SAMG file " << vectorFileName << endl;
-        return 0;
+        matrixFileName += ".frm";
+        vectorFileName += ".frv";
+
     }
+
+    cout << "Write matrix to file " << matrixFileName << " and rhs vector to file " << vectorFileName << endl;
+
+    m.writeToFile( matrixFileName );
+    rhs.writeToFile( vectorFileName );
+    cout << "Written matrix to file " << matrixFileName << endl;
+    cout << "Written rhs vector to file " << vectorFileName << endl;
+    return 0;
 }

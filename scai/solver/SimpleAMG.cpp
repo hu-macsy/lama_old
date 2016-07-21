@@ -130,11 +130,12 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     // Info about available AMGSetup
     std::vector<std::string> values;  // string is create type for the factory
     AMGSetup::getCreateValues( values );
-    std::cout << "Factory of AMGSetup: " << values.size() << " entries" << std::endl;
+
+    SCAI_LOG_INFO( logger, "Factory of AMGSetup: " << values.size() << " entries" )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        std::cout << "   Registered values[" << i << "] = " << values[i] << std::endl;
+        SCAI_LOG_DEBUG( logger, "   Registered values[" << i << "] = " << values[i] )
     }
 
     if ( runtime.mSetup.get() == NULL )

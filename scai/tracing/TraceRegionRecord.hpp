@@ -58,7 +58,7 @@ namespace tracing
  *  stop explicitly as it works also very well in case of exception.
  */
 
-class TraceRegionRecord
+class COMMON_DLL_IMPORTEXPORT TraceRegionRecord
 {
 
 public:

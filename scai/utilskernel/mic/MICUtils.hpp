@@ -59,6 +59,21 @@ class COMMON_DLL_IMPORTEXPORT MICUtils
 {
 public:
 
+    /** MIC implementation for UtilKernelTrait::exp */
+
+    template<typename ValueType>
+    static void exp( ValueType mValues[], const IndexType n );
+
+    /** MIC implementation for UtilKernelTrait::conj */
+
+    template<typename ValueType>
+    static void conj( ValueType mValues[], const IndexType n );
+
+    /** MIC implementation for UtilKernelTrait::scale */
+
+    template<typename ValueType>
+    static void scale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
+
     /** MIC implementation for UtilKernelTrait::Copy::setScale */
 
     template<typename ValueType, typename OtherValueType>
@@ -86,6 +101,11 @@ public:
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
+
+    /** MIC implementation for UtilKernelTrait::Setter::setSequence */
+
+    template<typename ValueType>
+    static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
 
     /** MIC implementation for UtilKernelTrait::getValue */
 

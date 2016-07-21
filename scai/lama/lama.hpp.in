@@ -41,7 +41,6 @@ extern "C" inline const char* lama_get_version()
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/StorageIO.hpp>
 #include <scai/lama/Vector.hpp>
 
 // Expressions
@@ -55,6 +54,9 @@ extern "C" inline const char* lama_get_version()
 
 // Norms
 #include <scai/lama/norm/all.hpp>
+
+// IO
+#include <scai/lama/io/FileIO.hpp>
 
 // Storage
 #include <scai/lama/storage/COOStorage.hpp>

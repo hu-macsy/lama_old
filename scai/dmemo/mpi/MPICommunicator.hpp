@@ -335,6 +335,18 @@ inline MPI_Datatype MPICommunicator::getMPIType<unsigned int>()
 }
 
 template<>
+inline MPI_Datatype MPICommunicator::getMPIType<long>()
+{
+    return MPI_LONG;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
+{
+    return MPI_UNSIGNED_LONG;
+}
+
+template<>
 inline MPI_Datatype MPICommunicator::getMPIType<long double>()
 {
     return MPI_LONG_DOUBLE;
@@ -365,12 +377,6 @@ inline MPI_Datatype MPICommunicator::getMPIType<ComplexLongDouble>()
 }
 
 #endif
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
-{
-    return MPI_UNSIGNED_LONG;
-}
 
 /* ---------------------------------------------------------------------------------- */
 /*              getMPI2Type                                                           */

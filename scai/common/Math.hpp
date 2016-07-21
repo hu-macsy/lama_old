@@ -129,8 +129,33 @@ struct Math
 #endif
 
     /*
+     * Computes the exponential function of a given value
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int exp( const int& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float exp( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double exp( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double exp( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> exp( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> exp( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> exp( const Complex<long double>& x );
+#endif
+
+    /*
      * Getter for the real part
      */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int real( const int& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long real( const long& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long real( const long long& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double real( const double& x );
@@ -148,6 +173,12 @@ struct Math
     /*
      * Getter for the imag part
      */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int imag( const int& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long imag( const long& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long imag( const long long& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float imag( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double imag( const double& x );
@@ -314,7 +345,44 @@ long double Math::conj( const long double& x )
     return x;
 }
 
+// -------------------------------- exp -----------------------------
+
+int Math::exp( const int& x )
+{
+    return static_cast<int> ( ::expf( static_cast<float>( x ) ) );
+}
+
+float Math::exp( const float& x )
+{
+    return ::expf(x);
+}
+
+double Math::exp( const double& x )
+{
+    return ::exp(x);
+}
+
+long double Math::exp( const long double& x )
+{
+    return ::expl(x);
+}
+
 // -------------------------------- real -----------------------------
+
+int Math::real( const int& x )
+{
+    return x;
+}
+
+long Math::real( const long& x )
+{
+    return x;
+}
+
+long long Math::real( const long long& x )
+{
+    return x;
+}
 
 float Math::real( const float& x )
 {
@@ -332,6 +400,21 @@ long double Math::real( const long double& x )
 }
 
 // -------------------------------- imag -----------------------------
+
+int Math::imag( const int& )
+{
+    return 0;
+}
+
+long Math::imag( const long& )
+{
+    return 0;
+}
+
+long long Math::imag( const long long& )
+{
+    return 0;
+}
 
 float Math::imag( const float& )
 {

@@ -201,6 +201,22 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Multiplication of two arrays: result = x * y
+     *
+     *  @param[out] result  output array
+     *  @param[in]  x       source array
+     *  @param[in]  y       source array
+     *  @param[in]  prefLoc location where operation should be done if possible
+     */
+
+    template<typename ValueType>
+    static void arrayTimesArray(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& y,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** scale array in place : array *= beta
      *
      *  Note: scale will be done where array has currently valid values. The preferred
@@ -214,6 +230,12 @@ public:
 
     template<typename ValueType>
     static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+
+    /** Calculates the exponentional function of the vector elements in place. */
+
+    template<typename ValueType>
+    static void exp( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /*
      * Implementation of functions
@@ -315,17 +337,82 @@ public:
     template<typename ValueType>
     static ValueType unscan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Sort an array of values
+     *
+     *  @param[in,out] is the array of values to be sorted
+     *  @param[out] is the permutation that gives the sorted array
+     *  @param[in] prefLoc is the preferred context where computation should be done
+     * 
+     *  Note: array_out = array_in[ perm ]
+     *
+     *  ToDo: ascending or descending, why no choice
+     */
+
     template<typename ValueType>
     static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Bucket sort of an array with integer values
+     *
+     *  @param[out] perm is permutation to get array sorted
+     *  @param[out] offset is an offset array for perm to sort it bucketwise, size is nb + 1
+     *  @param[in] nb is the number of buckets
+     *  @param[in] array contains bucket indexes, 0 <= array[i] < nb
+     *  @param[in] prefLoc is the preferred context where computation should be done
+     *
+     *  Note: the sorted array is given by array[perm] 
+     *  Note: perm.size() == array.size() if all values of array are correct bucket indexes
+     *        otherwise perm.size() < array.size(), can still be used to get legal sorted buckets
+     *  Note: in contrary to sort the array remains unchanged
+     */
+
+    static void bucketSort(
+        hmemo::HArray<IndexType>& offsets,
+        hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<IndexType>& array,
+        const IndexType nb,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Slighter version of bucketSort, counts only values */
+
+    static void bucketCount(
+        hmemo::HArray<IndexType>& bucketSizes,
+        const hmemo::HArray<IndexType>& array,
+        const IndexType nb,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** Initialize an array with the sequence 0, .., n-1
      *
-     *  @param[out] array will contain the values 0, ..., n-1
-     *  @param[in]  n     becomes size of the array
+     *  @param[out] array   will contain the values 0, ..., n-1
+     *  @param[in]  n       becomes size of the array
      *  @param[in]  prefLoc optional the context where allocation/initialization should be done
      */
 
     static void setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Initilize an array with a sequence of values starting with startValue, incrementing by inc
+     *
+     *  @param[out] array       will contain the values startValue, ..., startValue + (n-1)*inc
+     *  @param[in]  startValue  startValue of the sequence
+     *  @param[in]  inc         increment of the sequence
+     *  @param[in]  n           becomes size of the array
+     *  @param[in]  prefLoc     optional the context where allocation/initialization should be done
+     */
+
+    template<typename ValueType>
+    static void setSequence( hmemo::HArray<ValueType>& array, ValueType startValue, ValueType inc, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Set an array with random values.
+     *
+     *  @param[out] array    will contain random values of its type
+     *  @param[in]  n        number of values, becomes size of array
+     *  @param[in]  fillRate ratio of non-zero values
+     *  @param[in]  prefLoc  optional the context where random numbers should be drawn
+     */
+
+    static void setRandom( hmemo::_HArray& array,
+                           IndexType n,
+                           float fillRate = 1.0f,
+                           hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Sete an array with random values.
      *
@@ -336,10 +423,10 @@ public:
      */
 
     template<typename ValueType>
-    static void setRandom( hmemo::HArray<ValueType>& array,
-                           IndexType n,
-                           float fillRate = 1.0f,
-                           hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void setRandomImpl( hmemo::HArray<ValueType>& array,
+                               IndexType n,
+                               float fillRate = 1.0f,
+                               hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
 

@@ -35,8 +35,10 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
-using namespace scai::dmemo;
+using namespace scai;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -62,8 +64,6 @@ struct BlockDistributionTestConfig
     PartitionId rank;
     PartitionId size;
     IndexType blockSize;
-
-    std::vector<IndexType> nonLocalIndexes;
 
     DistributionPtr dist;
 };
@@ -126,42 +126,66 @@ BOOST_AUTO_TEST_CASE( blockSizeTest )
 
 BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
 {
+    using namespace utilskernel;
+
+    LArray<IndexType> indexes;
+    HArrayUtils::setOrder( indexes, size * blockSize );
+   
+    LArray<PartitionId> owners;
+    dist->computeOwners( owners, indexes );
+
+    LArray<PartitionId> owners1;
+
+    BOOST_CHECK_EQUAL( owners.size(), indexes.size() );
+
+    hmemo::ReadAccess<PartitionId> rOwners( owners );
+ 
     for ( PartitionId p = 0; p < size; ++p )
     {
-        if ( p == rank )
+        for ( IndexType i = 0; i < blockSize; ++i )
         {
-            for ( IndexType i = 0; i < blockSize; ++i )
+            IndexType pos = p * blockSize + i;
+
+            BOOST_CHECK_EQUAL( p, owners[pos] );
+
+            if ( p == rank )
             {
-                BOOST_CHECK( dist->isLocal( p * blockSize + i ) );
-                BOOST_CHECK_EQUAL( dist->global2local( p * blockSize + i ), i );
+                BOOST_CHECK( dist->isLocal( pos ) );
+                BOOST_CHECK_EQUAL( dist->global2local( pos ), i );
             }
-        }
-        else
-        {
-            for ( IndexType i = 0; i < blockSize; ++i )
+            else
             {
-                nonLocalIndexes.push_back( p * blockSize + i );
-                BOOST_CHECK_EQUAL( dist->global2local( p * blockSize + i ), nIndex );
+                BOOST_CHECK( !dist->isLocal( pos ) );
             }
         }
     }
+}
 
-    std::vector<PartitionId> owners;
-    dist->computeOwners( nonLocalIndexes, owners );
-    BOOST_CHECK_EQUAL( ( int ) owners.size(), ( size - 1 ) * blockSize );
-    std::vector<PartitionId>::size_type currentIndex = 0;
+/* --------------------------------------------------------------------- */
 
-    for ( PartitionId p = 0; p < size; ++p )
+BOOST_AUTO_TEST_CASE( ownedIndexesTest )
+{
+    SCAI_LOG_INFO( logger, "ownedIndexesTest for dist = " << *dist )
+
+    using namespace utilskernel;
+
+    LArray<IndexType> myIndexes1;
+    LArray<IndexType> myIndexes2;
+
+    dist->getOwnedIndexes( myIndexes1 );                 // call it for block distribution
+    dist->Distribution::getOwnedIndexes( myIndexes2 );   // call if from base class
+
+    IndexType nLocal = dist->getLocalSize();
+
+    BOOST_REQUIRE_EQUAL( nLocal, myIndexes1.size() );
+    BOOST_REQUIRE_EQUAL( nLocal, myIndexes2.size() );
+
+    hmemo::ReadAccess<IndexType> rIndexes1( myIndexes1 );
+    hmemo::ReadAccess<IndexType> rIndexes2( myIndexes2 );
+
+    for ( IndexType i = 0; i < nLocal; ++i )
     {
-        if ( p == rank )
-        {
-            continue;
-        }
-
-        for ( IndexType i = 0; i < blockSize; ++i )
-        {
-            BOOST_CHECK_EQUAL( p, owners[currentIndex++] );
-        }
+        BOOST_CHECK_EQUAL( rIndexes1[i], rIndexes2[i] );
     }
 }
 

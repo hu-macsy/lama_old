@@ -46,6 +46,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Constants.hpp>
 
 #include <typeinfo>
 
@@ -171,6 +172,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_arithmetic_test_typ
             {
                 BOOST_CHECK_EQUAL( a, read[i] );
             }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    const ValueType values[] = { 1.0, 1.1, 1.3, 1.0 };
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
+    HArray<ValueType> array( ctx );
+    array.init( values, n );
+    HArrayUtils::exp( array, ctx );
+    {
+        ReadAccess<ValueType> read( array, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = read[i] - common::Math::exp(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
     }
 }
@@ -338,6 +361,77 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( bucketSortTest )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    LArray<IndexType> emptyArray;
+
+    LArray<IndexType> perm;
+    LArray<IndexType> offsets;
+ 
+    IndexType numBuckets = 5;
+
+    HArrayUtils::bucketSort( offsets, perm, emptyArray, numBuckets, loc );
+
+    BOOST_CHECK_EQUAL( perm.size(), 0 );
+    BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
+
+    IndexType vals[] = { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 };
+    const IndexType n = sizeof( vals ) / sizeof( IndexType );
+    LArray<IndexType> array( n, vals, loc );
+    numBuckets = array.max() + 1;
+
+    HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
+
+    BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
+    BOOST_CHECK_EQUAL( perm.size(), n );
+
+    LArray<IndexType> sortedArray;
+    HArrayUtils::gather( sortedArray, array, perm );
+    BOOST_CHECK( HArrayUtils::isSorted( sortedArray, true, loc ) );
+
+    // number of buckets = 1, so only two values array[i] == 0 are taken
+
+    numBuckets = 1;
+    HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
+    BOOST_CHECK_EQUAL( perm.size(), 2 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( bucketCountTest )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    LArray<IndexType> emptyArray;
+
+    LArray<IndexType> sizes;
+
+    IndexType numBuckets = 5;
+
+    HArrayUtils::bucketCount( sizes, emptyArray, numBuckets, loc );
+
+    BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
+
+    IndexType vals[] = { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 };
+    const IndexType n = sizeof( vals ) / sizeof( IndexType );
+    LArray<IndexType> array( n, vals, loc );
+
+    numBuckets = array.max() + 1;
+    HArrayUtils::bucketCount( sizes, array, numBuckets, loc );
+    BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
+    BOOST_CHECK_EQUAL( sizes.sum(), n );
+
+    BOOST_CHECK_EQUAL( 4, numBuckets );
+    BOOST_CHECK_EQUAL( 2, sizes[0] );
+    BOOST_CHECK_EQUAL( 4, sizes[1] );
+    BOOST_CHECK_EQUAL( 2, sizes[2] );
+    BOOST_CHECK_EQUAL( 2, sizes[3] );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( setOrderTest )
 {
     ContextPtr loc = Context::getContextPtr();
@@ -350,6 +444,25 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
     {
         IndexType elem = array[i];
         BOOST_CHECK_EQUAL( i, elem );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setSequenceTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+    const IndexType n = 10;
+    const ValueType start = 5;
+    const ValueType inc = 10;
+    LArray<ValueType> array;
+    HArrayUtils::setSequence( array, start, inc, n, loc );
+    BOOST_CHECK_EQUAL( array.size(), n );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        ValueType elem = array[i];
+        BOOST_CHECK_EQUAL( start + i * inc, elem );
     }
 }
 
@@ -443,6 +556,54 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_arithmetic_te
             }
         }
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_arithmetic_test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    ValueType sourceVals1[] = { 3,  1,  4,  2 };
+    ValueType sourceVals2[] = { 2, -1, -1, -5 };
+    const IndexType n1 = sizeof( sourceVals1 ) / sizeof( ValueType );
+    const IndexType n2 = sizeof( sourceVals2 ) / sizeof( ValueType );
+    BOOST_REQUIRE_EQUAL( n1, n2 );
+    LArray<ValueType> x1( n1, sourceVals1, loc );
+    LArray<ValueType> x2( n2, sourceVals2, loc );
+    LArray<ValueType> xf( n2 - 1, sourceVals2, loc ); // wrong sized array
+    LArray<ValueType> target( loc );
+    ValueType alpha = 1.0;
+    ValueType beta = 2.0;
+    ValueType factors[] = { 6, -1, -4, -10 };
+    IndexType NCASE = sizeof( factors ) / sizeof( ValueType );
+
+    HArrayUtils::arrayTimesArray( target, alpha, x1, x2, loc );
+
+    {
+        BOOST_CHECK_EQUAL( NCASE, target.size() );
+        ReadAccess<ValueType> rTarget( target, host );
+        for ( int i = 0; i < NCASE; ++i )
+        {
+            BOOST_CHECK_EQUAL( factors[i], rTarget[i] );
+        }
+    }
+
+    HArrayUtils::arrayTimesArray( target, beta, x1, x2, loc );
+
+    {
+        BOOST_CHECK_EQUAL( NCASE, target.size() );
+        ReadAccess<ValueType> rTarget( target, host );
+        for ( int i = 0; i < NCASE; ++i )
+        {
+            BOOST_CHECK_EQUAL( beta * factors[i], rTarget[i] );
+        }
+    }
+
+    BOOST_CHECK_THROW (
+    {
+        HArrayUtils::arrayTimesArray( target, alpha, x1, xf, loc );
+    }, Exception );
 }
 
 /* --------------------------------------------------------------------- */

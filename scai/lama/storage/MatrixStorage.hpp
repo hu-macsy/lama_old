@@ -35,7 +35,8 @@
 #pragma once
 
 // local library
-#include <scai/lama/io/FileType.hpp>
+#include <scai/lama/io/FileIO.hpp>
+
 #include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
@@ -514,20 +515,18 @@ public:
      * @brief write the matrix storage to an output file
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
+     * @param[in] fileType format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
      * @param[in] valuesType representation type for output values, default is same type as matrix values
-     * @param[in] iaType representation type for row index values
-     * @param[in] jaType representation type for col index values
-     * @param[in] writeBinary whether the data should be written binary
+     * @param[in] indexType representation type for row/col index values (default is settings of FileIO)
+     * @param[in] mode, use BINARY or FORMATTED to force a certain mode
      */
 
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::DEFAULT,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeBinary = false ) const = 0;
+        const std::string& type = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const = 0;
 
     virtual bool checkSymmetry() const = 0;
 
@@ -851,21 +850,19 @@ public:
 
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::DEFAULT,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeToFile = false ) const;
+        const std::string& fileType = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void writeToFile(
         const PartitionId size,
         const PartitionId rank,
         const std::string& fileName,
-        const File::FileType fileType = File::DEFAULT,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeToFile = false ) const;
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void readFromFile( const std::string& fileName );
 

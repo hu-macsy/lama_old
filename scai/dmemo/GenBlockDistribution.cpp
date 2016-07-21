@@ -37,6 +37,7 @@
 
 // local library
 #include <scai/dmemo/Distributed.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 // internal scai libraries
 #include <scai/common/unique_ptr.hpp>
@@ -49,6 +50,8 @@
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace dmemo
 {
 
@@ -58,6 +61,8 @@ GenBlockDistribution::~GenBlockDistribution()
 {
     SCAI_LOG_INFO( logger, "~GenBlockDistribution" )
 }
+
+/* ---------------------------------------------------------------------- */
 
 void GenBlockDistribution::setOffsets(
     const IndexType rank,
@@ -76,9 +81,12 @@ void GenBlockDistribution::setOffsets(
     }
 
     SCAI_ASSERT_EQUAL( sumSizes, getGlobalSize(), "sum over local sizes must be global size" )
+
     mUB = mOffsets[rank] - 1;
     mLB = mOffsets[rank] - localSizes[rank];
 }
+
+/* ---------------------------------------------------------------------- */
 
 void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType mySize )
 {
@@ -89,6 +97,8 @@ void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType num
     SCAI_ASSERT_EQ_DEBUG( localSizes[rank], mySize, "wrongly gathered values" )
     setOffsets( rank, numPartitions, localSizes.get() );
 }
+
+/* ---------------------------------------------------------------------- */
 
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
@@ -104,6 +114,8 @@ GenBlockDistribution::GenBlockDistribution(
     setOffsets( rank, size, &localSizes[0] );
     SCAI_LOG_INFO( logger, *this << ": constructed by local sizes" )
 }
+
+/* ---------------------------------------------------------------------- */
 
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
@@ -121,6 +133,8 @@ GenBlockDistribution::GenBlockDistribution(
     SCAI_LOG_INFO( logger, *this << ": constructed by local range " << firstGlobalIdx << ":" << lastGlobalIdx )
 }
 
+/* ---------------------------------------------------------------------- */
+
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const IndexType localSize,
@@ -131,6 +145,8 @@ GenBlockDistribution::GenBlockDistribution(
     int rank = mCommunicator->getRank();
     setOffsets( rank, size, localSize );
 }
+
+/* ---------------------------------------------------------------------- */
 
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
@@ -189,10 +205,14 @@ void GenBlockDistribution::getLocalRange( IndexType& lb, IndexType& ub ) const
     ub = mUB;
 }
 
+/* ---------------------------------------------------------------------- */
+
 PartitionId GenBlockDistribution::getOwner( const IndexType globalIndex ) const
 {
+    // owner of an index can be computed by each processor without communication 
+
     int first = 0;
-    int last = mCommunicator->getSize() - 1;
+    int last  = mCommunicator->getSize() - 1;
 
     if ( globalIndex < 0 )
     {
@@ -228,6 +248,8 @@ PartitionId GenBlockDistribution::getOwner( const IndexType globalIndex ) const
     return first;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType GenBlockDistribution::getLocalSize() const
 {
     IndexType localSize = 0;
@@ -240,14 +262,18 @@ IndexType GenBlockDistribution::getLocalSize() const
     return localSize;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType GenBlockDistribution::local2global( const IndexType localIndex ) const
 {
     return mLB + localIndex;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) const
 {
-    IndexType localIndex = nIndex; // default value if globalIndex is not local
+    IndexType localIndex = nIndex;   // default value if globalIndex is not local
 
     if ( globalIndex >= mLB && globalIndex <= mUB )
     {
@@ -257,47 +283,61 @@ IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) cons
     return localIndex;
 }
 
-void GenBlockDistribution::computeOwners(
-    const std::vector<IndexType>& requiredIndexes,
-    std::vector<PartitionId>& owners ) const
-{
-    owners.clear();
-    owners.reserve( requiredIndexes.size() );
-    SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
+/* ---------------------------------------------------------------------- */
 
-    for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
+void GenBlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
+{
+    ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
+
+    const IndexType n = indexes.size();
+
+    ReadAccess<IndexType> rIndexes( indexes, ctx );
+    WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
+
+    // ToDo: call a kernel and allow arbitrary context
+
+    for ( IndexType i = 0; i < n; i++ )
     {
-        IndexType requiredIndex = requiredIndexes[i];
-        PartitionId owner = getOwner( requiredIndex );
-        owners.push_back( owner );
-        SCAI_LOG_TRACE( logger, "owner of required index = " << requiredIndex << " is " << owner )
+        wOwners[i] = getOwner( rIndexes[i] );
     }
 }
 
+/* ---------------------------------------------------------------------- */
+
+void GenBlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
+{
+    const IndexType nLocal = getLocalSize();
+
+    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
+
+    utilskernel::HArrayUtils::setSequence( myGlobalIndexes, mLB, 1, nLocal );
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool GenBlockDistribution::isEqual( const Distribution& other ) const
 {
-    if ( this == &other )
+    bool isSame = false;
+
+    bool proven = proveEquality( isSame, other );
+
+    if ( proven )
     {
-        return true; // pointer equality, is always okay
+        return isSame;
     }
 
-    if ( *mCommunicator != other.getCommunicator() )
-    {
-        return false;
-    }
-
-    const GenBlockDistribution* otherBlock = dynamic_cast<const GenBlockDistribution*>( &other );
-
-    if ( !otherBlock )
+    if ( other.getKind() != getKind() )
     {
         return false;
     }
+
+    const GenBlockDistribution& otherBlock = reinterpret_cast<const GenBlockDistribution&>( other );
 
     bool equal = true;
 
     for ( PartitionId p = 0; p < mCommunicator->getSize(); ++p )
     {
-        if ( mOffsets[p] != otherBlock->mOffsets[p] )
+        if ( mOffsets[p] != otherBlock.mOffsets[p] )
         {
             equal = false;
             break;
@@ -307,47 +347,21 @@ bool GenBlockDistribution::isEqual( const Distribution& other ) const
     return equal;
 }
 
+/* ---------------------------------------------------------------------- */
+
 void GenBlockDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
     stream << "GenBlockDistribution( gsize = " << mGlobalSize << ", local = " << mLB << ":" << mUB << ")";
 }
 
-void GenBlockDistribution::printDistributionVector( std::string name ) const
-{
-    IndexType myRank = mCommunicator->getRank();
-    IndexType parts = mCommunicator->getSize();
-    IndexType myLocalSize = getLocalSize();
-    std::vector<IndexType> localSizes( parts );
-    mCommunicator->gather( &localSizes[0], 1, MASTER, &myLocalSize );
-
-    if ( myRank == MASTER ) // process 0 is MASTER process
-    {
-        std::ofstream file;
-        file.open( ( name + ".part" ).c_str() );
-
-        // print row - partition mapping
-        for ( IndexType i = 0; i < parts; ++i )
-        {
-            for ( IndexType j = 0; j < localSizes[i]; j++ )
-            {
-                file << i << std::endl;
-            }
-        }
-
-        file.close();
-    }
-}
-
 /* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-const char GenBlockDistribution::theCreateValue[] = "GEN_BLOCK";
-
 std::string GenBlockDistribution::createValue()
 {
-    return theCreateValue;
+    return getId();
 }
 
 Distribution* GenBlockDistribution::create( const DistributionArguments arg )

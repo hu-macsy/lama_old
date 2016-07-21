@@ -42,6 +42,7 @@
 // local library
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/Vector.hpp>
+#include <scai/lama/io/FileIO.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
@@ -120,18 +121,16 @@ public:
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
      * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
      * @param[in] valuesType representation type for output values, default is same type as matrix values
-     * @param[in] iaType representation type for row index values
-     * @param[in] jaType representation type for col index values
-     * @param[in] writeBinary whether the data should be written binary
+     * @param[in] indexType representation type for col/row index values
+     * @param[in] fileMode can be used to forche BINARY or FORMATTED output
      */
 
     void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::DEFAULT,
-        const common::scalar::ScalarType valuesType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeBinary = false ) const;
+        const std::string& fileType = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -219,14 +218,36 @@ public:
     void setIdentity( const IndexType n );
 
     /**
-     * This method sets a matrix by reading its values from a file.
+     * This method sets a matrix by reading its values from one or multiple files.
      *
      * @param[in] filename      the filename to read from
+     * @param[in] rowDist       optional, if set it is the distribution of the matrix 
      *
-     * Each matrix class must provide an implementation of this method.
-     * The matrix might have any distribution.
+     *   \code
+     *      CSRSparseMatrix<double> matrix;
+     *      matrix.readFromFile( "matrix.mtx" )                    ! matrix only on processor 0
+     *      matrix.readFromFile( "matrix_%r.mtx" )                 ! general block distributed matrix, each processor reads it own file
+     *      matrix.readFromFile( "matrix.mtx", rowDist )           ! each processor gets its local part of the matrix in one file
+     *      matrix.readFromFile( "matrix_%r.mtx", rowDist )        ! read a partitioned matrix with the given distribution
+     *   \endcode
      */
-    virtual void readFromFile( const std::string& filename ) = 0;
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr rowDist = dmemo::DistributionPtr() );
+
+    /**
+     *  This method sets a matrix a reading its values from one or multiple files and also the distribution from a file
+     *
+     * @param[in] matrixFileName the single or partitioned filename to read from
+     * @param[in] distributionFileName the single or partitioned filename with the row distribution of the matrix
+     *
+     *   \code
+     *      CSRSparseMatrix<double> matrix;
+     *      matrix.readFromFile( "matrix.mtx", "owners.mtx" )
+     *      matrix.readFromFile( "matrix_%r.mtx", "owners.mtx" )
+     *      matrix.readFromFile( "matrix.mtx", "rows%r.mtx" )
+     *      matrix.readFromFile( "matrix_%r.mtx", "rows%r.mtx" )
+     *   \endcode
+     */
+    void readFromFile( const std::string& matrixFileName, const std::string& distributionFileName );
 
     /** This method sets a matrix with the values owned by this partition in dense format
      *
@@ -330,7 +351,7 @@ public:
         const IndexType* offsets,
         const ValueType* values )
     {
-        const IndexType numRows    = rowDist->getLocalSize();
+        //const IndexType numRows    = rowDist->getLocalSize(); // not needed
         const IndexType numColumns = colDist->getLocalSize();
         // use of HArrayRef instead of HArray avoids additional copying of values
         const hmemo::HArrayRef<IndexType> offsetArray( numDiagonals, offsets );
@@ -1045,6 +1066,10 @@ protected:
      */
     void setDistributedMatrix( dmemo::DistributionPtr distribution, dmemo::DistributionPtr colDistribution );
 
+    void readFromSingleFile( const std::string& fileName );
+ 
+    void readFromPartitionedFile( const std::string& fileName, dmemo::DistributionPtr dist );
+
     dmemo::DistributionPtr mColDistribution;
 
     // TODO remove mNumRows and mNumColumns, this value is stored in the distribution
@@ -1074,6 +1099,20 @@ private    :
     void setDefaultKind(); // set default values for communication and compute kind
 
     SyncKind mCommunicationKind;//!< synchronous/asynchronous communication
+
+    void writeToSingleFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const common::scalar::ScalarType indexType,
+        const FileIO::FileMode fileMode ) const;
+
+    void writeToPartitionedFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const common::scalar::ScalarType indexType,
+        const FileIO::FileMode fileMode ) const;
 };
 
 /* ======================================================================== */

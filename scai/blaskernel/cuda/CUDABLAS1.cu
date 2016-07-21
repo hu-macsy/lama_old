@@ -375,12 +375,12 @@ void CUDABLAS1::copy(
 
 template<typename ValueType>
 void CUDABLAS1::axpy(
-    int n,
+    IndexType n,
     ValueType alpha,
     const ValueType* x_d,
-    int incX,
+    IndexType incX,
     ValueType* y_d,
-    const int incY )
+    const IndexType incY )
 {
     SCAI_REGION( "CUDA.BLAS1.axpy" )
 

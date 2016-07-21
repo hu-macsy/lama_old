@@ -153,9 +153,11 @@ public:
      *  Each processor knowns the sizes of each partition and can therefore compute
      *  owners without any communication.
      */
-    virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
-    void printDistributionVector( std::string name ) const;
+    /** Override Distribution::getOwnedIndexes with more efficient version. */
+
+    virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
     /** Static method required for create to use in Distribution::Register */
 
@@ -165,10 +167,13 @@ public:
 
     static std::string createValue();
 
-    virtual const char* getKind() const
-    {
-        return theCreateValue;
-    }
+    /** Implementation of pure method Distribution::getKind */
+
+    virtual inline const char* getKind() const;
+
+    /** Unique identification for this derived distribution class. */
+
+    static inline const char* getId();
 
 protected:
 
@@ -176,18 +181,28 @@ protected:
 
 private:
 
-    static const char theCreateValue[];
-
     void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType localSizes[] );
 
     void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType mySize );
 
     GenBlockDistribution(); // disable default destructor
 
-    common::scoped_array<IndexType> mOffsets;//!< offset for each partition
+    common::scoped_array<IndexType> mOffsets;  //!< offset for each partition
 
     IndexType mLB, mUB;//!< local range of full size in global values
 };
+
+
+const char* GenBlockDistribution::getKind() const
+{
+    return getId();
+}
+
+const char* GenBlockDistribution::getId() 
+{
+    return "GEN_BLOCK";
+}
+
 
 } /* end namespace dmemo */
 

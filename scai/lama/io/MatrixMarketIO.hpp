@@ -1,5 +1,5 @@
 /**
- * @file PetSCIO.hpp
+ * @file MatrixMarketIO.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include "CRTPFileIO.hpp"
+#include <scai/lama/io/CRTPFileIO.hpp>
 
 namespace scai
 {
@@ -42,25 +42,23 @@ namespace scai
 namespace lama
 {
 
-/** This file format supports the binary format used by PetSC. 
- *
- *   - header information is just at the beginning of the file
- *   - uses CSR format, but the sizes array and not the offsets
- *   - stores data always in BIG endian (x86 has LITTLE endian)
- */
+class MatrixMarketIO :
 
-class PetSCIO : 
-
-    public CRTPFileIO<PetSCIO>,         // use type conversions
-    public FileIO::Register<PetSCIO>    // register at factory
-
+    public CRTPFileIO<MatrixMarketIO>,         // use type conversions
+    public FileIO::Register<MatrixMarketIO>    // register at factory
 {
 
 public:
 
-    /** Constructor might reset default values */
+    /** Implementation of pure methdod FileIO::isSupportedMode */
 
-    PetSCIO();
+    virtual bool isSupportedMode( const FileMode mode ) const;
+
+    /** File suffix is used to decide about choice of output class */
+
+    virtual std::string getVectorFileSuffix() const;
+
+    virtual std::string getMatrixFileSuffix() const;
 
     /** Implementation for Printable.:writeAt */
 
@@ -105,6 +103,56 @@ public:
     __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
+ 
+private:
+
+    /** Enumeration type for the different symmetry flags in the Matrix Market file */
+
+    typedef enum
+    {
+        GENERAL,
+        SYMMETRIC,
+        HERMITIAN,
+        SKEW_SYMMETRIC
+    } Symmetry;
+
+    /** Conversion of enum value to string */
+
+    const char* symmetry2str( const Symmetry symmetry );
+
+    void writeMMHeader(
+        class IOStream& outFile,
+        const bool vector,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValues,
+        const Symmetry symmetry,
+        const common::scalar::ScalarType dataType );
+
+    void readMMHeader(
+        IndexType& numRows,
+        IndexType& numColumns,
+        IndexType& numValues,
+        common::scalar::ScalarType& dataType,
+        Symmetry& symmetry,
+        class IOStream& inFile );
+
+    /** Extend COO data by adding all symmetric data */
+
+    template<typename ValueType>
+    void addSymmetricEntries(
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>& ja,
+        hmemo::HArray<ValueType>& vals, 
+        bool conjFlag );
+
+    /** Check for symmetry */
+    template<typename ValueType>
+    Symmetry checkSymmetry( 
+        const hmemo::HArray<IndexType>& cooIA, 
+        const hmemo::HArray<IndexType>& cooJA, 
+        const hmemo::HArray<ValueType>& cooValues );
+
 };
 
 }

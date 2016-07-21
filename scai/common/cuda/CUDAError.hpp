@@ -49,15 +49,15 @@ namespace common
 {
 /** Function that translates enum CUresult to strings. */
 
-const char* cudaDriverErrorString( CUresult res );
+COMMON_DLL_IMPORTEXPORT const char* cudaDriverErrorString( CUresult res );
 
 /** Function that translates enum cublasStatus to strings. */
 
-const char* cublasErrorString( cublasStatus_t res );
+COMMON_DLL_IMPORTEXPORT const char* cublasErrorString( cublasStatus_t res );
 
 /** Function that translates enum cuparseStatus to strings. */
 
-const char* cusparseErrorString( cusparseStatus_t res );
+COMMON_DLL_IMPORTEXPORT const char* cusparseErrorString( cusparseStatus_t res );
 
 } /* end namespace common */
 

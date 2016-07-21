@@ -100,8 +100,9 @@ public:
 
         IndexProxy& operator= ( const IndexProxy& other )
         {
-            ValueType tmp = HArrayUtils::getVal<ValueType>( mArray, mIndex );
+            ValueType tmp = HArrayUtils::getVal<ValueType>( other.mArray, other.mIndex );
             HArrayUtils::setVal( mArray, mIndex, tmp );
+            return *this;
         }
 
     private:
@@ -168,6 +169,34 @@ public:
         else
         {
             HArrayUtils::setScalar( *this, value, reduction::COPY, hmemo::Context::getHostPtr() );
+        }
+    }
+
+    /** @brief Construcor with context and size and initial startValue and increment.
+     *
+     *  @param n is the size of the array
+     *  @param startValue is the initial value
+     *  @param inc is the increment for the sequence of values
+     *  @param context is location where initialization is done, if not specified its the host
+     */
+
+    explicit LArray( const IndexType n,
+                     const ValueType startValue,
+                     const ValueType inc,
+                     hmemo::ContextPtr context = hmemo::ContextPtr() )
+    {
+        // SCAI_ASSERT( context.get(), "NULL context" )
+        this->resize( n );  // size of the array must be known before a value can be assigned
+
+        // context == NULL might happen by DenseVector
+
+        if ( context.get() )
+        {
+            HArrayUtils::setSequence( *this, startValue, inc, n, context );
+        }
+        else
+        {
+            HArrayUtils::setSequence( *this, startValue, inc, n, hmemo::Context::getHostPtr() );
         }
     }
 
@@ -292,6 +321,11 @@ public:
     ValueType operator[] ( const IndexType i ) const
     {
         return HArrayUtils::getVal<ValueType>( *this, i );
+    }
+
+    void setRandom( IndexType n, float fillRate = 1.0f, hmemo::ContextPtr context = hmemo::ContextPtr() )
+    {
+        HArrayUtils::setRandomImpl( *this, n, fillRate, context );
     }
 
     /** Get the minimal value of an array */

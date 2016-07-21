@@ -99,7 +99,7 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
     ContextPtr prefLoc = this->getContextPtr();
     mIlg.clear();
     mIlg.resize( mNumRows );
-    HArrayUtils::setScalar( mIlg, 0, utilskernel::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( mIlg, IndexType( 0 ), utilskernel::reduction::COPY, prefLoc );
     HArrayUtils::setOrder( mPerm, mNumRows, prefLoc );
 }
 
@@ -526,7 +526,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     HArrayUtils::setScalar( mDlg, mNumRows, utilskernel::reduction::COPY, prefLoc );
     mIlg.clear();
     mIlg.resize( mNumRows );
-    HArrayUtils::setScalar( mIlg, 1, utilskernel::reduction::COPY, prefLoc );
+    HArrayUtils::setScalar( mIlg, IndexType( 1 ), utilskernel::reduction::COPY, prefLoc );
     mDiagonalProperty = true;
 }
 
@@ -1405,16 +1405,18 @@ const char* JDSStorage<ValueType>::typeName()
 
 SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST )
 
-#define JDS_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+#define JDS_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void JDSStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void JDSStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void JDSStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
     template void JDSStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;                                               \
+    template void JDSStorage<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define JDS_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
