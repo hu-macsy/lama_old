@@ -47,6 +47,7 @@ scai_project (
 
         CommunicatorTest
 
+        DistributedTest
         DistributionTest
 
         NoDistributionTest
