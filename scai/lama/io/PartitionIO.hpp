@@ -98,6 +98,8 @@ public:
 
     static void getPartitionFileName( std::string& fileName, bool& isPartitioned, const dmemo::Communicator& comm );
 
+    static bool isPartitionFileName( const std::string& fileName );
+
     static const PartitionId MASTER = 0;
 
 protected:

@@ -84,6 +84,22 @@ void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, c
 
 /* --------------------------------------------------------------------------------- */
 
+bool PartitionIO::isPartitionFileName( const string& fileName )
+{
+    size_t pos = fileName.find( "%r" );
+    
+    if ( pos == string::npos )
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
 DistributionPtr PartitionIO::readSDistribution( const string& inFileName, CommunicatorPtr comm )
 {
     SCAI_LOG_INFO( logger, "read distribution from one single file " << inFileName )
@@ -232,7 +248,7 @@ void PartitionIO::write( const Distribution& distribution, const string& fileNam
 
     getPartitionFileName( distFileName, writePartitions, distribution.getCommunicator() );
 
-    SCAI_LOG_ERROR( logger, distribution.getCommunicator() << ": write ( partitioned = " << writePartitions << " ) to " << distFileName )
+    SCAI_LOG_INFO( logger, distribution.getCommunicator() << ": write ( partitioned = " << writePartitions << " ) to " << distFileName )
 
     if ( writePartitions )
     {
@@ -274,16 +290,31 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 
     SCAI_LOG_INFO( logger, *comm << ", owner computation for " << distribution << " finished, owners = " << owners )
 
+    int errorFlag = 0;
+
     if ( rank == MASTER )
     {
         SCAI_LOG_INFO( logger, *comm << ", MASTER, write distribution to " << fileName )
 
-        FileIO::write( owners, fileName );
+        try
+        {
+            FileIO::write( owners, fileName );
+        }
+        catch ( common::Exception& e )
+        {
+            SCAI_LOG_ERROR( logger, "master process could not write owner file " << fileName << "\n" << e.what() )
+            errorFlag = 1;
+        }
     }
 
-    // just make sure that no other process starts anything before write is finished
+    // bcast error status, implies also synchronization
 
-    comm->synchronize();
+    comm->bcast( &errorFlag, 1, MASTER );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "Error @ writing distrubution to " << fileName )
+    }
 }
 
 /* --------------------------------------------------------------------------------- */

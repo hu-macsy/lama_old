@@ -525,12 +525,19 @@ void SAMGIO::readStorageImpl(
 
     inFile.closeCheck();   // gives a warning if not complete file has been read
 
+    IndexType maxColumn = csrJA.max();   // maximal appearing column
+
     csrIA -= 1;
     csrJA -= 1;
 
     SCAI_LOG_INFO( logger, "CSR data: ia = " << csrIA << ", ja = " << csrJA << ", valaues = " << csrValues )
 
-    IndexType numColumns = numRows;  // SAMG expects always square matrices
+    IndexType numColumns = numRows;  // Usuallly, SAMG expects always square matrices
+    
+    if ( maxColumn > numColumns )
+    {
+        numColumns = maxColumn;      // but might be bigger for partitioned data
+    }
 
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
