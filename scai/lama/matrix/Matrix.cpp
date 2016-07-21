@@ -821,8 +821,8 @@ void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist 
 
     PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
 
-    SCAI_LOG_ERROR( logger, *comm << ": Matrix.readFromFile ( " << fileName << " ) -> read " 
-                         << newFileName << ", partitioned = " << isPartitioned );
+    SCAI_LOG_INFO( logger, *comm << ": Matrix.readFromFile ( " << fileName << " ) -> read " 
+                            << newFileName << ", partitioned = " << isPartitioned );
 
     if ( !isPartitioned )
     {
