@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
 {
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
-    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
+    const ValueType values[] = { 1.0, 1.1, 1.3, 1.0 };
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
