@@ -429,6 +429,10 @@ public:
         hmemo::HArray<OtherValueType>* values,
         const hmemo::ContextPtr loc ) const;
 
+    /** Own implementation to get global owners of the row */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
+
     /**
      *   This routine builds compressed sparse column format data.
      *

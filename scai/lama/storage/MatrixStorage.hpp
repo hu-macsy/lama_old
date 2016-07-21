@@ -278,6 +278,14 @@ public:
 
     virtual void getDiagonal( hmemo::_HArray& diagonal ) const = 0;
 
+    /** Get for each row the first column index with value entry.
+     *  If diagonal flag is set, the column index will be the same as the (global) row
+     *  index. I.e. for a local storage this routine gives the owned indexes to reconstruct
+     *  the distribution.
+     */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
+
     /** This method sets the diagonal of a matrix storage.
      *
      * Implementation of this routine must be provided by all derived classes.
@@ -865,6 +873,8 @@ public:
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void readFromFile( const std::string& fileName );
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /******************************************************************
      *   invert                                                        *

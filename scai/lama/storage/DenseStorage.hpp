@@ -238,6 +238,10 @@ public:
         hmemo::HArray<OtherValueType>* csrValues,
         const hmemo::ContextPtr loc ) const;
 
+    /** Override MatrixStorage<ValueType>::getFirstColumnIndexes */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
+
     /******************************************************************
      *   invert                                                        *
      ******************************************************************/
