@@ -60,7 +60,7 @@ namespace common
  *  as creator functions might be registered later.
  */
 template<typename InputType, typename ValueType, typename OutputType>
-class Factory1
+class COMMON_DLL_IMPORTEXPORT Factory1
 {
 public:
 
@@ -80,7 +80,7 @@ public:
      *  Derived class must provide create function and createValue
      */
     template<class Derived>
-    class Register
+    class COMMON_DLL_IMPORTEXPORT Register
     {
     public:
 
@@ -90,7 +90,7 @@ public:
 
         /** Guard class that registers/unregisters the creator.   */
 
-        class RegisterGuard
+        class COMMON_DLL_IMPORTEXPORT RegisterGuard
         {
         public:
             RegisterGuard();

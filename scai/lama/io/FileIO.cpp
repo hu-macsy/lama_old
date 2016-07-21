@@ -35,6 +35,8 @@
 #include "FileIO.hpp"
 
 #include <scai/common/Settings.hpp>
+#include <scai/common/exception/IOException.hpp>
+
 #include <string>
 #include <fstream>
 
@@ -46,16 +48,25 @@ namespace lama
 
 FileIO::FileIO() :
 
-    mBinarySet( false ),                             // binary mod not explicitly set
-    mBinary( false ),                                // default is formatted output
+    mFileMode( DEFAULT_MODE ),                       // no forace of anything
     mAppendMode( false ),                            // default is to write each output file new
     mScalarTypeIndex( common::scalar::INDEX_TYPE ),  // default is as used in LAMA
     mScalarTypeData( common::scalar::INTERNAL )      // default is same type as used in output data structure
 {
-    if ( common::Settings::getEnvironment( mBinary, "SCAI_IO_BINARY" ) )
+    bool binary;
+
+    if ( common::Settings::getEnvironment( binary, "SCAI_IO_BINARY" ) )
     {
-        mBinarySet = true;
-        SCAI_LOG_INFO( logger, "Binary mode set by SCAI_IO_BINARY = " << mBinary )
+        if ( binary )
+        {
+            mFileMode = BINARY;
+        }
+        else
+        {
+            mFileMode = FORMATTED;
+        }
+
+        SCAI_LOG_INFO( logger, "File mode set by SCAI_IO_BINARY = " << binary )
     }
 
     common::Settings::getEnvironment( mAppendMode, "SCAI_IO_APPEND" );
@@ -108,18 +119,19 @@ void FileIO::writeAt( std::ostream& stream ) const
 
 void FileIO::writeMode( std::ostream& stream ) const
 {
-    if ( mBinary )
+    stream << "FileMode = ";
+
+    if ( mFileMode == BINARY )
     {
         stream << "binary";
     }
-    else
+    else if ( mFileMode == FORMATTED )
     {
         stream << "formatted";
     }
-
-    if ( mBinarySet )
+    else
     {
-        stream << "(forced)";
+        stream << "DEFAULT";
     }
 
     stream << ", append = " << mAppendMode;
@@ -139,10 +151,9 @@ void FileIO::setDataType( common::scalar::ScalarType type )
     mScalarTypeData = type;
 }
 
-void FileIO::enableBinary( bool flag ) 
+void FileIO::setMode( const FileMode mode )
 {
-    mBinary = flag;
-    mBinarySet = true;
+    mFileMode = mode;
 }
 
 void FileIO::enableAppendMode( bool flag ) 
@@ -205,6 +216,62 @@ std::string FileIO::getSuffix( const std::string& fileName )
     }
 
     return fileName.substr( pos );
+}
+
+/* -------------------------------------------------------------------------- */
+
+int FileIO::removeFile( const std::string& fileName )
+{
+    std::string suffix = getSuffix( fileName );
+
+    // Let FileIO class delete the file as there might be joint files
+
+    if ( canCreate( suffix ) )
+    {
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        SCAI_LOG_INFO( logger, "delete file via " << *fileIO )
+
+        return fileIO->deleteFile( fileName );
+    }
+
+    // unknwon suffix, also delete it
+
+    int rc = std::remove( fileName.c_str() );
+
+    return rc;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void FileIO::write( const hmemo::_HArray& array, const std::string& outFileName )
+{
+    std::string suffix = getSuffix( outFileName );
+
+    if ( !canCreate( suffix ) )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
+    }
+
+    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+
+    fileIO->writeArray( array, outFileName );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void FileIO::read( hmemo::_HArray& array, const std::string& inFileName )
+{
+    std::string suffix = getSuffix( inFileName );
+
+    if ( !canCreate( suffix ) )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
+    }
+
+    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+
+    fileIO->readArray( array, inFileName );
 }
 
 }  // namespace lama

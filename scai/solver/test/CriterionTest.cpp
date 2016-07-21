@@ -170,8 +170,8 @@ BOOST_AUTO_TEST_CASE ( isSatisfiedTest )
     const IndexType N = 40;
     scai::lama::CSRSparseMatrix<ValueType> coefficients;
     scai::lama::MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N, N );
-    scai::lama::DenseVector<ValueType> rhs( N * N, 1.0 );
-    scai::lama::DenseVector<ValueType> solution( rhs );
+    scai::lama::DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
+    scai::lama::DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
     CG cgsolver( "CriterionTestSolver" );
     cgsolver.setStoppingCriterion( mIterationCountCriterion2Ptr );
     cgsolver.initialize( coefficients );

@@ -40,6 +40,7 @@
 
 #include <cmath>
 #include <limits>
+#include <iomanip>
 
 namespace scai
 {
@@ -88,13 +89,56 @@ inline ValueType getConstant( const constants::ConstantType& c )
 template<typename ValueType>
 bool operator==( const ValueType& x, const constants::ConstantType& c )
 {
-    return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+    if ( constants::ZERO == c )
+    {
+        AbsType r = Math::real( x );
+
+        bool isRealZero = Math::abs( r ) < TypeTraits<ValueType>::eps0();
+
+        if ( typeid( AbsType ) == typeid( ValueType ) )
+        {
+            return isRealZero;
+        }
+        else
+        {
+            // complex data, do not use operator < 
+
+            AbsType i = Math::imag( x );
+
+            bool isImagZero = Math::abs( i ) < TypeTraits<ValueType>::eps0();
+
+            return isRealZero && isImagZero;
+        }
+    }
+    else
+    {
+        AbsType r = Math::real( x );
+ 
+        bool isRealOne = Math::abs( r - AbsType( 1 ) ) < TypeTraits<ValueType>::eps1();
+
+        if ( typeid( AbsType ) == typeid( ValueType ) )
+        {
+            return isRealOne;
+        }
+        else
+        {
+            // for complex type we have to assure that imaginary part is close to 0
+
+            AbsType i = Math::imag( x );
+
+            bool isImagZero = Math::abs( i ) < TypeTraits<ValueType>::eps0();
+
+            return isRealOne && isImagZero;
+        }
+    }
 }
 
 template<typename ValueType>
 bool operator==( const constants::ConstantType& c, const ValueType& x )
 {
-    return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
+    return operator==( x, c );
 }
 
 /** Operator not equal also provided for convenience */
@@ -102,13 +146,13 @@ bool operator==( const constants::ConstantType& c, const ValueType& x )
 template<typename ValueType>
 bool operator!=( const ValueType& x, const constants::ConstantType& c )
 {
-    return ! ( x == c );
+    return !operator==( x, c );
 }
 
 template<typename ValueType>
 bool operator!=( const constants::ConstantType& c, const ValueType& x )
 {
-    return ! ( x == c );
+    return !operator==( x, c );
 }
 
 } /* end namespace common */

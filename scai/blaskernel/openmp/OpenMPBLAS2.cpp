@@ -103,11 +103,11 @@ void OpenMPBLAS2::gemv(
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int i = 0; i < M; i++ )
+                for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < N; j++ )
+                    for ( IndexType j = 0; j < N; j++ )
                     {
                         Z += A[lda * j + i] * X[j];
                     }
@@ -119,11 +119,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for ( int i = 0; i < M; i++ )
+                for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < N; j++ )
+                    for ( IndexType j = 0; j < N; j++ )
                     {
                         Z += A[lda * j + i] * X[j * incX];
                     }
@@ -142,11 +142,11 @@ void OpenMPBLAS2::gemv(
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int i = 0; i < N; i++ )
+                for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < M; j++ )
+                    for ( IndexType j = 0; j < M; j++ )
                     {
                         Z += A[lda * i + j] * X[j];
                     }
@@ -158,11 +158,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for ( int i = 0; i < N; i++ )
+                for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < M; j++ )
+                    for ( IndexType j = 0; j < M; j++ )
                     {
                         Z += A[lda * i + j] * X[j * incX];
                     }
@@ -191,11 +191,11 @@ void OpenMPBLAS2::gemv(
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int i = 0; i < M; i++ )
+                for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < N; j++ )
+                    for ( IndexType j = 0; j < N; j++ )
                     {
                         Z += A[lda * i + j] * X[j];
                     }
@@ -207,11 +207,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for ( int i = 0; i < M; i++ )
+                for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < N; j++ )
+                    for ( IndexType j = 0; j < N; j++ )
                     {
                         Z += A[lda * i + j] * X[j * incX];
                     }
@@ -229,11 +229,11 @@ void OpenMPBLAS2::gemv(
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int i = 0; i < N; i++ )
+                for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < M; j++ )
+                    for ( IndexType j = 0; j < M; j++ )
                     {
                         Z += A[lda * j + i] * X[j];
                     }
@@ -245,11 +245,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for ( int i = 0; i < N; i++ )
+                for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < M; j++ )
+                    for ( IndexType j = 0; j < M; j++ )
                     {
                         Z += A[lda * j + i] * X[j * incX];
                     }

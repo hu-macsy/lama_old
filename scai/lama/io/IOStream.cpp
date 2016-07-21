@@ -127,6 +127,7 @@ void IOStream::endianConvert( char* out, const char* in, const IndexType n, cons
         }
         else if ( size == 8 )
         {
+            // double, long
             out_s[0] = in_s[7];
             out_s[1] = in_s[6];
             out_s[2] = in_s[5];
@@ -135,6 +136,26 @@ void IOStream::endianConvert( char* out, const char* in, const IndexType n, cons
             out_s[5] = in_s[2];
             out_s[6] = in_s[1];
             out_s[7] = in_s[0];
+        }
+        else if ( size == 16 )
+        {
+            // long double 
+            out_s[0] = in_s[15];
+            out_s[1] = in_s[14];
+            out_s[2] = in_s[13];
+            out_s[3] = in_s[12];
+            out_s[4] = in_s[11];
+            out_s[5] = in_s[10];
+            out_s[6] = in_s[9];
+            out_s[7] = in_s[8];
+            out_s[8] = in_s[7];
+            out_s[9] = in_s[6];
+            out_s[10] = in_s[5];
+            out_s[11] = in_s[4];
+            out_s[12] = in_s[3];
+            out_s[13] = in_s[2];
+            out_s[14] = in_s[1];
+            out_s[15] = in_s[0];
         }
         else
         {

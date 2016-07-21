@@ -43,7 +43,7 @@
 #include <scai/lama/expression/Expression.hpp>
 
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/io/FileType.hpp>
+#include <scai/lama/io/FileIO.hpp>
 
 // others
 #include <scai/hmemo.hpp>
@@ -186,6 +186,14 @@ public:
 
     Vector& operator=( const Expression_SV& expression );
 
+    /** this = x * y */
+
+    Vector& operator=( const Expression_VV );
+
+    /** this = alpha * x * y */
+
+    Vector& operator=( const Expression_SVV );
+
     /** this +=  alpha * A * x */
 
     Vector& operator+=( const Expression_SMV& expression );
@@ -221,6 +229,14 @@ public:
      * @return            a reference to this.
      */
     Vector& operator*=( const Scalar value );
+
+    /**
+     * @brief Multiplies the passed value with all elements of this.
+     *
+     * @param[in] other   the vector to multiply to do the multiplication per element
+     * @return            a reference to this.
+     */
+    Vector& operator*=( const Vector& other );
 
     /**
      * @brief Divides the passed value with all elements of this.
@@ -284,28 +300,58 @@ public:
     virtual void setValues( const hmemo::_HArray& values ) = 0;
 
     /**
-     * @brief Assign this vector with values stored the file with the given filename.
-     *
-     * @param[in] filename  the name of the file to be read containing vector data.
-     *
-     * The implementation of this method in derived classes can make its own
-     * decision what the distribtion of this vector will be.
+     * This method initializes a (distributed) vector with random numbers. 
+     * 
+     * @param[in] distribution specifies the distribution of the vector
+     * @param[in] fillRate for the number of non-zeros
      */
-    virtual void readFromFile( const std::string& filename ) = 0;
+    virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 ) = 0;
+
+    /**
+     * This method sets a vector by reading its values from one or multiple files.
+     *
+     * @param[in] fileName      the filename to read from
+     * @param[in] distribution  optional, if set it is the distribution of the vector 
+     *
+     *   \code
+     *      DenseVector<double> vector;
+     *      vector.readFromFile( "vector.mtx" )                    ! vector only on processor 0
+     *      vector.readFromFile( "vector_%r.mtx" )                 ! general block distributed vector, each processor reads it own file
+     *      vector.readFromFile( "vector.mtx", rowDist )           ! each processor gets its local part of the vector in one file
+     *      vector.readFromFile( "vector_%r.mtx", rowDist )        ! read a partitioned vector with the given distribution
+     *   \endcode
+     */
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr distribution = dmemo::DistributionPtr() );
+
+    /**
+     *  This method sets a vector a reading its values from one or multiple files and also the distribution from a file
+     *
+     * @param[in] vectorFileName the single or partitioned filename to read from
+     * @param[in] distributionFileName the single or partitioned filename with the row distribution of the vector
+     *
+     *   \code
+     *      CSRSparseMatrix<double> vector;
+     *      vector.readFromFile( "vector.mtx", "owners.mtx" )
+     *      vector.readFromFile( "vector_%r.mtx", "owners.mtx" )
+     *      vector.readFromFile( "vector.mtx", "rows%r.mtx" )
+     *      vector.readFromFile( "vector_%r.mtx", "rows%r.mtx" )
+     *   \endcode
+     */
+    void readFromFile( const std::string& vectorFileName, const std::string& distributionFileName );
 
     /**
      * @brief write the vector to an output file
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
-     * @param[in] dataType representation type for output values, default is same type as vector
-     * @param[in] writeBinary whether the data should be written binary
+     * @param[in] fileType format of the output file ("frv" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
+     * @param[in] dataType representation type for output values, if set it overrides IO settings
+     * @param[in] fileMode can be BINARY or FORMATTED, DEFAULT_MODE keeps default/environment settings
      */
-    virtual void writeToFile(
+    void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::DEFAULT,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const bool writeBinary = false ) const = 0;
+        const std::string& fileType = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
      * @brief get a vector with all local values
@@ -466,6 +512,8 @@ public:
      */
     virtual void assign( const Expression_SV_SV& expression ) = 0;
 
+    virtual void assign( const Expression_SVV& expression ) = 0;
+
     /**
      * @brief Returns the dot product of this and other.
      *
@@ -473,6 +521,14 @@ public:
      * @return            the dot product of this and other
      */
     virtual Scalar dotProduct( const Vector& other ) const = 0;
+
+    /**
+     *  @brief Scale a Vector with another Vector.
+     *
+     *  @param[in] other   the other vector to scale this with
+     *  @return            reference to the scaled vector
+     */
+    virtual Vector& scale( const Vector& other ) = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
@@ -538,6 +594,11 @@ public:
      */
     virtual void conj() = 0;
 
+    /**
+     *  Calculates the exponentional function of the vector elements in place.
+     */
+    virtual void exp() = 0;
+
 protected:
 
     /**
@@ -570,6 +631,36 @@ protected:
     hmemo::ContextPtr mContext; //!< decides about location of vector operations
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+private:
+
+    /** write only the local data to a file, no communication here */
+
+    void writeLocalToFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const FileIO::FileMode fileMode ) const;
+
+    /** write the whole vector into a single file, can imply redistribution */
+
+    void writeToSingleFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const FileIO::FileMode fileMode ) const;
+
+    /** same as writeLocalToFile but also communication for error handling */
+
+    void writeToPartitionedFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const FileIO::FileMode fileMode ) const;
+
+    void readFromSingleFile( const std::string& fileName );
+
+    void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
 };
 
 IndexType Vector::size() const

@@ -79,6 +79,44 @@ void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void OpenMPUtils::exp( ValueType mValues[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.exp" )
+
+    if ( n > 0 )
+    {
+        SCAI_LOG_INFO( logger, "exp, #n = " << n )
+        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            mValues[i] = common::Math::exp( mValues[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.vectorScale" )
+
+    if ( n > 0  )
+    {
+        SCAI_LOG_INFO( logger, "vectorScale, #n = " << n )
+        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            result[i] = x[i] * y[i];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType, typename OtherValueType>
 void OpenMPUtils::setScale(
     ValueType outValues[],
@@ -857,6 +895,86 @@ IndexType OpenMPUtils::compress(
 }
 
 /* --------------------------------------------------------------------------- */
+
+void OpenMPUtils::countBuckets(
+    IndexType bucketSizes[],
+    const IndexType nBuckets,
+    const IndexType bucketMap[],
+    const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "countBuckets, #elems = " << n << ", #buckets = " << nBuckets ) 
+
+    // initialize size array for each bucket
+
+    for ( IndexType i = 0; i < nBuckets; i++ )
+    {
+        bucketSizes[i] = 0;
+    }
+
+    // increment size of a bucket for each value mapped to this bucket
+
+    for ( IndexType k = 0; k < n; k++ )
+    {
+        IndexType i = bucketMap[k];
+
+        // No error message here, just count
+
+        if ( i >= 0 && i < nBuckets )
+        {
+            bucketSizes[i]++;
+        }
+    }
+
+    // Note: out of range values if bucketSizes.sum() != n 
+}
+
+/* --------------------------------------------------------------------------- */
+
+void OpenMPUtils::sortInBuckets( IndexType sortedIndexes[],
+                                 IndexType offsets[],           // used as tmp, remains unchanged
+                                 const IndexType nBuckets,
+                                 const IndexType bucketMap[],
+                                 const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "sortInBuckets, #elems = " << n << ", #buckets = " << nBuckets ) 
+
+    #pragma omp parallel
+    {
+        IndexType lb;
+        IndexType ub;
+
+        // each thread takes responsability for a range of buckets
+
+        omp_get_my_range( lb, ub, nBuckets );
+
+        SCAI_LOG_DEBUG( logger, "take care of buckets from " << lb << " - " << ub )
+
+        for ( IndexType k = 0; k < n; k++ )
+        {
+            IndexType i = bucketMap[k];
+
+            if ( lb <= i && i < ub )
+            {
+                IndexType& offset = offsets[i];
+                SCAI_ASSERT_LT_DEBUG( offset, n, "out of range offset" )
+                sortedIndexes[offset] = k;
+                offset++;
+                SCAI_LOG_TRACE( logger, k << " is in bucket " << i << ", offset = " << offsets[i] )
+            }
+        }
+    }
+
+    // set back the old offsets
+
+    for ( IndexType i = nBuckets; i > 0; --i )
+    {
+        offsets[i] = offsets[i - 1];
+    }
+
+    offsets[0] = 0;
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -866,7 +984,9 @@ void OpenMPUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegi
     const common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
     // we keep the registrations for IndexType as we do not need conversions
-    kregistry::KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::countBuckets>( countBuckets, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::sortInBuckets>( sortInBuckets, ctx, flag );
 }
 
 template<typename ValueType>
@@ -878,6 +998,11 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
+<<<<<<< HEAD
+=======
+    KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
+>>>>>>> develop
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );

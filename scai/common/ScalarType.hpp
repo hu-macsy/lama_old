@@ -70,17 +70,18 @@ struct scalar
 
     typedef enum
     {
-        INDEX_TYPE, //!<  synonymous for IndexType
-        INT,
-        LONG,
-        FLOAT, //!<  synonymous for float
-        DOUBLE, //!<  synonymous for double
-        LONG_DOUBLE, //!<  synonymous for long double
-        COMPLEX, //!<  synonymous for complex
-        DOUBLE_COMPLEX, //!<  synonymous for double complex
+        INT,                 //!<  synonymous for int (signed 32 bit)
+        LONG,                //!<  synonymous for long (signed 64 bit)
+        FLOAT,               //!<  synonymous for float
+        DOUBLE,              //!<  synonymous for double
+        LONG_DOUBLE,         //!<  synonymous for long double
+        COMPLEX,             //!<  synonymous for complex
+        DOUBLE_COMPLEX,      //!<  synonymous for double complex
         LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
-        PATTERN, //!<  dummy type of size 0
-        INTERNAL, //!<  take the type currently in use, getScalarType<ValueType>()
+
+        INDEX_TYPE,          //!<  take the type as defined for IndexType, getScalarType<IndexType>()
+        PATTERN,             //!<  dummy type of size 0
+        INTERNAL,            //!<  take the type currently in use, getScalarType<ValueType>()
         UNKNOWN
     } ScalarType;
 
@@ -109,9 +110,9 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const sc
  *
  */
 
-MIC_CALLABLE_MEMBER const char* scalarType2str( const scalar::ScalarType stype );
+COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER const char* scalarType2str( const scalar::ScalarType stype );
 
-MIC_CALLABLE_MEMBER scalar::ScalarType str2ScalarType( const char* str );
+COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER scalar::ScalarType str2ScalarType( const char* str );
 
 } /* end namespace common */
 

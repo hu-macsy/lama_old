@@ -38,15 +38,18 @@ scai_project (
 
     CLASSES
         
-        FileStream
         IOStream
-        IOUtils
-        XDRFileStream
-        mmio
+
+        FileIO
+        SAMGIO
+        MatrixMarketIO
+        PETScIO
+        MatlabIO
+        PartitionIO
 
     HEADERS
 
-        FileType
+        CRTPFileIO
 
     ADD_PARENT_SCOPE
 )

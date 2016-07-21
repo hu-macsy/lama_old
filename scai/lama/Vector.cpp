@@ -39,8 +39,12 @@
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/Distribution.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
@@ -164,6 +168,153 @@ Vector::Vector( const Vector& other )
 Vector::~Vector()
 {
     SCAI_LOG_INFO( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*    Reading vector from a file                                                          */
+/* ---------------------------------------------------------------------------------------*/
+
+/* ---------------------------------------------------------------------------------*/
+
+void Vector::readFromSingleFile( const std::string& fileName )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    const PartitionId MASTER = 0;
+    const PartitionId myRank = comm->getRank();
+
+    // this is a bit tricky stuff, but it avoids an additional copy from array -> vector
+
+    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
+
+    IndexType vectorSize;
+
+    if ( myRank == MASTER )
+    {
+        FileIO::read( localValues, fileName );
+
+        vectorSize = localValues.size();
+    }
+
+    comm->bcast( &vectorSize, 1, MASTER );
+
+    if ( myRank != MASTER )
+    {
+        localValues.clear();
+    }
+
+    DistributionPtr distribution( new CyclicDistribution( vectorSize, vectorSize, comm ) );
+
+    // works fine as assign can deal with alias, i.e. localValues und getLocalValuues() are same
+
+    assign( localValues, distribution );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Vector::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    // this is a bit tricky stuff, but it provides us with an array of the right type
+    // and it avoids an additional copy from array -> vector
+
+    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
+
+    bool errorFlag = false;
+
+    IndexType localSize = 0;
+
+    try
+    {
+        FileIO::read( localValues, myPartitionFileName );
+
+        localSize = localValues.size();
+
+        if ( dist.get() )
+        {
+            // size of storage must match the local size of distribution
+
+            SCAI_ASSERT_EQUAL( dist->getLocalSize(), localSize, "serious mismatch: local matrix in " << myPartitionFileName << " has illegal local size" )
+        }
+    }
+    catch ( common::Exception& e )
+    {
+        SCAI_LOG_ERROR( logger, *comm << ": failed to read " << myPartitionFileName << ": " << e.what() )
+        errorFlag = true;
+    }
+
+    errorFlag = comm->any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "error reading partitioned matrix" )
+    }
+
+    DistributionPtr vectorDist = dist;
+
+    if ( !vectorDist.get() )
+    {
+        // we have no distribution so assume a general block distribution
+
+        IndexType globalSize = comm->sum( localSize );
+
+        vectorDist.reset( new GenBlockDistribution( globalSize, localSize, comm ) );
+    }
+
+    // make sure that all processors have the same number of columns
+
+    assign( localValues, vectorDist );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Vector::readFromFile( const std::string& vectorFileName, const std::string& distributionFileName )
+{
+    // read the distribution
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    DistributionPtr distribution = PartitionIO::readDistribution( distributionFileName, comm );
+
+    readFromFile( vectorFileName, distribution );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Vector::readFromFile( const std::string& fileName, DistributionPtr distribution )
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": readFromFile( " << fileName << " )" )
+
+    std::string newFileName = fileName;
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // take default
+
+    if ( distribution.get() )
+    {
+        comm = distribution->getCommunicatorPtr();
+    }
+
+    bool isPartitioned;
+
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
+
+    if ( !isPartitioned )
+    {
+        // Alternative solution: each processor reads form the file its local part
+     
+        readFromSingleFile( newFileName );
+
+        if ( distribution.get() )
+        {
+            redistribute( distribution );
+        }
+    }
+    else
+    {
+        readFromPartitionedFile( newFileName, distribution );
+    }
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -325,6 +476,21 @@ Vector& Vector::operator=( const Expression_SV& expression )
     return *this;
 }
 
+Vector& Vector::operator=( const Expression_VV expression )
+{
+    SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> x * y" )
+    Expression_SVV tmpExp( Scalar( 1.0 ), expression );
+    assign( tmpExp );
+    return *this;
+}
+
+Vector& Vector::operator=( const Expression_SVV expression )
+{
+    SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> alpha * x * y" )
+    assign( expression );
+    return *this;
+}
+
 Vector& Vector::operator=( const Vector& other )
 {
     Distributed::operator=( other );
@@ -345,6 +511,11 @@ Vector& Vector::operator=( const Scalar value )
 Vector& Vector::operator*=( const Scalar value )
 {
     return operator=( Expression_SV( value, *this ) );
+}
+
+Vector& Vector::operator*=( const Vector& other )
+{
+    return scale( other );
 }
 
 Vector& Vector::operator/=( const Scalar value )

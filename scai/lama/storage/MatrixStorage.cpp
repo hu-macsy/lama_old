@@ -45,8 +45,7 @@
 #include <scai/dmemo/Redistributor.hpp>
 #include <scai/dmemo/Halo.hpp>
 
-#include <scai/lama/StorageIO.hpp>
-
+#include <scai/lama/io/FileIO.hpp>
 
 // internal scai libraries
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
@@ -1249,33 +1248,62 @@ void MatrixStorage<ValueType>::setDenseData(
 template<typename ValueType>
 void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileName,
-    const File::FileType fileType,
+    const std::string& fileType,
     const common::scalar::ScalarType valuesType,
-    const common::scalar::ScalarType iaType,
-    const common::scalar::ScalarType jaType,
-    const bool writeBinary /* = false */ ) const
+    const common::scalar::ScalarType indexType,
+    const FileIO::FileMode mode ) const
 {
-    writeToFile( 1, 0, fileName, fileType, valuesType, iaType, jaType, writeBinary );
+    writeToFile( 1, 0, fileName, fileType, valuesType, indexType, mode );
 }
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::writeToFile(
-    const PartitionId size,
-    const PartitionId rank,
+    const PartitionId /* size */,
+    const PartitionId /* rank */,
     const std::string& fileName,
-    const File::FileType fileType,
+    const std::string& fileType,
     const common::scalar::ScalarType dataType,
-    const common::scalar::ScalarType iaType,
-    const common::scalar::ScalarType jaType,
-    const bool writeBinary /* = false */ ) const
+    const common::scalar::ScalarType indexType,
+    const FileIO::FileMode mode ) const
 {
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-    // TODO Do not build CSR if this matrix is CSR storage
-    buildCSRData( csrIA, csrJA, csrValues );
-    StorageIO<ValueType>::writeCSRToFile( size, rank, csrIA, mNumColumns, csrJA, csrValues, fileName, fileType,
-                                          dataType, iaType, jaType, writeBinary );
+    std::string suffix = fileType;
+
+    if ( suffix == "" )
+    {
+        suffix = FileIO::getSuffix( fileName );
+    }
+
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // okay, we can use FileIO class from factory
+
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        if ( dataType != common::scalar::UNKNOWN )
+        {
+            fileIO->setDataType( dataType );
+        }
+
+        if ( indexType != common::scalar::UNKNOWN )
+        {
+            fileIO->setIndexType( indexType );
+        }
+
+        if ( mode != FileIO::DEFAULT_MODE )
+        {
+            fileIO->setMode( mode );
+        }
+
+        SCAI_LOG_INFO( logger, "write matrix storage to file, FileIO = " << *fileIO << ", storage = " << *this )
+
+        // Note. SCAI_IO_TYPE_DATA allows that data is converted
+
+        fileIO->writeStorage( *this, fileName );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "writeToFile " << fileName << ", unknown file type " << suffix )
+    }
 }
 
 /*****************************************************************************/
@@ -1285,18 +1313,31 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
 {
     SCAI_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName << ")" )
     SCAI_REGION( "Storage.readFromFile" )
-    IndexType numColumns;
-    IndexType numRows;
-    IndexType numValues;
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-    StorageIO<ValueType>::readCSRFromFile( csrIA, numColumns, csrJA, csrValues, fileName );
-    numRows = csrIA.size() - 1;
-    numValues = csrJA.size();
-    SCAI_LOG_INFO( logger,
-                   "read CSR storage <" << getValueType() << "> : " << numRows << " x " << numColumns << ", #values = " << numValues )
-    setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    std::string suffix = FileIO::getSuffix( fileName );
+   
+    // Note: reading does not care about binary argument, just read as it is
+
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // okay, we can use FileIO class from factory
+
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        // For reading we expect here that the file data type matches the storage type
+        // so SCAI_IO_TYPE_DATA should be ignored for reading 
+
+        fileIO->setDataType( common::scalar::INTERNAL );
+
+        SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
+
+        fileIO->readStorage( *this, fileName );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "readFromFile " << fileName << ", illegal suffix " << suffix )
+    }
+
     check( "read matrix" );
 }
 

@@ -213,7 +213,7 @@ void SparseMatrix<ValueType>::checkSettings()
 template<typename ValueType>
 bool SparseMatrix<ValueType>::isConsistent() const
 {
-    int consistencyErrors = 0;
+    IndexType consistencyErrors = 0;
 
     // ToDo: this implementation should use a corresponding predicate of MatrixStorage
 
@@ -2009,7 +2009,36 @@ void SparseMatrix<ValueType>::setCSRData(
         mHalo.clear();
     }
 
-    SCAI_LOG_INFO( logger, *this << ": filled by (local) dense data" )
+    SCAI_LOG_INFO( logger, *this << ": filled by (local) csr data" )
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::setDIAData(
+    dmemo::DistributionPtr rowDist,
+    dmemo::DistributionPtr colDist,
+    const IndexType numDiagonals,
+    const hmemo::HArray<IndexType>& offsets,
+    const hmemo::_HArray& values )
+{
+    Matrix::setDistributedMatrix( rowDist, colDist );
+    IndexType localNumRows = rowDist->getLocalSize();
+    IndexType globalNumCols = colDist->getGlobalSize();
+    mLocalData->setDIAData( localNumRows, globalNumCols, numDiagonals, offsets, values );
+
+    if ( !colDist->isReplicated() )
+    {
+        // localize the data according to row distribution, use splitHalo with replicated columns
+        mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
+    }
+    else
+    {
+        mHaloData->allocate( localNumRows, 0 );
+        mHalo.clear();
+    }
+
+    SCAI_LOG_INFO( logger, *this << ": filled by (local) dia data" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2022,94 +2051,6 @@ size_t SparseMatrix<ValueType>::getMemoryUsage() const
 }
 
 /* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void SparseMatrix<ValueType>::writeToFile1(
-
-    const std::string& fileName,
-    const File::FileType fileType /* = UNFORMATTED */,
-    const common::scalar::ScalarType valuesType /* = INTERNAL */,
-    const common::scalar::ScalarType iaType /* = IndexType */,
-    const common::scalar::ScalarType jaType /* = IndexType */,
-    const bool writeBinary /* = false */ ) const
-{
-    if ( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
-    {
-        // make sure that only one processor writes to file
-        const Communicator& comm = getRowDistribution().getCommunicator();
-
-        if ( comm.getRank() == 0 )
-        {
-            mLocalData->writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
-        }
-
-        // synchronization to avoid that other processors start with
-        // something that might depend on the finally written file
-        comm.synchronize();
-    }
-    else if ( hasDiagonalProperty() )
-    {
-        SCAI_LOG_INFO( logger, "write distributed matrix" )
-        const Communicator& comm = getRowDistribution().getCommunicator();
-
-        // as diagonal element is first one we can identify the global id of each row by the column index
-
-        if ( getColDistribution().isReplicated() )
-        {
-            mLocalData->writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, valuesType, iaType, jaType, writeBinary );
-        }
-        else
-        {
-            // join the local + halo part before writing it
-            CSRStorage<ValueType> local;
-            bool keepDiagonalProperty = true;
-            local.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
-            local.writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, valuesType, iaType, jaType, writeBinary );
-        }
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( *this << ": write to file not supported with distributions" )
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
-{
-    SCAI_REGION( "Mat.Sp.readFromFile" )
-    // Take the current default communicator
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    IndexType myRank = comm->getRank();
-    IndexType master = 0; // reading processor
-    IndexType numRows = 0; // will be the size of the vector
-    IndexType numCols = 0; // will be the size of the vector
-
-    if ( myRank == master )
-    {
-        mLocalData->readFromFile( fileName );
-        numRows = mLocalData->getNumRows();
-        numCols = mLocalData->getNumColumns();
-        mHaloData->allocate( numRows, 0 );
-        mHalo.clear();
-    }
-
-    comm->bcast( &numRows, 1, master );
-    comm->bcast( &numCols, 1, master );
-    DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
-    DistributionPtr colDist( new NoDistribution( numCols ) );
-
-    if ( myRank == master )
-    {
-        Matrix::setDistributedMatrix( dist, colDist );
-    }
-    else
-    {
-        allocate( dist, colDist );
-        // other processors have to set sizes of local / halo data
-    }
-}
 
 template<typename ValueType>
 std::string SparseMatrix<ValueType>::initTypeName()

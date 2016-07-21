@@ -38,6 +38,7 @@
 #include <scai/common/config.hpp>
 
 // local library
+#include <scai/utilskernel/LArray.hpp>
 #include <scai/dmemo/Distribution.hpp>
 
 // internal scai libraries
@@ -65,23 +66,47 @@ class COMMON_DLL_IMPORTEXPORT GeneralDistribution: public Distribution
 {
 public:
 
-    /** Construcor of a general distribution.
+    /** Constructor of a general distribution where each processor knows it indexes.
+     *
      *  \param globalSize is the size of the distributed range
-     \param myGlobalIndexes contains all indexes of range owned by this partition
-     \param communicator partitions on which the range is distributed.
-
-     Important: each global index from 0 to globalSize-1 must appear exactly once in
-     the vector myGlobalIndexes on one partition.
+     *  \param myGlobalIndexes contains all indexes of range owned by this partition
+     *  \param communicator partitions on which the range is distributed.
+     *
+     *  Important: each global index from 0 to globalSize-1 must appear exactly once in
+     *  the vector myGlobalIndexes on one partition.
      */
-
     GeneralDistribution(
         const IndexType globalSize,
-        const std::vector<IndexType>& myGlobalIndexes,
+        const hmemo::HArray<IndexType>& myGlobalIndexes,
         const CommunicatorPtr communicator );
 
+    /** This constructor creates a general distribution by a mapping of rows to partition ids.
+     *
+     *  @param[in] row2Partition has globalSize entries, row2Partition[i] specifies owner of i
+     *  @param[in] globalSize is the number of distributed elements
+     *  @param[in] communicator that specifies the processor array for distribution
+     *
+     *  Note:  0 <= row2Partion[i] < communicator->size() for 0 <= i < globalSize
+     *  Note:  Only the master process has to provide the mapping row2Partition.
+     */
+
+    /*
     GeneralDistribution(
         const std::vector<IndexType>& row2Partition,
         const IndexType globalSize,
+        const CommunicatorPtr communicator );
+    */
+
+    /** This constructor creates a general distribution by an array containing the owner for each element
+     *
+     *  @param[in] owners, with 0 <= owners[i] < communicator->size()
+     *  @param[in] communicator that specifies the processor array for distribution
+     *
+     *  // Note: owners must only be valid on host processor
+     */
+
+    GeneralDistribution(
+        const hmemo::HArray<IndexType>& owners,
         const CommunicatorPtr communicator );
 
     explicit GeneralDistribution( const Distribution& other );
@@ -94,7 +119,7 @@ public:
 
     virtual IndexType getLocalSize() const;
 
-    virtual std::vector<IndexType>& getLocalRows();
+    // virtual std::vector<IndexType>& getLocalRows();
 
     virtual IndexType local2global( const IndexType localIndex ) const;
 
@@ -104,9 +129,17 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    void getDistributionVector( std::vector<IndexType>& row2Partition ) const;
+    /** Override the default implementation of Distribution::allOwners */
 
-    void printDistributionVector( std::string name ) const;
+    virtual void allOwners( hmemo::HArray<PartitionId>& owners, const PartitionId root ) const;
+
+    /** Override Distribution::getOwnedIndexes */
+
+    virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
+
+    /** This method returns the array that contains for this processors all owned indexes. */
+
+    inline const hmemo::HArray<IndexType>& getMyIndexes() const;
 
     virtual const char* getKind() const
     {
@@ -120,8 +153,10 @@ protected:
     GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator );
 
     typedef std::map<IndexType, IndexType> Global2LocalMapType;
+
     Global2LocalMapType mGlobal2Local;
-    std::vector<IndexType> mLocal2Global;
+
+    utilskernel::LArray<IndexType> mLocal2Global;
 
 private:
 
@@ -133,6 +168,11 @@ private:
 };
 
 typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
+
+const hmemo::HArray<IndexType>& GeneralDistribution::getMyIndexes() const
+{
+    return mLocal2Global;
+}
 
 } /* end namespace dmemo */
 

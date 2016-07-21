@@ -34,7 +34,6 @@
 
 #pragma once
 
-#include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/hmemo/HArray.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Factory.hpp>
@@ -49,6 +48,8 @@ namespace scai
 
 namespace lama
 {
+
+class _MatrixStorage;
 
 /** This abstract base class specifies the methods that have to be 
  *  implemented for read/write of matrix storage and vector arrays.
@@ -73,11 +74,26 @@ class FileIO :
 
 public:
 
+    typedef enum
+    {
+        BINARY,             //!< forces the use of binary write
+        FORMATTED,          //!< forces the use of formatted write
+        DEFAULT_MODE        //!< keep it as it is set by default
+    } FileMode;
+
     /** Constructor sets default values for mode */
 
     FileIO();
 
     virtual ~FileIO();
+
+    /** Query if a certain file mode is supported
+     *
+     *  @param[in] mode either FORMATTED or BINARY
+     *  @returns true if the file mode is supported
+     */
+
+    virtual bool isSupportedMode( const FileMode mode ) const = 0;
 
     /** Write matrix storage into a file.
      *
@@ -139,7 +155,7 @@ public:
 
     /** Enable/Disable binary mode. */
 
-    void enableBinary( bool binary );
+    void setMode( FileMode mode );
 
     /** Enable/Disable append mode.
      *
@@ -159,6 +175,17 @@ public:
 
     static std::string getSuffix( const std::string& fileName );
 
+    /** Help routine to remove file and maybe joint files 
+     *
+     *  @param[in] fileName file to delete
+     *  @returns   0 on success
+     */
+    static int removeFile( const std::string& fileName );
+
+    static void write( const hmemo::_HArray& array, const std::string& fileName );
+
+    static void read( hmemo::_HArray& array, const std::string& fileName );
+
 protected:
 
     void writeAt( std::ostream& stream ) const;
@@ -174,8 +201,7 @@ protected:
 
     int getDataPrecision( common::scalar::ScalarType valueType );
 
-    bool mBinarySet;                        //!< if true binary mode must be respected
-    bool mBinary;                           //!< if true binary I/O is used
+    FileMode mFileMode;                     //!< if true binary mode must be respected
     bool mAppendMode;                       //!< if true output is appended to existing files
 
     common::scalar::ScalarType mScalarTypeIndex; //!< representation type of row indexes

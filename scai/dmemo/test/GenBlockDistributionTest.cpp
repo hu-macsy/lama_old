@@ -37,8 +37,10 @@
 
 #include <scai/dmemo.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
-using namespace scai::dmemo;
+using namespace scai;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -91,17 +93,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
 
 BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
-    std::vector<IndexType> indexes;
+    utilskernel::LArray<IndexType> indexes;
+    utilskernel::LArray<IndexType> owners;
+  
+    utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 
-    for ( IndexType i = 0; i < globalSize; i++ )
-    {
-        indexes.push_back( i );
-    }
+    dist->computeOwners( owners, indexes );
 
-    std::vector<PartitionId> owners;
-    dist->computeOwners( indexes, owners );
-    BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( owners.size() ) );
-    BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
+    BOOST_REQUIRE_EQUAL( globalSize, owners.size() );
+    BOOST_REQUIRE_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
 
     // now check for correct owners
 
@@ -141,10 +141,13 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    DistributionPtr genblockdist1( new GenBlockDistribution( comm->getSize(), 1, comm ) );
+    IndexType globalSize = comm->getSize();
+    IndexType localSize = 1;
+
+    DistributionPtr genblockdist1( new GenBlockDistribution( globalSize, localSize, comm ) );
     DistributionPtr genblockdist2( genblockdist1 );
-    DistributionPtr genblockdist3( new GenBlockDistribution( comm->getSize(), 1, comm ) );
-    DistributionPtr genblockdist4( new GenBlockDistribution( 2 * comm->getSize(), 2, comm ) );
+    DistributionPtr genblockdist3( new GenBlockDistribution( globalSize, localSize, comm ) );
+    DistributionPtr genblockdist4( new GenBlockDistribution( 2 * globalSize, 2 * localSize, comm ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist2 ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist3 ) );
     BOOST_CHECK( !( *genblockdist1 ).isEqual( *genblockdist4 ) );

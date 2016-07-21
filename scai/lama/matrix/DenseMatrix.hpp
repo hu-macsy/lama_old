@@ -270,11 +270,6 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
 
-    /**
-     *  Implementation for Matrix::readFromFile
-     */
-    virtual void readFromFile( const std::string& filename );
-
     /** Implementation of pure Matrix::setDenseData */
 
     virtual void setDenseData(
@@ -291,6 +286,15 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
+        const hmemo::_HArray& values );
+
+    /** Implementation for pure method Matrix::setDIAData. */
+
+    virtual void setDIAData(
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offset,
         const hmemo::_HArray& values );
 
     /** Implementation of pure method for the dense storage format. */
@@ -531,19 +535,6 @@ public:
 
     virtual size_t getValueTypeSize() const;
 
-    /** Method writes dense matrix to a file.
-     *
-     *  Writing is only supported for a replicated matrix.
-     */
-
-    void writeToFile1(
-        const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
-        const common::scalar::ScalarType valuesType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeBinary = false ) const;
-
     /**
      * @brief Implementation of pure function Matrix::copy with covariant return type.
      */
@@ -577,7 +568,7 @@ public:
     using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistribution;
     using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistributionPtr;
 
-    const std::vector<PartitionId>& getOwners() const
+    const utilskernel::LArray<PartitionId>& getOwners() const
     {
         return mOwners;
     }
@@ -601,7 +592,7 @@ protected:
     using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumRows;
     using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumColumns;
 
-    std::vector<PartitionId> mOwners;
+    utilskernel::LArray<PartitionId> mOwners;
 
     /**
      * @brief Set this matrix = alpha * A + beta * B
@@ -648,7 +639,7 @@ private:
         std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
         const DenseStorage<ValueType>& columnData,
         const PartitionId numChunks,
-        const std::vector<IndexType>& columnOwners );
+        const hmemo::HArray<PartitionId>& columnOwners );
 
     /** Restrict dense storage of a replicated matrix to its local part according to row distribution.
      *
@@ -678,13 +669,7 @@ private:
 
     void    computeOwners();
 
-    /** @brief Predicate to check if SCALapack::inverse routine has been registered in kernel registry. */
-
-    bool hasScalaPack();
-
     /** Special implementation of invert in place for a cyclic distributed matrix. */
-
-    void invertCyclic();
 
     void invertReplicated();
 
@@ -710,7 +695,7 @@ template<typename OtherValueType>
 void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>& other )
 {
     // check for valid pointer, might be dynamic cast went wrong somewhere else
-    SCAI_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
+    //SCAI_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
     SCAI_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
     // inherit size and distributions
     Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );

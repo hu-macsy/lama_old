@@ -38,6 +38,7 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
+#include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/io/IOStream.hpp>
 
 #include <scai/common/TypeTraits.hpp>
@@ -50,6 +51,8 @@
 
 using namespace std;
 
+#define MM_SUFFIX ".mtx"
+
 namespace scai
 {
 
@@ -58,8 +61,6 @@ using namespace utilskernel;
 
 namespace lama
 {
-
-static std::string MM_SUFFIX = ".mm";
 
 std::string MatrixMarketIO::getVectorFileSuffix() const
 {
@@ -87,9 +88,24 @@ std::string MatrixMarketIO::createValue()
 
 /* --------------------------------------------------------------------------------- */
 
+bool MatrixMarketIO::isSupportedMode( const FileMode mode ) const
+{   
+    // binary is not supported
+
+    if ( mode == BINARY )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void MatrixMarketIO::writeAt( std::ostream& stream ) const
 {
     stream << "MatrixMarketIO ( ";
+    stream << "suffix = " << MM_SUFFIX << ", ";
     writeMode( stream );
     stream << ", only formatted )";
 }
@@ -153,7 +169,8 @@ void MatrixMarketIO::writeMMHeader(
             outFile << "complex ";
             break;
 
-        case common::scalar::INDEX_TYPE:
+        case common::scalar::INT:
+        case common::scalar::LONG:
             outFile << "integer ";
             break;
 
@@ -390,10 +407,9 @@ void MatrixMarketIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    if ( mBinarySet )
-    {
-        SCAI_ASSERT_ERROR( !mBinary, "Matrix market format can not be written binary" );
-    }
+    SCAI_LOG_INFO( logger, *this << ": write array " << array << " to " << fileName );
+
+    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
@@ -493,6 +509,18 @@ void MatrixMarketIO::readArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+struct indexLess {
+
+    const IndexType* ia;
+    const IndexType* ja;
+
+    bool operator()( int pos1, int pos2 )
+    {   
+        return    ( ia[pos1] < ia[pos2] )
+               || ( ia[pos1] == ia[pos2] && ja[pos1] < ja[pos2] );
+    }
+}; 
+
 static void sortIJ( IndexType perm[], const IndexType ia[], const IndexType ja[], IndexType N )
 {
     for ( IndexType i = 0; i < N; ++ i )
@@ -500,26 +528,14 @@ static void sortIJ( IndexType perm[], const IndexType ia[], const IndexType ja[]
         perm[i] = i;
     }
 
+    indexLess cmp;
+
+    cmp.ia = ia;
+    cmp.ja = ja;
+
     // sort using a custom function object
 
-    struct indexLess {
-        const IndexType* ia;
-        const IndexType* ja;
-        bool operator()( int pos1, int pos2 )
-        {   
-            return    ( ia[pos1] < ia[pos2] )
-                   || ( ia[pos1] == ia[pos2] && ja[pos1] < ja[pos2] );
-        }
-    }; 
-
-    indexLess c;
-
-    c.ia = ia;
-    c.ja = ja;
-
-    // std::sort( perm.begin(), perm.end(), c );
-
-    std::sort( perm, perm + N, c );
+    std::sort( perm, perm + N, cmp );
 }
  
 /* --------------------------------------------------------------------------------- */
@@ -653,10 +669,7 @@ void MatrixMarketIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
-    if ( mBinarySet )
-    {
-        SCAI_ASSERT( !mBinary, "Binary mode not supported for MatrixMarketIO" )
-    }
+    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
     COOStorage<ValueType> coo( storage );
 
@@ -673,13 +686,13 @@ void MatrixMarketIO::writeStorageImpl(
 
     Symmetry symFlag = checkSymmetry( cooIA, cooJA, cooValues );
 
-    SCAI_LOG_ERROR( logger, "symmetry = " << symmetry2str( symFlag ) ) 
+    SCAI_LOG_INFO( logger, "symmetry = " << symmetry2str( symFlag ) ) 
 
     if ( symFlag == SYMMETRIC || symFlag == HERMITIAN )
     {
         removeUpperTriangular( cooIA, cooJA, cooValues );
   
-        SCAI_LOG_ERROR( logger, "#values = " << cooIA.size() << ", due to symmetry " << symmetry2str( symFlag ) )
+        SCAI_LOG_INFO( logger, "#values = " << cooIA.size() << ", due to symmetry " << symmetry2str( symFlag ) )
     }
 
     // Attention: indexing in MatrixMarket starts with 1 and not with 0 as in LAMA
@@ -829,9 +842,21 @@ void MatrixMarketIO::readStorageImpl(
     SCAI_ASSERT_GE( numRows, nrows, "found bigger row indexes than " << numRows )
     SCAI_ASSERT_GE( numColumns, ncols, "found bigger col indexes than " << numColumns )
 
-    COOStorage<ValueType> coo( numRows, numColumns, ia, ja, val );
+    // take the COO arrays and build a COO storage that takes ownership of the data
 
-    storage = coo;
+    COOStorage<ValueType> coo( numRows, numColumns );
+
+    coo.swap( ia, ja, val );
+
+    // make CSR data out of it to get it sorted
+
+    CSRStorage<ValueType> csr( coo );  
+
+    bool diagonalProperty = true;
+
+    csr.sortRows( diagonalProperty );
+
+    storage = csr;
 }
 
 /* --------------------------------------------------------------------------------- */

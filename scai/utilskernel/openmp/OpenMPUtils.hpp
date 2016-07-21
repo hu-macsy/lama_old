@@ -63,6 +63,16 @@ public:
     template<typename ValueType>
     static void conj( ValueType mValues[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::exp */
+
+    template<typename ValueType>
+    static void exp( ValueType mValues[], const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::vectorScale */
+
+    template<typename ValueType>
+    static void vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
+
     /** OpenMP implementation for UtilKernelTrait::setScale */
 
     template<typename ValueType, typename OtherValueType>
@@ -153,6 +163,17 @@ public:
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
+    /** Count bucket sizes for values mapped to buckets, see UtilKernelTrait::countBuckets */
+
+    static void countBuckets( IndexType bucketSizes[], const IndexType nBuckets, const IndexType bucketMap[], const IndexType n );
+
+    /** Resort indexes 0, ..., n-1 according to their mapping to buckets, see UtilKernelTrait::sortInBuckets */
+
+    static void sortInBuckets( IndexType sortedIndexes[],
+                               IndexType offsets[],         
+                               const IndexType nBuckets,
+                               const IndexType bucketMap[],
+                               const IndexType n );
 private:
 
     template<typename ValueType>

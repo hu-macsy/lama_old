@@ -43,6 +43,7 @@
 
 #include <scai/tasking.hpp>
 #include <scai/hmemo.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/Exception.hpp>
@@ -52,6 +53,7 @@ using namespace scai;
 using namespace hmemo;
 using namespace dmemo;
 using namespace tasking;
+using namespace utilskernel;
 
 using common::Exception;
 using common::unique_ptr;
@@ -88,37 +90,48 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
     IndexType n = 17;
-    std::vector<IndexType> localIndexes;
-    std::vector<IndexType> nonLocalIndexes;
+ 
+    LArray<IndexType> localIndexes;
 
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        localIndexes.push_back( rank * n + i );
-    }
+    HArrayUtils::setSequence( localIndexes, rank * n, 1, n );
 
     GeneralDistribution dist( n * size, localIndexes, comm );
 
-    for ( PartitionId p = 0; p < size; ++p )
+    LArray<IndexType> nonLocalIndexes;
+
+    IndexType pos = 0;
+
     {
-        if ( p == rank )
+        hmemo::WriteOnlyAccess<IndexType> wNonLocalIndexes( nonLocalIndexes, ( size - 1 ) * n );
+
+        for ( PartitionId p = 0; p < size; ++p )
         {
-            for ( IndexType i = 0; i < n; ++i )
+            if ( p == rank )
             {
-                BOOST_CHECK( dist.isLocal( p * n + i ) );
+                for ( IndexType i = 0; i < n; ++i )
+                {
+                    BOOST_CHECK( dist.isLocal( p * n + i ) );
+                }
             }
-        }
-        else
-        {
-            for ( IndexType i = 0; i < n; ++i )
+            else
             {
-                nonLocalIndexes.push_back( p * n + i );
+                for ( IndexType i = 0; i < n; ++i )
+                {
+                    wNonLocalIndexes[pos++] = p * n + i;
+                }
             }
         }
     }
+   
+    BOOST_CHECK_EQUAL( pos, nonLocalIndexes.size() ); 
 
-    std::vector < PartitionId > owners;
-    comm->computeOwners( nonLocalIndexes, dist, owners );
-    std::vector<PartitionId>::size_type currentIndex = 0;
+    LArray<PartitionId> owners;
+
+    comm->computeOwners( owners, dist, nonLocalIndexes );
+
+    pos = 0;
+
+    hmemo::ReadAccess<IndexType> rOwners( owners );
 
     for ( PartitionId p = 0; p < size; ++p )
     {
@@ -126,7 +139,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
         {
             for ( IndexType i = 0; i < n; ++i )
             {
-                BOOST_CHECK_EQUAL( p, owners[currentIndex++] );
+                BOOST_CHECK_EQUAL( p, rOwners[pos++] );
             }
         }
     }
@@ -233,7 +246,9 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
 
     const IndexType noReqIndexes = static_cast<IndexType>( requiredIndexes.size() );
     Halo halo;
-    HaloBuilder::build( distribution, requiredIndexes, halo );
+
+    HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
+    HaloBuilder::build( distribution, arrRequiredIndexes, halo );
     const Halo& haloRef = halo;
     const CommunicationPlan& requiredPlan = haloRef.getRequiredPlan();
     const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
@@ -311,8 +326,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_arithmetic_test_t
     }
 
     SCAI_LOG_INFO( logger, "build the Halo" );
+
     Halo halo;
-    HaloBuilder::build( distribution, requiredIndexes, halo );
+    {
+        HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
+        HaloBuilder::build( distribution, arrRequiredIndexes, halo );
+    }
+
     SCAI_LOG_INFO( logger, "halo is now available: " << halo );
     HArray<ValueType> localData;
     {
@@ -348,7 +368,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_arithmetic_test_t
         requiredIndexes.push_back( i );
     }
 
-    HaloBuilder::build( distribution, requiredIndexes, halo );
+    HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
+    HaloBuilder::build( distribution, arrRequiredIndexes, halo );
     comm->updateHalo( haloData, localData, halo );
     BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
     {
@@ -585,9 +606,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_typ
     ValueType dummyVal = 13;
     scoped_array<ValueType> myvals( new ValueType[n + 1] );
     scoped_array<ValueType> allvals( new ValueType[allN] );
-    scoped_array<int> sizes( new int[size] );
+    scoped_array<IndexType> sizes( new IndexType[size] );
 
-    for ( int i = 0; i <= n; i++ )
+    for ( IndexType i = 0; i <= n; i++ )
     {
         myvals[i] = dummyVal;
     }
@@ -595,11 +616,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_typ
     if ( rank == root )
     {
         // fill the send data
-        int offset = 0;
+        IndexType offset = 0;
 
-        for ( int p = 0; p < size; p++ )
+        for ( PartitionId p = 0; p < size; p++ )
         {
-            for ( int i = 0; i < p; i++ )
+            for ( PartitionId i = 0; i < p; i++ )
             {
                 allvals[offset] = dummyVal + i + 1;
                 ++offset;
@@ -612,7 +633,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_typ
     comm->scatterV( myvals.get(), n, root, allvals.get(), sizes.get() );
 
     // also verify that myvals has not been overwritten at end
-    for ( int i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         BOOST_CHECK_EQUAL( myvals[i], dummyVal + i + 1 );
     }
@@ -626,8 +647,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_arithmetic_test_types
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
-    IndexType rank = comm->getRank();
-    IndexType size = comm->getSize();
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
     const PartitionId root = 0;
     IndexType allN = 0; // only root will have full size
 
@@ -683,9 +704,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_type
     ValueType dummyVal = 13;
     scoped_array<ValueType> myvals( new ValueType[n + 1] );
     scoped_array<ValueType> allvals( new ValueType[allN] );
-    scoped_array<int> sizes( new int[size] );
+    scoped_array<IndexType> sizes( new IndexType[size] );
 
-    for ( int i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         myvals[i] = static_cast<ValueType>( rank );
     }
@@ -695,11 +716,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_type
     if ( rank == root )
     {
         // fill the recv data
-        int offset = 0;
+        IndexType offset = 0;
 
-        for ( int p = 0; p < size; p++ )
+        for ( PartitionId p = 0; p < size; p++ )
         {
-            for ( int i = 0; i < p; i++ )
+            for ( IndexType i = 0; i < p; i++ )
             {
                 allvals[offset] = -1;
                 ++offset;
@@ -713,11 +734,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_type
 
     if ( rank == root )
     {
-        int offset = 0;
+        IndexType offset = 0;
 
-        for ( int p = 0; p < size; ++p )
+        for ( PartitionId p = 0; p < size; ++p )
         {
-            for ( int i = 0; i < p; ++i )
+            for ( PartitionId i = 0; i < p; ++i )
             {
                 BOOST_CHECK_EQUAL( allvals[offset], static_cast<ValueType>( p ) );
                 ++offset;

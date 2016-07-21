@@ -41,6 +41,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
+#include <typeinfo>
 
 namespace scai
 {
@@ -52,59 +53,21 @@ namespace common
  * @brief The template class TypeTraits determines type-specific implementations.
  *
  * @tparam T The type of any arithmetic value type used
+ *
+ * /code
+ *  typedef ResultType AbsType;   // return type of function Math::abs( ValueType )
+ *  AbsType eps0();               // closest value to 0
+ *  AbsType eps1();               // closest value to 1
+ *  AbsType small();              // accepted tolerance for comparisons of results
+ *  ValueType min();              // used as neutral element for max reduction
+ *  ValueType max();              // used as neutral element for min reduction
+ *  int precision();              // number of relevant digits if printed 
+ * /endcode
  */
 template<typename ValueType>
-class TypeTraits
+class COMMON_DLL_IMPORTEXPORT TypeTraits
 {
 public:
-
-    /** Return type of function abs( ValueType )
-     *
-     *  Note: ValueType != TypeTraits<ValueType>::AbsType <=> ValueType is complex
-     */
-
-    typedef ValueType AbsType;
-
-    /** Get value-specific epsilon for comparison. */
-
-    static inline ValueType getEps()
-    {
-        return std::numeric_limits<ValueType>::epsilon();
-    }
-
-    /** Get type-specific precision to be used for comparison in matrix-vector operations */
-
-    static inline ValueType small()
-    {
-        return getEps();
-    }
-
-    /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
-
-    static inline ValueType getMax()
-    {
-        return std::numeric_limits<ValueType>::max();
-    }
-
-    /** Get number of digits to be used as default precision for formatted ouptut */
-
-    static inline int precision()
-    {
-        return std::numeric_limits<ValueType>::digits10;
-    }
-
-    /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
-
-    static inline ValueType getMin()
-    {
-        return - std::numeric_limits<ValueType>::max();
-    }
-
-    /**
-     * @brief Corresponding type value of enum ScalarType.
-    */
-    static const scalar::ScalarType stype = scalar::UNKNOWN;
-
     /**
      * @brief Return name of the type for identification.
      *
@@ -112,31 +75,42 @@ public:
      */
     static inline const char* id()
     {
-        return scalarType2str( scalar::UNKNOWN );
+        return typeid( ValueType ).name();
     }
+
+    /**
+     * @brief Corresponding type value of enum ScalarType.
+    */
+    static const scalar::ScalarType stype = scalar::UNKNOWN;
 };
 
-/** Type specific traits for IndexType */
+/** Type specific traits for int */
 
 template<>
-class TypeTraits<IndexType>
+class TypeTraits<int>
 {
 public:
-    typedef IndexType AbsType;
 
-    static inline IndexType getEps()
+    typedef int AbsType;
+
+    static inline int eps1()
     {
         return 0;
     }
 
-    static inline IndexType small()
+    static inline int small()
     {
         return 0;
     }
 
-    static inline IndexType getMax()
+    static inline int eps0()
     {
-        return std::numeric_limits<IndexType>::max();
+        return std::numeric_limits<int>::min();
+    }
+
+    static inline int getMax()
+    {
+        return std::numeric_limits<int>::max();
     }
 
     static inline int precision()
@@ -144,16 +118,62 @@ public:
         return 0;
     }
 
-    static inline IndexType getMin()
+    static inline int getMin()
     {
-        return - std::numeric_limits<IndexType>::max();
+        return - std::numeric_limits<int>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::INDEX_TYPE;
+    static const scalar::ScalarType stype = scalar::INT;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::INDEX_TYPE );
+        return scalarType2str( scalar::INT );
+    }
+};
+
+/** Type specific traits for long */
+
+template<>
+class TypeTraits<long>
+{
+public:
+    typedef long AbsType;
+
+    static inline long eps1()
+    {
+        return 0;
+    }
+
+    static inline long small()
+    {
+        return 0;
+    }
+
+    static inline long eps0()
+    {
+        return std::numeric_limits<long>::min();
+    }
+
+    static inline long getMax()
+    {
+        return std::numeric_limits<long>::max();
+    }
+
+    static inline int precision()
+    {
+        return 0;
+    }
+
+    static inline long getMin()
+    {
+        return - std::numeric_limits<long>::max();
+    }
+
+    static const scalar::ScalarType stype = scalar::LONG;
+
+    static inline const char* id()
+    {
+        return scalarType2str( scalar::LONG );
     }
 };
 
@@ -165,7 +185,7 @@ class TypeTraits<long double>
 public:
     typedef long double AbsType;
 
-    static inline long double getEps()
+    static inline long double eps1()
     {
         return std::numeric_limits<long double>::epsilon();
     }
@@ -173,6 +193,11 @@ public:
     static inline long double small()
     {
         return 1e-8L;
+    }
+
+    static inline long double eps0()
+    {
+        return std::numeric_limits<long double>::min();
     }
 
     static inline long double getMax()
@@ -206,7 +231,7 @@ class TypeTraits<double>
 public:
     typedef double AbsType;
 
-    static inline double getEps()
+    static inline double eps1()
     {
         return std::numeric_limits<double>::epsilon();
     }
@@ -214,6 +239,11 @@ public:
     static inline double small()
     {
         return 1e-5;
+    }
+
+    static inline double eps0()
+    {
+        return std::numeric_limits<double>::min();
     }
 
     static inline double getMax()
@@ -247,7 +277,7 @@ class TypeTraits<float>
 public:
     typedef float AbsType;
 
-    static inline float getEps()
+    static inline float eps1()
     {
         return std::numeric_limits<float>::epsilon();
     }
@@ -255,6 +285,11 @@ public:
     static inline float small()
     {
         return 1e-3f;
+    }
+
+    static inline float eps0()
+    {
+        return std::numeric_limits<float>::min();
     }
 
     static inline int precision()
@@ -289,14 +324,19 @@ class TypeTraits<ComplexFloat>
 public:
     typedef float AbsType;
 
-    static inline ComplexFloat getEps()
+    static inline float eps1()
     {
         return std::numeric_limits<float>::epsilon();
     }
 
-    static inline ComplexFloat small()
+    static inline float small()
     {
         return ComplexFloat( 1e-3f );
+    }
+
+    static inline float eps0()
+    {
+        return std::numeric_limits<float>::min();
     }
 
     static inline int precision()
@@ -308,6 +348,7 @@ public:
     {
         return std::numeric_limits<float>::max();
     }
+
     static inline ComplexFloat getMin()
     {
         return 0;
@@ -329,14 +370,19 @@ class TypeTraits<ComplexDouble>
 public:
     typedef double AbsType;
 
-    static inline ComplexDouble getEps()
+    static inline double eps1()
     {
         return std::numeric_limits<double>::epsilon();
     }
 
-    static inline ComplexDouble small()
+    static inline double small()
     {
-        return ComplexDouble( 1e-5 );
+        return double( 1e-5 );
+    }
+
+    static inline double eps0()
+    {
+        return std::numeric_limits<double>::min();
     }
 
     static inline int precision()
@@ -346,7 +392,7 @@ public:
 
     static inline ComplexDouble getMax()
     {
-        return std::numeric_limits<double>::epsilon();
+        return std::numeric_limits<double>::max();
     }
 
     static inline ComplexDouble getMin()
@@ -370,14 +416,19 @@ class TypeTraits<ComplexLongDouble>
 public:
     typedef long double AbsType;
 
-    static inline ComplexLongDouble getEps()
+    static inline LongDouble eps1()
     {
         return std::numeric_limits<long double>::epsilon();
     }
 
-    static inline ComplexLongDouble small()
+    static inline LongDouble small()
     {
-        return ComplexLongDouble( 1e-8L );
+        return LongDouble( 1e-8L );
+    }
+
+    static inline LongDouble eps0()
+    {
+        return std::numeric_limits<long double>::min();
     }
 
     static inline int precision()

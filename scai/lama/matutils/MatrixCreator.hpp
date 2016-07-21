@@ -153,6 +153,57 @@ public:
 
     static bool supportedStencilType( const IndexType dimension, const IndexType stencilType );
 
+    /** Build a (distributed) sparse matrix from a sparse storage by  replicating it in the diagonals.
+     *
+     *  @param[out] matrix is the generated distributed matrix
+     *  @param[in] storage is the matrix storage that is replicated
+     *  @param[in] nRepeat number of repitions in the diagonals
+     *
+     *  \code
+     *     storage :   3  0  1  0 
+     *                 0  1  0  -1
+     *
+     *     buildReplicatedDiag( matrix, storage, 2 )
+     *
+     *     matrix  :   3  0  1  0   0  0  0  0  
+     *                 0  1  0  -1  0  0  0  0
+     *                 0  0  0   0  3  0  1  0
+     *                 0  0  0   0  0  1  0  -1
+     *  \endcode
+     */
+
+    static void buildReplicatedDiag( SparseMatrix<ValueType>& matrix,
+                                     const MatrixStorage<ValueType>& storage,
+                                     const int nRepeat );
+
+    /** Build a (distributed) sparse matrix from a (replicated) sparse storage by 
+     *  replicating it m times in the rows and n times in the columns
+     *
+     *  @param[out] matrix is the generated distributed matrix
+     *  @param[in] storage is the matrix storage that is replicated
+     *  @param[in] nRepeatRow number of repitions in the row
+     *  @param[in] nRepeatCol number of repitions in the columns
+     *
+     *  \code
+     *     storage :   3  0  1  0 
+     *                 0  1  0  -1
+     *
+     *     buildReplicated( matrix, storage, 3, 2 )
+     *
+     *     matrix  :   3  0  1  0   0  0  0  0  
+     *                 0  1  0  -1  0  0  0  0
+     *                 3  0  1   0  3  0  1  0
+     *                 0  1  0  -1  0  1  0  -1
+     *                 3  0  1   0  3  0  1  0
+     *                 0  1  0  -1  0  1  0  -1
+     *  \endcode
+     */
+
+    static void buildReplicated( SparseMatrix<ValueType>& matrix,
+                                 const MatrixStorage<ValueType>& storage,
+                                 const int nRepeatRow,
+                                 const int nRepeatCol );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

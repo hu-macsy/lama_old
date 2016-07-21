@@ -223,6 +223,26 @@ void distributionInfo()
     cout << endl;
 }
 
+void fileIOInfo()
+{
+    using namespace scai::lama;
+    vector<string> values;  // string is create type for the factory
+    FileIO::getCreateValues( values );
+    cout << endl;
+    cout << "Factory of FileIO: " << values.size() << " entries" << endl;
+    cout << "===================================" << endl;
+    cout << endl;
+
+    for ( size_t i = 0; i < values.size(); ++i )
+    {
+        cout << "  Registered values[" << i << "] = " << values[i] << endl;
+        scai::common::unique_ptr<FileIO> fileIO( FileIO::create( values[i] ) );
+        cout << "    FileIO: " << *fileIO << endl;
+    }
+
+    cout << endl;
+}
+
 int main( int /*argc */, char** /*argv*/ )
 {
     std::string loadPath;
@@ -245,5 +265,6 @@ int main( int /*argc */, char** /*argv*/ )
     solverInfo();
     setupInfo();
     distributionInfo();
+    fileIOInfo();
 }
 

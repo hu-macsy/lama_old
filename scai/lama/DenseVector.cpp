@@ -39,13 +39,9 @@
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
-#include <scai/lama/StorageIO.hpp>
 
-#include <scai/lama/io/FileType.hpp>
-#include <scai/lama/io/IOUtils.hpp>
-#include <scai/lama/io/FileStream.hpp>
-
-#include <scai/lama/mepr/IOWrapper.hpp>
+#include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -174,34 +170,10 @@ DenseVector<ValueType>::DenseVector( const std::string& filename )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::readFromFile( const std::string& filename )
+void DenseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, const float fillRate )
 {
-    SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
-    // Take the current default communicator
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
-    IndexType myRank = comm->getRank();
-    IndexType host = 0; // reading processor
-
-    if ( myRank == host )
-    {
-        // Only host reads the values
-        IndexType numColumns;
-        StorageIO<ValueType>::readDenseFromFile( mLocalValues, numColumns, filename );
-        SCAI_ASSERT_EQ_ERROR( numColumns, 1, "vector must have exact one column in MatrixMarket file" )
-    }
-    else
-    {
-        // other processors have to clear their local values
-        mLocalValues.clear();
-    }
-
-    IndexType numElements = mLocalValues.size();
-    comm->bcast( &numElements, 1, host );
-    DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
-    SCAI_ASSERT_EQ_DEBUG( dist->getLocalSize(), mLocalValues.size(), "wrong distribution" );
-    SCAI_ASSERT_EQ_DEBUG( dist->getGlobalSize(), numElements, "wrong distribution" );
-    // this is safe, we have allocated it correctly
-    setDistributionPtr( dist );
+    allocate( distribution );
+    mLocalValues.setRandom( mLocalValues.size(), fillRate, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -227,6 +199,27 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar, Vector, Times>& ex
     : Vector( expression.getArg2() )
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x )" )
+    Vector::operator=( expression );
+}
+
+// linear algebra expression: x*y
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Expression<Vector, Vector, Times>& expression )
+
+    : Vector( expression.getArg1() )
+{
+    SCAI_LOG_INFO( logger, "Constructor( x * y )" )
+    Expression_SVV tmpExp( Scalar( 1.0 ), expression );
+    Vector::operator=( tmpExp );
+}
+
+// linear algebra expression: s*x*y
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Expression<Scalar, Expression<Vector, Vector, Times>, Times>& expression )
+
+    : Vector( expression.getArg2().getArg1() )
+{
+    SCAI_LOG_INFO( logger, "Constructor( alpha * x * y )" )
     Vector::operator=( expression );
 }
 
@@ -402,6 +395,8 @@ tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const dmemo::Halo& 
     return getDistribution().getCommunicator().updateHaloAsync( mHaloValues, mLocalValues, halo );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
@@ -411,15 +406,27 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     if ( localIndex != nIndex )
     {
-        ContextPtr contextPtr = Context::getHostPtr();
-        ReadAccess<ValueType> localAccess( mLocalValues, contextPtr );
-        SCAI_LOG_TRACE( logger, "index " << globalIndex << " is local " << localIndex )
-        myValue = localAccess[localIndex];
+        myValue = mLocalValues[localIndex];
     }
 
     ValueType allValue = getDistribution().getCommunicator().sum( myValue );
     SCAI_LOG_TRACE( logger, "myValue = " << myValue << ", allValue = " << allValue )
     return Scalar( allValue );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar value )
+{
+    SCAI_LOG_TRACE( logger, *this << ": setValue( globalIndex = " << globalIndex << " ) = " <<  value )
+
+    const IndexType localIndex = getDistribution().global2local( globalIndex );
+
+    if ( localIndex != nIndex )
+    {
+        mLocalValues[localIndex] = value.getValue<ValueType>();
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -449,6 +456,15 @@ void DenseVector<ValueType>::conj()
 {
     HArrayUtils::conj( mLocalValues, mContext );
 }
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::exp()
+{
+    HArrayUtils::exp( mLocalValues, mContext );
+}
+
 
 /* ------------------------------------------------------------------------- */
 
@@ -566,6 +582,51 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 }
 
 template<typename ValueType>
+void DenseVector<ValueType>::assign( const Expression_SVV& expression )
+{
+    const ValueType alpha = expression.getArg1().getValue<ValueType>();
+    const Expression_VV& exp2 = expression.getArg2();
+    const Vector& x = exp2.getArg1();
+    const Vector& y = exp2.getArg2();
+    SCAI_LOG_INFO( logger, "z = x * y, z = " << *this << " , x = " << x << " , y = " << y )
+    SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
+    SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
+
+    if ( x.getDistribution() != y.getDistribution() )
+    {
+        COMMON_THROWEXCEPTION(
+            "distribution do not match for z = x * y, z = " << *this << " , x = " << x << " , y = " << y )
+    }
+
+    if ( x.getDistribution() != getDistribution() || x.size() != size() )
+    {
+        allocate( x.getDistributionPtr() );
+    }
+
+    if ( typeid( *this ) == typeid( x ) && typeid( *this ) == typeid( y ) )
+    {
+        const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
+        const DenseVector<ValueType>& denseY = dynamic_cast<const DenseVector<ValueType>&>( y );
+
+        if ( mLocalValues.size() != denseX.mLocalValues.size() )
+        {
+            SCAI_LOG_DEBUG( logger, "resize local values of z = this" )
+            mLocalValues.clear();
+            WriteAccess<ValueType> localAccess( mLocalValues, mContext );
+            localAccess.resize( denseX.mLocalValues.size() );
+        }
+
+        SCAI_LOG_DEBUG( logger, "call arrayTimesArray" )
+        utilskernel::HArrayUtils::arrayTimesArray( mLocalValues, alpha, denseX.mLocalValues, denseY.mLocalValues, mContext );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION(
+            "Can not calculate  z = x * y, z = " << *this << ", x = " << x << ", y = " << y << " because of type mismatch." );
+    }
+}
+
+template<typename ValueType>
 Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 {
     SCAI_REGION( "Vector.Dense.dotP" )
@@ -595,6 +656,22 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
     COMMON_THROWEXCEPTION(
         "Can not calculate a dot product of " << typeid( *this ).name() << " and " << typeid( other ).name() )
 }
+
+template<typename ValueType>
+DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
+{
+    SCAI_REGION( "Vector.Dense.scale" )
+    SCAI_LOG_INFO( logger, "Scale " << *this << " with " << other )
+
+    if ( getDistribution() != other.getDistribution() )
+    {
+        COMMON_THROWEXCEPTION( "distribution do not match for this * other, this = " << *this << " , other = " << other )
+    }
+
+    HArrayUtils::assignOp( mLocalValues, other.getLocalValues(), utilskernel::reduction::MULT, mContext );
+    return *this;
+}
+
 
 template<typename ValueType>
 void DenseVector<ValueType>::allocate( DistributionPtr distribution )
@@ -727,14 +804,138 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
 /* -- IO ------------------------------------------------------------------- */
 
-template<typename ValueType>
-void DenseVector<ValueType>::writeToFile(
-    const std::string& fileBaseName,
-    const File::FileType fileType /* = File::SAMG_FORMAT */,
-    const common::scalar::ScalarType dataType /* = DOUBLE */,
-    const bool writeBinary /* = false */ ) const
+void Vector::writeLocalToFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode
+    ) const
 {
-    StorageIO<ValueType>::writeDenseToFile( mLocalValues, 1, fileBaseName, fileType, dataType, writeBinary );
+    std::string suffix = fileType;
+
+    if ( suffix == "" )
+    {
+        suffix = FileIO::getSuffix( fileName );
+    }
+ 
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // okay, we can use FileIO class from factory
+
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        if ( dataType != common::scalar::UNKNOWN )
+        {
+            // overwrite the default settings
+
+            fileIO->setDataType( dataType );
+        }
+
+        if ( fileMode != FileIO::DEFAULT_MODE )
+        {
+            // overwrite the default settings
+
+            fileIO->setMode( fileMode );
+        }
+
+        fileIO->writeArray( getLocalValues(), fileName );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "File : " << fileName << ", unknown suffix" )
+    }
+}
+
+void Vector::writeToSingleFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode
+    ) const
+{
+    if ( getDistribution().isReplicated() )
+    {
+        // make sure that only one processor writes to file
+
+        const Communicator& comm = getDistribution().getCommunicator();
+
+        if ( comm.getRank() == 0 )
+        {
+            writeLocalToFile( fileName, fileType, dataType, fileMode );
+        }
+
+        // synchronization to avoid that other processors start with
+        // something that might depend on the finally written file
+
+        comm.synchronize();
+    }
+    else
+    {
+        // writing a distributed vector into a single file requires redistributon
+
+        DistributionPtr dist( new NoDistribution( size() ) );
+        common::unique_ptr<Vector> repV( copy() );
+        repV->redistribute( dist );
+        repV->writeLocalToFile( fileName, fileType, dataType, fileMode );
+    }
+}
+
+void Vector::writeToPartitionedFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode ) const
+{
+    bool errorFlag = false;
+
+    try
+    {
+        writeLocalToFile( fileName, fileType, dataType, fileMode );
+    }
+    catch ( common::Exception& e )
+    {
+        errorFlag = true;
+    }
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    errorFlag = comm.any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "Partitioned IO of vector failed" )
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Vector::writeToFile(
+    const std::string& fileName,
+    const std::string& fileType,               /* = "", take IO type by suffix   */
+    const common::scalar::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
+    const FileIO::FileMode fileMode            /* = DEFAULT_MODE */ 
+    ) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    std::string newFileName = fileName;
+
+    bool writePartitions;
+
+    const Communicator& comm = getDistribution().getCommunicator(); 
+
+    PartitionIO::getPartitionFileName( newFileName, writePartitions, comm );
+
+    if ( !writePartitions )
+    {
+        writeToSingleFile( newFileName, fileType, dataType, fileMode );
+    }
+    else
+    {
+        // matrix_%r.mtx -> matrix_0.4.mtx,  ..., matrix_3.4.mtxt
+        writeToPartitionedFile( newFileName, fileType, dataType, fileMode );
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/

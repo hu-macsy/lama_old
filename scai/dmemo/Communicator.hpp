@@ -660,6 +660,11 @@ public:
         computeOwners( &owners[0], distribution, &requiredIndexes[0], n );
     }
 
+    void computeOwners(
+        hmemo::HArray<PartitionId>& owners,
+        const Distribution& distribution,
+        const hmemo::HArray<IndexType>& requiredIndexes ) const;
+
     /**************************************************************************************
      *                                                                                    *
      *  Communication routines for HArrays for convenience                             *

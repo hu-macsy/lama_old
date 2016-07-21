@@ -36,12 +36,12 @@
 #include "LamaTiming.hpp"
 
 #include <scai/lama/matrix/all.hpp>
+#include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/norm/Norm.hpp>
-#include <scai/lama/StorageIO.hpp>
 
 #include <scai/solver/GMRES.hpp>
 #include <scai/solver/SimpleAMG.hpp>
@@ -145,14 +145,14 @@ int main( int argc, const char* argv[] )
 
         HOST_PRINT( myRank, "Matrix from file " << matrixFilename << " : " << inMatrix )
 
-        if ( rhsFilename.size() == 0 && _StorageIO::hasSuffix( matrixFilename, "frm" ) )
+        if ( rhsFilename.size() == 0 && FileIO::hasSuffix( matrixFilename, "frm" ) )
         {
             // this filename can also be taken for vector
 
             rhsFilename = matrixFilename.substr( 0, matrixFilename.size() - 4 ) + ".frv";
         }
 
-        if ( ! _StorageIO::fileExists( rhsFilename ) )
+        if ( ! FileIO::fileExists( rhsFilename ) )
         {
             HOST_PRINT( myRank, "rhs file " << rhsFilename << " does not exist, take default rhs" )
             rhsFilename = "";
@@ -377,7 +377,7 @@ int main( int argc, const char* argv[] )
 
     if ( solFilename.size() )
     {
-        if ( _StorageIO::fileExists( solFilename ) )
+        if ( FileIO::fileExists( solFilename ) )
         {
             HOST_PRINT( myRank, "Compare solution with vector in " << solFilename )
             LamaTiming timer( comm, "Comparing solution" );
@@ -398,7 +398,7 @@ int main( int argc, const char* argv[] )
             solution.redistribute( repDist );
             if ( myRank == 0 )
             {
-                solution.writeToFile( solFilename, File::MATRIX_MARKET );
+                solution.writeToFile( solFilename );
             }
         }
     }

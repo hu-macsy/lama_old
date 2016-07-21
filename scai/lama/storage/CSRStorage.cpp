@@ -38,7 +38,7 @@
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-
+#include <scai/sparsekernel/DIAKernelTrait.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
@@ -77,6 +77,7 @@ using common::shared_ptr;
 using common::TypeTraits;
 
 using sparsekernel::CSRKernelTrait;
+using sparsekernel::DIAKernelTrait;
 using sparsekernel::OpenMPCSRUtils;
 
 using tasking::SyncToken;
@@ -325,6 +326,56 @@ void CSRStorage<ValueType>::setCSRDataImpl(
      */
     mDiagonalProperty = checkDiagonalProperty();
     buildRowIndexes();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void CSRStorage<ValueType>::setDIADataImpl(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const HArray<IndexType>& offsets,
+    const HArray<OtherValueType>& values,
+    const ContextPtr /* loc */ )
+{
+    SCAI_ASSERT_EQUAL_ERROR( numDiagonals, offsets.size() );
+    SCAI_ASSERT_EQUAL_ERROR( numRows * numDiagonals, values.size() );
+
+    mNumRows = numRows;
+    mNumColumns = numColumns;
+
+    // TODO: check
+    mDiagonalProperty = true;
+
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
+    static LAMAKernel<DIAKernelTrait::getCSRSizes<OtherValueType> > getCSRSizes;
+    static LAMAKernel<DIAKernelTrait::getCSRValues<OtherValueType, ValueType> > getCSRValues;
+
+    // do it where all routines are avaialble
+    ContextPtr loc = this->getContextPtr();
+    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
+    SCAI_LOG_INFO( logger,
+                   "buildTypedCSRData<" << common::getScalarType<OtherValueType>() << ">"
+                   << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
+
+    WriteOnlyAccess<IndexType> csrIA( mIa, loc, mNumRows + 1 );
+    ReadAccess<IndexType> diaOffsets( offsets, loc );
+    ReadAccess<OtherValueType> diaValues( values, loc );
+
+    // In contrary to COO and CSR, the DIA format stores also some ZERO values like Dense
+    OtherValueType eps = static_cast<OtherValueType>( 0.0 );
+    getCSRSizes[loc]( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, numDiagonals, diaOffsets.get(),
+                      diaValues.get(), eps );
+
+    mNumValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
+    SCAI_LOG_INFO( logger, "CSR: #non-zero values = " << mNumValues )
+
+    WriteOnlyAccess<IndexType> csrJA( mJa, loc, mNumValues );
+    WriteOnlyAccess<ValueType> csrValues( mValues, loc, mNumValues );
+    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
+                       numDiagonals, diaOffsets.get(), diaValues.get(), eps );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2132,19 +2183,21 @@ const char* CSRStorage<ValueType>::typeName()
 
 SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST )
 
-#define CSR_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+#define CSR_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void CSRStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template  void CSRStorage<ValueType>::setCSRDataSwap(const IndexType, const IndexType, const IndexType,                \
-            hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>&,             \
-            hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );        \
+            hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>&,                                                          \
+            hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                                     \
     template void CSRStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void CSRStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void CSRStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void CSRStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
     template void CSRStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;                                               \
+    template void CSRStorage<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define CSR_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, CSR_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )

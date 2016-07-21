@@ -58,6 +58,21 @@ class COMMON_DLL_IMPORTEXPORT CUDAUtils
 {
 public:
 
+    /** CUDA implementation for UtilKernelTrait::exp */
+
+    template<typename ValueType>
+    static void exp( ValueType mValues[], const IndexType n );
+
+    /** CUDA implementation for UtilKernelTrait::conj */
+
+    template<typename ValueType>
+    static void conj( ValueType mValues[], const IndexType n );
+
+    /** CUDA implementation for UtilKernelTrait::vectorScale */
+
+    template<typename ValueType>
+    static void vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
+
     /*  CUDA implementation of UtilKernelTrait::validIndexes  */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );

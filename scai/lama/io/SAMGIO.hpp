@@ -1,5 +1,5 @@
 /**
- * @file MatrixMarketIO.hpp
+ * @file SAMGIO.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,14 +27,14 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Structure that contains IO routines for PETSC
+ * @brief Dervied FileIO class that implements IO routines for the SAMG file format. 
  * @author Thomas Brandes
  * @date 10.06.2016
  */
 
 #pragma once
 
-#include "CRTPFileIO.hpp"
+#include <scai/lama/io/CRTPFileIO.hpp>
 
 namespace scai
 {
@@ -42,13 +42,28 @@ namespace scai
 namespace lama
 {
 
-class MatrixMarketIO :
+/** The SAMG format supports binary and formatted IO.
+ *
+ *  The SAMG format uses two files, one for header information and one with
+ *  the data itself. Only the header file name has to be specified for
+ *  read/write operations.
+ */
 
-    public CRTPFileIO<MatrixMarketIO>,         // use type conversions
-    public FileIO::Register<MatrixMarketIO>    // register at factory
+class SAMGIO : 
+
+    public CRTPFileIO<SAMGIO>,         // use type conversions
+    public FileIO::Register<SAMGIO>    // register at factory
 {
 
 public:
+
+    /** Constructor might reset default values */
+
+    SAMGIO();
+
+    /** Implementation of pure methdod FileIO::isSupportedMode */
+
+    virtual bool isSupportedMode( const FileMode mode ) const;
 
     /** File suffix is used to decide about choice of output class */
 
@@ -67,6 +82,10 @@ public:
     // registration key for factory
 
     static std::string createValue();
+
+    /** Override default implementation as also data files should be deleted. */
+
+    virtual int deleteFile( const std::string& fileName );
 
 public:
  
@@ -99,55 +118,30 @@ public:
     __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
- 
+
 private:
 
-    /** Enumeration type for the different symmetry flags in the Matrix Market file */
+    /** Guard class for an additional registration with the vector file suffix. */
 
-    typedef enum
+    class Guard
     {
-        GENERAL,
-        SYMMETRIC,
-        HERMITIAN,
-        SKEW_SYMMETRIC
-    } Symmetry;
+    public:
 
-    /** Conversion of enum value to string */
+        Guard();
+        ~Guard();
+    };
 
-    const char* symmetry2str( const Symmetry symmetry );
+    static Guard mGuard;
 
-    void writeMMHeader(
-        class IOStream& outFile,
-        const bool vector,
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numValues,
-        const Symmetry symmetry,
-        const common::scalar::ScalarType dataType );
+    /** Own routines for read/write of the header file, no template parameters required */
 
-    void readMMHeader(
-        IndexType& numRows,
-        IndexType& numColumns,
-        IndexType& numValues,
-        common::scalar::ScalarType& dataType,
-        Symmetry& symmetry,
-        class IOStream& inFile );
+    void readMatrixHeader( IndexType& numRows, IndexType& numValues, bool& binary, const std::string& fileName );
 
-    /** Extend COO data by adding all symmetric data */
+    void writeMatrixHeader( const IndexType numRows, const IndexType numValues, const bool binary, const std::string& fileName );
 
-    template<typename ValueType>
-    void addSymmetricEntries(
-        hmemo::HArray<IndexType>& ia,
-        hmemo::HArray<IndexType>& ja,
-        hmemo::HArray<ValueType>& vals, 
-        bool conjFlag );
+    void readVectorHeader( IndexType& n, IndexType& typeSize, bool& binary, const std::string& fileName );
 
-    /** Check for symmetry */
-    template<typename ValueType>
-    Symmetry checkSymmetry( 
-        const hmemo::HArray<IndexType>& cooIA, 
-        const hmemo::HArray<IndexType>& cooJA, 
-        const hmemo::HArray<ValueType>& cooValues );
+    void writeVectorHeader( const IndexType n, const IndexType typeSize, const bool binary, const std::string& fileName );
 
 };
 

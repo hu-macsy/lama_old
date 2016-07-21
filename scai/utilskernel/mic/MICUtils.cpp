@@ -63,6 +63,69 @@ SCAI_LOG_DEF_LOGGER( MICUtils::logger, "MIC.Utils" )
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void MICUtils::conj( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger,
+                    "conj<" << common::getScalarType<ValueType>() << ">: " << "n =" << n )
+    void* arrayPtr = array;
+    int device = MICContext::getCurrentDevice();
+#pragma offload target( mic : device), in ( arrayPtr, n )
+    {
+        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        #pragma omp parallel for
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            array[i] = common::Math::conj( array[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MICUtils::exp( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger,
+                    "exp<" << common::getScalarType<ValueType>() << ">: " << "n =" << n )
+    void* arrayPtr = array;
+    int device = MICContext::getCurrentDevice();
+#pragma offload target( mic : device), in ( arrayPtr, n )
+    {
+        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        #pragma omp parallel for
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            array[i] = common::Math::exp( array[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MICUtils::vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
+{
+    SCAI_LOG_DEBUG( logger,
+                    "vectorScale<" << common::getScalarType<ValueType>() << ">: " << "n =" << n )
+    void* arrayPtr = array;
+    int device = MICContext::getCurrentDevice();
+#pragma offload target( mic : device), in ( arrayPtr, n )
+    {
+        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        #pragma omp parallel for
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            result[i] = x[i] * y[i];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType, typename OtherValueType>
 void MICUtils::setScale(
     ValueType outValues[],
@@ -794,6 +857,12 @@ void MICUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
+<<<<<<< HEAD
+=======
+    KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
+>>>>>>> develop
 }
 
 template<typename ValueType, typename OtherValueType>

@@ -37,9 +37,11 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/StorageIO.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
+#include <scai/utilskernel/LArray.hpp>
+
+#include <scai/common/Settings.hpp>
 
 #include <iostream>
 #include <algorithm>
@@ -88,13 +90,32 @@ static bool isValue( const char* arg )
     return true;
 }
 
+static common::scalar::ScalarType getType()
+{
+    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
+
+    std::string val;
+
+    if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
+    {
+        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
+
+        if ( env_type == scai::common::scalar::UNKNOWN )
+        {
+            std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
+        }
+
+        type = env_type;
+    }
+
+    return type;
+}
+
 struct CommandLineOptions
 {
     string outFileName;
     string matFileName;
 
-    File::FileType outFileType;
-    bool writeBinary;
     common::scalar::ScalarType outDataType;
 
     Scalar value;   // value for the vector
@@ -107,9 +128,7 @@ struct CommandLineOptions
     {
         outFileName = "";
         matFileName = "";
-        writeBinary = false;
-        outFileType = File::DEFAULT;
-        outDataType = common::scalar::INTERNAL;       // same as input data type
+        outDataType = getType();
         value       = Scalar( 1 );
         size        = 0;
         random      = false;
@@ -117,36 +136,7 @@ struct CommandLineOptions
 
     bool parseOption( const std::string& option )
     {
-        if ( option == "-a" )
-        {
-            outFileType = File::SAMG_FORMAT;
-        }
-        else if ( option == "-mm" )
-        {
-            outFileType = File::MATRIX_MARKET;
-        }
-        else if ( option == "-b" )
-        {
-            outFileType = File::SAMG_FORMAT;
-            writeBinary = true;
-        }
-        else if ( option == "-s" )
-        {
-            outDataType = common::scalar::FLOAT;
-        }
-        else if ( option == "-c" )
-        {
-            outDataType = common::scalar::COMPLEX;
-        }
-        else if ( option == "-d" )
-        {
-            outDataType = common::scalar::DOUBLE;
-        }
-        else if ( option == "-z" )
-        {
-            outDataType = common::scalar::DOUBLE_COMPLEX;
-        }
-        else if ( option == "-random" )
+        if ( option == "-random" )
         {
             random = true;
         }
@@ -173,7 +163,7 @@ struct CommandLineOptions
         {
             outFileName = option;
         }
-        else if ( matFileName == "" && _StorageIO::fileExists( option ) )
+        else if ( matFileName == "" && FileIO::fileExists( option ) )
         {
             matFileName = option;
         }
@@ -192,26 +182,6 @@ struct CommandLineOptions
             cout << "No outfile name specified, take 'vector'" << endl;
             outFileName = "vector";
         }
-    }
-
-    void checkOutFileType()
-    {
-        if ( outFileType != File::DEFAULT )
-        {
-            return;
-        }
-
-        if ( _StorageIO::hasSuffix( outFileName, ".mtx" ) )
-        {
-            outFileType = File::MATRIX_MARKET;
-        }
-        else
-        {
-            outFileType = File::SAMG_FORMAT;
-            writeBinary = true;
-        }
-
-        cout << "No output file type specified, take " << outFileType << endl;
     }
 
     void checkOutDataType()
@@ -238,22 +208,20 @@ struct CommandLineOptions
 
 void printUsage( const char* progName )
 {
-    cout << "Usage: " << progName << " [-b|-a|-mm] [-s|-d|-c|-z] outfile_name <size> <val> [matrix_filename]" << endl;
+    cout << "Usage: " << progName << " [--SCAI_var=val] outfile_name <size> <val> [matrix_filename]" << endl;
     cout << "   outfile_name is filename for vector output" << endl;
-    cout << "    -b generates binary file [default if filename has not suffix .mtx]" << endl;
-    cout << "    -a generates formatted file" << endl;
-    cout << "    -mm generates matrix market format[ default if filename has suffix .mtx]" << endl;
+    cout << "    --SCAI_IO_BINARY=0|1 force formatted or binary output" << endl; 
+    cout << "    --SCAI_TYPE=float|double|LongDouble|ComplexFloat|ComplexDouble|ComplexLong value type" << endl;
     cout << "   size is the number of elements in the vector" << endl;
     cout << "   val is the value for each entry" << endl;
     cout << "    -random each entry is multiplied with a random value from 0..1" << endl;
-    cout << "    -d output format is double precision [default]" << endl;
-    cout << "    -c output format is complex" << endl;
-    cout << "    -z output format is double complex" << endl;
     cout << "   matrix_filename : if set, compute vector as rhs of matrix * vector" << endl;
 }
 
-int main( int argc, char* argv[] )
+int main( int argc, const char* argv[] )
 {
+    common::Settings::parseArgs( argc, argv );
+
     CommandLineOptions options;
 
     if ( argc < 2 )
@@ -277,7 +245,6 @@ int main( int argc, char* argv[] )
     }
 
     options.checkOutFileName();
-    options.checkOutFileType();
     options.checkOutDataType();
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
     // use vector of outDataType so no information is lost
@@ -304,27 +271,28 @@ int main( int argc, char* argv[] )
     }
 
     cout << "Vector (uninitialized): " << *v << endl;
+
     *v = options.value;
 
     if ( options.random )
     {
         using namespace hmemo;
-        // we know what we do here, so const_cast is okay
-        _HArray& vLocal = const_cast<_HArray&>( v->getLocalValues() );
-        ContextPtr host = Context::getHostPtr();
-        HArray<double> randomValues;
-        {
-            IndexType n = vLocal.size();
-            std::srand( 171451 );
-            WriteOnlyAccess<double> write( randomValues, host, n );
 
-            for ( int i = 0; i < n; ++i )
-            {
-                write[i] = static_cast<double>( rand() ) / static_cast<double>( RAND_MAX );
-            }
-        }
-        // multiply random numbers with the scalar value
-        utilskernel::HArrayUtils::assignOp( vLocal, randomValues, utilskernel::reduction::MULT, host );
+        // we know what we do here, so const_cast is okay
+
+        _HArray& vLocal = const_cast<_HArray&>( v->getLocalValues() );
+
+        IndexType n = vLocal.size();
+
+        float fillRate = 1.0f;          // full fill, no zero entries
+
+        utilskernel::HArrayUtils::setRandom( vLocal, n, fillRate );
+        // scale random numbers from -1 .. 1 with options.value
+        utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<ScalarRepType>(), utilskernel::reduction::MULT );
+    }
+    else
+    {
+        *v = options.value;
     }
 
     cout << "Vector generated: " << *v << endl;
@@ -339,9 +307,8 @@ int main( int argc, char* argv[] )
     }
 
     cout << "write to output file " << options.outFileName;
-    cout << ", format = " << options.outFileType;
     cout << ", data type = " << options.outDataType;
     cout << endl;
-    v->writeToFile( options.outFileName, options.outFileType, common::scalar::INTERNAL, options.writeBinary );
+    v->writeToFile( options.outFileName );
     cout << "Done." << endl;
 }

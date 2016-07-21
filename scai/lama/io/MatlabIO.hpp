@@ -1,5 +1,5 @@
 /**
- * @file SAMGIO.hpp
+ * @file MatlabIO.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,14 +27,14 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Dervied FileIO class that implements IO routines for the SAMG file format. 
+ * @brief Structure that contains IO routines for Matlab text format
  * @author Thomas Brandes
  * @date 10.06.2016
  */
 
 #pragma once
 
-#include "CRTPFileIO.hpp"
+#include <scai/lama/io/CRTPFileIO.hpp>
 
 namespace scai
 {
@@ -42,30 +42,39 @@ namespace scai
 namespace lama
 {
 
-/** The SAMG format supports binary and formatted IO.
+/** This file format stores just the COO data of a matrix. 
  *
- *  The SAMG format uses two files, one for header information and one with
- *  the data itself. Only the header file name has to be specified for
- *  read/write operations.
+ *   - there is not header at all
+ *   - number of non-zero matrix entries is given by number of lines
+ *   - size of matrix is given by maximal values for row and for column indexes
+ *   - size of vector is just given by number of lines
+ *
+ *   It is very useful to read dumped matrices of Matlab.
+ *
+ *   /code
+ *   data_mat = [ia ja,real(val),imag(val)];
+ *   save -ascii dataMatrix.txt data_mat;
+ *   
+ *   data_rhs = [real(b),imag(b)];
+ *   save -ascii datRHS.txt data_rhs;
+ *   /endcode
+ *
+ *   /code
+ *   solver.exe dataMatrix.txt datRHS.txt
+ *   /endcode
  */
 
-class SAMGIO : 
+class MatlabIO : 
 
-    public CRTPFileIO<SAMGIO>,         // use type conversions
-    public FileIO::Register<SAMGIO>    // register at factory
+    public CRTPFileIO<MatlabIO>,         // use type conversions
+    public FileIO::Register<MatlabIO>    // register at factory
 {
 
 public:
 
-    /** Constructor might reset default values */
+    /** Implementation of pure methdod FileIO::isSupportedMode */
 
-    SAMGIO();
-
-    /** File suffix is used to decide about choice of output class */
-
-    virtual std::string getVectorFileSuffix() const;
-
-    virtual std::string getMatrixFileSuffix() const;
+    virtual bool isSupportedMode( const FileMode mode ) const;
 
     /** Implementation for Printable.:writeAt */
 
@@ -110,30 +119,6 @@ public:
     __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
-
-private:
-
-    /** Guard class for an additional registration with the vector file suffix. */
-
-    class Guard
-    {
-    public:
-
-        Guard();
-        ~Guard();
-    };
-
-    static Guard mGuard;
-
-    /** Own routines for read/write of the header file, no template parameters required */
-
-    void readMatrixHeader( IndexType& numRows, IndexType& numValues, bool& binary, const std::string& fileName );
-
-    void writeMatrixHeader( const IndexType numRows, const IndexType numValues, const bool binary, const std::string& fileName );
-
-    void readVectorHeader( IndexType& n, IndexType& typeSize, bool& binary, const std::string& fileName );
-
-    void writeVectorHeader( const IndexType n, const IndexType typeSize, const bool binary, const std::string& fileName );
 
 };
 

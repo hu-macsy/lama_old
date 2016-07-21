@@ -100,8 +100,9 @@ public:
 
         IndexProxy& operator= ( const IndexProxy& other )
         {
-            ValueType tmp = HArrayUtils::getVal<ValueType>( mArray, mIndex );
+            ValueType tmp = HArrayUtils::getVal<ValueType>( other.mArray, other.mIndex );
             HArrayUtils::setVal( mArray, mIndex, tmp );
+            return *this;
         }
 
     private:
@@ -320,6 +321,11 @@ public:
     ValueType operator[] ( const IndexType i ) const
     {
         return HArrayUtils::getVal<ValueType>( *this, i );
+    }
+
+    void setRandom( IndexType n, float fillRate = 1.0f, hmemo::ContextPtr context = hmemo::ContextPtr() )
+    {
+        HArrayUtils::setRandomImpl( *this, n, fillRate, context );
     }
 
     /** Get the minimal value of an array */
