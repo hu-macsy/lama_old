@@ -104,7 +104,7 @@ void MatlabIO::writeAt( std::ostream& stream ) const
  *
  *  Note: it might be possible that one line contains less than 'nEntries' entries
  */
-void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
+void MatlabIO::checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
 {
     nLines   = 0;
     nEntries = 0;
@@ -133,6 +133,8 @@ void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName
             // LOG_DEBUG: cout << "max tokens = " << nEntries << " at line " << nLines << endl;
         }
     }
+
+    SCAI_LOG_INFO( logger, "checkTextFile " << fileName << ": #lines = " << nLines << ", #entries = " << nEntries )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -219,6 +221,12 @@ void MatlabIO::readStorageImpl(
     checkTextFile( nnz, k, fileName.c_str() );
 
     SCAI_LOG_INFO( logger, "File : " << fileName << ", #lines = " << nnz << ", #entries = " << k )
+
+    if ( nnz == 0 )
+    {
+        storage.clear();
+        return;
+    }
 
     SCAI_ASSERT_GE( k, 3, "#entries/row in file " << fileName << " must be at least 3" )
 

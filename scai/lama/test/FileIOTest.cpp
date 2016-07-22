@@ -36,6 +36,8 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
+#include <scai/lama/test/storage/Storages.hpp>
+
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/utilskernel/LArray.hpp>
 
@@ -315,6 +317,65 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( EmptyStorage )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    // read / write of matrix storage with size 0 x 0
+
+    std::vector<std::string> supportedSuffixes;
+
+    FileIO::getCreateValues( supportedSuffixes );
+
+    // loop over all supported suffixes, got them from FileIO factory
+
+    for ( size_t i = 0; i < supportedSuffixes.size(); ++i )
+    {
+        const std::string& fileSuffix = supportedSuffixes[i];
+
+        unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
+ 
+        if ( fileSuffix != fileIO->getMatrixFileSuffix() )
+        {
+            SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
+            continue;   
+        }
+
+        TypedStorages<ValueType> storages;
+
+        for ( size_t j = 0; j < storages.size(); ++j )
+        {
+            MatrixStorage<ValueType>& m = *storages[j];
+
+            std::string typeName = TypeTraits<ValueType>::id();
+            std::string fileName = "outEmptyStorage" + typeName + fileSuffix;
+
+            m.clear();
+            m.writeToFile( fileName );
+
+            BOOST_CHECK( FileIO::fileExists( fileName ) );
+
+            setNonSquareData( m );  // just set dummy data to see it will be rewritten
+
+            m.readFromFile( fileName );
+
+            // The storage read can have less columns 
+
+            BOOST_CHECK_EQUAL( 0, m.getNumColumns() );
+            BOOST_CHECK_EQUAL( 0, m.getNumRows() );
+
+#ifdef DELETE_OUTPUT_FILES
+            int rc = FileIO::removeFile( fileName );
+    
+            BOOST_CHECK_EQUAL( rc, 0 );
+            BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+#endif
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_arithmetic_test_types )
 {
     const IndexType N = 20;
@@ -453,4 +514,64 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_arithmetic_test_type
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_arithmetic_test_types )
+{
+    std::vector<std::string> supportedSuffixes;
+
+    FileIO::getCreateValues( supportedSuffixes );
+
+    // loop over all supported suffixes, got them from FileIO factory
+
+    for ( size_t i = 0; i < supportedSuffixes.size(); ++i )
+    {
+        const std::string& fileSuffix = supportedSuffixes[i];
+
+        unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
+ 
+        if ( fileSuffix != fileIO->getVectorFileSuffix() )
+        {
+            SCAI_LOG_INFO( logger, *fileIO << " skipped for vector, " << fileSuffix 
+                                   << " is not default vector suffix" << fileIO->getVectorFileSuffix() )
+            continue;   
+        }
+
+        LArray<ValueType> array;
+
+        std::string typeName = TypeTraits<ValueType>::id();
+        std::string fileName = "outEmptyArray_" + typeName  + fileSuffix;
+
+        SCAI_LOG_INFO( logger, "FileIO: write this empty array: " << array << " via " << *fileIO << " to " << fileName )
+    
+        fileIO->writeArray( array, fileName );
+
+        BOOST_CHECK( FileIO::fileExists( fileName ) );
+
+        IndexType N = 10;
+
+        LArray<ValueType> inArray( N, ValueType( 1 ) );
+
+        BOOST_CHECK_EQUAL( N, inArray.size() );
+
+        fileIO->readArray( inArray, fileName );
+
+        BOOST_CHECK_EQUAL( 0, inArray.size() );
+
+        // due to binary output and using same data type there should be no loss
+
+        BOOST_CHECK_EQUAL( 0, array.maxDiffNorm( inArray ) );
+
+#ifdef DELETE_OUTPUT_FILES
+        int rc = FileIO::removeFile( fileName );
+    
+        BOOST_CHECK_EQUAL( rc, 0 );
+        BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+#endif
+
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
+
+/* ------------------------------------------------------------------------- */
