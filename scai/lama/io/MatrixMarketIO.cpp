@@ -848,11 +848,6 @@ void MatrixMarketIO::readStorageImpl(
 
     coo.swap( ia, ja, val );
 
-    // make CSR data out of it to get it sorted
-    // CSRStorage<ValueType> csr( coo );  
-    // bool diagonalProperty = true;
-    // csr.sortRows( diagonalProperty );
-
     storage = coo;
 }
 

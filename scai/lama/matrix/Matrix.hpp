@@ -249,6 +249,15 @@ public:
      */
     void readFromFile( const std::string& matrixFileName, const std::string& distributionFileName );
 
+    /** This method resorts column indexes in such a way that the diagonal element is always the 
+     *  first one in a row. 
+     *
+     *  This method throws an exception if row and column distribution are not equal. Furhtermore
+     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
+     *  element in a sparse format.
+     */
+    void setDiagonalProperty();
+
     /** This method sets a matrix with the values owned by this partition in dense format
      *
      *  @param[in] rowDist distributon of rows for the matrix

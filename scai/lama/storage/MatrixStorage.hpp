@@ -259,6 +259,15 @@ public:
 
     virtual void setIdentity( const IndexType n ) = 0;
 
+    /** This method resorts column indexes in such a way that the diagonal element is always the 
+     *  first one in a row. 
+     *
+     *  This method throws an exception if the matrix storage is not square. Furthermore
+     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
+     *  element in a sparse format.
+     */
+    virtual void setDiagonalProperty();
+
     /** This method returns the i-th row of the matrix
      *
      * @param[out] row is the destination array that will contain the row

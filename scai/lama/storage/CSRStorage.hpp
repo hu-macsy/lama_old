@@ -285,6 +285,13 @@ public:
      */
     void sortRows( bool diagonalProperty );
 
+    /** This method overrides _MatrixStorage::setDiagonalProperty 
+     *
+     *  This routine only moves the diagonal elements at the beginning of each rows.
+     *  It throws an exception if there is no entry for the diagonal element.
+     */
+    virtual void setDiagonalProperty();
+
     /** Template method for getting row. */
 
     template<typename OtherType>

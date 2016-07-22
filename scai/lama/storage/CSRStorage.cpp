@@ -392,6 +392,17 @@ void CSRStorage<ValueType>::sortRows( bool diagonalProperty )
     mDiagonalProperty = checkDiagonalProperty();
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::setDiagonalProperty()
+{
+    sortRows( true );
+    SCAI_ASSERT( mDiagonalProperty, "Missing diagonal element, cannot set diagonal property" )
+}
+
+/* --------------------------------------------------------------------------- */
+
 //this version avoids copying the ia, ja, and value arrays, but instead swaps them
 //also it does not check their validity
 //this is much faster of course, but destroys the input ia, ja and value arrays

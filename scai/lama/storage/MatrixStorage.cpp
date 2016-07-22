@@ -180,6 +180,20 @@ _MatrixStorage& _MatrixStorage::operator=( const _MatrixStorage& other )
 
 /* --------------------------------------------------------------------------- */
 
+void _MatrixStorage::setDiagonalProperty()
+{
+    // default implementation just throw an exception if diagonal property is not given
+
+    mDiagonalProperty = checkDiagonalProperty();
+
+    if ( !mDiagonalProperty )
+    {
+        COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set it" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 void _MatrixStorage::resetDiagonalProperty()
 {
     mDiagonalProperty = checkDiagonalProperty();
