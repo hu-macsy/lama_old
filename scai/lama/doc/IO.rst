@@ -5,31 +5,228 @@
 Input/Output
 ============
 
-For creating matrices and vectors from input files you can read the data from file in supported format types.
+For creating matrices and vectors from input files you can read the data from file in supported file types.
 
-If you have your own special file format you have to read the data on your own and initialize storages, matrices, vectors with the obtained data in csr or dense format. The other way round you can get access to the stored data and print it to file the way you like it.
+If you have your own special file typee you have to read the data on your own and initialize storages, matrices, 
+vectors with the obtained data in csr or dense format. The other way round you can get access to the stored data 
+and print it to file the way you like it.
 
-Supported Types
----------------
+I/O of HArrays
+==============
 
- - MatrixMarket (for description on the format see |MM|)
+.. code-block:: c++
 
- - SAMG format (see below)
+    HArray<ValueType> array;
+    FileIO::read( array, fileName )
+    ...
+    FileIO::write( array, fileName )
+
+I/O of MatrixStroage
+====================
+
+.. code-block:: c++
+
+    _MarixStorage& m = ...
+    FileIO::read( m, fileName )
+    ....
+    FileIO::write( m, fileName )
+
+.. code-block:: c++
+
+    _MarixStorage& m = ...
+    m.readFromFile( fileName )
+    ....
+    m.writeToFile( ... )
+
+.. code-block:: c++
+
+    CSRStorage<double> m( fileName );
+
+I/O of Vectors
+==============
+
+In contrary to a single array, the vector data might be distributed among the different processors.
+
+.. code-block:: c++
+
+    Vector& v = ...
+    v.readFromFile( fileName )
+    ....
+    v.writeToFile( ... )
+
+When writing a distributed vector to a single file, data is gathered on the master process that writes the complete
+data into the file. 
+
+When reading a vector from a single file, data is only read by the master process. The distribution set for the
+vector specifies exactly this mapping. Nevertheless, the data might be redistributed later within the application as
+required.
+
+A vector can be written to and read from mutliple file, one for each processor. This is exactly the case when
+the fileName contains the substring "%r" that is replaced with "<rank>.<size>" of the communicator.
+
+.. code-block:: c++
+
+    Vector& v = ...
+    ....
+    v.writeToFile( "data_%r.mtx" )
+
+.. code-block:: c++
+
+    mpirun -np 2 <appl>  -> write files data_0.2.mtx and data_1.2.mtx
+    mpirun -np 3 <appl>  -> write files data_0.3.mtx, data_1.3.mtx and data_2.3.mtx
+
+But be careful. If the distribution of the vector is not a block distribution, the mapping information
+is lost. When reading the vector from multiple files, the distribution of the vector will be set
+implicitly to a corresponding general block distribution.
+
+I/O of Distributions
+====================
+
+If a vector or a matrix is stored in multiple files, the information about the mapping is lost 
+if the distribution is not a (general) block distribution.
+
+Therefore the mapping itself can be written to a single or mutliple files. 
+
+A single file contains for each entry the owner.
+
+.. code-block:: c++
+
+   0   0   1    1   0   0   2   2   3   3   2   2   3   3
+
+A multiple file contains for each processor the owned global indexes.
+
+.. code-block:: c++
+
+   0 :   0  1   4   5
+   1 :   2  3   6   7
+   2 :   8  9  12  13
+   3 :  10 11  14  15
+
+.. code-block:: c++
+
+   PartitionIO::write( distribution, "ownwers.mtx" )
+
+I/O of Matrices
+===============
+
+Writing and reading a matrix to a single file is done in the same way as for a vector.
+
+.. code-block:: c++
+
+    m.writeToFile( "matrix.mtx" )  -> all data is gathered on the master process and written
+    m.readFromFile( "matrix.mtx" )  -> all data is on the master process
+
+    m.writeToFile( "matrix_%r.mtx" ) -> each processor reads a local part of the matrix
+    m.readFromFile( "matrix_%r.mtx" ) -> each processor reads a local part of the matrix
+
+Reading a matrix 
+
+.. code-block:: c++
+
+    DistributionPtr dist = ...
+    m.readFromFile( "matrix_%r.mtx", dist )
+
+.. code-block:: c++
+
+    m.readFromFile( "matrix_%r.mtx", "owners.mtx" )
+    m.readFromFile( "matrix_%r.mtx", "myIndexes%r.mtx" )
+
+In contrary to a vector, a partitioned matrix might still contain the info about its
+distribution. This is the case if the data is stored in a sparse format and the first
+column index of a row is the diagonal element. As column indexes are still global, the
+array of first column indexes for each row is the same as the global indexes of each partition
+stored in a partitioned mapping file.
+
+.. code-block:: c++
+
+    m.readFromFile( "matrix_%r.mtx", "" )
+
+Consider the following example of a 16 x 16 matrix:
+
+.. code-block:: c++
+
+   matrix        owner, local index   
+
+   0 0 4             0  0          
+   1 1 4             0  1 
+   2 2 4             1  0
+   3 3 4             1  1
+   4 4 4             0  2
+   5 5 4             0  3
+   6 6 4             1  2
+   7 7 4             1  3
+   8 8 4             2  0
+   9 9 4             2  1
+   10 10 4           3  0 
+   11 11 4           3  1
+   12 12 4           2  2
+   13 13 4           2  3
+   14 14 4           3  2
+   15 15 4           3  3
+   0 1 -1
+   ....
+
+.. code-block:: c++
+
+   matrix_1.0.txt   matrix_1.4.txt    matrix_2.4.txt    matrix_3.4.txt
+
+   0 0 4            0  2  4            0  8  4            0  10  4
+   1 1 4            1  3  4            1  9  4            1  11  4
+   2 4 4            2  6  4            2 12  4            2  14  4
+   3 5 4            3  7  4            3 13  4            3  15  4
+   0 1 -1           0  1 -1            0  4  -1           0  6  -1
+   ....             ...                ...                ...
+
+Supported File Types
+--------------------
+
+The decision about the file type is taken by the suffix of the file name:
+Currently, the following file types are supported
+
+ - MatrixMarket (for description on the format see |MM|), for suffix ".mtx"
+
+ - SAMG format (see below), for suffix ".frm" (matrix) or ".frv" (vector)
  
    - FORMATTED (ASCII)
    
    - BINARY
 
-   - XDR
- 
+ - PETSC format (binary format), for suffix ".psc"
+
+ - MATLAB format (pure ASCII format), for suffix ".txt"
+
 .. |MM| raw:: html
 
    <a href="http://math.nist.gov/MatrixMarket/formats.html" target="_blank"> here </a>
 
+Conversion from one file type to another file type is rather simple, just read the matrix/vector from one file
+and write it with its new extension to another file.
+
+.. code-block:: c++
+
+    _MatrixStorage& m = ...
+    m.readFromFile( "matrix_3D27P_100_100_100.txt" )
+    m.writeToFile( "matrix_3D27P_100_100_100.mtx" )
+
+Here are some remarks:
+
+ * The matrix type, e.g. CSR, DIA, ELL, JDS, does not matter when reading or writing matrix data.
+   There is always an implicit conversion when reading or writing the data. Nevertheless the CSR format
+   is preferred as it has usually the minimal overhead.
+ * The value type, e.g. float, double, ComplexFloat, ComplexDouble is taken over if the binary mode is used,
+   i.e. there is no loss of precision. In the formatted output, the number of significant digits depends on
+   the value type, but there may be a certain loss of precision. Implicit type conversion is supported but
+   should be used rather carefully.
+ * Usually a certain file type supports the formatted or the binary mode. Only the SAMG format supports both modes.
+ * Some formats do not store for a matrix storage the number of columns explicitly. Here the number of columns
+   is determined by the maximal column index that appears in the data.
+
 SAMG format
 -----------
 
-The SAMG format comes from the |SAMG| library of Fraunhofer SCAI and uses two files to describe a matrix or vector - one for formatting informations, one for the data. The data can be stored in three different ways: FORMATTED, BINARY, XDR. Formatted means the values are stored human readable in ASCII, otherwise they are stored in binary or xdr format.
+The SAMG format comes from the |SAMG| library of Fraunhofer SCAI and uses two files to describe a matrix or vector - 
+one header file with general information ( mode, size), one for the data. 
+The data can be saved in both modes, either BINARY or FORMATTED.
 
 .. |SAMG| raw:: html
 
@@ -39,7 +236,7 @@ Matrices
 ^^^^^^^^
 
 Matrix header: *.frm*
-   first line:  format (f formatted, b binary, x xdr) *tab* 4 (SAMG internal version number)
+   first line:  mode (f formatted, b binary) *tab* 4 (SAMG internal version number)
    second line: *tab tab* number of values (nv) *tab* number of rows (nr) *tab* 22 (SAMG internal: symmetry information) *tab* 1 (SAMG internal: number of unknowns ) *tab* 0 (SAMG internal)   
 
 .. 22: unsymmetric, not equal sums of row
@@ -54,7 +251,7 @@ Vectors
 ^^^^^^^
 
 Vector header: *.frv*
-   first line: format (f formatted, x xdr, b binary)
+   first line: mode (f formatted, x xdr, b binary)
    second line: number of values (nv)
    third line: size of value type (in most cases: 4 for float, 8 for double)
    
