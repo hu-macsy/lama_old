@@ -46,6 +46,7 @@ scai_project (
     SOURCES
 
         CommunicatorTest
+        CommunicationPlanTest
 
         DistributedTest
         DistributionTest

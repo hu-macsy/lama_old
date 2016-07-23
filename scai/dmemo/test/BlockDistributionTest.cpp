@@ -94,10 +94,27 @@ BOOST_AUTO_TEST_CASE( factoryTest )
 
 BOOST_AUTO_TEST_CASE( createTest )
 {
-    DistributionPtr bdist ( BlockDistribution::create( DistributionArguments( comm, 1, NULL, 1.0 ) ) );
-    BOOST_CHECK_EQUAL( bdist->getGlobalSize(), 1 );
-    bdist.reset( Distribution::getDistributionPtr( "BLOCK", comm, 1 ) );
-    BOOST_CHECK_EQUAL( bdist->getGlobalSize(), 1 );
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    const IndexType globalSize = 5;
+
+    DistributionPtr bdist ( BlockDistribution::create( DistributionArguments( comm, globalSize, NULL, 1.0 ) ) );
+    BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
+    bdist.reset( Distribution::getDistributionPtr( "BLOCK", comm, globalSize ) );
+    BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( constructorTest )
+{
+    CommunicatorPtr comm;
+    const IndexType globalSize = 17;
+
+    BOOST_CHECK_THROW(
+    { 
+        BlockDistribution bdist( globalSize, comm );
+    }, 
+    common::Exception );
 }
 
 /* --------------------------------------------------------------------- */

@@ -176,7 +176,7 @@ bool Communicator::operator!=( const Communicator& other ) const
 void Communicator::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "Communicator";
+    stream << "Communicator( type = " << mCommunicatorType << " )";
 }
 
 /* -------------------------------------------------------------------------- */

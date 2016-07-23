@@ -149,60 +149,6 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( allocatePlanTest )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    BOOST_REQUIRE( comm );
-    IndexType rank = comm->getRank();
-    IndexType size = comm->getSize();
-    std::vector<IndexType> reqQuantities( size );
-
-    for ( PartitionId p = 0; p < size; ++p )
-    {
-        if ( p != rank )
-        {
-            reqQuantities[p] = ( 2 * p + rank ) % 3;
-        }
-        else
-        {
-            reqQuantities[p] = 0;
-        }
-    }
-
-    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
-    // verify that requiredPlan is correctly set up
-    IndexType offsetCheck = 0;
-
-    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
-    {
-        IndexType n = requiredPlan[p].quantity;
-        PartitionId partitionId = requiredPlan[p].partitionId;
-        IndexType nExpected = ( 2 * partitionId + rank ) % 3;
-        BOOST_CHECK_EQUAL( n, nExpected );
-        BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
-        offsetCheck += n;
-    }
-
-    BOOST_CHECK_EQUAL( offsetCheck, requiredPlan.totalQuantity() );
-    CommunicationPlan providesPlan;
-    providesPlan.allocateTranspose( requiredPlan, *comm );
-    offsetCheck = 0;
-
-    for ( PartitionId p = 0; p < providesPlan.size(); ++p )
-    {
-        IndexType n = providesPlan[p].quantity;
-        PartitionId partitionId = providesPlan[p].partitionId;
-        IndexType nExpected = ( partitionId + 2 * rank ) % 3;
-        BOOST_CHECK_EQUAL( n, nExpected );
-        BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck );
-        offsetCheck += n;
-    }
-
-    BOOST_CHECK_EQUAL( offsetCheck, providesPlan.totalQuantity() );
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE( bcastStringTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -863,11 +809,33 @@ BOOST_AUTO_TEST_CASE( nodeTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( writeAtTest )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    std::ostringstream outDerived;
+
+    outDerived << *comm;
+
+    BOOST_CHECK( outDerived.str().length() > 0 );
+
+    // verify that a derived communicator class has overridden the 
+    // default implementation of the base class Distriution
+
+    std::ostringstream outBase;
+    comm->Communicator::writeAt( outBase );
+    BOOST_CHECK( outDerived.str() != outBase.str() );
+}
+
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( procArrayTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     PartitionId procArray[3];
+    PartitionId posArray[3];
 
     bool replace = true;
 
@@ -908,6 +876,13 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
         BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] );
     }
 
+    posArray[0] = posArray[1] = posArray[2] = nPartition;
+
+    comm->getGrid2Rank( posArray, procArray );
+
+    BOOST_CHECK_EQUAL( comm->getRank(), posArray[1] * procArray[0] + posArray[0] );
+    BOOST_CHECK_EQUAL( nPartition, posArray[2] );
+
     comm->factorize3( 1, 16, 1, procArray );
     
     BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] * procArray[2] );
@@ -918,6 +893,11 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
 
         BOOST_CHECK_EQUAL( comm->getSize(), procArray[1] );
     }
+
+    posArray[0] = posArray[1] = posArray[2] = nPartition;
+    comm->getGrid3Rank( posArray, procArray );
+
+    BOOST_CHECK_EQUAL( comm->getRank(), posArray[2] * procArray[0] * procArray[1] + posArray[1] * procArray[0] + posArray[0] );
 }
 
 /* --------------------------------------------------------------------- */
