@@ -295,7 +295,8 @@ public:
      */
     bool operator!=( const Distribution& other ) const;
 
-    /** Replication of distributed data, one entry for each element of the global range
+    /** Replication of distributed data, e.g. a distributed vector, where all local
+     *  values will be replicated on all processors corresponding to their order
      *
      * @tparam     T1           Value type of output data
      * @tparam     T2           Value type of input data
@@ -314,7 +315,9 @@ public:
     template<typename T1, typename T2>
     void replicate( T1* allValues, const T2* localValues ) const;
 
-    /** Replication of distributed data, one line of n entries for each element of the global range
+    /** Replication of distributed data, e.g. a distributed dense array where all
+     *  local values will be replicated. In contrary to replicate there are n elements for
+     *  each distributed element.
      *
      * @tparam     T1           Value type of output data
      * @tparam     T2           Value type of input data

@@ -146,21 +146,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_arithmetic_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadAndWriteVectorTest, ValueType, scai_arithmetic_test_types )
 {
-    // IO for complex values can cause size conflicts, sizeof( double ) == sizeof( ComplexFloat )
-    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // same as used for read and write
 
-    if ( isComplex( stype ) || ( stype == scalar::LONG_DOUBLE ) )
+    if ( comm->getSize() >  1 )
     {
+        // will be test with parallel IO test
         return;
     }
 
     IndexType n = 4;
-    DenseVector<ValueType> result( n, 5.0 );
     DenseVector<ValueType> vector( n, 5.0 );
+    DenseVector<ValueType> result( vector );  // copy constructor
     std::string prefix = scai::test::Configuration::getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
-    //Write and read FORMATTED
+
     vector.writeToFile( prefix + "/" + testfilename + ".frv", "", TypeTraits<ValueType>::stype, FileIO::FORMATTED );
+
     DenseVector<ValueType> vector2( prefix + "/" + testfilename + ".frv" );
     // replicate vector2 as it is only on first processor
     vector2.redistribute( result.getDistributionPtr() );

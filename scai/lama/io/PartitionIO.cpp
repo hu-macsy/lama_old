@@ -186,7 +186,7 @@ DistributionPtr PartitionIO::readPDistribution( const string& inFileName, Commun
 {
     utilskernel::LArray<IndexType> owners;
 
-    SCAI_LOG_INFO( logger, *comm << ", read partitioned distribution from " << inFileName << endl;
+    SCAI_LOG_INFO( logger, *comm << ", read partitioned distribution from " << inFileName )
 
     hmemo::HArray<IndexType> myIndexes;
 
