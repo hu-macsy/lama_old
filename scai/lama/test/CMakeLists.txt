@@ -66,7 +66,6 @@ scai_project (
         MaxNormTest
         NormTest
         ScalarTest
-        FileIOTest
         PartitionIOTest
         VectorTest
         VersionTest

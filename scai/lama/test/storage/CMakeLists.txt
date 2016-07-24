@@ -55,6 +55,8 @@ scai_project (
         SparseAssemblyStorageTest
         DenseStorageTest
 
+        FileIOTest
+
         lamaStorageTest
     )
 

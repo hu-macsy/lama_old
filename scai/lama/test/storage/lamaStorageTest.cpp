@@ -27,7 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Main program for test of LAMA storage classes
+ * @brief Main program for test of LAMA storage classes. Due to file I/O
+ *        this test must not be executed by multiple processors.
  * @author Thomas Brandes
  * @date 16.03.2016
  */
