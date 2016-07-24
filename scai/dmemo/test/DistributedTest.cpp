@@ -90,6 +90,25 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( copyTest )
+{
+    const IndexType globalSize = 5;
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    DistributionPtr dist( new CyclicDistribution( globalSize, 1, comm ) );
+
+    MockDistributed mock1( dist );
+
+    // default copy constructor of MockDistributedcalls copy constructor of Distributed
+
+    MockDistributed mock2( mock1 ); 
+
+    BOOST_CHECK_EQUAL( mock1.getDistribution(), mock2.getDistribution() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( swapTest )
 {
     const IndexType globalSize = 5;

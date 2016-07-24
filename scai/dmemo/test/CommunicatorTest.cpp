@@ -169,170 +169,6 @@ BOOST_AUTO_TEST_CASE( bcastStringTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( buildHaloTest )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    BOOST_REQUIRE( comm );
-    IndexType rank = comm->getRank();
-    IndexType size = comm->getSize();
-    IndexType vectorSize = size;
-    BlockDistribution distribution( vectorSize, comm );
-    std::vector<IndexType> requiredIndexes;
-    const PartitionId leftNeighbor = comm->getNeighbor( -1 );
-    const PartitionId rightNeighbor = comm->getNeighbor( 1 );
-// Each processor requires values from left and right neighbor
-
-    if ( !distribution.isLocal( leftNeighbor ) )
-    {
-        requiredIndexes.push_back( leftNeighbor );
-    }
-
-    if ( rightNeighbor != leftNeighbor && !distribution.isLocal( rightNeighbor ) )
-    {
-        requiredIndexes.push_back( rightNeighbor );
-    }
-
-    const IndexType noReqIndexes = static_cast<IndexType>( requiredIndexes.size() );
-    Halo halo;
-
-    HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-    HaloBuilder::build( distribution, arrRequiredIndexes, halo );
-    const Halo& haloRef = halo;
-    const CommunicationPlan& requiredPlan = haloRef.getRequiredPlan();
-    const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
-    // check for a correct provide plan
-    IndexType offsetCheck = 0;
-
-    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
-    {
-        IndexType n = requiredPlan[p].quantity;
-        BOOST_CHECK_EQUAL( ( IndexType ) 1, n );
-        PartitionId neighbor = requiredPlan[p].partitionId;
-        BOOST_CHECK( neighbor == leftNeighbor || neighbor == rightNeighbor );
-        BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
-        offsetCheck += n;
-    }
-
-    BOOST_CHECK_EQUAL( noReqIndexes, requiredPlan.totalQuantity() );
-    offsetCheck = 0;
-    PartitionId nProvides = providesPlan.size();
-
-    for ( PartitionId p = 0; p < nProvides; ++p )
-    {
-        IndexType n = providesPlan[p].quantity;
-        BOOST_CHECK_EQUAL( n, static_cast<IndexType>( 1 ) );
-        PartitionId neighbor = providesPlan[p].partitionId;
-        BOOST_CHECK( neighbor == leftNeighbor || neighbor == rightNeighbor );
-        BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck );
-        offsetCheck += n;
-    }
-
-    BOOST_CHECK_EQUAL( noReqIndexes, providesPlan.totalQuantity() );
-    const ReadAccess<IndexType> providesIndexes( haloRef.getProvidesIndexes() );
-
-    for ( PartitionId p = 0; p < providesPlan.size(); ++p )
-    {
-        const IndexType* indexes = providesIndexes + providesPlan[p].offset;
-        IndexType expectedLocalIndex = rank;
-        BOOST_CHECK_EQUAL( expectedLocalIndex, distribution.local2global( indexes[0] ) );
-    }
-
-    BOOST_CHECK_EQUAL( noReqIndexes, halo.getHaloSize() );
-    IndexType nIndexes = static_cast<IndexType>( requiredIndexes.size() );
-
-    for ( IndexType i = 0; i < nIndexes; ++i )
-    {
-        const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
-        BOOST_CHECK( 0 <= haloIndex && haloIndex < halo.getHaloSize() );
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_arithmetic_test_types )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    BOOST_REQUIRE( comm );
-    IndexType rank = comm->getRank();
-    IndexType size = comm->getSize();
-    SCAI_LOG_INFO( logger, "updateHaloTest<" << common::getScalarType<ValueType>() << ">" );
-    const IndexType factor = 4;
-    const IndexType vectorSize = factor * size;
-    BlockDistribution distribution( vectorSize, comm );
-    std::vector<IndexType> requiredIndexes;
-
-    for ( IndexType i = 0; i < factor; ++i )
-    {
-        const IndexType requiredIndex = ( ( rank + 1 ) * factor + i ) % vectorSize;
-
-        if ( distribution.isLocal( requiredIndex ) )
-        {
-            continue;
-        }
-
-        requiredIndexes.push_back( requiredIndex );
-    }
-
-    SCAI_LOG_INFO( logger, "build the Halo" );
-
-    Halo halo;
-    {
-        HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-        HaloBuilder::build( distribution, arrRequiredIndexes, halo );
-    }
-
-    SCAI_LOG_INFO( logger, "halo is now available: " << halo );
-    HArray<ValueType> localData;
-    {
-        WriteOnlyAccess<ValueType> localDataAccess( localData, distribution.getLocalSize() );
-
-        for ( IndexType i = 0; i < localData.size(); ++i )
-        {
-            localDataAccess[i] = static_cast<ValueType>( distribution.local2global( i ) );
-        }
-    }
-    SCAI_LOG_INFO( logger, "update halo data by communicator" );
-    HArray<ValueType> haloData;
-    comm->updateHalo( haloData, localData, halo );
-    BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
-    {
-        ReadAccess<ValueType> haloDataAccess( haloData );
-
-        for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexes.size() ); ++i )
-        {
-            ValueType expectedValue = static_cast<ValueType>( requiredIndexes[i] );
-            BOOST_CHECK_EQUAL( expectedValue, haloDataAccess[i] );
-        }
-    }
-    requiredIndexes.clear();
-
-    for ( IndexType i = 0; i < vectorSize; ++i )
-    {
-        if ( distribution.isLocal( i ) || ( i + rank ) % 2 == 0 )
-        {
-            continue;
-        }
-
-        requiredIndexes.push_back( i );
-    }
-
-    HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-    HaloBuilder::build( distribution, arrRequiredIndexes, halo );
-    comm->updateHalo( haloData, localData, halo );
-    BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
-    {
-        ReadAccess<ValueType> haloDataAccess( haloData );
-
-        for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexes.size() ); ++i )
-        {
-            ValueType expectedValue = static_cast<ValueType>( requiredIndexes[i] );
-            BOOST_CHECK_EQUAL( expectedValue, haloDataAccess[i] );
-        }
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -491,6 +327,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, scai_arithmetic_test_types 
         // make sure that next value has not been overwritten
         BOOST_CHECK_EQUAL( dummyVal, vector[N] );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( bcastFailTest )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    IndexType root = comm->getSize() + 1;
+
+    IndexType dummyVal = 13;
+
+    // Illegal root for bcast should throw an exception
+
+    BOOST_CHECK_THROW (
+    {
+        comm->bcast( &dummyVal, 1, root );
+    }, common::Exception );
 }
 
 /* --------------------------------------------------------------------- */
@@ -698,6 +552,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
     
         BOOST_CHECK( any );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
+{
+    using common::Math;
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    std::srand( 1751 + comm->getRank() * 17 );
+
+    IndexType N = 5;
+    LArray<ValueType> vals;
+    HArrayUtils::setRandom( vals, N, 1.0f );
+    ValueType localMin = vals[0];
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        ValueType v = Math::abs( vals[i] );
+
+        if ( v > localMin )
+        {
+            localMin = v;
+        }
+    }
+
+    ValueType globalMin = comm->min( localMin );
+
+    BOOST_CHECK( Math::abs( globalMin ) <= Math::abs( localMin ) );
 }
 
 /* --------------------------------------------------------------------- */

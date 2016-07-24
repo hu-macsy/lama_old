@@ -51,6 +51,8 @@ scai_project (
         DistributedTest
         DistributionTest
 
+        HaloTest
+
         NoDistributionTest
         BlockDistributionTest
         CyclicDistributionTest

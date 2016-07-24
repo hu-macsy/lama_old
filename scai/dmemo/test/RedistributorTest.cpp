@@ -106,6 +106,54 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( buildRowPlansTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+    IndexType size = 10;
+    IndexType chunkSize = 1;
+    shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
+    shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
+    IndexType blockLocalSize = distBlock->getLocalSize();
+    IndexType cyclicLocalSize = distCyclic->getLocalSize();
+    HArray<ValueType> myData1( blockLocalSize );
+    {
+        WriteAccess<ValueType> data ( myData1 );
+
+        for ( IndexType i = 0; i < blockLocalSize; i++ )
+        {
+            data[i] = static_cast<ValueType>( 100 * comm->getRank() + i );
+        }
+    }
+    HArray<ValueType> myData2( cyclicLocalSize );
+
+    Redistributor r1( distCyclic, distBlock );
+    Redistributor r2( distBlock, distCyclic );
+
+    // For testing buildRowPlans we set the sizes just as 1
+
+    HArray<IndexType> targetSizes( myData2.size(), 1 );  // myData2 is target of r1
+    HArray<IndexType> sourceSizes( myData1.size(), 1 );  // myData1 is target of r1
+
+    r1.buildRowPlans( targetSizes, sourceSizes );
+
+    SCAI_LOG_DEBUG( logger, "redistribute 1" );
+    r1.redistribute( myData2, myData1 );
+    SCAI_LOG_DEBUG( logger, "redistribute 2" );
+    r2.redistribute( myData1, myData2 );
+
+    {
+        ReadAccess<ValueType> data ( myData1 );
+
+        for ( IndexType i = 0; i < blockLocalSize; i++ )
+        {
+            ValueType expected = static_cast<ValueType>( 100 * comm->getRank() + i );
+            SCAI_CHECK_CLOSE( data[i], expected, 1 );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     IndexType size = 10;
