@@ -39,6 +39,8 @@
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/utilskernel.hpp>
 
+#include <scai/dmemo/test/TestDistributions.hpp>
+
 using namespace scai;
 using namespace dmemo;
 
@@ -52,60 +54,9 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DistributionTest" )
 
 /* --------------------------------------------------------------------- */
 
-class AllDistributions : public std::vector<DistributionPtr> 
-{
-public:
-
-    AllDistributions( const IndexType globalSize )
-    {
-        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-        std::vector<std::string> values;
-
-        Distribution::getCreateValues( values );
-
-        for ( size_t i = 0; i < values.size(); ++i )
-        {
-            DistributionPtr dist( Distribution::getDistributionPtr( values[i], comm, globalSize ) );
-
-            BOOST_CHECK_EQUAL( dist->getKind(), values[i] );
-
-            push_back( dist );
-        } 
-
-        utilskernel::LArray<PartitionId> owners;
-
-        {
-            PartitionId owner = 315;
-            PartitionId nPartitions = comm->getSize();
-
-            hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, globalSize );
-
-            for ( IndexType i = 0; i < globalSize; ++i )
-            {
-                owner = owner * 119 % 185;
-                wOwners[i] = owner % nPartitions;
-            }
-        }
-
-        push_back( DistributionPtr( new GeneralDistribution( owners, comm ) ) );
-
-        float weight = static_cast<float>( comm->getRank() + 1 );
-
-        push_back( DistributionPtr( new GenBlockDistribution( globalSize, weight, comm ) ) );
-    }
-
-private:
-
-    AllDistributions();
-
-};
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE( localSizeTest )
 {
-    AllDistributions allDist( 17 );
+    TestDistributions allDist( 17 );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
@@ -127,7 +78,7 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
 
 BOOST_AUTO_TEST_CASE( local2GlobalTest )
 {
-    AllDistributions allDist( 17 );
+    TestDistributions allDist( 17 );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
@@ -153,7 +104,7 @@ BOOST_AUTO_TEST_CASE( local2GlobalTest )
 
 BOOST_AUTO_TEST_CASE( global2LocalTest )
 {
-    AllDistributions allDist( 17 );
+    TestDistributions allDist( 17 );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
@@ -174,7 +125,7 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
 
 BOOST_AUTO_TEST_CASE( ownedIndexesTest )
 {
-    AllDistributions allDist( 17 );
+    TestDistributions allDist( 17 );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
@@ -205,7 +156,7 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
 
 BOOST_AUTO_TEST_CASE( computeOwnersTest )
 {
-    AllDistributions allDist( 17 );
+    TestDistributions allDist( 17 );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
@@ -270,7 +221,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
     for ( int k = 0; k < nCases; ++k )
     {
-        AllDistributions allDist( globalSizes[k] );
+        TestDistributions allDist( globalSizes[k] );
 
         for ( size_t i = 0; i < allDist.size(); ++i )
         {
@@ -479,7 +430,7 @@ BOOST_AUTO_TEST_CASE( replicateRaggedTest )
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    AllDistributions allDist( 17 );
+    TestDistributions allDist( 17 );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
@@ -503,9 +454,9 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 BOOST_AUTO_TEST_CASE( equalTest )
 {
-    AllDistributions allDist1( 17 );
-    AllDistributions allDist2( 17 );
-    AllDistributions allDist3( 18 );
+    TestDistributions allDist1( 17 );
+    TestDistributions allDist2( 17 );
+    TestDistributions allDist3( 18 );
 
     for ( size_t i = 0; i < allDist1.size(); ++i )
     {

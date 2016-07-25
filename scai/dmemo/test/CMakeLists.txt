@@ -61,6 +61,10 @@ scai_project (
         ${MetisDistributionTest}
 
         RedistributorTest
+
+    HEADERS
+
+        TestDistributions
     )
 
 ### checks ####

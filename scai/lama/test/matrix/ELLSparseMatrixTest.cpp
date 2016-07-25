@@ -1,5 +1,5 @@
 /**
- * @file test/matrix/CSRSparseMatrixTest.cpp
+ * @file test/matrix/ELLSparseMatrixTest.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains only test specific for the CSR Sparse matrix
+ * @brief Contains only test specific for the ELL Sparse matrix
  * @author Thomas Brandes
  * @date 24.03.2016
  */
@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matrix/ELLSparseMatrix.hpp>
 #include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
@@ -47,23 +47,23 @@ using namespace lama;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CSRSparseMatrixTest )
+BOOST_AUTO_TEST_SUITE( ELLSparseMatrixTest )
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.CSRSparseMatrixTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.ELLSparseMatrixTest" );
 
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, ValueType, scai_arithmetic_test_types )
 {
-    CSRSparseMatrix<ValueType> matrix;
+    ELLSparseMatrix<ValueType> matrix;
     // check zero sizes
     BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
     BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );
     // check correct format / type
     BOOST_CHECK_EQUAL( common::TypeTraits<ValueType>::stype, matrix.getValueType() );
-    BOOST_CHECK_EQUAL( Matrix::CSR, matrix.getFormat() );
-    const CSRStorage<ValueType>& local = matrix.getLocalStorage();
-    const CSRStorage<ValueType>& halo = matrix.getHaloStorage();
+    BOOST_CHECK_EQUAL( Matrix::ELL, matrix.getFormat() );
+    const ELLStorage<ValueType>& local = matrix.getLocalStorage();
+    const ELLStorage<ValueType>& halo = matrix.getHaloStorage();
     BOOST_CHECK_EQUAL( local.getNumRows(), halo.getNumRows() );
 }
 
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( sizeConstructorTest )
     const IndexType numRows = 13;
     const IndexType numCols = 17;
 
-    CSRSparseMatrix<ValueType> matrix( numRows, numCols );
+    ELLSparseMatrix<ValueType> matrix( numRows, numCols );
 
     // check correct sizes, distributions
 
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE( distConstructorTest )
             dmemo::DistributionPtr rowDist = rowDists[irow];
             dmemo::DistributionPtr colDist = colDists[icol];
          
-            CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+            ELLSparseMatrix<ValueType> matrix( rowDist, colDist );
     
             // check correct sizes, distributions
 
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE( storageConstructorTest )
     std::srand( 1317 );                   // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
 
-    CSRStorage<ValueType> globalStorage;
+    ELLStorage<ValueType> globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
 
     dmemo::TestDistributions rowDists( numRows );
@@ -159,13 +159,13 @@ BOOST_AUTO_TEST_CASE( storageConstructorTest )
             dmemo::DistributionPtr rowDist = rowDists[irow];
             dmemo::DistributionPtr colDist = colDists[icol];
 
-            CSRSparseMatrix<ValueType> matrix( globalStorage );
-            CSRSparseMatrix<ValueType> matrix1( matrix, rowDist, colDist );
-            CSRSparseMatrix<ValueType> matrix2_tmp( matrix, rowDist, repColDist );
-            CSRSparseMatrix<ValueType> matrix2( matrix2_tmp.getLocalStorage(), rowDist, colDist );
+            ELLSparseMatrix<ValueType> matrix( globalStorage );
+            ELLSparseMatrix<ValueType> matrix1( matrix, rowDist, colDist );
+            ELLSparseMatrix<ValueType> matrix2_tmp( matrix, rowDist, repColDist );
+            ELLSparseMatrix<ValueType> matrix2( matrix2_tmp.getLocalStorage(), rowDist, colDist );
 
-            const CSRStorage<ValueType>& localStorage1 = matrix1.getLocalStorage();
-            const CSRStorage<ValueType>& localStorage2 = matrix2.getLocalStorage();
+            const ELLStorage<ValueType>& localStorage1 = matrix1.getLocalStorage();
+            const ELLStorage<ValueType>& localStorage2 = matrix2.getLocalStorage();
 
             BOOST_REQUIRE_EQUAL( localStorage1.getNumRows(), localStorage2.getNumRows() );
             BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumColumns() );
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE( transposeConstructorTest )
     std::srand( 1317 );                   // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
 
-    CSRStorage<ValueType> globalStorage;
+    ELLStorage<ValueType> globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
 
     dmemo::TestDistributions rowDists( numRows );
@@ -212,16 +212,16 @@ BOOST_AUTO_TEST_CASE( transposeConstructorTest )
                 continue; // transpose not supported for replicated matrices with distributed columns
             }
 
-            CSRSparseMatrix<ValueType> matrix1( globalStorage );
+            ELLSparseMatrix<ValueType> matrix1( globalStorage );
             matrix1.redistribute( rowDist, colDist );
             bool transposeFlag = true;
  
             SCAI_LOG_INFO( logger, "transposeConstructorTest with matrix1 = " << matrix1 )
 
-            CSRSparseMatrix<ValueType> matrix2( matrix1, transposeFlag );
+            ELLSparseMatrix<ValueType> matrix2( matrix1, transposeFlag );
 
-            const CSRStorage<ValueType>& localStorage1 = matrix1.getLocalStorage();
-            const CSRStorage<ValueType>& localStorage2 = matrix2.getLocalStorage();
+            const ELLStorage<ValueType>& localStorage1 = matrix1.getLocalStorage();
+            const ELLStorage<ValueType>& localStorage2 = matrix2.getLocalStorage();
 
             BOOST_REQUIRE_EQUAL( localStorage1.getNumRows(), localStorage2.getNumColumns() );
             BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumRows() );
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE( virtualConstructorTest )
     std::srand( 1317 );                   // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
 
-    CSRStorage<ValueType> globalStorage;
+    ELLStorage<ValueType> globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
 
     dmemo::TestDistributions dists( numRows );
@@ -255,22 +255,22 @@ BOOST_AUTO_TEST_CASE( virtualConstructorTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        CSRSparseMatrix<ValueType> matrix( globalStorage );
+        ELLSparseMatrix<ValueType> matrix( globalStorage );
         matrix.redistribute( dist, dist );
 
         // virtual default constructor generates default matrix
 
-        common::unique_ptr<CSRSparseMatrix<ValueType> > newMatrix( matrix.newMatrix() );
+        common::unique_ptr<ELLSparseMatrix<ValueType> > newMatrix( matrix.newMatrix() );
    
-        const CSRStorage<ValueType>& newLocalStorage = newMatrix->getLocalStorage();
+        const ELLStorage<ValueType>& newLocalStorage = newMatrix->getLocalStorage();
 
         BOOST_CHECK_EQUAL( 0, newLocalStorage.getNumRows() );
         BOOST_CHECK_EQUAL( 0, newLocalStorage.getNumColumns() );
 
-        common::unique_ptr<CSRSparseMatrix<ValueType> > copyMatrix( matrix.copy() );
+        common::unique_ptr<ELLSparseMatrix<ValueType> > copyMatrix( matrix.copy() );
 
-        const CSRStorage<ValueType>& localStorage = matrix.getLocalStorage();
-        const CSRStorage<ValueType>& copyLocalStorage = copyMatrix->getLocalStorage();
+        const ELLStorage<ValueType>& localStorage = matrix.getLocalStorage();
+        const ELLStorage<ValueType>& copyLocalStorage = copyMatrix->getLocalStorage();
 
         BOOST_CHECK_EQUAL( localStorage.getNumRows(), copyLocalStorage.getNumRows() );
         BOOST_CHECK_EQUAL( copyLocalStorage.getNumColumns(), copyLocalStorage.getNumColumns() );
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE( expConstructorTest )
     std::srand( 1317 );                   // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
 
-    CSRStorage<ValueType> globalStorage;
+    ELLStorage<ValueType> globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
 
     dmemo::TestDistributions dists( numRows );
@@ -306,17 +306,17 @@ BOOST_AUTO_TEST_CASE( expConstructorTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        CSRSparseMatrix<ValueType> matrix1( globalStorage );
+        ELLSparseMatrix<ValueType> matrix1( globalStorage );
 
         matrix1.redistribute( dist, repColDist );     // only row distribution
 
         ValueType mult = 2;
 
-        CSRSparseMatrix<ValueType> matrix2( mult * matrix1 );
-        CSRSparseMatrix<ValueType> matrix3( matrix2 - matrix1 );
+        ELLSparseMatrix<ValueType> matrix2( mult * matrix1 );
+        ELLSparseMatrix<ValueType> matrix3( matrix2 - matrix1 );
 
-        const CSRStorage<ValueType>& localStorage1 = matrix1.getLocalStorage();
-        const CSRStorage<ValueType>& localStorage3 = matrix3.getLocalStorage();
+        const ELLStorage<ValueType>& localStorage1 = matrix1.getLocalStorage();
+        const ELLStorage<ValueType>& localStorage3 = matrix3.getLocalStorage();
 
         BOOST_CHECK_EQUAL( localStorage1.getNumRows(), localStorage3.getNumRows() );
         BOOST_CHECK_EQUAL( localStorage1.getNumColumns(), localStorage3.getNumColumns() );

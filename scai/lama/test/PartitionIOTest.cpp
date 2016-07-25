@@ -39,11 +39,14 @@
 
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/DenseVector.hpp>
+
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -107,6 +110,9 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr dist = testDists[i];
+
+        SCAI_LOG_INFO( logger, "DistributionSingleIO: dist[" << i <<  "] = " << *dist )
+
         CommunicatorPtr comm = dist->getCommunicatorPtr();
         const std::string fileName = "TestDist.txt";
         SCAI_LOG_INFO( logger, *comm << ": writeDistribution " << *dist )
@@ -177,6 +183,165 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         BOOST_CHECK( !FileIO::fileExists( pFileName ) );
 #endif
 
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( VectorSingleIO )
+{
+    typedef RealType ValueType;   // no focus here on type
+
+    TestDistributions testDists;
+
+    const std::string distFileName   = "TestDist.txt";
+    const std::string vectorFileName = "TestVector.frv";
+
+    for ( size_t i = 0; i < testDists.size(); ++i )
+    {
+        DistributionPtr dist = testDists[i];
+        CommunicatorPtr comm = dist->getCommunicatorPtr();
+
+        // skip this test for a replicated distribution with multiple processes
+        // has a special handling
+
+        if ( dist->isReplicated() )
+        {
+            CommunicatorPtr currentComm = Communicator::getCommunicatorPtr();
+
+            if ( currentComm->getSize() > 1 )
+            {
+                continue;
+            }
+        }
+
+        DenseVector<ValueType> vector;
+
+        float fillRate = 1;
+
+        vector.setRandom( dist, fillRate );
+
+        vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
+        PartitionIO::write( *dist, distFileName );
+        
+        DenseVector<ValueType> readVector;
+
+        // read vector and reconstruct its old distribution
+
+        readVector.readFromFile( vectorFileName, distFileName );
+
+        // The local parts of the two vectors must be exactly the same
+
+        const hmemo::HArray<ValueType>& local = vector.getLocalValues();
+        const hmemo::HArray<ValueType>& readLocal = readVector.getLocalValues();
+
+        BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
+
+        ValueType diff = utilskernel::HArrayUtils::absMaxDiffVal( local, readLocal );
+
+        BOOST_CHECK( diff == ValueType( 0 ) );
+
+        int rc = PartitionIO::removeFile( vectorFileName, *comm );
+        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_CHECK( !PartitionIO::fileExists( vectorFileName, *comm ) );
+
+        rc = PartitionIO::removeFile( distFileName, *comm );
+        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( VectorPartitionIO )
+{
+    typedef RealType ValueType;   // no focus here on type
+
+    TestDistributions testDists;
+
+    const std::string distFileName   = "TestDist.txt";
+    const std::string vectorFileName = "TestVector%r.frv";
+
+    for ( size_t i = 0; i < testDists.size(); ++i )
+    {
+        DistributionPtr dist = testDists[i];
+        CommunicatorPtr comm = dist->getCommunicatorPtr();
+
+        // skip this test for a replicated distribution with multiple processes
+        // has a special handling
+
+        if ( dist->isReplicated() )
+        {
+            CommunicatorPtr currentComm = Communicator::getCommunicatorPtr();
+
+            if ( currentComm->getSize() > 1 )
+            {
+                continue;
+            }
+        }
+
+        DenseVector<ValueType> vector;
+
+        float fillRate = 1;
+
+        vector.setRandom( dist, fillRate );
+
+        // use binary IO to avoid loss of precision
+
+        bool withDist = dist->getBlockDistributionSize() == nIndex;
+
+        if ( withDist )
+        {
+            PartitionIO::write( *dist, distFileName );
+        }
+
+        vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
+        
+        DenseVector<ValueType> readVector;
+
+        if ( withDist )
+        {
+            readVector.readFromFile( vectorFileName, distFileName );
+
+            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName 
+                                    << " ) with dist ( " << distFileName << " ): " << readVector )
+        }
+        else
+        {
+            readVector.readFromFile( vectorFileName );
+
+            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName << " ): " << readVector )
+        }
+
+        // we replicate now the vector, proves same distribution and same values
+
+        DistributionPtr repDist( new NoDistribution( vector.size() ) );
+
+        vector.redistribute( repDist );
+        readVector.redistribute( repDist );
+
+        // The two vector must be exactly the same
+
+        const hmemo::HArray<ValueType>& local = vector.getLocalValues();
+        const hmemo::HArray<ValueType>& readLocal = readVector.getLocalValues();
+
+        BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
+
+        ValueType diff = utilskernel::HArrayUtils::absMaxDiffVal( local, readLocal );
+
+        BOOST_CHECK( diff == ValueType( 0 ) );
+
+        int rc = PartitionIO::removeFile( vectorFileName, *comm );
+        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_CHECK( !PartitionIO::fileExists( vectorFileName, *comm ) );
+
+        if ( withDist )
+        {
+            SCAI_LOG_DEBUG( logger, "remove file " << distFileName )
+            int rc = PartitionIO::removeFile( distFileName, *comm );
+            BOOST_CHECK_EQUAL( 0, rc );
+            BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
+        }
     }
 }
 
