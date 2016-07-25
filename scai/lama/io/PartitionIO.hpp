@@ -98,7 +98,19 @@ public:
 
     static void getPartitionFileName( std::string& fileName, bool& isPartitioned, const dmemo::Communicator& comm );
 
+    /** Counterpart to FileIO::removeFile with partitioned file names.
+     *
+     *  @param[in] fileName file to delete
+     *  @param[in] comm is the communicator
+     *  @returns   0 on success, same result on all processors
+     */
+    static int removeFile( const std::string& fileName, const dmemo::Communicator& comm );
+
     static bool isPartitionFileName( const std::string& fileName );
+
+    /** Counterpart to FileIO::fileExists, now with partitioned file names */
+
+    static bool fileExists( const std::string& fileName, const dmemo::Communicator& comm );
 
     static const PartitionId MASTER = 0;
 

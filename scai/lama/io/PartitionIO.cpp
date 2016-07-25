@@ -100,6 +100,87 @@ bool PartitionIO::isPartitionFileName( const string& fileName )
 
 /* --------------------------------------------------------------------------------- */
 
+int PartitionIO::removeFile( const std::string& fileName, const dmemo::Communicator& comm )
+{
+    int rc = 0;
+
+    std::string pFileName = fileName;
+
+    bool isPartitioned;
+
+    getPartitionFileName( pFileName, isPartitioned, comm );
+
+    if ( isPartitioned )
+    {
+        // partitoned file name, each processor deletes its part, sync results
+
+        rc = FileIO::removeFile( pFileName );
+
+        bool okay = rc == 0;
+
+        okay = comm.all( okay );
+
+        if ( !okay )
+        {
+            rc = -1;
+        }
+    }
+    else
+    {
+        // serial file name, only root processor deletes and bcasts the result
+
+        const PartitionId root = 0;
+
+        if ( comm.getRank() == root )
+        {
+            rc = FileIO::removeFile( pFileName );
+        }
+
+        comm.bcast( &rc, 1, root );
+    }
+
+    return rc;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+bool PartitionIO::fileExists( const std::string& fileName, const dmemo::Communicator& comm )
+{
+    bool exists = true;
+
+    std::string pFileName = fileName;
+
+    bool isPartitioned;
+
+    getPartitionFileName( pFileName, isPartitioned, comm );
+
+    if ( isPartitioned )
+    {
+        // partitoned file name, each processor deletes its part, sync results
+
+        exists = FileIO::fileExists( pFileName );
+
+        exists = comm.all( exists );
+    }
+    else
+    {
+        const PartitionId root = 0;
+
+        if ( comm.getRank() == root )
+        {
+            exists = FileIO::fileExists( pFileName );
+        }
+
+        int& alias = reinterpret_cast<int&>( exists );  // alias var as bcast
+
+        comm.bcast( &alias, 1, root );
+    }
+
+    return exists;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 DistributionPtr PartitionIO::readSDistribution( const string& inFileName, CommunicatorPtr comm )
 {
     SCAI_LOG_INFO( logger, "read distribution from one single file " << inFileName )
@@ -186,7 +267,7 @@ DistributionPtr PartitionIO::readPDistribution( const string& inFileName, Commun
 {
     utilskernel::LArray<IndexType> owners;
 
-    cout << *comm << ", read distribution from " << inFileName << endl;
+    SCAI_LOG_INFO( logger, *comm << ", read distribution from " << inFileName )
 
     hmemo::HArray<IndexType> myIndexes;
 
