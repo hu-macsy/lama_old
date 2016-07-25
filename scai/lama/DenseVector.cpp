@@ -857,9 +857,9 @@ void Vector::writeToSingleFile(
     {
         // make sure that only one processor writes to file
 
-        const Communicator& comm = getDistribution().getCommunicator();
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-        if ( comm.getRank() == 0 )
+        if ( comm->getRank() == 0 )
         {
             writeLocalToFile( fileName, fileType, dataType, fileMode );
         }
@@ -867,7 +867,7 @@ void Vector::writeToSingleFile(
         // synchronization to avoid that other processors start with
         // something that might depend on the finally written file
 
-        comm.synchronize();
+        comm->synchronize();
     }
     else
     {
@@ -876,7 +876,7 @@ void Vector::writeToSingleFile(
         DistributionPtr dist( new NoDistribution( size() ) );
         common::unique_ptr<Vector> repV( copy() );
         repV->redistribute( dist );
-        repV->writeLocalToFile( fileName, fileType, dataType, fileMode );
+        repV->writeToSingleFile( fileName, fileType, dataType, fileMode );
     }
 }
 

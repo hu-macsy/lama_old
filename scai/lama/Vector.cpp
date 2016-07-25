@@ -191,6 +191,8 @@ void Vector::readFromSingleFile( const std::string& fileName )
 
     if ( myRank == MASTER )
     {
+        SCAI_LOG_INFO( logger, *comm << ": read array from single file " << fileName )
+
         FileIO::read( localValues, fileName );
 
         vectorSize = localValues.size();
