@@ -36,10 +36,13 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
+#include <scai/dmemo/test/TestDistributions.hpp>
 
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
@@ -58,6 +61,40 @@ using namespace dmemo;
 
 /* ------------------------------------------------------------------------- */
 
+/** This function removes for a parallel execution all replicated distributions. 
+ *
+ *  Read/write of replicated data should be done more carefully.
+ */
+
+static void removeReplicatedDistributions( std::vector<dmemo::DistributionPtr>& distributions )
+{
+    // skip this test for a replicated distribution with multiple processes
+    // has a special handling
+
+    CommunicatorPtr currentComm = Communicator::getCommunicatorPtr();
+
+    if ( currentComm->getSize() == 1 )
+    {
+        return;
+    }
+
+    IndexType pos = 0;
+
+    for ( size_t i = 0; i < distributions.size(); ++i )
+    {
+        if ( distributions[i]->isReplicated() )
+        {
+            continue;
+        }
+
+        distributions[pos++] = distributions[i];
+    }
+
+    distributions.resize( pos );
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE( PartitionIOTest )
 
 /* ------------------------------------------------------------------------- */
@@ -66,46 +103,14 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.PartitionIOTest" );
 
 /* ------------------------------------------------------------------------- */
 
-class TestDistributions : public std::vector<DistributionPtr>
-{
-public:
-
-    TestDistributions()
-    {
-        const IndexType globalSize = 31;
-
-        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-        push_back( DistributionPtr( new CyclicDistribution( globalSize, 3, comm ) ) );
-        push_back( DistributionPtr( new BlockDistribution( globalSize, comm ) ) );
-
-        utilskernel::LArray<PartitionId> owners;
-
-        utilskernel::HArrayUtils::setRandom( owners, globalSize, 1.0 );
-
-        {
-            hmemo::WriteAccess<PartitionId> wOwners( owners );
-
-            PartitionId nPartitions = comm->getSize();
-
-            for ( IndexType i = 0; i < globalSize; ++i )
-            {
-                wOwners[i] = wOwners[i] % nPartitions;
-            }
-        }
-
-        push_back( DistributionPtr( new GeneralDistribution( owners, comm ) ) );
-
-        float weight = static_cast<float>( comm->getRank() + 1 );
-
-        push_back( DistributionPtr( new GenBlockDistribution( globalSize, weight, comm ) ) );
-    }
-};
-
-/* ------------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE( DistributionSingleIO )
 {
-    TestDistributions testDists;
+    // Purpose: write and read of different distributions into a single file
+
+    const IndexType n = 31;
+
+    dmemo::TestDistributions testDists( n );
+    removeReplicatedDistributions( testDists );
 
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
@@ -114,13 +119,13 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
         SCAI_LOG_INFO( logger, "DistributionSingleIO: dist[" << i <<  "] = " << *dist )
 
         CommunicatorPtr comm = dist->getCommunicatorPtr();
-        const std::string fileName = "TestDist.txt";
+        const std::string distFileName = "TestDist.txt";
         SCAI_LOG_INFO( logger, *comm << ": writeDistribution " << *dist )
-        PartitionIO::write( *dist, fileName );
+        PartitionIO::write( *dist, distFileName );
         // Hint:      We assume a common file system for all processors
         // Attention: write should have an implicit synchronization
-        BOOST_CHECK( FileIO::fileExists( fileName ) );
-        DistributionPtr newDist = PartitionIO::readDistribution( fileName, comm );
+        BOOST_CHECK( FileIO::fileExists( distFileName ) );
+        DistributionPtr newDist = PartitionIO::readDistribution( distFileName, comm );
         SCAI_LOG_INFO( logger, *comm << ": readDistribution " << *newDist )
         // should be equal
         utilskernel::LArray<IndexType> myIndexes1;
@@ -131,13 +136,10 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
         BOOST_CHECK_EQUAL( 0, myIndexes1.maxDiffNorm( myIndexes2 ) );
 
 #ifdef DELETE_OUTPUT_FILES
-        if ( comm->getRank() == 0 )
-        {
-            // only one processor should delete the file
-            int rc = FileIO::removeFile( fileName );
-            BOOST_CHECK_EQUAL( 0, rc );
-            BOOST_CHECK( !FileIO::fileExists( fileName ) );
-        }
+        // only one processor should delete the file
+        int rc = PartitionIO::removeFile( distFileName, *comm );
+        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_CHECK( !PartitionIO::fileExists( distFileName ) );
 #endif
 
     }
@@ -147,7 +149,12 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
 
 BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
 {
-    TestDistributions testDists;
+    // Purpose: write and read of different distributions into a partitioned file
+
+    const IndexType n = 25;
+
+    dmemo::TestDistributions testDists( n );
+    removeReplicatedDistributions( testDists );
 
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
@@ -178,7 +185,7 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         BOOST_CHECK_EQUAL( 0, owners1.maxDiffNorm( owners2 ) );
 
 #ifdef DELETE_OUTPUT_FILES
-        int rc = FileIO::removeFile( pFileName );
+        int rc = PartitionIO::removeFile( vectorFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
         BOOST_CHECK( !FileIO::fileExists( pFileName ) );
 #endif
@@ -192,7 +199,10 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 {
     typedef RealType ValueType;   // no focus here on type
 
-    TestDistributions testDists;
+    const IndexType n = 18;
+
+    dmemo::TestDistributions testDists( n );
+    removeReplicatedDistributions( testDists );
 
     const std::string distFileName   = "TestDist.txt";
     const std::string vectorFileName = "TestVector.frv";
@@ -202,19 +212,6 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
         DistributionPtr dist = testDists[i];
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
-        // skip this test for a replicated distribution with multiple processes
-        // has a special handling
-
-        if ( dist->isReplicated() )
-        {
-            CommunicatorPtr currentComm = Communicator::getCommunicatorPtr();
-
-            if ( currentComm->getSize() > 1 )
-            {
-                continue;
-            }
-        }
-
         DenseVector<ValueType> vector;
 
         float fillRate = 1;
@@ -223,7 +220,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
         PartitionIO::write( *dist, distFileName );
-        
+
         DenseVector<ValueType> readVector;
 
         // read vector and reconstruct its old distribution
@@ -257,7 +254,10 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 {
     typedef RealType ValueType;   // no focus here on type
 
-    TestDistributions testDists;
+    const IndexType n = 18;
+
+    dmemo::TestDistributions testDists( n );
+    removeReplicatedDistributions( testDists );
 
     const std::string distFileName   = "TestDist.txt";
     const std::string vectorFileName = "TestVector%r.frv";
@@ -267,26 +267,11 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         DistributionPtr dist = testDists[i];
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
-        // skip this test for a replicated distribution with multiple processes
-        // has a special handling
-
-        if ( dist->isReplicated() )
-        {
-            CommunicatorPtr currentComm = Communicator::getCommunicatorPtr();
-
-            if ( currentComm->getSize() > 1 )
-            {
-                continue;
-            }
-        }
-
         DenseVector<ValueType> vector;
 
         float fillRate = 1;
 
         vector.setRandom( dist, fillRate );
-
-        // use binary IO to avoid loss of precision
 
         bool withDist = dist->getBlockDistributionSize() == nIndex;
 
@@ -339,6 +324,154 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         {
             SCAI_LOG_DEBUG( logger, "remove file " << distFileName )
             int rc = PartitionIO::removeFile( distFileName, *comm );
+            BOOST_CHECK_EQUAL( 0, rc );
+            BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( MatrixSingleIO )
+{
+    typedef RealType ValueType;   // no focus here on type
+
+    const IndexType numRows = 15;   // # rows for global matrix
+    const IndexType numCols = 15;   // # cols for global matrix
+
+    dmemo::TestDistributions testDists( numRows );
+    removeReplicatedDistributions( testDists );
+
+    DistributionPtr colDist( new NoDistribution( numCols ) );
+
+    const std::string distFileName   = "TestDist.txt";
+    const std::string matrixFileName = "TestMatrix.frm";
+
+    for ( size_t i = 0; i < testDists.size(); ++i )
+    {
+        DistributionPtr rowDist = testDists[i];
+        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
+
+        CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+
+        float fillRate = 0.2f;
+
+        MatrixCreator<ValueType>::fillRandom( matrix, fillRate );
+
+        matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
+        PartitionIO::write( *rowDist, distFileName );
+        
+        CSRSparseMatrix<ValueType> readMatrix;
+
+        // read matrix and reconstruct its old distribution
+
+        readMatrix.readFromFile( matrixFileName, distFileName );
+
+        // The local parts of the two matrices must be exactly the same
+
+        const CSRStorage<ValueType>& local = matrix.getLocalStorage();
+        const CSRStorage<ValueType>& readLocal = readMatrix.getLocalStorage();
+
+        BOOST_REQUIRE_EQUAL( local.getNumRows(), readLocal.getNumRows() );
+        BOOST_REQUIRE_EQUAL( local.getNumColumns(), readLocal.getNumColumns() );
+
+        ValueType diff = local.maxDiffNorm( readLocal );
+
+        BOOST_CHECK( diff == ValueType( 0 ) );
+
+        int rc = PartitionIO::removeFile( matrixFileName, *comm );
+        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, *comm ) );
+
+        rc = PartitionIO::removeFile( distFileName, *comm );
+        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
+{
+    return;
+
+    typedef RealType ValueType;   // no focus here on type
+
+    const IndexType numRows = 15;   // # rows for global matrix
+    const IndexType numCols = 15;   // # cols for global matrix
+
+    dmemo::TestDistributions testDists( numRows );
+    removeReplicatedDistributions( testDists );
+
+    DistributionPtr colDist( new NoDistribution( numCols ) );
+
+    const std::string distFileName   = "TestDist.txt";
+    const std::string matrixFileName = "TestMatrix%r.frm";
+
+    for ( size_t i = 0; i < testDists.size(); ++i )
+    {
+        DistributionPtr rowDist = testDists[i];
+        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
+
+        CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+
+        float fillRate = 0.2f;
+
+        MatrixCreator<ValueType>::fillRandom( matrix, fillRate );
+
+        matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
+
+        bool withDist = rowDist->getBlockDistributionSize() == nIndex;
+
+        if ( withDist )
+        {
+            PartitionIO::write( *rowDist, distFileName );
+        }
+        
+        SCAI_LOG_ERROR( logger, "written matrix " << matrix << " to partitioned file " << distFileName )
+
+        CSRSparseMatrix<ValueType> readMatrix;
+
+        if ( withDist )
+        {
+            readMatrix.readFromFile( matrixFileName, distFileName );
+
+            SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName 
+                                    << " ) with dist ( " << distFileName << " ): " << readMatrix )
+        }
+        else
+        {
+            readMatrix.readFromFile( matrixFileName );
+
+            SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName << " ): " << readMatrix )
+        }
+
+        // we replicate now the matrix, proves same distribution and same values
+
+        DistributionPtr repDist( new NoDistribution( numRows ) );
+
+        matrix.redistribute( repDist, colDist );
+        readMatrix.redistribute( repDist, colDist );
+
+        // The local parts of the two matrices must be exactly the same
+
+        const CSRStorage<ValueType>& local = matrix.getLocalStorage();
+        const CSRStorage<ValueType>& readLocal = readMatrix.getLocalStorage();
+
+        BOOST_REQUIRE_EQUAL( local.getNumRows(), readLocal.getNumRows() );
+        BOOST_REQUIRE_EQUAL( local.getNumColumns(), readLocal.getNumColumns() );
+
+        ValueType diff = local.maxDiffNorm( readLocal );
+
+        BOOST_CHECK( diff == ValueType( 0 ) );
+
+        int rc = PartitionIO::removeFile( matrixFileName, *comm );
+        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, *comm ) );
+
+        if ( withDist )
+        {
+            rc = PartitionIO::removeFile( distFileName, *comm );
             BOOST_CHECK_EQUAL( 0, rc );
             BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
         }
