@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE( replicateTest )
 {
     const IndexType N = 30;  // global size 
 
-    AllDistributions allDist( N );
+    TestDistributions allDist( N );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
     const IndexType globalN = 11; // global size, ToDo: this test fails very strange with N = 15, 17
     const IndexType repN = 4;
 
-    AllDistributions allDist( globalN );
+    TestDistributions allDist( globalN );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
@@ -371,7 +371,7 @@ BOOST_AUTO_TEST_CASE( replicateRaggedTest )
     const IndexType globalN = 15;  // global size 
     const IndexType repN = 3;
 
-    AllDistributions allDist( globalN );
+    TestDistributions allDist( globalN );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
