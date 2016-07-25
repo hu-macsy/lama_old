@@ -576,23 +576,23 @@ void Matrix::writeToSingleFile(
     if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
         // make sure that only one processor writes to file
-        const Communicator& comm = getDistribution().getCommunicator();
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-        if ( comm.getRank() == 0 )
+        if ( comm->getRank() == 0 )
         {
             getLocalStorage().writeToFile( fileName, fileType, dataType, indexType, fileMode );
         }
 
         // synchronization to avoid that other processors start with
         // something that might depend on the finally written file
-        comm.synchronize();
+        comm->synchronize();
     }
     else
     {
         DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
         common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
-        repM->writeToFile( fileName, fileType, dataType, indexType, fileMode );
+        repM->writeToSingleFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
 
