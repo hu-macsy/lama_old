@@ -47,6 +47,10 @@ scai_project (
         Creator
 
         CSRSparseMatrixTest
+        COOSparseMatrixTest
+        ELLSparseMatrixTest
+        DIASparseMatrixTest
+        JDSSparseMatrixTest
 
         lamaMatrixTest
     )
