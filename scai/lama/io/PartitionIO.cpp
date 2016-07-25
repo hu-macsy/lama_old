@@ -171,9 +171,7 @@ bool PartitionIO::fileExists( const std::string& fileName, const dmemo::Communic
             exists = FileIO::fileExists( pFileName );
         }
 
-        int& alias = reinterpret_cast<int&>( exists );  // alias var as bcast
-
-        comm.bcast( &alias, 1, root );
+        comm.bcast( reinterpret_cast<int*>( &exists ), 1, root );
     }
 
     return exists;

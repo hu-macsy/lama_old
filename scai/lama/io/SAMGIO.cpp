@@ -237,7 +237,7 @@ void SAMGIO::readVectorHeader( IndexType& n, IndexType& typeSize, bool& binary, 
     if ( inFile.fail() )
     {
         COMMON_THROWEXCEPTION( "Invalid SAMG vector header file: " << fileName
-                               << "could not read '[f|b] <n> <typeSize>" )
+                               << ", could not read '[f|b] <n> <typeSize>" )
     }
 
     inFile.close();
