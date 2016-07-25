@@ -345,7 +345,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 {
     using namespace hmemo;
 
-    CommunicatorPtr comm = distribution.getCommunicatorPtr();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
  
     PartitionId rank = comm->getRank();
 
