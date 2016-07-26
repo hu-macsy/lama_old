@@ -206,7 +206,7 @@ int main( int argc, const char* argv[] )
             return -1;
         }
 
-        if ( !MatrixCreator<ValueType>::supportedStencilType( cmdArgs.dimension, cmdArgs.stencilType ) )
+        if ( !MatrixCreator::supportedStencilType( cmdArgs.dimension, cmdArgs.stencilType ) )
         {
             HOST_PRINT( myRank, "Unsupported stencilType " << cmdArgs.stencilType << " for dim = " << cmdArgs.dimension )
             return -1;
@@ -221,7 +221,7 @@ int main( int argc, const char* argv[] )
         // replace %s in file name with stencil description
         replaceStencil( matrixFileName, stencilName );
         CSRSparseMatrix<ValueType> m;
-        MatrixCreator<ValueType>::buildPoisson( m, cmdArgs.dimension, cmdArgs.stencilType, cmdArgs.dimX, cmdArgs.dimY, cmdArgs.dimZ );
+        MatrixCreator::buildPoisson( m, cmdArgs.dimension, cmdArgs.stencilType, cmdArgs.dimX, cmdArgs.dimY, cmdArgs.dimZ );
         DenseVector<ValueType> lhs( m.getRowDistributionPtr(), 1.0 );
         DenseVector<ValueType> rhs( m * lhs );
 

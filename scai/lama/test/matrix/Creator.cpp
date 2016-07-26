@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
     const IndexType repN = 6;
 
-    MatrixCreator<ValueType>::buildReplicatedDiag( matrix, storage, repN );
+    MatrixCreator::buildReplicatedDiag( matrix, storage, repN );
 
     SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix 
                            << " from rep = " << repN << " x " << storage )
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedTest )
     const IndexType repRow = 2;
     const IndexType repCol = 2;
 
-    MatrixCreator<ValueType>::buildReplicated( matrix, storage, repRow, repCol );
+    MatrixCreator::buildReplicated( matrix, storage, repRow, repCol );
 
     SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicated " << matrix )
 

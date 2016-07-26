@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
     typedef SCAI_TEST_TYPE ValueType;
     const IndexType N = 40;
     scai::lama::CSRSparseMatrix<ValueType> coefficients;
-    scai::lama::MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N, N );
+    scai::lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
     SimpleAMG SimpleAMGSolver( "SimpleAMGSolver" );
     /* cant not be tested: not getter
     SimpleAMGSolver.setHostOnlyLevel( IndexType hostOnlyLevel );

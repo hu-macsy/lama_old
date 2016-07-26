@@ -100,7 +100,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     CG cgSolver( "CGTestSolver" );
     SCAI_LOG_INFO( logger, "Solver = " << cgSolver );
     CSRSparseMatrix<ValueType> helpcoefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
+    MatrixCreator::buildPoisson2D( helpcoefficients, 9, N1, N2 );
     SCAI_LOG_INFO( logger, "Poisson2D matrix = " << helpcoefficients );
     MatrixType coefficients( helpcoefficients );
     SCAI_LOG_INFO( logger, "Poisson2D matrix (converted to MatrixType)  = " << helpcoefficients );
@@ -167,7 +167,7 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
     const IndexType N2 = 4;
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<ValueType> csrCoefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( csrCoefficients, 9, N1, N2 );
+    MatrixCreator::buildPoisson2D( csrCoefficients, 9, N1, N2 );
     MatrixType coefficients( csrCoefficients );
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );

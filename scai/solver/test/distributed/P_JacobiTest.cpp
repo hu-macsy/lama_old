@@ -105,7 +105,7 @@ void testSolveMethod( ContextPtr loc )
     const IndexType N1 = 4;
     const IndexType N2 = 4;
     CSRSparseMatrix<ValueType> helpcoefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
+    MatrixCreator::buildPoisson2D( helpcoefficients, 9, N1, N2 );
     DistributionPtr dist( new BlockDistribution( helpcoefficients.getNumRows(), comm ) );
     helpcoefficients.redistribute( dist, dist );
     MatrixType coefficients( helpcoefficients );

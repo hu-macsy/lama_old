@@ -52,8 +52,6 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/matutils/MatrixCreator.hpp>
-
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 

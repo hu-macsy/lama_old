@@ -58,8 +58,8 @@ static void bench( IndexType size, double fillRate )
     CSRSparseMatrix<ValueType> a( size, size );
     CSRSparseMatrix<ValueType> b( size, size );
     CSRSparseMatrix<ValueType> c( size, size );
-    MatrixCreator<ValueType>::fillRandom( a, fillRate );
-    MatrixCreator<ValueType>::fillRandom( b, fillRate );
+    MatrixCreator::fillRandom( a, fillRate );
+    MatrixCreator::fillRandom( b, fillRate );
     a.setContextPtr( host );
     b.setContextPtr( host );
     c.setContextPtr( host );

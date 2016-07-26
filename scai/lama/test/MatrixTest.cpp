@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
     const IndexType numColumns = 160;
     const double density = 0.1; // 10% density
     MatrixType matrix( numRows, numColumns );
-    MatrixCreator<ValueType>::fillRandom( matrix, density );
+    MatrixCreator::fillRandom( matrix, density );
     SCAI_LOG_INFO( logger, "Random matrix = " << matrix );
     BOOST_CHECK_EQUAL( numRows, matrix.getNumRows() );
     BOOST_CHECK_EQUAL( numColumns, matrix.getNumColumns() );

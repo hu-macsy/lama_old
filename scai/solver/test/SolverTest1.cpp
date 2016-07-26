@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE( solveWithoutInitialization )
     const IndexType N1 = 4;
     const IndexType N2 = 4;
     CSRSparseMatrix<ValueType> coefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
+    MatrixCreator::buildPoisson2D( coefficients, 9, N1, N2 );
     const ValueType solutionInitValue = 1.0;
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
     DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue + 1.0 );

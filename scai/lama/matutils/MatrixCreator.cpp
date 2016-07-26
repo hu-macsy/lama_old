@@ -44,7 +44,7 @@
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
-#include <scai/common/macros/instantiate.hpp>
+#include <scai/common/macros/loop.hpp>
 
 // std
 #include <cmath>
@@ -55,7 +55,7 @@ namespace scai
 namespace lama
 {
 
-SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixCreator<ValueType>::logger, "MatrixCreator" )
+SCAI_LOG_DEF_LOGGER( MatrixCreator::logger, "MatrixCreator" )
 
 static inline void getStencilProperties(
     IndexType& dimension,
@@ -109,8 +109,7 @@ static inline void getStencilProperties(
     }
 }
 
-template<typename ValueType>
-bool MatrixCreator<ValueType>::supportedStencilType( const IndexType dimension, const IndexType stencilType )
+bool MatrixCreator::supportedStencilType( const IndexType dimension, const IndexType stencilType )
 {
     bool supported = false;
 
@@ -209,10 +208,9 @@ static inline IndexType getNStencilValues(
     return numValues;
 }
 
-template<typename IndexType, typename ValueType>
 static inline void getStencil(
     std::vector<IndexType>& positions,
-    std::vector<ValueType>& values,
+    std::vector<int>& values,
     const IndexType idX,
     const IndexType idY,
     const IndexType idZ,
@@ -226,7 +224,7 @@ static inline void getStencil(
     positions.clear(); // reset number of entries to 0
     values.clear(); // reset
     positions.push_back( getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) );
-    values.push_back( stencilType - static_cast<ValueType>( 1.0 ) );
+    values.push_back( stencilType - 1 );
     IndexType leftX = getNumNeighbors( idX, dimX, -length );
     IndexType rightX = getNumNeighbors( idX, dimX, length );
     IndexType leftY = getNumNeighbors( idY, dimY, -length );
@@ -264,15 +262,16 @@ static inline void getStencil(
                 }
 
                 positions.push_back( getMatrixPosition( jx, jy, jz, dimX, dimY, dimZ ) );
-                values.push_back( static_cast<ValueType>( -1.0 ) );
+                values.push_back( -1 );
             }
         }
     }
 }
 
-template<typename ValueType>
-void MatrixCreator<ValueType>::buildPoisson(
-    CSRSparseMatrix<ValueType>& matrix,
+/* ------------------------------------------------------------------------- */
+
+void MatrixCreator::buildPoisson(
+    Matrix& matrix,
     const IndexType dimension,
     const IndexType stencilType,
     const IndexType dimX,
@@ -280,15 +279,11 @@ void MatrixCreator<ValueType>::buildPoisson(
     const IndexType dimZ )
 {
     // Calculate subdomains, subranges
-    PartitionId gridSize[3] =
-    { 1, 1, 1 };
-    PartitionId gridRank[3] =
-    { 0, 0, 0 };
-    PartitionId dimLB[3] =
-    { 0, 0, 0 };
-    PartitionId dimUB[3] =
-    { dimX - 1, dimY - 1, dimZ - 1 };
-    // ToDo: take communicator from input set
+    PartitionId gridSize[3] = { 1, 1, 1 };
+    PartitionId gridRank[3] = { 0, 0, 0 };
+    PartitionId dimLB[3]    = { 0, 0, 0 };
+    PartitionId dimUB[3]    = { dimX - 1, dimY - 1, dimZ - 1 };
+
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
 
     // get rank of this processor
@@ -316,7 +311,11 @@ void MatrixCreator<ValueType>::buildPoisson(
     }
 
     SCAI_LOG_INFO( logger,
-                   *comm << ": rank = (" << gridRank[0] << "," << gridRank[1] << "," << gridRank[2] << ") of (" << gridSize[0] << "," << gridSize[1] << "," << gridSize[2] << "), local range = [" << dimLB[0] << ":" << dimUB[0] << "," << dimLB[1] << ":" << dimUB[1] << "," << dimLB[2] << ":" << dimUB[2] << "] of " << dimX << " x " << dimY << " x " << dimZ )
+                   *comm << ": rank = (" << gridRank[0] << "," << gridRank[1] << "," << gridRank[2] 
+                    << ") of (" << gridSize[0] << "," << gridSize[1] << "," << gridSize[2] 
+                    << "), local range = [" << dimLB[0] << ":" << dimUB[0] << "," << dimLB[1] << ":" << dimUB[1] << "," << dimLB[2] << ":" << dimUB[2] 
+                    << "] of " << dimX << " x " << dimY << " x " << dimZ )
+
     IndexType globalSize = dimX * dimY * dimZ; // number of rows, columns of full matrix
     std::vector<IndexType> myGlobalIndexes; // row indexes of this processor
     std::vector<IndexType> myIA; // number of entries in my rows
@@ -368,25 +367,26 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     SCAI_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
     // allocate and fill local part of the distributed matrix
-    hmemo::HArrayRef<IndexType> indexes( static_cast<IndexType>(  myGlobalIndexes.size() ), &myGlobalIndexes[0] );
+    hmemo::HArrayRef<IndexType> indexes(  myGlobalIndexes );
     dmemo::DistributionPtr distribution( new dmemo::GeneralDistribution( globalSize, indexes, comm ) );
     SCAI_LOG_INFO( logger, "distribution = " << *distribution )
     // create new local CSR data ( # local rows x # columns )
-    scai::lama::CSRStorage<ValueType> localMatrix;
+    scai::lama::CSRStorage<double> localMatrix;
     localMatrix.allocate( localSize, globalSize );
     // Allocate local matrix with correct sizes and correct first touch in case of OpenMP
     // ToDo: localMatrix( localSize, numColumns, numNonZeros, &myIA[0] );
     hmemo::HArray<IndexType> csrIA;
     hmemo::HArray<IndexType> csrJA;
-    hmemo::HArray<ValueType> csrValues;
+    hmemo::HArray<double> csrValues;
     {
         hmemo::WriteOnlyAccess<IndexType> ia( csrIA, localSize + 1 );
         hmemo::WriteOnlyAccess<IndexType> ja( csrJA, myNNA );
-        hmemo::WriteOnlyAccess<ValueType> values( csrValues, myNNA );
+        hmemo::WriteOnlyAccess<double> values( csrValues, myNNA );
         ia[0] = 0;
+
         std::vector<IndexType> colIndexes;
-        std::vector<double> colValues;
-        ;
+        std::vector<int> colValues;     
+
         colIndexes.reserve( stencilType );
         colValues.reserve( stencilType );
         // compute global indexes this processor is responsibile for and number of non-zero values
@@ -414,7 +414,7 @@ void MatrixCreator<ValueType>::buildPoisson(
                     for ( size_t k = 0; k < colIndexes.size(); ++k )
                     {
                         ja[nnzCounter] = colIndexes[k];
-                        values[nnzCounter] = static_cast<ValueType>( colValues[k] );
+                        values[nnzCounter] = static_cast<double>( colValues[k] );
                         ++nnzCounter;
                     }
 
@@ -434,9 +434,8 @@ void MatrixCreator<ValueType>::buildPoisson(
 
 /* ------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MatrixCreator<ValueType>::buildPoisson1D(
-    CSRSparseMatrix<ValueType>& matrix,
+void MatrixCreator::buildPoisson1D(
+    Matrix& matrix,
     const IndexType stencilType,
     const IndexType dim )
 {
@@ -446,9 +445,8 @@ void MatrixCreator<ValueType>::buildPoisson1D(
 
 /* ------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MatrixCreator<ValueType>::buildPoisson2D(
-    CSRSparseMatrix<ValueType>& matrix,
+void MatrixCreator::buildPoisson2D(
+    Matrix& matrix,
     const IndexType stencilType,
     const IndexType dim1,
     const IndexType dim2 )
@@ -459,9 +457,8 @@ void MatrixCreator<ValueType>::buildPoisson2D(
 
 /* ------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MatrixCreator<ValueType>::buildPoisson3D(
-    CSRSparseMatrix<ValueType>& matrix,
+void MatrixCreator::buildPoisson3D(
+    Matrix& matrix,
     const IndexType stencilType,
     const IndexType dim1,
     const IndexType dim2,
@@ -473,8 +470,7 @@ void MatrixCreator<ValueType>::buildPoisson3D(
 
 /* ------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
+void MatrixCreator::fillRandom( Matrix& matrix, double density )
 {
     int seed = 15191;
     // Shape and distribution of matrix is not changed
@@ -496,28 +492,25 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 
     const IndexType colSize = matrix.getNumColumns();
     const IndexType expectedEntries = static_cast<IndexType>( localRowSize * colSize * density + 30.0 );
+
     std::vector<IndexType> csrIA( localRowSize + 1 );
+    std::vector<IndexType> csrJA;   // take here a vector, more convenient for push_back
 
-    std::vector<IndexType> csrJA;
-
-    std::vector<ValueType> csrValues;
     csrJA.reserve( expectedEntries );
 
-    csrValues.reserve( expectedEntries );
     IndexType numValues = 0;
+
     csrIA[0] = numValues;
 
     for ( int i = 0; i < localRowSize; ++i )
     {
         for ( int j = 0; j < colSize; ++j )
         {
-            ValueType value = static_cast<ValueType>( rand() ) / static_cast<ValueType>( RAND_MAX );
+            double value = static_cast<double>( rand() ) / static_cast<double>( RAND_MAX );
 
             if ( value < density )
             {
-                value = static_cast<ValueType>( rand() ) / static_cast<ValueType>( RAND_MAX );
                 csrJA.push_back( j );
-                csrValues.push_back( value );
                 ++numValues;
             }
         }
@@ -525,19 +518,37 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
         csrIA[i + 1] = numValues;
     }
 
-    CSRStorage<ValueType> localCSRStorage;
-    localCSRStorage.setRawCSRData( localRowSize, colSize, numValues, &csrIA[0], &csrJA[0], &csrValues[0] );
-    SCAI_LOG_DEBUG( logger, "replace owned data with " << localCSRStorage )
+    // now we draw the non-zero values
+
+    common::unique_ptr<hmemo::_HArray> csrValues( hmemo::_HArray::create( matrix.getValueType() ) );
+
+    hmemo::_HArray& values = *csrValues;
+
+    // draw the non-zero values, now with fill rate 1.0f
+
+    utilskernel::HArrayUtils::setRandom( values, numValues, 1.0f );
+    
+    // some tricky stuff to avoid an additional copy
+
+    _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( matrix.getLocalStorage() );
+
+    hmemo::HArrayRef<IndexType> ia( csrIA );
+    hmemo::HArrayRef<IndexType> ja( csrJA );
+
+    localMatrix.setCSRData( localRowSize, colSize, numValues, ia, ja, *csrValues );
+
+    SCAI_LOG_DEBUG( logger, "local random part: " << localMatrix )
+
     // The new matrix data has the same row distribution as the input
-    // matrix, also take over the original column distribution
-    matrix.assign( localCSRStorage, matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() ); // builds also halo
+    // matrix, also take over the original column distribution to build halo
+
+    matrix.assign( localMatrix, matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() ); 
 }
 
 /* ------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MatrixCreator<ValueType>::buildRandom(
-    CSRSparseMatrix<ValueType>& matrix,
+void MatrixCreator::buildRandom(
+    Matrix& matrix,
     const IndexType size,
     const double density )
 {
@@ -694,7 +705,7 @@ static void replicateStorage(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixCreator<ValueType>::buildReplicatedDiag( 
+void MatrixCreator::buildReplicatedDiag( 
     SparseMatrix<ValueType>& matrix,
     const MatrixStorage<ValueType>& storage,
     const IndexType nRepeat )
@@ -750,7 +761,7 @@ void MatrixCreator<ValueType>::buildReplicatedDiag(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixCreator<ValueType>::buildReplicated( SparseMatrix<ValueType>& matrix,
+void MatrixCreator::buildReplicated( SparseMatrix<ValueType>& matrix,
         const MatrixStorage<ValueType>& storage,
         const IndexType nRepeatRow,
         const IndexType nRepeatCol )
@@ -801,11 +812,23 @@ void MatrixCreator<ValueType>::buildReplicated( SparseMatrix<ValueType>& matrix,
 }
 
 /* ========================================================================= */
-/*       Template Instantiations                                             */
+/*       Template Method Instantiations                                      */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( MatrixCreator, SCAI_ARITHMETIC_HOST )
+#define MATRIX_CREATOR_SPECIFIER( ValueType )                                                  \
+    template void MatrixCreator::buildReplicated( SparseMatrix<ValueType>& matrix,             \
+                                                  const MatrixStorage<ValueType>& storage,     \
+                                                  const IndexType nRepeatRow,                  \
+                                                  const IndexType nRepeatCol );                \
+    template void MatrixCreator::buildReplicatedDiag( SparseMatrix<ValueType>& matrix,         \
+                                                      const MatrixStorage<ValueType>& storage, \
+                                                      const IndexType nRepeat ) ;
+
+SCAI_COMMON_LOOP( MATRIX_CREATOR_SPECIFIER, SCAI_ARITHMETIC_HOST )
+
+#undef MATRIX_CREATOR_SPECIFIER
 
 } /* end namespace lama */
 
 } /* end namespace scai */
+

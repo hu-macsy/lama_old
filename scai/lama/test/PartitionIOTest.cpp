@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE( MatrixSingleIO )
 
         float fillRate = 0.2f;
 
-        MatrixCreator<ValueType>::fillRandom( matrix, fillRate );
+        MatrixCreator::fillRandom( matrix, fillRate );
 
         matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
         PartitionIO::write( *rowDist, distFileName );
@@ -417,7 +417,7 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
 
         float fillRate = 0.2f;
 
-        MatrixCreator<ValueType>::fillRandom( matrix, fillRate );
+        MatrixCreator::fillRandom( matrix, fillRate );
 
         matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
 
