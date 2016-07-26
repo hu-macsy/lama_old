@@ -165,27 +165,39 @@ DenseMatrix<ValueType>::DenseMatrix(
     assign( other, rowDistribution, colDistribution );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM& expression )
 {
+    // resolve expression in base class matrix
     Matrix::operator=( expression );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM& expression )
 {
+    // resolve expression in base class matrix
     Matrix::operator=( expression );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM& expression )
 {
+    // resolve expression in base class matrix, usually -> matrixPlusMatrix
     Matrix::operator=( expression );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SM& expression )
 {
+    // resolve expression in base class matrix
     Matrix::operator=( expression );
 }
 
@@ -1575,9 +1587,14 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
     SCAI_ASSERT_EQUAL_DEBUG( A.getRowDistribution(), B.getRowDistribution() )
     SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
 // Now we can do it completely local
-    Matrix::setDistributedMatrix( A.getRowDistributionPtr(), A.getColDistributionPtr() );
-// Add matrices of each chunk
-    SCAI_LOG_INFO( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
+    SCAI_LOG_INFO( logger, "Mat.plusMatrix, this = " << alpha << " * A + " << beta << " * B"
+                            << ", A = " << A << ", B = " << B )
+
+    allocate( A.getRowDistributionPtr(), A.getColDistributionPtr() );
+
+    // Add matrices of each chunk
+
+    SCAI_LOG_DEBUG( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
@@ -1819,7 +1836,7 @@ DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage()
 
     // take the column data chunk that is owned by this processor regarding col dist
 
-    const PartitionId myRank = getRowDistribution().getCommunicator().getRank();
+    const PartitionId myRank = getColDistribution().getCommunicator().getRank();
     return *mData[myRank];
 }
 

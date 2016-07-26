@@ -29,7 +29,7 @@
  *
  * @brief Contains constructor tests for all matrices
  * @author Thomas Brandes
- * @date 24.03.2016
+ * @date 24.07.2016
  */
 
 #include <boost/test/unit_test.hpp>
@@ -137,6 +137,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( distConstructorTest, MatrixType, MatrixTypes )
          
             MatrixType matrix( rowDist, colDist );
     
+            SCAI_LOG_INFO( logger, "Matrix constructed with distributions: " << matrix )
+
             // check correct sizes, distributions
 
             BOOST_CHECK_EQUAL( numRows, matrix.getNumRows() ); 
@@ -308,7 +310,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 {
     typedef typename MatrixType::StorageType StorageType;
 
-    const IndexType numRows = 4;
+    const IndexType numRows = 16;
     const IndexType numCols = numRows;
 
     float fillRate = 0.2;
@@ -319,7 +321,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
     StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
-
     dmemo::TestDistributions dists( numRows );
     dmemo::DistributionPtr repColDist( new dmemo::NoDistribution( numCols ) );
 
@@ -333,12 +334,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
         matrix1.redistribute( dist, repColDist );     // only row distribution
 
+        const StorageType& localStorage1 = matrix1.getLocalStorage();
+
+        BOOST_CHECK_EQUAL( localStorage1.getNumRows(), dist->getLocalSize() );
+        BOOST_CHECK_EQUAL( localStorage1.getNumColumns(), numCols );
+
         ValueType mult = 2;
 
         MatrixType matrix2( mult * matrix1 );
         MatrixType matrix3( matrix2 - matrix1 );
 
-        const StorageType& localStorage1 = matrix1.getLocalStorage();
+        // Note: matrix3 = 2 * matrix1 - matrix1 = matrix1, so matrix1 and matrix3 must be equal
+
         const StorageType& localStorage3 = matrix3.getLocalStorage();
 
         BOOST_CHECK_EQUAL( localStorage1.getNumRows(), localStorage3.getNumRows() );

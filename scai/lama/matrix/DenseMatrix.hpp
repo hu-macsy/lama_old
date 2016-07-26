@@ -196,23 +196,28 @@ public:
         const OtherValueType* const values );
 
     /**
-     * Contructor of a dense matrix by matrix expression alhpa * A * B + beta * C
+     * Contructor of a dense matrix by matrix expression alpha * A * B + beta * C
      *
-     * @param[in] expression  matrix expression alhpa * A * B + beta * C
+     * @param[in] expression  matrix expression alpha * A * B + beta * C
      */
     DenseMatrix( const Expression_SMM_SM& expression );
 
     /**
-     * Constructor of a dense matrix by matrix espression alhpa * A * B
+     * Constructor of a dense matrix by matrix expression alpha * A * B
      *
-     * @param[in] expression   matrix espression alhpa * A * B
+     * @param[in] expression   matrix espression alpha * A * B
      */
     DenseMatrix( const Expression_SMM& expression );
 
+    /**
+     * Constructor of a dense matrix by matrix expression alpha * A + beta * b
+     *
+     * @param[in] expression   matrix espression scalar * matrix + scalar * matrix
+     */
     DenseMatrix( const Expression_SM_SM& expression );
 
     /**
-     * Constructor of a dense matrix by matrix expression alhpa * A
+     * Constructor of a dense matrix by matrix expression alpha * A
      *
      * @param[in] expression   matrix expression alpha * A where alpha is a Scalar and A a matrix
      */

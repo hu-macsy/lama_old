@@ -543,14 +543,14 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 
     if ( beta == zero )
     {
-        // second summand not needed
+        // second term not needed
         this->matrixTimesScalar( A, alpha );
         return *this;
     }
 
     if ( alpha == zero )
     {
-        // first summand not needed
+        // first term not needed
         this->matrixTimesScalar( B, beta );
         return *this;
     }

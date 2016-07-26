@@ -393,8 +393,6 @@ BOOST_AUTO_TEST_CASE( MatrixSingleIO )
 
 BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
 {
-    return;
-
     typedef RealType ValueType;   // no focus here on type
 
     const IndexType numRows = 15;   // # rows for global matrix
@@ -428,7 +426,7 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
             PartitionIO::write( *rowDist, distFileName );
         }
         
-        SCAI_LOG_ERROR( logger, "written matrix " << matrix << " to partitioned file " << distFileName )
+        SCAI_LOG_INFO( logger, "written matrix " << matrix << " to partitioned file " << distFileName )
 
         CSRSparseMatrix<ValueType> readMatrix;
 
@@ -475,6 +473,70 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
             BOOST_CHECK_EQUAL( 0, rc );
             BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
         }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( MatrixColPartitionIO )
+{
+    typedef RealType ValueType;   // no focus here on type
+
+    CSRSparseMatrix<ValueType> stencilMatrix;
+
+    MatrixCreator::buildPoisson2D( stencilMatrix, 5, 10, 10 );
+
+    dmemo::TestDistributions testDists( stencilMatrix.getNumRows() );
+    removeReplicatedDistributions( testDists );
+
+    DistributionPtr colDist( new NoDistribution( stencilMatrix.getNumColumns() ) );
+
+    const std::string matrixFileName = "TestMatrix%r.frm";
+
+    for ( size_t i = 0; i < testDists.size(); ++i )
+    {
+        DistributionPtr rowDist = testDists[i];
+
+        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
+
+        CSRSparseMatrix<ValueType> matrix( stencilMatrix, rowDist, colDist );
+
+        // Stencil matrix has diagonal property so we know the distribution
+
+        matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
+
+        SCAI_LOG_INFO( logger, "written matrix " << matrix << " to partitioned file, dist in col indexes" )
+
+        CSRSparseMatrix<ValueType> readMatrix;
+
+        // read partitioned matrix and its distribution from first column indexes 
+
+        readMatrix.readFromFile( matrixFileName, "" );
+
+        SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName << " ): " << readMatrix )
+
+        // we replicate now the matrix, proves same distribution and same values
+
+        DistributionPtr repDist( new NoDistribution( matrix.getNumRows() ) );
+
+        matrix.redistribute( repDist, colDist );
+        readMatrix.redistribute( repDist, colDist );
+
+        // The local parts of the two matrices must be exactly the same
+
+        const CSRStorage<ValueType>& local = matrix.getLocalStorage();
+        const CSRStorage<ValueType>& readLocal = readMatrix.getLocalStorage();
+
+        BOOST_REQUIRE_EQUAL( local.getNumRows(), readLocal.getNumRows() );
+        BOOST_REQUIRE_EQUAL( local.getNumColumns(), readLocal.getNumColumns() );
+
+        ValueType diff = local.maxDiffNorm( readLocal );
+
+        BOOST_CHECK( diff == ValueType( 0 ) );
+
+        int rc = PartitionIO::removeFile( matrixFileName, *comm );
+        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, *comm ) );
     }
 }
 
