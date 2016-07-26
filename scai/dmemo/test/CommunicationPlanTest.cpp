@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     CommunicationPlan requiredPlan2( comm->getSize(), &reqOwners[0], reqOwners.size() );
 
-    BOOST_CHECK_EQUAL( requiredPlan2.totalQuantity(), reqOwners.size() );
+    BOOST_CHECK_EQUAL( requiredPlan2.totalQuantity(), static_cast<IndexType>( reqOwners.size() ) );
   
     CommunicationPlan requiredPlan1( &reqQuantities[0], reqQuantities.size() );
 
