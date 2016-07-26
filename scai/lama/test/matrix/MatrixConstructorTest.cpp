@@ -1,5 +1,5 @@
 /**
- * @file test/matrix/CSRSparseMatrixTest.cpp
+ * @file test/matrix/MatrixConstructorTest.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains only test specific for the CSR Sparse matrix
+ * @brief Contains constructor tests for all matrices
  * @author Thomas Brandes
  * @date 24.03.2016
  */
@@ -36,6 +36,12 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matrix/ELLSparseMatrix.hpp>
+#include <scai/lama/matrix/COOSparseMatrix.hpp>
+#include <scai/lama/matrix/DIASparseMatrix.hpp>
+#include <scai/lama/matrix/JDSSparseMatrix.hpp>
+#include <scai/lama/matrix/DenseMatrix.hpp>
+
 #include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
@@ -47,36 +53,53 @@ using namespace lama;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CSRSparseMatrixTest )
-
-SCAI_LOG_DEF_LOGGER( logger, "Test.CSRSparseMatrixTest" );
+BOOST_AUTO_TEST_SUITE( MatrixConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, ValueType, scai_arithmetic_test_types )
+SCAI_LOG_DEF_LOGGER( logger, "Test.MatrixConstructorTest" );
+
+/* ------------------------------------------------------------------------- */
+
+/** For the matrix tests here it is sufficient to take only one of the possible value types. */
+
+typedef RealType ValueType;
+
+/** Define a list of all matrix types. */
+
+typedef boost::mpl::list<CSRSparseMatrix<ValueType>,
+                         DIASparseMatrix<ValueType>,
+                         COOSparseMatrix<ValueType>,
+                         JDSSparseMatrix<ValueType>,
+                         ELLSparseMatrix<ValueType>,
+                         DenseMatrix<ValueType>
+                        > MatrixTypes;
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, MatrixType, MatrixTypes )
 {
-    CSRSparseMatrix<ValueType> matrix;
+    typedef typename MatrixType::StorageType StorageType;
+
+    MatrixType matrix;   // default constructor
+
     // check zero sizes
     BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
     BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );
     // check correct format / type
     BOOST_CHECK_EQUAL( common::TypeTraits<ValueType>::stype, matrix.getValueType() );
-    BOOST_CHECK_EQUAL( Matrix::CSR, matrix.getFormat() );
-    const CSRStorage<ValueType>& local = matrix.getLocalStorage();
-    const CSRStorage<ValueType>& halo = matrix.getHaloStorage();
-    BOOST_CHECK_EQUAL( local.getNumRows(), halo.getNumRows() );
+    const StorageType& local = matrix.getLocalStorage();
+    BOOST_CHECK_EQUAL( 0, local.getNumRows() );
 }
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( sizeConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sizeConstructorTest, MatrixType, MatrixTypes )
 {
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
-
     const IndexType numRows = 13;
     const IndexType numCols = 17;
 
-    CSRSparseMatrix<ValueType> matrix( numRows, numCols );
+    MatrixType matrix( numRows, numCols );
 
     // check correct sizes, distributions
 
@@ -93,7 +116,7 @@ BOOST_AUTO_TEST_CASE( sizeConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( distConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( distConstructorTest, MatrixType, MatrixTypes )
 {
     typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
 
@@ -112,7 +135,7 @@ BOOST_AUTO_TEST_CASE( distConstructorTest )
             dmemo::DistributionPtr rowDist = rowDists[irow];
             dmemo::DistributionPtr colDist = colDists[icol];
          
-            CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+            MatrixType matrix( rowDist, colDist );
     
             // check correct sizes, distributions
 
@@ -129,9 +152,9 @@ BOOST_AUTO_TEST_CASE( distConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( storageConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( storageConstructorTest, MatrixType, MatrixTypes )
 {
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
+    typedef typename MatrixType::StorageType StorageType;
 
     const IndexType numRows = 4;
     const IndexType numCols = 7;
@@ -142,7 +165,7 @@ BOOST_AUTO_TEST_CASE( storageConstructorTest )
     std::srand( 1317 );                   // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
 
-    CSRStorage<ValueType> globalStorage;
+    StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
 
     dmemo::TestDistributions rowDists( numRows );
@@ -159,13 +182,13 @@ BOOST_AUTO_TEST_CASE( storageConstructorTest )
             dmemo::DistributionPtr rowDist = rowDists[irow];
             dmemo::DistributionPtr colDist = colDists[icol];
 
-            CSRSparseMatrix<ValueType> matrix( globalStorage );
-            CSRSparseMatrix<ValueType> matrix1( matrix, rowDist, colDist );
-            CSRSparseMatrix<ValueType> matrix2_tmp( matrix, rowDist, repColDist );
-            CSRSparseMatrix<ValueType> matrix2( matrix2_tmp.getLocalStorage(), rowDist, colDist );
+            MatrixType matrix( globalStorage );
+            MatrixType matrix1( matrix, rowDist, colDist );
+            MatrixType matrix2_tmp( matrix, rowDist, repColDist );
+            MatrixType matrix2( matrix2_tmp.getLocalStorage(), rowDist, colDist );
 
-            const CSRStorage<ValueType>& localStorage1 = matrix1.getLocalStorage();
-            const CSRStorage<ValueType>& localStorage2 = matrix2.getLocalStorage();
+            const StorageType& localStorage1 = matrix1.getLocalStorage();
+            const StorageType& localStorage2 = matrix2.getLocalStorage();
 
             BOOST_REQUIRE_EQUAL( localStorage1.getNumRows(), localStorage2.getNumRows() );
             BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumColumns() );
@@ -177,9 +200,9 @@ BOOST_AUTO_TEST_CASE( storageConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( transposeConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes )
 {
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
+    typedef typename MatrixType::StorageType StorageType;
 
     const IndexType numRows = 4;
     const IndexType numCols = 7;
@@ -190,7 +213,7 @@ BOOST_AUTO_TEST_CASE( transposeConstructorTest )
     std::srand( 1317 );                   // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
 
-    CSRStorage<ValueType> globalStorage;
+    StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
 
     dmemo::TestDistributions rowDists( numRows );
@@ -212,16 +235,16 @@ BOOST_AUTO_TEST_CASE( transposeConstructorTest )
                 continue; // transpose not supported for replicated matrices with distributed columns
             }
 
-            CSRSparseMatrix<ValueType> matrix1( globalStorage );
+            MatrixType matrix1( globalStorage );
             matrix1.redistribute( rowDist, colDist );
             bool transposeFlag = true;
  
             SCAI_LOG_INFO( logger, "transposeConstructorTest with matrix1 = " << matrix1 )
 
-            CSRSparseMatrix<ValueType> matrix2( matrix1, transposeFlag );
+            MatrixType matrix2( matrix1, transposeFlag );
 
-            const CSRStorage<ValueType>& localStorage1 = matrix1.getLocalStorage();
-            const CSRStorage<ValueType>& localStorage2 = matrix2.getLocalStorage();
+            const StorageType& localStorage1 = matrix1.getLocalStorage();
+            const StorageType& localStorage2 = matrix2.getLocalStorage();
 
             BOOST_REQUIRE_EQUAL( localStorage1.getNumRows(), localStorage2.getNumColumns() );
             BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumRows() );
@@ -231,9 +254,9 @@ BOOST_AUTO_TEST_CASE( transposeConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( virtualConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( virtualConstructorTest, MatrixType, MatrixTypes )
 {
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
+    typedef typename MatrixType::StorageType StorageType;
 
     const IndexType numRows = 4;
     const IndexType numCols = numRows;
@@ -244,7 +267,7 @@ BOOST_AUTO_TEST_CASE( virtualConstructorTest )
     std::srand( 1317 );                   // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
 
-    CSRStorage<ValueType> globalStorage;
+    StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
 
     dmemo::TestDistributions dists( numRows );
@@ -255,22 +278,22 @@ BOOST_AUTO_TEST_CASE( virtualConstructorTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        CSRSparseMatrix<ValueType> matrix( globalStorage );
+        MatrixType matrix( globalStorage );
         matrix.redistribute( dist, dist );
 
         // virtual default constructor generates default matrix
 
-        common::unique_ptr<CSRSparseMatrix<ValueType> > newMatrix( matrix.newMatrix() );
+        common::unique_ptr<MatrixType> newMatrix( matrix.newMatrix() );
    
-        const CSRStorage<ValueType>& newLocalStorage = newMatrix->getLocalStorage();
+        const StorageType& newLocalStorage = newMatrix->getLocalStorage();
 
         BOOST_CHECK_EQUAL( 0, newLocalStorage.getNumRows() );
         BOOST_CHECK_EQUAL( 0, newLocalStorage.getNumColumns() );
 
-        common::unique_ptr<CSRSparseMatrix<ValueType> > copyMatrix( matrix.copy() );
+        common::unique_ptr<MatrixType > copyMatrix( matrix.copy() );
 
-        const CSRStorage<ValueType>& localStorage = matrix.getLocalStorage();
-        const CSRStorage<ValueType>& copyLocalStorage = copyMatrix->getLocalStorage();
+        const StorageType& localStorage = matrix.getLocalStorage();
+        const StorageType& copyLocalStorage = copyMatrix->getLocalStorage();
 
         BOOST_CHECK_EQUAL( localStorage.getNumRows(), copyLocalStorage.getNumRows() );
         BOOST_CHECK_EQUAL( copyLocalStorage.getNumColumns(), copyLocalStorage.getNumColumns() );
@@ -281,9 +304,9 @@ BOOST_AUTO_TEST_CASE( virtualConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( expConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 {
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
+    typedef typename MatrixType::StorageType StorageType;
 
     const IndexType numRows = 4;
     const IndexType numCols = numRows;
@@ -294,7 +317,7 @@ BOOST_AUTO_TEST_CASE( expConstructorTest )
     std::srand( 1317 );                   // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
 
-    CSRStorage<ValueType> globalStorage;
+    StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
 
     dmemo::TestDistributions dists( numRows );
@@ -306,17 +329,17 @@ BOOST_AUTO_TEST_CASE( expConstructorTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        CSRSparseMatrix<ValueType> matrix1( globalStorage );
+        MatrixType matrix1( globalStorage );
 
         matrix1.redistribute( dist, repColDist );     // only row distribution
 
         ValueType mult = 2;
 
-        CSRSparseMatrix<ValueType> matrix2( mult * matrix1 );
-        CSRSparseMatrix<ValueType> matrix3( matrix2 - matrix1 );
+        MatrixType matrix2( mult * matrix1 );
+        MatrixType matrix3( matrix2 - matrix1 );
 
-        const CSRStorage<ValueType>& localStorage1 = matrix1.getLocalStorage();
-        const CSRStorage<ValueType>& localStorage3 = matrix3.getLocalStorage();
+        const StorageType& localStorage1 = matrix1.getLocalStorage();
+        const StorageType& localStorage3 = matrix3.getLocalStorage();
 
         BOOST_CHECK_EQUAL( localStorage1.getNumRows(), localStorage3.getNumRows() );
         BOOST_CHECK_EQUAL( localStorage1.getNumColumns(), localStorage3.getNumColumns() );

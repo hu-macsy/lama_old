@@ -79,6 +79,8 @@ public:
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
+    typedef DenseStorage<ValueType> StorageType;
+
     typedef common::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
 
     /** Getter for the type name of the class. */
@@ -121,10 +123,15 @@ public:
     /** Constructs a dense matrix from any other matrix that can be of a different type.
      *
      *  @param[in] other   input matrix.
-     *
-     *  New dense matrix has the same size and the same distribution.
+     *  @param[in] transposeFlag if true the input matrix will be transposed
      */
-    DenseMatrix( const Matrix& other );
+    DenseMatrix( const Matrix& other, bool transposeFlag = false );
+
+    /** Constructor of a (replicated) dense matrix by global storage.
+     *
+     *  @param[in] globalData  contains the matrix storage
+     */
+    explicit DenseMatrix( const _MatrixStorage& globalData );
 
     /** Constructs a dense matrix from any other matrix with new distributions.
      *

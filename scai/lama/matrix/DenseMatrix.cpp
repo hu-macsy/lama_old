@@ -207,6 +207,16 @@ DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+DenseMatrix<ValueType>::DenseMatrix( const _MatrixStorage& globalData )
+{
+    DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
+    DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
+    DenseMatrix<ValueType>::assign( globalData, rowDist, colDist );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const DenseMatrix<ValueType>& other )
 {
     // override the default assignment operator
@@ -230,10 +240,18 @@ DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other )
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Matrix& other )
+DenseMatrix<ValueType>::DenseMatrix( const Matrix& other, bool transposeFlag )
 {
-    SCAI_LOG_INFO( logger, "copy constructor( any matrix) : " << other )
-    assign( other ); // will choose the local assignment
+    SCAI_LOG_INFO( logger, "copy constructor( any matrix) : " << other << ", transpse = " << transposeFlag )
+    
+    if ( transposeFlag )
+    {
+        assignTranspose( other ); 
+    }
+    else
+    {
+        assign( other ); 
+    }
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1783,8 +1801,9 @@ const DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage() const
         return *mData[0];
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), getColDistribution() )
-    const PartitionId myRank = getRowDistribution().getCommunicator().getRank();
+    // take the column data chunk that is owned by this processor regarding col dist
+
+    const PartitionId myRank = getColDistribution().getCommunicator().getRank();
     return *mData[myRank];
 }
 
@@ -1798,7 +1817,8 @@ DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage()
         return *mData[0];
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), getColDistribution() )
+    // take the column data chunk that is owned by this processor regarding col dist
+
     const PartitionId myRank = getRowDistribution().getCommunicator().getRank();
     return *mData[myRank];
 }
