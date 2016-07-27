@@ -118,16 +118,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sizeConstructorTest, MatrixType, MatrixTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( distConstructorTest, MatrixType, MatrixTypes )
 {
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
-
     const IndexType numRows = 13;
     const IndexType numCols = 17;
 
     scai::dmemo::TestDistributions rowDists( numRows );
     scai::dmemo::TestDistributions colDists( numCols );
 
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
-    
     for ( size_t irow = 0; irow < rowDists.size(); ++irow )
     {
         for ( size_t icol = 0; icol < colDists.size(); ++icol )
@@ -175,8 +171,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storageConstructorTest, MatrixType, MatrixTypes )
 
     dmemo::DistributionPtr repColDist( new dmemo::NoDistribution( numCols ) );
 
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
-
     for ( size_t irow = 0; irow < rowDists.size(); ++irow )
     {
         for ( size_t icol = 0; icol < colDists.size(); ++icol )
@@ -222,8 +216,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
     dmemo::TestDistributions colDists( numCols );
 
     dmemo::DistributionPtr repColDist( new dmemo::NoDistribution( numCols ) );
-
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
 
     for ( size_t irow = 0; irow < rowDists.size(); ++irow )
     {
@@ -274,8 +266,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( virtualConstructorTest, MatrixType, MatrixTypes )
 
     dmemo::TestDistributions dists( numRows );
 
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
-
     for ( size_t i = 0; i < dists.size(); ++i )
     {
         dmemo::DistributionPtr dist = dists[i];
@@ -323,8 +313,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
     globalStorage.setDenseData( numRows, numCols, denseData );
     dmemo::TestDistributions dists( numRows );
     dmemo::DistributionPtr repColDist( new dmemo::NoDistribution( numCols ) );
-
-    typedef SCAI_TEST_TYPE ValueType;    // type itself does not matter
 
     for ( size_t i = 0; i < dists.size(); ++i )
     {
