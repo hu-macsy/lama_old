@@ -72,6 +72,187 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( SetGetValueTest )
+{
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    IndexType n = 5;   // let it really small, this test is very inefficient
+
+    utilskernel::LArray<ValueType> data;
+
+    utilskernel::HArrayUtils::setRandom( data, n, 1.0 );
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        utilskernel::LArray<ValueType> data1( n );
+
+        dmemo::DistributionPtr dist = dists[i];
+  
+        DenseVector<ValueType> distV( dist );
+ 
+        // set the value in the distributed vector
+
+        for ( IndexType k = 0; k < n; ++k )
+        {
+            distV.setValue( k, ValueType( data[k] ) );
+        }
+
+        // get the value from the distributed vector
+
+        for ( IndexType k = 0; k < n; ++k )
+        {
+            Scalar a ( distV.getValue( k ) );
+            data1[k] = a.getValue<ValueType>();
+        }
+
+        BOOST_CHECK( data.maxDiffNorm( data1 ) == 0 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( SetAndBuildTest )
+{
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    IndexType n = 16;
+
+    DenseVector<ValueType> repV;
+
+    dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
+
+    // Note: all processors must have the same random numbers
+
+    repV.setRandom( repDist, 1.0 );
+
+    BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        dmemo::DistributionPtr dist = dists[i];
+  
+        // distV = repV, but distributed
+
+        DenseVector<ValueType> distV( repV, dist );
+        
+        DenseVector<ValueType> newV( dist );
+ 
+        hmemo::HArray<ValueType> tmp;
+
+        distV.buildValues( tmp );
+        newV.setValues( tmp );
+
+        // replicate newV, so we can compare with repV
+
+        newV.redistribute( repV.getDistributionPtr() );
+
+        BOOST_CHECK_EQUAL( n, newV.getLocalValues().size() );
+
+        BOOST_CHECK_EQUAL( 0, newV.getLocalValues().maxDiffNorm( repV.getLocalValues() ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( SequenceTest )
+{
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    IndexType n = 16;
+
+    DenseVector<ValueType> repV( n, 0, 1, ctx );  // just a sequence: 0, 1, ...
+
+    BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        dmemo::DistributionPtr dist = dists[i];
+  
+        // distV = repV, but distributed
+
+        DenseVector<ValueType> distV( repV, dist );
+        
+        BOOST_CHECK_EQUAL( distV.min() , 0 );
+        BOOST_CHECK_EQUAL( distV.max() , n - 1 );
+
+        BOOST_CHECK_EQUAL( dist->getLocalSize(), distV.getLocalValues().size() );
+
+        // distV1 = [ 0, ..., n-1] distributed, must be same
+
+        DenseVector<ValueType> distV1( dist, 0, 1, ctx );
+
+        BOOST_CHECK_EQUAL( 0, distV1.getLocalValues().maxDiffNorm( distV.getLocalValues() ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
+{
+    typedef RealType ValueType;
+
+    IndexType n = 4;
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        dmemo::DistributionPtr dist = dists[i];
+
+        DenseVector<ValueType> b( dist , 3 );
+        DenseVector<ValueType> a( dist , 3 );
+        DenseVector<ValueType> c( a + b );
+        DenseVector<ValueType> r( dist , 6 );
+
+        // prove same distribution, same values of r and c
+
+        BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( vecMultExpConstructorTest )
+{
+    typedef RealType ValueType;
+
+    IndexType n = 4;
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        dmemo::DistributionPtr dist = dists[i];
+
+        DenseVector<ValueType> b( dist , 3 );
+        DenseVector<ValueType> a( dist , 3 );
+        DenseVector<ValueType> c( a * b ); 
+        DenseVector<ValueType> r( dist , 9 );
+
+        // prove same distribution, same values of r and c
+
+        BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 {
     // Note: it is sufficient to consider one matrix type and one value type
@@ -93,37 +274,13 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
             dmemo::DistributionPtr colDist = colDists[i];
 
             CSRSparseMatrix<double> mat( rowDist, colDist );
+
             DenseVector<ValueType> x( colDist, 3 );
-            SCAI_LOG_INFO( logger, "linear algebra expression: a*A*x" );
+            SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );
             DenseVector<ValueType> y( 2 * mat * x );
-            DenseVector<ValueType> r( rowDist, 0 );
-            BOOST_CHECK( r.getLocalValues().maxDiffNorm( y.getLocalValues() ) == 0 );
+            
+            BOOST_CHECK_EQUAL( y.getDistribution(), *rowDist );
         }
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( vecExpConstructorTest )
-{
-    typedef RealType ValueType;
-
-    IndexType n = 4;
-
-    dmemo::TestDistributions dists( n );
-
-    for ( size_t i = 0; i < dists.size(); ++i )
-    {
-        dmemo::DistributionPtr dist = dists[i];
-
-        DenseVector<ValueType> b( dist , 3 );
-        DenseVector<ValueType> a( dist , 3 );
-        DenseVector<ValueType> c( a + b );
-        DenseVector<ValueType> r( dist , 6 );
-
-        // prove same distribution, same values of r and c
-
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
     }
 }
 

@@ -135,10 +135,26 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType start
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType startValue, const ValueType inc, ContextPtr context )
-    : Vector( distribution, context ), mLocalValues( distribution->getLocalSize(), startValue, inc )
+    : Vector( distribution, context ), 
+      mLocalValues( context )
 {
     SCAI_LOG_INFO( logger,
-                   "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", startValue = " << startValue << ", inc=" << inc)
+                   "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution 
+                    << ", local size = " << distribution->getLocalSize() << ", startValue = " << startValue << ", inc=" << inc)
+
+    // get my owned indexes 
+    
+    HArray<IndexType> myGlobalIndexes( context );
+
+    // mult with inc and add startValue
+
+    distribution->getOwnedIndexes( myGlobalIndexes );
+
+    // localValues[] =  indexes[] * inc + startValue
+
+    HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
+    HArrayUtils::assignScalar( mLocalValues, inc, utilskernel::reduction::MULT, context );
+    HArrayUtils::assignScalar( mLocalValues, startValue, utilskernel::reduction::ADD, context );
 }
 
 template<typename ValueType>

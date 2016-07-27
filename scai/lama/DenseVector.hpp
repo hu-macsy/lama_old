@@ -135,8 +135,8 @@ public:
      *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
      * 
      * @param[in] distribution  the distribution to use for the new vector.
-     * @param[in] startValue the first value of the new DenseVector
-     * @param[in] inc        the increment for the sequence of values 
+     * @param[in] startValue    the first value of the new DenseVector
+     * @param[in] inc           the increment for the sequence of values 
      * @param[in] context    specifies optionally the context where dense vector should reside
      */
     DenseVector( dmemo::DistributionPtr distribution, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );

@@ -40,6 +40,7 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/utilskernel/LArray.hpp>
 
+#include <scai/common/Settings.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
@@ -97,6 +98,98 @@ static void setNonSquareData( MatrixStorage<ValueType>& storage )
     LArray<ValueType> csrValues( numValues, ValueType( 1 ) );
 
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( Unsupported )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    LArray<ValueType> array( 10, 1 );
+
+    BOOST_CHECK_THROW(
+    {
+        FileIO::write( array, "myArray.unsupported_suffix" );
+    }, common::Exception );
+
+    BOOST_CHECK_THROW(
+    {
+        FileIO::read( array, "myArray.unsupported_suffix" );
+    }, common::Exception );
+
+    int rc = FileIO::removeFile( "myArray.unsupported_suffix" );
+
+    BOOST_CHECK( rc != 0 );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( Settings )
+{
+    common::Settings::putEnvironment( "SCAI_IO_BINARY", "1" );
+    common::Settings::putEnvironment( "SCAI_IO_TYPE_DATA", "_Internal" );
+
+    std::vector<std::string> supportedSuffixes;
+
+    FileIO::getCreateValues( supportedSuffixes );
+
+    // loop over all supported suffixes, got them from FileIO factory
+
+    for ( size_t i = 0; i < supportedSuffixes.size(); ++i )
+    {
+        const std::string& fileSuffix = supportedSuffixes[i];
+
+        common::Settings::putEnvironment( "SCAI_IO_TYPE_INDEX", "_Internal" );
+
+        unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
+
+        common::Settings::putEnvironment( "SCAI_IO_TYPE_INDEX", "float2" );
+
+        BOOST_CHECK_THROW (
+        {
+            unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
+        }, common::Exception );
+    }
+
+    // remove entries
+
+    unsetenv( "SCAI_IO_BINARY" );
+    unsetenv( "SCAI_IO_TYPE_DATA" );
+    unsetenv( "SCAI_IO_TYPE_INDEX" );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( WriteAtTest )
+{
+    std::vector<std::string> supportedSuffixes;
+
+    FileIO::getCreateValues( supportedSuffixes );
+
+    // loop over all supported suffixes, got them from FileIO factory
+
+    for ( size_t i = 0; i < supportedSuffixes.size(); ++i )
+    {   
+        const std::string& fileSuffix = supportedSuffixes[i];
+        
+        unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
+
+        SCAI_LOG_INFO( logger, "Suffix " << fileSuffix << ": " << *fileIO )
+
+        std::ostringstream out1;
+        out1 << *fileIO;
+
+        BOOST_CHECK( out1.str().length() > 0 );
+
+        std::ostringstream out2;
+        fileIO->FileIO::writeAt( out2 );
+        BOOST_CHECK( out2.str().length() > 0 );
+
+        // make sure that derived FileIO class has overridden writeAt
+
+        BOOST_CHECK( out1.str() != out2.str() );
+    }
 }
 
 /* ------------------------------------------------------------------------- */
