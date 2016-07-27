@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE( copyHaloTest )
         BOOST_CHECK_THROW(
         {
             halo2.clear();
-        }, common::Exception )
+        }, common::Exception );
     }
 
     // ReadAccesses are released, so clear is safe now
