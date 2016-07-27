@@ -47,8 +47,10 @@
 #include <scai/hmemo.hpp>
 #include <scai/dmemo.hpp>
 
-#include <scai/common/Settings.hpp>
 #include <scai/logging.hpp>
+
+#include <scai/common/Settings.hpp>
+#include <scai/common/OpenMP.hpp>
 
 #include <iostream>
 
@@ -56,6 +58,13 @@
 
 bool init_function()
 {
+    int nThreads;
+
+    if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    {
+        omp_set_num_threads( nThreads );
+    }
+
     try
     {
         scai::dmemo::CommunicatorPtr testCommunicator = scai::dmemo::Communicator::getCommunicatorPtr();

@@ -42,12 +42,16 @@
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
 
 #include <scai/hmemo/Context.hpp>
 
 #include <scai/solver/test/TestMacros.hpp>
 
-using namespace scai::solver;
+using namespace scai;
+
+using namespace lama;
+using namespace solver;
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -108,21 +112,74 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-// GetterTest makes no sense, because it test the AMGSetup, which can be SingleGridSetup or other, with different defaults
-/*    const lama::Matrix& getGalerkin( unsigned int level );
-    const lama::Matrix& getRestriction( unsigned int level );
-    const lama::Matrix& getInterpolation( unsigned int level );
+BOOST_AUTO_TEST_CASE ( SolveTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
 
-    lama::Vector& getSolutionVector( unsigned int level );
-    lama::Vector& getRhsVector( unsigned int level );
+    const IndexType N = 40;
 
-    Solver& getSmoother( unsigned int level );
-    Solver& getCoarseLevelSolver();
+    scai::lama::CSRSparseMatrix<ValueType> coefficients;
+    scai::lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
 
-    double getAverageSmootherTime() const;
-    double getAverageTransferTime() const;
-    double getAverageResidualTime() const;
-*/
+    const dmemo::Communicator& comm = coefficients.getRowDistribution().getCommunicator();
+
+    SCAI_LOG_INFO( logger, "Solve matrix: " << coefficients )
+
+    std::string loggerFileName = "logger%r.solve";
+
+    // use class PartitionIO to get individual file names for each processor
+
+    std::string pLoggerFileName = loggerFileName;
+    bool isPartitioned;
+    PartitionIO::getPartitionFileName( pLoggerFileName, isPartitioned, comm );
+
+    common::shared_ptr<Timer> timer( new Timer() );
+
+    LoggerPtr slogger( new CommonLogger( "<SimpleAMG>: ", LogLevel::completeInformation, LoggerWriteBehaviour::toFileOnly, pLoggerFileName, timer ) );
+    SimpleAMG simpleAMGSolver( "SimpleAMGSolver", slogger );
+
+    simpleAMGSolver.initialize( coefficients ); 
+
+    for ( unsigned int i = 0; i < simpleAMGSolver.getNumLevels(); ++i )
+    {
+        const Matrix& galerkin    = simpleAMGSolver.getGalerkin( i );
+        const Matrix& restriction = simpleAMGSolver.getRestriction( i );
+        const Matrix& interpol    = simpleAMGSolver.getInterpolation( i );
+        const Solver& smoother    = simpleAMGSolver.getSmoother( i );
+
+        if ( i == 0 )
+        {
+            BOOST_CHECK_EQUAL( galerkin.getNumRows(), coefficients.getNumRows() );
+        }
+
+        BOOST_CHECK_EQUAL( restriction.getNumRows(), interpol.getNumColumns() );
+        BOOST_CHECK_EQUAL( interpol.getNumRows(), restriction.getNumColumns() );
+
+        // smoother must be an iterative solver 
+
+        BOOST_CHECK( dynamic_cast<const IterativeSolver*>( &smoother ) );
+    }
+
+    DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr() );
+    DenseVector<ValueType> x( coefficients.getColDistributionPtr() );
+
+    rhs = ValueType( 1 );
+    x = ValueType( 0 );
+    
+    simpleAMGSolver.solve( x, rhs );
+
+    // check that timing works 
+
+    BOOST_CHECK( simpleAMGSolver.getAverageSmootherTime() > 0.0 );
+    BOOST_CHECK( simpleAMGSolver.getAverageTransferTime() > 0.0 );
+    BOOST_CHECK( simpleAMGSolver.getAverageResidualTime() > 0.0 );
+
+    // Now delete the logger file
+
+    int rc = PartitionIO::removeFile( loggerFileName, comm );
+    BOOST_CHECK_EQUAL( 0, rc );
+    BOOST_CHECK( !PartitionIO::fileExists( loggerFileName, comm ) );
+}
 
 // ---------------------------------------------------------------------------------------------------------------
 
