@@ -47,6 +47,8 @@
 #include <scai/common/Math.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/Scalar.hpp>
+#include <scai/lama/expression/all.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/logging.hpp>
 
@@ -285,6 +287,78 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
         // verify for same matrix
         BOOST_CHECK_EQUAL( matrix.getRowDistribution(), copyMatrix->getRowDistribution() );
         BOOST_CHECK_EQUAL( matrix.getColDistribution(), copyMatrix->getColDistribution() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( AssignAddTest )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+
+    Matrices allMatrices( stype, context );    // is created by factory
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for assign operator tests" )
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix& matrix1 = *allMatrices[s];
+
+        initMatrix( matrix1, "BLOCK", "NO" );
+
+        MatrixPtr matrix2Ptr( matrix1.copy() );
+        MatrixPtr matrix3Ptr( matrix1.newMatrix() );
+
+        Matrix& matrix2 = *matrix2Ptr;
+        Matrix& matrix3 = *matrix3Ptr;
+
+        matrix3 = matrix1 + matrix2;
+        matrix3 = matrix3 - matrix2;
+        matrix1 += 2 * matrix3;
+        matrix1 -= matrix3;
+ 
+        BOOST_CHECK_EQUAL( matrix3.getRowDistributionPtr(), matrix1.getRowDistributionPtr() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( AssignMultTest )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+
+    Matrices allMatrices( stype, context );    // is created by factory
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for assign operator tests" )
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix& matrix1 = *allMatrices[s];
+
+        if ( matrix1.getMatrixKind() == Matrix::DENSE ) 
+        {
+            continue;
+        }
+
+        initMatrix( matrix1, "BLOCK", "NO" );
+
+        CSRSparseMatrix<SCAI_TEST_TYPE> unityLeft;
+        CSRSparseMatrix<SCAI_TEST_TYPE> unityRight;
+
+        unityLeft.setIdentity( matrix1.getRowDistributionPtr() );
+        unityRight.setIdentity( matrix1.getColDistributionPtr() );
+
+        MatrixPtr matrix2Ptr( matrix1.newMatrix() );
+
+        Matrix& matrix2 = *matrix2Ptr;
+
+        matrix2 = matrix1 * unityRight;   // not for Dense
+
+        BOOST_CHECK_EQUAL( matrix1.getRowDistributionPtr(), matrix1.getRowDistributionPtr() );
     }
 }
 
