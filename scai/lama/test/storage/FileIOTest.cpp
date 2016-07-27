@@ -35,7 +35,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/storage/Storages.hpp>
 
 #include <scai/lama/storage/CSRStorage.hpp>

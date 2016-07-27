@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/dmemo/test/TestDistributions.hpp>
 
 #include <scai/lama/io/PartitionIO.hpp>

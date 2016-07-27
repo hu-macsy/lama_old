@@ -38,7 +38,7 @@
 #include <scai/lama/io/IOStream.hpp>
 #include <scai/utilskernel/LArray.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 using namespace scai;

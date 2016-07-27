@@ -51,8 +51,6 @@
 
 #include <iostream>
 
-#include <scai/lama/test/TestMacros.hpp>
-
 BOOST_GLOBAL_FIXTURE( ContextFix );
 
 /** Static variables of ContextFix are defined here */

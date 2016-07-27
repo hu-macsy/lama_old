@@ -43,7 +43,7 @@
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 typedef SCAI_TEST_TYPE ValueType;
 

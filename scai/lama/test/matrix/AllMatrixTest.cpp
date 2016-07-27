@@ -44,11 +44,12 @@
 #include <scai/dmemo/Distribution.hpp>
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
+#include <scai/lama/Scalar.hpp>
 
 #include <scai/logging.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai;
 using namespace lama;

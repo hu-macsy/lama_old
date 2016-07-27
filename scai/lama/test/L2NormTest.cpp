@@ -39,7 +39,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai;
 using namespace lama;
