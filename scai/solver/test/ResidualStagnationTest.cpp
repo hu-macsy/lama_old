@@ -43,7 +43,7 @@
 #include <scai/solver/Jacobi.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
-#include <scai/lama/test/EquationHelper.hpp>
+#include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 using namespace scai::solver;

@@ -55,7 +55,7 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/lama/test/EquationHelper.hpp>
+#include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>

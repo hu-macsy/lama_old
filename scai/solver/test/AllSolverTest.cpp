@@ -1,5 +1,5 @@
 /**
- * @file SolverTest1.cpp
+ * @file AllSolverTest.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief SolverTest1.cpp
- * @author Jan Ecker
+ * @brief This test runs test for each solver provided by the solver factory.
+ * @author Thomas Brandes
  * @date 09.03.2016
  */
 
@@ -49,9 +49,11 @@ using namespace scai::solver;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( SolverTest )
+BOOST_AUTO_TEST_SUITE( AllSolverTest )
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.SolverTest" )
+/* --------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.AllSolverTest" )
 
 /* --------------------------------------------------------------------- */
 

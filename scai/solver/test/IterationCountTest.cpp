@@ -41,7 +41,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
-#include <scai/lama/test/EquationHelper.hpp>
+#include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 using namespace scai::solver;

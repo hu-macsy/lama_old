@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE( vecExpAssignTest )
             v1->allocate( dist );
             *v1 = 3;
 
-            SCAI_LOG_ERROR( logger, "run vec exp test for v = " << *v1 )
+            SCAI_LOG_INFO( logger, "run vec exp test for v = " << *v1 )
 
             VectorPtr v2( v1->copy() );
             *v2 = 5;
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( vecExpAssignTest )
             *v3 = *v1 + *v2;
             VectorPtr v4( v1->copy() );
             *v4 += *v2;
-            *v3 -= 2 * *v4;
+            *v3 -= *v4;
             BOOST_CHECK( v3->maxNorm() < Scalar( 1e-4 ) );
         }
     }

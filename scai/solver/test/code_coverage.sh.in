@@ -33,36 +33,6 @@
  # @date 15.08.2012
 ###
 
-###
- # @file code_coverage.sh
- #
- # @license
- # Copyright (c) 2009-2016
- # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
- # for Fraunhofer-Gesellschaft
- #
- # This file is part of the SCAI framework LAMA.
- #
- # LAMA is free software: you can redistribute it and/or modify it under the
- # terms of the GNU Affero General Public License as published by the Free
- # Software Foundation, either version 3 of the License, or (at your option)
- # any later version.
- #
- # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
- # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
- # more details.
- #
- # You should have received a copy of the GNU Affero General Public License
- # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- # @endlicense
- #
- # @brief This file is a shellscript, which contains all necessary steps to 
- #        measure code coverage of LAMA.
- # @author Alexander Büchel, Lauretta Schubert
- # @date 15.08.2012
-###
-
 source scai_code_coverage_functions.sh
 
 dirname=$(create_dir)
@@ -70,9 +40,20 @@ echo "Create coverage directory: ${dirname}"
 
 prepare_coverage $dirname ../..
 
-export SCAI_LOG=TRACE
+# SCAI_LOG=TRACE increases code coverage but is very time consuming
+
+export SCAI_LOG=WARN
 export SCAI_TRACE=time
 	
+# check if installed LAMA version supports MPI communicator
+
+LAMA_SUPPORTS_MPI=0
+./solverTest --SCAI_COMMUNICATOR=MPI --run_test=VersionTest > /dev/null >& /dev/null
+if [ "$?" -eq 0 ]
+then
+   LAMA_SUPPORTS_MPI=1
+fi
+
 # Running tests serial
 echo "Running serial tests"
 ./solverTest >/dev/null
@@ -82,17 +63,15 @@ then
 	error_count=$(($error_count + $?))
 fi
     
-if [ -d distributed ];
-then    
-	echo "Running distributed tests serial"
-	./distributed/solverDistTest >/dev/null
+if [ "${LAMA_SUPPORTS_MPI}" -eq 1 ];
+then
+	echo "Running solver tests with 3 processes"
+	mpirun -np 3 ./solverTest --SCAI_NUM_THREADS=1 >/dev/null
 	if [ $? -ne 0 ]
 	then
-		echo "ERROR in solverDistTest"
+		echo "ERROR in solverTest"
 		error_count=$(($error_count + $?))
 	fi
-
-	//TODO: running solver tests distributed
 fi
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"

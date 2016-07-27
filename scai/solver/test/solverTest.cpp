@@ -1,5 +1,5 @@
 /**
- * @file solver/test/SolverTest.cpp
+ * @file solver/test/solverTest.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/test/SolverTest.cpp
+ * @brief Driver program for all test of the Solver project.
  * @author Thomas Brandes
  * @date 02.03.2016
  */

@@ -76,15 +76,14 @@ echo "Running lama matrix tests on Host context"
 
 if [ "${LAMA_SUPPORTS_MPI}" -eq 1 ];
 then
-    # Running parallel tests serial and with two processes
-    echo "Running matrix tests with 3 processes"
-    mpirun -np 3 --output-filename ${dirname}/lamaMatrixMPITest.xml ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=MPI --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
-
-	#for i in 2 3 4;
-	#do
-    #	echo "Running distributed tests with $i processes"
-    #	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml distributed/lamaDistTest --output_format=XML --log_level=all --report_level=no
-    #done
+    # Running parallel tests with different number of processes
+	for i in 2 3 4;
+    do 
+        echo "Running lama tests with $i processes"
+        mpirun -np $i --output-filename ${dirname}/lamaMPITest.xml ./lamaTest --SCAI_COMMUNICATOR=MPI --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
+        echo "Running lama matrix tests with $i processes"
+        mpirun -np $i --output-filename ${dirname}/lamaMatrixMPITest.xml ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=MPI --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
+    done
 fi
 
 #Running CUDA tests
@@ -102,3 +101,4 @@ then
     ./matrix/lamaMatrixTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrixHostTest.xml
 fi
 
+echo "Tests finished, results in directory: ${dirname}"

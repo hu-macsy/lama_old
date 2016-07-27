@@ -1,5 +1,5 @@
 /**
- * @file solver/test/distributed/SolverDistTest.cpp
+ * @file VersionTest.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,12 +27,23 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/test/distributed/SolverDistTest.cpp
- * @author Lauretta Schubert
- * @date 10.02.2016
+ * @brief Contains test for Version check.
+ * @author Thomas Brandes
+ * @date 03.06.2016
  */
 
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE SolverDistTest
-
 #include <boost/test/unit_test.hpp>
+
+#include <scai/lama.hpp>
+#include <string>
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( VersionTest )
+{
+    std::string version = lama_get_version();
+    // version is something like x.y.z
+    int len = version.length();
+    BOOST_CHECK( len >= 5 );
+}
+

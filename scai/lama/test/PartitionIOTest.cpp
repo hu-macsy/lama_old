@@ -57,7 +57,7 @@ using namespace dmemo;
 
 /** Output files should be deleted unless for debugging it might be useful to check them. */
 
-#undef DELETE_OUTPUT_FILES
+#define DELETE_OUTPUT_FILES
 
 /* ------------------------------------------------------------------------- */
 
