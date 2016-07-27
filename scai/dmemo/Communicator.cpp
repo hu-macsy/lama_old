@@ -86,17 +86,7 @@ SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
 CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorKind& type )
 {
-    SCAI_LOG_TRACE( logger, "Get communicator of type " << type )
-
-    if ( canCreate( type ) )
-    {
-        return create( type );
-    }
-    else
-    {
-        SCAI_LOG_WARN( logger, "could not get communicator " << type << ", take default one" )
-        return getDefaultCommunicatorPtr();
-    }
+    return create( type );
 }
 
 CommunicatorPtr Communicator::getDefaultCommunicatorPtr()

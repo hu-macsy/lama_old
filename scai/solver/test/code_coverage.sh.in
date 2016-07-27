@@ -55,7 +55,7 @@ then
 fi
 
 # Running tests serial
-echo "Running serial tests"
+echo "Running solver tests"
 ./solverTest >/dev/null
 if [ $? -ne 0 ]
 then
@@ -82,3 +82,6 @@ then
 fi
 
 zip -qr ../solver_coverage.zip *
+
+echo "Code coverage run finished, results in directory: ${dirname}"
+

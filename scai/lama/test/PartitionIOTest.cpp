@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
         // only one processor should delete the file
         int rc = PartitionIO::removeFile( distFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( distFileName ) );
+        BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
 #endif
 
     }
@@ -185,9 +185,9 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         BOOST_CHECK_EQUAL( 0, owners1.maxDiffNorm( owners2 ) );
 
 #ifdef DELETE_OUTPUT_FILES
-        int rc = PartitionIO::removeFile( vectorFileName, *comm );
+        int rc = PartitionIO::removeFile( pFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !FileIO::fileExists( pFileName ) );
+        BOOST_CHECK( !PartitionIO::fileExists( pFileName, *comm ) );
 #endif
 
     }

@@ -104,3 +104,5 @@ then
 fi
 
 zip -qr ../lama_coverage.zip *
+
+echo "Code coverage run finished, results in directory: ${dirname}"
