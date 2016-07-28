@@ -155,18 +155,6 @@ public:
      */
     virtual const char* getTypeName() const = 0;
 
-    /** @brief Creates a LAMA array with the same value type as the matrix.
-     *
-     *  @return an auto pointer to the LAMA array.
-     *
-     *  Same as hmemo::_HArray::create( this.getValueType() )
-     *
-     *  Value type is known only at runtime, so pointer to the base class
-     *  is returned. Auto pointer indicates that calling routine takes ownership of
-     *  the allocated array.
-     */
-    hmemo::_HArray* createArray() const;
-
     /**
      * @brief Clears the full matrix, resets global and local sizes to 0.
      *

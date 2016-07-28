@@ -41,7 +41,9 @@
 
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/HArrayRef.hpp>
+
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/test/TestDistributions.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
@@ -49,6 +51,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/logging.hpp>
 
@@ -359,6 +362,82 @@ BOOST_AUTO_TEST_CASE( AssignMultTest )
         matrix2 = matrix1 * unityRight;   // not for Dense
 
         BOOST_CHECK_EQUAL( matrix1.getRowDistributionPtr(), matrix1.getRowDistributionPtr() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( checkSymmetryTest )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    Matrices allMatrices( context );    // is created by factory
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for checkSymmetry" )
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix& matrix = *allMatrices[s];
+
+        matrix.setIdentity( 5 );
+        BOOST_CHECK( matrix.checkSymmetry() );
+
+        MatrixCreator::buildPoisson2D( matrix, 5, 3, 3 );
+        BOOST_CHECK( matrix.checkSymmetry() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
+{
+    const IndexType n1 = 3;
+    const IndexType n2 = 4;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    Matrices allMatrices( context );    // is created by factory
+
+    TestDistributions testDistributions( n1 * n2 );  
+    DistributionPtr repDist( new NoDistribution( n1 * n2 ) );
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for checkSymmetry" )
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix& matrix = *allMatrices[s];
+
+        if ( matrix.getMatrixKind() == Matrix::DENSE )
+        {
+            continue;   // Dense does not support first column indexes
+        }
+
+        if ( matrix.getFormat() == Matrix::DIA )
+        {
+            continue;   // DIA does not support first column indexes
+        }
+
+        for ( size_t i = 0; i < testDistributions.size(); ++i )
+        {
+            DistributionPtr dist = testDistributions[i];
+
+            matrix.clear();
+
+            MatrixCreator::buildPoisson2D( matrix, 5, n1, n2 );
+
+            matrix.setDiagonalProperty();
+
+            matrix.redistribute( dist, repDist );
+
+            utilskernel::LArray<IndexType> myGlobalIndexes1;
+            utilskernel::LArray<IndexType> myGlobalIndexes2;
+
+            matrix.getLocalStorage().getFirstColumnIndexes( myGlobalIndexes1 );
+            dist->getOwnedIndexes( myGlobalIndexes2 );
+
+            BOOST_CHECK_EQUAL( myGlobalIndexes1.size(), myGlobalIndexes2.size() );
+            BOOST_CHECK_EQUAL( 0, myGlobalIndexes1.maxDiffNorm( myGlobalIndexes2 ) );
+        }
     }
 }
 

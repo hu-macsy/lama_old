@@ -258,14 +258,6 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 
 /* ---------------------------------------------------------------------------------*/
 
-hmemo::_HArray* Matrix::createArray() const
-{
-    // _HArray is also a factory so we can use it
-    return hmemo::_HArray::create( getValueType() );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 Scalar Matrix::operator()( IndexType i, IndexType j ) const
 {
     return getValue( i, j );

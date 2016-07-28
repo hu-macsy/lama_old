@@ -41,6 +41,7 @@
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
+#include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
 
@@ -341,6 +342,48 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
         BOOST_CHECK_EQUAL( ValueType( 0 ), localStorage1.maxDiffNorm( localStorage3 ) );
     }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, MatrixType, MatrixTypes )
+{
+    // Note: swap can only be done with matrices of same type, same format
+
+    typedef typename MatrixType::StorageType StorageType;
+
+    const IndexType n1 = 10;
+    const IndexType n2 = 10;
+
+    MatrixType matrix1;
+    MatrixCreator::buildPoisson2D( matrix1, 5, n1, n1 );
+
+    MatrixType matrix0;   
+
+    matrix0.swap( matrix1 );
+
+    BOOST_CHECK_EQUAL( 0, matrix1.getNumRows() );
+    BOOST_CHECK_EQUAL( 0, matrix1.getNumColumns() );
+
+    BOOST_CHECK_EQUAL( n1 * n2, matrix0.getNumRows() );
+    BOOST_CHECK_EQUAL( n1 * n2, matrix0.getNumColumns() );
+
+    const IndexType m1 = 10;
+    const IndexType m2 = 10;
+    const IndexType m3 = 10;
+
+    MatrixType matrix2;
+    MatrixCreator::buildPoisson3D( matrix2, 7, m1, m2, m3 );
+
+    SCAI_LOG_DEBUG( logger, "before swap: matrix2 = " << matrix2 << ", matrix0 = " << matrix0 )
+    matrix2.swap( matrix0 );
+    SCAI_LOG_DEBUG( logger, "after swap: matrix2 = " << matrix2 << ", matrix0 = " << matrix0 )
+
+    BOOST_CHECK_EQUAL( n1 * n2, matrix2.getNumRows() );
+    BOOST_CHECK_EQUAL( n1 * n2, matrix2.getNumColumns() );
+
+    BOOST_CHECK_EQUAL( m1 * m2 * m3, matrix0.getNumRows() );
+    BOOST_CHECK_EQUAL( m1 * m2 * m3, matrix0.getNumColumns() );
 }
 
 /* ------------------------------------------------------------------------- */
