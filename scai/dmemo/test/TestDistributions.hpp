@@ -61,6 +61,8 @@ public:
     {
         CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
+        // Take all available distributions from the factory
+
         std::vector<std::string> values;
 
         Distribution::getCreateValues( values );
@@ -71,8 +73,27 @@ public:
 
             BOOST_CHECK_EQUAL( dist->getKind(), values[i] );
 
+            if ( values[i] == "METIS" )
+            {
+                 // METIS prints a lot of warnings with a single processor, so skip it
+
+                 if ( comm->getSize() == 1 )
+                 {
+                     continue;
+                 }
+
+                 // METIS prints warnings if number of elements is less than global size
+
+                 if ( comm->getSize() > globalSize )
+                 {
+                     continue;
+                 }
+            }
+
             push_back( dist );
         } 
+
+        // Create a random general distribution, must be same on all processors
 
         utilskernel::LArray<PartitionId> owners;
 
@@ -90,6 +111,8 @@ public:
         }
 
         push_back( DistributionPtr( new GeneralDistribution( owners, comm ) ) );
+
+        // Create a general block distribution with different weights on each processor
 
         float weight = static_cast<float>( comm->getRank() + 1 );
 

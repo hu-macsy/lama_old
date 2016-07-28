@@ -123,7 +123,8 @@ do
 	./dmemo/test/dmemoTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=NO 1>${dirname}/dmemoTest_${CTX}.xml
     for np in ${MPI_PROCS} ;
     do 
-	    mpirun -np ${np} ./dmemo/test/dmemoTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 1> ${dirname}/dmemo_${np}_Test_${CTX}.xml
+	    echo "### dmemoTest on ${CTX} with ${np} MPI processes"
+	    mpirun -np ${np} -output-filename ${dirname}/dmemoTest_${CTX}_${np}.xml ./dmemo/test/dmemoTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 
     done
 	
 	# LAMA tests
@@ -132,7 +133,8 @@ do
 		./lama/test/lamaTest ${BOOST_TEST_ARGS} 1>${dirname}/lamaTest_${CTX}.xml
         for np in ${MPI_PROCS} ;
         do 
-	        mpirun -np ${np} ./lama/test/lamaTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 1> ${dirname}/lama_${np}_Test_${CTX}.xml
+	        echo "### lamaTest on ${CTX} with ${np} MPI processes"
+	        mpirun -np ${np} -output-filename ${dirname}/lamaTest_${CTX}_${np}.xml ./lama/test/lamaTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 
         done
 	)
 	echo "### lamaStorageTest on ${CTX}"
@@ -145,21 +147,34 @@ do
         for np in ${MPI_PROCS} ;
         do 
 	        echo "### lamaMatrixTest on ${CTX} with ${np} MPI processes"
-	        mpirun -np ${np} ./lama/test/matrix/lamaMatrixTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 1> ${dirname}/lamaMatrix_${np}_Test_${CTX}.xml
+	        mpirun -np ${np} -output-filename ${dirname}/lamaMatrixTest_${CTX}_${np}.xml ./lama/test/matrix/lamaMatrixTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 
         done
     )
 	
 	# Solver tests
 	echo "### solverTest on ${CTX}"
-	./solver/test/solverTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=NO 1>${dirname}/solverTest_${CTX}.xml
+	./solver/test/solverTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=NO 1> ${dirname}/solverTest_${CTX}.xml
     for np in ${MPI_PROCS} ;
     do 
-	    echo "### solverTest on ${CTX} with ${np} MPI processes"
-	    echo "mpirun -np ${np} ./solver/test/solverTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS}"
-	    mpirun -np ${np} ./solver/test/solverTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 1> ${dirname}/solverDist_${np}_Test_${CTX}.xml
+        if [ "$CTX" == "CUDA" ]; then
+            echo "skip MPI solver test with CUDA"
+        else
+	        echo "### solverTest on ${CTX} with ${np} MPI processes"
+	        echo "mpirun -np ${np} ./solver/test/solverTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS}"
+	        mpirun -np ${np} -output-filename ${dirname}/solverTest_${CTX}_${np}.xml ./solver/test/solverTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 
+        fi
 	done
 done
 
 echo "All tests are finished, for XML result files see ${dirname}"
+
+# rename the MPI output file to end with xml
+
+for filename in ${dirname}/*.xml.* ;
+do
+    # rename <filename>.xml.<rank> to <filename>.<rank>.xml
+    newname=${filename/\.xml/}.xml
+    mv $filename $newname
+done
 
 unset CONTEXTS
