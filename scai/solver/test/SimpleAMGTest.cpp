@@ -38,6 +38,7 @@
 #include <scai/solver/TrivialPreconditioner.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
+#include <scai/solver/logger/FileLogger.hpp>
 #include <scai/solver/CG.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
@@ -174,7 +175,9 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
     BOOST_CHECK( simpleAMGSolver.getAverageTransferTime() > 0.0 );
     BOOST_CHECK( simpleAMGSolver.getAverageResidualTime() > 0.0 );
 
-    // Now delete the logger file
+    // Now delete the logger file, close it before
+
+    FileLogger::getFileLogger().closeLogFile();
 
     int rc = PartitionIO::removeFile( loggerFileName, comm );
     BOOST_CHECK_EQUAL( 0, rc );
