@@ -581,7 +581,7 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
 
 template<typename ValueType>
 __global__
-void scatterVal_kernel( ValueType* out, const IndexType* indexes, const ValueType val, const IndexType n )
+void scatterVal_kernel( ValueType* out, const IndexType* indexes, const ValueType value, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -592,7 +592,7 @@ void scatterVal_kernel( ValueType* out, const IndexType* indexes, const ValueTyp
 }
 
 template<typename ValueType>
-void CUDAUtils::scatterVal( ValueType out*, const IndexType* indexes, const ValueType val, const IndexType n )
+void CUDAUtils::scatterVal( ValueType out[], const IndexType indexes[], const ValueType val, const IndexType n  )
 {
     SCAI_LOG_INFO( logger,
                    "scatterVal<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
