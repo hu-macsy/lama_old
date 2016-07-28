@@ -579,6 +579,37 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+__global__
+void scatterVal_kernel( ValueType* out, const IndexType* indexes, const ValueType value, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[indexes[i]] = value;
+    }
+}
+
+template<typename ValueType>
+void CUDAUtils::scatterVal( ValueType out[], const IndexType indexes[], const ValueType val, const IndexType n  )
+{
+    SCAI_LOG_INFO( logger,
+                   "scatterVal<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+
+    if ( n > 0 )
+    {
+        SCAI_CHECK_CUDA_ACCESS
+        const int blockSize = 256;
+        dim3 dimBlock( blockSize, 1, 1 );
+        dim3 dimGrid = makeGrid( n, dimBlock.x );
+        scatterVal_kernel <<< dimGrid, dimBlock>>>( out, indexes, val, n );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType, typename OtherValueType>
 __global__
 void setKernelCopy( ValueType* out, const OtherValueType* in, const IndexType n )
@@ -860,6 +891,7 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
     KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

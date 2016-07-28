@@ -810,6 +810,31 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MICUtils::scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n )
+{
+    SCAI_REGION( "MIC.Utils.scatterVal" )
+    SCAI_LOG_DEBUG( logger,
+                    "scatterVal: out<" << TypeTraits<ValueType>::id() << ">"
+                    << "[ indexes[" << n << "] ]" << " = " << value )
+    void* outPtr = out;
+    const void* indexesPtr = indexes;
+    int device = MICContext::getCurrentDevice();
+    #pragma offload target( mic : device ) in( outPtr, indexesPtr, inPtr, n )
+    {
+        ValueType1* out = static_cast<ValueType1*>( outPtr );
+        const IndexType* indexes = static_cast<const IndexType*>( indexesPtr );
+        #pragma omp parallel for
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            out[indexes[i]] = value;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MICUtils::invert( ValueType array[], const IndexType n )
 {
     // SCAI_REGION( "MIC.invert" )
@@ -859,10 +884,8 @@ void MICUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
-<<<<<<< HEAD
-=======
     KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
->>>>>>> develop
+    KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

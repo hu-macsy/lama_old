@@ -146,6 +146,11 @@ public:
     template<typename ValueType, typename otherValueType>
     static void setScatter( ValueType out[], const IndexType indexes[], const otherValueType in[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::scatterVal */
+
+    template<typename ValueType>
+    static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
+
     /** CUDA implementation for UtilKernelTrait::invert */
 
     template<typename ValueType>
