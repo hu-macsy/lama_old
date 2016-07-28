@@ -82,6 +82,8 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
 
     utilskernel::LArray<ValueType> data;
 
+    std::srand( 13151 );   // This test only works if all processors have same random numbers
+
     utilskernel::HArrayUtils::setRandom( data, n, 1.0 );
 
     dmemo::TestDistributions dists( n );
@@ -92,24 +94,23 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
 
         dmemo::DistributionPtr dist = dists[i];
   
-        DenseVector<ValueType> distV( dist );
+        DenseVector<ValueType> distV( dist, 0 );
  
-        // set the value in the distributed vector
+        // set each value in the distributed vector
 
         for ( IndexType k = 0; k < n; ++k )
         {
             distV.setValue( k, ValueType( data[k] ) );
         }
 
-        // get the value from the distributed vector
+        // get each value from the distributed vector
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            Scalar a ( distV.getValue( k ) );
-            data1[k] = a.getValue<ValueType>();
+            data1[k] = distV.getValue( k ).getValue<ValueType>();
         }
 
-        BOOST_CHECK( data.maxDiffNorm( data1 ) == 0 );
+        BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
     }
 }
 
@@ -130,6 +131,8 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
     dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
 
     // Note: all processors must have the same random numbers
+
+    std::srand( 13141 );   // This test only works if all processors have same random numbers
 
     repV.setRandom( repDist, 1.0 );
 

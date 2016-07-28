@@ -416,9 +416,11 @@ tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const dmemo::Halo& 
 template<typename ValueType>
 Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
-    SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " )" )
-    ValueType myValue = static_cast<ValueType>( 0.0 );
+    ValueType myValue = 0;
+
     const IndexType localIndex = getDistribution().global2local( globalIndex );
+
+    SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " ) -> local : " << localIndex )
 
     if ( localIndex != nIndex )
     {
@@ -426,7 +428,11 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
     }
 
     ValueType allValue = getDistribution().getCommunicator().sum( myValue );
+
+    // works also fine for replicated distributions with NoCommunicator
+
     SCAI_LOG_TRACE( logger, "myValue = " << myValue << ", allValue = " << allValue )
+
     return Scalar( allValue );
 }
 
@@ -438,6 +444,8 @@ void DenseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar
     SCAI_LOG_TRACE( logger, *this << ": setValue( globalIndex = " << globalIndex << " ) = " <<  value )
 
     const IndexType localIndex = getDistribution().global2local( globalIndex );
+
+    SCAI_LOG_TRACE( logger, *this << ": set @g " << globalIndex << " is @l " << localIndex << " : " << value )
 
     if ( localIndex != nIndex )
     {
@@ -480,7 +488,6 @@ void DenseVector<ValueType>::exp()
 {
     HArrayUtils::exp( mLocalValues, mContext );
 }
-
 
 /* ------------------------------------------------------------------------- */
 
