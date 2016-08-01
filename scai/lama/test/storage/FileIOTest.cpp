@@ -664,6 +664,88 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_arithmetic_test_types
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( PatternIOTest )
+{
+    // DataType = Pattern : no I/O of the matrix values
+
+    typedef RealType ValueType;
+
+    std::vector<std::string> supportedSuffixes;
+
+    FileIO::getCreateValues( supportedSuffixes );
+
+    // loop over all supported suffixes, got them from FileIO factory
+
+    for ( size_t i = 0; i < supportedSuffixes.size(); ++i )
+    {
+        const std::string& fileSuffix = supportedSuffixes[i];
+
+        unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
+ 
+        if ( fileSuffix != fileIO->getMatrixFileSuffix() )
+        {
+            SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
+            continue;   
+        }
+
+        fileIO->setDataType( common::scalar::PATTERN );
+
+        std::string fileName = "outStoragePattern" + fileSuffix;
+
+        CSRStorage<ValueType> csrStorage;
+        setNonSquareData( csrStorage );
+
+        SCAI_LOG_INFO( logger, *fileIO << ": write matrix pattern -> " << fileName 
+                               << ", matrix = " << csrStorage );
+
+        fileIO->writeStorage( csrStorage, fileName );
+
+        CSRStorage<ValueType> readStorage;
+
+        fileIO->readStorage( readStorage, fileName );
+
+        BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
+        BOOST_REQUIRE_EQUAL( readStorage.getNumValues(), csrStorage.getNumValues() );
+
+        for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
+        {   
+            for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
+            {   
+                if ( csrStorage.getValue( i, j ) != 0 )
+                {
+                    BOOST_CHECK( readStorage.getValue( i, j ) == ValueType( 1 ) );
+                }
+                else
+                {
+                    BOOST_CHECK( readStorage.getValue( i, j ) == 0 );
+                }
+            }
+        }
+
+        // If we want to read a full matrix, the read operation must throw an exception
+
+        fileIO->setDataType( common::scalar::INTERNAL );
+
+        SCAI_LOG_INFO( logger, *fileIO << ": read matrix pattern -> " << fileName 
+                               << ", matrix = " << csrStorage );
+
+        BOOST_CHECK_THROW(
+        {
+            fileIO->readStorage( readStorage, fileName );
+        }, common::Exception );
+
+#ifdef DELETE_OUTPUT_FILES
+        int rc = FileIO::removeFile( fileName );
+    
+        BOOST_CHECK_EQUAL( rc, 0 );
+        BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+#endif
+
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
 
 /* ------------------------------------------------------------------------- */

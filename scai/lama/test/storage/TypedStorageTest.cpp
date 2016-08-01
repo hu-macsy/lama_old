@@ -779,7 +779,7 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
 
         if ( storage.getFormat() == Format::DIA )
         {
-            continue;   // DIA  has still bug
+            continue;   // DIA  has still bug for diagonal property
         }
 
         setDenseHalo( storage );

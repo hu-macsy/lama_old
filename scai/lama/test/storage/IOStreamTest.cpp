@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_arithmetic_test_t
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( writeBinary, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_arithmetic_test_types )
 {
     const IndexType n = 5;
 
@@ -99,7 +99,55 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeBinary, ValueType, scai_arithmetic_test_type
 
     // scalar::ScalarType type = TypeTraits<ValueType>::stype;
 
-    scalar::ScalarType stype = scalar::INTERNAL;  // use exactly the given type
+    IOStream outFile( "tmp.data", std::ios::out | std::ios::binary );
+
+    scalar::ScalarType stype = scalar::PATTERN;   // that should throw an exception
+
+    BOOST_CHECK_THROW(
+    {
+        outFile.writeBinary( data, stype );
+    }, common::Exception );
+
+    stype = scalar::INTERNAL;  // use the same type as data
+
+    outFile.writeBinary( data, stype );
+    outFile.close();
+
+    LArray<ValueType> data1;
+
+    IOStream inFile( "tmp.data", std::ios::in | std::ios::binary );
+
+    inFile.seekg( 0, std::ios::end );
+    size_t realSize = inFile.tellg();
+    inFile.seekg( 0, std::ios::beg );
+
+    BOOST_CHECK_EQUAL( n * sizeof( ValueType ), realSize );
+
+    inFile.readBinary( data1, n, stype );
+    inFile.close();
+
+    BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
+
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
+
+    BOOST_CHECK_EQUAL( diff, 0 );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_arithmetic_test_types )
+{
+    // This test writes an array binary in a file but uses ScalarRepType that has highest precision
+
+    const IndexType n = 5;
+
+    float fillRate = 1.0f;
+
+    LArray<ValueType> data;
+    HArrayUtils::setRandom( data, n, fillRate );
+
+    scalar::ScalarType stype = TypeTraits<ScalarRepType>::stype;
 
     IOStream outFile( "tmp.data", std::ios::out | std::ios::binary );
     outFile.writeBinary( data, stype );
@@ -108,6 +156,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeBinary, ValueType, scai_arithmetic_test_type
     LArray<ValueType> data1;
 
     IOStream inFile( "tmp.data", std::ios::in | std::ios::binary );
+
+    inFile.seekg( 0, std::ios::end );
+    size_t realSize = inFile.tellg();
+    inFile.seekg( 0, std::ios::beg );
+
+    BOOST_CHECK_EQUAL( n * common::typeSize( stype ), realSize );
+
     inFile.readBinary( data1, n, stype );
     inFile.close();
 

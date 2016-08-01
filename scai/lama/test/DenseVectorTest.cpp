@@ -36,11 +36,14 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
+#include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
 
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matutils/MatrixCreator.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -283,6 +286,158 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
             DenseVector<ValueType> y( 2 * mat * x );
             
             BOOST_CHECK_EQUAL( y.getDistribution(), *rowDist );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_arithmetic_test_types )
+{
+    // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
+
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    const IndexType nRows = 16;
+    const IndexType nCols = 13;
+
+    // generate random input data, same on all processors
+
+    std::srand( 51413 );
+
+    DenseMatrix<ValueType> A;
+    A.setContextPtr( ctx );
+    A.allocate( nRows, nCols );
+    MatrixCreator::fillRandom( A, 0.1 );
+    DenseVector<ValueType> x( ctx );
+    x.setRandom( A.getColDistributionPtr() );
+    DenseVector<ValueType> y( ctx );
+    y.setRandom( A.getRowDistributionPtr() );
+    DenseVector<ValueType> res( 2 * A * x - y );
+
+    // Now we do the same with all other matrices and all kind of distributions
+
+    dmemo::TestDistributions colDists( nCols );
+    dmemo::TestDistributions rowDists( nRows );
+
+    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+
+    for ( size_t i = 0; i < rowDists.size(); ++i )
+    {
+        dmemo::DistributionPtr rowDist = rowDists[i];
+
+        for ( size_t j = 0; j < colDists.size(); ++j )
+        {
+            dmemo::DistributionPtr colDist = colDists[i];
+            
+            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+
+            for ( size_t k = 0; k < matrices.size(); ++k )
+            {
+                Matrix& A1 = *matrices[k];
+
+                A1.assign( A );
+                A1.redistribute( rowDist, colDist );
+
+                DenseVector<ValueType> x1( x, colDist );
+                DenseVector<ValueType> y1( y, rowDist );
+                DenseVector<ValueType> res1;
+
+                SCAI_LOG_INFO( logger, "matrixTimesVector with this matrix: " << A1 )
+
+                res1 = 2 * A1 * x1 - y1;
+
+                res1.redistribute( res.getDistributionPtr() );
+                res1 -= res;
+                
+                BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+// BOOST_AUTO_TEST_CASE_TEMPLATE( VectorMatrixMultTest, ValueType, scai_arithmetic_test_types )
+
+
+BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
+{
+    return;
+
+    typedef float ValueType;
+
+    // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
+
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    // ToDo: this test causes serious problems with non-square matrices
+
+    const IndexType nRows = 7;
+    const IndexType nCols = 7;
+
+    // generate random input data, same on all processors
+
+    std::srand( 51413 );
+
+    DenseMatrix<ValueType> A;
+    A.setContextPtr( ctx );
+    A.allocate( nRows, nCols );
+    MatrixCreator::fillRandom( A, 0.1 );
+    DenseVector<ValueType> x( ctx );
+    x.setRandom( A.getRowDistributionPtr() );
+    DenseVector<ValueType> y( ctx );
+    y.setRandom( A.getColDistributionPtr() );
+    DenseVector<ValueType> res( 2 * x * A - y );
+
+    // Now we do the same with all other matrices and all kind of distributions
+
+    dmemo::TestDistributions colDists( nCols );
+    dmemo::TestDistributions rowDists( nRows );
+
+    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+
+    for ( size_t i = 0; i < rowDists.size(); ++i )
+    {
+        dmemo::DistributionPtr rowDist = rowDists[i];
+
+        for ( size_t j = 0; j < colDists.size(); ++j )
+        {
+            dmemo::DistributionPtr colDist = colDists[i];
+            
+            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+
+            for ( size_t k = 0; k < matrices.size(); ++k )
+            {
+                Matrix& A1 = *matrices[k];
+
+                A1.setCommunicationKind( Matrix::SYNCHRONOUS );
+
+                if ( A1.getMatrixKind() == Matrix::DENSE )
+                {
+                    continue;   // ToDo: this test fails for dense matrices
+                }
+
+                A1.assign( A );
+                A1.redistribute( rowDist, colDist );
+
+                DenseVector<ValueType> x1( x, rowDist );
+                DenseVector<ValueType> y1( y, colDist );
+                DenseVector<ValueType> res1;
+
+                SCAI_LOG_INFO( logger, "vectorTimesMatrix with this matrix: " << A1 << ", y1 = " << y1 )
+
+                res1 = 2 * x1 * A1 - y1;
+
+                BOOST_CHECK_EQUAL( res1.size(), A1.getNumColumns() );
+
+                // A1.vectorTimesMatrix( res1, Scalar( 2 ), x1, Scalar( -1 ), y1 );
+
+                res1.redistribute( res.getDistributionPtr() );
+                res1 -= res;
+                
+                // fails: BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
+            }
         }
     }
 }

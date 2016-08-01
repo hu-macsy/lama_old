@@ -547,6 +547,14 @@ void DenseMatrix<ValueType>::clear()
 }
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::purge()
+{
+    Matrix::setReplicatedMatrix( 0, 0 ); // clear Matrix
+    mData.resize( 1 ); // clear Data
+    mData[0]->purge();
+}
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::allocate( const IndexType numRows, const IndexType numColumns )
 {
     Matrix::setReplicatedMatrix( numRows, numColumns );
@@ -1297,18 +1305,6 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::conj()
 {
     getLocalStorage().conj();
-}
-
-template<typename ValueType>
-std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix<ValueType>::getCyclicLocalValues()
-{
-    return mData;
-}
-
-template<typename ValueType>
-const std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix<ValueType>::getCyclicLocalValues() const
-{
-    return mData;
 }
 
 template<typename ValueType>

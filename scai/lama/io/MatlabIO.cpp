@@ -200,7 +200,14 @@ void MatlabIO::writeStorageImpl(
     int precIndex = 0;
     int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
-    outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
+    if ( mScalarTypeData == common::scalar::PATTERN )
+    {
+        outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex );
+    }
+    else
+    {
+        outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -228,7 +235,16 @@ void MatlabIO::readStorageImpl(
         return;
     }
 
-    SCAI_ASSERT_GE( k, 3, "#entries/row in file " << fileName << " must be at least 3" )
+    bool readPattern = mScalarTypeData == common::scalar::PATTERN;
+
+    int nEntries = 2;   
+
+    if ( !readPattern )
+    {
+        nEntries = 3;
+    }
+
+    SCAI_ASSERT_GE( k, nEntries, "#entries/row in file " << fileName << " must be at least " << nEntries )
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
@@ -238,7 +254,15 @@ void MatlabIO::readStorageImpl(
 
     IOStream inFile( fileName, std::ios::in );
 
-    inFile.readFormatted( dIA, dJA, val, nnz );
+    if ( readPattern )
+    {
+        inFile.readFormatted( dIA, dJA, nnz );
+        val.init( ValueType( 1 ), nnz );
+    }
+    else
+    {
+        inFile.readFormatted( dIA, dJA, val, nnz );
+    }
 
     LArray<IndexType> ia( dIA );
     LArray<IndexType> ja( dJA );

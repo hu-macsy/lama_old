@@ -39,6 +39,7 @@
 #include <scai/lama/test/TestVectors.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
@@ -56,7 +57,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.VectorTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( vecExpAssignTest )
+BOOST_AUTO_TEST_CASE( assign_V_V_Test )
 {
     const IndexType n = 13;
 
@@ -86,6 +87,233 @@ BOOST_AUTO_TEST_CASE( vecExpAssignTest )
             *v4 += *v2;
             *v3 -= *v4;
             BOOST_CHECK( v3->maxNorm() < Scalar( 1e-4 ) );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
+{
+    const IndexType n = 13;
+
+    TestVectors vectors;
+
+    dmemo::TestDistributions dists(n);
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        VectorPtr v1 = vectors[i];
+
+        for ( size_t j = 0; j < dists.size(); ++j )
+        {
+            dmemo::DistributionPtr dist = dists[i];
+
+            v1->allocate( dist );
+            *v1 = 3;
+            VectorPtr v2( v1->copy() );
+            *v2 = 5;
+            VectorPtr v3( v1->newVector() );
+            VectorPtr v4( v1->newVector() );
+            *v3 = *v1 * *v2;
+            *v4 = 3 * *v1 * *v2;
+            *v4 -= 2 * *v3;
+ 
+            // Now v3 and v4 must be equal
+
+            *v3 -= *v4;
+
+            BOOST_CHECK( v3->maxNorm() < Scalar( 1e-4 ) );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( assign_MV_Test )
+{
+    const IndexType n = 13;
+
+    TestVectors vectors;
+
+    dmemo::TestDistributions dists(n);
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        VectorPtr v1 = vectors[i];
+
+        for ( size_t j = 0; j < dists.size(); ++j )
+        {
+            dmemo::DistributionPtr dist = dists[i];
+
+            v1->setSequence( 3, 1, dist );
+
+            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ));
+            m->setIdentity( dist );
+
+            VectorPtr v2( v1->newVector() );
+ 
+            *v2 = *m * *v1;
+
+            // Now v1 and v2 must be equal
+
+            *v2 -= *v1;
+
+            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+
+            *v2 = 2 * *m * *v1;
+
+            // Now v1 and v2 must be equal
+
+            *v2 -= 2 * *v1;
+
+            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+
+            *v2 = *m * *v1 - *v1;
+            
+            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+
+            *v2 = 2 * *m * *v1 - 2 * *v1;
+            
+            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( assign_VM_Test )
+{
+    const IndexType n = 13;
+
+    TestVectors vectors;
+
+    dmemo::TestDistributions dists(n);
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        VectorPtr v1 = vectors[i];
+
+        for ( size_t j = 0; j < dists.size(); ++j )
+        {   
+            dmemo::DistributionPtr dist = dists[i];
+            
+            v1->allocate( dist );
+            *v1 = 3;
+            
+            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ));
+            m->setIdentity( dist );
+            m->setCommunicationKind( Matrix::ASYNCHRONOUS );
+            
+            // SCAI_LOG_ERROR( logger, "vectorMultMatrix, v = " << *v1 << ", m = " << *m )
+
+            VectorPtr v2( v1->newVector() );
+
+            *v2 = ( *v1 ) * ( *m );
+
+            // Now v1 and v2 must be equal
+
+            *v2 -= *v1;
+            
+            Scalar s = v2->maxNorm();
+
+            BOOST_CHECK( s < Scalar( 1e-4 ) );
+
+            *v2 = 2 * *v1 * *m;
+            
+            // Now 2 * v1 and v2 must be equal
+            
+            *v2 -= 2 * *v1;
+            
+            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            
+            *v2 = *v1 * *m - *v1;
+            
+            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            
+            *v2 = 2 * *v1 * *m - 2 * *v1;
+            
+            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_arithmetic_test_types )
+{
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    IndexType n = 111;
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+
+    VectorPtr v( Vector::getDenseVector( stype, dist, ctx ) );
+
+    std::string format = Vector::kind2Str( v->getVectorKind() );
+
+    BOOST_CHECK_EQUAL( "DENSE", format );
+    BOOST_CHECK_EQUAL( Vector::str2Kind( "DENSE" ), v->getVectorKind() );
+    
+    DenseVector<ValueType>* denseV = dynamic_cast<DenseVector<ValueType>* >( v.get() );
+
+    BOOST_REQUIRE( denseV != NULL );
+
+    BOOST_CHECK_EQUAL( denseV->getContextPtr(), ctx );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( dotProductTest )
+{   
+    // This test does not verify the correctness of the dot product
+    // but that it is the same, either computed replicated or distributed.
+
+    using namespace hmemo;
+
+    const IndexType n = 13;
+    
+    TestVectors vectors;
+    
+    dmemo::TestDistributions dists(n);
+    
+    std::srand( 1311 );   // same random numbers on all processors
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {   
+        VectorPtr v1 = vectors[i];
+        VectorPtr v2( v1->newVector() );
+
+        // generate two arrays of same value type with random numbers
+
+        common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
+        common::shared_ptr<_HArray> data2( _HArray::create( v1->getValueType() ) );
+
+        utilskernel::HArrayUtils::setRandom( *data1, n );
+        utilskernel::HArrayUtils::setRandom( *data2, n );
+
+        v1->assign( *data1 );
+        v2->assign( *data2 );
+
+        Scalar dotp = v1->dotProduct( *v2 );  // replicated computation
+ 
+        for ( size_t j = 0; j < dists.size(); ++j )
+        {   
+            // now compute the dot product with distributed vectors
+
+            dmemo::DistributionPtr dist = dists[i];
+            
+            v1->redistribute( dist );
+            v2->redistribute( dist );
+            
+            Scalar distDotp = v1->dotProduct( *v2 );
+
+            // we cannot check for equality due to different rounding errors
+
+            SCAI_CHECK_CLOSE( dotp, distDotp, 0.001 );
         }
     }
 }

@@ -44,6 +44,7 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
+#include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
 
@@ -76,6 +77,13 @@ typedef boost::mpl::list<CSRSparseMatrix<ValueType>,
                          DenseMatrix<ValueType>
                         > MatrixTypes;
 
+typedef boost::mpl::list<CSRSparseMatrix<ValueType>,
+                         DIASparseMatrix<ValueType>,
+                         COOSparseMatrix<ValueType>,
+                         JDSSparseMatrix<ValueType>,
+                         ELLSparseMatrix<ValueType>
+                        > SparseMatrixTypes;
+
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, MatrixType, MatrixTypes )
@@ -87,9 +95,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, MatrixType, MatrixTypes )
     // check zero sizes
     BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
     BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );
+
     // check correct format / type
     BOOST_CHECK_EQUAL( common::TypeTraits<ValueType>::stype, matrix.getValueType() );
+
     const StorageType& local = matrix.getLocalStorage();
+
+    BOOST_CHECK_EQUAL( matrix.getFormat(), local.getFormat() );
+
+    if ( matrix.getMatrixKind() == Matrix::SPARSE )
+    {
+        SparseMatrix<ValueType>& spMatrix = reinterpret_cast<SparseMatrix<ValueType>& >( matrix );
+        spMatrix.prefetch();
+    } 
+
     BOOST_CHECK_EQUAL( 0, local.getNumRows() );
 }
 
@@ -113,6 +132,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sizeConstructorTest, MatrixType, MatrixTypes )
 
     BOOST_CHECK_EQUAL( numRows, localStorage.getNumRows() );
     BOOST_CHECK_EQUAL( numCols, localStorage.getNumColumns() );
+
+    BOOST_CHECK( matrix.isConsistent() );
+
+    matrix.clear();
+    matrix.purge();
+
+    BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
+    BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -191,6 +218,60 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storageConstructorTest, MatrixType, MatrixTypes )
             BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumColumns() );
 
             BOOST_CHECK_EQUAL( ValueType( 0 ), localStorage1.maxDiffNorm( localStorage2 ) );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
+{
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    typedef typename MatrixType::StorageType StorageType;
+
+    const IndexType n = 11;
+
+    float fillRate = 0.2;
+
+    hmemo::HArray<ValueType> denseData( ctx );
+    std::srand( 1317 );                   // makes sure that all processors generate same data
+    utilskernel::HArrayUtils::setRandom( denseData, n * n , fillRate );
+
+    StorageType globalStorage;
+
+    globalStorage.setDenseData( n, n, denseData );
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        dmemo::DistributionPtr dist = dists[i];
+
+        Matrices testMatrices( ctx );
+
+        for ( size_t k = 0; k < testMatrices.size(); ++k )
+        {
+            Matrix& otherMatrix = *testMatrices[k];
+
+            otherMatrix.assign( globalStorage );
+
+            otherMatrix.redistribute( dist, dist );
+ 
+            MatrixType matrix1( otherMatrix );  // copy constructor arbitrary matrix
+
+            MatrixType matrix2( otherMatrix, dist, dist ); // same as before but with redist
+
+            const StorageType& localStorage1 = matrix1.getLocalStorage();
+            const StorageType& localStorage2 = matrix2.getLocalStorage();
+
+            BOOST_REQUIRE_EQUAL( localStorage1.getNumRows(), localStorage2.getNumRows() );
+            BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumColumns() );
+
+            BOOST_CHECK_EQUAL( ValueType( 0 ), localStorage1.maxDiffNorm( localStorage2 ) );
+
+            // ToDo: not yet available for all types
+            // MatrixType matrix3( otherMatrix, true );  // transpose
         }
     }
 }
@@ -346,11 +427,70 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
+{
+    // Note: here we only test constructor MatrixType( "fileName" ) 
+    //       as readFromFile is already tested in PartitionIO
+
+    typedef typename MatrixType::StorageType StorageType;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    const IndexType numRows = 16;
+    const IndexType numCols = 16;
+
+    std::string fileName = "myMatrix.psc";   // binary type, so no loss of precision
+
+    float fillRate = 0.2;
+
+    hmemo::HArray<ValueType> denseData;
+    std::srand( 31991 );                   // makes sure that all processors generate same data
+    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+
+    StorageType globalStorage;
+    globalStorage.setDenseData( numRows, numCols, denseData );
+
+    if ( comm->getRank() == 0 )
+    {
+        globalStorage.writeToFile( fileName );
+    }
+
+    comm->synchronize();
+
+    dmemo::DistributionPtr rowDist( new dmemo::NoDistribution( numRows ) );
+    dmemo::DistributionPtr colDist( new dmemo::NoDistribution( numCols ) );
+
+    // comm->synchronize();
+
+    MatrixType matrix1( fileName );
+
+    BOOST_CHECK( matrix1.isConsistent() );
+    BOOST_CHECK_EQUAL( numRows, matrix1.getNumRows() );
+    BOOST_CHECK( matrix1.getNumColumns() <= numCols );
+
+    matrix1.redistribute( rowDist, colDist );   
+
+    MatrixType matrix2( globalStorage );
+
+    matrix2.redistribute( rowDist, colDist );
+
+    const StorageType& localStorage1 = matrix1.getLocalStorage();
+    const StorageType& localStorage2 = matrix2.getLocalStorage();
+
+    BOOST_CHECK_EQUAL( ValueType( 0 ), localStorage1.maxDiffNorm( localStorage2 ) );
+
+    if ( comm->getRank() == 0 )
+    {
+        int rc = FileIO::removeFile( fileName );
+        BOOST_CHECK_EQUAL( 0, rc );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, MatrixType, MatrixTypes )
 {
     // Note: swap can only be done with matrices of same type, same format
-
-    typedef typename MatrixType::StorageType StorageType;
 
     const IndexType n1 = 10;
     const IndexType n2 = 10;

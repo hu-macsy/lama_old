@@ -243,7 +243,13 @@ void PETScIO::writeStorageImpl(
     outFile.writeBinary( headValues, mScalarTypeIndex );
     outFile.writeBinary( csrIA, mScalarTypeIndex );
     outFile.writeBinary( csrJA , mScalarTypeIndex ); 
-    outFile.writeBinary( csrValues, mScalarTypeData );
+
+    // output of values is skipped for PATTERN 
+
+    if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+    {
+        outFile.writeBinary( csrValues, mScalarTypeData );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -286,7 +292,15 @@ void PETScIO::readStorageImpl(
 
     inFile.readBinary( csrSizes, nrows, mScalarTypeIndex );
     inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
-    inFile.readBinary( csrValues, nnz, mScalarTypeData );
+
+    if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+    {
+        inFile.readBinary( csrValues, nnz, mScalarTypeData );
+    }
+    else
+    {
+        csrValues.init( ValueType( 1 ), nnz );
+    }
 
     storage.setCSRData( nrows, ncols, nnz, csrSizes, csrJA, csrValues );
 }

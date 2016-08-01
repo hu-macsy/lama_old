@@ -47,6 +47,7 @@ scai_project (
         Creator
 
         MatrixConstructorTest
+        SparseMatrixTest
 
         lamaMatrixTest
     )

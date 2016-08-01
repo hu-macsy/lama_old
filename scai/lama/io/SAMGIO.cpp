@@ -376,7 +376,11 @@ void SAMGIO::writeStorageImpl(
 
         outFile.writeBinary( csrIA, mScalarTypeIndex );
         outFile.writeBinary( csrJA, mScalarTypeIndex ); 
-        outFile.writeBinary( csrValues, mScalarTypeData );
+
+        if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+        {
+            outFile.writeBinary( csrValues, mScalarTypeData );
+        }
     }
     else
     {
@@ -387,7 +391,11 @@ void SAMGIO::writeStorageImpl(
 
         outFile.writeFormatted( csrIA, precIndex );
         outFile.writeFormatted( csrJA, precIndex );
-        outFile.writeFormatted( csrValues, precData );
+
+        if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+        {
+            outFile.writeFormatted( csrValues, precData );
+        }
     }
 
     outFile.close();
@@ -496,6 +504,8 @@ void SAMGIO::readStorageImpl(
         }
         else
         {
+            // Note: works fine for PATTERN as typeSize( PATTERN ) == 0
+
             expectedSize += numValues * common::typeSize( mScalarTypeData ) ;
         }
 
@@ -512,7 +522,17 @@ void SAMGIO::readStorageImpl(
 
         inFile.readBinary( csrIA, numRows + 1, mScalarTypeIndex );
         inFile.readBinary( csrJA, numValues, mScalarTypeIndex );
-        inFile.readBinary( csrValues, numValues, mScalarTypeData );
+
+        if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+        {
+            inFile.readBinary( csrValues, numValues, mScalarTypeData );
+        }
+        else
+        { 
+            // set values with default value
+
+            csrValues.init( ValueType( 1 ), numValues );
+        }
     }
     else
     {
@@ -520,7 +540,17 @@ void SAMGIO::readStorageImpl(
 
         inFile.readFormatted( csrIA, numRows + 1 );
         inFile.readFormatted( csrJA, numValues );
-        inFile.readFormatted( csrValues, numValues );
+
+        if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+        {
+            inFile.readFormatted( csrValues, numValues );
+        }
+        else
+        { 
+            // set values with default value
+
+            csrValues.init( ValueType( 1 ), numValues );
+        }
     }
 
     inFile.closeCheck();   // gives a warning if not complete file has been read

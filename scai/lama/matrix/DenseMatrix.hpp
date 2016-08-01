@@ -333,6 +333,10 @@ public:
 
     virtual void clear();
 
+    /* Implementation of pure method Matrix::purge. */
+
+    virtual void purge();
+
     /* Implementation of pure method of class Matrix. */
 
     virtual void allocate( const IndexType numRows, const IndexType numColumns );
@@ -524,10 +528,6 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual IndexType getNumValues() const;
-
-    std::vector<DenseStoragePtr>& getCyclicLocalValues();
-
-    const std::vector<DenseStoragePtr>& getCyclicLocalValues() const;
 
     /* Implementation of pure method of class Matrix. */
 

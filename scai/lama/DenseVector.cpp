@@ -157,6 +157,44 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
     HArrayUtils::assignScalar( mLocalValues, startValue, utilskernel::reduction::ADD, context );
 }
 
+template <typename ValueType>
+void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar inc, const int n )
+{
+    setDistributionPtr( DistributionPtr( new NoDistribution( n ) ) );
+
+    HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), n, getContextPtr() );
+}
+
+template <typename ValueType>
+void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar inc, DistributionPtr distribution )
+{
+    setDistributionPtr( distribution );
+
+    if ( distribution->isReplicated() )
+    {
+        SCAI_ASSERT_EQ_DEBUG( distribution->getGlobalSize(), distribution->getLocalSize(), *distribution << " not replicated" );
+
+        HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), distribution->getGlobalSize() );
+        return;
+    }
+
+    ContextPtr context = getContextPtr();
+
+    // get my owned indexes 
+
+    HArray<IndexType> myGlobalIndexes( context );
+
+    // mult with inc and add startValue
+
+    distribution->getOwnedIndexes( myGlobalIndexes );
+
+    // localValues[] =  indexes[] * inc + startValue
+
+    HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
+    HArrayUtils::assignScalar( mLocalValues, inc.getValue<ValueType>(), utilskernel::reduction::MULT, context );
+    HArrayUtils::assignScalar( mLocalValues, startValue.getValue<ValueType>(), utilskernel::reduction::ADD, context );
+}
+
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Vector& other )
     : Vector( other )
@@ -388,29 +426,6 @@ DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
     return vector.release();
 }
 
-template<typename ValueType>
-void DenseVector<ValueType>::updateHalo( const dmemo::Halo& halo ) const
-{
-    const IndexType haloSize = halo.getHaloSize();
-    SCAI_LOG_DEBUG( logger, "Acquiring halo write access on " << *mContext )
-    mHaloValues.clear();
-    WriteAccess<ValueType> haloAccess( mHaloValues, mContext );
-    haloAccess.reserve( haloSize );
-    haloAccess.release();
-    getDistribution().getCommunicator().updateHalo( mHaloValues, mLocalValues, halo );
-}
-
-template<typename ValueType>
-tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const dmemo::Halo& halo ) const
-{
-    const IndexType haloSize = halo.getHaloSize();
-    // create correct size of Halo
-    {
-        WriteOnlyAccess<ValueType> haloAccess( mHaloValues, mContext, haloSize );
-    }
-    return getDistribution().getCommunicator().updateHaloAsync( mHaloValues, mLocalValues, halo );
-}
-
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -538,7 +553,7 @@ void DenseVector<ValueType>::swap( Vector& other )
 
     Vector::swapVector( other );
     mLocalValues.swap( otherPtr->mLocalValues );
-    mHaloValues.swap( otherPtr->mHaloValues );
+    // mHaloValues.swap( otherPtr->mHaloValues );
 }
 
 template<typename ValueType>
@@ -657,27 +672,27 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 
     // add other->getVectorKind() == DENSE, if sparse is also supported
 
-    if ( this->getValueType() == other.getValueType() )
-    {
-        if ( getDistribution() != other.getDistribution() )
-        {
-            COMMON_THROWEXCEPTION( "distribution do not match for this * other, this = " << *this << " , other = " << other )
-        }
+    SCAI_ASSERT_EQ_ERROR( getValueType(), other.getValueType(), 
+                          "dotProduct not supported for different value types. " 
+                           << *this << " x " << other )
 
-        const DenseVector<ValueType>* denseOther = dynamic_cast<const DenseVector<ValueType>*>( &other );
-        SCAI_ASSERT_DEBUG( denseOther, "dynamic_cast failed for other = " << other )
-        SCAI_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
-        const IndexType localSize = mLocalValues.size();
-        SCAI_ASSERT_EQ_DEBUG( localSize, getDistribution().getLocalSize(), "size mismatch" )
-        const ValueType localDotProduct = mLocalValues.dotProduct( denseOther->mLocalValues );
-        SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
-        ValueType dotProduct = getDistribution().getCommunicator().sum( localDotProduct );
-        SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
-        return Scalar( dotProduct );
-    }
+    SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), 
+                          "dotProduct not supported for vectors with different distributions. " 
+                          << *this  << " x " << other )
 
-    COMMON_THROWEXCEPTION(
-        "Can not calculate a dot product of " << typeid( *this ).name() << " and " << typeid( other ).name() )
+    const DenseVector<ValueType>* denseOther = dynamic_cast<const DenseVector<ValueType>*>( &other );
+
+    SCAI_ASSERT_ERROR( denseOther, "dynamic_cast failed for other = " << other )
+
+    SCAI_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
+    const IndexType localSize = mLocalValues.size();
+    SCAI_ASSERT_EQ_DEBUG( localSize, getDistribution().getLocalSize(), "size mismatch" )
+    const ValueType localDotProduct = mLocalValues.dotProduct( denseOther->mLocalValues );
+    SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
+    ValueType dotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
+
+    return Scalar( dotProduct );
 }
 
 template<typename ValueType>
@@ -722,12 +737,28 @@ void DenseVector<ValueType>::assign( const Scalar value )
 }
 
 template<typename ValueType>
+void DenseVector<ValueType>::add( const Scalar value )
+{
+    SCAI_LOG_DEBUG( logger, *this << ": add " << value )
+    // assign the scalar value on the home of this dense vector.
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::reduction::ADD, mContext );
+}
+
+template<typename ValueType>
 void DenseVector<ValueType>::assign( const _HArray& localValues, DistributionPtr dist )
 {
     SCAI_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
     SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "size mismatch" )
     setDistributionPtr( dist );
     HArrayUtils::assign( mLocalValues, localValues );
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::assign( const _HArray& globalValues )
+{
+    SCAI_LOG_INFO( logger, "assign vector with globalValues = " << globalValues )
+    setDistributionPtr( DistributionPtr( new NoDistribution( globalValues.size() ) ) );
+    HArrayUtils::assign( mLocalValues, globalValues );
 }
 
 template<typename ValueType>

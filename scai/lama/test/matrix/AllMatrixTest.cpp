@@ -117,9 +117,28 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
         Matrix& matrix = *allMatrices[s];
+
         std::ostringstream os;
         os << matrix;    // calls virtutal method writeAt for each matrix class
         BOOST_CHECK( os.str().length() > 0 );
+
+        // print the different enum value, length() > 1 makes sure that not an int is printed
+
+        std::ostringstream os1;
+        os1 << matrix.getMatrixKind();
+        BOOST_CHECK( os1.str().length() > 1 );
+
+        std::ostringstream os2;
+        os2 << matrix.getCommunicationKind();
+        BOOST_CHECK( os2.str().length() > 1 );
+
+        std::ostringstream os3;
+        os3 << matrix.getFormat();
+        BOOST_CHECK( os3.str().length() > 1 );
+
+        std::ostringstream os4;
+        os4 << matrix.getTypeName();
+        BOOST_CHECK( os4.str().length() > 1 );
     }
 }
 
@@ -319,10 +338,16 @@ BOOST_AUTO_TEST_CASE( AssignAddTest )
 
         matrix3 = matrix1 + matrix2;
         matrix3 = matrix3 - matrix2;
-        matrix1 += 2 * matrix3;
+        matrix1 += 3 * matrix3;
         matrix1 -= matrix3;
+        matrix1 += matrix3;
+        matrix1 -= 2 * matrix3;
  
         BOOST_CHECK_EQUAL( matrix3.getRowDistributionPtr(), matrix1.getRowDistributionPtr() );
+
+        matrix1 = matrix2;
+
+        BOOST_CHECK_EQUAL( matrix1.getRowDistributionPtr(), matrix2.getRowDistributionPtr() );
     }
 }
 
@@ -361,7 +386,11 @@ BOOST_AUTO_TEST_CASE( AssignMultTest )
 
         matrix2 = matrix1 * unityRight;   // not for Dense
 
-        BOOST_CHECK_EQUAL( matrix1.getRowDistributionPtr(), matrix1.getRowDistributionPtr() );
+        BOOST_CHECK_EQUAL( matrix2.getRowDistributionPtr(), matrix1.getRowDistributionPtr() );
+
+        matrix2 = matrix1 * unityRight + matrix1;
+
+        BOOST_CHECK_EQUAL( matrix2.getRowDistributionPtr(), matrix1.getRowDistributionPtr() );
     }
 }
 
@@ -437,6 +466,83 @@ BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
 
             BOOST_CHECK_EQUAL( myGlobalIndexes1.size(), myGlobalIndexes2.size() );
             BOOST_CHECK_EQUAL( 0, myGlobalIndexes1.maxDiffNorm( myGlobalIndexes2 ) );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( diagonalTest )
+{
+    const IndexType n1 = 3;
+    const IndexType n2 = 4;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    Matrices allMatrices( context );    // is created by factory
+
+    TestDistributions testDistributions( n1 * n2 );
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for checkSymmetry" )
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix& matrix = *allMatrices[s];
+
+        if ( matrix.getFormat() == Matrix::DIA )
+        {
+            continue;  // DIA has problems with diagonal property
+        }
+
+        matrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+
+        for ( size_t i = 0; i < testDistributions.size(); ++i )
+        {
+            DistributionPtr dist = testDistributions[i];
+
+            matrix.clear();
+
+            MatrixCreator::buildPoisson2D( matrix, 5, n1, n2 );
+
+            matrix.redistribute( dist, dist );
+
+            VectorPtr xPtr ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
+            VectorPtr y1Ptr( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
+            VectorPtr y2Ptr( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
+            VectorPtr dPtr ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
+
+            Vector& x  = *xPtr;
+            Vector& y1 = *y1Ptr;
+            Vector& y2 = *y2Ptr;
+            Vector& d  = *dPtr;
+
+            x.allocate( matrix.getColDistributionPtr() );
+            x  = Scalar( 1 );
+
+            y1 = matrix * x;
+
+            matrix.getDiagonal( d );
+            
+            BOOST_CHECK_EQUAL( d.getDistribution(), matrix.getRowDistribution() );
+
+            matrix.setDiagonal( 0 );
+
+            // Now we can prove y2 = matrix * x + diagonal must be same as y1 
+
+            y2 = matrix * x + d;
+            y2 = y2 - y1;
+            BOOST_CHECK( y2.maxNorm() < Scalar( 0.0001 ) );
+
+            // Write back modified diagonal and check result
+
+            d += Scalar( 1 );
+
+            matrix.setDiagonal( d );
+
+            y2 = matrix * x - y1;
+            y2 += -1;
+
+            BOOST_CHECK( y2.maxNorm() < Scalar( 0.0001 ) );
         }
     }
 }

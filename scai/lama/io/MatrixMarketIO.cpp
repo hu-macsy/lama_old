@@ -478,7 +478,7 @@ void MatrixMarketIO::readArrayImpl(
         if ( mmType == common::scalar::PATTERN )
         {
             reader >> i;
-            val = 1.0;
+            val = ValueType( 1 );
             i--;
         }
         else
@@ -785,9 +785,12 @@ void MatrixMarketIO::readStorageImpl(
     
     if ( common::scalar::PATTERN == mmType )
     {
+        // to be consistent with other FileIO handlers throw an exception if not Pattern expected
+
+        SCAI_ASSERT_EQ_ERROR( common::scalar::PATTERN, mScalarTypeData, "File " << fileName << " has only matrix pattern" )
+
         inFile.readFormatted( ia, ja, numValuesFile );
-        val.resize( numValuesFile );
-        val = ValueType( 1 );
+        val.init( ValueType( 1 ), numValuesFile );
     }
     else
     {

@@ -164,8 +164,16 @@ public:
      *     a.clear();                          \\ same functionality, clears involved arrays
      *
      * \endcode
+     *
+     * This routine will not free any allocated memory. It is especially helpful to invalidate
+     * all data before it is defined again.
      */
     virtual void clear() = 0;
+
+    /**
+     * @brief Same as clear but here all data is freed.
+     */
+    virtual void purge() = 0;
 
     /** @brief Reallocates this matrix to a replicated zero-matrix of the given shape.
      *
@@ -201,7 +209,12 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution ) = 0;
 
-    /** Set matrix to a (replicated) identity matrix with same row and column distribution. */
+    /** Set matrix to a (replicated) identity matrix with same row and column distribution. 
+     *
+     *  \code
+     *    m.setIdentitiy( n ) ->  m.setIdentity( DistributionPtr( new NoDistribution( n ) ) );
+     *  \code
+     */
 
     void setIdentity( const IndexType n );
 
