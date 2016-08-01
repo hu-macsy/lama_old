@@ -33,7 +33,10 @@
 ###
 
 ### BOOST_INCLUDE_DIR      - Boost include directory
+### BOOST_unit_test_framework_FOUND      - if Boost component is found
+### Boost_unit_test_framework_LIBRARY    - Boost component library
 ### BOOST_VERSION          - concluded ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}
+### BOOST_TEST_ENABLED     - if Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST
 
 ### Boost_USE_STATIC_LIBS  ( default is OFF )
 ### 
@@ -44,7 +47,7 @@
 # set ( Boost_USE_STATIC_LIBS OFF )
 # set ( Boost_USE_MULTITHREADED OFF )
 
-if ( NOT DEFINED BOOST_INCLUDE_DIR )
+if ( NOT DEFINED BOOST_TEST_ENABLED AND BUILD_TEST )
 
     if    ( WIN32 )
         message ( STATUS "Setting special Boost options on Windows" )
@@ -54,6 +57,8 @@ if ( NOT DEFINED BOOST_INCLUDE_DIR )
 
     # Finds packages with custom search options 
 
+    set ( Boost_COMPONENTS unit_test_framework )
+
     # FindBoost Debug options comment
     if    ( SCAI_CMAKE_VERBOSE )
         set ( Boost_DEBUG TRUE )
@@ -62,21 +67,29 @@ if ( NOT DEFINED BOOST_INCLUDE_DIR )
 
     # Find Boost 
 
-    find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+    find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS ${Boost_COMPONENTS} )
 
     set ( BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}" )
 
     if    ( Boost_INCLUDE_DIR )
         set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
-    else  ( Boost_INCLUDE_DIR )
-	if    ( CXX_SUPPORTS_C11 )
-            message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
-        else  ( CXX_SUPPORTS_C11 )
-            message ( FATAL_ERROR "No C++11 compiler detected, thus boost is needed but not found")
-	endif ( CXX_SUPPORTS_C11 )
     endif ( Boost_INCLUDE_DIR )
+
+    if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+        set ( FOUND_BOOST_TEST TRUE )
+    endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND ) 
+
+    set ( BOOST_TEST_ENABLED FALSE )
+    if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+      set ( BOOST_TEST_ENABLED TRUE )
+    endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
     # LAMA irrelevant entries will be removed from cmake GUI completely
     set ( Boost_DIR "${Boost_DIR}" CACHE INTERNAL "" )
 
-endif ( NOT DEFINED BOOST_INCLUDE_DIR )
+endif ( NOT DEFINED BOOST_TEST_ENABLED AND BUILD_TEST)
+
+if    ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
+    message ( WARNING "Boost Test Framework is missing, so BUILD_TEST is disabled!" )
+    set ( BUILD_TEST FALSE )
+endif ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )

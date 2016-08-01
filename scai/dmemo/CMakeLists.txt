@@ -72,7 +72,7 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## Use Boost if BUILD_TEST is enabled
 if ( BUILD_TEST )
-    include( Package/Boost )
+    include( Package/BoostTest )
 endif ( BUILD_TEST )
 
 ### include all search packages
@@ -154,8 +154,7 @@ endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### set link directories ###
 if ( WIN32 )
-    set ( LAMAPP_LINK_DIRECTORIES ${LAMAPP_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS} )
-	link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
+	link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
 ### add library ###

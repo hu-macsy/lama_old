@@ -34,12 +34,12 @@
 
 heading ( "Compiler:" )
 
-if    ( CMAKE_CXX_COMPILER AND ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR ) )
+if    ( CMAKE_CXX_COMPILER AND ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR ) )
     set( REQUIRED_FOUND TRUE )
-else  ( CMAKE_CXX_COMPILER AND ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR ) )
+else  ( CMAKE_CXX_COMPILER AND ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR ) )
     set( REQUIRED_FOUND FALSE )
     message ( FATAL_ERROR "Compiler Configuration incomplete" )
-endif ( CMAKE_CXX_COMPILER AND ( CXX_SUPPORTS_C11 OR SCAI_BOOST_INCLUDE_DIR ) )
+endif ( CMAKE_CXX_COMPILER AND ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR ) )
 
 heading2 ( "Configuration" "REQUIRED_FOUND" )
     found_message ( "C++ Compiler" "CMAKE_CXX_COMPILER" "REQUIRED" "${CMAKE_CXX_COMPILER_ID} Version ${CXX_COMPILER_VERSION}" )
@@ -48,5 +48,5 @@ heading2 ( "Configuration" "REQUIRED_FOUND" )
 if    ( NOT CXX_SUPPORTS_C11 )
     emptyline()
     message ( STATUS "Either compiler supporting C++11 or Boost needed." )
-    found_message ( "Boost" "SCAI_BOOST_INCLUDE_DIR" "REQUIRED" "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
+    found_message ( "Boost" "BOOST_INCLUDE_DIR" "REQUIRED" "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${BOOST_INCLUDE_DIR}" )
 endif ( NOT CXX_SUPPORTS_C11 )

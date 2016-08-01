@@ -58,7 +58,7 @@ if    ( ${USE_COMPLEX} )
     set ( CXX_SOURCES ${CXX_SOURCES} ComplexTest TypeConversionTest )
 endif ( ${USE_COMPLEX} )
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( commonTest ${CXX_SOURCES} )
 

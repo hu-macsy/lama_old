@@ -40,7 +40,7 @@ scai_project (
         MICContextTest
 )
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( hmemoMICTest ${CXX_SOURCES} )
 

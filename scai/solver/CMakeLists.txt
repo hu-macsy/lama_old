@@ -72,7 +72,7 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## Use Boost if BUILD_TEST is enabled
 if ( BUILD_TEST )
-    include( Package/Boost )
+    include( Package/BoostTest )
 endif ( BUILD_TEST )
 
 ### include all search packages
@@ -153,6 +153,11 @@ if ( AMG_SUBDIRPRESENT )
     message ( STATUS "amg subdir provides following solver libraries: ${SOLVER_SUB_LIBRARIES}" )
     #set ( SOLVER_SUB_LIBRARIES ${SOLVER_SUB_LIBRARIES} PARENT_SCOPE )
 endif ( AMG_SUBDIRPRESENT )
+
+### set link directories ###
+if ( WIN32 )
+    link_directories ( ${Boost_LIBRARY_DIRS} )
+endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )

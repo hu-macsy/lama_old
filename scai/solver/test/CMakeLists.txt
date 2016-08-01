@@ -73,7 +73,7 @@ scai_project (
    
 ### set include directories ###
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 ### add definitions ###
 

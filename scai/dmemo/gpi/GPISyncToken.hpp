@@ -46,7 +46,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/dmemo/gpi/GPICommunicator.hpp>
 
-// boost
+// std
 #include <vector>
 
 namespace scai
