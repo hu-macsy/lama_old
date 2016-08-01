@@ -287,6 +287,10 @@ public:
 
     virtual void allocate( dmemo::DistributionPtr distribution );
 
+    /** Implememenation of pure routine Vector::allocate. */
+
+    virtual void allocate( const IndexType n );
+
     /** Override the default assignment operator.
      *
      *  Note: all other assignment operators are inherited from class Vector.

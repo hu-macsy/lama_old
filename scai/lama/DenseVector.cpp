@@ -721,6 +721,15 @@ void DenseVector<ValueType>::allocate( DistributionPtr distribution )
 }
 
 template<typename ValueType>
+void DenseVector<ValueType>::allocate( const IndexType n )
+{
+    setDistributionPtr( DistributionPtr( new NoDistribution( n ) ) );
+    // resize the local values at its context
+    WriteOnlyAccess<ValueType> dummyWAccess( mLocalValues, mContext, n );
+    // local values are likely to be uninitialized
+}
+
+template<typename ValueType>
 void DenseVector<ValueType>::assign( const Vector& other )
 {
     setDistributionPtr( other.getDistributionPtr() );

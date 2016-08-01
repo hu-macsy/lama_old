@@ -625,8 +625,16 @@ public:
      *  @brief Allocates or reallocates this vector for a given distribution.
      *
      *  All elements of the vector are undefined after this operation.
+     *  This operation will allocate memory at the context of this vector.
      */
     virtual void allocate( dmemo::DistributionPtr distributionPtr ) = 0;
+
+    /**
+     *  @brief Allocates or reallocates this vector as replicted with the given size.
+     *
+     *  All elements of the vector are undefined after this operation.
+     */
+    virtual void allocate( const IndexType n ) = 0;
 
     /**
      * @brief Redistributes this vector to the new passed distribution.

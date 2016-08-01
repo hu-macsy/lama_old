@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains generic tests for Vector (mainly constructors)
+ * @brief Contains generic tests for Vector objects.
  * @author Thomas Brandes
  * @date 27.07.2016
  */
@@ -57,37 +57,95 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.VectorTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( assign_V_V_Test )
+BOOST_AUTO_TEST_CASE( WriteTest )
 {
     const IndexType n = 13;
 
     TestVectors vectors;
 
-    dmemo::TestDistributions dists(n);
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        VectorPtr v = vectors[i];
+        v->allocate( n );
+
+        std::ostringstream out1;
+        out1 << *v;   // same as v1->writeAt( out1 );
+        BOOST_CHECK( out1.str().length() > 0 );
+
+        std::ostringstream out2;
+        v->Vector::writeAt( out2 );
+        BOOST_CHECK( out1.str().length() > 0 );
+
+        BOOST_CHECK( out2.str() != out1.str() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( AllocateTest )
+{
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const IndexType n = 13;
+
+    TestVectors vectors;
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+    dmemo::DistributionPtr dist1( new dmemo::BlockDistribution( n + 1, comm ) );
+    dmemo::DistributionPtr repDist1( new dmemo::NoDistribution( n + 1 ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v1 = vectors[i];
+        VectorPtr v = vectors[i];
 
-        for ( size_t j = 0; j < dists.size(); ++j )
+        size_t size0 = v->getMemoryUsage();
+
+        v->allocate( n );
+
+        size_t size1 = v->getMemoryUsage();
+
+        BOOST_CHECK( size1 >= size0 + n * common::typeSize( v->getValueType() ) );
+
+        *v = 1;
+        v->redistribute( dist );
+        BOOST_CHECK_EQUAL( ( *v )( n - 1 ), Scalar( 1 ) );
+
+        BOOST_CHECK_THROW( 
         {
-            dmemo::DistributionPtr dist = dists[i];
+           v->redistribute( dist1 );
+        }, common::Exception );
 
-            v1->allocate( dist );
-            *v1 = 3;
+        v->allocate( dist1 );
+        *v = 2;
+        v->redistribute( repDist1 );
 
-            SCAI_LOG_INFO( logger, "run vec exp test for v = " << *v1 )
+        BOOST_CHECK_EQUAL( ( *v )( n - 1 ), Scalar( 2 ) );
+    }
+}
 
-            VectorPtr v2( v1->copy() );
-            *v2 = 5;
+/* --------------------------------------------------------------------- */
 
-            VectorPtr v3( v1->newVector() );
-            *v3 = *v1 + *v2;
-            VectorPtr v4( v1->copy() );
-            *v4 += *v2;
-            *v3 -= *v4;
-            BOOST_CHECK( v3->maxNorm() < Scalar( 1e-4 ) );
-        }
+BOOST_AUTO_TEST_CASE( InvertTest )
+{   
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+    
+    const IndexType n = 13;
+    
+    TestVectors vectors;
+    
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) ); 
+    
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {   
+        VectorPtr v = vectors[i];
+        
+        v->allocate( dist );
+
+        *v = 0.5;
+ 
+        v->invert();
+ 
+        BOOST_CHECK_EQUAL( ( *v )( n / 2 ), Scalar( 2 ) );
     }
 }
 
