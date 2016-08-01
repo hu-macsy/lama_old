@@ -69,7 +69,11 @@ if ( NOT DEFINED BOOST_INCLUDE_DIR )
     if    ( Boost_INCLUDE_DIR )
         set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
     else  ( Boost_INCLUDE_DIR )
-        message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
+	if    ( CXX_SUPPORTS_C11 )
+            message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
+        else  ( CXX_SUPPORTS_C11 )
+            message ( FATAL_ERROR "No C++11 compiler detected, thus boost is needed but not found")
+	endif ( CXX_SUPPORTS_C11 )
     endif ( Boost_INCLUDE_DIR )
 
     # LAMA irrelevant entries will be removed from cmake GUI completely
