@@ -46,7 +46,8 @@ scai_project (
         Redistribution
         Creator
 
-        CSRSparseMatrixTest
+        MatrixConstructorTest
+        SparseMatrixTest
 
         lamaMatrixTest
     )

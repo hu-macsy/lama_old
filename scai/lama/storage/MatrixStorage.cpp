@@ -180,6 +180,20 @@ _MatrixStorage& _MatrixStorage::operator=( const _MatrixStorage& other )
 
 /* --------------------------------------------------------------------------- */
 
+void _MatrixStorage::setDiagonalProperty()
+{
+    // default implementation just throw an exception if diagonal property is not given
+
+    mDiagonalProperty = checkDiagonalProperty();
+
+    if ( !mDiagonalProperty )
+    {
+        COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set it" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 void _MatrixStorage::resetDiagonalProperty()
 {
     mDiagonalProperty = checkDiagonalProperty();
@@ -443,6 +457,39 @@ void MatrixStorage<ValueType>::buildCSCData(
     buildCSRData( rowIA, rowJA, rowValues );
     ContextPtr loc = Context::getHostPtr();
     convertCSR2CSC( colIA, colJA, colValues, mNumColumns, rowIA, rowJA, rowValues, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
+{
+    utilskernel::LArray<IndexType> csrIA;
+    utilskernel::LArray<IndexType> csrJA;
+    utilskernel::LArray<ValueType> csrValues;
+
+    buildCSRData( csrIA, csrJA, csrValues );
+
+    // ToDo: csrIA[i] == csrIA[i+1], no entry in row at all
+    // ToDo: csrIA[numRows-1] == numValues possible, out of range addressing
+
+    // gather: colIndexes[i] = csrJA[ csrIA[i] ]
+
+    if ( mNumRows > 0 )
+    {
+        SCAI_ASSERT_LT_ERROR( csrIA[mNumRows - 1], csrJA.size(), "last row without any entry" )
+    }
+
+    static LAMAKernel<UtilKernelTrait::setGather<IndexType, IndexType> > setGather;
+
+    ContextPtr loc = getContextPtr();
+    setGather.getSupportedContext( loc );
+
+    WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, mNumRows );
+    SCAI_CONTEXT_ACCESS( loc )
+    ReadAccess<IndexType> ja( csrJA, loc );
+    ReadAccess<IndexType> ia( csrIA, loc );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -285,6 +285,13 @@ public:
      */
     void sortRows( bool diagonalProperty );
 
+    /** This method overrides _MatrixStorage::setDiagonalProperty 
+     *
+     *  This routine only moves the diagonal elements at the beginning of each rows.
+     *  It throws an exception if there is no entry for the diagonal element.
+     */
+    virtual void setDiagonalProperty();
+
     /** Template method for getting row. */
 
     template<typename OtherType>
@@ -428,6 +435,10 @@ public:
         hmemo::HArray<IndexType>* ja,
         hmemo::HArray<OtherValueType>* values,
         const hmemo::ContextPtr loc ) const;
+
+    /** Own implementation to get global owners of the row */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /**
      *   This routine builds compressed sparse column format data.

@@ -207,6 +207,43 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( getFirstColTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+    ContextPtr context = Context::getContextPtr();
+    const IndexType numRows = 4;
+    const IndexType numColumns = 8;
+    const IndexType ia[] = { 0,    2,       5, 6,    8 };
+    const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
+    const IndexType firstCols[] = { 1, 3, 5, 7 };
+    const IndexType numValues = ia[numRows];
+    LArray<IndexType> csrIA( numRows + 1, ia, context );
+    LArray<IndexType> csrJA( numValues, ja, context );
+    LArray<ValueType> csrValues( numValues, ValueType( 1 ), context );  
+    CSRStorage<ValueType> csrStorage;
+    csrStorage.setContextPtr( context );
+    csrStorage.allocate( numRows, numColumns );
+    csrStorage.swap( csrIA, csrJA, csrValues );
+
+    // we check both, base class and derived class method
+
+    LArray<IndexType> firstColIndexes1;
+    LArray<IndexType> firstColIndexes2;
+    csrStorage.getFirstColumnIndexes( firstColIndexes1 );
+    csrStorage.MatrixStorage<ValueType>::getFirstColumnIndexes( firstColIndexes2 );
+
+    BOOST_REQUIRE_EQUAL( numRows, firstColIndexes1.size() );
+    BOOST_REQUIRE_EQUAL( numRows, firstColIndexes2.size() );
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        BOOST_CHECK_EQUAL( firstColIndexes1[i], firstCols[i] );
+        BOOST_CHECK_EQUAL( firstColIndexes2[i], firstCols[i] );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( CSRCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here

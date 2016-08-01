@@ -135,6 +135,9 @@ public:
     template<typename ValueType1, typename ValueType2>
     static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
 
+    template<typename ValueType>
+    static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
+
     /** MIC implementation for UtilKernelTrait::invert */
 
     template<typename ValueType>

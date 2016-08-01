@@ -762,6 +762,13 @@ public:
      */
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const = 0;
 
+    /** Read in the environment variable SCAI_NP for user processor array.
+     *
+     * @param[out] userProcArray specifies the user processor array.
+     *
+     */
+    static    void getUserProcArray( PartitionId userProcArray[3] );
+
 protected:
 
     // Default constructor can only be called by base classes.
@@ -774,13 +781,6 @@ protected:
     int mNodeSize; // number of processors on same node
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    /** Read in the environment variable LAMA_NP for user processor array.
-     *
-     * @param[out] userProcArray specifies the user processor array.
-     *
-     */
-    static    void getUserProcArray( PartitionId userProcArray[3] );
 
     /** Shift implementation for direction == 0, just copies values. */
 

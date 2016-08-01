@@ -234,6 +234,7 @@ void MPICommunicator::initialize( int& argc, char**& argv )
 #endif
     mCommWorld = MPI_COMM_WORLD;
     MPI_Comm_dup( mCommWorld, &mComm );
+    MPI_Comm_set_errhandler( mComm, MPI_ERRORS_RETURN );
     MPI_Comm_dup( mCommWorld, &mCommTask );
     SCAI_LOG_INFO( logger, "MPI_Init" )
     SCAI_MPICALL( logger, MPI_Comm_size( mComm, &mSize ), "MPI_Comm_size" )
@@ -298,14 +299,11 @@ void MPICommunicator::setNodeData()
     memset( nodeName, '\0', MPI_MAX_PROCESSOR_NAME );
     SCAI_MPICALL( logger, MPI_Get_processor_name( nodeName, &nodeNameLength ), "MPI_Get_processor_name" )
     SCAI_LOG_INFO( logger, "Processor " << mRank << " runs on node " << nodeName )
-    char* allNodeNames = ( char* ) malloc( MPI_MAX_PROCESSOR_NAME * mSize * sizeof( char ) );
 
-    if ( allNodeNames == NULL )
-    {
-        COMMON_THROWEXCEPTION( "Can't alloc enough memory for all node names." )
-    }
+    common::scoped_array<char> allNodeNames( new char[ MPI_MAX_PROCESSOR_NAME * mSize * sizeof( char ) ] );
 
-    memset( allNodeNames, '\0', MPI_MAX_PROCESSOR_NAME * mSize );
+    memset( allNodeNames.get(), '\0', MPI_MAX_PROCESSOR_NAME * mSize );
+
     SCAI_MPICALL( logger,
                   MPI_Allgather( &nodeName[0], MPI_MAX_PROCESSOR_NAME, MPI_CHAR, &allNodeNames[0],
                                  MPI_MAX_PROCESSOR_NAME, MPI_CHAR, mComm ),
@@ -330,7 +328,6 @@ void MPICommunicator::setNodeData()
         ++mNodeSize;
     }
 
-    free( allNodeNames );
     SCAI_ASSERT_ERROR( mNodeSize > 0, "Serious problem encountered to get node size" )
     SCAI_ASSERT_ERROR( mNodeRank < mNodeSize, "Serious problem encountered to get node size" )
     SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )

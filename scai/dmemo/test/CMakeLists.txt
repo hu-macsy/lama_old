@@ -46,8 +46,12 @@ scai_project (
     SOURCES
 
         CommunicatorTest
+        CommunicationPlanTest
 
+        DistributedTest
         DistributionTest
+
+        HaloTest
 
         NoDistributionTest
         BlockDistributionTest
@@ -57,6 +61,10 @@ scai_project (
         ${MetisDistributionTest}
 
         RedistributorTest
+
+    HEADERS
+
+        TestDistributions
     )
 
 ### checks ####

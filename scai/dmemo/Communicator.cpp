@@ -86,17 +86,7 @@ SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
 CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorKind& type )
 {
-    SCAI_LOG_TRACE( logger, "Get communicator of type " << type )
-
-    if ( canCreate( type ) )
-    {
-        return create( type );
-    }
-    else
-    {
-        SCAI_LOG_WARN( logger, "could not get communicator " << type << ", take default one" )
-        return getDefaultCommunicatorPtr();
-    }
+    return create( type );
 }
 
 CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
@@ -176,8 +166,10 @@ bool Communicator::operator!=( const Communicator& other ) const
 void Communicator::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "Communicator";
+    stream << "Communicator( type = " << mCommunicatorType << " )";
 }
+
+/* -------------------------------------------------------------------------- */
 
 void Communicator::factorize2( const double sizeX, const double sizeY, PartitionId procgrid[2] ) const
 {
@@ -229,6 +221,8 @@ void Communicator::factorize2( const double sizeX, const double sizeY, Partition
     SCAI_LOG_INFO( logger,
                    "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] )
 }
+
+/* -------------------------------------------------------------------------- */
 
 void Communicator::factorize3(
     const double sizeX,
@@ -304,6 +298,8 @@ void Communicator::factorize3(
                    "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] << " x " << procgrid[2] )
 }
 
+/* -------------------------------------------------------------------------- */
+
 void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const
 {
     SCAI_ASSERT_EQ_ERROR( getSize(), procgrid[0] * procgrid[1], "size mismatch for 2D grid" )
@@ -315,6 +311,8 @@ void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[
     SCAI_LOG_INFO( logger,
                    *this << ": is (" << pos[0] << "," << pos[1] << ") of (" << procgrid[0] << "," << procgrid[1] << ")" )
 }
+
+/* -------------------------------------------------------------------------- */
 
 void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const
 {
@@ -331,26 +329,31 @@ void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[
                    *this << ": is (" << pos[0] << "," << pos[1] << "," << pos[2] << ") of (" << procgrid[0] << "," << procgrid[1] << "," << procgrid[2] << ")" )
 }
 
+/* -------------------------------------------------------------------------- */
+
 void Communicator::getUserProcArray( PartitionId userProcArray[3] )
 {
-    const char* np4lama = getenv( "LAMA_NP" );
+    std::string npString;
+
+    bool hasNP = common::Settings::getEnvironment( npString, "SCAI_NP" );
+
     userProcArray[0] = 0;
     userProcArray[1] = 0;
     userProcArray[2] = 0;
-    const std::string delimiters = " x_";
 
-    if ( np4lama )
+    if ( hasNP )
     {
-        std::string str( np4lama );
+        const std::string delimiters = " x_";
+
         int offset = 0;
-        std::string::size_type lastPos = str.find_first_not_of( delimiters, 0 );
+        std::string::size_type lastPos = npString.find_first_not_of( delimiters, 0 );
         // Find first "non-delimiter".
-        std::string::size_type pos = str.find_first_of( delimiters, lastPos );
+        std::string::size_type pos = npString.find_first_of( delimiters, lastPos );
 
         while ( std::string::npos != pos || std::string::npos != lastPos )
         {
             // Found a token
-            std::istringstream val( str.substr( lastPos, pos - lastPos ) );
+            std::istringstream val( npString.substr( lastPos, pos - lastPos ) );
 
             if ( offset > 2 )
             {
@@ -359,17 +362,17 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
 
             val >> userProcArray[offset++];
             // Skip delimiters.  Note the "not_of"
-            lastPos = str.find_first_not_of( delimiters, pos );
+            lastPos = npString.find_first_not_of( delimiters, pos );
             // Find next "non-delimiter"
-            pos = str.find_first_of( delimiters, lastPos );
+            pos = npString.find_first_of( delimiters, lastPos );
         }
 
         SCAI_LOG_INFO( logger,
-                       "LAMA_NP=" << np4lama << " -> userProcArray " << userProcArray[0] << " x " << userProcArray[1] << " x " << userProcArray[2] )
+                        "SCAI_NP=" << npString << " -> userProcArray " << userProcArray[0] << " x " << userProcArray[1] << " x " << userProcArray[2] )
     }
     else
     {
-        SCAI_LOG_INFO( logger, "environment variable LAMA_NP no set" )
+        SCAI_LOG_INFO( logger, "environment variable SCAI_NP no set" )
     }
 }
 

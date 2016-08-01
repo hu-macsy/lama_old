@@ -186,6 +186,8 @@ void CommunicationPlan::purge()
 
 void CommunicationPlan::allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag )
 {
+    mCompressed = false;
+
     SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from quantities" )
     mEntries.resize( noPartitions );
     mQuantity = 0; // counts total quantity
@@ -217,6 +219,8 @@ void CommunicationPlan::allocate(
     const IndexType nOwners,
     bool compressFlag )
 {
+    mCompressed = false;
+
     mEntries.resize( noPartitions );
     SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" )
 

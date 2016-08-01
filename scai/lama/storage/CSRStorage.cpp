@@ -392,6 +392,17 @@ void CSRStorage<ValueType>::sortRows( bool diagonalProperty )
     mDiagonalProperty = checkDiagonalProperty();
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::setDiagonalProperty()
+{
+    sortRows( true );
+    SCAI_ASSERT( mDiagonalProperty, "Missing diagonal element, cannot set diagonal property" )
+}
+
+/* --------------------------------------------------------------------------- */
+
 //this version avoids copying the ia, ja, and value arrays, but instead swaps them
 //also it does not check their validity
 //this is much faster of course, but destroys the input ia, ja and value arrays
@@ -1056,6 +1067,26 @@ void CSRStorage<ValueType>::buildCSR(
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
         setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, utilskernel::reduction::COPY );
     }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
+{
+    // gather: colIndexes[i] = csrJA[ csrIA[i] ]
+    // Be careful: only legal if csrIA[i] < csrIA[i+1], at least one entry per row
+
+    static LAMAKernel<UtilKernelTrait::setGather<IndexType, IndexType> > setGather;
+
+    ContextPtr loc = getContextPtr();
+    setGather.getSupportedContext( loc );
+
+    WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, mNumRows );
+    SCAI_CONTEXT_ACCESS( loc )
+    ReadAccess<IndexType> ja( mJa, loc );
+    ReadAccess<IndexType> ia( mIa, loc );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */

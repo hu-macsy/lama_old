@@ -27,7 +27,7 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief ToDo: Missing description in ./scai_test.sh
+ # @brief Script that runs all tests of all SCAI Projects
  # @author Lauretta Schubert
  # @date 22.03.2016
 ###
@@ -38,7 +38,12 @@ export SCAI_LOG=ERROR
 export SCAI_TRACE=NONE
 export SCAI_UNSUPPORTED=IGNORE
 
-MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
+if [ -d dmemo/mpi ]
+then 
+    MPI_PROCS="2 4"
+else
+    MPI_PROCS=""
+fi
 
 declare -a CONTEXTS
 
@@ -48,16 +53,16 @@ CONTEXTS+=(Host)
 # Use CUDA
 if [ -d hmemo/cuda ]
 then
-	CONTEXTS+=(CUDA)
+    CONTEXTS+=(CUDA)
 fi
 
 # Use MIC
 if [ -d hmemo/mic ]
 then
-	CONTEXTS+=(MIC)
+    CONTEXTS+=(MIC)
 fi
 
-echo "## Used Contexts: ${CONTEXTS[*]}"
+echo "## Used Contexts: ${CONTEXTS[*]}, MPI_PROCS=${MPI_PROCS}"
 
 # Common tests
 echo "### commonTest"
@@ -79,95 +84,74 @@ echo "### commonTest"
 
 # KRegistry tests
 (
-    cd kregistry/test/
-    echo "### kregistryTest on ${CTX}"
+    echo "### kregistryTest"
     ./kregistry/test/kregistryTest
 )
 
 for CTX in ${CONTEXTS[*]}
 do
-	# Tasking tests
-	echo "### taskingTest on ${CTX}"
-	./tasking/test/taskingTest --SCAI_CONTEXT=${CTX}
+    # Tasking tests
+    echo "### taskingTest on ${CTX}"
+    ./tasking/test/taskingTest --SCAI_CONTEXT=${CTX}
 
-	# HMemo tests
-	echo "### hmemoTest on ${CTX}"
-	./hmemo/test/hmemoTest --SCAI_CONTEXT=${CTX}
+    # HMemo tests
+    echo "### hmemoTest on ${CTX}"
+    ./hmemo/test/hmemoTest --SCAI_CONTEXT=${CTX}
 
-	# BLASKernel tests
-	echo "### blaskernelTest on ${CTX}"
-	./blaskernel/test/blaskernelTest --SCAI_CONTEXT=${CTX}
+    # BLASKernel tests
+    echo "### blaskernelTest on ${CTX}"
+    ./blaskernel/test/blaskernelTest --SCAI_CONTEXT=${CTX}
 
-	# UtilsKernel tests
-	echo "### utilskernelTest on ${CTX}"
-	./utilskernel/test/utilskernelTest --SCAI_CONTEXT=${CTX}
+    # UtilsKernel tests
+    echo "### utilskernelTest on ${CTX}"
+    ./utilskernel/test/utilskernelTest --SCAI_CONTEXT=${CTX}
 
-	# SparseKernel tests
-	echo "### sparsekernelTest on ${CTX}"
-	./sparsekernel/test/sparsekernelTest --SCAI_CONTEXT=${CTX}
+    # SparseKernel tests
+    echo "### sparsekernelTest on ${CTX}"
+    ./sparsekernel/test/sparsekernelTest --SCAI_CONTEXT=${CTX}
 
-	# DMemo tests
-	export SCAI_COMMUNICATOR=NO
-	echo "### dmemoTest on ${CTX}"
-	./dmemo/test/dmemoTest --SCAI_CONTEXT=${CTX}
-	if [ "${MPI_FOUND}" != "" ]
-	then
-		export SCAI_COMMUNICATOR=MPI
-		mpirun -np 1 ./dmemo/test/dmemoTest --SCAI_CONTEXT=${CTX}
-		mpirun -np 2 ./dmemo/test/dmemoTest --SCAI_CONTEXT=${CTX}
-		mpirun -np 3 ./dmemo/test/dmemoTest --SCAI_CONTEXT=${CTX}
-		mpirun -np 4 ./dmemo/test/dmemoTest --SCAI_CONTEXT=${CTX}
-	fi
+    # DMemo tests
+    echo "### dmemoTest on ${CTX}"
+    ./dmemo/test/dmemoTest --SCAI_CONTEXT=${CTX} --SCAI_COMMUNICATOR=NO
+    for np in ${MPI_PROCS} ;
+    do
+        echo "### dmemoTest on ${CTX} with ${np} MPI processes"
+        mpirun -np ${np} ./dmemo/test/dmemoTest --SCAI_CONTEXT=${CTX} --SCAI_COMMUNICATOR=MPI
+    done
 
-	# LAMA tests
-	echo "### lama_test on ${CTX}"
-	( # lamaTest
-		./lama/test/lamaTest --SCAI_CONTEXT=${CTX}
-	)
-	( # Storage Test
-		./lama/test/storage/lamaStorageTest --SCAI_CONTEXT=${CTX}
-	)
-# # LAMA Distributed test removed?
-#	(
-#	    export SCAI_COMMUNICATOR=NO
-#	    ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDistTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
-#	    if [ "${MPI_FOUND}" != "" ]
-#	    then
-#	        export SCAI_COMMUNICATOR=MPI
-#	        mpirun -np 1 ./lama/test/distributed/lamaDistTest --SCAI_CONTEXT=${CTX}
-#	        mpirun -np 2 ./lama/test/distributed/lamaDistTest --SCAI_CONTEXT=${CTX}
-#	        mpirun -np 3 ./lama/test/distributed/lamaDistTest --SCAI_CONTEXT=${CTX}
-#	        mpirun -np 4 ./lama/test/distributed/lamaDistTest --SCAI_CONTEXT=${CTX}
-#	    fi
-#    )
- 	( # Matrix Test   
-	    export SCAI_COMMUNICATOR=NO
-	    ./lama/test/matrix/lamaMatrixTest --SCAI_CONTEXT=${CTX}
-	    if [ "${MPI_FOUND}" != "" ]
-	    then
-	        export SCAI_COMMUNICATOR=MPI
-	        mpirun -np 1 ./lama/test/matrix/lamaMatrixTest --SCAI_CONTEXT=${CTX}
-	        mpirun -np 2 ./lama/test/matrix/lamaMatrixTest --SCAI_CONTEXT=${CTX}
-	        mpirun -np 3 ./lama/test/matrix/lamaMatrixTest --SCAI_CONTEXT=${CTX}
-	        mpirun -np 4 ./lama/test/matrix/lamaMatrixTest --SCAI_CONTEXT=${CTX}
-	    fi
+    # LAMA tests
+    echo "### lamaTest on ${CTX}"
+    ( # lamaTest
+        ./lama/test/lamaTest --SCAI_CONTEXT=${CTX} --SCAI_COMMUNICATOR=NO
+        for np in ${MPI_PROCS} ;
+        do
+            echo "### lamaTest on ${CTX} with ${np} MPI processes"
+            mpirun -np ${np}  ./lama/test/lamaTest --SCAI_CONTEXT=${CTX} --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1
+        done
+    )
+    echo "### lamaStorageTest on ${CTX}"
+    ( # Storage Test
+        ./lama/test/storage/lamaStorageTest --SCAI_CONTEXT=${CTX}
+    )
+    echo "### lamaMatrixTest on ${CTX}"
+    ( # Matrix Test   
+        ./lama/test/matrix/lamaMatrixTest --SCAI_CONTEXT=${CTX} --SCAI_COMMUNICATOR=NO
+        for np in ${MPI_PROCS} ;
+        do
+            echo "### lamaMatrixTest on ${CTX} with ${np} MPI processes"
+            mpirun -np ${np} ./lama/test/matrix/lamaMatrixTest --SCAI_CONTEXT=${CTX} --SCAI_NUM_THREADS=1 --SCAI_COMMUNICATOR=MPI
+        done
     )
 
-	# Solver tests
+    # Solver tests
 
-	echo "### solverTest on ${CTX}"
-	export SCAI_COMMUNICATOR=NO
-	./solver/test/solverTest --SCAI_CONTEXT=${CTX}
-	export SCAI_COMMUNICATOR=NO
-	./solver/test/distributed/solverDistTest #--SCAI_CONTEXT=${CTX}
-	if [ "${MPI_FOUND}" != "" ]
-	then
-		export SCAI_COMMUNICATOR=MPI
-		mpirun -np 1 ./solver/test/distributed/solverDistTest #--SCAI_CONTEXT=${CTX}
-		mpirun -np 2 ./solver/test/distributed/solverDistTest #--SCAI_CONTEXT=${CTX}
-		mpirun -np 3 ./solver/test/distributed/solverDistTest #--SCAI_CONTEXT=${CTX}
-		mpirun -np 4 ./solver/test/distributed/solverDistTest #--SCAI_CONTEXT=${CTX}
-	fi
+    echo "### solverTest on ${CTX}"
+    ./solver/test/solverTest --SCAI_CONTEXT=${CTX} --SCAI_COMMUNICATOR=NO
+    for np in ${MPI_PROCS} ;
+    do
+       echo "### solverTest on ${CTX} with ${np} MPI processes"
+       mpirun -np ${np} ./solver/test/solverTest --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1
+    done
 done
 
 unset CONTEXTS

@@ -127,7 +127,7 @@ int main()
             ELLSparseMatrix<ValueType1> b( size, size );
             JDSSparseMatrix<ValueType1> c( size, size );
             CSRSparseMatrix<ValueType1> d( size, size );
-            MatrixCreator<ValueType>::fillRandom( a, rate );
+            MatrixCreator::fillRandom( a, rate );
             cout << "ELL <-- CSR" << endl;
             bench( b, a );
             cout << "CSR <-- ELL" << endl;

@@ -78,7 +78,7 @@ static void setupMatrix( CSRSparseMatrix<ValueType>& matrix, const IndexType N1,
 {
     ContextPtr context   = Context::getContextPtr();
 
-    MatrixCreator<ValueType>::buildPoisson2D( matrix, 9, N1, N2 );
+    MatrixCreator::buildPoisson2D( matrix, 9, N1, N2 );
 
     matrix.setContextPtr( context );
 }

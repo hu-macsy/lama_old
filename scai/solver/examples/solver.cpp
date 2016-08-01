@@ -65,7 +65,7 @@ int main()
     // Create a 2D Poisson Matrix with 9Points and dimension 100 in every direction
     //
     CSRSparseMatrix<ValueType> matrix;
-    MatrixCreator<ValueType>::buildPoisson2D( matrix, 9, 100, 100 );
+    MatrixCreator::buildPoisson2D( matrix, 9, 100, 100 );
     //
     // Set up CG solver
     //

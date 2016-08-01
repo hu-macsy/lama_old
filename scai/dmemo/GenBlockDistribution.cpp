@@ -315,6 +315,13 @@ void GenBlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIn
 
 /* ---------------------------------------------------------------------- */
 
+IndexType GenBlockDistribution::getBlockDistributionSize() const
+{
+    return getLocalSize();
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool GenBlockDistribution::isEqual( const Distribution& other ) const
 {
     bool isSame = false;

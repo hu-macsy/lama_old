@@ -1,5 +1,5 @@
 /**
- * @file CUDATestContext.hpp
+ * @file VersionTest.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,34 +27,23 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief CUDATestContext.hpp
- * @author Jiri Kraus
- * @date 05.04.2012
+ * @brief Contains test for Version check.
+ * @author Thomas Brandes
+ * @date 03.06.2016
  */
 
-#pragma once
+#include <boost/test/unit_test.hpp>
 
-#include <scai/hmemo/Context.hpp>
+#include <scai/lama.hpp>
+#include <string>
 
-namespace scai
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( VersionTest )
 {
-namespace lama_test
-{
+    std::string version = lama_get_version();
+    // version is something like x.y.z
+    int len = version.length();
+    BOOST_CHECK( len >= 5 );
+}
 
-class CUDATestContext
-{
-public:
-    static hmemo::ContextPtr getContext();
-private:
-    CUDATestContext();
-    CUDATestContext( const CUDATestContext& );
-    const CUDATestContext& operator=( const CUDATestContext& );
-    ~CUDATestContext();
-
-    static hmemo::ContextPtr cudaContext;
-
-};
-
-} /* end namespace lama_test */
-
-} /* end namespace scai */

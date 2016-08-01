@@ -34,6 +34,7 @@
 
 // hpp
 #include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
@@ -192,6 +193,8 @@ GeneralDistribution::GeneralDistribution(
     }
 }
 
+/* ---------------------------------------------------------------------- */
+
 GeneralDistribution::GeneralDistribution( const Distribution& other ) : 
 
     Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
@@ -210,11 +213,26 @@ GeneralDistribution::GeneralDistribution( const Distribution& other ) :
     }
 }
 
+/* ---------------------------------------------------------------------- */
+
+GeneralDistribution::GeneralDistribution( const GeneralDistribution& other ) :
+
+    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
+
+{
+    mLocal2Global = other.mLocal2Global;
+    mGlobal2Local = other.mGlobal2Local;
+}
+
+/* ---------------------------------------------------------------------- */
+
 GeneralDistribution::GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator ) : 
 
     Distribution( globalSize, communicator )
 {
 }
+
+/* ---------------------------------------------------------------------- */
 
 GeneralDistribution::~GeneralDistribution()
 {
@@ -247,6 +265,63 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 
     return elem->second;
 }
+
+/* ---------------------------------------------------------------------- */
+
+IndexType GeneralDistribution::getBlockDistributionSize() const
+{
+    // Note: we assume that the local indexes are descending and do not contain doubles
+ 
+    IndexType localSize = mLocal2Global.size();
+
+    bool isBlocked = true;
+
+    ReadAccess<IndexType> rIndexes( mLocal2Global );
+
+    for ( IndexType i = 0; i < localSize; ++i )
+    {
+        if ( rIndexes[i] - rIndexes[0] != i )
+        {
+            isBlocked = false;
+        }
+    }
+
+    CommunicatorPtr comm = getCommunicatorPtr();
+
+    isBlocked = comm->all( isBlocked );
+
+    if ( !isBlocked )
+    {
+        return nIndex;
+    }
+
+    // Each processor has a contiguous part, but verify that it is in the same order
+
+    GenBlockDistribution genBlock( mGlobalSize, localSize, comm );
+
+    IndexType lb;
+    IndexType ub;
+
+    genBlock.getLocalRange( lb, ub );
+
+    isBlocked = true;
+
+    if ( localSize > 0 )
+    {
+        isBlocked = ( rIndexes[0] == lb ) && ( rIndexes[localSize-1] == ub );
+    }
+
+    isBlocked = comm->all( isBlocked );
+
+    if ( !isBlocked )
+    {
+        return nIndex;
+    }
+
+    return localSize;
+}
+
+/* ---------------------------------------------------------------------- */
 
 bool GeneralDistribution::isEqual( const Distribution& other ) const
 {

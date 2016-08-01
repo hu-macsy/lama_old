@@ -71,15 +71,15 @@ mkdir ${dirname}
 ERROR_LEVEL=test_suite
 
 # Running dmemo tests (only Host)
-echo "Running dmemo tests on Host"
-./dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest.xml
+echo "Running dmemo tests with NoCommunicator"
+./dmemoTest --SCAI_COMMUNICATOR=NO --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest.xml
 
 if [ -d ../mpi ];
 then
     echo "Running dmemo tests distributed"
-	for i in 2 3 4;
+	for i in 1 2 3 4;
 	do
-    	echo "Running distributed tests with $i processes"
-    	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml dmemoTest --output_format=XML --log_level=all --report_level=no
+    	echo "Running MPI tests with $i processes"
+    	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml dmemoTest --SCAI_COMMUNICATOR=MPI --output_format=XML --log_level=all --report_level=no
     done
 fi

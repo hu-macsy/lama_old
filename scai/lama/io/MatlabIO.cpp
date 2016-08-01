@@ -104,7 +104,7 @@ void MatlabIO::writeAt( std::ostream& stream ) const
  *
  *  Note: it might be possible that one line contains less than 'nEntries' entries
  */
-void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
+void MatlabIO::checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
 {
     nLines   = 0;
     nEntries = 0;
@@ -133,6 +133,8 @@ void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName
             // LOG_DEBUG: cout << "max tokens = " << nEntries << " at line " << nLines << endl;
         }
     }
+
+    SCAI_LOG_INFO( logger, "checkTextFile " << fileName << ": #lines = " << nLines << ", #entries = " << nEntries )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -198,7 +200,14 @@ void MatlabIO::writeStorageImpl(
     int precIndex = 0;
     int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
-    outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
+    if ( mScalarTypeData == common::scalar::PATTERN )
+    {
+        outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex );
+    }
+    else
+    {
+        outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -220,7 +229,22 @@ void MatlabIO::readStorageImpl(
 
     SCAI_LOG_INFO( logger, "File : " << fileName << ", #lines = " << nnz << ", #entries = " << k )
 
-    SCAI_ASSERT_GE( k, 3, "#entries/row in file " << fileName << " must be at least 3" )
+    if ( nnz == 0 )
+    {
+        storage.clear();
+        return;
+    }
+
+    bool readPattern = mScalarTypeData == common::scalar::PATTERN;
+
+    int nEntries = 2;   
+
+    if ( !readPattern )
+    {
+        nEntries = 3;
+    }
+
+    SCAI_ASSERT_GE( k, nEntries, "#entries/row in file " << fileName << " must be at least " << nEntries )
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
@@ -230,7 +254,15 @@ void MatlabIO::readStorageImpl(
 
     IOStream inFile( fileName, std::ios::in );
 
-    inFile.readFormatted( dIA, dJA, val, nnz );
+    if ( readPattern )
+    {
+        inFile.readFormatted( dIA, dJA, nnz );
+        val.init( ValueType( 1 ), nnz );
+    }
+    else
+    {
+        inFile.readFormatted( dIA, dJA, val, nnz );
+    }
 
     LArray<IndexType> ia( dIA );
     LArray<IndexType> ja( dJA );

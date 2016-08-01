@@ -80,23 +80,6 @@ public:
         const hmemo::HArray<IndexType>& myGlobalIndexes,
         const CommunicatorPtr communicator );
 
-    /** This constructor creates a general distribution by a mapping of rows to partition ids.
-     *
-     *  @param[in] row2Partition has globalSize entries, row2Partition[i] specifies owner of i
-     *  @param[in] globalSize is the number of distributed elements
-     *  @param[in] communicator that specifies the processor array for distribution
-     *
-     *  Note:  0 <= row2Partion[i] < communicator->size() for 0 <= i < globalSize
-     *  Note:  Only the master process has to provide the mapping row2Partition.
-     */
-
-    /*
-    GeneralDistribution(
-        const std::vector<IndexType>& row2Partition,
-        const IndexType globalSize,
-        const CommunicatorPtr communicator );
-    */
-
     /** This constructor creates a general distribution by an array containing the owner for each element
      *
      *  @param[in] owners, with 0 <= owners[i] < communicator->size()
@@ -111,7 +94,9 @@ public:
 
     explicit GeneralDistribution( const Distribution& other );
 
-//    GeneralDistribution(const GeneralDistribution& other);
+    /** Reimplment the default copy constructor */
+
+    GeneralDistribution( const GeneralDistribution& other );
 
     virtual ~GeneralDistribution();
 
@@ -124,6 +109,13 @@ public:
     virtual IndexType local2global( const IndexType localIndex ) const;
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
+
+    /** Implementation of pure function Distribution::getBlockDistributionSize.
+     *
+     *  Each processor must have a contiguous part of indexes and their order
+     *  must match the rank order of processors.
+     */
+    virtual IndexType getBlockDistributionSize() const;
 
     virtual bool isEqual( const Distribution& other ) const;
 

@@ -41,7 +41,10 @@
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
+
 #include <scai/common/mepr/TypeListUtils.hpp>
+#include <scai/common/Settings.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -51,6 +54,14 @@ using namespace scai::lama;
 using namespace scai::dmemo;
 using namespace std;
 
+#define HOST_PRINT( rank, msg )             \
+    {                                           \
+        if ( rank == 0 )                        \
+        {                                       \
+            std::cout << msg << std::endl;      \
+        }                                       \
+    }                                           \
+     
 void replaceStencil( std::string& str, const std::string& stencil )
 {
     size_t i = str.find( "%s" );
@@ -74,158 +85,223 @@ void printUsage( const char* prog_name )
     cout << "         stencilType = 7, 19, 27 (for dim = 3) " << endl;
 }
 
-/** Define the value type used in this example, take default real type. */
-
-typedef RealType ValueType;
-
-int main( int argc, char* argv[] )
+struct CommandLineArguments
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    int myRank = comm->getRank();
     std::string matrixFileName;
-    IndexType dimension = 1;
-    IndexType stencilType = 3;
-    IndexType dimX = 1;
-    IndexType dimY = 1;
-    IndexType dimZ = 1;
 
-    if ( argc >= 5 )
+    IndexType dimension;
+    IndexType stencilType;
+    IndexType dimX;
+    IndexType dimY;
+    IndexType dimZ;
+ 
+    CommandLineArguments()
     {
+        dimension = 1;
+        stencilType = 3;
+        dimX = 1;
+        dimY = 1;
+        dimZ = 1;
+    }
+
+    bool parseArguments( PartitionId myRank, int argc, const char* argv[] )
+    {
+        if ( argc < 5 )
+        {
+            HOST_PRINT( myRank, "Insufficient arguments." )
+
+            return false;
+        }
+
         matrixFileName = argv[1];
         {
-	    std::stringstream ss;
+            std::stringstream ss;
             ss << argv[2];
             ss >> dimension;
-	}
+        }
 
-	{
-	    std::stringstream ss;
+        {
+            std::stringstream ss;
             ss << argv[3];
             ss >> stencilType;
-	}
+        }
 
-	{
-	    std::stringstream ss;
+        {
+            std::stringstream ss;
             ss << argv[4];
             ss >> dimX;
-	}
+        }
 
         if ( argc >= 6 )
         {
-	    std::stringstream ss;
+            std::stringstream ss;
             ss << argv[5];
-	    ss >> dimY;
+            ss >> dimY;
         }
 
         if ( argc >= 7 )
         {
-	    std::stringstream ss;
-	    ss << argv[6];
-	    ss >> dimZ;
-        }
-    }
-    else
-    {
-        if ( myRank == 0 )
-        {
-            printUsage( argv[0] );
+            std::stringstream ss;
+            ss << argv[6];
+            ss >> dimZ;
         }
 
-        return -1;
-    }
-
-    cout << "Generate poisson file " << matrixFileName <<
-         ", dim = " << dimension << ", stencilType = " << stencilType << endl;
-
-    if ( !MatrixCreator<ValueType>::supportedStencilType( dimension, stencilType ) )
-    {
-        if ( myRank == 0 )
+        if ( argc != ( dimension + 4 ) )
         {
-            cout << "Unsupported stencilType " << stencilType << " for dim = " << dimension << endl;
+            HOST_PRINT( myRank, "Missing values for dim = " << dimension
+                        << ", argc = " << argc << ", expected " << ( dimension + 3 ) );
+
+            return false;
         }
 
-        return -1;
+        return true;
     }
 
-    if ( argc != ( dimension + 4 ) )
+    std::string stencilName()
     {
-        if ( myRank == 0 )
+        // Generate name for the stencil
+
+        ostringstream ostream;
+
+        ostream << dimension << "D" << stencilType << "P_" << dimX;
+
+        if ( dimension > 1 )
         {
-            cout << "Missing values for dim = " << dimension
-                 << ", argc = " << argc << ", expected " << ( dimension + 3 ) << endl;
+            ostream << "_" << dimY;
         }
 
-        return -1;
-    }
-
-    // Generate name for the stencil
-    ostringstream stencilName;
-    stencilName << dimension << "D" << stencilType << "P_" << dimX;
-
-    if ( dimension > 1 )
-    {
-        stencilName << "_" << dimY;
-    }
-
-    if ( dimension > 2 )
-    {
-        stencilName << "_" << dimZ;
-    }
-
-    cout << "Stencil is : " << stencilName.str() << endl;
-    // replace %s in file name with stencil description
-    replaceStencil( matrixFileName, stencilName.str() );
-    CSRSparseMatrix<ValueType> m;
-    MatrixCreator<ValueType>::buildPoisson( m, dimension, stencilType, dimX, dimY, dimZ );
-    DenseVector<ValueType> lhs( m.getRowDistributionPtr(), 1.0 );
-    DenseVector<ValueType> rhs( m * lhs );
-    cout << "m = " << m << endl;
-    cout << "m has diagonal property = " << m.hasDiagonalProperty() << endl;
-    cout << "lhs = " << lhs << endl;
-    cout << "rhs = " << rhs << endl;
-    cout << endl;
-    cout << "Solution vector x = ( 1.0, ..., 1.0 ) assumed" << endl;
-
-    std::string suffix = FileIO::getSuffix( matrixFileName );
-
-    std::string vectorFileName = matrixFileName;
-
- 
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // known suffix so we can use it directly
-
-        if ( suffix == ".frm" )
+        if ( dimension > 2 )
         {
-            // SAMG format uses two different suffixes for matrix and vector
-            // take <filename>.frv instead of <filename>.frm
+            ostream << "_" << dimZ;
+        }
 
-            vectorFileName.replace( vectorFileName.length() - 4, 4, ".frv" );
+        return ostream.str();
+    }
+};
+
+/** Define the value type used in this example, take default real type. */
+
+typedef RealType ValueType;
+
+int main( int argc, const char* argv[] )
+{
+    common::Settings::parseArgs( argc, argv );
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    int myRank = comm->getRank();
+
+    try
+    {
+        CommandLineArguments cmdArgs;
+
+        bool okay = cmdArgs.parseArguments( myRank, argc, argv );
+
+        if ( !okay )
+        {
+            if ( myRank == 0 )
+            {
+                printUsage( argv[0] );
+            }
+
+            return -1;
+        }
+
+        if ( !MatrixCreator::supportedStencilType( cmdArgs.dimension, cmdArgs.stencilType ) )
+        {
+            HOST_PRINT( myRank, "Unsupported stencilType " << cmdArgs.stencilType << " for dim = " << cmdArgs.dimension )
+            return -1;
+        }
+
+        std::string stencilName = cmdArgs.stencilName();
+
+        HOST_PRINT( myRank, "Stencil is : " << stencilName )
+
+        std::string matrixFileName = cmdArgs.matrixFileName;
+
+        // replace %s in file name with stencil description
+        replaceStencil( matrixFileName, stencilName );
+        CSRSparseMatrix<ValueType> m;
+        MatrixCreator::buildPoisson( m, cmdArgs.dimension, cmdArgs.stencilType, cmdArgs.dimX, cmdArgs.dimY, cmdArgs.dimZ );
+        DenseVector<ValueType> lhs( m.getRowDistributionPtr(), 1.0 );
+        DenseVector<ValueType> rhs( m * lhs );
+
+        HOST_PRINT( myRank, "Poisson matrix m = " << m )
+
+        bool diagonalProperty = m.hasDiagonalProperty();
+
+        HOST_PRINT( myRank, "m has diagonal property = " << diagonalProperty )
+        HOST_PRINT( myRank, "lhs = " << lhs << ", is all 1.0" )
+        HOST_PRINT( myRank, "rhs = " << rhs << ", is m * lhs" )
+
+        std::string suffix = FileIO::getSuffix( matrixFileName );
+
+        std::string vectorFileName = matrixFileName;
+
+        if ( FileIO::canCreate( suffix ) )
+        {
+            // known suffix so we can use it directly
+
+            if ( suffix == ".frm" )
+            {
+                // SAMG format uses two different suffixes for matrix and vector
+                // take <filename>.frv instead of <filename>.frm
+
+                vectorFileName.replace( vectorFileName.length() - 4, 4, ".frv" );
+            }
+            else
+            {
+                // take <filename>_v.<suffix> for <filename>.<suffix>
+
+                vectorFileName.replace( vectorFileName.length() - suffix.length(), 1, "_v." );
+            }
         }
         else
         {
-            // take <filename>_v.<suffix> for <filename>.<suffix>
+            if ( suffix.length() > 0 )
+            {
+                HOST_PRINT( myRank, "ATTENTION: " << suffix << " is unknown suffix, take SAMG format" )
+            }
 
-            vectorFileName.replace( vectorFileName.length() - suffix.length(), 1, "_v." );
+            matrixFileName += ".frm";
+            vectorFileName += ".frv";
+
         }
-    }
-    else 
-    {
-        if ( suffix.length() > 0 )
+
+        HOST_PRINT( myRank, "Write matrix to file " << matrixFileName << " and rhs vector to file " << vectorFileName )
+
+        if ( PartitionIO::isPartitionFileName( matrixFileName ) )
         {
-            cout << "ATTENTION: " << suffix << " is unknown suffix, take SAMG format" << endl;
+            // check if is necessary to write the mapping
+
+            IndexType nb = m.getRowDistribution().getBlockDistributionSize();
+
+            if ( nb == nIndex )
+            {
+                HOST_PRINT( myRank, "WARNING: matrix has no block distribution" )
+            }
+
+            std::string distFileName;
+
+            if ( common::Settings::getEnvironment( distFileName, "SCAI_DISTRIBUTION" ) )
+            {
+                PartitionIO::write( m.getRowDistribution(), distFileName );
+
+                HOST_PRINT( myRank, "written distribution to " << distFileName )
+            }
         }
 
-        matrixFileName += ".frm";
-        vectorFileName += ".frv";
+        m.writeToFile( matrixFileName );
+        rhs.writeToFile( vectorFileName );
+
+        HOST_PRINT( myRank, "Written matrix to file " << matrixFileName )
+        HOST_PRINT( myRank, "Written rhs vector to file " << vectorFileName )
 
     }
+    catch ( common::Exception& e )
+    {
+        HOST_PRINT( myRank, "Caught exception: " << e.what() << "\n\nTERMINATE due to error" )
+        return -1;
+    }
 
-    cout << "Write matrix to file " << matrixFileName << " and rhs vector to file " << vectorFileName << endl;
-
-    m.writeToFile( matrixFileName );
-    rhs.writeToFile( vectorFileName );
-    cout << "Written matrix to file " << matrixFileName << endl;
-    cout << "Written rhs vector to file " << vectorFileName << endl;
     return 0;
 }

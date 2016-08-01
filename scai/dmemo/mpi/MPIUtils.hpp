@@ -57,7 +57,6 @@
             errorStr << " of file " << __FILE__ << ": ";                            \
             errorStr << msg<< "\n";                                                 \
             common::Exception::addCallStack( errorStr );                            \
-            std::cerr << errorStr.str();                                            \
             throw MPIException( errorStr.str(), status );                           \
         }                                                                           \
     }

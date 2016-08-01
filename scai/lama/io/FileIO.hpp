@@ -186,9 +186,11 @@ public:
 
     static void read( hmemo::_HArray& array, const std::string& fileName );
 
-protected:
+    /** Override Printable::writeAt */
 
     void writeAt( std::ostream& stream ) const;
+
+protected:
 
     /** write the global settings in the stream, useful for derived classes */
 

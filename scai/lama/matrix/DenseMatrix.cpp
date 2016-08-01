@@ -165,27 +165,39 @@ DenseMatrix<ValueType>::DenseMatrix(
     assign( other, rowDistribution, colDistribution );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM& expression )
 {
+    // resolve expression in base class matrix
     Matrix::operator=( expression );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM& expression )
 {
+    // resolve expression in base class matrix
     Matrix::operator=( expression );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM& expression )
 {
+    // resolve expression in base class matrix, usually -> matrixPlusMatrix
     Matrix::operator=( expression );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SM& expression )
 {
+    // resolve expression in base class matrix
     Matrix::operator=( expression );
 }
 
@@ -202,6 +214,16 @@ DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
     mData[0].reset( new DenseStorage<ValueType>( 0, 0 ) );
 
     this->readFromFile( fileName );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+DenseMatrix<ValueType>::DenseMatrix( const _MatrixStorage& globalData )
+{
+    DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
+    DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
+    DenseMatrix<ValueType>::assign( globalData, rowDist, colDist );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -230,10 +252,18 @@ DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other )
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Matrix& other )
+DenseMatrix<ValueType>::DenseMatrix( const Matrix& other, bool transposeFlag )
 {
-    SCAI_LOG_INFO( logger, "copy constructor( any matrix) : " << other )
-    assign( other ); // will choose the local assignment
+    SCAI_LOG_INFO( logger, "copy constructor( any matrix) : " << other << ", transpse = " << transposeFlag )
+    
+    if ( transposeFlag )
+    {
+        assignTranspose( other ); 
+    }
+    else
+    {
+        assign( other ); 
+    }
 }
 
 /* ------------------------------------------------------------------------ */
@@ -514,6 +544,14 @@ void DenseMatrix<ValueType>::clear()
     Matrix::setReplicatedMatrix( 0, 0 ); // clear Matrix
     mData.resize( 1 ); // clear Data
     mData[0]->clear();
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::purge()
+{
+    Matrix::setReplicatedMatrix( 0, 0 ); // clear Matrix
+    mData.resize( 1 ); // clear Data
+    mData[0]->purge();
 }
 
 template<typename ValueType>
@@ -1270,18 +1308,6 @@ void DenseMatrix<ValueType>::conj()
 }
 
 template<typename ValueType>
-std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix<ValueType>::getCyclicLocalValues()
-{
-    return mData;
-}
-
-template<typename ValueType>
-const std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix<ValueType>::getCyclicLocalValues() const
-{
-    return mData;
-}
-
-template<typename ValueType>
 Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
     ValueType myValue = static_cast<ValueType>( 0.0 );
@@ -1557,9 +1583,14 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
     SCAI_ASSERT_EQUAL_DEBUG( A.getRowDistribution(), B.getRowDistribution() )
     SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
 // Now we can do it completely local
-    Matrix::setDistributedMatrix( A.getRowDistributionPtr(), A.getColDistributionPtr() );
-// Add matrices of each chunk
-    SCAI_LOG_INFO( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
+    SCAI_LOG_INFO( logger, "Mat.plusMatrix, this = " << alpha << " * A + " << beta << " * B"
+                            << ", A = " << A << ", B = " << B )
+
+    allocate( A.getRowDistributionPtr(), A.getColDistributionPtr() );
+
+    // Add matrices of each chunk
+
+    SCAI_LOG_DEBUG( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
@@ -1783,8 +1814,9 @@ const DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage() const
         return *mData[0];
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), getColDistribution() )
-    const PartitionId myRank = getRowDistribution().getCommunicator().getRank();
+    // take the column data chunk that is owned by this processor regarding col dist
+
+    const PartitionId myRank = getColDistribution().getCommunicator().getRank();
     return *mData[myRank];
 }
 
@@ -1798,8 +1830,9 @@ DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage()
         return *mData[0];
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), getColDistribution() )
-    const PartitionId myRank = getRowDistribution().getCommunicator().getRank();
+    // take the column data chunk that is owned by this processor regarding col dist
+
+    const PartitionId myRank = getColDistribution().getCommunicator().getRank();
     return *mData[myRank];
 }
 

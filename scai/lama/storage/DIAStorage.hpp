@@ -183,6 +183,10 @@ public:
         hmemo::HArray<OtherValueType>* values,
         const hmemo::ContextPtr loc ) const;
 
+    /** Override MatrixStorage<ValueType>::getFirstColumnIndexes */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
+
     /**
      * @brief fills DIA matrix storage by csr sparse data.
      *

@@ -259,6 +259,15 @@ public:
 
     virtual void setIdentity( const IndexType n ) = 0;
 
+    /** This method resorts column indexes in such a way that the diagonal element is always the 
+     *  first one in a row. 
+     *
+     *  This method throws an exception if the matrix storage is not square. Furthermore
+     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
+     *  element in a sparse format.
+     */
+    virtual void setDiagonalProperty();
+
     /** This method returns the i-th row of the matrix
      *
      * @param[out] row is the destination array that will contain the row
@@ -277,6 +286,14 @@ public:
      */
 
     virtual void getDiagonal( hmemo::_HArray& diagonal ) const = 0;
+
+    /** Get for each row the first column index with value entry.
+     *  If diagonal flag is set, the column index will be the same as the (global) row
+     *  index. I.e. for a local storage this routine gives the owned indexes to reconstruct
+     *  the distribution.
+     */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
 
     /** This method sets the diagonal of a matrix storage.
      *
@@ -865,6 +882,8 @@ public:
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void readFromFile( const std::string& fileName );
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /******************************************************************
      *   invert                                                        *

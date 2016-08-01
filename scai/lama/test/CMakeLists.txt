@@ -38,35 +38,19 @@ scai_project (
 
     CLASSES
 
-       # Configuration
-        SparseMatrixHelper
-        SparseMatrixTest
-    
     HEADERS
         
-        SameMatrixHelper
-        EquationHelper
-        TestMacros
-        TestSparseMatrices
+       TestMacros
+       TestVectors
 
     SOURCES
 
-        COOSparseMatrixTest
-        CSRSparseMatrixTest
-        DenseMatrixTest
-        DenseMatrixTest1
-        DerivedSparseMatrixTest
-        DIASparseMatrixTest
-        ELLSparseMatrixTest
-        IOStreamTest
-        JDSSparseMatrixTest
+        DenseVectorTest
         L1NormTest
         L2NormTest
-        MatrixTest
         MaxNormTest
         NormTest
         ScalarTest
-        FileIOTest
         PartitionIOTest
         VectorTest
         VersionTest

@@ -1,5 +1,5 @@
 /**
- * @file solver/test/SolverTest.cpp
+ * @file solver/test/solverTest.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/test/SolverTest.cpp
+ * @brief Driver program for all test of the Solver project.
  * @author Thomas Brandes
  * @date 02.03.2016
  */
@@ -47,8 +47,10 @@
 #include <scai/hmemo.hpp>
 #include <scai/dmemo.hpp>
 
-#include <scai/common/Settings.hpp>
 #include <scai/logging.hpp>
+
+#include <scai/common/Settings.hpp>
+#include <scai/common/OpenMP.hpp>
 
 #include <iostream>
 
@@ -56,6 +58,13 @@
 
 bool init_function()
 {
+    int nThreads;
+
+    if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    {
+        omp_set_num_threads( nThreads );
+    }
+
     try
     {
         scai::dmemo::CommunicatorPtr testCommunicator = scai::dmemo::Communicator::getCommunicatorPtr();

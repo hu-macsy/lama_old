@@ -405,6 +405,14 @@ void DenseStorageView<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseStorageView<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
+{
+    COMMON_THROWEXCEPTION( "getFirstColumnIndexes not possible for DENSE format" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherValueType>
 void DenseStorageView<ValueType>::setCSRDataImpl(
     const IndexType numRows,
@@ -638,8 +646,9 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     const ValueType beta,
     const HArray<ValueType>& y ) const
 {
-    SCAI_LOG_INFO( logger,
-                   "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+    SCAI_LOG_INFO( logger, "Computing z = " << alpha << " * x * A + " << beta << " * y" 
+                           << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
 
     if ( beta != common::constants::ZERO )

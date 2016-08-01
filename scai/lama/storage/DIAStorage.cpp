@@ -370,9 +370,9 @@ bool DIAStorage<ValueType>::checkDiagonalProperty() const
 template<typename ValueType>
 void DIAStorage<ValueType>::check( const char* /* msg */ ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( mNumDiagonals, mOffset.size() )
+    SCAI_ASSERT_EQ_ERROR( mNumDiagonals, mOffset.size(), "size mismatch for array with diagonal offsets" )
 
-    if ( mNumDiagonals == 0 )
+    if ( mNumDiagonals == 0 && mNumRows > 0 )
     {
         SCAI_ASSERT_EQUAL_ERROR( false, mDiagonalProperty )
     }
@@ -479,6 +479,14 @@ void DIAStorage<ValueType>::buildCSR(
     WriteOnlyAccess<CSRValueType> csrValues( *values, loc, numValues );
     getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
                        mNumDiagonals, diaOffsets.get(), diaValues.get(), eps );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
+{
+    COMMON_THROWEXCEPTION( "getFirstColumnIndexes not possible for DENSE format" )
 }
 
 /* --------------------------------------------------------------------------- */

@@ -93,6 +93,13 @@ IndexType NoDistribution::global2local( const IndexType globalIndex ) const
 
 /* ---------------------------------------------------------------------- */
 
+IndexType NoDistribution::getBlockDistributionSize() const
+{
+    return mGlobalSize;
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool NoDistribution::isEqual( const Distribution& other ) const
 {
     bool isSame = false;

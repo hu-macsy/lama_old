@@ -252,6 +252,18 @@ public:
      */
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
+    /** The following function verifies if the distribution is nothing else than a block
+     *  or general block distribution.
+     * 
+     *  @returns the local size of the block distribution if it is one, nIndex if it is not
+     *
+     *  Note: The call of this function might involve communication. It returns nIndex on all processors if it is nIndex on one.
+     *  Note: If it is a block distribution, the distribution of a distributed vector/matrix can be easily reconstructed without a mapping file.
+     *
+     *  getBlockDistributionSize() != nIndex iff isSorted( owners( {0, ..., globalSize-1 }, ascending = true )
+     */
+    virtual IndexType getBlockDistributionSize() const = 0;
+
     /**
      * Virtual method to check two distributions for equality.
      *
@@ -282,7 +294,8 @@ public:
      */
     bool operator!=( const Distribution& other ) const;
 
-    /** Replication of distributed data, one entry for each element of the global range
+    /** Replication of distributed data, e.g. a distributed vector, where all local
+     *  values will be replicated on all processors corresponding to their order
      *
      * @tparam     T1           Value type of output data
      * @tparam     T2           Value type of input data
@@ -301,7 +314,9 @@ public:
     template<typename T1, typename T2>
     void replicate( T1* allValues, const T2* localValues ) const;
 
-    /** Replication of distributed data, one line of n entries for each element of the global range
+    /** Replication of distributed data, e.g. a distributed dense array where all
+     *  local values will be replicated. In contrary to replicate there are n elements for
+     *  each distributed element.
      *
      * @tparam     T1           Value type of output data
      * @tparam     T2           Value type of input data
