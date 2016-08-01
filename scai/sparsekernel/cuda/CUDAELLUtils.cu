@@ -286,7 +286,6 @@ void CUDAELLUtils::check(
     else
     {
         SCAI_ASSERT_EQ_ERROR( 0, numValuesPerRow, "as numRows == 0" )
-        SCAI_ASSERT_EQ_ERROR( 0, numColumns, "as numRows == 0" )
     }
 }
 
