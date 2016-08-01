@@ -41,6 +41,7 @@
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/ScalarType.hpp>
 
 #include <cstring>
 
@@ -377,7 +378,7 @@ void SAMGIO::writeStorageImpl(
         outFile.writeBinary( csrIA, mScalarTypeIndex );
         outFile.writeBinary( csrJA, mScalarTypeIndex ); 
 
-        if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+        if ( mScalarTypeData != common::scalar::PATTERN )
         {
             outFile.writeBinary( csrValues, mScalarTypeData );
         }
@@ -392,7 +393,7 @@ void SAMGIO::writeStorageImpl(
         outFile.writeFormatted( csrIA, precIndex );
         outFile.writeFormatted( csrJA, precIndex );
 
-        if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+        if ( mScalarTypeData != common::scalar::PATTERN )
         {
             outFile.writeFormatted( csrValues, precData );
         }
@@ -523,7 +524,7 @@ void SAMGIO::readStorageImpl(
         inFile.readBinary( csrIA, numRows + 1, mScalarTypeIndex );
         inFile.readBinary( csrJA, numValues, mScalarTypeIndex );
 
-        if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+        if ( mScalarTypeData != common::scalar::PATTERN )
         {
             inFile.readBinary( csrValues, numValues, mScalarTypeData );
         }
@@ -541,7 +542,7 @@ void SAMGIO::readStorageImpl(
         inFile.readFormatted( csrIA, numRows + 1 );
         inFile.readFormatted( csrJA, numValues );
 
-        if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+        if ( mScalarTypeData != common::scalar::PATTERN )
         {
             inFile.readFormatted( csrValues, numValues );
         }

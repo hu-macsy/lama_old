@@ -185,9 +185,9 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         BOOST_CHECK_EQUAL( 0, owners1.maxDiffNorm( owners2 ) );
 
 #ifdef DELETE_OUTPUT_FILES
-        int rc = PartitionIO::removeFile( pFileName, *comm );
+        int rc = PartitionIO::removeFile( fileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( pFileName, *comm ) );
+        BOOST_CHECK( !PartitionIO::fileExists( fileName, *comm ) );
 #endif
 
     }

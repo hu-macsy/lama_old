@@ -246,7 +246,7 @@ void PETScIO::writeStorageImpl(
 
     // output of values is skipped for PATTERN 
 
-    if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+    if ( mScalarTypeData != common::scalar::PATTERN )
     {
         outFile.writeBinary( csrValues, mScalarTypeData );
     }
@@ -293,7 +293,7 @@ void PETScIO::readStorageImpl(
     inFile.readBinary( csrSizes, nrows, mScalarTypeIndex );
     inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
 
-    if ( mScalarTypeData != common::scalar::ScalarType::PATTERN )
+    if ( mScalarTypeData != common::scalar::PATTERN )
     {
         inFile.readBinary( csrValues, nnz, mScalarTypeData );
     }
