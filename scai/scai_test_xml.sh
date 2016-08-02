@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ###
  # @file scai_test_xml.sh
  #
