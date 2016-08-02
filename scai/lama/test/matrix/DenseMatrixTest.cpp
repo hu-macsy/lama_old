@@ -86,8 +86,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorN, MatrixType, SparseMatrixTypes
     // i.e. vector is a dense matrix 
     // Note: not yet available for distributed matrix
 
-    typedef typename MatrixType::StorageType StorageType;
-
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
     const IndexType n = 20;  // size of the square matrix
