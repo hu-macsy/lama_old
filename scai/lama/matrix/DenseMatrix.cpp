@@ -266,46 +266,6 @@ DenseMatrix<ValueType>::DenseMatrix( const Matrix& other, bool transposeFlag )
     }
 }
 
-/* ------------------------------------------------------------------------ */
-
-template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
-
-    : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( distribution, distribution )
-{
-    const Distribution& dist = getRowDistribution();
-    {
-        const int nPartitions = dist.getNumPartitions();
-
-        const int numLocalRows = dist.getLocalSize();
-
-        computeOwners();
-       
-        utilskernel::LArray<IndexType> numCols;
-
-        utilskernel::HArrayUtils::bucketCount( numCols, mOwners, nPartitions );
-
-        SCAI_ASSERT_EQUAL( numCols.sum(), mOwners.size(), "serious mismatch due to illegal owner" )
-
-        mData.resize( nPartitions );  
-
-        ReadAccess<IndexType> rNumCols( numCols );
-
-        for ( int i = 0; i < nPartitions; ++i )
-        {
-            //create Storage Vector
-
-            mData[i].reset( new DenseStorage<ValueType>( numLocalRows, rNumCols[i] ) );
-        }
-
-        mData[0]->setDiagonalImpl( ValueType( 1 ) );
-
-        SCAI_LOG_DEBUG( logger, "mData[0] : " << *mData[0] << ", with data = " << mData[0]->getData() )
-    }
-
-    SCAI_LOG_INFO( logger, *this << " constructed" )
-}
-
 /* ------------------------------------------------------------------ */
 
 template<typename ValueType>

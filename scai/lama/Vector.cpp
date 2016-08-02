@@ -332,32 +332,6 @@ void Vector::readFromFile( const std::string& fileName, DistributionPtr distribu
 /*    Assignment operator                                                                 */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector& Vector::operator=( const Expression_MV& expression )
-{
-    SCAI_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * matrix * vector1 + 0.0 * this" )
-    // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
-    // but be careful: this might not be allocated correctly, so we do it here
-    const Expression_SMV exp1( Scalar( 1.0 ), expression );
-    const Expression_SV exp2( Scalar( 0.0 ), *this );
-    const Expression_SMV_SV tempExpression( exp1, exp2 );
-    // due to alias of result/vector2 resize already here
-    allocate( expression.getArg1().getRowDistributionPtr() );
-    return *this = tempExpression;
-}
-
-Vector& Vector::operator=( const Expression_VM& expression )
-{
-    SCAI_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * vector1 * matrix + 0.0 * this" )
-    // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
-    // but be careful: this might not be resized correctly, so we do it here
-    const Expression_SVM exp1( Scalar( 1.0 ), expression );
-    const Expression_SV exp2( Scalar( 0.0 ), *this );
-    const Expression_SVM_SV tempExpression( exp1, exp2 );
-    // due to alias of result/vector2 resize already here
-    allocate( expression.getArg1().getDistributionPtr() );
-    return *this = tempExpression;
-}
-
 Vector& Vector::operator=( const Expression_SV_SV& expression )
 {
     SCAI_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )

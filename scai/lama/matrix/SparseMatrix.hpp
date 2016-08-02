@@ -331,21 +331,7 @@ public:
         const ValueType beta,
         const DenseMatrix<ValueType>& y ) const;
 
-    /* Implemenation of pure method of class Matrix */
-
-    virtual void matrixTimesVector(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const;
-
-    void vectorTimesMatrix(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const;
+    /* Implemenation of method needed for CRTPMatrix */
 
     void vectorTimesMatrixImpl(
         DenseVector<ValueType>& result,
@@ -426,21 +412,6 @@ public:
             const hmemo::HArray<ValueType>& localX ) > calcF,
         common::function <
         void(
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX,
-            const hmemo::HArray<ValueType>& localY ) > addF ) const;
-
-    void vectorHaloOperationAsync(
-        hmemo::HArray<ValueType>& localResult,
-        const hmemo::HArray<ValueType>& localX,
-        const hmemo::HArray<ValueType>& localY,
-        common::function <
-        tasking::SyncToken * (
-            const MatrixStorage<ValueType>* localMatrix,
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX ) > calcF,
-        common::function <
-        /*tasking::SyncToken**/void(
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX,
             const hmemo::HArray<ValueType>& localY ) > addF ) const;
