@@ -344,7 +344,7 @@ function checkCTFileContents {
 
 echo "Running runtime configuration tests:"
 make clean > /dev/null
-make simple DEFINES="-DSCAI_TRACE_ON" &> /dev/null
+make simple DEFINES="-DSCAI_TRACE_ON" #> /dev/null
 if [ $? -ne 0 ]; then
     echo "ERROR: Could not build executable! Tests are skipped!"
     errors=$(($errors + 1))
@@ -531,7 +531,7 @@ fi
 echo ""
 echo "Running compile time tests:"
 make clean > /dev/null
-make simple DEFINES="-DSCAI_TRACE_OFF" &> /dev/null
+make simple DEFINES="-DSCAI_TRACE_OFF" #> /dev/null
 if [ $? -ne 0 ]; then
     echo "ERROR: Could not build executable! Tests are skipped!"
     errors=$(($errors + 1))
@@ -545,7 +545,7 @@ fi
 
 ## Check if the tracing works with unnamed threads
 make clean > /dev/null
-make simple DEFINES="-DSCAI_TRACE_ON -DUNNAMED_THREADS" &> /dev/null
+make simple DEFINES="-DSCAI_TRACE_ON -DUNNAMED_THREADS" #> /dev/null
 if [ $? -ne 0 ]; then
     echo "ERROR: Could not build executable! Tests are skipped!"
     errors=$(($errors + 1))

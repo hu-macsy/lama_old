@@ -53,7 +53,7 @@ errors=0
 # =====================================================================================================================
 echo "Running runtime configuration tests:"
 make clean > /dev/null
-make simple DEFINES="-DSCAI_LOG_LEVEL_TRACE" > /dev/null
+make simple DEFINES="-DSCAI_LOG_LEVEL_TRACE" #> /dev/null
 if [ $? -ne 0 ]; then
     echo "ERROR: Could not build executable! Tests are skipped!"
     errors=$(($errors + 1))
@@ -105,7 +105,7 @@ export SCAI_LOG=TRACE
 
 for level in "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "OFF"; do
     make clean > /dev/null
-    make simple DEFINES="-DSCAI_LOG_LEVEL_${level}" > /dev/null
+    make simple DEFINES="-DSCAI_LOG_LEVEL_${level}" #> /dev/null
     if [ $? -ne 0 ]; then
         echo "ERROR: Could not build executable using log level $level"
         errors=$(($errors + 1))
@@ -151,7 +151,7 @@ echo "done"
 echo ""
 echo "Hierarchical configuration tests:"
 make clean > /dev/null
-make complex DEFINES="-DSCAI_LOG_LEVEL_TRACE" > /dev/null
+make complex DEFINES="-DSCAI_LOG_LEVEL_TRACE" #> /dev/null
 if [ $? -ne 0 ]; then
     echo "ERROR: Could not build executable! Tests are skipped!"
     errors=$(($errors + 1))
@@ -200,7 +200,7 @@ fi
 echo ""
 echo "Format string configuration tests:"
 make clean > /dev/null
-make simple DEFINES="-DSCAI_LOG_LEVEL_FATAL" > /dev/null
+make simple DEFINES="-DSCAI_LOG_LEVEL_FATAL" #> /dev/null
 if [ $? -ne 0 ]; then
     echo "ERROR: Could not build executable! Tests are skipped!"
     errors=$(($errors + 1))
