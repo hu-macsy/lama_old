@@ -33,27 +33,34 @@
 
 include make.inc
 
-# Include path contains also installation of existing projects
+INCLUDE_FLAGS = -I${SCAI_ROOT}/include
 
-INCLUDE_FLAGS = -I${INCLUDE_DIR} -I${SCAI_ROOT}/include
+ifdef SCAI_BOOST_INCLUDE_DIR
+    INCLUDE_FLAGS += -I${SCAI_BOOST_INCLUDE_DIR}
+endif
 
-LD_FLAGS = -L.. -Wl,-rpath=.. -lscai_logging
+ifdef LINK_LIBRARIES
+	LINK_LIBRARY = ${LINK_LIBRARIES}
+endif
+
+LD_FLAGS = ${SCAI_LD_FLAGS} ${LINK_LIBRARY} -Wl,-rpath,${SCAI_ROOT}/lib
 
 DEFINES =
-
 
 simple: simpleLogging.exe
 
 complex: complexLogging.exe
 
+.SUFFIXES:
+
 .SUFFIXES: .cpp .o
 .SUFFIXES: .o .exe
 
 .o.exe:
-	${CXX} -o $*.exe $*.o ${LD_FLAGS}
+	${CXX} -o $*.exe $*.o ${CXX_FLAGS} ${LD_FLAGS}:$(CURDIR)
 
 .cpp.o:
-	${CXX} ${CXX_FLAGS} ${DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
+	${CXX} -fPIC ${CXX_FLAGS} ${DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
 
 clean:
 	rm -rf *.exe *.o
