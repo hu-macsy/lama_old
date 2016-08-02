@@ -42,6 +42,8 @@
 
 // internal scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tracing.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tasking/mic/MICSyncToken.hpp>
@@ -97,7 +99,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     if ( y != result && beta != 0 )
     {
-        MICUtils::set( result, y, numRows, common::reduction::COPY );
+        MICUtils::set( result, y, numRows, utilskernel::reduction::COPY );
     }
 
     // performs y = alpha * A * x + beta * y

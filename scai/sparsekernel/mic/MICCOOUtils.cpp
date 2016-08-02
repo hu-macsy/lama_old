@@ -82,45 +82,6 @@ SCAI_LOG_DEF_LOGGER( MICCOOUtils::logger, "MIC.COOUtils" )
 /*     Template implementations                                                */
 /* --------------------------------------------------------------------------- */
 
-void MICCOOUtils::getCSRSizes(
-    IndexType csrSizes[],
-    const IndexType numRows,
-    const IndexType numValues,
-    const IndexType cooIA[] )
-{
-    SCAI_LOG_INFO( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues )
-    void* csrSizesPtr = csrSizes;
-    const void* cooIAPtr = cooIA;
-    // load distribution is done implicitly by block distribution of csrSizes
-    int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device ) in( numRows, numValues, csrSizesPtr, cooIAPtr )
-    {
-        IndexType* csrSizes = ( IndexType* ) csrSizesPtr;
-        const IndexType* cooIA = ( const IndexType* ) cooIAPtr;
-        #pragma omp parallel
-        {
-            // initialize size array for each row
-            #pragma omp for
-            for ( IndexType i = 0; i <= numRows; i++ )
-            {
-                csrSizes[i] = 0;
-            }
-
-            // increment size of a row for each used row value
-            #pragma omp for
-
-            for ( IndexType k = 0; k < numValues; k++ )
-            {
-                IndexType i = cooIA[k];
-                #pragma omp atomic
-                csrSizes[i]++;
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename COOValueType, typename CSRValueType>
 void MICCOOUtils::getCSRValuesP(
     IndexType csrJA[],
@@ -458,7 +419,6 @@ void MICCOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegi
     SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx, flag );
 }
 
 template<typename ValueType>

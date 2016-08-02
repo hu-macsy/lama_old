@@ -74,6 +74,15 @@ public:
     template<typename ValueType>
     static void scale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
 
+    /** MIC implementation for UtilKernelTrait::Copy::vectorScale */
+
+    template<typename ValueType>
+    static void vectorScale(
+        ValueType result[],
+        const ValueType x[],
+        const ValueType y[],
+        const IndexType n );
+
     /** MIC implementation for UtilKernelTrait::Copy::setScale */
 
     template<typename ValueType, typename OtherValueType>
