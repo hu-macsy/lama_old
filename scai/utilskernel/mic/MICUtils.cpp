@@ -824,7 +824,6 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
 template<typename ValueType>
 void MICUtils::scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n )
 {
-    SCAI_REGION( "MIC.Utils.scatterVal" )
     SCAI_LOG_DEBUG( logger,
                     "scatterVal: out<" << TypeTraits<ValueType>::id() << ">"
                     << "[ indexes[" << n << "] ]" << " = " << value )
@@ -852,7 +851,6 @@ void MICUtils::scatterVal( ValueType out[], const IndexType indexes[], const Val
 template<typename ValueType>
 void MICUtils::invert( ValueType array[], const IndexType n )
 {
-    // SCAI_REGION( "MIC.invert" )
     SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
     void* array_ptr = array;
     int device = MICContext::getCurrentDevice();
