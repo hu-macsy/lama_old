@@ -35,6 +35,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
+#include <scai/common/test/TestMacros.hpp>
+
 #include <scai/lama/test/storage/Storages.hpp>
 #include <scai/lama/test/storage/TestStorages.hpp>
 
@@ -108,6 +110,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorN, MatrixType, SparseMatrixTypes
 
     BOOST_CHECK_EQUAL( n, vectorK1.getNumRows() );
     BOOST_CHECK_EQUAL( k, vectorK1.getNumColumns() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types )
+{
+    // inverse of a matrix not yet for distributed matrices
+
+    const IndexType n = 20;  // size of the square matrix
+
+    DenseMatrix<ValueType> matrix( n, n );
+
+    MatrixCreator::fillRandom( matrix, 1.0f );
+
+    DenseMatrix<ValueType> invMatrix;
+
+    invMatrix.invert( matrix );
+
+    DenseMatrix<ValueType> e1;
+    e1.setIdentity( n );
+    DenseMatrix<ValueType> e2( matrix * invMatrix );
+
+    BOOST_CHECK( e1.maxDiffNorm( e2 ) < 1e-3 );
 }
 
 /* ------------------------------------------------------------------------- */

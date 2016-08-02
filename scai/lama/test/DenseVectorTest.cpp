@@ -521,7 +521,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
                 if ( A1.getMatrixKind() == Matrix::DENSE )
                 {
-                    continue;   // ToDo: this test fails for dense matrices
+                    continue;   // ToDo: this test works currently only for dense matrices
                 }
 
                 A1.assign( A );

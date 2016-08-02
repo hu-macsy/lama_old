@@ -34,6 +34,7 @@
 
 // hpp
 #include <scai/lama/storage/DenseStorage.hpp>
+#include <scai/lama/storage/DIAStorage.hpp>
 
 // local libraries
 #include <scai/lama/mepr/DenseStorageViewWrapper.hpp>
@@ -473,14 +474,15 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 template<typename ValueType>
 template<typename OtherValueType>
 void DenseStorageView<ValueType>::setDIADataImpl(
-    const IndexType /*numRows*/,
-    const IndexType /*numColumns*/,
-    const IndexType /*numDiagonals*/,
-    const HArray<IndexType>& /*offsets*/,
-    const HArray<OtherValueType>& /*values*/,
-    const ContextPtr /*prefLoc*/ )
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const HArray<IndexType>& offsets,
+    const HArray<OtherValueType>& values,
+    const ContextPtr /* prefLoc */ )
 {
-    COMMON_THROWEXCEPTION( "not yet implemeted" )
+    DIAStorage<OtherValueType> dia( numRows, numColumns, numDiagonals, offsets, values );
+    assign( dia );
 }
 
 /* --------------------------------------------------------------------------- */

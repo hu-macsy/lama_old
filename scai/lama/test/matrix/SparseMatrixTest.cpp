@@ -70,7 +70,7 @@ typedef RealType ValueType;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( LocalConstructorTest )
+BOOST_AUTO_TEST_CASE( localConstructorTest )
 {
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
@@ -81,16 +81,21 @@ BOOST_AUTO_TEST_CASE( LocalConstructorTest )
     {
         common::shared_ptr<MatrixStorage<ValueType> > storage = storages[i];
 
-        setDenseData( *storage );
+        setDenseData( *storage );  // fill it with some data
 
         dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( storage->getNumRows(), comm ) );
 
-        SparseMatrix<ValueType> matrix( storage, rowDist );
+        SparseMatrix<ValueType> matrix( storage, rowDist );  // local constructor 
 
         BOOST_CHECK_EQUAL( matrix.getContextPtr(), storage->getContextPtr() );
 
         BOOST_CHECK( matrix.isConsistent() );
 
+        if ( rowDist->getLocalSize() > 0 )
+        {
+             BOOST_CHECK( matrix.getMemoryUsage() > 0 );
+        }
+                           
         BOOST_CHECK_EQUAL( matrix.getNumRows(), rowDist->getGlobalSize() );
         BOOST_CHECK_EQUAL( matrix.getNumColumns(), storage->getNumColumns() );
         BOOST_CHECK_EQUAL( matrix.getMatrixKind(), Matrix::SPARSE );
@@ -103,7 +108,11 @@ BOOST_AUTO_TEST_CASE( LocalConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<CSRSparseMatrix<ValueType>
+typedef boost::mpl::list<CSRSparseMatrix<ValueType>,
+                         ELLSparseMatrix<ValueType>,
+                         DIASparseMatrix<ValueType>,
+                         JDSSparseMatrix<ValueType>,
+                         COOSparseMatrix<ValueType>
                         > SparseMatrixTypes;
 
 /* ------------------------------------------------------------------------- */
@@ -125,7 +134,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapLocalStorageTest, MatrixType, SparseMatrixTyp
 
     // only row block distributed
 
+    const StorageType& haloStorage = matrix.getHaloStorage();
+
     StorageType storage;
+
     storage.allocate( matrix.getRowDistribution().getLocalSize(), matrix.getColDistribution().getLocalSize() );
 
     matrix.swapLocalStorage( storage );
@@ -135,6 +147,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapLocalStorageTest, MatrixType, SparseMatrixTyp
     storage.scale( 2 );
 
     matrix.swapLocalStorage( storage );
+
+    // halo must not have been changed
+
+    BOOST_CHECK_EQUAL( &haloStorage, &matrix.getHaloStorage() );
 
     BOOST_CHECK_EQUAL( 0, storage.getNumValues() );
 

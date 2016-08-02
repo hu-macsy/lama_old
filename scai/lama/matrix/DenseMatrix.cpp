@@ -364,35 +364,33 @@ void DenseMatrix<ValueType>::setCSRData(
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::setDIAData(
-    DistributionPtr /*rowDist*/,
-    DistributionPtr /*colDist*/,
-    const IndexType /*numDiagonals*/,
-    const HArray<IndexType>& /*offsets*/,
-    const _HArray& /*values*/ )
+    DistributionPtr rowDist,
+    DistributionPtr colDist,
+    const IndexType numDiagonals,
+    const HArray<IndexType>& offsets,
+    const _HArray& values )
 {
-    COMMON_THROWEXCEPTION ( "not yet implemented" )
+    DistributionPtr tmpReplicatedColDistribution = colDist;
+    const IndexType n = rowDist->getLocalSize();
+    const IndexType m = colDist->getGlobalSize();
 
-    // from setCSRData
+    // splitting of the column data will be done after setting full column data
 
-    // DistributionPtr tmpReplicatedColDistribution = colDist;
-    // const IndexType n = rowDist->getLocalSize();
-    // const IndexType m = colDist->getGlobalSize();
+    if ( !colDist->isReplicated() )
+    {
+        tmpReplicatedColDistribution.reset( new NoDistribution( m ) );
+    }
 
-    // // splitting of the column data will be done after setting full column data
+    Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
 
-    // if ( !colDist->isReplicated() )
-    // {
-    //     tmpReplicatedColDistribution.reset( new NoDistribution( m ) );
-    // }
+    // due to temporary replicated col distribution, mData has only one entry
 
-    // Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
-    // // due to temporary replicated col distribution, mData has only one entry
-    // mData[0]->setCSRData( n, m, numValues, ia, ja, values );
+    mData[0]->setDIAData( n, m, numDiagonals, offsets, values );
 
-    // if ( !colDist->isReplicated() )
-    // {
-    //     splitColumns( colDist );
-    // }
+    if ( !colDist->isReplicated() )
+    {
+        splitColumns( colDist );
+    }
 }
 
 /* ------------------------------------------------------------------------ */

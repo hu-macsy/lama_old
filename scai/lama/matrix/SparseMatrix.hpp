@@ -144,10 +144,6 @@ public:
         dmemo::DistributionPtr rowDist,
         dmemo::DistributionPtr colDist );
 
-    SparseMatrix( const Matrix& matrix, const bool transposeFlag = false );
-
-    SparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
-
     /** Override also the default copy constructor that does not make a
      *  deep copy of the input matrix due to the use of shared pointers.
      */

@@ -89,8 +89,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueTy
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage )
-    :
+SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage ) :
 
     CRTPMatrix<SparseMatrix<ValueType>, ValueType>( storage->getNumRows(), storage->getNumColumns() )
 {
@@ -138,8 +137,7 @@ template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix(
     common::shared_ptr<MatrixStorage<ValueType> > localData,
     DistributionPtr rowDist,
-    DistributionPtr colDist )
-    :
+    DistributionPtr colDist ) :
 
     CRTPMatrix<SparseMatrix<ValueType>, ValueType>( rowDist, colDist )
 {
@@ -245,37 +243,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( const Matrix& other, const bool transposeFlag /* = false */ )
-
-{
-    Matrix::inheritAttributes( other ); // context, communication, compute kind
-
-    if ( transposeFlag )
-    {
-        assignTranspose( other );
-    }
-    else
-    {
-        assign( other );
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
-
-{
-    Matrix::inheritAttributes( other ); // context, communication, compute kind
-    assign( other );
-    this->redistribute( rowDist, colDist );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other )
-    :
+SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other ) :
 
     CRTPMatrix<SparseMatrix<ValueType>, ValueType>( other )
 
@@ -1523,7 +1491,10 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     else
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
-        SparseMatrix<ValueType> typedOther( other, getRowDistributionPtr(), getColDistributionPtr() );
+        common::shared_ptr<MatrixStorage<ValueType> > tmpPtr( getLocalStorage().newMatrixStorage() );
+        SparseMatrix<ValueType> typedOther( tmpPtr );
+        typedOther.assign( other );
+        typedOther.redistribute( getRowDistributionPtr(), getColDistributionPtr() );
         return Scalar( maxDiffNormImpl( typedOther ) );
     }
 }

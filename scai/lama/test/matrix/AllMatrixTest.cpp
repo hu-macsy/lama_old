@@ -47,10 +47,12 @@
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/logging.hpp>
@@ -543,6 +545,110 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
             y2 += -1;
 
             BOOST_CHECK( y2.maxNorm() < Scalar( 0.0001 ) );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( setCSRDataTest )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    typedef RealType ValueType;
+
+    const IndexType nRows = 15;
+    const IndexType nCols = 8;
+
+    std::srand( 1311 );
+
+    CSRSparseMatrix<ValueType> csr( nRows, nCols );
+    MatrixCreator::fillRandom( csr, 0.1f );
+
+    dmemo::DistributionPtr colDist( new NoDistribution( nCols ) );
+
+    TestDistributions testDistributions( nRows );
+
+    for ( size_t i = 0; i < testDistributions.size(); ++i )
+    {
+        DistributionPtr dist = testDistributions[i];
+
+        csr.redistribute( dist, csr.getColDistributionPtr() );
+
+        CSRStorage<ValueType> localCSR = csr.getLocalStorage();
+
+        const hmemo::HArray<IndexType>& ia = localCSR.getIA();
+        const hmemo::HArray<IndexType>& ja = localCSR.getJA();
+        const hmemo::HArray<ValueType>& values = localCSR.getValues();
+        const IndexType numValues = localCSR.getNumValues();
+
+        // now we have local CSR data to set
+
+        Matrices allMatrices( context );    // is created by factory
+
+        for ( size_t k = 0; k < allMatrices.size(); ++k )
+        {
+            Matrix& mat = *allMatrices[ k ];
+
+            mat.setCSRData( dist, colDist, numValues, ia, ja, values );
+
+            BOOST_CHECK( mat.isConsistent() );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( setDIADataTest )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    typedef RealType ValueType;
+
+    const IndexType nRows = 15;
+    const IndexType nCols = 8;
+
+    std::srand( 1311 );
+
+    DIASparseMatrix<ValueType> dia( nRows, nCols );
+    MatrixCreator::fillRandom( dia, 0.1f );
+
+    dmemo::DistributionPtr colDist( new NoDistribution( nCols ) );
+
+    TestDistributions testDistributions( nRows );
+
+    for ( size_t i = 0; i < testDistributions.size(); ++i )
+    {
+        DistributionPtr dist = testDistributions[i];
+
+        dia.redistribute( dist, dia.getColDistributionPtr() );
+
+        DIAStorage<ValueType> localDIA = dia.getLocalStorage();
+
+        SCAI_LOG_ERROR( logger, "Local DIAData: " << localDIA )
+
+        const IndexType numDiagonals = localDIA.getNumDiagonals();
+        const hmemo::HArray<IndexType>& offsets = localDIA.getOffsets();
+        const hmemo::HArray<ValueType>& values = localDIA.getValues();
+
+        // now we have local DIA data to set
+
+        Matrices allMatrices( context );    // is created by factory
+
+        for ( size_t k = 0; k < allMatrices.size(); ++k )
+        {
+            Matrix& mat = *allMatrices[ k ];
+
+            if ( mat.getMatrixKind() != Matrix::DENSE )
+            {
+                continue;
+            }
+
+            SCAI_LOG_ERROR( logger, "setDIAData for this mat: " << mat )
+
+            mat.setDIAData( dist, colDist, numDiagonals, offsets, values );
+
+            BOOST_CHECK( mat.isConsistent() );
         }
     }
 }
