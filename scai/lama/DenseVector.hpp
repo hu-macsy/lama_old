@@ -251,28 +251,28 @@ public:
      *
      * @param[in] expression     alpha * A * x
      */
-    DenseVector( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
+    DenseVector( const Expression_SMV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A.
      *
      * @param[in] expression     alpha * x * A
      */
-    DenseVector( const Expression<Scalar, Expression<Vector, Matrix, Times>, Times>& expression );
+    DenseVector( const Expression_SVM& expression );
 
     /**
      * @brief creates a DenseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
-    DenseVector( const Expression<Matrix, Vector, Times>& expression );
+    DenseVector( const Expression_MV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression x * A.
      *
      * @param[in] expression     x * A
      */
-    DenseVector( const Expression<Vector, Matrix, Times>& expression );
+    DenseVector( const Expression_VM& expression );
 
     /**
      * @brief releases all allocated resources.
@@ -287,6 +287,10 @@ public:
 
     virtual void allocate( dmemo::DistributionPtr distribution );
 
+    /** Implememenation of pure routine Vector::allocate. */
+
+    virtual void allocate( const IndexType n );
+
     /** Override the default assignment operator.
      *
      *  Note: all other assignment operators are inherited from class Vector.
@@ -294,7 +298,7 @@ public:
 
     DenseVector& operator=( const DenseVector<ValueType>& other );
 
-    /** Reimplement scalar assignment as otherwise type conversion rules do not apply. */
+    /** Reimplement Vector::operator= as otherwise a constructor of DenseVector might be called */
 
     DenseVector& operator=( const Scalar );
 

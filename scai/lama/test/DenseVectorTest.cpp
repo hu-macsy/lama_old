@@ -236,6 +236,62 @@ BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_arithmetic_test_types )
+{
+    // Note: here we only test constructor DenseVector( "fileName" ) 
+    //       as readFromFile is already tested in PartitionIO
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    const IndexType n = 10;
+
+    std::string fileName = "myVector.psc";   // binary type, so no loss of precision
+
+    float fillRate = 0.2;
+
+
+    hmemo::HArray<ValueType> denseData( ctx );
+    std::srand( 31991 );                   // makes sure that all processors generate same data
+    utilskernel::HArrayUtils::setRandom( denseData, n, fillRate );
+
+    if ( comm->getRank() == 0 )
+    {
+        FileIO::write( denseData, fileName );
+    }
+
+    comm->synchronize();
+
+    DenseVector<ValueType> vector1( fileName );
+
+    BOOST_CHECK_EQUAL( n, vector1.size() );
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    vector1.redistribute( dist );
+    vector1.prefetch( ctx );
+    vector1.wait();
+
+    DenseVector<ValueType> vector2( ctx );
+    vector2.assign( denseData );
+    vector2.redistribute( dist );
+
+    // vector1 and vector2 must be equal
+
+    const utilskernel::LArray<ValueType> localValues1 = vector1.getLocalValues();
+    const utilskernel::LArray<ValueType> localValues2 = vector2.getLocalValues();
+
+    BOOST_CHECK_EQUAL( ValueType( 0 ), localValues1.maxDiffNorm( localValues2 ) );
+
+    if ( comm->getRank() == 0 )
+    {
+        int rc = FileIO::removeFile( fileName );
+        BOOST_CHECK_EQUAL( 0, rc );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( vecMultExpConstructorTest )
 {
     typedef RealType ValueType;
@@ -294,7 +350,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( SwapTest )
+BOOST_AUTO_TEST_CASE( swapTest )
 {
     typedef RealType ValueType;
 
@@ -315,6 +371,25 @@ BOOST_AUTO_TEST_CASE( SwapTest )
 
     BOOST_CHECK_EQUAL( x1.getLocalValues().size(), dist2->getLocalSize() );
     BOOST_CHECK_EQUAL( x2.getLocalValues().size(), dist1->getLocalSize() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( assignTest )
+{
+    typedef RealType ValueType;
+
+    const IndexType n = 10;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    DenseVector<ValueType> x( dist );
+
+    x = 5;  // calls DenseVector::operator= ( Scalar )
+
+    BOOST_CHECK_EQUAL( x.l1Norm(), 5 * n );
 }
 
 /* --------------------------------------------------------------------- */
@@ -471,6 +546,45 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
             }
         }
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
+{
+    // only serial
+
+    typedef float ValueType;
+
+    // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
+
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    const IndexType nRows = 7;
+    const IndexType nCols = 4;
+
+    // generate random input data, same on all processors
+
+    std::srand( 1413 );
+
+    DenseMatrix<ValueType> A;
+    A.setContextPtr( ctx );
+    A.allocate( nRows, nCols );
+    MatrixCreator::fillRandom( A, 0.1 );
+    DenseVector<ValueType> x( ctx );
+    x.setRandom( A.getRowDistributionPtr() );
+    DenseVector<ValueType> y( ctx );
+    y.setRandom( A.getColDistributionPtr() );
+
+    DenseMatrix<ValueType> At( A, true );
+
+    DenseVector<ValueType> res1( 2 * x * A - y );
+    DenseVector<ValueType> res2( 2 * At * x - y );
+
+    const utilskernel::LArray<ValueType>& v1 = res1.getLocalValues();
+    const utilskernel::LArray<ValueType>& v2 = res2.getLocalValues(); 
+
+    BOOST_CHECK_EQUAL( 0, v1.maxDiffNorm( v2 ) );
 }
 
 /* --------------------------------------------------------------------- */

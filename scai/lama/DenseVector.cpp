@@ -248,7 +248,7 @@ DenseVector<ValueType>::DenseVector( const _HArray& localValues, DistributionPtr
 
 // linear algebra expression: a*x
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression<Scalar, Vector, Times>& expression )
+DenseVector<ValueType>::DenseVector( const Expression_SV& expression )
 
     : Vector( expression.getArg2() )
 {
@@ -258,7 +258,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar, Vector, Times>& ex
 
 // linear algebra expression: x*y
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression<Vector, Vector, Times>& expression )
+DenseVector<ValueType>::DenseVector( const Expression_VV& expression )
 
     : Vector( expression.getArg1() )
 {
@@ -269,9 +269,10 @@ DenseVector<ValueType>::DenseVector( const Expression<Vector, Vector, Times>& ex
 
 // linear algebra expression: s*x*y
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression<Scalar, Expression<Vector, Vector, Times>, Times>& expression )
+DenseVector<ValueType>::DenseVector( const Expression_SVV& expression ) : 
 
-    : Vector( expression.getArg2().getArg1() )
+    Vector( expression.getArg2().getArg1() )
+
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * y )" )
     Vector::operator=( expression );
@@ -280,10 +281,10 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar, Expression<Vector,
 // linear algebra expression: a*x+b*y, inherit distribution/context from vector x
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector(
-    const Expression<Expression<Scalar, Vector, Times>, Expression<Scalar, Vector, Times>, Plus>& expression ) //Expression_SV_SV
+DenseVector<ValueType>::DenseVector( const Expression_SV_SV& expression ) : 
 
-    : Vector( expression.getArg1().getArg2() )
+    Vector( expression.getArg1().getArg2() )
+
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta * y )" )
@@ -293,8 +294,7 @@ DenseVector<ValueType>::DenseVector(
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector(
-    const Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>, Expression<Scalar, Vector, Times>, Plus>& expression ) //Expression_SMV_SV
+DenseVector<ValueType>::DenseVector( const Expression_SMV_SV& expression )
 
     : Vector( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
               expression.getArg1().getArg2().getArg1().getContextPtr() )
@@ -307,8 +307,7 @@ DenseVector<ValueType>::DenseVector(
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector(
-    const Expression<Expression<Scalar, Expression<Vector, Matrix, Times>, Times>, Expression<Scalar, Vector, Times>, Plus>& expression ) //Expression_SVM_SV
+DenseVector<ValueType>::DenseVector( const Expression_SVM_SV& expression ) 
     : Vector( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
               expression.getArg1().getArg2().getArg2().getContextPtr() )
 {
@@ -320,7 +319,7 @@ DenseVector<ValueType>::DenseVector(
 // linear algebra expression: a*A*x, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression )
+DenseVector<ValueType>::DenseVector( const Expression_SMV& expression )
 
     : Vector( expression.getArg2().getArg1().getRowDistributionPtr(),
               expression.getArg2().getArg1().getContextPtr() )
@@ -333,34 +332,12 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar, Expression<Matrix,
 // linear algebra expression: a*x*A, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression<Scalar, Expression<Vector, Matrix, Times>, Times>& expression )
+DenseVector<ValueType>::DenseVector( const Expression_SVM& expression )
     : Vector( expression.getArg2().getArg2().getColDistributionPtr(),
               expression.getArg2().getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A )" )
-    Vector::operator=( expression );
-}
-
-// linear algebra expression: A*x, inherit distribution/context from matrix A
-
-template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression<Matrix, Vector, Times>& expression )
-    : Vector( expression.getArg1().getRowDistributionPtr(), expression.getArg1().getContextPtr() )
-{
-    allocate( getDistributionPtr() );
-    SCAI_LOG_INFO( logger, "Constructor( A * x )" )
-    Vector::operator=( expression );
-}
-
-// linear algebra expression: x*A, inherit distribution/context from matrix A
-
-template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression<Vector, Matrix, Times>& expression )
-    : Vector( expression.getArg2().getColDistributionPtr(), expression.getArg2().getContextPtr() )
-{
-    allocate( getDistributionPtr() );
-    SCAI_LOG_INFO( logger, "Constructor( x * A )" )
     Vector::operator=( expression );
 }
 
@@ -376,6 +353,9 @@ DenseVector<ValueType>::~DenseVector()
 template<typename ValueType>
 DenseVector<ValueType>& DenseVector<ValueType>::operator=( const DenseVector<ValueType>& other )
 {
+    SCAI_LOG_INFO( logger, "DenseVector<" << TypeTraits<ValueType>::id() << "> = " << 
+                           "DenseVector<" << TypeTraits<ValueType>::id() << ">" )
+
     assign( other );
     return *this;
 }
@@ -383,6 +363,8 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const DenseVector<Val
 template<typename ValueType>
 DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 {
+    SCAI_LOG_INFO( logger, "DenseVector<" << TypeTraits<ValueType>::id() << "> = " << value )
+
     assign( value );
     return *this;
 }
@@ -402,6 +384,8 @@ void DenseVector<ValueType>::buildValues( _HArray& values ) const
     HArrayUtils::assign( values, mLocalValues );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseVector<ValueType>::setValues( const _HArray& values )
 {
@@ -411,12 +395,16 @@ void DenseVector<ValueType>::setValues( const _HArray& values )
     HArrayUtils::assign( mLocalValues, values );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 DenseVector<ValueType>* DenseVector<ValueType>::copy() const
 {
     // create a new dense vector with the copy constructor
     return new DenseVector<ValueType>( *this );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
@@ -717,6 +705,15 @@ void DenseVector<ValueType>::allocate( DistributionPtr distribution )
     setDistributionPtr( distribution );
     // resize the local values at its context
     WriteOnlyAccess<ValueType> dummyWAccess( mLocalValues, mContext, getDistribution().getLocalSize() );
+    // local values are likely to be uninitialized
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::allocate( const IndexType n )
+{
+    setDistributionPtr( DistributionPtr( new NoDistribution( n ) ) );
+    // resize the local values at its context
+    WriteOnlyAccess<ValueType> dummyWAccess( mLocalValues, mContext, n );
     // local values are likely to be uninitialized
 }
 

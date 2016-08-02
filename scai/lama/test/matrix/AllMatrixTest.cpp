@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( AssignAddTest )
+BOOST_AUTO_TEST_CASE( assignAddTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_CASE( AssignAddTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( AssignMultTest )
+BOOST_AUTO_TEST_CASE( assignMultTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 

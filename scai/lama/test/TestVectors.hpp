@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Vector with all matrices, one for each supported matrix storage format/type
+ * @brief Array with all vectors, one for each supported vector storage kind/type
  * @author Thomas Brandes
  * @date 27.07.2016
  */
@@ -45,11 +45,12 @@ namespace scai
 namespace lama
 {
 
-/** Class for a list of vector, one for each supported
+/** Class for a list of vectors, one for each supported
  *  vector storage format and each supported arithmetic type.
  *  
  *  Note: Currently only DENSE vectors are supported, but SPARSE might be 
  *        supported in future releases.
+ *  
  */
 
 class TestVectors : public std::vector<scai::lama::VectorPtr>
@@ -57,7 +58,11 @@ class TestVectors : public std::vector<scai::lama::VectorPtr>
 
 public:
 
-    /** Constructor creates already the list with all vector pointers. */
+    /** Constructor creates already the list with shared vector pointers, one for each
+     *  registered key type in the Vector factory.
+     *
+     *  @param[in] ctx optional argument for the context where operations on vector should be executed
+     */
 
     TestVectors( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
