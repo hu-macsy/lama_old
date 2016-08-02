@@ -2,7 +2,7 @@
 
 if ((BASH_VERSINFO[0] < 4))
 then
-        echo "For testing logging you need bash version 4 or newer"
+        echo "For testing tracing you need bash version 4 or newer"
         exit
 fi
 
@@ -35,7 +35,7 @@ fi
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Tests for SCAI logging
+ # @brief Tests for SCAI tracing
  # @author Jan Ecker
  # @date 03.09.2015
 ###
