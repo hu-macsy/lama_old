@@ -37,6 +37,7 @@
 
 // local library
 #include <scai/hmemo/mic/MICContext.hpp>
+#include <scai/hmemo/exception/MemoryException.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
@@ -96,11 +97,21 @@ void* MICMemory::allocate( const size_t size ) const
     void* pointer = NULL;
     SCAI_LOG_INFO( logger, "allocate, init pointer = " << pointer )
     int deviceNr = mMICContext->getDeviceNr();
+
+    bool success = false;
     // allocate data on the MIC device and return the pointer
-#pragma offload target( mic : deviceNr ), in( size ), out( pointer )
+#pragma offload target( mic : deviceNr ), in( size ), out( pointer ), inout( success )
     {
         pointer = ::malloc( size );
+
+        success = (pointer != NULL);
     }
+
+    if( !success )
+    {
+        SCAI_THROWEXCEPTION( MemoryException, "malloc failed for size = " << size )
+    }
+
     SCAI_LOG_INFO( logger, "allocated " << size << " bytes on device, ptr = " << pointer )
     return pointer;
 }
