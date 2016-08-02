@@ -39,6 +39,7 @@
 #include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
@@ -229,6 +230,62 @@ BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
         // prove same distribution, same values of r and c
 
         BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_arithmetic_test_types )
+{
+    // Note: here we only test constructor DenseVector( "fileName" ) 
+    //       as readFromFile is already tested in PartitionIO
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    const IndexType n = 10;
+
+    std::string fileName = "myVector.psc";   // binary type, so no loss of precision
+
+    float fillRate = 0.2;
+
+
+    hmemo::HArray<ValueType> denseData( ctx );
+    std::srand( 31991 );                   // makes sure that all processors generate same data
+    utilskernel::HArrayUtils::setRandom( denseData, n, fillRate );
+
+    if ( comm->getRank() == 0 )
+    {
+        FileIO::write( denseData, fileName );
+    }
+
+    comm->synchronize();
+
+    DenseVector<ValueType> vector1( fileName );
+
+    BOOST_CHECK_EQUAL( n, vector1.size() );
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    vector1.redistribute( dist );
+    vector1.prefetch( ctx );
+    vector1.wait();
+
+    DenseVector<ValueType> vector2( ctx );
+    vector2.assign( denseData );
+    vector2.redistribute( dist );
+
+    // vector1 and vector2 must be equal
+
+    const utilskernel::LArray<ValueType> localValues1 = vector1.getLocalValues();
+    const utilskernel::LArray<ValueType> localValues2 = vector2.getLocalValues();
+
+    BOOST_CHECK_EQUAL( ValueType( 0 ), localValues1.maxDiffNorm( localValues2 ) );
+
+    if ( comm->getRank() == 0 )
+    {
+        int rc = FileIO::removeFile( fileName );
+        BOOST_CHECK_EQUAL( 0, rc );
     }
 }
 
