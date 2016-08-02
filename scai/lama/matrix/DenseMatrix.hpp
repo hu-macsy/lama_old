@@ -101,17 +101,13 @@ public:
     /**
      * Constructor of a distributed dense matrix.
      *
-     * @param[in] rowDist   TODO[doxy] Complete Description.
-     * @param[in] colDist   TODO[doxy] Complete Description.
+     * @param[in] rowDist   size and distribution of rows
+     * @param[in] colDist   size and distribution of columns
+     *
+     * For consistency with the constructors of sparse matrices the values 
+     * of the dense matrix are initialized with 0 here.
      */
     DenseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
-
-    /**
-     * Constructor of a square unity matrix.
-     *
-     * @param[in] dist   TODO[doxy] Complete Description.
-     */
-    explicit DenseMatrix( dmemo::DistributionPtr dist );
 
     /** Overwrites default copy constructor so it uses other copy constructor.
      *

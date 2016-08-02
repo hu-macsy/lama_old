@@ -40,6 +40,7 @@
 
 #include <scai/dmemo/test/TestDistributions.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
@@ -349,6 +350,50 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( swapTest )
+{
+    typedef RealType ValueType;
+
+    const IndexType n = 10;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    dmemo::DistributionPtr dist1( new dmemo::BlockDistribution( n, comm ) );
+    dmemo::DistributionPtr dist2( new dmemo::CyclicDistribution( n, 1, comm ) );
+
+    DenseVector<ValueType> x1( dist1, 1 );
+    DenseVector<ValueType> x2( dist2, 2 );
+
+    x1.swap( x2 );
+
+    BOOST_CHECK_EQUAL( x1( 8 ), ValueType( 2 ) );
+    BOOST_CHECK_EQUAL( x2( 1 ), ValueType( 1 ) );
+
+    BOOST_CHECK_EQUAL( x1.getLocalValues().size(), dist2->getLocalSize() );
+    BOOST_CHECK_EQUAL( x2.getLocalValues().size(), dist1->getLocalSize() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( assignTest )
+{
+    typedef RealType ValueType;
+
+    const IndexType n = 10;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    DenseVector<ValueType> x( dist );
+
+    x = 5;  // calls DenseVector::operator= ( Scalar )
+
+    BOOST_CHECK_EQUAL( x.l1Norm(), 5 * n );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_arithmetic_test_types )
 {
     // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
@@ -415,12 +460,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_arithmetic_
 
 /* --------------------------------------------------------------------- */
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE( VectorMatrixMultTest, ValueType, scai_arithmetic_test_types )
-
+// ToDo: BOOST_AUTO_TEST_CASE_TEMPLATE( VectorMatrixMultTest, ValueType, scai_arithmetic_test_types )
 
 BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 {
     return;
+
+    // This test fails sometimes with 5 or 6 processors
+    // valgrind shows memory problems during MPI gather
+    // TODO: Lauretta  
 
     typedef float ValueType;
 
@@ -428,7 +476,8 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    // ToDo: this test causes serious problems with non-square matrices
+    // Attention this test causes serious problems with non-square matrices
+    // ToDo: Lauretta 
 
     const IndexType nRows = 7;
     const IndexType nCols = 7;
@@ -497,6 +546,45 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
             }
         }
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
+{
+    // only serial
+
+    typedef float ValueType;
+
+    // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
+
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    const IndexType nRows = 7;
+    const IndexType nCols = 4;
+
+    // generate random input data, same on all processors
+
+    std::srand( 1413 );
+
+    DenseMatrix<ValueType> A;
+    A.setContextPtr( ctx );
+    A.allocate( nRows, nCols );
+    MatrixCreator::fillRandom( A, 0.1 );
+    DenseVector<ValueType> x( ctx );
+    x.setRandom( A.getRowDistributionPtr() );
+    DenseVector<ValueType> y( ctx );
+    y.setRandom( A.getColDistributionPtr() );
+
+    DenseMatrix<ValueType> At( A, true );
+
+    DenseVector<ValueType> res1( 2 * x * A - y );
+    DenseVector<ValueType> res2( 2 * At * x - y );
+
+    const utilskernel::LArray<ValueType>& v1 = res1.getLocalValues();
+    const utilskernel::LArray<ValueType>& v2 = res2.getLocalValues(); 
+
+    BOOST_CHECK_EQUAL( 0, v1.maxDiffNorm( v2 ) );
 }
 
 /* --------------------------------------------------------------------- */

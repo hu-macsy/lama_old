@@ -39,6 +39,13 @@
 #include <scai/lama/test/storage/TestStorages.hpp>
 
 #include <scai/lama/matrix/SparseMatrix.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matrix/ELLSparseMatrix.hpp>
+#include <scai/lama/matrix/JDSSparseMatrix.hpp>
+#include <scai/lama/matrix/DIASparseMatrix.hpp>
+#include <scai/lama/matrix/COOSparseMatrix.hpp>
+
+#include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
 
@@ -96,43 +103,125 @@ BOOST_AUTO_TEST_CASE( LocalConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
-/*
-BOOST_AUTO_TEST_CASE( FullConstructorTest )
-{
-    TypedStorages<ValueType> storages;
-
-    for ( size_t i = 0; i < storages.size(); ++i )
-    {
-        storage = storages[i];
-
-        matrix1.assign( storage );
-
-        SparseMatrix matrix( local, halo, halo, rowDist, colDist );
-
-    }
-}
-*/
+typedef boost::mpl::list<CSRSparseMatrix<ValueType>
+                        > SparseMatrixTypes;
 
 /* ------------------------------------------------------------------------- */
 
-/*
-BOOST_AUTO_TEST_CASE( TransposeConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SwapLocalStorageTest, MatrixType, SparseMatrixTypes )
 {
-    TypedStorages<ValueType> storages;
+    typedef typename MatrixType::StorageType StorageType;
 
-    for ( size_t i = 0; i < storages.size(); ++i )
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    const IndexType n = 100;  // size of the square matrix
+
+    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( n, comm ) );
+    dmemo::DistributionPtr colDist( new dmemo::BlockDistribution( n, comm ) );
+
+    MatrixType matrix( rowDist, colDist );
+
+    MatrixCreator::fillRandom( matrix, 0.2f );
+
+    // only row block distributed
+
+    StorageType storage;
+    storage.allocate( matrix.getRowDistribution().getLocalSize(), matrix.getColDistribution().getLocalSize() );
+
+    matrix.swapLocalStorage( storage );
+
+    BOOST_CHECK( storage.getNumValues() > 0 );
+
+    storage.scale( 2 );
+
+    matrix.swapLocalStorage( storage );
+
+    BOOST_CHECK_EQUAL( 0, storage.getNumValues() );
+
+    storage.clear(); // resizes to 0 x 0
+
+    BOOST_CHECK_THROW(
     {
-        storage = storages[i];
-
-        matrix1.assign( storage );
-
-        SparseMatrix matrix( matrix1, transposeFlag );
-
-        SparseMatrix matrix( matrix1, dist, dist );
-
-    }
+        matrix.swapLocalStorage( storage );
+    }, common::Exception );
 }
-*/
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( FlatCopyTest, MatrixType, SparseMatrixTypes )
+{
+    typedef typename MatrixType::StorageType StorageType;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    const IndexType n = 100;  // size of the square matrix
+
+    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( n, comm ) );
+    dmemo::DistributionPtr colDist( new dmemo::BlockDistribution( n, comm ) );
+
+    MatrixType matrix( rowDist, colDist );
+
+    MatrixCreator::fillRandom( matrix, 0.2f );
+
+    // only row block distributed
+
+    StorageType storage;
+    storage.allocate( matrix.getRowDistribution().getLocalSize(), matrix.getColDistribution().getLocalSize() );
+
+    matrix.swapLocalStorage( storage );
+
+    BOOST_CHECK( storage.getNumValues() > 0 );
+
+    storage.scale( 2 );
+
+    matrix.swapLocalStorage( storage );
+
+    BOOST_CHECK_EQUAL( 0, storage.getNumValues() );
+
+    storage.clear(); // resizes to 0 x 0
+
+    BOOST_CHECK_THROW(
+    {
+        matrix.swapLocalStorage( storage );
+    }, common::Exception );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, SparseMatrixTypes )
+{
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    typedef typename MatrixType::StorageType StorageType;
+
+    const IndexType numRows = 4;
+    const IndexType numCols = 7;
+
+    float fillRate = 0.2;
+
+    hmemo::HArray<ValueType> denseData;
+    std::srand( 1317 );                   // makes sure that all processors generate same data
+    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+
+    StorageType globalStorage;
+    globalStorage.setDenseData( numRows, numCols, denseData );
+
+    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( numRows, comm ) );
+    dmemo::DistributionPtr colDist( new dmemo::BlockDistribution( numCols, comm ) );
+
+    MatrixType matrix1( globalStorage );
+    matrix1.redistribute( rowDist, colDist );
+
+    SparseMatrix<ValueType> matrix2( matrix1 );
+
+    const StorageType& localStorage1 = matrix1.getLocalStorage();
+    const MatrixStorage<ValueType>& localStorage2 = matrix2.getLocalStorage();
+
+    BOOST_REQUIRE_EQUAL( localStorage1.getNumRows(), localStorage2.getNumRows() );
+    BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumColumns() );
+
+    BOOST_CHECK_EQUAL( 0, matrix1.maxDiffNorm( matrix2 ) );
+}
 
 /* ------------------------------------------------------------------------- */
 

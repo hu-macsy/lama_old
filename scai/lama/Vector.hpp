@@ -167,9 +167,6 @@ public:
      * @return               a reference to this.
      * @throws               Exceptions thrown by the Allocator
      */
-    Vector& operator=( const Expression_MV& expression );
-
-    Vector& operator=( const Expression_VM& expression );
 
     /** this = alpha * A * x */
 

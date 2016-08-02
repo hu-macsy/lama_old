@@ -60,14 +60,6 @@ class COMMON_DLL_IMPORTEXPORT MICCOOUtils
 {
 public:
 
-    /** MIC implementation for COOKernelTrait::getCSRSizes */
-
-    static void getCSRSizes(
-        IndexType csrSizes[],
-        const IndexType numRows,
-        const IndexType numValues,
-        const IndexType cooIA[] );
-
     /** MIC implementation for COOKernelTrait::getCSRValues */
 
     template<typename COOValueType, typename CSRValueType>
