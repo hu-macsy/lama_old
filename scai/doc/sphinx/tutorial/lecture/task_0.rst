@@ -13,7 +13,7 @@ first.
 
 .. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 3-18
+   :lines: 36-61
 
 Next we are reading the input matrix from the file provided via a command line
 argument. The CSRSparseMatrix provides a constructor to read from a matrix
@@ -21,7 +21,7 @@ market file for this.
 
 .. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 20-29
+   :lines: 63-65
 
 Then we create our right hand side and our solution vector of appropriate
 size. To verify the correctness of the solution we are
@@ -31,7 +31,7 @@ to BLAS functionality, that we are using to calculate the vector **rhs**.
 
 .. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 30-45
+   :lines: 66-76
 
 Now we have created a system of linear equations. To solve it we want to use
 the CG solver provided by LAMA and so we start with creating an object of type
@@ -54,21 +54,21 @@ solver object cgSolver.
 
 .. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 47-52
+   :lines: 77-82
 
 Finally we need to initialize our solver with the system matrix and solve the
 system.
 
 .. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 54-57
+   :lines: 83-86
 
 Because we know the exact solution we can calculate the error and the L2-Norm of
 the error.
 
 .. literalinclude:: ../../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 59-67
+   :lines: 87-90
 
 Task 0 and an example input matrix can be found in
 **<project-root>/examples/lecture**.
