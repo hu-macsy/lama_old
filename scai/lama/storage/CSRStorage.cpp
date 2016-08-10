@@ -601,7 +601,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
         ReadAccess<IndexType> ia( mIa, loc );
         ReadAccess<IndexType> ja( mJa, loc );
         ReadAccess<ValueType> values( mValues, loc );
-        WriteOnlyAccess<IndexType> new_ia( newIa, loc, mNumRows + 1 );
+        WriteOnlyAccess<IndexType> new_ia( newIa, loc, mNumRows );
         countNonZeros[loc]( new_ia.get(), ia.get(), ja.get(), values.get(), mNumRows, eps, mDiagonalProperty );
     }
     // now compute the new offsets from the sizes, gives also new numValues
