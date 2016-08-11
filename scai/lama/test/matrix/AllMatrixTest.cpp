@@ -339,13 +339,17 @@ BOOST_AUTO_TEST_CASE( assignAddTest )
         Matrix& matrix3 = *matrix3Ptr;
 
         matrix3 = matrix1 + matrix2;
+
+        BOOST_CHECK_EQUAL( matrix3.getRowDistribution(), matrix1.getRowDistribution() );
+        BOOST_CHECK_EQUAL( matrix3.getColDistribution(), matrix1.getColDistribution() );
+
         matrix3 = matrix3 - matrix2;
-        matrix1 += 3 * matrix3;
+        matrix1 += 2 * matrix3;
         matrix1 -= matrix3;
         matrix1 += matrix3;
-        matrix1 -= 2 * matrix3;
+        matrix1 -= 3 * matrix3;
  
-        BOOST_CHECK_EQUAL( matrix3.getRowDistributionPtr(), matrix1.getRowDistributionPtr() );
+        BOOST_CHECK_EQUAL( Scalar( 0 ), matrix1.maxNorm() );
 
         matrix1 = matrix2;
 
@@ -625,7 +629,7 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
 
         DIAStorage<ValueType> localDIA = dia.getLocalStorage();
 
-        SCAI_LOG_ERROR( logger, "Local DIAData: " << localDIA )
+        SCAI_LOG_INFO( logger, "Local DIAData: " << localDIA )
 
         const IndexType numDiagonals = localDIA.getNumDiagonals();
         const hmemo::HArray<IndexType>& offsets = localDIA.getOffsets();
@@ -644,7 +648,7 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
                 continue;
             }
 
-            SCAI_LOG_ERROR( logger, "setDIAData for this mat: " << mat )
+            SCAI_LOG_INFO( logger, "setDIAData for this mat: " << mat )
 
             mat.setDIAData( dist, colDist, numDiagonals, offsets, values );
 
