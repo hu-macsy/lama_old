@@ -110,11 +110,16 @@ void MICUtils::vectorScale( ValueType result[], const ValueType x[], const Value
 {
     SCAI_LOG_DEBUG( logger,
                     "vectorScale<" << common::getScalarType<ValueType>() << ">: " << "n =" << n )
-    void* arrayPtr = array;
+    void* rPtr = result;
+    const void* xPtr = x;
+    const void* yPtr = y;
     int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device), in ( arrayPtr, n )
+
+#pragma offload target( mic : device), in ( rPtr, xPtr, yPtr, n )
     {
-        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        ValueType* result = static_cast<ValueType*>( rPtr );
+        const ValueType* x = static_cast<const ValueType*>( xPtr );
+        const ValueType* y = static_cast<const ValueType*>( yPtr );
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; ++i )
@@ -140,13 +145,13 @@ void MICUtils::setScale(
     if ( value == scai::common::constants::ZERO )
     {
         // Important : inValues might be undefined
-        setVal( outValues, n, value, common::reduction::COPY );
+        setVal( outValues, n, value, reduction::COPY );
         return;
     }
 
     if ( value == scai::common::constants::ONE )
     {
-        set( outValues, inValues, n, common::reduction::COPY );
+        set( outValues, inValues, n, reduction::COPY );
         return;
     }
 
@@ -158,11 +163,13 @@ void MICUtils::setScale(
     {
         ValueType* outValues = static_cast<ValueType*>( outPtr );
         const OtherValueType* inValues = static_cast<const OtherValueType*>( inPtr );
+	const ValueType& valRef = *valPtr;
+
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; i++ )
         {
-            outValues[i] = static_cast<ValueType>( inValues[i] ) * ( *valPtr );
+            outValues[i] = static_cast<ValueType>( inValues[i] ) * valRef;
         }
     }
 }
@@ -203,22 +210,22 @@ ValueType MICUtils::reduceSum( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType MICUtils::reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op )
+ValueType MICUtils::reduce( const ValueType array[], const IndexType n, const reduction::ReductionOp op )
 {
     SCAI_LOG_INFO( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
 
     switch ( op )
     {
-        case common::reduction::ADD :
+        case reduction::ADD :
             return reduceSum( array, n );
 
-        case common::reduction::MAX :
+        case reduction::MAX :
             return reduceMaxVal( array, n );
 
-        case common::reduction::MIN :
+        case reduction::MIN :
             return reduceMinVal( array, n );
 
-        case common::reduction::ABS_MAX :
+        case reduction::ABS_MAX :
             return reduceAbsMaxVal( array, n );
 
         default:
@@ -231,7 +238,7 @@ ValueType MICUtils::reduce( const ValueType array[], const IndexType n, const co
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
+void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op )
 {
     SCAI_LOG_DEBUG( logger, "setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
     int device = MICContext::getCurrentDevice();
@@ -240,7 +247,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
 
     switch ( op )
     {
-        case common::reduction::COPY :
+        case reduction::COPY :
 #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1] )
             {
                 ValueType* array = static_cast<ValueType*>( arrayPtr );
@@ -254,7 +261,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             }
             break;
 
-        case common::reduction::ADD :
+        case reduction::ADD :
         {
             if ( val == common::constants::ZERO )
             {
@@ -279,7 +286,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             break;
         }
 
-        case common::reduction::SUB :
+        case reduction::SUB :
         {
             if ( val == common::constants::ZERO )
             {
@@ -304,7 +311,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             break;
         }
 
-        case common::reduction::MULT :
+        case reduction::MULT :
         {
             // scale all values of the array
             if ( val == common::constants::ONE )
@@ -313,7 +320,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             }
             else if ( val == common::constants::ZERO )
             {
-                setVal( array, n, ValueType( 0 ), common::reduction::COPY );
+                setVal( array, n, ValueType( 0 ), reduction::COPY );
             }
             else
             {
@@ -334,7 +341,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             break;
         }
 
-        case common::reduction::DIVIDE :
+        case reduction::DIVIDE :
         {
             // scale all values of the array
             if ( val == common::constants::ONE )
@@ -343,7 +350,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             }
             else if ( val == common::constants::ZERO )
             {
-                setVal( array, n, ValueType( 0 ), common::reduction::COPY );
+                setVal( array, n, ValueType( 0 ), reduction::COPY );
             }
             else
             {
@@ -401,10 +408,15 @@ void MICUtils::setSequence( ValueType array[], const ValueType startValue, const
                             << "..., " << ( startValue + (n-1) * inc ) )
     
     void* arrayPtr = array;
+    const ValueType* sPtr = &startValue;
+    const ValueType* iPtr = &inc;
     int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device), in ( arrayPtr, n )
+
+#pragma offload target( mic : device), in ( arrayPtr, n, sPtr[0:1], iPtr[0:1] )
     {
         ValueType* array = static_cast<ValueType*>( arrayPtr );
+	const ValueType& startValue = *sPtr;
+	const ValueType& inc = *iPtr;
         #pragma omp parallel for
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -655,7 +667,7 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType1, typename ValueType2>
-void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op )
+void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op )
 {
     SCAI_LOG_DEBUG( logger,
                     "set: out<" << TypeTraits<ValueType1>::id() << "[" << n << "]"
@@ -670,7 +682,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
         switch ( op )
         {
-            case common::reduction::COPY :
+            case reduction::COPY :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -682,7 +694,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
                 break;
             }
 
-            case common::reduction::ADD :
+            case reduction::ADD :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -694,7 +706,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
                 break;
             }
 
-            case common::reduction::SUB :
+            case reduction::SUB :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -706,7 +718,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
                 break;
             }
 
-            case common::reduction::MULT :
+            case reduction::MULT :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -718,7 +730,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
                 break;
             }
 
-            case common::reduction::DIVIDE :
+            case reduction::DIVIDE :
             {
                 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -812,17 +824,19 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
 template<typename ValueType>
 void MICUtils::scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n )
 {
-    SCAI_REGION( "MIC.Utils.scatterVal" )
     SCAI_LOG_DEBUG( logger,
                     "scatterVal: out<" << TypeTraits<ValueType>::id() << ">"
                     << "[ indexes[" << n << "] ]" << " = " << value )
     void* outPtr = out;
     const void* indexesPtr = indexes;
+    const ValueType* vPtr = &value;
     int device = MICContext::getCurrentDevice();
-    #pragma offload target( mic : device ) in( outPtr, indexesPtr, inPtr, n )
+
+    #pragma offload target( mic : device ) in( outPtr, indexesPtr, n, vPtr[0:1] )
     {
-        ValueType1* out = static_cast<ValueType1*>( outPtr );
+        ValueType* out = static_cast<ValueType*>( outPtr );
         const IndexType* indexes = static_cast<const IndexType*>( indexesPtr );
+	const ValueType& value = *vPtr; 
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; i++ )
@@ -837,7 +851,6 @@ void MICUtils::scatterVal( ValueType out[], const IndexType indexes[], const Val
 template<typename ValueType>
 void MICUtils::invert( ValueType array[], const IndexType n )
 {
-    // SCAI_REGION( "MIC.invert" )
     SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
     void* array_ptr = array;
     int device = MICContext::getCurrentDevice();

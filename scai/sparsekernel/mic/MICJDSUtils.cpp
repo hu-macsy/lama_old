@@ -40,6 +40,7 @@
 
 // other scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tasking/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -614,7 +615,7 @@ void MICJDSUtils::normalGEMV(
 
     if ( beta == common::constants::ZERO )
     {
-        MICUtils::setVal( result, numRows, ValueType( 0 ), common::reduction::COPY );
+        MICUtils::setVal( result, numRows, ValueType( 0 ), utilskernel::reduction::COPY );
     }
     else if ( result == y )
     {
@@ -625,7 +626,7 @@ void MICJDSUtils::normalGEMV(
         }
         else
         {
-            MICUtils::setVal( result, numRows, beta, common::reduction::MULT );
+            MICUtils::setVal( result, numRows, beta, utilskernel::reduction::MULT );
         }
     }
     else

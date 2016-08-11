@@ -40,8 +40,6 @@ scai_project(
         TypeList
         TypeListUtils
 
-    CLASSES
-        TemplateSpecifier
 
     ADD_PARENT_SCOPE
 )

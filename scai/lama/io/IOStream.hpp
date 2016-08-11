@@ -43,7 +43,6 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/mepr/TemplateSpecifier.hpp>
 #include <scai/common/macros/loop.hpp>
 #include <scai/common/exception/IOException.hpp>
 

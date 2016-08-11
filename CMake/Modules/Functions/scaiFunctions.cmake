@@ -45,9 +45,32 @@ macro    ( addExternalPackages )
 	endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} Sphinx )
 endmacro ( addExternalPackages )
 
+macro    ( addRecursiveExternalPackages )
+	if    ( ${UPPER_PROJECT_NAME}_INTERNAL_DEPS ) # not empty for revert list
+
+		set ( REVERT_LIST ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ) # because list does not accept variable recursion
+		list ( REVERSE REVERT_LIST )
+		set ( full_list "" )
+		foreach    ( internal_module ${REVERT_LIST} )
+			string ( TOUPPER ${internal_module} internal_upper_module )
+			list ( APPEND full_list ${${internal_upper_module}_EXTERNAL_DEPS} )
+		endforeach ( internal_module ${REVERT_LIST} )
+
+		list ( REMOVE_DUPLICATES full_list )
+
+		foreach    ( external_module ${full_list} )
+			include ( Package/${external_module} )
+		endforeach ( external_module ${full_list} )
+
+	endif ( ${UPPER_PROJECT_NAME}_INTERNAL_DEPS )
+endmacro ( addRecursiveExternalPackages )
+
 macro    ( addInternalAndExternalPackages )
 	addInternalPackages()
 	addExternalPackages()
+	if ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+		addRecursiveExternalPackages()
+	endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 endmacro ( addInternalAndExternalPackages )
 
 ## adding includes dirs from packages
@@ -90,9 +113,27 @@ macro    ( addExternalLinkLibraries )
 	endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 endmacro ( addExternalLinkLibraries )
 
+macro ( addRecursiveExternalLinkLibraries )
+	set ( REVERT_LIST ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ) # because list does not accept variable recursion
+	list ( REVERSE REVERT_LIST )
+	set ( recursivelist "" )
+	foreach    ( internal_module ${REVERT_LIST} )
+		string ( TOUPPER ${internal_module} internal_upper_module )
+		foreach    ( external_module ${${internal_upper_module}_EXTERNAL_DEPS} )
+			string ( TOUPPER ${external_module} external_upper_module )
+			list ( APPEND recursivelist ${SCAI_${external_upper_module}_LIBRARIES} )
+		endforeach ( external_module ${${internal_upper_module}_EXTERNAL_DEPS} )
+	endforeach ( internal_module ${REVERT_LIST} )
+	list ( REMOVE_DUPLICATES recursivelist )
+	target_link_libraries ( ${PROJECT_NAME} ${recursivelist} )
+endmacro ( addRecursiveExternalLinkLibraries )
+
 macro    ( addInternalAndExternalLinkLibraries )
 	addInternalLinkLibraries()
 	addExternalLinkLibraries()
+	if ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+		addRecursiveExternalLinkLibraries()
+	endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 endmacro ( addInternalAndExternalLinkLibraries )
 
 macro    ( setIntersphinxInternalVariables )

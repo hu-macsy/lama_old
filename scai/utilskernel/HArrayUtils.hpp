@@ -41,7 +41,6 @@
 
 #include <scai/logging.hpp>
 #include <scai/utilskernel/ReductionOp.hpp>
-#include <scai/common/mepr/TemplateSpecifier.hpp>
 
 namespace scai
 {

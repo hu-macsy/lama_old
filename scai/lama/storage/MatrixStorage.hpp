@@ -42,7 +42,6 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
-#include <scai/common/mepr/TemplateSpecifier.hpp>
 #include <scai/common/Factory.hpp>
 
 // std

@@ -33,25 +33,32 @@
 
 include make.inc
 
-INCLUDE_FLAGS = ${SCAI_INCLUDES} -I${SCAI_BOOST_INCLUDE_DIR}
+INCLUDE_FLAGS = -I${SCAI_ROOT}/include
 
-CXX_FLAGS = ${SCAI_CXX_FLAGS}
+ifdef SCAI_BOOST_INCLUDE_DIR
+    INCLUDE_FLAGS += -I${SCAI_BOOST_INCLUDE_DIR}
+endif
 
-LD_FLAGS = ${SCAI_LD_FLAGS}
+ifdef LINK_LIBRARIES
+	LINK_LIBRARY = ${LINK_LIBRARIES}
+endif
+
+LD_FLAGS = ${SCAI_LD_FLAGS} ${LINK_LIBRARY} -Wl,-rpath,${SCAI_ROOT}/lib
 
 DEFINES =
 
-
 simple: simpleTracing.exe
+
+.SUFFIXES:
 
 .SUFFIXES: .cpp .o
 .SUFFIXES: .o .exe
 
 .o.exe:
-	${CXX} -o $*.exe $*.o ${LD_FLAGS}
+	${CXX} -o $*.exe $*.o ${CXX_FLAGS} ${LD_FLAGS}:$(CURDIR)
 
 .cpp.o:
-	${CXX} ${CXX_FLAGS} ${DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
+	${CXX} -fPIC ${CXX_FLAGS} ${DEFINES} ${INCLUDE_FLAGS} -c $*.cpp
 
 clean:
 	rm -rf *.exe *.o *.ct.* *.time

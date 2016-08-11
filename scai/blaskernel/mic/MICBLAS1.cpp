@@ -142,7 +142,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 
             for ( int i = 0; i < n; ++i )
             {
-                local_asum += common::Math::abs( common::Math::real( x[i] ) ) + common::Math::abs( common::Math::imag( x[i] ) );
+                local_asum += common::Math::abs( common::Math::real( x[i * incX] ) ) + common::Math::abs( common::Math::imag( x[i * incX] ) );
             }
 
             #pragma omp critical

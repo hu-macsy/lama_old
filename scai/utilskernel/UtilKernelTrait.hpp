@@ -202,7 +202,7 @@ struct UtilKernelTrait
          *  @param x[in]       first input array
          *  @param y[in]       second input array
          *  @param n           size of all three arrays
-         *  @returns           result[i] = alpha * x[i] * y[i], \f$ 0 \le i < n \f$
+         *  @returns           result[i] = x[i] * y[i], \f$ 0 \le i < n \f$
          *
          *  Function is helpful to compute maximum norm for vectors and matrices
          */
@@ -221,9 +221,9 @@ struct UtilKernelTrait
          *
          *  Set out[i] = scale * in[i],  0 <= i < n
          *
-         *  @param[in,out]  outValues  is the output array
+         *  @param[out]     outValues  is the output array
          *  @param[in]      scaleValue scaling factor
-         *  @param[in,out]  inValues   is the array with entries to scale
+         *  @param[in]      inValues   is the array with entries to scale
          *  @param[in]      n          is the number of entries
          */
         typedef void ( *FuncType ) (
