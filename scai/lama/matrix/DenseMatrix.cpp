@@ -1537,14 +1537,23 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
     const DenseMatrix<ValueType>& B )
 {
     SCAI_REGION( "Mat.plusMatrix" )
-// already verified
+
+    // already verified
+
     SCAI_ASSERT_EQUAL_DEBUG( A.getRowDistribution(), B.getRowDistribution() )
     SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
-// Now we can do it completely local
+
+    // Now we can do it completely local
+
     SCAI_LOG_INFO( logger, "Mat.plusMatrix, this = " << alpha << " * A + " << beta << " * B"
                             << ", A = " << A << ", B = " << B )
 
-    allocate( A.getRowDistributionPtr(), A.getColDistributionPtr() );
+    // allocate this result matrix, but only if it is not aliased with A or B
+
+    if ( this != &A && this != &B )
+    {
+        allocate( A.getRowDistributionPtr(), A.getColDistributionPtr() );
+    }
 
     // Add matrices of each chunk
 
