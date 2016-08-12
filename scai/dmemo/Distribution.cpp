@@ -324,28 +324,42 @@ template<typename T1, typename T2>
 void Distribution::replicateN( T1* allValues, const T2* localValues, const IndexType n ) const
 {
     SCAI_REGION( "Distribution.replicateN" )
+
     const Communicator& comm = getCommunicator();
+
     // Implemenation via cyclic shifting of the vector data and distribution
     // maximal number of elements needed to allocate sufficient receive buffer but also to avoid reallocations
+
     IndexType currentSize = getLocalSize();
     IndexType maxLocalSize = comm.max( currentSize );
-    SCAI_LOG_INFO( logger,
-                   comm << ": replicateN, n = " << n << ", localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
-    // Only allocate the needed size of the Arrays
+
+    SCAI_LOG_ERROR( logger,
+                   comm << ": replicateN, n = " << n << 
+                   ", localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << "]" <<
+                   ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
+
     HArray<T1> valuesSend;
     HArray<T1> valuesReceive;
     HArray<IndexType> indexesSend;
     HArray<IndexType> indexesReceive;
+
     // set my owned indexes and my values
+
     ContextPtr commContext = comm.getCommunicationContext( valuesSend );
+
     // capacity of send arrays should also be sufficient for receiving data
+
     indexesSend.reserve( commContext, maxLocalSize );
     valuesSend.reserve( commContext, maxLocalSize * n );
+
     SCAI_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
+
     {
         WriteOnlyAccess<IndexType> wIndexesSend( indexesSend, commContext, currentSize );
-        WriteOnlyAccess<T1> wValuesSend( valuesSend, commContext, currentSize * n );
+        WriteOnlyAccess<T1>        wValuesSend ( valuesSend, commContext, currentSize * n );
+
         // current workaround as commContext works like HostContext
+
         IndexType* pIndexesSend = wIndexesSend.get();
         T1* pValuesSend = wValuesSend.get();
 
@@ -360,11 +374,9 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
                 pValuesSend[i * n + j] = static_cast<T1>( localValues[i * n + j] ); // type conversion here
                 allValues[globalIndex * n + j] = static_cast<T1>( localValues[i * n + j] ); // type conversion here
             }
-
-            pValuesSend[i] = static_cast<T1>( localValues[i] ); // type conversion here
-            allValues[globalIndex] = static_cast<T1>( localValues[i] ); // type conversion here
         }
     }
+
     IndexType countLines = currentSize; // count values set in the global vector, currentSize has been done
     // capacity of receive arrays should be sufficient for receiving data to avoid reallocations
     indexesReceive.reserve( commContext, maxLocalSize );
