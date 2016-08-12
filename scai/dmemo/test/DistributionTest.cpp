@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE( replicateTest )
 
 BOOST_AUTO_TEST_CASE( replicateNTest )
 {
-    const IndexType globalN = 11; // global size, ToDo: this test fails very strange with N = 15, 17
+    const IndexType globalN = 17; // global size
     const IndexType repN = 4;
 
     TestDistributions allDist( globalN );
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
         // Now replicate the local values 
 
         {
-            hmemo::WriteAccess<IndexType> wAllValues( allValues, repN * globalN );
+            hmemo::WriteAccess<IndexType> wAllValues( allValues );
             hmemo::ReadAccess<IndexType> rLocalValues( localValues );
             dist->replicateN( wAllValues.get(), rLocalValues.get(), repN );
         }
@@ -355,9 +355,11 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
 
                 if ( i != rAllValues[ repN * i + k ] )
                 {
-                    SCAI_LOG_ERROR( logger, dist->getCommunicator() << ": dist = " << *dist 
-                                            << ", wrong at i = " << i << " of " << globalN 
-                                            << ", k = " << k << " of repN = " << repN )
+                    SCAI_LOG_ERROR( logger, dist->getCommunicator() << ": dist = " << *dist << 
+                                            ", wrong at i = " << i << " of " << globalN << 
+                                            ", k = " << k << " of repN = " << repN << 
+                                            ", rAllValues [ " << repN * i + k << " ] = " << rAllValues[ repN * i + k ] )
+
                 }
             }
         }
@@ -368,8 +370,8 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
 
 BOOST_AUTO_TEST_CASE( replicateRaggedTest )
 {
-    const IndexType globalN = 15;  // global size 
-    const IndexType repN = 3;
+    const IndexType globalN = 17;  // global size 
+    const IndexType repN = 4;
 
     TestDistributions allDist( globalN );
 
