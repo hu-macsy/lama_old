@@ -348,7 +348,7 @@ void JDSStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) 
     ReadAccess<ValueType> rValues( mValues, loc );
     // diagonal is first column in JDS data
     // wDiagonal[ rJa[ i ] ] = rValues[ i ];
-    setScatter[loc]( wDiagonal.get(), rPerm.get(), rValues.get(), numDiagonal );
+    setScatter[loc]( wDiagonal.get(), rPerm.get(), rValues.get(), utilskernel::reduction::COPY, numDiagonal );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -602,7 +602,7 @@ void JDSStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> wCsrIA( ia, loc, mNumRows + 1 );
     SCAI_CONTEXT_ACCESS( loc )
     // rowValues[ perm[i] ] = ilg[i]
-    setScatter[loc]( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), mNumRows );
+    setScatter[loc]( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), utilskernel::reduction::COPY, mNumRows );
 
     if ( ja == NULL || values == NULL )
     {

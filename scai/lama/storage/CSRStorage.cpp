@@ -252,7 +252,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
         setVal.getSupportedContext( loc );
         SCAI_CONTEXT_ACCESS( loc )
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
-        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), utilskernel::reduction::COPY );
+        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), reduction::COPY );
     }
     mDiagonalProperty = true; // obviously given for identity matrix
     mSortedRows = true; // obviously given for identity matrix
@@ -277,7 +277,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     if ( ia.size() == numRows )
     {
-        IndexType sumIA = HArrayUtils::reduce( ia, utilskernel::reduction::ADD );
+        IndexType sumIA = HArrayUtils::reduce( ia, reduction::ADD );
         SCAI_ASSERT_EQUAL( numValues, sumIA, "sizes do not sum up to numValues" );
     }
     else if ( ia.size() == numRows + 1 )
@@ -583,7 +583,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     mValues.clear();
     WriteOnlyAccess<IndexType> ia( mIa, mNumRows + 1 );
     // make a correct initialization for the offset array
-    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), utilskernel::reduction::COPY  );
+    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), reduction::COPY  );
     mDiagonalProperty = checkDiagonalProperty();
 }
 
@@ -831,7 +831,7 @@ void CSRStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
         ReadAccess<IndexType> csrIA( mIa, loc );
         WriteAccess<ValueType> wValues( mValues, loc );     // partial setting
         //  wValues[ wIa[ i ] ] = rDiagonal[ i ];
-        setScatter[loc]( wValues.get(), csrIA.get(), rDiagonal.get(), numDiagonalElements );
+        setScatter[loc]( wValues.get(), csrIA.get(), rDiagonal.get(), reduction::COPY, numDiagonalElements );
     }
 
     if ( SCAI_LOG_TRACE_ON( logger ) )
@@ -867,10 +867,10 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
     setVal.getSupportedContext( loc, setScatter );
     SCAI_CONTEXT_ACCESS( loc )
     WriteOnlyAccess<OtherType> wRow( row, loc, mNumColumns );
-    setVal[loc]    ( wRow.get(), mNumColumns, OtherType( 0 ), utilskernel::reduction::COPY );
+    setVal[loc]    ( wRow.get(), mNumColumns, OtherType( 0 ), reduction::COPY );
     const ReadAccess<IndexType> ja( mJa, loc );
     const ReadAccess<ValueType> values( mValues, loc );
-    setScatter[loc]( wRow.get(), ja.get() + n1, values.get() + n1, nrow );
+    setScatter[loc]( wRow.get(), ja.get() + n1, values.get() + n1, reduction::COPY, nrow );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1054,8 +1054,8 @@ void CSRStorage<ValueType>::buildCSR(
         ReadAccess<IndexType> inJA( mJa, loc );
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
-        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, utilskernel::reduction::COPY );
-        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, utilskernel::reduction::COPY );
+        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, reduction::COPY );
+        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, reduction::COPY );
     }
     // copy values
     {
@@ -1065,7 +1065,7 @@ void CSRStorage<ValueType>::buildCSR(
         SCAI_CONTEXT_ACCESS( loc )
         ReadAccess<ValueType> inValues( mValues, loc );
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
-        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, utilskernel::reduction::COPY );
+        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, reduction::COPY );
     }
 }
 
@@ -2053,7 +2053,7 @@ template<typename ValueType>
 ValueType CSRStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
-    return utilskernel::HArrayUtils::asum( mValues, this->getContextPtr() );
+    return HArrayUtils::asum( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2085,7 +2085,7 @@ ValueType CSRStorage<ValueType>::maxNorm() const
     reduce.getSupportedContext( loc );
     ReadAccess<ValueType> csrValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, utilskernel::reduction::ABS_MAX );
+    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, reduction::ABS_MAX );
     return maxval;
 }
 
