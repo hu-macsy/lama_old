@@ -162,10 +162,11 @@ void HArrayUtils::assignScatter(
     _HArray& target,
     const HArray<IndexType>& indexes,
     const _HArray& source,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the scatter version with the correct value types for target and source
-    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatter( target, indexes, source, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatter( target, indexes, source, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -204,9 +205,13 @@ void HArrayUtils::scatter(
     HArray<TargetValueType>& target,
     const HArray<IndexType>& indexes,
     const HArray<SourceValueType>& source,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     SCAI_REGION( "HArray.scatter" )
+
+    SCAI_ASSERT( ( op == reduction::COPY ) || ( op == reduction::ADD ), "Unsupported reduction op " << op  )
+
     SCAI_ASSERT( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
                  "illegal scatter index, target has size " << target.size() )
     static LAMAKernel<UtilKernelTrait::setScatter<TargetValueType, SourceValueType> > setScatter;
@@ -224,7 +229,7 @@ void HArrayUtils::scatter(
     ReadAccess<SourceValueType> rSource( source, loc );
     ReadAccess<IndexType> rIndexes( indexes, loc );
     //  target[ indexes[i] ] = source[i]
-    setScatter[loc] ( wTarget.get(), rIndexes.get(), rSource.get(), n );
+    setScatter[loc] ( wTarget.get(), rIndexes.get(), rSource.get(), op, n );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1052,7 +1057,7 @@ void HArrayUtils::buildDenseArray(
     denseArray.clear();
     denseArray.resize( denseN );
     HArrayUtils::setScalar( denseArray, ValueType( 0 ), reduction::COPY, prefLoc );
-    HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, prefLoc );
+    HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, reduction::COPY, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1069,6 +1074,7 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::scatter<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                           \
             const hmemo::HArray<IndexType>&,                                                                            \
             const hmemo::HArray<OtherValueType>&,                                                                       \
+            const reduction::ReductionOp,                                                                               \
             const hmemo::ContextPtr );
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                                                                                        \

@@ -137,7 +137,11 @@ public:
     /** OpenMP implementation for UtilKernelTrait::setScatter */
 
     template<typename ValueType1, typename ValueType2>
-    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
+    static void setScatter( ValueType1 out[], 
+                            const IndexType indexes[], 
+                            const ValueType2 in[], 
+                            const reduction::ReductionOp op, 
+                            const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::invert */
 

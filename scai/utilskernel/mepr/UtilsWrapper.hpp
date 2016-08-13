@@ -77,7 +77,7 @@ template<typename ValueType> struct UtilsWrapperT<ValueType, common::mepr::NullT
 {
     static void setArray( hmemo::HArray<ValueType>&, const hmemo::_HArray&, const reduction::ReductionOp, const hmemo::ContextPtr ) {}
     static void gather( hmemo::HArray<ValueType>&, const hmemo::_HArray&, const hmemo::HArray<IndexType>&, const hmemo::ContextPtr ) {}
-    static void scatter( hmemo::HArray<ValueType>&, const hmemo::HArray<IndexType>&, const hmemo::_HArray&, const hmemo::ContextPtr ) {}
+    static void scatter( hmemo::HArray<ValueType>&, const hmemo::HArray<IndexType>&, const hmemo::_HArray&, const reduction::ReductionOp, const hmemo::ContextPtr ) {}
     static void setScalar( hmemo::_HArray&, const ValueType, const reduction::ReductionOp, const hmemo::ContextPtr ) {}
     static void setValImpl( hmemo::_HArray&, const IndexType, const ValueType ) {}
     static ValueType getValImpl( const hmemo::_HArray&, const IndexType )
@@ -90,14 +90,14 @@ template<typename TList> struct UtilsWrapperTT1<common::mepr::NullType, TList>
 {
     static void setArray( hmemo::_HArray&, const hmemo::_HArray&, const reduction::ReductionOp, const hmemo::ContextPtr ) {}
     static void gather( hmemo::_HArray&, const hmemo::_HArray&, const hmemo::HArray<IndexType>&, const hmemo::ContextPtr ) {}
-    static void scatter( hmemo::_HArray&, const hmemo::HArray<IndexType>&, const hmemo::_HArray&, const hmemo::ContextPtr ) {}
+    static void scatter( hmemo::_HArray&, const hmemo::HArray<IndexType>&, const hmemo::_HArray&, const reduction::ReductionOp, const hmemo::ContextPtr ) {}
 };
 
 template<typename ValueType> struct UtilsWrapperTT2<ValueType, common::mepr::NullType>
 {
     static void setArray( hmemo::HArray<ValueType>&, const hmemo::_HArray&, const reduction::ReductionOp, const hmemo::ContextPtr ) {}
     static void gather( hmemo::HArray<ValueType>&, const hmemo::_HArray&, const hmemo::HArray<IndexType>&, const hmemo::ContextPtr ) {}
-    static void scatter( hmemo::HArray<ValueType>&, const hmemo::HArray<IndexType>&, const hmemo::_HArray&, const hmemo::ContextPtr ) {}
+    static void scatter( hmemo::HArray<ValueType>&, const hmemo::HArray<IndexType>&, const hmemo::_HArray&, const reduction::ReductionOp, const hmemo::ContextPtr ) {}
 };
 
 /*
@@ -151,15 +151,16 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
     static void scatter( hmemo::HArray<ValueType>& target,
                          const hmemo::HArray<IndexType>& index,
                          const hmemo::_HArray& source,
+                         const reduction::ReductionOp op,
                          const hmemo::ContextPtr prefLoc )
     {
         if ( common::getScalarType<H>() ==  source.getValueType() )
         {
-            HArrayUtils::scatter( target, index, reinterpret_cast<const hmemo::HArray<H>&>( source ), prefLoc );
+            HArrayUtils::scatter( target, index, reinterpret_cast<const hmemo::HArray<H>&>( source ), op, prefLoc );
         }
         else
         {
-            UtilsWrapperT< ValueType, T >::scatter( target, index, source, prefLoc );
+            UtilsWrapperT< ValueType, T >::scatter( target, index, source, op, prefLoc );
         }
     }
 
@@ -227,15 +228,15 @@ struct UtilsWrapperTT1<common::mepr::TypeList<H, T>, TList2 >
         }
     }
 
-    static void scatter( hmemo::_HArray& target, const hmemo::HArray<IndexType>& index, const hmemo::_HArray& source, const hmemo::ContextPtr prefLoc )
+    static void scatter( hmemo::_HArray& target, const hmemo::HArray<IndexType>& index, const hmemo::_HArray& source, const reduction::ReductionOp op, const hmemo::ContextPtr prefLoc )
     {
         if ( common::getScalarType<H>() == target.getValueType() )
         {
-            UtilsWrapperTT2<H, TList2>::scatter( reinterpret_cast<hmemo::HArray<H>&>( target ), index, source, prefLoc );
+            UtilsWrapperTT2<H, TList2>::scatter( reinterpret_cast<hmemo::HArray<H>&>( target ), index, source, op, prefLoc );
         }
         else
         {
-            UtilsWrapperTT1<T, TList2>::scatter( target, index, source, prefLoc );
+            UtilsWrapperTT1<T, TList2>::scatter( target, index, source, op, prefLoc );
         }
     }
 };
@@ -267,15 +268,15 @@ struct UtilsWrapperTT2<ValueType, common::mepr::TypeList<H, T> >
         }
     }
 
-    static void scatter( hmemo::HArray<ValueType>& target, const hmemo::HArray<IndexType>& index, const hmemo::_HArray& source, const hmemo::ContextPtr prefLoc )
+    static void scatter( hmemo::HArray<ValueType>& target, const hmemo::HArray<IndexType>& index, const hmemo::_HArray& source, const reduction::ReductionOp op, const hmemo::ContextPtr prefLoc )
     {
         if ( common::getScalarType<H>() == source.getValueType() )
         {
-            HArrayUtils::scatter<ValueType, H>( target, index, reinterpret_cast<const hmemo::HArray<H>&>( source ), prefLoc );
+            HArrayUtils::scatter<ValueType, H>( target, index, reinterpret_cast<const hmemo::HArray<H>&>( source ), op, prefLoc );
         }
         else
         {
-            UtilsWrapperTT2<ValueType, T>::scatter( target, index, source, prefLoc );
+            UtilsWrapperTT2<ValueType, T>::scatter( target, index, source, op, prefLoc );
         }
     }
 };

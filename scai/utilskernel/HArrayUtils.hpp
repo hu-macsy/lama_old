@@ -111,16 +111,20 @@ public:
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::_HArray& source,
+        const reduction::ReductionOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
      *  @brief Scatter (unstructured write of values) with HArrays, template typed version
+     * 
+     *  target[index[i]] = source[i]
      */
     template<typename TargetValueType, typename SourceValueType>
     static void scatter(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::HArray<SourceValueType>& source,
+        const reduction::ReductionOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
