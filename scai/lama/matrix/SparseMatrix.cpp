@@ -1039,129 +1039,59 @@ void SparseMatrix<ValueType>::haloOperationSync(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::vectorHaloOperationSync(
+void SparseMatrix<ValueType>::invHaloOperationSync(
     HArray<ValueType>& localResult,
     const HArray<ValueType>& localX,
-    const HArray<ValueType>& localY,
+    HArray<ValueType>& haloX,
     common::function <
     void(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
-        const HArray<ValueType>& localX ) > calcF,
+        const HArray<ValueType>& localX ) > localF,
     common::function <
     void(
+        const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
-        const HArray<ValueType>& localX,
-        const HArray<ValueType>& localY ) > addF ) const
+        const HArray<ValueType>& haloX ) > haloF ) const
 {
-    DistributionPtr rowDist = getRowDistributionPtr();
-    DistributionPtr colDist = getColDistributionPtr();
-    const Communicator& comm = rowDist->getCommunicator();
-    IndexType numParts = comm.getSize();
-    IndexType myPart = comm.getRank();
-    ContextPtr hostContext = Context::getHostPtr();
-    ContextPtr localContext = mLocalData->getContextPtr();
-    ContextPtr haloContext = mLocalData->getContextPtr();
-    IndexType xSize = localX.size();
+    const Communicator& comm = getColDistribution().getCommunicator();
 
-    SCAI_ASSERT_EQ_ERROR( xSize, rowDist->getLocalSize(), "size mismatch of localX and rowDistribution " << *rowDist )
+    HArray<ValueType> haloResult;  // compute the values for other processors
 
-    IndexType ySize = localY.size();
-    IndexType resultSize = localResult.size();
-
-    SCAI_ASSERT_EQ_ERROR( ySize, resultSize, "size mismatch of localY and localResult" )
-    SCAI_ASSERT_EQ_ERROR( ySize, colDist->getLocalSize(), "size mismatch of localY and columnDistribution " << *colDist )
-
-    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-    // will be done on the host
-    std::vector<IndexType> sizes( numParts );
-    std::vector<IndexType> offsets;
-    comm.allgather( &sizes[0], 1, &xSize );
-    offsets = sizes;
-    offsets.resize( numParts + 1 );
-    sizes2offsets[ hostContext ]( &offsets[0], numParts );
-    HArray<ValueType> haloResult( mHalo.getHaloSize() );
-    HArray<ValueType> toOthersResult( xSize * numParts );
-    HArray<ValueType> fromOthersResult( xSize * numParts );
-
-    if ( numParts != 1 )
+    if ( !mHalo.isEmpty() )
     {
-        // calc halo vector parts
-        {
-            SCAI_REGION( "Vec.Times.Mat.others" )
-            SCAI_LOG_INFO( logger,
-                           comm << ": synchronous computation othersResult[ " << toOthersResult.size() << "] = localF( haloMatrix, localX[ " << xSize << "] ) on " << haloContext )
-            calcF( mHaloData.get(), haloResult, localX );
-            // reassemble halo computation to global indices
-            {
-                ReadAccess<ValueType> h( haloResult, hostContext );
-                WriteAccess<ValueType> o( toOthersResult, hostContext );
+        SCAI_LOG_INFO( logger, comm << ": compute halo vals for other procs, halo matrix = " << *mHaloData << ", localX = " << localX )
 
-                for ( IndexType i = 0; i < toOthersResult.size(); ++i )
-                {
-                    IndexType localIndex = mHalo.global2halo( i );
+        haloF( mHaloData.get(), haloX, localX );
 
-                    if ( localIndex != nIndex )
-                    {
-                        o[i] = h[localIndex];
-                    }
-                    else
-                    {
-                        o[i] = static_cast<ValueType>( 0 );
-                    }
-                }
-            }
-        }
-        // start vector part exchange
-        {
-            SCAI_REGION( "vector.swapping" )
-            ReadAccess<ValueType> toOthers( toOthersResult, hostContext );
-            WriteAccess<ValueType> fromOthers( fromOthersResult, hostContext );
+        SCAI_LOG_DEBUG( logger, comm << ": haloX = " << haloX )
 
-            for ( IndexType i = 0; i < numParts; ++i )
-            {
-                comm.gather( &fromOthers[0], sizes[i], i, &toOthers[offsets[i]] );
-            }
-        }
-        toOthersResult.prefetch( localContext );
+        // send other processors their values, use inverse schedule of halo
+
+        comm.exchangeByPlan( haloResult, mHalo.getProvidesPlan(), haloX, mHalo.getRequiredPlan() );
+
+        SCAI_LOG_DEBUG( logger, comm << ": now exchanged: haloResult = " << haloResult )
     }
 
-    // calc local vector parts
     {
-        SCAI_REGION( "Vec.Times.Mat.local" )
+        SCAI_REGION( "Mat.Sp.syncLocal" )
+
         SCAI_LOG_INFO( logger,
-                       comm << ": synchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
-        calcF( mLocalData.get(), localResult, localX );
+                       comm << ": synchronous computation localResult[ " << localResult.size() << "]" << 
+                               " = localF( localMatrix, localX[ " << localX.size() << "] )" << 
+                               " on " << * ( mLocalData->getContextPtr() ) )
+
+        localF( mLocalData.get(), localResult, localX );
     }
-    // alpha * ( sum up local vector parts with halo vector parts ) + beta * y
+
+    // Now we have to add the received values from other processors
+
+    if ( haloResult.size() > 0 )
     {
-        SCAI_REGION( "Vec.Vec.add" )
-        SCAI_LOG_INFO( logger,
-                       comm << ": synchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
-
-        if ( numParts != 1 )
-        {
-            ContextPtr contextPtr = Context::getHostPtr();
-            WriteAccess<ValueType> localData( localResult, contextPtr );
-            ReadAccess<ValueType> otherData( fromOthersResult, contextPtr );
-
-            for ( IndexType i = 0; i < numParts; ++i )
-            {
-                if ( i == myPart )
-                {
-                    continue;
-                }
-
-                for ( IndexType j = 0; j < xSize; ++j )
-                {
-                    localData[j] += otherData[i * xSize + j];
-                }
-            }
-        }
-
-        addF( localResult, localResult, localY );
+        HArrayUtils::scatter( localResult, mHalo.getProvidesIndexes(), haloResult, utilskernel::reduction::ADD );
     }
-    SCAI_LOG_DEBUG( logger, "vectorHaloOperationSync done" )
+
+    SCAI_LOG_DEBUG( logger, "invHaloOpSync done" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1343,34 +1273,27 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         const ValueType beta,
         const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrix;
 
-    // vectorPlusVector: result = alpha * x^ + beta * y
-
-    void ( *vPlusV )(
-        HArray<ValueType>& result,
-        const ValueType alpha,
-        const HArray<ValueType>& x,
-        const ValueType beta,
-        const HArray<ValueType>& y,
-        ContextPtr context ) = &HArrayUtils::arrayPlusArray<ValueType>;
-
-    ContextPtr hostContext = Context::getHostPtr();
-
     using namespace scai::common;
 
     function <
     void(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
-        const HArray<ValueType>& localX ) > calcF = bind( vectorTimesMatrix, _1, _2, static_cast<ValueType>( 1.0 ),
-                _3, static_cast<ValueType>( 0.0 ), _2 );
+        const HArray<ValueType>& localX ) > localF =
+            bind( vectorTimesMatrix, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
+
+    // haloF: localResult = alpha * haloX * haloMatrix
+
     function <
     void(
+        const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
-        const HArray<ValueType>& localX,
-        const HArray<ValueType>& localY ) > addF = bind( vPlusV, _1,
-                alphaValue, _2, betaValue, _3, hostContext );
+        const HArray<ValueType>& haloX ) > haloF =
+            bind( vectorTimesMatrix, _1, _2, alphaValue, _3, ValueType( 0 ), _2 );
 
-    vectorHaloOperationSync( localResult, localX, localY, calcF, addF );
+    HArray<ValueType>& haloX = denseX.getHaloValues();  // reuse this array to keep halo values
+
+    invHaloOperationSync( localResult, localX, haloX, localF, haloF );
 }
 
 /* -------------------------------------------------------------------------- */
