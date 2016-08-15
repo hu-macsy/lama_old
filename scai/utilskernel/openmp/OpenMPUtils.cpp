@@ -669,17 +669,40 @@ void OpenMPUtils::scatterVal( ValueType out[], const IndexType indexes[], const 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType1, typename ValueType2>
-void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
+void OpenMPUtils::setScatter( 
+    ValueType1 out[], 
+    const IndexType indexes[],    
+    const ValueType2 in[], 
+    const reduction::ReductionOp op, 
+    const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.setScatter" )
+
     SCAI_LOG_DEBUG( logger,
                     "setScatter: out<" << TypeTraits<ValueType1>::id() << ">"
-                    << "[ indexes[" << n << "] ]" << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                    << "[ indexes[" << n << "] ]" << op << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
-    for ( IndexType i = 0; i < n; i++ )
+    if ( op == reduction::COPY )
     {
-        out[indexes[i]] = static_cast<ValueType1>( in[i] );
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            out[indexes[i]] = static_cast<ValueType1>( in[i] );
+        }
+    }
+    else if ( op == reduction::ADD )
+    {
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            atomicAdd( out[indexes[i]], static_cast<ValueType1>( in[i] ) );
+        }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Unsupported reduce op " << op << " for setScatter" )
     }
 }
 

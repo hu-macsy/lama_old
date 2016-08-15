@@ -797,7 +797,7 @@ void MICUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexTy
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType1, typename ValueType2>
-void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
+void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const reduction::ReductionOp op, const IndexType n )
 {
     SCAI_LOG_DEBUG( logger,
                     "setScatter: out<" << common::getScalarType<ValueType1>() << ">" << "[ indexes[" << n << "] ]" << " = in<" << common::getScalarType<ValueType2>() << ">[" << n << "]" )
@@ -805,16 +805,30 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
     const void* indexesPtr = indexes;
     const void* inPtr = in;
     int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device ) in( outPtr, indexesPtr, inPtr, n )
+
+    #pragma offload target( mic : device ) in( outPtr, indexesPtr, inPtr, n, op )
     {
         ValueType1* out = static_cast<ValueType1*>( outPtr );
         const ValueType2* in = static_cast<const ValueType2*>( inPtr );
         const IndexType* indexes = static_cast<const IndexType*>( indexesPtr );
-        #pragma omp parallel for
 
-        for ( IndexType i = 0; i < n; i++ )
+        if ( op == reduction::COPY )
         {
-            out[indexes[i]] = static_cast<ValueType1>( in[i] );
+            #pragma omp parallel for
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[indexes[i]] = static_cast<ValueType1>( in[i] );
+            }
+        }
+        else if ( op == reduction::ADD )
+        {
+            #pragma omp parallel for
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                atomicAdd( out[indexes[i]], static_cast<ValueType1>( in[i] ) );
+            }
         }
     }
 }

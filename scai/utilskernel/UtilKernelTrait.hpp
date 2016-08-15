@@ -290,19 +290,23 @@ struct UtilKernelTrait
          *  @param[in,out] out is the array in which values will be inserted
          *  @param[in]     indexes are the positions where values are written
          *  @param[in]     in is the array with the output values.
+         *  @param[in]     op specifies how the set element is combined with available element
          *  @param[in]     n is the number of values
          *
          *  Note: Not all values might be set in 'out'. There should be no double
          *        values in indexes as this might result in non-ambiguous results
          *        by a parallel execution.
          *
-         *  out[ indexes[i] ] = in [i] , i = 0, ..., n-1
+         *  out[ indexes[i] ] = in [i] , i = 0, ..., n-1   for op == recution::COPY
+         *  out[ indexes[i] ] += in [i] , i = 0, ..., n-1   for op == recution::ADD
+         *  out[ indexes[i] ] *= in [i] , i = 0, ..., n-1   for op == recution::MULT
          */
 
         typedef void ( *FuncType ) (
             ValueType1 out[],
             const IndexType indexes[],
             const ValueType2 in[],
+            const reduction::ReductionOp op,
             const IndexType n );
 
         static const char* getId()

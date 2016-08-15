@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
             HArrayUtils::assignGather( array2, array1, perm, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
             tmp->resize( n ); // no init required as all values are set
-            HArrayUtils::assignScatter( *tmp, perm, array1, ctx );
+            HArrayUtils::assignScatter( *tmp, perm, array1, reduction::COPY, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same
 
@@ -250,11 +250,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_arithmetic_test_type
     BOOST_CHECK_THROW (
     {
         LArray<ValueType> target;
-        HArrayUtils::scatter( target, indexes, source );
+        HArrayUtils::scatter( target, indexes, source, reduction::COPY );
 
     }, Exception );
     LArray<ValueType> target( M );
-    HArrayUtils::scatter( target, indexes, source );
+    HArrayUtils::scatter( target, indexes, source, reduction::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {

@@ -155,8 +155,8 @@ public:
         }
         else
         {
-            // we inherit the row distribution of this matrix to result
-            result.allocate( getRowDistributionPtr() );
+            // we inherit the col distribution of this matrix to result
+            result.allocate( getColDistributionPtr() );
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 

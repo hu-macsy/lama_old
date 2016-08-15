@@ -464,12 +464,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_arithmetic_
 
 BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 {
-    return;
-
-    // This test fails sometimes with 5 or 6 processors
-    // valgrind shows memory problems during MPI gather
-    // TODO: Lauretta  
-
     typedef float ValueType;
 
     // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
@@ -480,7 +474,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
     // ToDo: Lauretta 
 
     const IndexType nRows = 7;
-    const IndexType nCols = 7;
+    const IndexType nCols = 9;
 
     // generate random input data, same on all processors
 
@@ -535,6 +529,8 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
                 res1 = 2 * x1 * A1 - y1;
 
+                SCAI_LOG_INFO( logger, "res1 = 2 * x1 * A1 - y1: " << res1 )
+
                 BOOST_CHECK_EQUAL( res1.size(), A1.getNumColumns() );
 
                 // A1.vectorTimesMatrix( res1, Scalar( 2 ), x1, Scalar( -1 ), y1 );
@@ -542,7 +538,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
                 res1.redistribute( res.getDistributionPtr() );
                 res1 -= res;
                 
-                // fails: BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
+                BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
             }
         }
     }
