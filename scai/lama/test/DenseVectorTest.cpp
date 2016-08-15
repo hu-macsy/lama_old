@@ -460,25 +460,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_arithmetic_
 
 /* --------------------------------------------------------------------- */
 
-// ToDo: BOOST_AUTO_TEST_CASE_TEMPLATE( VectorMatrixMultTest, ValueType, scai_arithmetic_test_types )
-
 BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 {
     typedef float ValueType;
 
-    // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
+    // test of: vector = scalar * vector * matrix + scalar * vector with all distributions, formats
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    // Attention this test causes serious problems with non-square matrices
-    // ToDo: Lauretta 
-
-    const IndexType nRows = 7;
-    const IndexType nCols = 9;
+    const IndexType nRows = 11;
+    const IndexType nCols = 11;
 
     // generate random input data, same on all processors
 
     std::srand( 51413 );
+
+    // Do vector = scalar * vector * matrix + scalar * vector with replicated storage data
 
     DenseMatrix<ValueType> A;
     A.setContextPtr( ctx );
@@ -490,7 +487,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
     y.setRandom( A.getColDistributionPtr() );
     DenseVector<ValueType> res( 2 * x * A - y );
 
-    // Now we do the same with all other matrices and all kind of distributions
+    // Now we do the same with all distributed matrices/vectors and all kind of distributions
 
     dmemo::TestDistributions colDists( nCols );
     dmemo::TestDistributions rowDists( nRows );
@@ -512,11 +509,6 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
                 Matrix& A1 = *matrices[k];
 
                 A1.setCommunicationKind( Matrix::SYNCHRONOUS );
-
-                if ( A1.getMatrixKind() == Matrix::DENSE )
-                {
-                    continue;   // ToDo: this test works currently only for dense matrices
-                }
 
                 A1.assign( A );
                 A1.redistribute( rowDist, colDist );

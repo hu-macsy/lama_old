@@ -1466,7 +1466,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
                             comm << ": send " << *sendValues << ", recv " << *recvValues << ", actual = " << actualPartition )
             SCAI_LOG_INFO( logger,
                            comm << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " << *mData[actualPartition] << ", sendX = " << *sendValues << ", localResult = " << localResult )
-            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, static_cast<ValueType>( 1.0 ), localResult );
+            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, ValueType( 1 ), localResult );
             std::swap( sendValues, recvValues );
         }
     }
@@ -1483,30 +1483,81 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
     const DenseVector<ValueType>& denseY ) const
 {
     SCAI_REGION( "Mat.Dense.vectorTimesMatrix" )
+
     const HArray<ValueType>& localY = denseY.getLocalValues();
+
     HArray<ValueType>& localResult = denseResult.getLocalValues();
-    ContextPtr localContext = mData[0]->getContextPtr();
+
     const Distribution& colDist = getColDistribution();
+
     const Communicator& comm = colDist.getCommunicator();
-    mData[0]->prefetch();
-
-    //It makes no sense to prefetch denseX because, if a transfer is started
-    //the halo update needs to wait for this transfer to finish
-
-    if ( betaValue != common::constants::ZERO )
-    {
-        denseY.prefetch( localContext );
-    }
 
     const HArray<ValueType>& localX = denseX.getLocalValues();
-    SCAI_LOG_INFO( logger,
-                   comm << ": vectorTimesMatrix" << ", alpha = " << alphaValue << ", localX = " << localX << ", beta = " << betaValue << ", localY = " << localY )
-    SCAI_LOG_INFO( logger,
-                   "Aliasing: result = y : " << ( &denseResult == &denseY ) << ", local = " << ( &localResult == &localY ) )
-    const DenseStorage<ValueType>& dense = *mData[0];
-    SCAI_LOG_INFO( logger, comm << ": vectorTimesMatrix, singe dense block = " << dense )
-    dense.vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
-    return;
+
+    PartitionId nParts = colDist.getNumPartitions();
+
+    if ( nParts == 1 )
+    {
+        // replicated column distribution, only on local block, X is replicated
+
+        // localResult = alpha * localX * mData[0] + beta * localY
+
+        mData[0]->vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
+
+        return;
+    }
+
+    const int COMM_DIRECTION = 1;       // circular shifting 
+
+    // reuse member variables of this DenseMatrix, avoids too much reallocation
+
+    HArray<ValueType>& sendValues = mSendValues;
+    HArray<ValueType>& recvValues = mReceiveValues;
+
+    IndexType maxSize = colDist.getMaxLocalSize(); 
+ 
+    // send/recv buffers must be large enough to keep largest amout of data from any processor
+
+    ContextPtr contextPtr = Context::getHostPtr();
+
+    recvValues.reserve( contextPtr, maxSize );
+    sendValues.reserve( contextPtr, maxSize );
+ 
+    SCAI_LOG_DEBUG( logger, comm << ": recv buffer = " << recvValues << ", send buffer = " << sendValues );
+
+    for ( PartitionId p = 0; p < nParts; ++p )
+    {
+        // compute the owner of the values that are in the current send buffer
+
+        PartitionId actualPartition = comm.getNeighbor( -p );
+
+        SCAI_LOG_DEBUG( logger, comm << ": will compute part for partition " << actualPartition << ", mData = " << *mData[actualPartition] )
+
+        if ( p == 0 )
+        { 
+            // start here with computation of own part
+
+            mData[actualPartition]->vectorTimesMatrix( sendValues, alphaValue, localX, betaValue, localY );
+        }
+        else
+        { 
+            // This processor computes the part for actual partition and adds it
+
+            mData[actualPartition]->vectorTimesMatrix( sendValues, alphaValue, localX, ValueType( 1 ), sendValues );
+        }
+
+        SCAI_LOG_DEBUG( logger, comm << ": computed part for partition " << actualPartition << ", is " << sendValues );
+
+        comm.shiftArray( recvValues, sendValues, COMM_DIRECTION );
+
+        SCAI_LOG_DEBUG( logger, comm << ": received next " << recvValues );
+
+        std::swap( sendValues, recvValues );
+    }
+
+    // we do not swap here as allocated data for localResult fits best
+
+    utilskernel::HArrayUtils::assign( localResult, sendValues );
 }
 
 /* -------------------------------------------------------------------------- */
