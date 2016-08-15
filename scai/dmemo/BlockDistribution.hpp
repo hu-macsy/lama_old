@@ -91,6 +91,10 @@ public:
 
     virtual IndexType getLocalSize() const;
 
+    /** Override default implementation Distribution::getMaxLocalSize() */
+
+    virtual IndexType getMaxLocalSize() const;
+
     virtual IndexType local2global( const IndexType localIndex ) const;
 
     virtual IndexType global2local( const IndexType globalIndex ) const;

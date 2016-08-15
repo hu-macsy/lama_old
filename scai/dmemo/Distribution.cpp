@@ -150,6 +150,8 @@ bool Distribution::operator!=( const Distribution& other ) const
 
 const Communicator& Distribution::getCommunicator() const
 {
+    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
+
     return *mCommunicator;
 }
 
@@ -164,9 +166,18 @@ CommunicatorPtr Distribution::getCommunicatorPtr() const
 
 PartitionId Distribution::getNumPartitions() const
 {
-    // mCommunicator is never NULL, but just in case
-    SCAI_ASSERT( mCommunicator, "Distribution without a Communicator is not allowed" )
+    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
+
     return mCommunicator->getSize();
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType Distribution::getMaxLocalSize() const
+{
+    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
+
+    return mCommunicator->max( getLocalSize() );
 }
 
 /* ---------------------------------------------------------------------- */

@@ -110,6 +110,13 @@ IndexType BlockDistribution::getLocalSize() const
 
 /* ---------------------------------------------------------------------- */
 
+IndexType BlockDistribution::getMaxLocalSize() const
+{
+    return mBlockSize;
+}
+
+/* ---------------------------------------------------------------------- */
+
 IndexType BlockDistribution::getBlockDistributionSize() const
 {
     return getLocalSize();

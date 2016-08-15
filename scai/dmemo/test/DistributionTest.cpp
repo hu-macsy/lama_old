@@ -76,6 +76,31 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
 
 /* --------------------------------------------------------------------- */
 
+
+BOOST_AUTO_TEST_CASE( maxLocalSizeTest )
+{
+    TestDistributions allDist( 17 );
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        DistributionPtr dist = allDist[i];
+
+        const Communicator& comm = dist->getCommunicator();
+
+        SCAI_LOG_INFO( logger, comm << ": maxLocalSizeTest, dist = " << *dist )
+
+        // most distribution know an efficient implementation
+        IndexType maxLocalSizeComputed = dist->getMaxLocalSize();
+
+        // this computes the smallest maximum
+        IndexType maxLocalSizeExpected = comm.max( dist->getLocalSize() );
+
+        BOOST_CHECK_EQUAL( maxLocalSizeExpected, maxLocalSizeComputed );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( local2GlobalTest )
 {
     TestDistributions allDist( 17 );

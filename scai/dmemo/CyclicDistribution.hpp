@@ -89,6 +89,10 @@ public:
      */
     virtual IndexType getLocalSize() const;
 
+    /** Override default implementation Distribution::getMaxLocalSize() */
+
+    virtual IndexType getMaxLocalSize() const;
+
     /**
      * @brief get number of elements nb in chunk as defined by Cyclic( nb )
      */

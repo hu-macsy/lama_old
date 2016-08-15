@@ -96,6 +96,12 @@ IndexType CyclicDistribution::getLocalSize() const
     return elements;
 }
 
+IndexType CyclicDistribution::getMaxLocalSize() const
+{
+    // processor 0 has always the most elemements
+    return getPartitionSize( 0 );
+}
+
 void CyclicDistribution::getChunkInfo( IndexType& localChunks, IndexType& extra, const PartitionId rank ) const
 {
     const PartitionId size = mCommunicator->getSize();

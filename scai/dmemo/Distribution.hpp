@@ -207,6 +207,16 @@ public:
      */
     virtual IndexType getLocalSize() const = 0;
 
+    /** 
+     * @brief This method returns the maximal number of local elements on any processor.
+     *
+     * This method can be used to allocate data with the right size for any communication
+     * that uses circular shifting for partition data.
+     *
+     * Default implementation: getCommunicator().max( getLocalSize() ) 
+     */
+    virtual IndexType getMaxLocalSize() const;
+
     /** Abstract method that translates a local index back to a global index.
      *
      * @param[in]   localIndex is the local index, 0 <= localIndex < getLocalSize()
