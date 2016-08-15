@@ -658,7 +658,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
     }
 
-    if ( mNumRows == 0 )
+    if ( mNumColumns == 0 )
     {
         return; // nothing to do
     }
@@ -696,9 +696,9 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         SCAI_LOG_INFO( logger, "alias of result and y, can use it" )
     }
 
-    // now we have: result = alpha * A * x + beta * result
+    // now we have: result = alpha * x * A + beta * result
 
-    if ( mNumColumns == 0 )
+    if ( mNumRows == 0 )
     {
         SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
