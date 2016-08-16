@@ -77,6 +77,12 @@ const char* scalarType2str( const scalar::ScalarType stype )
         case scalar::CHAR:
             return "char";
 
+        case scalar::UNSIGNED_INT:
+            return "uint";
+
+        case scalar::UNSIGNED_LONG:
+            return "ulong";
+
         case scalar::INDEX_TYPE:
             return "IndexType";
 

@@ -224,6 +224,98 @@ public:
     }
 };
 
+/** Type specific traits for unsigned int */
+
+template<>
+class TypeTraits<unsigned int>
+{
+public:
+    typedef unsigned int AbsType;
+
+    static inline unsigned int eps1()
+    {
+        return 0;
+    }
+
+    static inline unsigned int small()
+    {
+        return 0;
+    }
+
+    static inline unsigned int eps0()
+    {
+        return std::numeric_limits<unsigned int>::min();
+    }
+
+    static inline unsigned int getMax()
+    {
+        return std::numeric_limits<unsigned int>::max();
+    }
+
+    static inline int precision()
+    {
+        return 0;
+    }
+
+    static inline unsigned int getMin()
+    {
+        return 0;
+    }
+
+    static const scalar::ScalarType stype = scalar::UNSIGNED_INT;
+
+    static inline const char* id()
+    {
+        return scalarType2str( scalar::UNSIGNED_INT );
+    }
+};
+
+/** Type specific traits for unsigned long */
+
+template<>
+class TypeTraits<unsigned long>
+{
+public:
+    typedef unsigned long AbsType;
+
+    static inline unsigned long eps1()
+    {
+        return 0;
+    }
+
+    static inline unsigned long small()
+    {
+        return 0;
+    }
+
+    static inline unsigned long eps0()
+    {
+        return std::numeric_limits<unsigned long>::min();
+    }
+
+    static inline unsigned long getMax()
+    {
+        return std::numeric_limits<unsigned long>::max();
+    }
+
+    static inline int precision()
+    {
+        return 0;
+    }
+
+    static inline unsigned long getMin()
+    {
+        return 0;
+    }
+
+    static const scalar::ScalarType stype = scalar::UNSIGNED_LONG;
+
+    static inline const char* id()
+    {
+        return scalarType2str( scalar::UNSIGNED_LONG );
+    }
+};
+
 /** Type specific traits for long double */
 
 template<>
