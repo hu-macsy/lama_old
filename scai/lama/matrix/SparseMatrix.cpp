@@ -1039,6 +1039,56 @@ void SparseMatrix<ValueType>::haloOperationSync(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::vectorTimesMatrixRepCols(
+    DenseVector<ValueType>& denseResult,
+    const ValueType alphaValue,
+    const DenseVector<ValueType>& denseX,
+    const ValueType betaValue,
+    const DenseVector<ValueType>& denseY ) const
+{
+    SCAI_REGION( "Mat.Sp.vectorTimesMatrixRepCols" )
+
+    const HArray<ValueType>& localY = denseY.getLocalValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
+
+    HArray<ValueType>& localResult = denseResult.getLocalValues();
+
+    const Distribution& colDist = getColDistribution();
+
+    // this routine is only for non-replicated columns, i.e. mHaloData is empty
+
+    SCAI_ASSERT( 1, colDist.getNumPartitions() );
+
+    const Distribution& rowDist = getRowDistribution();
+    const Communicator& comm = rowDist.getCommunicator();
+
+    mLocalData->vectorTimesMatrix( localResult, alphaValue, localX, ValueType( 0 ), localY );
+
+    if ( comm.getSize() >  1 )
+    {
+        // we have to sum up all local results for final result
+
+        SCAI_LOG_INFO( logger, comm << ": sum up all local results, my is " << localResult )
+
+        {
+            WriteAccess<ValueType> w( localResult );
+
+            for ( IndexType i = 0; i < getNumColumns(); ++i )
+            {
+                ValueType localX = w[i];
+                ValueType globalX = comm.sum( localX );
+                w[i] = globalX;
+                SCAI_LOG_TRACE( logger, comm << ": sum, result = " << globalX << ", my part = " << localX )
+            }
+        }
+    }
+
+    utilskernel::HArrayUtils::axpy( localResult, betaValue, localY );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::invHaloOperationSync(
     HArray<ValueType>& localResult,
     const HArray<ValueType>& localX,
@@ -1054,6 +1104,15 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF ) const
 {
+    if ( getRowDistribution().getCommunicator().getSize() == 1 )
+    {
+        // the full matrix is replicated, the result is distributed, compute just its part
+
+        localF( mLocalData.get(), localResult, localX );
+
+        return;
+    }
+
     const Communicator& comm = getColDistribution().getCommunicator();
 
     HArray<ValueType> haloResult;  // compute the values for other processors

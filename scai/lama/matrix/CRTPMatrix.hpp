@@ -169,8 +169,19 @@ public:
         // Note: in case of beta == 0, we might skip this test
         SCAI_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
         SCAI_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-        static_cast<const Derived*>( this )->vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
-                beta.getValue<ValueType>(), *denseY );
+
+        if ( getColDistribution().getCommunicator().getSize() == 1 )
+        {
+            // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
+
+            static_cast<const Derived*>( this )->vectorTimesMatrixRepCols( *denseResult, alpha.getValue<ValueType>(), *denseX,
+                    beta.getValue<ValueType>(), *denseY );
+        }
+        else
+        {
+            static_cast<const Derived*>( this )->vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
+                    beta.getValue<ValueType>(), *denseY );
+        }
     }
 
     /** @brief Get the row of a matrix
