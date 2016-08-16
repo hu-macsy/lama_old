@@ -124,7 +124,7 @@ std::ostream& operator<<( std::ostream& stream, const scalar::ScalarType& object
 
 bool isComplex( const scalar::ScalarType stype )
 {
-    return common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::isComplex( stype );
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::isComplex( stype );
 }
 
 /*************************************************************************/
@@ -138,7 +138,7 @@ int precision( const scalar::ScalarType stype )
 
     // loop over all supported types and query its precision 
 
-    return common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::precision( stype );
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::precision( stype );
 }
 
 /*************************************************************************/
@@ -151,7 +151,7 @@ size_t typeSize( const scalar::ScalarType stype )
 
     // use TypeTraits as they contain already this information
 
-    return common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::sizeOf( stype );
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::sizeOf( stype );
 }
 
 /*************************************************************************/

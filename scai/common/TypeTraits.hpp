@@ -170,11 +170,11 @@ public:
         return - std::numeric_limits<char>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::INT;
+    static const scalar::ScalarType stype = scalar::CHAR;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::INT );
+        return scalarType2str( scalar::CHAR );
     }
 };
 
