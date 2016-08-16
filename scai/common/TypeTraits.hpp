@@ -131,6 +131,53 @@ public:
     }
 };
 
+/** Type specific traits for char */
+
+template<>
+class TypeTraits<char>
+{
+public:
+
+    typedef char AbsType;
+
+    static inline char eps1()
+    {
+        return 0;
+    }
+
+    static inline char small()
+    {
+        return 0;
+    }
+
+    static inline char eps0()
+    {
+        return std::numeric_limits<char>::min();
+    }
+
+    static inline char getMax()
+    {
+        return std::numeric_limits<char>::max();
+    }
+
+    static inline int precision()
+    {
+        return 0;
+    }
+
+    static inline char getMin()
+    {
+        return - std::numeric_limits<char>::max();
+    }
+
+    static const scalar::ScalarType stype = scalar::INT;
+
+    static inline const char* id()
+    {
+        return scalarType2str( scalar::INT );
+    }
+};
+
 /** Type specific traits for long */
 
 template<>

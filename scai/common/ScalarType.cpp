@@ -74,6 +74,9 @@ const char* scalarType2str( const scalar::ScalarType stype )
         case scalar::LONG_DOUBLE_COMPLEX:
             return "ComplexLongDouble";
 
+        case scalar::CHAR:
+            return "char";
+
         case scalar::INDEX_TYPE:
             return "IndexType";
 
