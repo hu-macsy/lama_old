@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_arithmetic_
 
         for ( size_t j = 0; j < colDists.size(); ++j )
         {
-            dmemo::DistributionPtr colDist = colDists[i];
+            dmemo::DistributionPtr colDist = colDists[j];
             
             Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
 
@@ -468,8 +468,8 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    const IndexType nRows = 11;
-    const IndexType nCols = 11;
+    const IndexType nRows = 2;
+    const IndexType nCols = 3;
 
     // generate random input data, same on all processors
 
@@ -492,6 +492,16 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
     dmemo::TestDistributions colDists( nCols );
     dmemo::TestDistributions rowDists( nRows );
 
+    for ( size_t i = 0; i < rowDists.size(); ++i )
+    {
+        SCAI_LOG_DEBUG( logger, "Row distribution [ " << i << " ] = " << *rowDists[i] )
+    }
+
+    for ( size_t j = 0; j < colDists.size(); ++j )
+    {
+        SCAI_LOG_DEBUG( logger, "Col distribution [ " << j << " ] = " << *colDists[j] )
+    }
+
     common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
@@ -500,7 +510,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
         for ( size_t j = 0; j < colDists.size(); ++j )
         {
-            dmemo::DistributionPtr colDist = colDists[i];
+            dmemo::DistributionPtr colDist = colDists[j];
             
             Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
 
@@ -517,7 +527,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
                 DenseVector<ValueType> y1( y, colDist );
                 DenseVector<ValueType> res1;
 
-                SCAI_LOG_INFO( logger, "vectorTimesMatrix with this matrix: " << A1 << ", y1 = " << y1 )
+                SCAI_LOG_INFO( logger, "vectorTimesMatrix[" << i << "," << j << "," << k << "] with this matrix: " << A1 << ", y1 = " << y1 )
 
                 res1 = 2 * x1 * A1 - y1;
 
