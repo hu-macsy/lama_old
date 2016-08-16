@@ -145,7 +145,11 @@ BOOST_AUTO_TEST_CASE( InvertTest )
  
         v->invert();
  
-        BOOST_CHECK_EQUAL( ( *v )( n / 2 ), Scalar( 2 ) );
+        Scalar s = ( *v )( n / 2 );
+
+        // s should be 2, but might not be exact
+
+        BOOST_CHECK( ( s - Scalar( 2 ) ) < 0.00001 );
     }
 }
 
