@@ -116,6 +116,10 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 #define SCAI_ALL_TYPES int, unsigned int, long, unsigned long, char, SCAI_ARITHMETIC_TYPES
 
+/** these can be used for Complex */
+
+#define SCAI_ALL1_TYPES int, long, SCAI_ARITHMETIC_TYPES
+
 /*
  * Lists of all used arithmetic types for which matrices, storages might be created
  */
