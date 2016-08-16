@@ -336,13 +336,6 @@ public:
         const ValueType beta,
         const DenseVector<ValueType>& y ) const;
 
-    void vectorTimesMatrixRepCols(
-        DenseVector<ValueType>& result,
-        const ValueType alpha,
-        const DenseVector<ValueType>& x,
-        const ValueType beta,
-        const DenseVector<ValueType>& y ) const;
-
     /**
      * @brief Same as matrixTimesVector but with vectors result, x, and y of same value type.
      */
