@@ -106,8 +106,7 @@ private    :
         const PartitionId dest,
         const IndexType size ) const;
 
-    template<typename T>
-    void bcastImpl( T val[], const IndexType n, const PartitionId root ) const;
+    void bcastData( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const;
 
     template<typename ValueType>
     void all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const;
@@ -166,6 +165,10 @@ private    :
         const CommunicationPlan& sendPlan ) const;
 
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
+
+    /** Implementation of Communicator::sumData */
+
+    virtual void sumData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
 public:
 

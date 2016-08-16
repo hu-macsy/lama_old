@@ -125,14 +125,22 @@ private:
 
     MPICommunicator( int& argc, char**& argv );
 
-    template<typename ValueType>
-    inline static MPI_Datatype getMPIType();
+    /** Implementation of Communicator::sumData */
 
-    template<typename T1, typename T2>
-    inline static MPI_Datatype getMPI2Type();
+    virtual void sumData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+
+    /** Translate SCAI project enum type ScalarType to MPI enum MPI_Datatype */
+
+    inline static MPI_Datatype getMPIType( common::scalar::ScalarType stype );
+
+    /** Translate SCAI project enum type ScalarType ( two types ) to MPI enum MPI_Datatype */
+
+    inline static MPI_Datatype getMPI2Type( common::scalar::ScalarType stype1, common::scalar::ScalarType stype2 );
 
     template<typename ValueType>
     inline static MPI_Op getMPISum();
+
+    inline static MPI_Op getMPISum( common::scalar::ScalarType stype );
 
     template<typename ValueType>
     inline static MPI_Op getMPIMin();
@@ -140,8 +148,9 @@ private:
     template<typename ValueType>
     inline static MPI_Op getMPIMax();
 
-    template<typename ValueType>
-    void bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const;
+    /** MPI implementation for pure method Communicator::bcastData */
+
+    void bcastData( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const;
 
     template<typename ValueType>
     void all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const;
@@ -304,113 +313,66 @@ private:
 /*              getMPIType                                                            */
 /* ---------------------------------------------------------------------------------- */
 
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<float>()
+inline MPI_Datatype MPICommunicator::getMPIType( common::scalar::ScalarType stype )
 {
-    return MPI_FLOAT;
+    switch ( stype )
+    {
+        case common::scalar::INT                 : return MPI_INT;
+        case common::scalar::LONG                : return MPI_LONG;
+        case common::scalar::FLOAT               : return MPI_FLOAT;
+        case common::scalar::DOUBLE              : return MPI_DOUBLE;
+        case common::scalar::LONG_DOUBLE         : return MPI_LONG_DOUBLE;
+        case common::scalar::COMPLEX             : return MPI_COMPLEX;
+        case common::scalar::DOUBLE_COMPLEX      : return MPI_DOUBLE_COMPLEX;
+        case common::scalar::LONG_DOUBLE_COMPLEX : return MPI::LONG_DOUBLE_COMPLEX;
+        case common::scalar::CHAR                : return MPI_CHAR;
+
+        default: 
+             COMMON_THROWEXCEPTION( "No MPI Type for " << stype )
+             return MPI_INT;
+    }
 }
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<char>()
-{
-    return MPI_CHAR;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<double>()
-{
-    return MPI_DOUBLE;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<int>()
-{
-    return MPI_INT;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<unsigned int>()
-{
-    return MPI_UNSIGNED;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<long>()
-{
-    return MPI_LONG;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
-{
-    return MPI_UNSIGNED_LONG;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<long double>()
-{
-    return MPI_LONG_DOUBLE;
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<ComplexFloat>()
-{
-    return MPI_COMPLEX;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<ComplexDouble>()
-{
-    // Be careful: some MPI implementations do not provide MPI_DOUBLE_COMPLEX
-    // May be helpful: MPI::DOUBLE_COMPLEX
-    return MPI_DOUBLE_COMPLEX;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<ComplexLongDouble>()
-{
-    // Be careful: some MPI implementations do not provide MPI_DOUBLE_COMPLEX
-    // May be helpful: MPI::DOUBLE_COMPLEX
-    return MPI::LONG_DOUBLE_COMPLEX;
-}
-
-#endif
 
 /* ---------------------------------------------------------------------------------- */
 /*              getMPI2Type                                                           */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T1, typename T2>
-inline MPI_Datatype MPICommunicator::getMPI2Type()
+inline MPI_Datatype MPICommunicator::getMPI2Type( common::scalar::ScalarType stype1,
+                                                  common::scalar::ScalarType stype2 )
 {
-    COMMON_THROWEXCEPTION( "unsupported type for MPI communication" )
-    return MPI_2INT;
-}
+    if ( stype2 != common::scalar::INT )
+    {
+        COMMON_THROWEXCEPTION( "getMPI2Type, 2nd type must be INT, is " << stype1 )
+    }
 
-template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<float, int>()
-{
-    return MPI_FLOAT_INT;
-}
+    switch ( stype1 )
+    {
+        case common::scalar::INT                 : return MPI_2INT;
+        case common::scalar::FLOAT               : return MPI_FLOAT_INT;
+        case common::scalar::DOUBLE              : return MPI_DOUBLE_INT;
 
-template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<double, int>()
-{
-    return MPI_DOUBLE_INT;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<int, int>()
-{
-    return MPI_2INT;
+        default: 
+             COMMON_THROWEXCEPTION( "No MPI2 Type for " << stype1 )
+             return MPI_2INT;
+    }
 }
 
 /* ---------------------------------------------------------------------------------- */
 /*              getMPISum                                                             */
 /* ---------------------------------------------------------------------------------- */
 
+inline MPI_Op MPICommunicator::getMPISum( common::scalar::ScalarType stype )
+{
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    if ( stype == common::scalar::LONG_DOUBLE_COMPLEX )
+    {
+        return mSumComplexLongDouble;
+    }
+#endif
+
+    return MPI_SUM;
+}
 
 template<typename ValueType>
 inline MPI_Op MPICommunicator::getMPISum()
