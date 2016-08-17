@@ -117,16 +117,36 @@ void NoCommunicator::sumData( void* outData, const void* inData, const IndexType
     memcpy( outData, inData, typeSize( stype ) * n );
 }
 
+void NoCommunicator::minData( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+{
+    if ( outData == inData )
+    {
+        return;   // IN_PLACE
+    }
+
+    memcpy( outData, inData, typeSize( stype ) * n );
+}
+
+void NoCommunicator::maxData( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+{
+    if ( outData == inData )
+    {
+        return;   // IN_PLACE
+    }
+
+    memcpy( outData, inData, typeSize( stype ) * n );
+}
+
 /* ---------------------------------------------------------------------------------- */
 /*      exchangeByPlan                                                                */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename ValueType>
 void NoCommunicator::exchangeByPlanImpl(
-    ValueType recvData[],
+    void* recvData,
     const CommunicationPlan& recvPlan,
-    const ValueType sendData[],
-    const CommunicationPlan& sendPlan ) const
+    const void* sendData,
+    const CommunicationPlan& sendPlan,
+    const common::scalar::ScalarType stype ) const
 {
     SCAI_ASSERT_EQ_ERROR( recvPlan.size(), sendPlan.size(), "size mismatch" )
 
@@ -137,21 +157,25 @@ void NoCommunicator::exchangeByPlanImpl(
 
     // send / recv plan have maximal one value
     SCAI_ASSERT_EQ_ERROR( 1, recvPlan.size(), "maximal one value in recvPlan" )
+
     int quantity = recvPlan[0].quantity;
+
     // recv and send plan must have same quantity
     SCAI_ASSERT_EQ_ERROR( quantity, sendPlan[0].quantity, "quantity mismatch" )
+
     // self copy of send data to recv data
-    memcpy( recvData, sendData, quantity * sizeof( ValueType ) );
+
+    memcpy( recvData, sendData, quantity * common::typeSize( stype ) );
 }
 
-template<typename ValueType>
 tasking::SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
-    ValueType recvData[],
+    void* recvData,
     const CommunicationPlan& recvPlan,
-    const ValueType sendData[],
-    const CommunicationPlan& sendPlan ) const
+    const void* sendData,
+    const CommunicationPlan& sendPlan,
+    const common::scalar::ScalarType stype ) const
 {
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan );
+    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, stype );
     return new tasking::NoSyncToken();
 }
 
@@ -159,27 +183,27 @@ tasking::SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
 /*              shift                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename ValueType>
-IndexType NoCommunicator::shiftImpl(
-    ValueType[],
+IndexType NoCommunicator::shiftData(
+    void*,
     const IndexType,
     const PartitionId,
-    const ValueType[],
+    const void*,
     const IndexType,
-    const PartitionId ) const
+    const PartitionId,
+    const common::scalar::ScalarType ) const
 {
-    COMMON_THROWEXCEPTION( "shiftImpl should never be called for NoCommunicator" )
+    COMMON_THROWEXCEPTION( "shiftData should never be called for NoCommunicator" )
 }
 
-template<typename ValueType>
-tasking::SyncToken* NoCommunicator::shiftAsyncImpl(
-    ValueType[],
+tasking::SyncToken* NoCommunicator::shiftAsyncData(
+    void*,
     const PartitionId,
-    const ValueType[],
+    const void*,
     const PartitionId,
-    const IndexType ) const
+    const IndexType,
+    const common::scalar::ScalarType ) const
 {
-    COMMON_THROWEXCEPTION( "shiftAsyncImpl should never be called for NoCommunicator" )
+    COMMON_THROWEXCEPTION( "shiftAsyncData should never be called for NoCommunicator" )
 }
 
 template<typename ValueType>
@@ -195,85 +219,65 @@ void NoCommunicator::bcastData( void*, const IndexType, const PartitionId root, 
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 }
 
-template<typename ValueType>
-void NoCommunicator::all2allvImpl( ValueType**, IndexType[], ValueType**, IndexType[] /*sendCount[]*/ ) const
+void NoCommunicator::all2allvImpl( void*[], IndexType[], void*[], IndexType[], common::scalar::ScalarType ) const
 {
 }
 
-template<typename ValueType>
-void NoCommunicator::scatterImpl(
-    ValueType myvals[],
+void NoCommunicator::scatterData(
+    void* myVals,
     const IndexType n,
     const PartitionId root,
-    const ValueType allvals[] ) const
+    const void* allVals,
+    const common::scalar::ScalarType stype ) const
 {
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 
-    for ( int i = 0; i < n; i++ )
-    {
-        myvals[i] = allvals[i];
-    }
+    memcpy( myVals, allVals, common::typeSize( stype ) * n );
 }
 
-template<typename ValueType>
-void NoCommunicator::scatterVImpl(
-    ValueType myvals[],
+void NoCommunicator::scatterVData(
+    void* myVals,
     const IndexType n,
     const PartitionId root,
-    const ValueType allvals[],
-    const IndexType sizes[] ) const
+    const void* allVals,
+    const IndexType sizes[],
+    const common::scalar::ScalarType stype ) const
 {
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
     SCAI_ASSERT_EQ_ERROR( sizes[0], n , "size mismatch" )
 
-    for ( int i = 0; i < n; i++ )
-    {
-        myvals[i] = allvals[i];
-    }
+    memcpy( myVals, allVals, common::typeSize( stype ) * n );
 }
 
-template<typename ValueType>
-void NoCommunicator::gatherImpl(
-    ValueType allvals[],
+void NoCommunicator::gatherData(
+    void* allVals,
     const IndexType n,
     const PartitionId root,
-    const ValueType myvals[] ) const
+    const void* myVals,
+    common::scalar::ScalarType stype ) const
 {
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 
-    for ( int i = 0; i < n; i++ )
-    {
-        allvals[i] = myvals[i];
-    }
+    memcpy( allVals, myVals, common::typeSize( stype ) * n );
 }
 
-template<typename ValueType>
-void NoCommunicator::gatherVImpl(
-    ValueType allvals[],
+void NoCommunicator::gatherVData(
+    void* allVals,
     const IndexType n,
     const PartitionId root,
-    const ValueType myvals[],
-    const IndexType sizes[] ) const
+    const void* myVals,
+    const IndexType sizes[],
+    common::scalar::ScalarType stype ) const
 {
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
     SCAI_ASSERT_EQ_ERROR( sizes[0], n, "" )
 
-    for ( int i = 0; i < n; i++ )
-    {
-        allvals[i] = myvals[i];
-    }
+    memcpy( allVals, myVals, common::typeSize( stype ) * n );
 }
 
-template<typename ValueType>
-void NoCommunicator::swapImpl( ValueType[], const IndexType, const PartitionId partner ) const
+void NoCommunicator::swapImpl( void*, const IndexType, const PartitionId partner, const common::scalar::ScalarType ) const
 {
     SCAI_ASSERT_EQ_ERROR( partner, 0, "" )
-}
-
-template<typename ValueType>
-ValueType NoCommunicator::sumImpl( const ValueType value ) const
-{
-    return value;
 }
 
 template<typename ValueType>

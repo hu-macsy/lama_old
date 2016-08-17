@@ -47,6 +47,7 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
+#include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/logging.hpp>
 
@@ -297,6 +298,40 @@ public:
      *      const CommunicationPlan& sendPlan ) const = 0;
      */
 
+    virtual void exchangeByPlanImpl(
+        void* recvData,
+        const CommunicationPlan& recvPlan,
+        const void* sendData,
+        const CommunicationPlan& sendPlan,
+        const common::scalar::ScalarType stype ) const = 0;
+
+    template<typename ValueType>
+    void exchangeByPlan( 
+        ValueType recvVals[],
+        const CommunicationPlan& recvPlan,
+        const ValueType sendVals[],
+        const CommunicationPlan& sendPlan ) const
+    {
+        exchangeByPlanImpl( recvVals, recvPlan, sendVals, sendPlan, common::TypeTraits<ValueType>::stype );
+    }
+
+    virtual tasking::SyncToken* exchangeByPlanAsyncImpl(
+        void* recvData,
+        const CommunicationPlan& recvPlan,
+        const void* sendData,
+        const CommunicationPlan& sendPlan,
+        const common::scalar::ScalarType stype ) const = 0;
+
+    template<typename ValueType>
+    tasking::SyncToken* exchangeByPlanAsync(
+        ValueType recvVals[],
+        const CommunicationPlan& recvPlan,
+        const ValueType sendVals[],
+        const CommunicationPlan& sendPlan ) const
+    {
+        return exchangeByPlanAsyncImpl( recvVals, recvPlan, sendVals, sendPlan, common::TypeTraits<ValueType>::stype );
+    }
+
     /* @brief Asynchronous exchange of data between all processors by communication plans.
      *
      *  @param[out] recvData   buffer for data received from other processors
@@ -333,6 +368,15 @@ public:
      *      const TypeId allvals[] ) const = 0;
      */
 
+    virtual void scatterData( void* myVals, const IndexType n, const PartitionId root, 
+                              const void* allVals, common::scalar::ScalarType stype ) const = 0;
+
+    template<typename ValueType>
+    void scatter( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[] ) const
+    {
+        scatterData( myVals, n, root, allVals, common::TypeTraits<ValueType>::stype );
+    }
+
     /* @brief Scatter of an array of values from root to all other processors.
      *
      *  @param[out]   myvals values that I receive
@@ -340,28 +384,33 @@ public:
      *  @param[in]    root   processor with values for all processors
      *  @param[in]    allvals values for all processors (size must be sum(sizes) )
      *  @param[in]    sizes   number of total values for all processors
-     *
-     *  virtual void scatterV(
-     *      int myvals[],
-     *      const IndexType n,
-     *      const PartitionId root,
-     *      const int allvals[],
-     *      const IndexType sizes[] ) const = 0;
      */
+
+    virtual void scatterVData( void* myVals, const IndexType n, const PartitionId root,
+                               const void* allVals, const IndexType sizes[], common::scalar::ScalarType stype ) const = 0;
+
+    template<typename ValueType>
+    void scatterV( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[], const IndexType sizes[] ) const
+    {
+        scatterVData( myVals, n, root, allVals, sizes, common::TypeTraits<ValueType>::stype );
+    }
 
     /* @brief Gather of an array of values from all processors to root.
      *
-     *  @param[out]   allvals values that I receive (size must be n * size() )
+     *  @param[out]   allVals values that I receive (size must be n * size() )
      *  @param[in]    n      number of elements in vector val
      *  @param[in]    root   processor with values for all processors
-     *  @param[in]    myvals values that this processor contributes
-     *
-     *  virtual void gather(
-     *      TypeId allvals[],
-     *      const IndexType n,
-     *      const PartitionId root,
-     *      const TypeId myvals[] ) const = 0;
+     *  @param[in]    myVals values that this processor contributes
+     *  @param[in]    stype  specifies the data type used              
      */
+
+    virtual void gatherData( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::scalar::ScalarType stype ) const = 0;
+
+    template<typename ValueType>
+    void gather( ValueType allVals[], const IndexType n, const PartitionId root, const ValueType myVals[] ) const
+    {
+        gatherData( allVals, n, root, myVals, common::TypeTraits<ValueType>::stype );
+    }
 
     /* @brief Gather of an array of double values from all processors to root.
      *
@@ -373,14 +422,21 @@ public:
      *
      *  The array sizes must only be valid on the root processor. The
      *  output array allvals will only be valid on the root processor.
-     *
-     *  virtual void gatherV(
-     *      TypeId allvals[],
-     *      const IndexType n,
-     *      const PartitionId root,
-     *      const TypeId myvals[],
-     *      const IndexType sizes[] ) const = 0;
      */
+
+    virtual void gatherVData(
+        void* allvals,
+        const IndexType n,
+        const PartitionId root,
+        const void* myvals,
+        const IndexType sizes[],
+        common::scalar::ScalarType stype ) const = 0;
+
+    template<typename ValueType>
+    void gatherV( ValueType allVals[], const IndexType n, const PartitionId root, const ValueType myVals[], const IndexType sizes[] ) const
+    {
+        gatherVData( allVals, n, root, myVals, sizes, common::TypeTraits<ValueType>::stype );
+    }
 
     /* @brief Sum operations sum up one single value from each partition to a global value.
      *
@@ -413,6 +469,18 @@ public:
      * virtual void swap( TypeId val[], const IndexType n, const PartitionId partner ) const = 0;
      */
 
+    virtual void swapImpl( 
+        void* val, 
+        const IndexType n, 
+        PartitionId partner, 
+        common::scalar::ScalarType stype ) const = 0;
+
+    template<typename ValueType>
+    void swap( ValueType val[], const IndexType n, const PartitionId partner ) const
+    {
+        swapImpl( val, n, partner, common::TypeTraits<ValueType>::stype );
+    }
+
     /* @brief This routine shifts data between neighbored processors.
      *
      *  @param[out] newVals  array with data this partition get from neighbored partition
@@ -424,14 +492,42 @@ public:
      *  @returns number of values received in newVals (newSize must have been larger before)
      *
      *  Each partition sends to rank() + direction and receives from rank() - direction.
-     *
-     *  virtual IndexType shiftData(
-     *      TypeId newVals[],
-     *      const IndexType newSize,
-     *      const TypeId oldVals[],
-     *      const IndexType oldSize,
-     *      const int direction ) const = 0;
      */
+
+    template<typename ValueType>
+    IndexType shiftData( ValueType newVals[], const IndexType newSize,
+                         const ValueType oldVals[], const IndexType oldSize,
+                         const int direction ) const
+    {
+        if ( direction % getSize() == 0 )
+        {
+            return shift0( newVals, newSize, oldVals, oldSize );
+        }
+
+        PartitionId dest = getNeighbor( direction );
+        PartitionId source = getNeighbor( -direction );
+
+        return shiftData( newVals, newSize, source, oldVals, oldSize, dest, common::TypeTraits<ValueType>::stype );
+    }
+
+    virtual IndexType shiftData(
+        void* newVals,
+        const IndexType newSize,
+        const PartitionId source,
+        const void* oldVals,
+        const IndexType oldSize,
+        const PartitionId dest,
+        common::scalar::ScalarType stype ) const = 0;
+
+    /** Pure method that provides the wanted functionality for each communicator */
+
+    virtual tasking::SyncToken* shiftAsyncData(
+        void* newVals,
+        const PartitionId source,
+        const void* oldVals,
+        const PartitionId dest,
+        const IndexType size,
+        common::scalar::ScalarType stype ) const = 0;
 
     /* @brief Asynchronous version of shift.
      *
@@ -452,6 +548,21 @@ public:
      *      const IndexType size,
      *      const int direction ) const = 0;
      */
+
+    template<typename ValueType>
+    tasking::SyncToken* shiftDataAsync( ValueType recvVals[], const ValueType sendVals[], const IndexType size, const int direction ) const
+    {
+        if ( direction % getSize() == 0 )
+        {
+            shift0( recvVals, size, sendVals, size );
+            return new tasking::NoSyncToken();
+        }
+
+        PartitionId dest = getNeighbor( direction );
+        PartitionId source = getNeighbor( -direction );
+
+        return shiftAsyncData( recvVals, source, sendVals, dest, size, common::TypeTraits<ValueType>::stype );
+    }
 
     /* @brief Exchange of data between all processors by communication plans.
      *
@@ -477,6 +588,19 @@ public:
      */
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
 
+    virtual void all2allvImpl( 
+        void* recvBuffer[], IndexType recvCount[],
+        void* sendBuffer[], IndexType sendCount[],
+        common::scalar::ScalarType stype ) const = 0;
+
+    template<typename ValueType>
+    void all2allv( ValueType* recvVal[], IndexType recvCount[],
+                   ValueType* sendVal[], IndexType sendCount[],
+                   common::scalar::ScalarType stype ) const 
+    {
+        all2allvImpl( recvVal, recvCount, sendVal, sendCount, common::TypeTraits<ValueType>::stype );
+    }
+
     /** @brief Expanded macro by SCAI_COMMON_LOOP that defines all virtual routines for one type.
      *
      *  @param _type is the used ValueType
@@ -485,81 +609,12 @@ public:
      */
 
 #define SCAI_DMEMO_COMMUNICATOR_METHODS( _type )                            \
-    \
-    virtual void exchangeByPlan(                                            \
-            _type* const recvData,                                          \
-            const CommunicationPlan& recvPlan,                              \
-            const _type* const sendData,                                    \
-            const CommunicationPlan& sendPlan ) const = 0;                  \
-    \
-    virtual tasking::SyncToken* exchangeByPlanAsync(                        \
-            _type* const recvData,                                          \
-            const CommunicationPlan& recvPlan,                              \
-            const _type* const sendData,                                    \
-            const CommunicationPlan& sendPlan ) const = 0;                  \
-    \
-    virtual void all2allv(                                                  \
-            _type* recvVal[],                                               \
-            IndexType recvCount[],                                          \
-            _type* sendVal[],                                               \
-            IndexType sendCount[] ) const = 0;                              \
-    \
-    virtual void scatter(                                                   \
-            _type myvals[],                                                 \
-            const IndexType n,                                              \
-            const PartitionId root,                                         \
-            const _type allvals[] ) const = 0;                              \
-    \
-    virtual void scatterV(                                                  \
-            _type myvals[],                                                 \
-            const IndexType n,                                              \
-            const PartitionId root,                                         \
-            const _type allvals[],                                          \
-            const IndexType sizes[] ) const = 0;                            \
-    \
-    virtual void gather(                                                    \
-            _type allvals[],                                                \
-            const IndexType n,                                              \
-            const PartitionId root,                                         \
-            const _type myvals[] ) const = 0;                               \
-    \
-    virtual void gatherV(                                                   \
-            _type allvals[],                                                \
-            const IndexType n,                                              \
-            const PartitionId root,                                         \
-            const _type myvals[],                                           \
-            const IndexType sizes[] ) const = 0;                            \
-    \
-    virtual void swap(                                                      \
-            _type val[],                                                    \
-            const IndexType n,                                              \
-            const PartitionId partner ) const = 0;                          \
-    \
+                                                                            \
     virtual void maxloc(                                                    \
             _type& val,                                                     \
             IndexType& location,                                            \
             const PartitionId root ) const = 0;                             \
-    \
-    virtual _type min(                                                      \
-            const _type value ) const = 0;                                  \
                                                                             \
-    virtual _type max(                                                      \
-            const _type value ) const = 0;                                  \
-                                                                            \
-    virtual IndexType shiftData(                                            \
-            _type newVals[],                                                \
-            const IndexType newSize,                                        \
-            const _type oldVals[],                                          \
-            const IndexType oldSize,                                        \
-            const int direction ) const = 0;                                \
-    \
-    virtual tasking::SyncToken* shiftDataAsync(                             \
-            _type newVals[],                                                \
-            const _type oldVals[],                                          \
-            const IndexType size,                                           \
-            const int direction ) const = 0;
-
-
     // define communicator methods for all supported types
 
     SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_METHODS, SCAI_ALL_TYPES )
@@ -574,6 +629,10 @@ public:
      */
  
     virtual void sumData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+
+    virtual void minData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+
+    virtual void maxData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
 
     /** Pure method for bcast
      *
@@ -631,6 +690,12 @@ public:
      */
     template<typename ValueType>
     inline ValueType sum( const ValueType localValue ) const;
+
+    template<typename ValueType>
+    inline ValueType min( const ValueType localValue ) const;
+
+    template<typename ValueType>
+    inline ValueType max( const ValueType localValue ) const;
 
     template<typename ValueType>
     void all2allv( ValueType* recvBuffer[], IndexType recvCount[],  ValueType* sendBuffer[], IndexType sendCount[] ) const;
@@ -824,6 +889,34 @@ ValueType Communicator::sum( ValueType localValue ) const
     // general routine uses typeless pointers void*, type is coded via ScalarType
 
     sumData( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
+
+    return globalValue;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType Communicator::min( ValueType localValue ) const
+{
+    ValueType globalValue;
+
+    // general routine uses typeless pointers void*, type is coded via ScalarType
+
+    minData( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
+
+    return globalValue;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType Communicator::max( ValueType localValue ) const
+{
+    ValueType globalValue;
+
+    // general routine uses typeless pointers void*, type is coded via ScalarType
+
+    maxData( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
 
     return globalValue;
 }

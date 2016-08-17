@@ -87,54 +87,59 @@ protected:
 
 private    :
 
-    // Implementation methods are all private, but CRTPCommunicator is a friend class
+    /** Implementation of pure method Communicator::shiftData */
 
-    template<typename T>
-    IndexType shiftImpl(
-        T newvals[],
+    IndexType shiftData(
+        void* newVals,
         const IndexType newSize,
         const PartitionId source,
-        const T oldVals[],
+        const void* oldVals,
         const IndexType oldSize,
-        const PartitionId dest ) const;
-
-    template<typename T>
-    tasking::SyncToken* shiftAsyncImpl(
-        T newvals[],
-        const PartitionId source,
-        const T oldVals[],
         const PartitionId dest,
-        const IndexType size ) const;
+        common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::shiftAsyncData */
+
+    tasking::SyncToken* shiftAsyncData(
+        void* newVals,
+        const PartitionId source,
+        const void* oldVals,
+        const PartitionId dest,
+        const IndexType size,
+        common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::bcastData */
 
     void bcastData( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
-    void all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const;
+    /** Implementation of pure method Communciator::all2allvImpl */
 
-    template<typename T>
-    void scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const;
+    void all2allvImpl( void* recvBuffer[], IndexType recvCount[],
+                       void* sendBuffer[], IndexType sendCount[],
+                       common::scalar::ScalarType stype ) const;
 
-    template<typename T>
-    void scatterVImpl(
-        T myvals[],
+    /** Implementation of pure method Communicator::scatterData */
+
+    void scatterData( void* myVals, const IndexType n, const PartitionId root, const void* allVals, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::scatterVData */
+
+    void scatterVData( void* myVals, const IndexType n, const PartitionId root,
+                       const void* allVals, const IndexType sizes[], common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::gatherData */
+
+    void gatherData( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::gatherVData */
+
+    void gatherVData(
+        void* allvals,
         const IndexType n,
         const PartitionId root,
-        const T allvals[],
-        const IndexType sizes[] ) const;
-
-    template<typename T>
-    void gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const;
-
-    template<typename T>
-    void gatherVImpl(
-        T allvals[],
-        const IndexType n,
-        const PartitionId root,
-        const T myvals[],
-        const IndexType sizes[] ) const;
-
-    template<typename T>
-    T sumImpl( const T value ) const;
+        const void* myvals,
+        const IndexType sizes[],
+        const common::scalar::ScalarType stype ) const;
 
     template<typename T>
     T maxImpl( const T value ) const;
@@ -145,30 +150,39 @@ private    :
     template<typename T>
     void maxlocImpl( T& val, IndexType& location, const PartitionId root ) const;
 
-    template<typename T>
-    void swapImpl( T val[], const IndexType n, const PartitionId partner ) const;
+    void swapImpl( void* val, const IndexType n, const PartitionId partner, common::scalar::ScalarType stype ) const;
 
-    // common implementation for self exchange, uses size of datatype
+    /** Implementation of pure method Communicator::exchangeByPlanImpl */
 
-    template<typename T>
     void exchangeByPlanImpl(
-        T recvData[],
+        void* recvData,
         const CommunicationPlan& recvPlan,
-        const T sendData[],
-        const CommunicationPlan& sendPlan ) const;
+        const void* sendData,
+        const CommunicationPlan& sendPlan,
+        const common::scalar::ScalarType stype ) const;
 
-    template<typename T>
+    /** Implementation of pure method Communicator::exchangeByPlanAsyncImpl */
+
     tasking::SyncToken* exchangeByPlanAsyncImpl(
-        T recvData[],
+        void* recvData,
         const CommunicationPlan& recvPlan,
-        const T sendData[],
-        const CommunicationPlan& sendPlan ) const;
+        const void* sendData,
+        const CommunicationPlan& sendPlan,
+        const common::scalar::ScalarType stype ) const;
 
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
     /** Implementation of Communicator::sumData */
 
     virtual void sumData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of Communicator::minData */
+
+    virtual void minData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of Communicator::maxData */
+
+    virtual void maxData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
 public:
 

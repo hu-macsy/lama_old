@@ -43,6 +43,7 @@
 
 #include <scai/tracing.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <locale>
 #include <string>
@@ -489,24 +490,17 @@ void Communicator::updateHalo(
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
     SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
     SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
+
     // Before we exchange by plan, we have to pack local values to send
     // Note: A previous MPI implementation took advantage of packing the data after
     //       starting the receives. This is here no more possible. But we might now
     //       pack the data already on the GPU and can avoid gpu->host transfer of all localValues
+
     IndexType numSendValues = providesPlan.totalQuantity();
     HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
-    // TODO: HArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes() );
-    {
-        ReadAccess<ValueType> local( localValues );
-        ReadAccess<IndexType> ind ( halo.getProvidesIndexes() );
-        IndexType nValues = ind.size();
-        WriteOnlyAccess<ValueType> send ( sendValues, nValues );
 
-        for ( IndexType i = 0; i < nValues; ++i )
-        {
-            send[i] = local[ ind[i] ];
-        }
-    }
+    utilskernel::HArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes() );
+
     exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
 }
 
@@ -533,27 +527,22 @@ SyncToken* Communicator::updateHaloAsync(
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
     SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
     SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
+
     // Before we exchange by plan, we have to pack local values to send
     // Note: A previous MPI implementation took advantage of packing the data after
     //       starting the receives. This is here no more possible. But we might now
     //       pack the data already on the GPU and can avoid gpu->host transfer of all localValues
+
     IndexType numSendValues = providesPlan.totalQuantity();
+
     common::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
+
     // put together the (send) values to provide for other partitions
-    {
-        ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
-        WriteAccess<ValueType> sendData( *sendValues, contextPtr );
-        ReadAccess<ValueType> localData( localValues, contextPtr );
-        ReadAccess<IndexType> sendIndexes( halo.getProvidesIndexes(), contextPtr );
 
-        // currently supported only on host
+    utilskernel::HArrayUtils::gather( *sendValues, localValues, halo.getProvidesIndexes() );
 
-        for ( IndexType i = 0; i < numSendValues; i++ )
-        {
-            sendData[i] = localData[sendIndexes[i]];
-        }
-    }
     SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
+
     // Also push the sendValues array to the token so it will be freed after synchronization
     // Note: it is guaranteed that access to sendValues is freed before sendValues
     token->pushRoutine( common::bind( releaseArray, sendValues ) );
@@ -834,6 +823,6 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
 #undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
-    } /* end namespace dmemo */
+} /* end namespace dmemo */
 
-    } /* end namespace scai */
+} /* end namespace scai */
