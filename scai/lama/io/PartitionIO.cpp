@@ -246,7 +246,7 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
     {
         IndexType localSize;
         hmemo::ReadAccess<IndexType> rSizes( localSizes );
-        comm->scatter( &localSize, 1, MASTER, rSizes );
+        comm->scatter( &localSize, 1, MASTER, rSizes.get() );
         dist.reset( new GenBlockDistribution ( globalSize, localSize, comm ) );
     }
     else

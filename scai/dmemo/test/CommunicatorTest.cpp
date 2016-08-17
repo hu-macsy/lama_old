@@ -777,7 +777,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
 
     common::Settings::putEnvironment( "SCAI_NP", "", replace );
 
-    comm->factorize2( 16, 1, procArray );
+    comm->factorize2( procArray, 16, 1 );
     
     BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] );
 
@@ -795,7 +795,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
     BOOST_CHECK_EQUAL( comm->getRank(), posArray[1] * procArray[0] + posArray[0] );
     BOOST_CHECK_EQUAL( nPartition, posArray[2] );
 
-    comm->factorize3( 1, 16, 1, procArray );
+    comm->factorize3( procArray, 1, 16, 1 );
     
     BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] * procArray[2] );
 

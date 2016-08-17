@@ -172,7 +172,7 @@ void Communicator::writeAt( std::ostream& stream ) const
 
 /* -------------------------------------------------------------------------- */
 
-void Communicator::factorize2( const double sizeX, const double sizeY, PartitionId procgrid[2] ) const
+void Communicator::factorize2( PartitionId procgrid[2], const double sizeX, const double sizeY ) const
 {
     PartitionId usergrid[3];
     getUserProcArray( usergrid );
@@ -226,10 +226,10 @@ void Communicator::factorize2( const double sizeX, const double sizeY, Partition
 /* -------------------------------------------------------------------------- */
 
 void Communicator::factorize3(
+    PartitionId procgrid[3],
     const double sizeX,
     const double sizeY,
-    const double sizeZ,
-    PartitionId procgrid[3] ) const
+    const double sizeZ ) const
 {
     PartitionId usergrid[3];
     getUserProcArray( usergrid );
@@ -442,7 +442,7 @@ void Communicator::shiftArray(
     // but we are able to receive even more data if array is large enough
     IndexType maxNumRecvElems = recvData.capacity();
     // For shifting of data we use the pure virtual methods implemened by each communicator
-    IndexType numRecvElems = shiftData( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
+    IndexType numRecvElems = shift( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
     SCAI_LOG_DEBUG( logger,
                     "shift, direction = " << direction << ", sent " << numSendElems
                     << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
@@ -466,7 +466,7 @@ SyncToken* Communicator::shiftAsync(
     recvData.resize( numElems ); // size should fit at least to keep own data
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
-    common::unique_ptr<SyncToken> syncToken( shiftDataAsync( recvData.get(), sendData.get(), numElems, direction ) );
+    common::unique_ptr<SyncToken> syncToken( shiftAsync( recvData.get(), sendData.get(), numElems, direction ) );
     SCAI_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
     // release of accesses are delayed, add routines  in the sync token so they are called at synchonization
     syncToken->pushRoutine( sendData.releaseDelayed() );
@@ -641,7 +641,7 @@ void Communicator::computeOwners(
         SCAI_LOG_DEBUG( logger,
                         *this << " shift: recv " << receiveSize << ", send " << currentSize << ", direction = " << direction )
         // --->   Pure method call
-        currentSize = shiftData( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
+        currentSize = shift( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
         SCAI_ASSERT_ERROR( ownersSize == nIndex || currentSize == ownersSize, "Communication corrupted." )
         SCAI_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
         IndexType* indexes = indexesReceive.get();
@@ -673,7 +673,7 @@ void Communicator::computeOwners(
         }
 
         // --->   Pure method call
-        ownersSize = shiftData( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
+        ownersSize = shift( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
         SCAI_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" )
 
         for ( IndexType i = 0; i < ownersSize; i++ )
@@ -770,10 +770,21 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
     }
 }
 
-// Instantiation of template methods for the supported types
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::all2allv( ValueType* recvVal[], IndexType recvCount[],
+                             ValueType* sendVal[], IndexType sendCount[] ) const
+{
+    all2allvImpl( reinterpret_cast<void**>( recvVal ), recvCount,
+                  reinterpret_cast<void**>( sendVal ), sendCount,
+                  common::TypeTraits<ValueType>::stype );
+}
+
+/* -------------------------------------------------------------------------- */
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     IndexType Communicator::shift0(                                 \
             _type targetVals[],                                     \
@@ -810,6 +821,11 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
             HArray<_type>& haloValues,                              \
             const HArray<_type>& localValues,                       \
             const Halo& halo ) const;                               \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::all2allv(                                    \
+            _type* recvVal[], IndexType recvCount[],                \
+            _type* sendVal[], IndexType sendCount[] ) const;        \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::updateHaloAsync(                       \

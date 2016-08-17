@@ -174,34 +174,34 @@ public:
 
     virtual ~Communicator();
 
-    /** @brief TODO[doxy] Complete Description.
+    /** @brief Find a facotorization of size with two factors
      *
-     *  @param[in] sizeX      TODO[doxy] Complete Description.
-     *  @param[in] sizeY      TODO[doxy] Complete Description.
-     *  @param[in] procgrid   TODO[doxy] Complete Description.
+     *  @param[in] sizeX      weight for the first dimension
+     *  @param[in] sizeY      weight for the second dimension
+     *  @param[out] procgrid   array of size 2 with the two factors
      */
-    void factorize2( const double sizeX, const double sizeY, PartitionId procgrid[2] ) const;
+    void factorize2( PartitionId procgrid[2], const double sizeX, const double sizeY ) const;
 
-    /** @brief TODO[doxy] Complete Description.
+    /** @brief Find a factorization of size with three factors
      *
-     *  @param[in] sizeX      TODO[doxy] Complete Description.
-     *  @param[in] sizeY      TODO[doxy] Complete Description.
-     *  @param[in] sizeZ      TODO[doxy] Complete Description.
-     *  @param[in] procgrid   TODO[doxy] Complete Description.
+     *  @param[out] procgrid   array of size 3 with the three factors
+     *  @param[in] sizeX      weight for the first dimension
+     *  @param[in] sizeY      weight for the second dimension
+     *  @param[in] sizeZ      weight for the third dimension
      */
-    void factorize3( const double sizeX, const double sizeY, const double sizeZ, PartitionId procgrid[3] ) const;
+    void factorize3( PartitionId procgrid[3], const double sizeX, const double sizeY, const double sizeZ ) const;
 
-    /** @brief TODO[doxy] Complete Description.
+    /** @brief Get the position of this processor in a two-dimensional processor grid
      *
-     *  @param[out] pos       TODO[doxy] Complete Description.
-     *  @param[in]  procgrid  TODO[doxy] Complete Description.
+     *  @param[out] pos       my position
+     *  @param[in]  procgrid  sizes of the two dimensions
      */
     void getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const;
 
-    /** @brief TODO[doxy] Complete Description.
+    /** @brief Get the position of this processor in a three-dimensional processor grid
      *
-     *  @param[out] pos       TODO[doxy] Complete Description.
-     *  @param[in]  procgrid  TODO[doxy] Complete Description.
+     *  @param[out] pos       my position
+     *  @param[in]  procgrid  sizes of the three dimensions
      */
     void getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const;
 
@@ -339,7 +339,7 @@ public:
      *  @param[in]  sendData   buffer for data to send to other processors
      *  @param[in]  sendPlan   contains number of elements and offsets for sending data
      *
-     *  @return TODO[doxy] Complete Description.
+     *  @return SyncToken that can be used to wait for completion
      *
      *  All send and receive data between each pair of processors must be a contiguous
      *  part of the sendData or recvData.
@@ -495,9 +495,9 @@ public:
      */
 
     template<typename ValueType>
-    IndexType shiftData( ValueType newVals[], const IndexType newSize,
-                         const ValueType oldVals[], const IndexType oldSize,
-                         const int direction ) const
+    IndexType shift( ValueType newVals[], const IndexType newSize,
+                     const ValueType oldVals[], const IndexType oldSize,
+                     const int direction ) const
     {
         if ( direction % getSize() == 0 )
         {
@@ -550,7 +550,7 @@ public:
      */
 
     template<typename ValueType>
-    tasking::SyncToken* shiftDataAsync( ValueType recvVals[], const ValueType sendVals[], const IndexType size, const int direction ) const
+    tasking::SyncToken* shiftAsync( ValueType recvVals[], const ValueType sendVals[], const IndexType size, const int direction ) const
     {
         if ( direction % getSize() == 0 )
         {
@@ -588,18 +588,18 @@ public:
      */
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
 
+    template<typename ValueType>
+    void all2allv( ValueType* recvVal[], IndexType recvCount[],
+                   ValueType* sendVal[], IndexType sendCount[] ) const;
+
+    /** Same routine but uses void pointers and codes the ValueType so it can
+     *  become a virtual method that is provided by all derived communicator classes. 
+     */
+
     virtual void all2allvImpl( 
         void* recvBuffer[], IndexType recvCount[],
         void* sendBuffer[], IndexType sendCount[],
         common::scalar::ScalarType stype ) const = 0;
-
-    template<typename ValueType>
-    void all2allv( ValueType* recvVal[], IndexType recvCount[],
-                   ValueType* sendVal[], IndexType sendCount[],
-                   common::scalar::ScalarType stype ) const 
-    {
-        all2allvImpl( recvVal, recvCount, sendVal, sendCount, common::TypeTraits<ValueType>::stype );
-    }
 
     /** @brief Expanded macro by SCAI_COMMON_LOOP that defines all virtual routines for one type.
      *
@@ -696,9 +696,6 @@ public:
 
     template<typename ValueType>
     inline ValueType max( const ValueType localValue ) const;
-
-    template<typename ValueType>
-    void all2allv( ValueType* recvBuffer[], IndexType recvCount[],  ValueType* sendBuffer[], IndexType sendCount[] ) const;
 
     /** @brief allgather is combination of gather and broadcast
      *
