@@ -637,7 +637,7 @@ void MPICommunicator::bcastData( void* val, const IndexType n, const PartitionId
 {
     SCAI_REGION( "Communicator.MPI.bcast" )
     MPI_Datatype commType = getMPIType( stype );
-    SCAI_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<ValueType>" )
+    SCAI_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<" << stype << ">" )
 }
 
 /* ---------------------------------------------------------------------------------- */

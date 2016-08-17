@@ -189,9 +189,10 @@ void NoCommunicator::maxlocImpl( ValueType&, IndexType&, const PartitionId root 
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 }
 
-void NoCommunicator::bcastData( void*, const IndexType, const PartitionId, common::scalar::ScalarType ) const
+void NoCommunicator::bcastData( void*, const IndexType, const PartitionId root, common::scalar::ScalarType ) const
 {
     // Nothing to do as root is the only one processor
+    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 }
 
 template<typename ValueType>

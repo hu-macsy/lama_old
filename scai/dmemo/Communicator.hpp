@@ -833,6 +833,8 @@ ValueType Communicator::sum( ValueType localValue ) const
 template<typename ValueType>
 void Communicator::bcast( ValueType val[], const IndexType n, const PartitionId root ) const
 {
+    SCAI_ASSERT_LT_ERROR( root, getSize(), *this << ": Illegal root " << root )
+
     // general pure routine uses typeless pointers void*, type is coded via ScalarType
 
     bcastData( val, n, root, common::TypeTraits<ValueType>::stype );
