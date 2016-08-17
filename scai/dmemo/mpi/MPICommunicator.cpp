@@ -410,7 +410,7 @@ template<typename ValueType>
 MPI_Request MPICommunicator::startrecv( ValueType* buffer, int count, int source ) const
 {
     MPI_Request request;
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     SCAI_MPICALL( logger, MPI_Irecv( buffer, count, commType, source, defaultTag, selectMPIComm(), &request ),
                   "MPI_Irecv" )
     return request;
@@ -420,7 +420,7 @@ template<typename ValueType>
 MPI_Request MPICommunicator::startsend( const ValueType* buffer, int count, int target ) const
 {
     MPI_Request request;
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     SCAI_MPICALL( logger,
                   MPI_Isend( const_cast<ValueType*>( buffer ), count, commType, target, defaultTag, selectMPIComm(),
                              &request ),
@@ -432,7 +432,7 @@ template<typename ValueType>
 int MPICommunicator::getCount( MPI_Status& mpiStatus ) const
 {
     int size = 0;
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     SCAI_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &size ), "MPI_Get_count" )
     return size;
 }
@@ -440,7 +440,7 @@ int MPICommunicator::getCount( MPI_Status& mpiStatus ) const
 template<typename ValueType>
 void MPICommunicator::send( const ValueType buffer[], int count, int target ) const
 {
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     SCAI_MPICALL( logger,
                   MPI_Send( const_cast<ValueType*>( buffer ), count, commType, target, defaultTag, selectMPIComm() ),
                   "MPI_Send" )
@@ -454,7 +454,7 @@ void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
     SCAI_ASSERT_ERROR( sendSizes != 0, " invalid sendSizes " )
     SCAI_ASSERT_ERROR( recvSizes != 0, " invalid recvSizes " )
     // MPI is not const-aware so we have to use a const_cast on sendSizes
-    MPI_Datatype commType = getMPIType<IndexType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<IndexType>::stype );
     SCAI_MPICALL( logger,
                   MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes,
                                 1, commType, selectMPIComm() ),
@@ -633,12 +633,11 @@ inline MPI_Comm MPICommunicator::selectMPIComm() const
 /*              bcast                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MPICommunicator::bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const
+void MPICommunicator::bcastData( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.bcast" )
-    MPI_Datatype commType = getMPIType<ValueType>();
-    SCAI_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<ValueType>" )
+    MPI_Datatype commType = getMPIType( stype );
+    SCAI_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<" << stype << ">" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -686,7 +685,7 @@ IndexType MPICommunicator::shiftImpl(
     SCAI_ASSERT_ERROR( dest != getRank(), "dest must not be this partition" )
     SCAI_LOG_DEBUG( logger,
                     *this << ": recv from " << source << " max " << recvSize << " values " << ", send to " << dest << " " << sendSize << " values." )
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     MPI_Status mpiStatus;
     SCAI_MPICALL( logger,
                   MPI_Sendrecv( const_cast<ValueType*>( sendVals ), sendSize, commType, dest, 4711, recvVals, recvSize,
@@ -731,12 +730,30 @@ ValueType MPICommunicator::sumImpl( const ValueType value ) const
 {
     SCAI_REGION( "Communicator.MPI.sum" )
     ValueType sum;
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     MPI_Op opType = getMPISum<ValueType>();
     SCAI_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &sum, 1, commType, opType,
                                          selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
     SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
     return sum;
+}
+
+void MPICommunicator::sumData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
+{
+    SCAI_REGION( "Communicator.MPI.sumData" )
+    MPI_Datatype commType = getMPIType( stype );
+    MPI_Op opType = getMPISum( stype );
+
+    if ( inValues == outValues )
+    {
+        SCAI_MPICALL( logger, MPI_Allreduce( MPI_IN_PLACE, outValues, n, commType, opType,
+                                             selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
+    }
+    else
+    {
+        SCAI_MPICALL( logger, MPI_Allreduce( const_cast<void*>( inValues ), outValues, n, commType, opType,
+                                             selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
+    }
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -747,7 +764,7 @@ template<typename ValueType>
 ValueType MPICommunicator::minImpl( const ValueType value ) const
 {
     SCAI_REGION( "Communicator.MPI.min" )
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     MPI_Op opType = getMPIMin<ValueType>();
     ValueType globalMin; // no initialization needed, done in MPI call
     SCAI_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMin, 1, commType,
@@ -759,7 +776,7 @@ template<typename ValueType>
 ValueType MPICommunicator::maxImpl( const ValueType value ) const
 {
     SCAI_REGION( "Communicator.MPI.max" )
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     MPI_Op opType = getMPIMax<ValueType>();
     ValueType globalMax; // no initialization needed, done in MPI call
     SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
@@ -788,7 +805,7 @@ void MPICommunicator::scatterImpl(
     SCAI_REGION( "Communicator.MPI.scatter" )
     SCAI_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
     SCAI_LOG_DEBUG( logger, *this << ": scatter of " << n << " elements, root = " << root )
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     // MPI interface is not aware of const, so const_cast is required
     SCAI_MPICALL( logger,
                   MPI_Scatter( const_cast<ValueType*>( allvals ), n, commType, myvals, n, commType, root,
@@ -810,7 +827,7 @@ void MPICommunicator::scatterVImpl(
 {
     SCAI_REGION( "Communicator.MPI.scatterV" )
     SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
 
     if ( root == getRank() )
     {
@@ -866,7 +883,7 @@ void MPICommunicator::gatherImpl(
     SCAI_REGION( "Communicator.MPI.gather" )
     SCAI_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
     SCAI_LOG_DEBUG( logger, *this << ": gather of " << n << " elements, root = " << root )
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     // MPI interface is not aware of const, so const_cast is required
     void* sendbuf = const_cast<ValueType*>( myvals );
     SCAI_MPICALL( logger, MPI_Gather( sendbuf, n, commType, allvals, n, commType, root, selectMPIComm() ),
@@ -888,7 +905,7 @@ void MPICommunicator::gatherVImpl(
     SCAI_REGION( "Communicator.MPI.gatherV" )
     SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
     void* sendbuf = const_cast<ValueType*>( myvals );
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
 
     if ( root == getRank() )
     {
@@ -946,7 +963,7 @@ void MPICommunicator::maxlocImpl( ValueType& val, IndexType& location, Partition
     in.val = val;
     in.location = location;
     ValAndLoc out;
-    MPI_Datatype commType = getMPI2Type<ValueType, int>();
+    MPI_Datatype commType = getMPI2Type( common::TypeTraits<ValueType>::stype, common::scalar::INT );
     MPI_Reduce( &in, &out, 1, commType, MPI_MAXLOC, root, selectMPIComm() );
 
     if ( mRank == root )
@@ -978,7 +995,7 @@ void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId 
     }
 
     MPI_Status mpiStatus;
-    MPI_Datatype commType = getMPIType<ValueType>();
+    MPI_Datatype commType = getMPIType( common::TypeTraits<ValueType>::stype );
     SCAI_MPICALL( logger,
                   MPI_Sendrecv( tmp.get(), n, commType, partner, defaultTag, val, n, commType, partner, defaultTag,
                                 selectMPIComm(), &mpiStatus ),

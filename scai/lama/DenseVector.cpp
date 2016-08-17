@@ -786,8 +786,14 @@ template<typename ValueType>
 size_t DenseVector<ValueType>::getMemoryUsage() const
 {
     // Note: memory of mHaloValues is not counted, is just a temporary
-    size_t memoryUsage = sizeof( ValueType ) * mLocalValues.size();
-    return getDistribution().getCommunicator().sum( memoryUsage );
+
+    IndexType localSize = mLocalValues.size();
+
+    // Note: do sum with IndexType, as size_t is not yet handled by TypeTraits
+
+    IndexType globalSize = getDistribution().getCommunicator().sum( localSize );
+
+    return sizeof( ValueType ) * globalSize;
 }
 
 /* ------------------------------------------------------------------------ */

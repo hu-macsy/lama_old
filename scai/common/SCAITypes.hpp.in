@@ -111,8 +111,14 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 /**
  *  List of all supported types (e.g. for communicator methods)
+ *  For all these types TypeTraits<type> must be defined
  */
-#define SCAI_ALL_TYPES IndexType, SCAI_ARITHMETIC_TYPES
+
+#define SCAI_ALL_TYPES int, unsigned int, long, unsigned long, char, SCAI_ARITHMETIC_TYPES
+
+/** these can be used for Complex */
+
+#define SCAI_ALL1_TYPES int, long, SCAI_ARITHMETIC_TYPES
 
 /*
  * Lists of all used arithmetic types for which matrices, storages might be created
@@ -149,6 +155,8 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 #define SCAI_ARITHMETIC_ARRAY_EXT_HOST_LIST SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_EXT_HOST )
 #define SCAI_ARITHMETIC_ARRAY_CUDA_LIST     SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_CUDA )
 #define SCAI_ARITHMETIC_ARRAY_MIC_LIST      SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_MIC )
+
+#define SCAI_ALL_TYPES_LIST                 SCAI_TYPELIST( SCAI_ALL_TYPES )
 
 /** Representation type for Scalar must be the arithmetic type with highest precision */
 

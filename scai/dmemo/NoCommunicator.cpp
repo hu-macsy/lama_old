@@ -44,6 +44,8 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/weak_ptr.hpp>
 
+#include <cstring>
+
 using namespace std;
 
 namespace scai
@@ -103,6 +105,16 @@ PartitionId NoCommunicator::getNodeRank() const
 void NoCommunicator::all2all( IndexType recvValues[], const IndexType sendValues[] ) const
 {
     recvValues[0] = sendValues[0];
+}
+
+void NoCommunicator::sumData( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+{
+    if ( outData == inData )
+    {
+        return;   // IN_PLACE
+    }
+
+    memcpy( outData, inData, typeSize( stype ) * n );
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -177,9 +189,9 @@ void NoCommunicator::maxlocImpl( ValueType&, IndexType&, const PartitionId root 
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 }
 
-template<typename ValueType>
-void NoCommunicator::bcastImpl( ValueType[], const IndexType, const PartitionId root ) const
+void NoCommunicator::bcastData( void*, const IndexType, const PartitionId root, common::scalar::ScalarType ) const
 {
+    // Nothing to do as root is the only one processor
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 }
 

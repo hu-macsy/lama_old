@@ -74,6 +74,15 @@ const char* scalarType2str( const scalar::ScalarType stype )
         case scalar::LONG_DOUBLE_COMPLEX:
             return "ComplexLongDouble";
 
+        case scalar::CHAR:
+            return "char";
+
+        case scalar::UNSIGNED_INT:
+            return "uint";
+
+        case scalar::UNSIGNED_LONG:
+            return "ulong";
+
         case scalar::INDEX_TYPE:
             return "IndexType";
 
@@ -115,7 +124,7 @@ std::ostream& operator<<( std::ostream& stream, const scalar::ScalarType& object
 
 bool isComplex( const scalar::ScalarType stype )
 {
-    return common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::isComplex( stype );
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::isComplex( stype );
 }
 
 /*************************************************************************/
@@ -129,7 +138,7 @@ int precision( const scalar::ScalarType stype )
 
     // loop over all supported types and query its precision 
 
-    return common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::precision( stype );
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::precision( stype );
 }
 
 /*************************************************************************/
@@ -140,9 +149,19 @@ size_t typeSize( const scalar::ScalarType stype )
 
     SCAI_ASSERT( stype != scalar::INTERNAL, "typeSize of INTERNAL unknown" )
 
-    // use TypeTraits as they contain already this information
+    if ( stype == scalar::PATTERN )
+    {
+        return 0;      // allowed, stands for a dummy type
+    }
 
-    return common::mepr::ScalarTypeHelper<SCAI_ARITHMETIC_ARRAY_HOST_LIST>::sizeOf( stype );
+    if ( stype == scalar::INDEX_TYPE )
+    {
+        return sizeof( IndexType );   // must be handled separately here
+    }
+
+    // for all types use TypeTraits as they contain already this information
+
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::sizeOf( stype );
 }
 
 /*************************************************************************/

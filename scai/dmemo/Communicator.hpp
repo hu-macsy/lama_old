@@ -319,15 +319,6 @@ public:
      *      const CommunicationPlan& sendPlan ) const = 0;
      */
 
-    /* @brief Broadcast a typed array from root to all other processors.
-     *
-     *  @param[in,out] val  in on root, out on all other processors
-     *  @param[in]     n    number of elements in vector val
-     *  @param[in]     root processor with correct values of val
-     *
-     *  virtual void bcast( TypeId val[], const IndexType n, const PartitionId root ) const = 0;
-     */
-
     /* @brief Scatter of an array of values from root to all other processors.
      *
      *  @param[out]   myvals values that I receive
@@ -396,7 +387,6 @@ public:
      *  @param[in] value  value on the calling partition
      *  @returns   global value, available for all partitions.
      *
-     *  virtual TypeId sum( const TypeId value ) const = 0;
      *  virtual TypeId min( const TypeId value ) const = 0;
      *  virtual TypeId max( const TypeId value ) const = 0;
      */
@@ -508,11 +498,6 @@ public:
             const _type* const sendData,                                    \
             const CommunicationPlan& sendPlan ) const = 0;                  \
     \
-    virtual void bcast(                                                     \
-            _type val[],                                                    \
-            const IndexType n,                                              \
-            const PartitionId root ) const = 0;                             \
-    \
     virtual void all2allv(                                                  \
             _type* recvVal[],                                               \
             IndexType recvCount[],                                          \
@@ -557,13 +542,10 @@ public:
     \
     virtual _type min(                                                      \
             const _type value ) const = 0;                                  \
-    \
-    virtual _type sum(                                                      \
-            const _type value ) const = 0;                                  \
-    \
+                                                                            \
     virtual _type max(                                                      \
             const _type value ) const = 0;                                  \
-    \
+                                                                            \
     virtual IndexType shiftData(                                            \
             _type newVals[],                                                \
             const IndexType newSize,                                        \
@@ -584,18 +566,29 @@ public:
 
 #undef SCAI_DMEMO_COMMUNICATOR_METHODS
 
+    /**  Sum values from all processes and distributes the result back to all processes. 
+     * 
+     *   @param[out] outValues array with the result values, same on all processes
+     *   @param[in]  inValues individual contributions on each process
+     *   @param[in]  stype specifies the data type of the data 
+     */
+ 
+    virtual void sumData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+
+    /** Pure method for bcast
+     *
+     *  @param[in,out] values  in on root, out on all other processors
+     *  @param[in]     n    number of elements in vector val
+     *  @param[in]     root processor with correct values of val
+     *  @param[in]     stype codes the used data type of values     
+     */
+    virtual void bcastData( void* values, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const = 0;
+
     /**************************************************************************************
      *                                                                                    *
      *  Other Virtual routines provided by derived class                                  *
      *                                                                                    *
      *************************************************************************************/
-
-     // Sum of size_t values needed for large quantities like memory usage
-     virtual size_t sum( const size_t value ) const = 0;
-
-    // Broadcast of characters needed for strings
-
-    virtual void bcast( char val[], const IndexType n, const PartitionId root ) const = 0;
 
     /** @brief Barrier synchronization between all processors. */
 
@@ -611,12 +604,33 @@ public:
     virtual bool all( const bool flag ) const;
     virtual bool any( const bool flag ) const;
 
+    /* @brief Broadcast a typed array from root to all other processors.
+     *
+     *  @tparam ValueType  is the data type
+     *  @param[in,out] val  in on root, out on all other processors
+     *  @param[in]     n    number of elements in vector val
+     *  @param[in]     root processor with correct values of val
+     *
+     *  Note: implementation uses pure method bcastData without template argument
+     */
+    template<typename ValueType>
+    void bcast( ValueType val[], const IndexType n, const PartitionId root ) const;
+
     /** Broadcast of a string.
      *
      *  This class provides one implementation, but derived classes might override it.
      */
     virtual void bcast( std::string&, const PartitionId root ) const;
 
+    /* @brief Sum  up one single value from each partition to a global value.
+     *
+     *  @param[in] localValue  value on the calling partition
+     *  @returns   global value, available for all partitions.
+     *
+     *  Implementation uses pure virtual method sumData (without template arguments)
+     */
+    template<typename ValueType>
+    inline ValueType sum( const ValueType localValue ) const;
 
     template<typename ValueType>
     void all2allv( ValueType* recvBuffer[], IndexType recvCount[],  ValueType* sendBuffer[], IndexType sendCount[] ) const;
@@ -740,6 +754,16 @@ public:
         const hmemo::HArray<ValueType>& sendArray,
         const int direction ) const;
 
+    /** @brief Sum up values of an array
+     *
+     *  @tparam        ValueType   specifies the type of the array data
+     *  @param[in,out] array       in are the local values, out are the global summed values
+     *
+     *  Note: All partitions must have the same size for the array
+     */
+    template<typename ValueType>
+    void sumArray( hmemo::HArray<ValueType>& array ) const;
+
     /** Override routine of base class Printable. */
 
     virtual void writeAt( std::ostream& stream ) const;
@@ -789,6 +813,32 @@ protected:
                       const ValueType oldVals[], const IndexType oldSize ) const;
 
 };
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType> 
+ValueType Communicator::sum( ValueType localValue ) const
+{
+    ValueType globalValue;
+  
+    // general routine uses typeless pointers void*, type is coded via ScalarType
+
+    sumData( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
+
+    return globalValue;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::bcast( ValueType val[], const IndexType n, const PartitionId root ) const
+{
+    SCAI_ASSERT_LT_ERROR( root, getSize(), *this << ": Illegal root " << root )
+
+    // general pure routine uses typeless pointers void*, type is coded via ScalarType
+
+    bcastData( val, n, root, common::TypeTraits<ValueType>::stype );
+}
 
 /* -------------------------------------------------------------------------- */
 

@@ -490,14 +490,9 @@ void SAMGIO::readStorageImpl(
 
         size_t expectedSize = numRows + 1 + numValues;
 
-        if ( mScalarTypeIndex == common::scalar::INDEX_TYPE )
-        {
-            expectedSize *= sizeof( IndexType );
-        }
-        else
-        {
-            expectedSize *= mScalarTypeIndex;
-        }
+        expectedSize *= common::typeSize( mScalarTypeIndex );
+
+        // common::typeSize( INTERNAL ) not possible, ValueType must be known
 
         if ( mScalarTypeData == common::scalar::INTERNAL )
         {
@@ -516,7 +511,10 @@ void SAMGIO::readStorageImpl(
 
         if ( expectedSize != realSize )
         {
-            SCAI_LOG_WARN( logger, "Binary file: real size = " << realSize << ", expected size = " << expectedSize )
+            SCAI_LOG_WARN( logger, "Binary file " << fileName << ": real size = " << realSize << 
+                                    ", expected size = " << expectedSize << ", #rows = " << numRows << ", #nnz = " << numValues <<
+                                    ", IndexType = " << mScalarTypeIndex << ", DataType = " << mScalarTypeData <<
+                                    ", ValueType = " << common::TypeTraits<ValueType>::id() );
         }
 
         // Note: read operations can deal with scalar::INTERNAL, scalar::INDEX_TYPE

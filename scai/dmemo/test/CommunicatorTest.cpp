@@ -585,6 +585,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( sumArrayTest, ValueType, scai_array_test_types )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    PartitionId size = comm->getSize();
+
+    std::srand( 17511 );  // same vals on each processor
+
+    IndexType N = 5;
+    LArray<ValueType> vals;
+    HArrayUtils::setRandom( vals, N, 1.0f );
+
+    LArray<ValueType> saveVals( vals );
+
+    comm->sumArray( vals );
+
+    { 
+        ReadAccess<ValueType> rLocal( saveVals );
+        ReadAccess<ValueType> rGlobal( vals );
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            BOOST_CHECK_EQUAL( rLocal[i] * size, rGlobal[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();

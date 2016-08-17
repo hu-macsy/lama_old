@@ -1054,6 +1054,15 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF ) const
 {
+    if ( getRowDistribution().getCommunicator().getSize() == 1 )
+    {
+        // the full matrix is replicated, the result is distributed, compute just its part
+
+        localF( mLocalData.get(), localResult, localX );
+
+        return;
+    }
+
     const Communicator& comm = getColDistribution().getCommunicator();
 
     HArray<ValueType> haloResult;  // compute the values for other processors

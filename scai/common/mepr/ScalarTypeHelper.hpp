@@ -61,8 +61,9 @@ struct ScalarTypeHelper;
 template<>
 struct ScalarTypeHelper<NullType>
 {
-    static size_t sizeOf( const scalar::ScalarType& )
+    static size_t sizeOf( const scalar::ScalarType stype )
     {
+        COMMON_THROWEXCEPTION( "sizeof: unsupported for " << stype )
         return 0;
     }
 
@@ -88,7 +89,7 @@ struct ScalarTypeHelper<NullType>
 template<typename H, typename T>
 struct ScalarTypeHelper< TypeList<H, T> >
 {
-    static size_t sizeOf( const scalar::ScalarType& s )
+    static size_t sizeOf( const scalar::ScalarType s )
     {
         if ( s == common::getScalarType<H>() )
         {

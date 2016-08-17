@@ -1489,6 +1489,7 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
     HArray<ValueType>& localResult = denseResult.getLocalValues();
 
     const Distribution& colDist = getColDistribution();
+    const Distribution& rowDist = getRowDistribution();
 
     const Communicator& comm = colDist.getCommunicator();
 
@@ -1496,13 +1497,16 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     PartitionId nParts = colDist.getNumPartitions();
 
-    if ( nParts == 1 )
+    SCAI_ASSERT_GT( nParts, 1, "replicated columns are not considered here" )
+
+    if ( rowDist.getNumPartitions() == 1 )
     {
-        // replicated column distribution, only on local block, X is replicated
+        // the full matrix is replicated, the result is distributed, compute just its part
 
-        // localResult = alpha * localX * mData[0] + beta * localY
+        PartitionId rank = comm.getRank();
+        mData[rank]->vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
 
-        mData[0]->vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
+        SCAI_LOG_INFO( logger, comm << ": computed local Result for replicated matrix: " << localResult );
 
         return;
     }
@@ -1531,11 +1535,13 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 
         PartitionId actualPartition = comm.getNeighbor( -p );
 
-        SCAI_LOG_DEBUG( logger, comm << ": will compute part for partition " << actualPartition << ", mData = " << *mData[actualPartition] )
+        SCAI_LOG_INFO( logger, comm << ": will compute part for partition " << actualPartition << ", mData = " << *mData[actualPartition] )
 
         if ( p == 0 )
         { 
             // start here with computation of own part
+
+            SCAI_LOG_INFO( logger, comm << ": localX = " << localX << ", localY = " << localY )
 
             mData[actualPartition]->vectorTimesMatrix( sendValues, alphaValue, localX, betaValue, localY );
         }
@@ -1543,10 +1549,12 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
         { 
             // This processor computes the part for actual partition and adds it
 
+            SCAI_LOG_INFO( logger, comm << ": localX = " << localX << ", sendValues = " << sendValues )
+
             mData[actualPartition]->vectorTimesMatrix( sendValues, alphaValue, localX, ValueType( 1 ), sendValues );
         }
 
-        SCAI_LOG_DEBUG( logger, comm << ": computed part for partition " << actualPartition << ", is " << sendValues );
+        SCAI_LOG_INFO( logger, comm << ": computed part for partition " << actualPartition << ", is " << sendValues );
 
         comm.shiftArray( recvValues, sendValues, COMM_DIRECTION );
 

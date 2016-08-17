@@ -398,6 +398,24 @@ IndexType Communicator::shift0(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void Communicator::sumArray( HArray<ValueType>& array ) const
+{
+    ContextPtr commContext = getCommunicationContext( array );
+
+    SCAI_LOG_INFO( logger, "sumArray at this context " << *commContext << ", array = " << array )
+
+    IndexType numElems = array.size();
+
+    WriteAccess<ValueType> data( array, commContext );
+
+    // alias of inValues and outValues, sumData can deal with it
+
+    sumData( data.get(), data.get(), numElems, common::TypeTraits<ValueType>::stype );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void Communicator::shiftArray(
     HArray<ValueType>& recvArray,
     const HArray<ValueType>& sendArray,
@@ -781,25 +799,29 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 #undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::shiftArray(                                  \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-    \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::sumArray(                                    \
+            HArray<_type>& array ) const;                           \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::updateHalo(                                  \
             HArray<_type>& haloValues,                              \
             const HArray<_type>& localValues,                       \
             const Halo& halo ) const;                               \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::updateHaloAsync(                       \
             HArray<_type>& haloValues,                              \

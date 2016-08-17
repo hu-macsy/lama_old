@@ -87,6 +87,9 @@ struct TypeList
 #define TYPELIST_6( T1, T2, T3, T4, T5, T6 ) scai::common::mepr::TypeList<T1,TYPELIST_5( T2, T3, T4, T5, T6 ) >
 #define TYPELIST_7( T1, T2, T3, T4, T5, T6, T7 ) scai::common::mepr::TypeList<T1,TYPELIST_6( T2, T3, T4, T5, T6, T7 ) >
 #define TYPELIST_8( T1, T2, T3, T4, T5, T6, T7, T8 ) scai::common::mepr::TypeList<T1,TYPELIST_7( T2, T3, T4, T5, T6, T7, T8 ) >
+#define TYPELIST_9( T1, T2, T3, T4, T5, T6, T7, T8, T9 ) scai::common::mepr::TypeList<T1,TYPELIST_8( T2, T3, T4, T5, T6, T7, T8, T9 ) >
+#define TYPELIST_10( T1, T2, T3, T4, T5, T6, T7, T8, T9, T10 ) scai::common::mepr::TypeList<T1,TYPELIST_9( T2, T3, T4, T5, T6, T7, T8, T9, T10 ) >
+#define TYPELIST_11( T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11 ) scai::common::mepr::TypeList<T1,TYPELIST_10( T2, T3, T4, T5, T6, T7, T8, T9, T10, T11 ) >
 
 // Help macro is required to guarantee that argument N is no more a macro itself
 

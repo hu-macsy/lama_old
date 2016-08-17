@@ -327,7 +327,7 @@ public:
         const ValueType beta,
         const DenseMatrix<ValueType>& y ) const;
 
-    /* Implemenation of method needed for CRTPMatrix */
+    /* Implementation of method needed for CRTPMatrix */
 
     void vectorTimesMatrixImpl(
         DenseVector<ValueType>& result,

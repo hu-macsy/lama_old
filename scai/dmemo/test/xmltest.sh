@@ -33,18 +33,20 @@ dirname=xmlresult_$(date +%s)
 echo "Create result directory: ${dirname}"
 mkdir ${dirname}
 
-ERROR_LEVEL=test_suite
+# Options specific for Boost Unit Test set for all test runs
+
+BOOST_TEST_ARGS="--output_format=XML --log_level=test_suite --report_level=no"
 
 # Running dmemo tests (only Host)
 echo "Running dmemo tests with NoCommunicator"
-./dmemoTest --SCAI_COMMUNICATOR=NO --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest.xml
+./dmemoTest --SCAI_COMMUNICATOR=NO ${BOOST_TEST_ARGS} 1> ${dirname}/dmemoTest.xml
 
 if [ -d ../mpi ];
 then
     echo "Running dmemo tests distributed"
-	for i in 1 2 3 4;
+	for i in 1 2 3 4 6 11;
 	do
     	echo "Running MPI tests with $i processes"
-    	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml dmemoTest --SCAI_COMMUNICATOR=MPI --output_format=XML --log_level=all --report_level=no
+    	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi_${i}.xml ./dmemoTest --SCAI_COMMUNICATOR=MPI ${BOOST_TEST_ARGS} --SCAI_NUM_THREADS=1
     done
 fi
