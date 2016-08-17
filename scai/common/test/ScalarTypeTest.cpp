@@ -4,6 +4,7 @@
  * @license
  * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
@@ -35,6 +36,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/SCAITypes.hpp>
 #include <sstream>
 
 using namespace scai;
@@ -42,7 +44,7 @@ using namespace common;
 
 BOOST_AUTO_TEST_CASE( ScalarTypeTest )
 {
-    for ( int type = scalar::INDEX_TYPE; type <= scalar::UNKNOWN; ++type )
+    for ( int type = scalar::ScalarType( 0 ); type <= scalar::UNKNOWN; ++type )
     {
         scalar::ScalarType stype = scalar::ScalarType( type );
         std::ostringstream s;
@@ -60,4 +62,14 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
             BOOST_CHECK( pos == std::string::npos );
         }
     }
+
+    BOOST_CHECK( typeSize( scalar::PATTERN ) == 0 );
+
+    BOOST_CHECK_EQUAL( sizeof( IndexType ), typeSize( scalar::INDEX_TYPE ) );
+
+    BOOST_CHECK_THROW (
+    {
+        typeSize( scalar::INTERNAL );
+    }, common::Exception );
+
 }

@@ -149,7 +149,17 @@ size_t typeSize( const scalar::ScalarType stype )
 
     SCAI_ASSERT( stype != scalar::INTERNAL, "typeSize of INTERNAL unknown" )
 
-    // use TypeTraits as they contain already this information
+    if ( stype == scalar::PATTERN )
+    {
+        return 0;      // allowed, stands for a dummy type
+    }
+
+    if ( stype == scalar::INDEX_TYPE )
+    {
+        return sizeof( IndexType );   // must be handled separately here
+    }
+
+    // for all types use TypeTraits as they contain already this information
 
     return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::sizeOf( stype );
 }
