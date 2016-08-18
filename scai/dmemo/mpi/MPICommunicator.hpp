@@ -40,7 +40,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/dmemo/CRTPCommunicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
@@ -67,16 +67,11 @@ namespace dmemo
 
 class COMMON_DLL_IMPORTEXPORT MPICommunicator:
 
-    public CRTPCommunicator<MPICommunicator>,
+    public Communicator,
     public Communicator::Register<MPICommunicator>           // register at factory
 {
-
-// Only MPICommunicatorManager is allowed to create MPI communicator
-
-    friend class MPICommunicatorManager;
-    friend class CRTPCommunicator<MPICommunicator> ;
-
 public:
+
     virtual ~MPICommunicator();
 
     virtual bool isEqual( const Communicator& other ) const;
@@ -123,17 +118,17 @@ private:
 
     MPICommunicator( int& argc, char**& argv );
 
-    /** Implementation of Communicator::sumData */
+    /** Implementation of Communicator::sumImpl */
 
-    virtual void sumData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
-    /** Implementation of Communicator::minData */
+    /** Implementation of Communicator::minImpl */
 
-    virtual void minData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
-    /** Implementation of Communicator::maxData */
+    /** Implementation of Communicator::maxImpl */
 
-    virtual void maxData( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
     /** Translate SCAI project enum type ScalarType to MPI enum MPI_Datatype */
 
@@ -149,9 +144,9 @@ private:
 
     inline static MPI_Op getMPIMax( common::scalar::ScalarType stype );
 
-    /** MPI implementation for pure method Communicator::bcastData */
+    /** MPI implementation for pure method Communicator::bcastImpl */
 
-    void bcastData( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const;
+    void bcastImpl( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const;
 
     /** MPI Implementation for pure method Communciator::all2allvImpl */
 
@@ -159,32 +154,26 @@ private:
                        void* sendBuffer[], IndexType sendCount[],
                        common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
-    ValueType maxImpl( ValueType myVal ) const;
-
-    template<typename ValueType>
-    ValueType minImpl( ValueType myVal ) const;
-
     inline void send( const void* buffer, int count, int target, common::scalar::ScalarType stype ) const;
 
     inline int getCount( MPI_Status& status, common::scalar::ScalarType stype ) const;
 
-    /** Implementation of pure method Communicator::scatterData */
+    /** Implementation of pure method Communicator::scatterImpl */
 
-    void scatterData( void* myVals, const IndexType n, const PartitionId root, const void* allVals, common::scalar::ScalarType stype ) const;
+    void scatterImpl( void* myVals, const IndexType n, const PartitionId root, const void* allVals, common::scalar::ScalarType stype ) const;
 
-    /** Implementation of pure method Communicator::scatterVData */
+    /** Implementation of pure method Communicator::scatterVImpl */
 
-    void scatterVData( void* myVals, const IndexType n, const PartitionId root, 
+    void scatterVImpl( void* myVals, const IndexType n, const PartitionId root, 
                        const void* allVals, const IndexType sizes[], common::scalar::ScalarType stype ) const;
 
-    /** Implementation of pure method Communicator::gatherData */
+    /** Implementation of pure method Communicator::gatherImpl */
 
-    void gatherData( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::scalar::ScalarType stype ) const;
+    void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::scalar::ScalarType stype ) const;
 
-    /** Implementation of pure method Communicator::gatherVData */
+    /** Implementation of pure method Communicator::gatherVImpl */
 
-    void gatherVData(
+    void gatherVImpl(
         void* allvals,
         const IndexType n,
         const PartitionId root,
@@ -192,9 +181,9 @@ private:
         const IndexType sizes[],
         common::scalar::ScalarType stype ) const;
 
-    /** Implementation of pure method Communicator::shiftData */
+    /** Implementation of pure method Communicator::shiftImpl */
 
-    IndexType shiftData(
+    IndexType shiftImpl(
         void* newVals,
         const IndexType newSize,
         const PartitionId source,
@@ -203,9 +192,9 @@ private:
         const PartitionId dest,
         common::scalar::ScalarType stype ) const;
 
-    /** Implementation of pure method Communicator::shiftAsyncData */
+    /** Implementation of pure method Communicator::shiftAsyncImpl */
 
-    tasking::SyncToken* shiftAsyncData(
+    tasking::SyncToken* shiftAsyncImpl(
         void* newVals,
         const PartitionId source,
         const void* oldVals,
@@ -217,8 +206,9 @@ private:
 
     void swapImpl( void* val, const IndexType n, PartitionId partner, common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
-    void maxlocImpl( ValueType& val, IndexType& location, PartitionId root ) const;
+    void maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
+
+    void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::exchangeByPlanImpl */
 

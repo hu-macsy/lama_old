@@ -127,9 +127,6 @@ scai_project (
 
         ${METISDISTRIBUTION}
 
-    HEADERS                  # .hpp only
-
-        CRTPCommunicator
     )
 
 ### add subdirectories

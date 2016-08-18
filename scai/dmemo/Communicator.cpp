@@ -409,9 +409,9 @@ void Communicator::sumArray( HArray<ValueType>& array ) const
 
     WriteAccess<ValueType> data( array, commContext );
 
-    // alias of inValues and outValues, sumData can deal with it
+    // alias of inValues and outValues, sumImpl can deal with it
 
-    sumData( data.get(), data.get(), numElems, common::TypeTraits<ValueType>::stype );
+    sumImpl( data.get(), data.get(), numElems, common::TypeTraits<ValueType>::stype );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -783,6 +783,107 @@ void Communicator::all2allv( ValueType* recvVal[], IndexType recvCount[],
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionId root ) const
+{
+    // For the virtual routine maxlocImpl we make sure that val and location are stored contiguously
+
+    struct ValAndLoc
+    {
+        ValueType val;
+        IndexType loc;
+    };
+
+    ValAndLoc x;
+
+    x.val = val;
+    x.loc = location;
+
+    maxlocImpl( &x.val, &x.loc, root, common::TypeTraits<ValueType>::stype );
+
+    if ( getRank() == root )
+    {
+        val = x.val;
+        location = x.loc;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::minloc( ValueType& val, IndexType& location, const PartitionId root ) const
+{
+    // For the virtual routine minlocImpl we make sure that val and location are stored contiguously
+
+    struct ValAndLoc
+    {
+        ValueType val;
+        IndexType loc;
+    };
+
+    ValAndLoc x;
+
+    x.val = val;
+    x.loc = location;
+
+    minlocImpl( &x.val, &x.loc, root, common::TypeTraits<ValueType>::stype );
+
+    if ( getRank() == root )
+    {
+        val = x.val;
+        location = x.loc;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::exchangeByPlan(
+    hmemo::HArray<ValueType>& recvArray,
+    const CommunicationPlan& recvPlan,
+    const hmemo::HArray<ValueType>& sendArray,
+    const CommunicationPlan& sendPlan ) const
+{
+    SCAI_ASSERT_EQ_ERROR( sendArray.size(), sendPlan.totalQuantity(), "size mismatch" )
+    IndexType recvSize = recvPlan.totalQuantity();
+    // find a context where data of sendArray can be communicated
+    // if possible try to find a context where valid data is available
+    // CUDAaware MPI: might give GPU or Host context here
+    hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
+    SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlan, comCtx = " << *comCtx )
+    hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
+    // Data will be received at the same context where send data is
+    hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
+    exchangeByPlan( recvData.get(), recvPlan, sendData.get(), sendPlan );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* Communicator::exchangeByPlanAsync(
+    hmemo::HArray<ValueType>& recvArray,
+    const CommunicationPlan& recvPlan,
+    const hmemo::HArray<ValueType>& sendArray,
+    const CommunicationPlan& sendPlan ) const
+{
+    SCAI_ASSERT_EQ_ERROR( sendArray.size(), sendPlan.totalQuantity(), "size mismatch" )
+    IndexType recvSize = recvPlan.totalQuantity();
+    // allocate accesses, SyncToken will take ownership
+    hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
+    SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
+    hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
+    hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
+    SyncToken* token( exchangeByPlanAsync( recvData.get(), recvPlan, sendData.get(), sendPlan ) );
+    // Add the read and write access to the sync token to get it freed after successful wait
+    // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
+    token->pushRoutine( recvData.releaseDelayed() );
+    token->pushRoutine( sendData.releaseDelayed() );
+    // return ownership of new created object
+    return token;
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
@@ -791,7 +892,19 @@ void Communicator::all2allv( ValueType* recvVal[], IndexType recvCount[],
             const IndexType maxTargetSize,                          \
             const _type sourceVals[],                               \
             const IndexType sourceSize ) const;                     \
-
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::maxloc(                                      \
+            _type& val,                                             \
+            IndexType& location,                                    \
+            const PartitionId root ) const;                         \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::minloc(                                      \
+            _type& val,                                             \
+            IndexType& location,                                    \
+            const PartitionId root ) const;                         \
+                                                                    \
 // instantiate methods for all communicator data types
 
     SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
@@ -826,6 +939,20 @@ void Communicator::all2allv( ValueType* recvVal[], IndexType recvCount[],
     void Communicator::all2allv(                                    \
             _type* recvVal[], IndexType recvCount[],                \
             _type* sendVal[], IndexType sendCount[] ) const;        \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::exchangeByPlan(                              \
+            HArray<_type>& recvArray,                               \
+            const CommunicationPlan& recvPlan,                      \
+            const HArray<_type>& sendArray,                         \
+            const CommunicationPlan& sendPlan ) const;              \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    SyncToken* Communicator::exchangeByPlanAsync(                   \
+            HArray<_type>& recvArray,                               \
+            const CommunicationPlan& recvPlan,                      \
+            const HArray<_type>& sendArray,                         \
+            const CommunicationPlan& sendPlan ) const;              \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::updateHaloAsync(                       \
