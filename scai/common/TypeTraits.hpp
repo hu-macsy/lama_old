@@ -118,7 +118,7 @@ public:
         return 0;
     }
 
-    static inline int getMin()
+    static inline int getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<int>::max();
     }
@@ -165,9 +165,9 @@ public:
         return 0;
     }
 
-    static inline char getMin()
+    static inline char getMin() // with C++11: use lowest instead
     {
-        return - std::numeric_limits<char>::max();
+        return static_cast<char> (- std::numeric_limits<char>::max() );
     }
 
     static const scalar::ScalarType stype = scalar::CHAR;
@@ -211,7 +211,7 @@ public:
         return 0;
     }
 
-    static inline long getMin()
+    static inline long getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<long>::max();
     }
@@ -257,7 +257,7 @@ public:
         return 0;
     }
 
-    static inline unsigned int getMin()
+    static inline unsigned int getMin() // with C++11: use lowest instead
     {
         return 0;
     }
@@ -303,7 +303,7 @@ public:
         return 0;
     }
 
-    static inline unsigned long getMin()
+    static inline unsigned long getMin() // with C++11: use lowest instead
     {
         return 0;
     }
@@ -349,7 +349,7 @@ public:
         return std::numeric_limits<long double>::digits10;
     }
 
-    static inline long double getMin()
+    static inline long double getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<long double>::max();
     }
@@ -395,7 +395,7 @@ public:
         return std::numeric_limits<double>::digits10;
     }
 
-    static inline double getMin()
+    static inline double getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<double>::max();
     }
@@ -440,7 +440,7 @@ public:
     {
         return std::numeric_limits<float>::max();
     }
-    static inline float getMin()
+    static inline float getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<float>::max();
     }
@@ -488,7 +488,7 @@ public:
         return std::numeric_limits<float>::max();
     }
 
-    static inline ComplexFloat getMin()
+    static inline ComplexFloat getMin() // with C++11: use lowest instead
     {
         return 0;
     }
@@ -534,7 +534,7 @@ public:
         return std::numeric_limits<double>::max();
     }
 
-    static inline ComplexDouble getMin()
+    static inline ComplexDouble getMin() // with C++11: use lowest instead
     {
         return 0;
     }
@@ -580,7 +580,7 @@ public:
         return std::numeric_limits<long double>::max();
     }
 
-    static inline ComplexLongDouble getMin()
+    static inline ComplexLongDouble getMin() // with C++11: use lowest instead
     {
         return 0;
     }
