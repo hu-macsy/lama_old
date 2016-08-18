@@ -122,7 +122,7 @@ GPICommunicator::GPIGuard GPICommunicator::guard;
 /* ---------------------------------------------------------------------------------- */
 
 GPICommunicator::GPICommunicator( )
-    : CRTPCommunicator<GPICommunicator>( GPI ),
+    : Communicator( GPI ),
       mQueueID( 0 ),
       mThreadSafetyLevel( Communicator::Funneled )
 {
@@ -251,57 +251,24 @@ PartitionId GPICommunicator::getNodeRank() const
 /*              getGPIType                                                            */
 /* ---------------------------------------------------------------------------------- */
 
-template<>
-inline gaspi_datatype_t GPICommunicator::getGPIType<float>()
+gaspi_datatype_t GPICommunicator::getGPIType( common::scalar::ScalarType stype )
 {
-    return GASPI_TYPE_FLOAT;
+    switch ( stype )
+    {
+        case common::scalar::INT                 : return GASPI_TYPE_INT;
+        case common::scalar::FLOAT               : return GASPI_TYPE_FLOAT;
+        case common::scalar::DOUBLE              : return GASPI_TYPE_DOUBLE;
+        case common::scalar::UNSIGNED_LONG       : return GASPI_TYPE_ULONG;
+
+        default:
+             COMMON_THROWEXCEPTION( "No GPI Type specified for " << stype )
+             return GASPI_TYPE_DOUBLE;
+    }
 }
 
-template<>
-inline gaspi_datatype_t GPICommunicator::getGPIType<double>()
-{
-    return GASPI_TYPE_DOUBLE;
-}
-
-template<>
-inline gaspi_datatype_t GPICommunicator::getGPIType<int>()
-{
-    return GASPI_TYPE_INT;
-}
-
-template<>
-inline gaspi_datatype_t GPICommunicator::getGPIType<unsigned long>()
-{
-    return GASPI_TYPE_ULONG;
-}
-
-template<>
-inline gaspi_datatype_t GPICommunicator::getGPIType<LongDouble>()
-{
-    COMMON_THROWEXCEPTION( "LongDouble communication not suppported by GASPI" )
-    return GASPI_TYPE_ULONG;
-}
-
-template<>
-inline gaspi_datatype_t GPICommunicator::getGPIType<ComplexFloat>()
-{
-    COMMON_THROWEXCEPTION( "ComplexFloat communication not suppported by GASPI" )
-    return GASPI_TYPE_FLOAT;
-}
-
-template<>
-inline gaspi_datatype_t GPICommunicator::getGPIType<ComplexDouble>()
-{
-    COMMON_THROWEXCEPTION( "ComplexDouble communication not suppported by GASPI" )
-    return GASPI_TYPE_DOUBLE;
-}
-
-template<>
-inline gaspi_datatype_t GPICommunicator::getGPIType<ComplexLongDouble>()
-{
-    COMMON_THROWEXCEPTION( "ComplexLongDouble communication not suppported by GASPI" )
-    return GASPI_TYPE_DOUBLE;
-}
+/* ---------------------------------------------------------------------------------- */
+/*                                     wait                                           */
+/* ---------------------------------------------------------------------------------- */
 
 void GPICommunicator::wait() const
 {
@@ -641,14 +608,18 @@ IndexType GPICommunicator::shiftImpl(
 /*              shiftAsync                                                            */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
 tasking::SyncToken* GPICommunicator::shiftAsyncImpl(
-    T recvVals[],
+    void* recvVals,
     const PartitionId source,
-    const T sendVals[],
+    const void* sendVals,
     const PartitionId dest,
-    const IndexType size ) const
+    const IndexType size,
+    common::scalar::ScalarType stype ) const
 {
+    typedef double T;
+
+    SCAI_ASSERT_EQUAL( common::typeSize( stype ), sizeof( T ), "size mismatch" );
+
     // SCAI_REGION( "Communicator.GPI.shiftAsyncImpl" )
     SCAI_LOG_DEBUG( logger,
                     *this << ": recv from " << source << ", send to " << dest << ", both " << size << " values." )
@@ -681,50 +652,31 @@ tasking::SyncToken* GPICommunicator::shiftAsyncImpl(
 /*              sum                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-T GPICommunicator::sumImpl( const T value ) const
+void GPICommunicator::sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.GPI.sum" )
-    T localSum = value;   // might be used also as buffer
-    T globalSum;
-    gaspi_datatype_t commType = getGPIType<T>();
-    SCAI_GASPI_CALL( gaspi_allreduce( &localSum, &globalSum, 1, GASPI_OP_SUM, commType, group, timeout ) )
-    SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << globalSum )
-    return globalSum;
-}
 
-/* ---------------------------------------------------------------------------------- */
-/*                    min reduction                                                   */
-/* ---------------------------------------------------------------------------------- */
+    gaspi_datatype_t commType = getGPIType( stype );
 
-template<typename T>
-T GPICommunicator::minImpl( const T value ) const
-{
-    SCAI_REGION( "Communicator.GPI.min" )
-    SCAI_LOG_DEBUG( logger, "minImpl: local value = " << value )
-    T localMin = value;   // might be used also as buffer
-    T globalMin = 0;
-    gaspi_datatype_t commType = getGPIType<T>();
-    SCAI_GASPI_CALL( gaspi_allreduce( &localMin, &globalMin, 1, GASPI_OP_MIN, commType, group, timeout ) )
-    SCAI_LOG_DEBUG( logger, "minImpl: global value = " << globalMin )
-    return globalMin;
-}
+    // Attention: no segment data required here
 
-/* ---------------------------------------------------------------------------------- */
-/*                    max reduction                                                   */
-/* ---------------------------------------------------------------------------------- */
+    if ( inValues == outValues )
+    {
+        // maybe we need a copy of inValues 
 
-template<typename T>
-T GPICommunicator::maxImpl( const T value ) const
-{
-    SCAI_REGION( "Communicator.GPI.max" )
-    T localMax = value;   // might be used also as buffer
-    T globalMax = 0;
-    SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
-    gaspi_datatype_t commType = getGPIType<T>();
-    SCAI_GASPI_CALL( gaspi_allreduce( &localMax, &globalMax, 1, GASPI_OP_MAX, commType, group, timeout ) );
-    SCAI_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
-    return globalMax;
+        size_t tmpSize = n * common::typeSize( stype );
+
+        common::scoped_array<char> tmp ( new char[ tmpSize ] );
+        memcpy( tmp.get(), inValues,  tmpSize );
+
+        SCAI_GASPI_CALL( gaspi_allreduce( tmp.get(), inValues, outValues, n, GASPI_OP_SUM, commType, group, timeout ) )
+    }
+    else
+    {
+        // for other reductions: use GASPI_OP_MIN, GASPI_OP_MAX
+
+        SCAI_GASPI_CALL( gaspi_allreduce( outValues, inValues, n, GASPI_OP_SUM, commType, group, timeout ) )
+    }
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -743,8 +695,7 @@ void GPICommunicator::synchronize() const
 /*      bcast                                                                         */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void GPICommunicator::bcastImpl( T val[], const IndexType n, const PartitionId root ) const
+void GPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.GPI.bcast" )
 
@@ -754,8 +705,12 @@ void GPICommunicator::bcastImpl( T val[], const IndexType n, const PartitionId r
         return;
     }
 
-    SegmentData<T> segment( this, n );
-    SCAI_LOG_DEBUG( logger, *this << ": bcast<" << TypeTraits<T>::id() << ">, root = " << root << ", n = " << n )
+    SCAI_ASSERT_EQUAL( common::typeSize( stype ), sizeof( double ), "size mismatch" );
+
+    SegmentData<double> segment( this, n );
+
+    SCAI_LOG_DEBUG( logger, *this << ": bcast<" << stype ">, root = " << root << ", n = " << n )
+
     int distance = 1;
 
     if ( mRank == root )
@@ -819,11 +774,15 @@ void GPICommunicator::bcastImpl( T val[], const IndexType n, const PartitionId r
 }
 
 /* ---------------------------------------------------------------------------------- */
-/*      scatter( myvals, n, root, allvals )                                           */
+/*      scatter( myVals, n, root, allVals )                                           */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void GPICommunicator::scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const
+void GPICommunicator::scatterImpl(
+    void* myVals,
+    const IndexType n,
+    const PartitionId root,
+    const void* allVals,
+    common::scalar::ScalarType stype ) const
 {
     SCAI_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
     SCAI_LOG_DEBUG( logger, *this << ": scatter of " << n << " elements, root = " << root )
@@ -833,12 +792,14 @@ void GPICommunicator::scatterImpl( T myvals[], const IndexType n, const Partitio
         return;
     }
 
-    SegmentData<T> srcSegment( this, n * mSize );  // for allVals
-    SegmentData<T> dstSegment( this, n );          // for myVals
+    SCAI_ASSERT_EQUAL( common::typeSize( stype ), sizeof( double ), "size mismatch" );
+
+    SegmentData<double> srcSegment( this, n * mSize );  // for allVals
+    SegmentData<double> dstSegment( this, n );          // for myVals
 
     if ( mRank == root )
     {
-        srcSegment.assign( allvals, n * mSize ); // copy from ptr to segment
+        srcSegment.assign( reinterpret_cast<const double*>( allVals ), n * mSize ); // copy from ptr to segment
         IndexType offset = srcSegment.getOffset();
 
         for ( PartitionId pid = 0; pid < mSize; ++pid )
@@ -867,12 +828,12 @@ void GPICommunicator::scatterImpl( T myvals[], const IndexType n, const Partitio
     }
 
     wait();  // make sure that remoteRead has finished
-    dstSegment.copyTo( myvals, n );  // each proc copies its values from dst
+    dstSegment.copyTo( myVals, n );  // each proc copies its values from dst
 
     for ( int i = 0; i < n; ++i )
     {
-        SCAI_LOG_DEBUG( logger, "dstSegment[" << i << "] = " << dstSegment[i] )
-        SCAI_LOG_DEBUG( logger, "myvals[" << i << "] = " << myvals[i] )
+        // SCAI_LOG_DEBUG( logger, "dstSegment[" << i << "] = " << dstSegment[i] )
+        // SCAI_LOG_DEBUG( logger, "myVals[" << i << "] = " << myVals[i] )
     }
 
     // root waits for all processor until data has been read
@@ -895,17 +856,21 @@ void GPICommunicator::scatterImpl( T myvals[], const IndexType n, const Partitio
 }
 
 /* ---------------------------------------------------------------------------------- */
-/*      scatter( myvals, n, root, allvals, sizes )                                    */
+/*      scatter( myVals, n, root, allVals, sizes )                                    */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
 void GPICommunicator::scatterVImpl(
-    T myvals[],
+    void* myVals,
     const IndexType n,
     const PartitionId root,
-    const T allvals[],
-    const IndexType sizes[] ) const
+    const void* allVals,
+    const IndexType sizes[],
+    common::scalar::ScalarType stype ) const
 {
+    typedef double T;
+
+    SCAI_ASSERT_EQUAL( common::typeSize( stype ), sizeof( T ), "size mismatch" );
+
     SCAI_REGION( "Communicator.GPI.scatterV" )
     SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
     int totalSize = 1;
@@ -930,7 +895,7 @@ void GPICommunicator::scatterVImpl(
 
     if ( mRank == root )
     {
-        srcSegment.assign( allvals, totalSize ); // copy from ptr to segment
+        srcSegment.assign( allVals, totalSize ); // copy from ptr to segment
         IndexType offset = srcSegment.getOffset();
 
         for ( PartitionId pid = 0; pid < mSize; ++pid )
@@ -972,7 +937,7 @@ void GPICommunicator::scatterVImpl(
         }
 
         wait();  // make sure that remoteRead has finished
-        dstSegment.copyTo( myvals, n );  // each proc copies its values from dst
+        dstSegment.copyTo( myVals, n );  // each proc copies its values from dst
     }
 
     // root waits for all processor until data has been read
@@ -996,7 +961,7 @@ void GPICommunicator::scatterVImpl(
         }
     }
 
-    SCAI_LOG_DEBUG( logger, *this << ": scatterV<" << TypeTraits<T>::id() << ">, ready" )
+    SCAI_LOG_DEBUG( logger, *this << ": scatterV<" << stype << ">, ready" )
 }
 
 template<typename T>
@@ -1052,15 +1017,20 @@ void GPICommunicator::remoteRead( SegmentData<T>& localSegment, const IndexType 
 }
 
 /* ---------------------------------------------------------------------------------- */
-/*      gather( allvals, n, root, myvals )                                            */
+/*      gather( allVals, n, root, myVals )                                            */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void GPICommunicator::gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const
+void GPICommunicator::gatherImpl(
+    void* allVals,
+    const IndexType n,
+    const PartitionId root,
+    const void* myVals,
+    const common::scalar::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.GPI.gather" )
     SCAI_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
-    SCAI_LOG_DEBUG( logger, *this << ": gather<" << TypeTraits<T>::id() <<
+
+    SCAI_LOG_DEBUG( logger, *this << ": gather<" << stype << ">" <<
                     " of " << n << " elements, root = " << root )
 
     if ( n < 1 )
@@ -1068,9 +1038,13 @@ void GPICommunicator::gatherImpl( T allvals[], const IndexType n, const Partitio
         return;
     }
 
-    SegmentData<T> srcSegment( this, n );          // keeps myvals to be accessed by root
-    SegmentData<T> dstSegment( this, n * mSize );  // keeps allvals on root
-    srcSegment.assign( myvals, n ); // copy from ptr to segment
+    typedef double T;
+
+    SCAI_ASSERT_EQUAL( common::typeSize( stype ), sizeof( T ), "size mismatch" );
+
+    SegmentData<T> srcSegment( this, n );          // keeps myVals to be accessed by root
+    SegmentData<T> dstSegment( this, n * mSize );  // keeps allVals on root
+    srcSegment.assign( myVals, n ); // copy from ptr to segment
 
     if ( root == mRank )
     {
@@ -1119,22 +1093,26 @@ void GPICommunicator::gatherImpl( T allvals[], const IndexType n, const Partitio
             SCAI_ASSERT_EQUAL_ERROR( n, writtenSize )
         }
 
-        dstSegment.copyTo( allvals, n * mSize );
+        dstSegment.copyTo( allVals, n * mSize );
     }
 }
 
 /* ---------------------------------------------------------------------------------- */
-/*      gather( allvals, n, root, myvals, sizes )                                     */
+/*      gather( allVals, n, root, myVals, sizes )                                     */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
 void GPICommunicator::gatherVImpl(
-    T allvals[],
+    void* allVals,
     const IndexType n,
     const PartitionId root,
-    const T myvals[],
-    const IndexType sizes[] ) const
+    const void* myVals,
+    const IndexType sizes[],
+    const common::scalar::ScalarType stype ) const
 {
+    typedef double T;
+
+    SCAI_ASSERT_EQUAL( common::typeSize( stype ), sizeof( T ), "size mismatch" );
+
     SCAI_REGION( "Communicator.GPI.gatherV" )
     SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
     SCAI_LOG_DEBUG( logger, *this << ": gather, root = " << root )
@@ -1155,7 +1133,7 @@ void GPICommunicator::gatherVImpl(
     // Note: segment data is now safe against different values of n, totalSize
     SegmentData<T> srcSegment( this, n );
     SegmentData<T> dstSegment( this, totalSize );   // allValues on root
-    srcSegment.assign( myvals, n ); // copy from ptr to segment
+    srcSegment.assign( myVals, n ); // copy from ptr to segment
     IndexType rootOffset = 0;
 
     if ( root == mRank )
@@ -1219,7 +1197,7 @@ void GPICommunicator::gatherVImpl(
             }
         }
 
-        dstSegment.copyTo( allvals, totalSize );
+        dstSegment.copyTo( allVals, totalSize );
     }
 
     wait();
@@ -1229,21 +1207,24 @@ void GPICommunicator::gatherVImpl(
 /*           maxloc                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void GPICommunicator::maxlocImpl( T& val, IndexType& location, PartitionId root ) const
+void GPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const
 {
+    typedef double T;
+
+    T& maxVal = *( reinterpret_cast<T*>( val ) );
+
     // get max values
-    T myVal = val;
-    val = max( val );
+    T myVal = maxVal;
+    maxVal = max( myVal );
     IndexType itsMyValue = -1;
 
-    if ( myVal == val )
+    if ( myVal == maxVal )
     {
-        itsMyValue = location;
+        itsMyValue = *location;
     }
 
     vector<IndexType> locations( mSize );
-    gatherImpl( locations.data(), 1, root, &itsMyValue );
+    gatherImpl( locations.data(), 1, root, &itsMyValue, stype );
 
     if ( mRank == root )
     {
@@ -1252,7 +1233,7 @@ void GPICommunicator::maxlocImpl( T& val, IndexType& location, PartitionId root 
         {
             if ( locations[i] != -1 )
             {
-                location = i;
+                *location = i;
                 break;
             }
         }
@@ -1265,10 +1246,14 @@ void GPICommunicator::maxlocImpl( T& val, IndexType& location, PartitionId root 
 /*           swap                                                                     */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void GPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner ) const
+void GPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partner, common::scalar::ScalarType stype ) const
 {
+    typedef double T;
+
+    SCAI_ASSERT_EQUAL( common::typeSize( stype ), sizeof( T ), "size mismatch" );
+
     // this is now safe as there is no global synchronization
+
     if ( partner == mRank )
     {
         return;

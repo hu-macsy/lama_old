@@ -40,7 +40,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/dmemo/CRTPCommunicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 #include <scai/dmemo/gpi/SegmentData.hpp>
 
 // others
@@ -66,7 +66,7 @@ namespace dmemo
  *  gaspi_proc_init is called in the constructor, gaspi_proc_term is called in the destructor.
  */
 
-class COMMON_DLL_IMPORTEXPORT GPICommunicator: public CRTPCommunicator<GPICommunicator>,
+class COMMON_DLL_IMPORTEXPORT GPICommunicator: public Communicator,
     public Communicator::Register<GPICommunicator>,
     public common::enable_shared_from_this<GPICommunicator>
 
@@ -74,7 +74,6 @@ class COMMON_DLL_IMPORTEXPORT GPICommunicator: public CRTPCommunicator<GPICommun
     // Only GPICommunicatorManager is allowed to create GPI communicator
 
     friend class GPISyncToken;
-    friend class CRTPCommunicator<GPICommunicator>;
 
 public:
 
@@ -110,7 +109,6 @@ public:
      */
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const;
 
-
     virtual void synchronize() const;
 
     /** scatter */
@@ -133,80 +131,100 @@ private:
 
     void setNodeData();
 
-    template<typename T>
-    inline static gaspi_datatype_t getGPIType();
+    inline static gaspi_datatype_t getGPIType( common::scalar::ScalarType stype );
 
-    template<typename T>
-    T sumImpl( T myVal ) const;
-    template<typename T>
-    T maxImpl( T myVal ) const;
-    template<typename T>
-    T minImpl( T myVal ) const;
+    /** Implementation of Communicator::sumImpl */
 
-    template<typename T>
-    void bcastImpl( T val[], const IndexType n, const PartitionId root ) const;
+    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
-    template<typename T>
-    void scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const;
+    /** Implementation of Communicator::minImpl */
 
-    template<typename T>
-    void scatterVImpl(
-        T myvals[],
-        const IndexType n,
-        const PartitionId root,
-        const T allvals[],
-        const IndexType sizes[] ) const;
+    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
-    template<typename T>
-    void gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const;
+    /** Implementation of Communicator::maxImpl */
 
-    template<typename T>
+    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+
+    /** Implementation for pure method Communicator::bcastImpl */
+
+    void bcastImpl( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const;
+
+
+    /** Implementation of pure method Communicator::scatterImpl */
+
+    void scatterImpl( void* myVals, const IndexType n, const PartitionId root, const void* allVals, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::scatterVImpl */
+
+    void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
+                       const void* allVals, const IndexType sizes[], common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::gatherImpl */
+
+    void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::gatherVImpl */
+
     void gatherVImpl(
-        T allvals[],
+        void* allvals,
         const IndexType n,
         const PartitionId root,
-        const T myvals[],
-        const IndexType sizes[] ) const;
+        const void* myvals,
+        const IndexType sizes[],
+        common::scalar::ScalarType stype ) const;
 
-    template<typename T>
+    /** Implementation of pure method Communicator::shiftImpl */
+
     IndexType shiftImpl(
-        T newvals[],
+        void* newVals,
         const IndexType newSize,
         const PartitionId source,
-        const T oldVals[],
+        const void* oldVals,
         const IndexType oldSize,
-        const PartitionId dest ) const;
-
-    template<typename T>
-    tasking::SyncToken* shiftAsyncImpl(
-        T newvals[],
-        const PartitionId source,
-        const T oldVals[],
         const PartitionId dest,
-        const IndexType size ) const;
+        common::scalar::ScalarType stype ) const;
 
-    template<typename T>
-    void swapImpl( T val[], const IndexType n, PartitionId partner ) const;
+    /** Implementation of pure method Communicator::shiftAsyncImpl */
 
-    template<typename T>
-    void maxlocImpl( T& val, IndexType& location, PartitionId root ) const;
+    tasking::SyncToken* shiftAsyncImpl(
+        void* newVals,
+        const PartitionId source,
+        const void* oldVals,
+        const PartitionId dest,
+        const IndexType size,
+        common::scalar::ScalarType stype ) const;
 
-    template<typename T>
+    /** Implementation of pure method Communicator::swapImpl */
+
+    void swapImpl( void* val, const IndexType n, PartitionId partner, common::scalar::ScalarType stype ) const;
+
+    void maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
+
+    void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::exchangeByPlanImpl */
+
     void exchangeByPlanImpl(
-        T recvData[],
+        void* recvData,
         const CommunicationPlan& recvPlan,
-        const T sendData[],
-        const CommunicationPlan& sendPlan ) const;
+        const void* sendData,
+        const CommunicationPlan& sendPlan,
+        const common::scalar::ScalarType stype ) const;
 
-    template<typename T>
+    /** Implementation of pure method Communicator::exchangeByPlanAsyncImpl */
+
     tasking::SyncToken* exchangeByPlanAsyncImpl(
-        T recvData[],
+        void* recvData,
         const CommunicationPlan& recvPlan,
-        const T sendData[],
-        const CommunicationPlan& sendPlan ) const;
+        const void* sendData,
+        const CommunicationPlan& sendPlan,
+        const common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
-    void all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const;
+    /** GPI Implementation for pure method Communciator::all2allvImpl */
+
+    void all2allvImpl( void* recvBuffer[], IndexType recvCount[],
+                       void* sendBuffer[], IndexType sendCount[],
+                       common::scalar::ScalarType stype ) const;
 
     const gaspi_queue_id_t mQueueID;
 

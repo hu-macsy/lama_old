@@ -104,9 +104,9 @@ SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size, 
 }
 
 template<typename T>
-void SegmentData<T>::assign( const T values[], const IndexType n )
+void SegmentData<T>::assign( const void* values, const IndexType n )
 {
-    T* data = get();
+    void* data = get();
 
     if ( values == data )
     {
@@ -119,9 +119,9 @@ void SegmentData<T>::assign( const T values[], const IndexType n )
 }
 
 template<typename T>
-void SegmentData<T>::copyTo( T values[], const IndexType n ) const
+void SegmentData<T>::copyTo( void* values, const IndexType n ) const
 {
-    const T* data = get();
+    const void* data = get();
 
     if ( values == data )
     {
@@ -163,7 +163,7 @@ template class COMMON_DLL_IMPORTEXPORT SegmentData<char> ;
 
 // generic template instantiation for the supported data types
 
-SCAI_COMMON_INST_CLASS( SegmentData, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( SegmentData, SCAI_ARITHMETIC_HOST )
 
 } // namespace dmemo
 

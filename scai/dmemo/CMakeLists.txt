@@ -141,6 +141,9 @@ add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
 if ( GPI_FOUND AND USE_GPI )
+    include( Package/Boost )
+    message( STATUS "add BOOST_INCLUDE_DIR=${BOOST_INCLUDE_DIR}" )
+    include_directories ( ${BOOST_INCLUDE_DIR} )
     add_subdirectory( gpi )
 endif ( GPI_FOUND AND USE_GPI )
 

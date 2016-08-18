@@ -98,14 +98,14 @@ public:
      *
      *  Note: assert n <= mSize
      */
-    void assign( const T values[], const IndexType n );
+    void assign( const void* values, const IndexType n );
 
     /** Copy data from SegmentData array to other memory
      *
      *  @param[out] values points to data to be filled
      *  @param[in] n  number of data values to be copied
      */
-    void copyTo( T values[], const IndexType n ) const;
+    void copyTo( void* values, const IndexType n ) const;
 
     /** Query the segment id to use routines for remote write/read. */
 
