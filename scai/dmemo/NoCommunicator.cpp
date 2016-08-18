@@ -56,8 +56,7 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
 
-NoCommunicator::NoCommunicator()
-    : CRTPCommunicator<NoCommunicator>( NO )
+NoCommunicator::NoCommunicator() : Communicator( NO )
 {
     SCAI_LOG_DEBUG( logger, "NoCommunicator()" )
 }
@@ -107,7 +106,7 @@ void NoCommunicator::all2all( IndexType recvValues[], const IndexType sendValues
     recvValues[0] = sendValues[0];
 }
 
-void NoCommunicator::sumData( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+void NoCommunicator::sumImpl( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
 {
     if ( outData == inData )
     {
@@ -117,7 +116,7 @@ void NoCommunicator::sumData( void* outData, const void* inData, const IndexType
     memcpy( outData, inData, typeSize( stype ) * n );
 }
 
-void NoCommunicator::minData( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+void NoCommunicator::minImpl( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
 {
     if ( outData == inData )
     {
@@ -127,7 +126,7 @@ void NoCommunicator::minData( void* outData, const void* inData, const IndexType
     memcpy( outData, inData, typeSize( stype ) * n );
 }
 
-void NoCommunicator::maxData( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+void NoCommunicator::maxImpl( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
 {
     if ( outData == inData )
     {
@@ -183,7 +182,7 @@ tasking::SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
 /*              shift                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
-IndexType NoCommunicator::shiftData(
+IndexType NoCommunicator::shiftImpl(
     void*,
     const IndexType,
     const PartitionId,
@@ -192,10 +191,10 @@ IndexType NoCommunicator::shiftData(
     const PartitionId,
     const common::scalar::ScalarType ) const
 {
-    COMMON_THROWEXCEPTION( "shiftData should never be called for NoCommunicator" )
+    COMMON_THROWEXCEPTION( "shiftImpl should never be called for NoCommunicator" )
 }
 
-tasking::SyncToken* NoCommunicator::shiftAsyncData(
+tasking::SyncToken* NoCommunicator::shiftAsyncImpl(
     void*,
     const PartitionId,
     const void*,
@@ -203,17 +202,22 @@ tasking::SyncToken* NoCommunicator::shiftAsyncData(
     const IndexType,
     const common::scalar::ScalarType ) const
 {
-    COMMON_THROWEXCEPTION( "shiftAsyncData should never be called for NoCommunicator" )
+    COMMON_THROWEXCEPTION( "shiftAsyncImpl should never be called for NoCommunicator" )
 }
 
-template<typename ValueType>
-void NoCommunicator::maxlocImpl( ValueType&, IndexType&, const PartitionId root ) const
+void NoCommunicator::maxlocImpl( void*, IndexType*, PartitionId root, common::scalar::ScalarType ) const
 {
     // nothing to do
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 }
 
-void NoCommunicator::bcastData( void*, const IndexType, const PartitionId root, common::scalar::ScalarType ) const
+void NoCommunicator::minlocImpl( void*, IndexType*, PartitionId root, common::scalar::ScalarType ) const
+{
+    // nothing to do
+    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
+}
+
+void NoCommunicator::bcastImpl( void*, const IndexType, const PartitionId root, common::scalar::ScalarType ) const
 {
     // Nothing to do as root is the only one processor
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
@@ -223,7 +227,7 @@ void NoCommunicator::all2allvImpl( void*[], IndexType[], void*[], IndexType[], c
 {
 }
 
-void NoCommunicator::scatterData(
+void NoCommunicator::scatterImpl(
     void* myVals,
     const IndexType n,
     const PartitionId root,
@@ -235,7 +239,7 @@ void NoCommunicator::scatterData(
     memcpy( myVals, allVals, common::typeSize( stype ) * n );
 }
 
-void NoCommunicator::scatterVData(
+void NoCommunicator::scatterVImpl(
     void* myVals,
     const IndexType n,
     const PartitionId root,
@@ -249,7 +253,7 @@ void NoCommunicator::scatterVData(
     memcpy( myVals, allVals, common::typeSize( stype ) * n );
 }
 
-void NoCommunicator::gatherData(
+void NoCommunicator::gatherImpl(
     void* allVals,
     const IndexType n,
     const PartitionId root,
@@ -261,7 +265,7 @@ void NoCommunicator::gatherData(
     memcpy( allVals, myVals, common::typeSize( stype ) * n );
 }
 
-void NoCommunicator::gatherVData(
+void NoCommunicator::gatherVImpl(
     void* allVals,
     const IndexType n,
     const PartitionId root,
@@ -278,18 +282,6 @@ void NoCommunicator::gatherVData(
 void NoCommunicator::swapImpl( void*, const IndexType, const PartitionId partner, const common::scalar::ScalarType ) const
 {
     SCAI_ASSERT_EQ_ERROR( partner, 0, "" )
-}
-
-template<typename ValueType>
-ValueType NoCommunicator::minImpl( const ValueType value ) const
-{
-    return value;
-}
-
-template<typename ValueType>
-ValueType NoCommunicator::maxImpl( const ValueType value ) const
-{
-    return value;
 }
 
 /* --------------------------------------------------------------- */

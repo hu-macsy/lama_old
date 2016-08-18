@@ -556,6 +556,75 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
+typedef boost::mpl::list<int, float, double> scai_minloc_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_minloc_types )
+{
+    using common::Math;
+
+    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    std::srand( 11171 + comm->getRank() * 17 );
+
+    // test it for each processor to be the root
+
+    for ( PartitionId root = 0; root < comm->getSize(); ++root )
+    {
+        IndexType N = 5;
+        LArray<ValueType> vals;
+        HArrayUtils::setRandom( vals, N, 1.0f );
+        ValueType localMin = vals[0];
+        IndexType localMinLoc = 0;
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            ValueType v = vals[i];
+
+            if ( v < localMin )
+            {
+                localMin = v;
+                localMinLoc = i;
+            }
+        }
+    
+        SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, local " << localMin << " @ " << localMinLoc )
+
+        ValueType globalMin1 = comm->min( localMin );
+
+        BOOST_CHECK( globalMin1 <= localMin );
+    
+        // some types not supported yet for minloc
+
+        if ( common::isComplex( stype ) ||  ( stype == common::scalar::LONG_DOUBLE ) )
+        {
+            continue;
+        }
+
+        IndexType globalMinLoc = localMinLoc;
+        ValueType globalMin = localMin;
+
+        comm->minloc( globalMin, globalMinLoc, root );
+
+        comm->bcast( &globalMin, 1, root );
+        comm->bcast( &globalMinLoc, 1, root );
+
+        BOOST_CHECK_EQUAL( globalMin1, globalMin );
+
+        SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, global " << globalMin << " @ " << globalMinLoc )
+
+        BOOST_CHECK( globalMin <= localMin );
+
+        bool any = globalMinLoc == localMinLoc;
+
+        any = comm->any( any );
+    
+        BOOST_CHECK( any );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
 {
     using common::Math;
@@ -601,15 +670,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumArrayTest, ValueType, scai_array_test_types )
 
     comm->sumArray( vals );
 
-    { 
-        ReadAccess<ValueType> rLocal( saveVals );
-        ReadAccess<ValueType> rGlobal( vals );
+    saveVals *= size;
 
-        for ( IndexType i = 0; i < N; ++i )
-        {
-            BOOST_CHECK_EQUAL( rLocal[i] * size, rGlobal[i] );
-        }
-    }
+    BOOST_CHECK( vals.maxDiffNorm( saveVals) < 0.0001 );
 }
 
 /* --------------------------------------------------------------------- */
