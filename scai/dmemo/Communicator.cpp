@@ -43,6 +43,7 @@
 
 #include <scai/tracing.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/unique_ptr.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <locale>
@@ -784,27 +785,113 @@ void Communicator::all2allv( ValueType* recvVal[], IndexType recvCount[],
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionId root ) const
+void Communicator::maxlocDefault( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    // For the virtual routine maxlocImpl we make sure that val and location are stored contiguously
+    SCAI_LOG_INFO( logger, *this << ": maxlocDefault<" << common::TypeTraits<ValueType>::id() << ">" )
 
-    struct ValAndLoc
+    ValueType maxVal = max( val );
+
+    IndexType myMaxLocation = nIndex;
+
+    if ( maxVal == val )
     {
-        ValueType val;
-        IndexType loc;
-    };
+        myMaxLocation = location;
+    }
 
-    ValAndLoc x;
+    common::scoped_array<IndexType> allMaxLocations( new IndexType[ getSize() ] );
 
-    x.val = val;
-    x.loc = location;
-
-    maxlocImpl( &x.val, &x.loc, root, common::TypeTraits<ValueType>::stype );
+    gather( allMaxLocations.get(), 1, root, &myMaxLocation );
 
     if ( getRank() == root )
     {
-        val = x.val;
-        location = x.loc;
+        // find first defined location
+
+        for ( PartitionId p = 0; p < getSize(); ++p )
+        {
+            if ( allMaxLocations[p] != nIndex )
+            {
+                location = allMaxLocations[p];
+                SCAI_LOG_DEBUG( logger, *this << ": maxlocDefault location = " << location << " @ " << p )
+                break;
+            }
+        }
+
+        val = maxVal;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::minlocDefault( ValueType& val, IndexType& location, const PartitionId root ) const
+{
+    SCAI_LOG_INFO( logger, *this << ": minlocDefault<" << common::TypeTraits<ValueType>::id() << ">" )
+
+    ValueType minVal = min( val );
+
+    IndexType myMinLocation = nIndex;   // undefined
+
+    if ( minVal == val )
+    {
+        myMinLocation = location;
+    }
+
+    common::scoped_array<IndexType> allMinLocations( new IndexType[ getSize() ] );
+
+    gather( allMinLocations.get(), 1, root, &myMinLocation );
+
+    if ( getRank() == root )
+    {
+        // find first defined location
+
+        for ( PartitionId p = 0; p < getSize(); ++p )
+        {
+            if ( allMinLocations[p] != nIndex )
+            {
+                location = allMinLocations[p];
+                SCAI_LOG_DEBUG( logger, *this << ": minlocDefault location = " << location << " @ " << p )
+                break;
+            }
+        }
+
+        val = minVal;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionId root ) const
+{
+    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+
+    if ( supportsLocReduction( stype ) )
+    {
+
+        // For the virtual routine maxlocImpl we make sure that val and location are stored contiguously
+
+        struct ValAndLoc
+        {
+            ValueType val;
+            IndexType loc;
+        };
+    
+        ValAndLoc x;
+
+        x.val = val;
+        x.loc = location;
+    
+        maxlocImpl( &x.val, &x.loc, root, stype );
+
+        if ( getRank() == root )
+        {
+            val = x.val;
+            location = x.loc;
+        }
+    }
+    else
+    {
+        maxlocDefault( val, location, root );
     }
 }
 
@@ -813,28 +900,38 @@ void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionI
 template<typename ValueType>
 void Communicator::minloc( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    // For the virtual routine minlocImpl we make sure that val and location are stored contiguously
+    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
-    struct ValAndLoc
+    if ( supportsLocReduction( stype ) )
     {
-        ValueType val;
-        IndexType loc;
-    };
 
-    ValAndLoc x;
+        // For the virtual routine minlocImpl we make sure that val and location are stored contiguously
 
-    x.val = val;
-    x.loc = location;
+        struct ValAndLoc
+        {
+            ValueType val;
+            IndexType loc;
+        };
 
-    minlocImpl( &x.val, &x.loc, root, common::TypeTraits<ValueType>::stype );
+        ValAndLoc x;
 
-    if ( getRank() == root )
+        x.val = val;
+        x.loc = location;
+    
+        minlocImpl( &x.val, &x.loc, root, common::TypeTraits<ValueType>::stype );
+
+        if ( getRank() == root )
+        {
+            val = x.val;
+            location = x.loc;
+        }
+    }
+    else
     {
-        val = x.val;
-        location = x.loc;
+        minlocDefault( val, location, root );
     }
 }
-
+    
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>

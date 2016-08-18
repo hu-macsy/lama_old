@@ -402,6 +402,13 @@ public:
         const IndexType sizes[],
         common::scalar::ScalarType stype ) const = 0;
 
+    /**
+     *  Predicate that returns true if (derived) Communicator class supports loc reduction for 
+     *  a given value type.
+     */
+
+    virtual bool supportsLocReduction( common::scalar::ScalarType stype ) const = 0;
+
     /* @brief Sum operations sum up one single value from each partition to a global value.
      *
      *  @param[in] value  value on the calling partition
@@ -425,10 +432,16 @@ public:
     template<typename ValueType>
     void maxloc( ValueType& val, IndexType& location, const PartitionId root ) const;
 
+    template<typename ValueType>
+    void maxlocDefault( ValueType& val, IndexType& location, const PartitionId root ) const;
+
     virtual void maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const = 0;
 
     template<typename ValueType>
     void minloc( ValueType& val, IndexType& location, const PartitionId root ) const;
+
+    template<typename ValueType>
+    void minlocDefault( ValueType& val, IndexType& location, const PartitionId root ) const;
 
     virtual void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const = 0;
 

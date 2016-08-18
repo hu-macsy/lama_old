@@ -1038,6 +1038,23 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
 }
 
 /* ---------------------------------------------------------------------------------- */
+/*          supportsLocReduction                                                      */
+/* ---------------------------------------------------------------------------------- */
+
+bool MPICommunicator::supportsLocReduction( common::scalar::ScalarType stype ) const
+{
+    // min/maxloc reduction not supported for all data types
+
+    switch ( stype )
+    {
+        case common::scalar::INT       : return true;
+        case common::scalar::FLOAT     : return true;
+        case common::scalar::DOUBLE    : return true;
+        default                        : return false;
+    }
+}
+
+/* ---------------------------------------------------------------------------------- */
 /*           swap                                                                     */
 /* ---------------------------------------------------------------------------------- */
 

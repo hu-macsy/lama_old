@@ -210,6 +210,10 @@ private:
 
     void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
 
+    /** Implementation of Communicator::supportsLocReduction */
+
+    bool supportsLocReduction( common::scalar::ScalarType type ) const;
+
     /** Implementation of pure method Communicator::exchangeByPlanImpl */
 
     void exchangeByPlanImpl(

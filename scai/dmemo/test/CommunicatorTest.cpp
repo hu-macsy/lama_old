@@ -492,8 +492,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
 {
     using common::Math;
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     std::srand( 1751 + comm->getRank() * 17 );
@@ -525,15 +523,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
 
         BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
     
-        // some types not supported yet for maxloc
-
-        if ( common::isComplex( stype ) ||  ( stype == common::scalar::LONG_DOUBLE ) )
-        {
-            continue;
-        }
-
         IndexType globalMaxLoc = localMaxLoc;
-        ValueType globalMax = localMax;
+        ValueType globalMax    = localMax;
 
         comm->maxloc( globalMax, globalMaxLoc, root );
 
@@ -556,13 +547,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<int, float, double> scai_minloc_types;
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_minloc_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
 {
     using common::Math;
-
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -592,15 +579,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_minloc_types )
 
         ValueType globalMin1 = comm->min( localMin );
 
-        BOOST_CHECK( globalMin1 <= localMin );
+        bool error1 = localMin < globalMin1;
+
+        BOOST_CHECK( !error1 );
+
+        // BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
     
-        // some types not supported yet for minloc
-
-        if ( common::isComplex( stype ) ||  ( stype == common::scalar::LONG_DOUBLE ) )
-        {
-            continue;
-        }
-
         IndexType globalMinLoc = localMinLoc;
         ValueType globalMin = localMin;
 
@@ -613,7 +597,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_minloc_types )
 
         SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, global " << globalMin << " @ " << globalMinLoc )
 
-        BOOST_CHECK( globalMin <= localMin );
+        bool error = localMin < globalMin;
+
+        BOOST_CHECK( !error );
 
         bool any = globalMinLoc == localMinLoc;
 

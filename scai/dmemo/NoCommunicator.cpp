@@ -208,13 +208,18 @@ tasking::SyncToken* NoCommunicator::shiftAsyncImpl(
 void NoCommunicator::maxlocImpl( void*, IndexType*, PartitionId root, common::scalar::ScalarType ) const
 {
     // nothing to do
-    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "illegal root partition" )
 }
 
 void NoCommunicator::minlocImpl( void*, IndexType*, PartitionId root, common::scalar::ScalarType ) const
 {
     // nothing to do
-    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "illegal root partition" )
+}
+
+bool NoCommunicator::supportsLocReduction( common::scalar::ScalarType ) const
+{
+    return true;  
 }
 
 void NoCommunicator::bcastImpl( void*, const IndexType, const PartitionId root, common::scalar::ScalarType ) const
