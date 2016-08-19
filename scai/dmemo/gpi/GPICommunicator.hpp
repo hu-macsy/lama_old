@@ -198,6 +198,10 @@ private:
 
     void swapImpl( void* val, const IndexType n, PartitionId partner, common::scalar::ScalarType stype ) const;
 
+    /** Implementation of Communicator::supportsLocReduction */
+
+    virtual bool supportsLocReduction( common::scalar::ScalarType type ) const;
+
     void maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
 
     void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
@@ -233,19 +237,16 @@ private:
 
     // Be careful here: remoteOffset must be set to ptr of remSegment on other processor */
 
-    template<typename T>
-    void remoteWrite( const SegmentData<T>& localSegment, const IndexType localOffset, const PartitionId remP,
-                      SegmentData<T>& remSegment, const IndexType remOffset, const IndexType size ) const;
+    void remoteWrite( const SegmentData& localSegment, const IndexType localOffset, const PartitionId remP,
+                      SegmentData& remSegment, const IndexType remOffset, const IndexType size ) const;
 
     // Be careful here: dstOffset must be the logical offset
 
-    template<typename T>
-    void localWrite( const SegmentData<T>& srcSegment, const IndexType srcOffset,
-                     SegmentData<T>& dstSegment, const IndexType dstOffset, const IndexType size ) const;
+    void localWrite( const SegmentData& srcSegment, const IndexType srcOffset,
+                     SegmentData& dstSegment, const IndexType dstOffset, const IndexType size ) const;
 
-    template<typename T>
-    void remoteRead( SegmentData<T>& localSegment, const IndexType localOffset, const PartitionId remP,
-                     const SegmentData<T>& remSegment, const IndexType remOffset, const IndexType size ) const;
+    void remoteRead( SegmentData& localSegment, const IndexType localOffset, const PartitionId remP,
+                     const SegmentData& remSegment, const IndexType remOffset, const IndexType size ) const;
 
     /** Helper routine regarding notification. */
     void notify( const gaspi_segment_id_t segID,

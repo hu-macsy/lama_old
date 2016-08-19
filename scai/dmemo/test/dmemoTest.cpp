@@ -53,7 +53,9 @@ bool init_function()
 {
     try
     {
+        std::cout << "get default communicator" << std::endl;
         scai::dmemo::CommunicatorPtr comm = scai::dmemo::Communicator::getCommunicatorPtr();
+        std::cout << "got default communicator " << *comm << std::endl;
         return true;
     }
     catch ( scai::common::Exception& ex )
