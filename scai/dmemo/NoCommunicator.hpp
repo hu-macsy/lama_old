@@ -142,6 +142,10 @@ private    :
 
     void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
 
+    /** Implementation of Communicator::supportsLocReduction */
+ 
+    virtual bool supportsLocReduction( common::scalar::ScalarType type ) const;
+
     void swapImpl( void* val, const IndexType n, const PartitionId partner, common::scalar::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::exchangeByPlanImpl */
@@ -164,7 +168,7 @@ private    :
 
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
-    /** Implementation of Communicator::sumData */
+    /** Implementation of Communicator::sumImpl */
 
     virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
