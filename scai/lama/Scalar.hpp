@@ -345,7 +345,7 @@ inline bool operator<( const Scalar& a, const Scalar& b )
         common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
 	{
 		// no complex number
-		return (a.getValue<ScalarRepType>()).real() < (b.getValue<ScalarRepType>()).real();
+		return common::Math::real( a.getValue<ScalarRepType>() ) < common::Math::real( b.getValue<ScalarRepType>() );
 	}
 	else
 	{
@@ -359,7 +359,7 @@ inline bool operator>( const Scalar& a, const Scalar& b )
         common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
 	{
 		// no complex number
-		return (a.getValue<ScalarRepType>()).real() > (b.getValue<ScalarRepType>()).real();
+		return common::Math::real( a.getValue<ScalarRepType>() ) > common::Math::real( b.getValue<ScalarRepType>() );
 	}
 	else
 	{

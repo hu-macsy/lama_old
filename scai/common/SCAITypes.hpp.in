@@ -41,6 +41,8 @@
 #include <scai/common/Complex.hpp>
 #endif
 
+#include <scai/common/config.hpp>
+
 #include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 #include <scai/common/mepr/TypeListUtils.hpp>
