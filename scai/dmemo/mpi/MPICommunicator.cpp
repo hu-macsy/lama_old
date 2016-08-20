@@ -290,47 +290,25 @@ void MPICommunicator::min_operator( void* in, void* out, int* count, MPI_Datatyp
 
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::setNodeData()
+
+void MPICommunicator::getProcessorName( char* name ) const
 {
-    // routine set mNodeRank and mNodeSize
-    // processors with same processor_name are assumed to be on the same node
-    int nodeNameLength; // lenght of node name for this processor
-    char nodeName[MPI_MAX_PROCESSOR_NAME]; // name of node for this processor
-    memset( nodeName, '\0', MPI_MAX_PROCESSOR_NAME );
-    SCAI_MPICALL( logger, MPI_Get_processor_name( nodeName, &nodeNameLength ), "MPI_Get_processor_name" )
-    SCAI_LOG_INFO( logger, "Processor " << mRank << " runs on node " << nodeName )
+    size_t len = maxProcessorName();
 
-    common::scoped_array<char> allNodeNames( new char[ MPI_MAX_PROCESSOR_NAME * mSize * sizeof( char ) ] );
+    memset( name, '\0', len * sizeof( char ) );
 
-    memset( allNodeNames.get(), '\0', MPI_MAX_PROCESSOR_NAME * mSize );
+    int nodeNameLength;   // not really neded as terminated with \0
 
-    SCAI_MPICALL( logger,
-                  MPI_Allgather( &nodeName[0], MPI_MAX_PROCESSOR_NAME, MPI_CHAR, &allNodeNames[0],
-                                 MPI_MAX_PROCESSOR_NAME, MPI_CHAR, mComm ),
-                  "MPI_Allgather( <node_names> )" )
-    mNodeSize = 0;
-    mNodeRank = mSize; // illegal value to verify that it will be set
+    SCAI_MPICALL( logger, MPI_Get_processor_name( name, &nodeNameLength ), "MPI_Get_processor_name" )
 
-    for ( int i = 0; i < mSize; ++i )
-    {
-        if ( strcmp( &allNodeNames[i * MPI_MAX_PROCESSOR_NAME], nodeName ) )
-        {
-            continue; // processor i is not on same node
-        }
+    SCAI_LOG_INFO( logger, "Processor " << mRank << " runs on node " << name )
+}
 
-        // Processor i is on same node as this processor
+/* --------------------------------------------------------------- */
 
-        if ( i == mRank )
-        {
-            mNodeRank = mNodeSize;
-        }
-
-        ++mNodeSize;
-    }
-
-    SCAI_ASSERT_ERROR( mNodeSize > 0, "Serious problem encountered to get node size" )
-    SCAI_ASSERT_ERROR( mNodeRank < mNodeSize, "Serious problem encountered to get node size" )
-    SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )
+size_t MPICommunicator::maxProcessorName() const
+{
+    return MPI_MAX_PROCESSOR_NAME;
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -379,26 +357,6 @@ bool MPICommunicator::isEqual( const Communicator& other ) const
 Communicator::ThreadSafetyLevel MPICommunicator::getThreadSafetyLevel() const
 {
     return mThreadSafetyLevel;
-}
-
-PartitionId MPICommunicator::getSize() const
-{
-    return mSize;
-}
-
-PartitionId MPICommunicator::getRank() const
-{
-    return mRank;
-}
-
-PartitionId MPICommunicator::getNodeSize() const
-{
-    return mNodeSize;
-}
-
-PartitionId MPICommunicator::getNodeRank() const
-{
-    return mNodeRank;
 }
 
 MPI_Comm MPICommunicator::getMPIComm() const

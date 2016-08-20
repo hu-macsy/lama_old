@@ -45,6 +45,7 @@
 #include <scai/common/weak_ptr.hpp>
 
 #include <cstring>
+#include <unistd.h>
 
 using namespace std;
 
@@ -79,26 +80,6 @@ bool NoCommunicator::isEqual( const Communicator& other ) const
 Communicator::ThreadSafetyLevel NoCommunicator::getThreadSafetyLevel() const
 {
     return Communicator::Multiple;
-}
-
-PartitionId NoCommunicator::getSize() const
-{
-    return 1;
-}
-
-PartitionId NoCommunicator::getRank() const
-{
-    return 0;
-}
-
-PartitionId NoCommunicator::getNodeSize() const
-{
-    return 1;
-}
-
-PartitionId NoCommunicator::getNodeRank() const
-{
-    return 0;
 }
 
 void NoCommunicator::all2all( IndexType recvValues[], const IndexType sendValues[] ) const
@@ -287,6 +268,22 @@ void NoCommunicator::gatherVImpl(
 void NoCommunicator::swapImpl( void*, const IndexType, const PartitionId partner, const common::scalar::ScalarType ) const
 {
     SCAI_ASSERT_EQ_ERROR( partner, 0, "" )
+}
+
+/* --------------------------------------------------------------- */
+
+void NoCommunicator::getProcessorName( char* name ) const
+{
+    size_t len = maxProcessorName();
+
+    memset( name, 0, len * sizeof( char ) );
+
+    gethostname( name,len );
+}
+
+size_t NoCommunicator::maxProcessorName() const
+{
+    return 256;
 }
 
 /* --------------------------------------------------------------- */

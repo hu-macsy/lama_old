@@ -144,8 +144,15 @@ CommunicatorPtr Communicator::getCommunicatorPtr()
     return getDefaultCommunicatorPtr();
 }
 
-Communicator::Communicator( const CommunicatorKind& type )
-    : mCommunicatorType( type )
+/* -----------------------------------------------------------------------------*/
+
+Communicator::Communicator( const CommunicatorKind& type ) : 
+
+      mCommunicatorType( type ),
+      mRank( 0 ),
+      mSize( 1 ),
+      mNodeRank( 0 ),
+      mNodeSize( 1 )
 {
     SCAI_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
 }
@@ -977,6 +984,60 @@ SyncToken* Communicator::exchangeByPlanAsync(
     token->pushRoutine( sendData.releaseDelayed() );
     // return ownership of new created object
     return token;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void Communicator::setNodeData()
+{
+    // Note: here we assume that mSize, mRank are already set correctly
+
+    // routine set mNodeRank and mNodeSize
+    // processors with same processor_name are assumed to be on the same node
+
+    int maxNameLength = maxProcessorName(); 
+
+    common::scoped_array<char> myNodeName( new char[ maxNameLength ] );
+
+    common::scoped_array<char> allNodeNames( new char[ maxNameLength * getSize() ] );
+
+    getProcessorName( myNodeName.get() );
+
+    memset( allNodeNames.get(), '\0', maxNameLength * mSize * sizeof( char ) );
+
+    // use gather / bcast 
+
+    const PartitionId root = 0;
+
+    gather( allNodeNames.get(), maxNameLength, root, myNodeName.get() );
+    bcast( allNodeNames.get(), maxNameLength * mSize, root );
+
+    mNodeSize = 0;
+    mNodeRank = mSize; // illegal value to verify that it will be set
+
+    const char* ptrAllNodeNames = allNodeNames.get();
+
+    for ( int i = 0; i < mSize; ++i )
+    {
+        if ( strcmp( &ptrAllNodeNames[i * maxNameLength], myNodeName.get() ) )
+        {
+            continue; // processor i is not on same node
+        }
+
+        // Processor i is on same node as this processor
+
+        if ( i == mRank )
+        {
+            mNodeRank = mNodeSize;
+        }
+
+        ++mNodeSize;
+    }
+
+    SCAI_ASSERT_GT_ERROR( mNodeSize, 0, "Serious problem encountered to get node size" )
+    SCAI_ASSERT_LT_ERROR( mNodeRank, mNodeSize, "Serious problem encountered to get node size" )
+
+    SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )
 }
 
 /* -------------------------------------------------------------------------- */

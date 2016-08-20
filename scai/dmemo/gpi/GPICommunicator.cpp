@@ -132,8 +132,10 @@ GPICommunicator::GPICommunicator( )
     SCAI_LOG_DEBUG( logger, "GPICommunicator(): call init" )
     gaspi_timeout_t init_timeout = 10000;   // in milli seconds
     SCAI_GASPI_CALL( gaspi_proc_init( init_timeout ) )
-    SCAI_GASPI_CALL( gaspi_proc_num( &mSize ) )
-    SCAI_GASPI_CALL( gaspi_proc_rank( &mRank ) )
+    SCAI_GASPI_CALL( gaspi_proc_num( &gSize ) )
+    SCAI_GASPI_CALL( gaspi_proc_rank( &gRank ) )
+    mRank = gRank;
+    mSize = gSize;
     SCAI_LOG_INFO( logger, "GASPI proc " << mRank << " of " << mSize << " started" )
     gaspi_number_t num_notifications;
     SCAI_GASPI_CALL( gaspi_notification_num ( &num_notifications ) )
@@ -141,7 +143,10 @@ GPICommunicator::GPICommunicator( )
     SCAI_ASSERT_ERROR( mMaxNotifications >= 2 * mSize,
                        "# notifications = " << mMaxNotifications << " not sufficient"
                        << ", need at least 2 * " << mSize )
+
     // the following call is for convenience to get correct node rank by hostnames
+    // Note: mRank, mSize must be set correctly before
+
     setNodeData();   // determine mNodeRank, mNodeSize, also uses some communication pattern
 }
 
@@ -149,53 +154,22 @@ GPICommunicator::GPICommunicator( )
 
 #define GPI_MAX_PROCESSOR_NAME 512
 
-void GPICommunicator::setNodeData()
+/* --------------------------------------------------------------- */
+
+void GPICommunicator::getProcessorName( char* name ) const
 {
-    char nodeName[GPI_MAX_PROCESSOR_NAME];  // name of node for this processor
-    memset( nodeName, '\0', GPI_MAX_PROCESSOR_NAME );
-    // GPI is available only on Linux, so use this Linux routine
-    gethostname( nodeName, GPI_MAX_PROCESSOR_NAME );
+    size_t len = maxProcessorName();
 
-    SCAI_LOG_INFO( logger, "Processor " << mRank << " runs on node " << nodeName )
+    memset( name, 0, len * sizeof( char ) );
 
-    char* allNodeNames = new char[ GPI_MAX_PROCESSOR_NAME * mSize ];
+    gethostname( name,len );
+}
 
-    if ( allNodeNames == NULL )
-    {
-        COMMON_THROWEXCEPTION( "Can't alloc enough memory for all node names." )
-    }
+/* --------------------------------------------------------------- */
 
-    memset( allNodeNames, '\0', GPI_MAX_PROCESSOR_NAME * mSize * sizeof( char ) );
-    const PartitionId root = 0;
-    gather( allNodeNames, GPI_MAX_PROCESSOR_NAME, root, nodeName );
-    bcast( allNodeNames, GPI_MAX_PROCESSOR_NAME * mSize, root );
-    mNodeSize = 0;
-    mNodeRank = mSize;  // illegal value to verify that it will be set
-
-    for ( int i = 0; i < mSize; ++i )
-    {
-        SCAI_LOG_DEBUG( logger, "processor " << i << " on node " << ( allNodeNames + i * GPI_MAX_PROCESSOR_NAME ) )
-
-        if ( strcmp( &allNodeNames[ i * GPI_MAX_PROCESSOR_NAME ], nodeName ) )
-        {
-            continue;   // processor i is not on same node
-        }
-
-        // Processor i is on same node as this processor
-
-        if ( i == mRank )
-        {
-            mNodeRank = mNodeSize;
-        }
-
-        ++mNodeSize;
-    }
-
-    delete[] allNodeNames;
-    SCAI_ASSERT_ERROR( mNodeSize > 0, "Serious problem encountered to get node size" )
-    SCAI_ASSERT_ERROR( mNodeRank < mNodeSize, "Serious problem encountered to get node size" )
-    SCAI_LOG_INFO( logger, *this << ": runs on " << nodeName
-                   << ", node rank " << mNodeRank << " of " << mNodeSize )
+size_t GPICommunicator::maxProcessorName() const
+{
+    return GPI_MAX_PROCESSOR_NAME;
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -229,26 +203,6 @@ bool GPICommunicator::isEqual( const Communicator& other ) const
 Communicator::ThreadSafetyLevel GPICommunicator::getThreadSafetyLevel() const
 {
     return mThreadSafetyLevel;
-}
-
-PartitionId GPICommunicator::getSize() const
-{
-    return mSize;
-}
-
-PartitionId GPICommunicator::getRank() const
-{
-    return mRank;
-}
-
-PartitionId GPICommunicator::getNodeSize() const
-{
-    return mNodeSize;
-}
-
-PartitionId GPICommunicator::getNodeRank() const
-{
-    return mNodeRank;
 }
 
 /* ---------------------------------------------------------------------------------- */

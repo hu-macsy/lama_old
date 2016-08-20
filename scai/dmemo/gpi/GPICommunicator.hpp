@@ -83,22 +83,6 @@ public:
 
     virtual ThreadSafetyLevel getThreadSafetyLevel() const;
 
-    /** @brief Provide implementation for Communicator::getSize */
-
-    virtual PartitionId getSize() const;
-
-    /** @brief Provide implementation for Communicator::getRank */
-
-    virtual PartitionId getRank() const;
-
-    /** @brief Provide implementation for Communicator::getNodeSize */
-
-    virtual PartitionId getNodeSize() const;
-
-    /** @brief Provide implementation for Communicator::getNodeRank */
-
-    virtual PartitionId getNodeRank() const;
-
     /** All-to-all exchange of an integer value between all processors.
      *
      * @param[out] recvValues will contain one value from each processor
@@ -129,7 +113,13 @@ private:
 
     void wait() const;
 
-    void setNodeData();
+    /** Implementation of Communicator::getProcessorName */
+
+    virtual void getProcessorName( char* name ) const;
+
+    /** Implementation of Communicator::maxProcessorName */
+
+    virtual size_t maxProcessorName() const;
 
     inline static gaspi_datatype_t getGPIType( common::scalar::ScalarType stype );
 
@@ -232,8 +222,8 @@ private:
 
     const gaspi_queue_id_t mQueueID;
 
-    gaspi_rank_t mRank; // rank of this processor
-    gaspi_rank_t mSize; // size of communicator
+    gaspi_rank_t gRank; // rank of this processor (same as mRank, but might be other type)
+    gaspi_rank_t gSize; // size of communicator
 
     // Be careful here: remoteOffset must be set to ptr of remSegment on other processor */
 
