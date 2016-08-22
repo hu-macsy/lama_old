@@ -823,11 +823,11 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
         }
         else if ( op == reduction::ADD )
         {
-            #pragma omp parallel for
+            // No parallelization at this time
 
             for ( IndexType i = 0; i < n; i++ )
             {
-                atomicAdd( out[indexes[i]], static_cast<ValueType1>( in[i] ) );
+                out[indexes[i]] += static_cast<ValueType1>( in[i] );
             }
         }
     }
