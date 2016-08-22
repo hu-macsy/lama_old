@@ -579,12 +579,17 @@ public:
      * 
      *   @param[out] outValues array with the result values, same on all processes
      *   @param[in]  inValues individual contributions on each process
+     *   @param[in]  n is the number of values in arrays inValues and outValues
      *   @param[in]  stype specifies the data type of the data 
      */
  
     virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
 
+    /**  Find minimal values from all processes and distributes the result back to all processes. */
+
     virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+
+    /**  Find maximal values from all processes and distributes the result back to all processes. */
 
     virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
 

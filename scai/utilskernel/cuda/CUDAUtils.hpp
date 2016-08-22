@@ -141,7 +141,7 @@ public:
     template<typename ValueType, typename otherValueType>
     static void setGather( ValueType out[], const otherValueType in[], const IndexType indexes[], const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::setScatter, out[ indexes[i] ] <op>= in [i] */
+    /** CUDA implementation for UtilKernelTrait::setScatter, out[ indexes[i] ] op= in [i] */
 
     template<typename ValueType, typename otherValueType>
     static void setScatter( ValueType out[], const IndexType indexes[], const otherValueType in[], const reduction::ReductionOp op, const IndexType n );

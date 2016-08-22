@@ -82,7 +82,7 @@ public:
 
     /** This constructor creates a general distribution by an array containing the owner for each element
      *
-     *  @param[in] owners, with 0 <= owners[i] < communicator->size()
+     *  @param[in] owners array with ower for each element, 0 <= owners[i] < communicator->size()
      *  @param[in] communicator that specifies the processor array for distribution
      *
      *  // Note: owners must only be valid on host processor
