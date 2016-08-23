@@ -443,7 +443,9 @@ ValueType MICBLAS1::dot(
             *valPtr += local_val;
         }
     }
-    SCAI_LOG_INFO( logger, "dot: result = " << val )
+
+    SCAI_LOG_DEBUG( logger, "dot: result = " << val )
+
     return val;
 }
 
@@ -458,8 +460,9 @@ void MICBLAS1::sum(
     const ValueType* y,
     ValueType* z )
 {
-    SCAI_LOG_DEBUG( logger,
-                    "sum<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
+    SCAI_LOG_INFO( logger,
+                    "sum<" << common::TypeTraits<ValueType>::id() << ">, z[" << n << "] = " << alpha << " * x + " << beta << " * y "
+                    ", x = " << x << ", y = " << y << ", z = " << z )
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -476,11 +479,11 @@ void MICBLAS1::sum(
     int device = MICContext::getCurrentDevice();
 #pragma offload target( MIC : device ), in( xPtr, yPtr, zPtr, alphaPtr[0:1], betaPtr[0:1] )
     {
-        const ValueType* x = static_cast<const ValueType*>( xPtr );
-        const ValueType* y = static_cast<const ValueType*>( yPtr );
-        ValueType* z = static_cast<ValueType*>( zPtr );
-        #pragma omp parallel for
+        const ValueType* x = reinterpret_cast<const ValueType*>( xPtr );
+        const ValueType* y = reinterpret_cast<const ValueType*>( yPtr );
+        ValueType* z = reinterpret_cast<ValueType*>( zPtr );
 
+        #pragma omp parallel for
         for ( int i = 0; i < n; i++ )
         {
             z[i] = *alphaPtr * x[i] + *betaPtr * y[i];
@@ -498,7 +501,9 @@ void MICBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[" << flag << "], BLAS1<" << common::TypeTraits<ValueType>::id() << ">" )
+
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( MICBLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( MICBLAS1::nrm2, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( MICBLAS1::asum, ctx, flag );
@@ -516,12 +521,16 @@ void MICBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
 
 MICBLAS1::RegisterGuard::RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for MIC at kernel registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 MICBLAS1::RegisterGuard::~RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "unregister BLAS1 OpenMP-routines for MIC at kernel registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
