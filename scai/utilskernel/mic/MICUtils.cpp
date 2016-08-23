@@ -888,7 +888,7 @@ void MICUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistr
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag << "]" )
+    SCAI_LOG_INFO( logger, "register[flag=" << flag << "] UtilsKernel OpenMP-routines for MIC at kernel registry" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
 }
@@ -898,8 +898,8 @@ void MICUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
+                            << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
@@ -920,8 +920,8 @@ void MICUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
+                             << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
