@@ -303,7 +303,7 @@ void GPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
 
         const IndexType quantity = notifyWait( recvSegment.getID(), fromP + mSize );
         // notifiaction value is written size that we match against what is expected
-        SCAI_ASSERT_EQUAL_ERROR( 1, quantity );
+        SCAI_ASSERT_EQ_ERROR( 1, quantity, "serious mismatch" );
     }
 
     recvSegment.copyTo( recvSizes, mSize );  // copy from recvSegment back to recvSizes
@@ -427,7 +427,7 @@ void GPICommunicator::exchangeByPlanImpl(
         const IndexType   quantity = recvPlan[i].quantity;
         const IndexType val = notifyWait( dstDataSegment.getID(), fromP + mSize );
         // notifiaction value is written size that we match against what is expected
-        SCAI_ASSERT_EQUAL_ERROR( quantity, val );
+        SCAI_ASSERT_EQ_ERROR( quantity, val, "notification mismatch" );
     }
 
     wait();
@@ -625,11 +625,57 @@ tasking::SyncToken* GPICommunicator::shiftAsyncImpl(
 /*              sum                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
+template<typename ValueType>
+static gaspi_return_t
+reduce_sum( gaspi_pointer_t op1,
+           gaspi_pointer_t op2,
+           gaspi_pointer_t result,
+           gaspi_state_t,
+           const gaspi_number_t numValues,
+           const gaspi_size_t elemSize,
+           gaspi_timeout_t )
+{
+   SCAI_ASSERT_EQ_ERROR( elemSize, sizeof( ValueType ), "serious type mismatch" )
+
+   ValueType* t_op1 = reinterpret_cast<ValueType*>( op1 );
+   ValueType* t_op2 = reinterpret_cast<ValueType*>( op2 );
+   ValueType* t_res = reinterpret_cast<ValueType*>( result );
+
+   for ( gaspi_number_t i = 0; i< numValues; ++i )
+   {
+       t_res[i] = t_op1[i] + t_op2[i];
+   }
+
+   return GASPI_SUCCESS;
+}
+
 void GPICommunicator::sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.GPI.sum" )
 
-    gaspi_datatype_t commType = getGPIType( stype );
+    gaspi_size_t elem_size = common::typeSize( stype );
+
+    SCAI_LOG_INFO( logger, *this << ": sumImpl: #values = " << n << ", elemSize = " << elem_size )
+
+    gaspi_reduce_operation_t op;
+
+    switch( stype )
+    {
+        case common::scalar::INT    : op = reduce_sum<int>; break;
+        case common::scalar::FLOAT  : op = reduce_sum<float>; break;
+        case common::scalar::DOUBLE : op = reduce_sum<double>; break;
+        case common::scalar::LONG   : op = reduce_sum<long>; break;
+#ifdef SCAI_COMPLEX_SUPPORTED
+        case common::scalar::COMPLEX : op = reduce_sum<ComplexFloat>; break;
+        case common::scalar::DOUBLE_COMPLEX : op = reduce_sum<ComplexDouble>; break;
+#endif
+        default:
+           COMMON_THROWEXCEPTION( "Unsupported reduction type for sum: " << stype );
+    }
+
+    gaspi_state_t state = NULL;
+
+    SCAI_GASPI_CALL( gaspi_barrier( group, timeout ) )   // really needed here, otherwise problems
 
     // Attention: no segment data required here
 
@@ -637,17 +683,20 @@ void GPICommunicator::sumImpl( void* outValues, const void* inValues, const Inde
     {
         // maybe we need a copy of inValues 
 
-        size_t tmpSize = n * common::typeSize( stype );
+        size_t tmpSize = n * elem_size;
 
         common::scoped_array<char> tmp ( new char[ tmpSize ] );
+
         memcpy( tmp.get(), inValues,  tmpSize );
 
-        SCAI_GASPI_CALL( gaspi_allreduce( tmp.get(), outValues, n, GASPI_OP_SUM, commType, group, timeout ) )
+        SCAI_GASPI_CALL( gaspi_allreduce_user( tmp.get(), outValues, n, elem_size, op, state, group, timeout ) )
     }
     else
     {
-        SCAI_GASPI_CALL( gaspi_allreduce( const_cast<void*>( inValues ), outValues, n, GASPI_OP_SUM, commType, group, timeout ) )
+        SCAI_GASPI_CALL( gaspi_allreduce_user( const_cast<void*>( inValues ), outValues, n, elem_size, op, state, group, timeout ) )
     }
+
+    SCAI_GASPI_CALL( gaspi_barrier( group, timeout ) )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -704,8 +753,6 @@ void GPICommunicator::maxImpl( void* outValues, const void* inValues, const Inde
     }
     else
     {
-        // for other reductions: use GASPI_OP_MIN, GASPI_OP_MAX
-
         SCAI_GASPI_CALL( gaspi_allreduce( const_cast<void*>( inValues ), outValues, n, GASPI_OP_MAX, commType, group, timeout ) )
     }
 }
@@ -747,8 +794,6 @@ void GPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId
         segment.assign( val, n );
     }
 
-    // SCAI_ASSERT_EQUAL_ERROR( 0, root )   // not yet supported for other root
-
     // Note: If root processor is not 0 an 'implicit' shift of '-root' is done
 
     while ( distance < mSize )    /* log NP (base 2) loop */
@@ -788,7 +833,7 @@ void GPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId
             const IndexType offset = segment.getOffset();
             notify( segment.getID(), source, mRank, offset );
             const IndexType val = notifyWait( segment.getID(), source + mSize );
-            SCAI_ASSERT_EQUAL_ERROR( n, val );
+            SCAI_ASSERT_EQ_ERROR( n, val, "notify mismatch" );
         }
     }
 
@@ -875,7 +920,7 @@ void GPICommunicator::scatterImpl(
             }
 
             IndexType writtenSize = notifyWait( srcSegment.getID(), pid + mSize );
-            SCAI_ASSERT_EQUAL_ERROR( n, writtenSize )
+            SCAI_ASSERT_EQ_ERROR( n, writtenSize, "notify mismatch" )
         }
     }
 
@@ -981,7 +1026,7 @@ void GPICommunicator::scatterVImpl(
             if ( size > 0 )
             {
                 IndexType writtenSize = notifyWait( srcSegment.getID(), pid + mSize );
-                SCAI_ASSERT_EQUAL_ERROR( size, writtenSize )
+                SCAI_ASSERT_EQ_ERROR( size, writtenSize, "notify mismatch" )
             }
         }
     }
@@ -1137,7 +1182,7 @@ void GPICommunicator::gatherImpl(
             }
 
             IndexType writtenSize = notifyWait( dstSegment.getID(), pid + mSize );
-            SCAI_ASSERT_EQUAL_ERROR( n, writtenSize )
+            SCAI_ASSERT_EQ_ERROR( n, writtenSize, "notify mismatch" )
         }
 
         dstSegment.copyTo( allVals, n * mSize );
@@ -1241,7 +1286,7 @@ void GPICommunicator::gatherVImpl(
             if ( size > 0 )
             {
                 IndexType writtenSize = notifyWait( dstSegment.getID(), pid + mSize );
-                SCAI_ASSERT_EQUAL_ERROR( size, writtenSize )
+                SCAI_ASSERT_EQ_ERROR( size, writtenSize, "notify mismatch" )
             }
         }
 
@@ -1299,7 +1344,7 @@ void GPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
     notify( dstSegment.getID(), partner, mRank + mSize, n );
     // wait for acknowledge that my data has been written
     const IndexType nn = notifyWait( dstSegment.getID(), partner + mSize );
-    SCAI_ASSERT_EQUAL_ERROR( n, nn );
+    SCAI_ASSERT_EQ_ERROR( n, nn, "notify mismatch" );
     dstSegment.copyTo( val, n );
 }
 
