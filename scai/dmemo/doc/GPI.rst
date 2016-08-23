@@ -23,11 +23,33 @@ CMake Configuration for GPI
 
 GPI-2 depends on ibverbs (Verbs library from OFED). Therefore LAMA looks for a GPI-2 and ibverbs installation to enable a build with GPI.
 
-If your GPI-2 installation is not in the default path define the METIS_ROOT in the cmake call with -DGPI2_ROOT=<path_to_metis> or define the environment variables GPI2_INCLUDE_PATH and GPI2_LIBRARY_PATH with:
+If your GPI-2 installation is not in the default path, define the ``GPI2_ROOT`` in the cmake call with ``-DGPI2_ROOT=<path_to_gpi2>``.
+or set the corresponding environment variable:
 
 .. code-block:: bash 
 
-   export GPI2_INCLUDE_PATH=<path_to_gpi>/include
-   export GPI2_LIBRARY_PATH=<path_to_gpi>/lib
+   export GPI2_ROOT=<path_to_gpi>
+   cmake ...
+
+Setting the root variable has the same effect as setting the both variables 
+``GPI2_INCLUDE_PATH`` and ``GPI2_LIBRARY_PATH`` as follows:
+
+.. code-block:: bash 
+
+   export GPI2_INCLUDE_PATH=$GPI2_ROOT/include
+   export GPI2_LIBRARY_PATH=$GPI2_ROOT/lib
+
+define separately the environment variables ``GPI2_INCLUDE_PATH`` and ``GPI2_LIBRARY_PATH`` with:
 
 The same for ibverbs: define IBVERBS_ROOT with the cmake call or IBVERBS_INCLUDE_PATH and IBVERBS_LIBRARY_PATH in your environment.
+
+Restrictions for GPI
+^^^^^^^^^^^^^^^^^^^^
+
+GPI does not support reducitions for long double values and not for complex values. Therefore only the data
+types float and double can be used as supported value types on host.
+
+.. code-block:: bash 
+
+    SCAI_HOST_TYPES_LIST=float;double
+

@@ -1723,7 +1723,9 @@ void MICCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegi
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register CSSUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: untyped routines" )
+
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
@@ -1737,8 +1739,9 @@ void MICCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register CSSUtils OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: T = " << common::TypeTraits<ValueType>::id() )
+
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
@@ -1760,17 +1763,23 @@ template<typename ValueType, typename OtherValueType>
 void MICCSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
+
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register CSSUtils OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    SCAI_LOG_INFO( logger, "register[flag=" << flag << "]: TT " << 
+                            common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
+
 /* --------------------------------------------------------------------------- */
 /*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
 MICCSRUtils::RegisterGuard::RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "register CSRUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
@@ -1779,6 +1788,8 @@ MICCSRUtils::RegisterGuard::RegisterGuard()
 
 MICCSRUtils::RegisterGuard::~RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "unregister CSRUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );

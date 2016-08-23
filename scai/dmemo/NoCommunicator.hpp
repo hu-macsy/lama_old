@@ -70,12 +70,6 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-protected:
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-private    :
-
     /** Implementation of pure method Communicator::shiftImpl */
 
     IndexType shiftImpl(
@@ -189,6 +183,10 @@ public:
     // key for factory
 
     static CommunicatorKind createValue();
+
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } /* end namespace dmemo */

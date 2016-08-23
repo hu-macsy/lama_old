@@ -660,11 +660,8 @@ template<typename ValueType>
 void CSRStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, HArray<ValueType>& values )
 {
     SCAI_ASSERT_EQUAL_ERROR( ia.size(), mNumRows + 1 )
-    IndexType numValues = 0;
-    {
-        ReadAccess<IndexType> csrIA( ia );
-        numValues = csrIA[mNumRows];
-    }
+    IndexType numValues = HArrayUtils::getValImpl<IndexType>( ia, mNumRows );
+
     SCAI_ASSERT_EQUAL_ERROR( numValues, ja.size() )
     SCAI_ASSERT_EQUAL_ERROR( numValues, values.size() )
     mNumValues = numValues;

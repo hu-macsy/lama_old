@@ -119,6 +119,7 @@ scai_project (
         
 )
 
+
 ## add subdirectories
 
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -136,6 +137,8 @@ add_subdirectory ( mepr )
 
 if ( USE_MIC )
     add_subdirectory ( mic )
+    # ToDo: this is currently just a workaround to fix a symbol error
+    SET_SOURCE_FILES_PROPERTIES( HArrayUtils.cpp PROPERTIES COMPILE_FLAGS -no-offload )
 endif ( USE_MIC )
 
 add_subdirectory ( openmp )
