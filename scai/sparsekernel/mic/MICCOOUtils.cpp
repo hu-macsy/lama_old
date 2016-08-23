@@ -168,8 +168,9 @@ void MICCOOUtils::getCSRValuesS(
 #pragma offload target( mic : device ) in( numRows, numValues, csrJAPtr, csrValuesPtr, csrIAPtr, cooIAPtr, cooJAPtr, cooValuesPtr )
     {
         std::vector<IndexType> rowOffset( numRows ); // temp copy of csrIA
-        IndexType* csrJA = ( IndexType* ) cooJAPtr;
-        CSRValueType* csrValues = ( CSRValueType* ) csrValuesPtr;
+
+        IndexType* csrJA = reinterpret_cast<IndexType*>( cooJAPtr );
+        CSRValueType* csrValues = reinterpret_cast<CSRValueType*>( csrValuesPtr );
         const IndexType* csrIA = ( IndexType* ) csrIAPtr;
         const IndexType* cooIA = ( const IndexType* ) cooIAPtr;
         const IndexType* cooJA = ( const IndexType* ) cooJAPtr;
@@ -378,7 +379,8 @@ void MICCOOUtils::jacobi(
     const void* oldSolutionPtr = oldSolution;
     const void* rhsPtr = rhs;
     int device = MICContext::getCurrentDevice();
-#pragma offload target( mic ), in( numRows, cooNumValues, solutionPtr, cooIAPtr, cooJAPtr, cooValuesPtr, \
+
+    #pragma offload target( mic ), in( numRows, cooNumValues, solutionPtr, cooIAPtr, cooJAPtr, cooValuesPtr, \
                                        rhsPtr, oldSolutionPtr, omega )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
@@ -387,15 +389,14 @@ void MICCOOUtils::jacobi(
         const IndexType* cooIA = static_cast<const IndexType*>( cooIAPtr );
         const IndexType* cooJA = static_cast<const IndexType*>( cooJAPtr );
         const ValueType* cooValues = static_cast<const ValueType*>( cooValuesPtr );
-        #pragma omp parallel for
 
+        #pragma omp parallel for
         for ( IndexType i = 0; i < numRows; ++i )
         {
             solution[i] = omega * rhs[i] / cooValues[i] + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
         }
 
         #pragma omp parallel for
-
         for ( IndexType k = numRows; k < cooNumValues; ++k )
         {
             IndexType i = cooIA[k];
@@ -440,10 +441,11 @@ void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
 
-    SCAI_LOG_INFO( logger, "register[flag=" << flag << "]: TT " <<
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
                             common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
 
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
+
     // ToDo: routine does not work yet
     // KernelRegistry::set<COOKernelTrait::getCSRValues<float, float> >( getCSRValuesS, ctx, flag );
     // KernelRegistry::set<COOKernelTrait::getCSRValues<float, double> >( getCSRValuesS, ctx, flag );

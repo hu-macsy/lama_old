@@ -1161,8 +1161,8 @@ void MICELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
 
-    SCAI_LOG_INFO( logger, "register[flag=" << flag << "]: TT " <<
-                            common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
+                             common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
 
     KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
