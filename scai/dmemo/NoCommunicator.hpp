@@ -78,12 +78,6 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-protected:
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-private    :
-
     /** Implementation of pure method Communicator::shiftImpl */
 
     IndexType shiftImpl(
@@ -180,8 +174,6 @@ private    :
 
     virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
-public:
-
     // static methods, variables to register create routine in Communicator factory of base class.
 
     static CommunicatorPtr create();
@@ -189,6 +181,10 @@ public:
     // key for factory
 
     static CommunicatorKind createValue();
+
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } /* end namespace dmemo */

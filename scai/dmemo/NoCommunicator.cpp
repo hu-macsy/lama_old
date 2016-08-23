@@ -205,6 +205,10 @@ tasking::SyncToken* NoCommunicator::shiftAsyncImpl(
     COMMON_THROWEXCEPTION( "shiftAsyncImpl should never be called for NoCommunicator" )
 }
 
+/* ---------------------------------------------------------------------------------- */
+/*              minloc/maxloc                                                         */
+/* ---------------------------------------------------------------------------------- */
+
 void NoCommunicator::maxlocImpl( void*, IndexType*, PartitionId root, common::scalar::ScalarType ) const
 {
     // nothing to do
@@ -222,11 +226,15 @@ bool NoCommunicator::supportsLocReduction( common::scalar::ScalarType ) const
     return true;  
 }
 
+/* ---------------------------------------------------------------------------------- */
+
 void NoCommunicator::bcastImpl( void*, const IndexType, const PartitionId root, common::scalar::ScalarType ) const
 {
     // Nothing to do as root is the only one processor
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 }
+
+/* ---------------------------------------------------------------------------------- */
 
 void NoCommunicator::all2allvImpl( void*[], IndexType[], void*[], IndexType[], common::scalar::ScalarType ) const
 {
