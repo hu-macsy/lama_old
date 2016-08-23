@@ -78,22 +78,6 @@ public:
 
     virtual ThreadSafetyLevel getThreadSafetyLevel() const;
 
-    /** @brief Provide implementation for Communicator::getSize */
-
-    virtual PartitionId getSize() const;
-
-    /** @brief Provide implementation for Communicator::getRank */
-
-    virtual PartitionId getRank() const;
-
-    /** @brief Provide implementation for Communicator::getNodeSize */
-
-    virtual PartitionId getNodeSize() const;
-
-    /** @brief Provide implementation for Communicator::getNodeRank */
-
-    virtual PartitionId getNodeRank() const;
-
     MPI_Comm getMPIComm() const;
 
     /** All-to-all exchange of an integer value between all processors.
@@ -232,6 +216,14 @@ private:
         const CommunicationPlan& sendPlan,
         const common::scalar::ScalarType stype ) const;
 
+    /** Implementation of Communicator::getProcessorName */
+
+    virtual void getProcessorName( char* name ) const;
+
+    /** Implementation of Communicator::maxProcessorName */
+
+    virtual size_t maxProcessorName() const;
+
     void initialize( int& argc, char**& argv );
 
     const common::Thread::Id mMainThread;  // id of thread that calls constructor
@@ -248,12 +240,7 @@ protected:
 
     MPICommunicator();
 
-    void setNodeData();
-
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
-
-    int mRank; // rank of this processor
-    int mSize;// size of communicator
 
     bool mExternInitialization;
 

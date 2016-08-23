@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE( ConservativeTest )
 
         SCAI_LOG_INFO( logger, "ConservativeTest: solver " << iterativeSolver << ", maxDiff = " << maxDiff )
 
-        BOOST_CHECK( maxDiff < 1e-5 );
+        BOOST_CHECK( maxDiff < 1e-4 );
     }
 }
 

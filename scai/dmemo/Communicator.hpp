@@ -241,26 +241,25 @@ public:
      * @return number of partitions.
      */
 
-    virtual PartitionId getSize() const = 0;
+    inline PartitionId getSize() const;
 
     /** @brief Getter of rank of this partition.
      *
      * @return rank of this partition, 0 <= rank < getSize()
      */
-    virtual PartitionId getRank() const = 0;
+    inline PartitionId getRank() const;
 
     /** @brief Getter of the number of partitions on same node.
      *
      * @return number of partitions on same node as this partition.
      */
-
-    virtual PartitionId getNodeSize() const = 0;
+    inline PartitionId getNodeSize() const;
 
     /** @brief Getter of node rank
      *
      * @return rank of this partition on its node, 0 <= rank < getNodeSize()
      */
-    virtual PartitionId getNodeRank() const = 0;
+    inline PartitionId getNodeRank() const;
 
     /**
      * Help routine to get the rank of a neighbored position.
@@ -567,12 +566,16 @@ public:
      * 
      *   @param[out] outValues array with the result values, same on all processes
      *   @param[in]  inValues individual contributions on each process
+     *   @param[in]  n is the number of values in arrays inValues and outValues
      *   @param[in]  stype specifies the data type of the data 
      */
- 
     virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
 
+    /**  Find minimal values from all processes and distributes the result back to all processes. */
+
     virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+
+    /**  Find maximal values from all processes and distributes the result back to all processes. */
 
     virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
 
@@ -776,9 +779,27 @@ protected:
 
     CommunicatorKind mCommunicatorType; //!< type of this communicator
 
+    int mRank; //!< rank of this processor 
+
+    int mSize; //!< number of processors in this communicato
+
     int mNodeRank; //!< rank of this processor on its node
 
     int mNodeSize; //!< number of processors on same node
+
+    /** This method determines node rank and node size by comparing the names. */
+
+    void setNodeData();
+
+    /** Get the processor name.
+     *
+     *  @param[out] name is the processor name, allocated with at least maxProcessorName 
+     */
+    virtual void getProcessorName( char* name ) const = 0;
+
+    /** Pure method that returns the maximal length of string set by getProcessorName */
+
+    virtual size_t maxProcessorName() const = 0;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
@@ -791,6 +812,34 @@ protected:
 
 /* -------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                          */
+/* -------------------------------------------------------------------------- */
+
+PartitionId Communicator::getSize() const
+{
+    return mSize;
+}
+
+/* -------------------------------------------------------------------------- */
+
+PartitionId Communicator::getRank() const
+{
+    return mRank;
+}
+
+/* -------------------------------------------------------------------------- */
+
+PartitionId Communicator::getNodeSize() const
+{
+    return mNodeSize;
+}
+
+/* -------------------------------------------------------------------------- */
+
+PartitionId Communicator::getNodeRank() const
+{
+    return mNodeRank;
+}
+
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType> 

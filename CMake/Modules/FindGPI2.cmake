@@ -46,7 +46,9 @@ find_path ( GPI2_INCLUDE_DIR GASPI.h
     ${GPI2_ROOT}/include
 )
 
-# message( STATUS "GPI2_INCLUDE_DIR: ${GPI2_INCLUDE_DIR}" )
+if    ( SCAI_CMAKE_VERBOSE )
+    message( STATUS "find_path: GPI2_INCLUDE_DIR=${GPI2_INCLUDE_DIR}" )
+endif ( SCAI_CMAKE_VERBOSE )
 
 find_library ( GPI2_LIBRARIES GPI2 
     /usr/local/lib
@@ -55,14 +57,16 @@ find_library ( GPI2_LIBRARIES GPI2
     ${GPI2_ROOT}/lib
 )
 
-# message( STATUS "GPI2_LIBRARIES: ${GPI2_LIBRARIES}" )
+if    ( SCAI_CMAKE_VERBOSE )
+    message( STATUS "find_library: GPI2_LIBRARIES=${GPI2_LIBRARIES}" )
+endif ( SCAI_CMAKE_VERBOSE )
 
-#include( FindPackageHandleStandardArgs )
-#
-#find_package_handle_standard_args( GPI2
-#    DEFAULT_MSG
-#    GPI2_INCLUDE_DIR
-#    GPI2_LIBRARIES
-#)
+set ( GPI2_FOUND FALSE )
+
+if ( GPI2_INCLUDE_DIR )
+    if ( GPI2_LIBRARIES )
+        set ( GPI2_FOUND TRUE )
+    endif ( GPI2_LIBRARIES )
+endif ( GPI2_INCLUDE_DIR )
 
 mark_as_advanced( GPI2_INCLUDE_DIR GPI2_LIBRARIES )

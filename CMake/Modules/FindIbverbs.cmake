@@ -46,7 +46,9 @@ find_path( IBVERBS_INCLUDE_DIR infiniband/verbs.h
     ${IBVERBS_ROOT}/include
 )
 
-#message( STATUS "IBVERBS_INCLUDE_DIR: ${IBVERBS_INCLUDE_DIR}" )
+if    ( SCAI_CMAKE_VERBOSE )
+    message( STATUS "IBVERBS_INCLUDE_DIR: ${IBVERBS_INCLUDE_DIR}" )
+endif ( SCAI_CMAKE_VERBOSE )
 
 FIND_LIBRARY( IBVERBS_LIBRARIES ibverbs 
     /usr/local/lib
@@ -55,14 +57,17 @@ FIND_LIBRARY( IBVERBS_LIBRARIES ibverbs
     ${IBVERBS_ROOT}/lib
 )
 
-#message( STATUS "IBVERBS_LIBRARIES: ${IBVERBS_LIBRARIES}" )
+if ( SCAI_CMAKE_VERBOSE )
+    message( STATUS "IBVERBS_LIBRARIES: ${IBVERBS_LIBRARIES}" )
+endif ( SCAI_CMAKE_VERBOSE )
 
-#include( FindPackageHandleStandardArgs )
-#
-#find_package_handle_standard_args( IBVERBS
-#    DEFAULT_MSG
-#    IBVERBS_INCLUDE_DIR
-#    IBVERBS_LIBRARIES
-#)
+set ( IBVERBS_FOUND FALSE )
+
+if ( IBVERBS_INCLUDE_DIR )
+    if ( IBVERBS_LIBRARIES )
+        set ( IBVERBS_FOUND TRUE )
+    endif ( IBVERBS_LIBRARIES )
+endif ( IBVERBS_INCLUDE_DIR )
 
 mark_as_advanced( IBVERBS_INCLUDE_DIR IBVERBS_LIBRARIES )
+

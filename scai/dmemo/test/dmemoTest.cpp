@@ -45,15 +45,25 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/Settings.hpp>
+#include <scai/common/OpenMP.hpp>
 #include <scai/dmemo.hpp>
 
 #include <iostream>
 
 bool init_function()
 {
+    int nThreads;
+
+    if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    {
+        omp_set_num_threads( nThreads );
+    }
+
     try
     {
+        std::cout << "get default communicator" << std::endl;
         scai::dmemo::CommunicatorPtr comm = scai::dmemo::Communicator::getCommunicatorPtr();
+        std::cout << "got default communicator " << *comm << std::endl;
         return true;
     }
     catch ( scai::common::Exception& ex )

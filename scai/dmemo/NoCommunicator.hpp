@@ -64,14 +64,6 @@ public:
 
     virtual ThreadSafetyLevel getThreadSafetyLevel() const;
 
-    virtual PartitionId getSize() const;
-
-    virtual PartitionId getRank() const;
-
-    virtual PartitionId getNodeSize() const;
-
-    virtual PartitionId getNodeRank() const;
-
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const;
 
     virtual void synchronize() const;
@@ -173,6 +165,16 @@ public:
     /** Implementation of Communicator::maxImpl */
 
     virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of Communicator::getProcessorName */
+
+    virtual void getProcessorName( char* name ) const;
+
+    /** Implementation of Communicator::maxProcessorName */
+
+    virtual size_t maxProcessorName() const;
+
+public:
 
     // static methods, variables to register create routine in Communicator factory of base class.
 

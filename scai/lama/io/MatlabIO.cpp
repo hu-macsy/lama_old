@@ -98,7 +98,7 @@ void MatlabIO::writeAt( std::ostream& stream ) const
 
 /** Method to count number of lines of a text file and the maximal number of entries in one line 
  *
- *  @param[out]  number of lines the file has
+ *  @param[out]  nLines is number of lines the file has
  *  @param[out]  nEntries is maximal number of entries
  *  @param[in]   fileName is the name of the file
  *
