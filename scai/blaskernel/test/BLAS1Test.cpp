@@ -42,6 +42,7 @@
 #include <scai/kregistry/KernelContextFunction.hpp>
 
 #include <scai/blaskernel/test/TestMacros.hpp>
+#include <scai/blaskernel/openmp/OpenMPBLAS1.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/TypeTraits.hpp>
 
@@ -60,6 +61,38 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( asumOpenMPTest )
+{
+    // direct use of OpenMP::asum without registry
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ValueType values[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
+    const IndexType nValues = sizeof( values ) / sizeof( ValueType );
+    const IndexType incX1 = 1;
+    const IndexType incX2 = 2;
+    const ValueType result1 = 21.0;
+    const ValueType result2 = 9.0;
+    HArray<ValueType> AValues( nValues, values );
+    {
+        ReadAccess<ValueType> rAValues( AValues );
+
+        ValueType sum = OpenMPBLAS1::asum( -1, rAValues.get(), incX1 );
+        BOOST_CHECK_EQUAL( sum, ValueType( 0 ));
+
+        sum = OpenMPBLAS1::asum( 3, rAValues.get(), -incX2 );
+        BOOST_CHECK_EQUAL( sum, ValueType( 0 ));
+
+        sum = OpenMPBLAS1::asum( 6, rAValues.get(), incX1 );
+        BOOST_CHECK_EQUAL( sum, result1 );
+
+        sum = OpenMPBLAS1::asum( 3, rAValues.get(), incX2 );
+        BOOST_CHECK_EQUAL( sum, result2 );
+    }
+
+} 
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 BOOST_AUTO_TEST_CASE_TEMPLATE( asumTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;   // initialization/free  of context not here

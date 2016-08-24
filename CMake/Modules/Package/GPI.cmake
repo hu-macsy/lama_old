@@ -41,20 +41,9 @@
 ### GPI2_INCLUDE_DIR
 ### IBVERBS_INCLUDE_DIR
 
+# set( SCAI_CMAKE_VERBOSE True )
+
 find_package ( GPI2 ${SCAI_FIND_PACKAGE_FLAGS} )
-
-if    ( GPI2_FOUND )
-    ## get GPI2 version
-    try_run ( GPI2_RUN_RESULT_VAR GPI2_COMPILE_RESULT_VAR
-        ${CMAKE_BINARY_DIR}/VersionCheck
-        ${CMAKE_MODULE_PATH}/VersionCheck/gpi.cpp
-        CMAKE_FLAGS 
-        -DINCLUDE_DIRECTORIES:STRING=${GPI2_INCLUDE_DIR}
-        COMPILE_OUTPUT_VARIABLE GPI2_COMPILE_OUTPUT_VAR
-        RUN_OUTPUT_VARIABLE GPI2_RUN_OUTPUT_VAR )
-
-    set ( GPI2_VERSION ${GPI2_RUN_OUTPUT_VAR} )
-endif ( GPI2_FOUND )
 
 if    ( SCAI_CMAKE_VERBOSE )
     message ( STATUS "GPI2_FOUND=${GPI2_FOUND}" )
@@ -69,6 +58,35 @@ if    ( SCAI_CMAKE_VERBOSE )
     message ( STATUS "IBVERBS_INCLUDE_DIR=${IBVERBS_INCLUDE_DIR}" )
     message ( STATUS "IBVERBS_LIBRARIES=${IBVERBS_LIBRARIES}" )
 endif ( SCAI_CMAKE_VERBOSE )
+
+set ( GPI_FOUND FALSE )
+
+if    ( GPI2_FOUND )
+    ## get GPI2 version
+    try_run ( GPI2_RUN_RESULT_VAR GPI2_COMPILE_RESULT_VAR
+        ${CMAKE_BINARY_DIR}/VersionCheck
+        ${CMAKE_MODULE_PATH}/VersionCheck/gpi.cpp
+        CMAKE_FLAGS 
+        -DINCLUDE_DIRECTORIES:STRING=${GPI2_INCLUDE_DIR}
+        LINK_LIBRARIES ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES}
+        COMPILE_OUTPUT_VARIABLE GPI2_COMPILE_OUTPUT_VAR
+        RUN_OUTPUT_VARIABLE GPI2_RUN_OUTPUT_VAR )
+
+    if    ( SCAI_CMAKE_VERBOSE )
+        message( STATUS "GPI2_COMPILE_RESULUT_VAR=${GPI2_COMPILE_RESULT_VAR}" )
+        message( STATUS "GPI2_RUN_RESULT_VAR=${GPI2_RUN_RESULT_VAR}" )
+        message( STATUS "GPI2_RUN_OUTPUT_VAR=${GPI2_RUN_OUTPUT_VAR}" )
+    endif ( SCAI_CMAKE_VERBOSE )
+
+    if ( GPI2_COMPILE_RESULT_VAR )
+        # If we could compile correctly we have found GPI 
+        # This solution works also if GPI2 has been compiled for Etherent without IBVERBS
+        set ( GPI_FOUND TRUE )
+    endif ( GPI2_COMPILE_RESULT_VAR )
+
+    set ( GPI2_VERSION ${GPI2_RUN_OUTPUT_VAR} )
+
+endif ( GPI2_FOUND )
 
 ### ALLOW to switch off GPI2 explicitly ###
 # do what setAndCheckCache does but with 2 packages
@@ -90,17 +108,13 @@ else ( DEFINED USE_GPI )
 endif ( DEFINED USE_GPI )
 set ( USE_GPI ${USE_GPI} CACHE BOOL "Enable / Disable use of GPI" )
 
-set ( GPI_FOUND FALSE )
-if    ( GPI2_FOUND AND IBVERBS_FOUND )
-    set ( GPI_FOUND TRUE )
-endif ( GPI2_FOUND AND IBVERBS_FOUND )
-
 set ( GPI_ENABLED FALSE )
 
-if    ( USE_GPI AND GPI2_FOUND AND IBVERBS_FOUND )
+if    ( USE_GPI AND GPI_FOUND )
     # conclude GPI2 and IBVERBS to SCAI_GPI
     set ( SCAI_GPI_INCLUDE_DIR ${GPI2_INCLUDE_DIR} ${IBVERBS_INCLUDE_DIR} )
     set ( SCAI_GPI_LIBRARIES ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 
     set ( GPI_ENABLED TRUE )
-endif ( USE_GPI AND GPI2_FOUND AND IBVERBS_FOUND )
+
+endif ( USE_GPI AND GPI_FOUND )
