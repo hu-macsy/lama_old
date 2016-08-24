@@ -1003,6 +1003,8 @@ void Communicator::setNodeData()
 
     getProcessorName( myNodeName.get() );
 
+    SCAI_LOG_INFO( logger, "Node name of processor " << mRank << " of " << mSize << ": " << myNodeName.get() )
+
     memset( allNodeNames.get(), '\0', maxNameLength * mSize * sizeof( char ) );
 
     // use gather / bcast 

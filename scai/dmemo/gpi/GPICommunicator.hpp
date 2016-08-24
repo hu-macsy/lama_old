@@ -264,6 +264,10 @@ protected:
 
 private:
 
+    /** Common implementation for user reduction */
+
+    void reduce( void* outValues, const void* inValues, const IndexType n, gaspi_reduce_operation_t op, gaspi_size_t elem_size ) const;
+
     // Guard class whose destructor takes care of GPI finalize
 
     class GPIGuard

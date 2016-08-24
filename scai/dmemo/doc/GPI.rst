@@ -9,19 +9,25 @@ GPI-2
 
   <a href="http://www.gpi-site.com/gpi2/" target="_blank">GPI-2</a>
 
-Use of GPI in LAMA
-^^^^^^^^^^^^^^^^^^
+Use of GPI-2 in LAMA
+^^^^^^^^^^^^^^^^^^^^
 
 Within LAMA, GPI-2 is used for the implementation of a derived communicator class, and therefore
 one possibility to run LAMA applications on distributed memory architectures.
 
-As GPI is interoperabel with MPI, both communication libraries, i.e. both communicator
+Currently, version GPI-2-1.3.0 or higher is supported.
+
+As proposed in the GASPI standard, GPI-2 is interoperabel with MPI.
+Therefore, both communication libraries, i.e. both communicator
 classes, MPICommunicator and GPICommunicator, can be used in one application. 
 
 CMake Configuration for GPI
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-GPI-2 depends on ibverbs (Verbs library from OFED). Therefore LAMA looks for a GPI-2 and ibverbs installation to enable a build with GPI.
+The GPI-2 implementaion based on Infiniband/RoCE requires ibverbs (Verbs library from OFED). 
+Therefore cmake searches for a GPI-2 and ibverbs installation to enable a build with GPI.
+GPI-2 can also be configured in such a way that it uses TCP sockets and the ethernet
+without the need of Infiniband and ibverbs.
 
 If your GPI-2 installation is not in the default path, define the ``GPI2_ROOT`` in the cmake call with ``-DGPI2_ROOT=<path_to_gpi2>``.
 or set the corresponding environment variable:

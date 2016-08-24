@@ -127,8 +127,10 @@ GPICommunicator::GPICommunicator( )
       mThreadSafetyLevel( Communicator::Funneled )
 {
     SCAI_TRACE_SCOPE( false )   // switch off tracing in this scope as it might call this constructor again
-    // set gaspi_printf as print routine for logging
-    logging::GenLogger::myPrintf = &gaspi_printf;
+
+    // set gaspi_printf as print routine for logging, no more needed for GPI 2.1.3.0
+    // logging::GenLogger::myPrintf = &gaspi_printf;
+
     SCAI_LOG_DEBUG( logger, "GPICommunicator(): call init" )
     gaspi_timeout_t init_timeout = 10000;   // in milli seconds
     SCAI_GASPI_CALL( gaspi_proc_init( init_timeout ) )
@@ -622,6 +624,43 @@ tasking::SyncToken* GPICommunicator::shiftAsyncImpl(
 }
 
 /* ---------------------------------------------------------------------------------- */
+/*              reduce                                                                */
+/* ---------------------------------------------------------------------------------- */
+
+/** Common method for a call of gaspi_allreduce_user */
+
+void GPICommunicator::reduce( 
+    void* outValues, 
+    const void* inValues, 
+    const IndexType n, 
+    gaspi_reduce_operation_t op, 
+    gaspi_size_t elem_size ) const
+{
+    gaspi_state_t state = NULL;
+
+    SCAI_GASPI_CALL( gaspi_barrier( group, timeout ) )   // really needed here, otherwise wrong results
+
+    if ( inValues == outValues )
+    {
+        // unclear whether IN_PLACE is supported, for safety we allocate a copy of inValues 
+
+        size_t tmpSize = n * elem_size;
+
+        common::scoped_array<char> tmp ( new char[ tmpSize ] );
+
+        memcpy( tmp.get(), inValues,  tmpSize );
+
+        SCAI_GASPI_CALL( gaspi_allreduce_user( tmp.get(), outValues, n, elem_size, op, state, group, timeout ) )
+    }
+    else
+    {
+        SCAI_GASPI_CALL( gaspi_allreduce_user( const_cast<void*>( inValues ), outValues, n, elem_size, op, state, group, timeout ) )
+    }
+
+    SCAI_GASPI_CALL( gaspi_barrier( group, timeout ) )
+}
+
+/* ---------------------------------------------------------------------------------- */
 /*              sum                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
@@ -661,100 +700,141 @@ void GPICommunicator::sumImpl( void* outValues, const void* inValues, const Inde
 
     switch( stype )
     {
-        case common::scalar::INT    : op = reduce_sum<int>; break;
-        case common::scalar::FLOAT  : op = reduce_sum<float>; break;
-        case common::scalar::DOUBLE : op = reduce_sum<double>; break;
-        case common::scalar::LONG   : op = reduce_sum<long>; break;
+        case common::scalar::INT           : op = reduce_sum<int>; break;
+        case common::scalar::UNSIGNED_INT  : op = reduce_sum<unsigned int>; break;
+        case common::scalar::LONG          : op = reduce_sum<long>; break;
+        case common::scalar::UNSIGNED_LONG : op = reduce_sum<unsigned long>; break;
+        case common::scalar::FLOAT         : op = reduce_sum<float>; break;
+        case common::scalar::DOUBLE        : op = reduce_sum<double>; break;
+        case common::scalar::LONG_DOUBLE   : op = reduce_sum<long double>; break;
 #ifdef SCAI_COMPLEX_SUPPORTED
-        case common::scalar::COMPLEX : op = reduce_sum<ComplexFloat>; break;
-        case common::scalar::DOUBLE_COMPLEX : op = reduce_sum<ComplexDouble>; break;
+        case common::scalar::COMPLEX             : op = reduce_sum<ComplexFloat>; break;
+        case common::scalar::DOUBLE_COMPLEX      : op = reduce_sum<ComplexDouble>; break;
+        case common::scalar::LONG_DOUBLE_COMPLEX : op = reduce_sum<ComplexLongDouble>; break;
 #endif
         default:
            COMMON_THROWEXCEPTION( "Unsupported reduction type for sum: " << stype );
     }
 
-    gaspi_state_t state = NULL;
-
-    SCAI_GASPI_CALL( gaspi_barrier( group, timeout ) )   // really needed here, otherwise problems
-
-    // Attention: no segment data required here
-
-    if ( inValues == outValues )
-    {
-        // maybe we need a copy of inValues 
-
-        size_t tmpSize = n * elem_size;
-
-        common::scoped_array<char> tmp ( new char[ tmpSize ] );
-
-        memcpy( tmp.get(), inValues,  tmpSize );
-
-        SCAI_GASPI_CALL( gaspi_allreduce_user( tmp.get(), outValues, n, elem_size, op, state, group, timeout ) )
-    }
-    else
-    {
-        SCAI_GASPI_CALL( gaspi_allreduce_user( const_cast<void*>( inValues ), outValues, n, elem_size, op, state, group, timeout ) )
-    }
-
-    SCAI_GASPI_CALL( gaspi_barrier( group, timeout ) )
+    reduce( outValues, inValues, n, op, elem_size );
 }
 
 /* ---------------------------------------------------------------------------------- */
 /*              min                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
+template<typename ValueType>
+static gaspi_return_t
+reduce_min( gaspi_pointer_t op1,
+            gaspi_pointer_t op2,
+            gaspi_pointer_t result,
+            gaspi_state_t,
+            const gaspi_number_t numValues,
+            const gaspi_size_t elemSize,
+            gaspi_timeout_t )
+{
+   SCAI_ASSERT_EQ_ERROR( elemSize, sizeof( ValueType ), "serious type mismatch" )
+
+   ValueType* t_op1 = reinterpret_cast<ValueType*>( op1 );
+   ValueType* t_op2 = reinterpret_cast<ValueType*>( op2 );
+   ValueType* t_res = reinterpret_cast<ValueType*>( result );
+
+   for ( gaspi_number_t i = 0; i< numValues; ++i )
+   {
+       t_res[i] = t_op2[i] < t_op1[i] ? t_op2[i] : t_op1[i];
+   }
+
+   return GASPI_SUCCESS;
+}
+
 void GPICommunicator::minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
 {
-    SCAI_REGION( "Communicator.GPI.min" )
+    SCAI_REGION( "Communicator.GPI.sum" )
 
-    gaspi_datatype_t commType = getGPIType( stype );
+    gaspi_size_t elem_size = common::typeSize( stype );
 
-    // Attention: no segment data required here
+    SCAI_LOG_INFO( logger, *this << ": minImpl: #values = " << n << ", elemSize = " << elem_size )
 
-    if ( inValues == outValues )
+    gaspi_reduce_operation_t op;
+
+    switch( stype )
     {
-        // maybe we need a copy of inValues 
-
-        size_t tmpSize = n * common::typeSize( stype );
-
-        common::scoped_array<char> tmp ( new char[ tmpSize ] );
-        memcpy( tmp.get(), inValues,  tmpSize );
-
-        SCAI_GASPI_CALL( gaspi_allreduce( tmp.get(), outValues, n, GASPI_OP_SUM, commType, group, timeout ) )
+        case common::scalar::INT           : op = reduce_min<int>; break;
+        case common::scalar::UNSIGNED_INT  : op = reduce_min<unsigned int>; break;
+        case common::scalar::LONG          : op = reduce_min<long>; break;
+        case common::scalar::UNSIGNED_LONG : op = reduce_min<unsigned long>; break;
+        case common::scalar::FLOAT         : op = reduce_min<float>; break;
+        case common::scalar::DOUBLE        : op = reduce_min<double>; break;
+        case common::scalar::LONG_DOUBLE   : op = reduce_min<long double>; break;
+#ifdef SCAI_COMPLEX_SUPPORTED
+        case common::scalar::COMPLEX             : op = reduce_min<ComplexFloat>; break;
+        case common::scalar::DOUBLE_COMPLEX      : op = reduce_min<ComplexDouble>; break;
+        case common::scalar::LONG_DOUBLE_COMPLEX : op = reduce_min<ComplexLongDouble>; break;
+#endif
+        default:
+           COMMON_THROWEXCEPTION( "Unsupported reduction type for min: " << stype );
     }
-    else
-    {
-        SCAI_GASPI_CALL( gaspi_allreduce( const_cast<void*>( inValues ), outValues, n, GASPI_OP_MIN, commType, group, timeout ) )
-    }
+
+    reduce( outValues, inValues, n, op, elem_size );
 }
 
 /* ---------------------------------------------------------------------------------- */
 /*              max                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
+template<typename ValueType>
+static gaspi_return_t
+reduce_max( gaspi_pointer_t op1,
+            gaspi_pointer_t op2,
+            gaspi_pointer_t result,
+            gaspi_state_t,
+            const gaspi_number_t numValues,
+            const gaspi_size_t elemSize,
+            gaspi_timeout_t )
+{
+   SCAI_ASSERT_EQ_ERROR( elemSize, sizeof( ValueType ), "serious type mismatch" )
+
+   ValueType* t_op1 = reinterpret_cast<ValueType*>( op1 );
+   ValueType* t_op2 = reinterpret_cast<ValueType*>( op2 );
+   ValueType* t_res = reinterpret_cast<ValueType*>( result );
+
+   for ( gaspi_number_t i = 0; i< numValues; ++i )
+   {
+       t_res[i] = t_op2[i] > t_op1[i] ? t_op2[i] : t_op1[i];
+   }
+
+   return GASPI_SUCCESS;
+}
+
 void GPICommunicator::maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
 {
-    SCAI_REGION( "Communicator.GPI.max" )
+    SCAI_REGION( "Communicator.GPI.sum" )
 
-    gaspi_datatype_t commType = getGPIType( stype );
+    gaspi_size_t elem_size = common::typeSize( stype );
 
-    // Attention: no segment data required here
+    SCAI_LOG_INFO( logger, *this << ": maxImpl: #values = " << n << ", elemSize = " << elem_size )
 
-    if ( inValues == outValues )
+    gaspi_reduce_operation_t op;
+
+    switch( stype )
     {
-        // maybe we need a copy of inValues 
-
-        size_t tmpSize = n * common::typeSize( stype );
-
-        common::scoped_array<char> tmp ( new char[ tmpSize ] );
-        memcpy( tmp.get(), inValues,  tmpSize );
-
-        SCAI_GASPI_CALL( gaspi_allreduce( tmp.get(), outValues, n, GASPI_OP_SUM, commType, group, timeout ) )
+        case common::scalar::INT           : op = reduce_max<int>; break;
+        case common::scalar::UNSIGNED_INT  : op = reduce_max<unsigned int>; break;
+        case common::scalar::LONG          : op = reduce_max<long>; break;
+        case common::scalar::UNSIGNED_LONG : op = reduce_max<unsigned long>; break;
+        case common::scalar::FLOAT         : op = reduce_max<float>; break;
+        case common::scalar::DOUBLE        : op = reduce_max<double>; break;
+        case common::scalar::LONG_DOUBLE   : op = reduce_max<long double>; break;
+#ifdef SCAI_COMPLEX_SUPPORTED
+        case common::scalar::COMPLEX             : op = reduce_max<ComplexFloat>; break;
+        case common::scalar::DOUBLE_COMPLEX      : op = reduce_max<ComplexDouble>; break;
+        case common::scalar::LONG_DOUBLE_COMPLEX : op = reduce_max<ComplexLongDouble>; break;
+#endif
+        default:
+           COMMON_THROWEXCEPTION( "Unsupported reduction type for max: " << stype );
     }
-    else
-    {
-        SCAI_GASPI_CALL( gaspi_allreduce( const_cast<void*>( inValues ), outValues, n, GASPI_OP_MAX, commType, group, timeout ) )
-    }
+
+    reduce( outValues, inValues, n, op, elem_size );
 }
 
 /* ---------------------------------------------------------------------------------- */

@@ -38,6 +38,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/tracing.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/Settings.hpp>
 
 // boost
 #include <boost/version.hpp>
@@ -56,27 +57,18 @@ namespace dmemo
 {
 // Help routine to get the Size of the Shared Memory segment
 
-static size_t getSegmentSize()
+size_t GPIMemManager::getSegmentSize()
 {
     size_t size = 1024 * 1024;   // MB
-    std::cout << "getSegmentSize -> " << size << " * nMB " << std::endl;
+
     int nMB = 256;   // default 256 MB
-    const char* sizeString = getenv( "SCAI_GPI_SEGMENT_SIZE" );
 
-    if ( sizeString  )
-    {
-        std::cout << "Environment variable SCAI_GPI_SEGMENT_SIZE = " << sizeString << std::endl;
-        int n = sscanf( sizeString, "%d", &nMB );
-        std::cout << "Read nMB = " << nMB << ", n = " << n << std::endl;
-    }
-    else
-    {
-        std::cout << "Environment variable SCAI_GPI_SEGMENT_SIZE not found" << std::endl;
-    }
+    common::Settings::getEnvironment( nMB, "SCAI_GPI_SEGMENT_SIZE" );
 
-    std::cout << "getSegmentSize -> " << size << " * " << nMB << std::endl;
     size *= nMB;
-    std::cout << "getSegmentSize -> " << size << std::endl;
+
+    SCAI_LOG_INFO( logger, "getSegmentSize -> " << size << " bytes" )
+
     return size;
 }
 
