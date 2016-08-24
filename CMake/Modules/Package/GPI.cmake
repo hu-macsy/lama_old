@@ -41,7 +41,7 @@
 ### GPI2_INCLUDE_DIR
 ### IBVERBS_INCLUDE_DIR
 
-# set( SCAI_CMAKE_VERBOSE True )
+set( SCAI_CMAKE_VERBOSE True )
 
 find_package ( GPI2 ${SCAI_FIND_PACKAGE_FLAGS} )
 
@@ -59,6 +59,15 @@ if    ( SCAI_CMAKE_VERBOSE )
     message ( STATUS "IBVERBS_LIBRARIES=${IBVERBS_LIBRARIES}" )
 endif ( SCAI_CMAKE_VERBOSE )
 
+if ( IBVERBS_FOUND )
+    set ( GPI2_EXTRA_LIBRARIES ${IBVERBS_LIBRARIES} )
+else ( IBVERBS_FOUND )
+    set ( GPI2_EXTRA_LIBRARIES "-lpthread" )
+endif ( IBVERBS_FOUND )
+
+# ToDo: more convenient analysis which version of GPI-2 (Infiniband/Ethernet, with/without GPU) 
+#       has been installed at GPI2_ROOT
+
 set ( GPI_FOUND FALSE )
 
 if    ( GPI2_FOUND )
@@ -68,7 +77,7 @@ if    ( GPI2_FOUND )
         ${CMAKE_MODULE_PATH}/VersionCheck/gpi.cpp
         CMAKE_FLAGS 
         -DINCLUDE_DIRECTORIES:STRING=${GPI2_INCLUDE_DIR}
-        LINK_LIBRARIES ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES}
+        LINK_LIBRARIES ${GPI2_LIBRARIES} ${GPI2_EXTRA_LIBRARIES}
         COMPILE_OUTPUT_VARIABLE GPI2_COMPILE_OUTPUT_VAR
         RUN_OUTPUT_VARIABLE GPI2_RUN_OUTPUT_VAR )
 
@@ -91,29 +100,25 @@ endif ( GPI2_FOUND )
 ### ALLOW to switch off GPI2 explicitly ###
 # do what setAndCheckCache does but with 2 packages
 # Check if cache variable is already set
+
 if    ( DEFINED USE_GPI )
     # do nothing
     # if cache variable is NOT set
     set( USE_GPI ${USE_GPI} )
 else ( DEFINED USE_GPI )
     # Check if package was found
-    if    ( GPI2_FOUND AND IBVERBS_FOUND )
-        set ( USE_PACKAGE TRUE )
-    else  ( GPI2_FOUND AND IBVERBS_FOUND )
-        set ( USE_PACKAGE FALSE )
-    endif ( GPI2_FOUND AND IBVERBS_FOUND )
-        
-    # Set cache variable
+    set ( USE_PACKAGE ${GPI_FOUND} )
     set ( USE_GPI ${USE_PACKAGE} )
 endif ( DEFINED USE_GPI )
+
 set ( USE_GPI ${USE_GPI} CACHE BOOL "Enable / Disable use of GPI" )
 
 set ( GPI_ENABLED FALSE )
 
 if    ( USE_GPI AND GPI_FOUND )
     # conclude GPI2 and IBVERBS to SCAI_GPI
-    set ( SCAI_GPI_INCLUDE_DIR ${GPI2_INCLUDE_DIR} ${IBVERBS_INCLUDE_DIR} )
-    set ( SCAI_GPI_LIBRARIES ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
+    set ( SCAI_GPI_INCLUDE_DIR ${GPI2_INCLUDE_DIR} )
+    set ( SCAI_GPI_LIBRARIES ${GPI2_LIBRARIES} ${GPI2_EXTRA_LIBRARIES} )
 
     set ( GPI_ENABLED TRUE )
 
