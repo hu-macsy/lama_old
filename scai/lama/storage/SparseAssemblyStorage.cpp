@@ -725,8 +725,6 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
     // copy ja, values
     WriteOnlyAccess<IndexType> csrJA( *ja, mNumValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, mNumValues );
-    #pragma omp parallel for
-
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
         IndexType offset = 0;
