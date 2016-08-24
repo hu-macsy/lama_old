@@ -158,7 +158,9 @@ void BLAS_BLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
         return;
     }
 
-    SCAI_LOG_INFO( logger, "register BLAS3 wrapper routines for Host at kernel registry [" << flag << "]" )
+    SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS3 wrapper routines for Host at kernel registry: " <<
+                            "T = " << common::TypeTraits<ValueType>::id() )
+
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( BLAS_BLAS3::gemm, ctx, flag );
 }
 
@@ -168,12 +170,16 @@ void BLAS_BLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 BLAS_BLAS3::BLAS_BLAS3()
 {
+    SCAI_LOG_INFO( logger, "register BLAS3 wrapper routines for Host at kernel registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS3::~BLAS_BLAS3()
 {
+    SCAI_LOG_INFO( logger, "unregister BLAS3 wrapper routines for Host at kernel registry" )
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }

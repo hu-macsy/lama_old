@@ -120,7 +120,7 @@ public:
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
      * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
-     * @param[in] valuesType representation type for output values, default is same type as matrix values
+     * @param[in] dataType representation type for output values, default is same type as matrix values
      * @param[in] indexType representation type for col/row index values
      * @param[in] fileMode can be used to forche BINARY or FORMATTED output
      */

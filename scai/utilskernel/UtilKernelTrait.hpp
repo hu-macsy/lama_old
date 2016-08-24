@@ -488,7 +488,7 @@ struct UtilKernelTrait
          *           bucketSizes [nBuckets = 3]     =  {  4  3  3 }
          *           offsets     [nBuckets + 1 = 4] =  {  0           4        7        10  }
          *           sortedIndexes [n=10]           =  {  0  3  8  9  1  4  6  2  5  7 }
-         *  \endcod
+         *  \endcode
          *
          */
 

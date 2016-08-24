@@ -850,9 +850,13 @@ void MICJDSUtils::jacobiHalo(
 void MICJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
+
     // context for which kernels will be added
+
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: untyped routines" )
+
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
@@ -864,8 +868,9 @@ void MICJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: T = " << common::TypeTraits<ValueType>::id() )
+
     KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
@@ -877,8 +882,10 @@ void MICJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
+                             common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+
     KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
@@ -891,6 +898,8 @@ void MICJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
 
 MICJDSUtils::RegisterGuard::RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "register JDSUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
@@ -899,6 +908,8 @@ MICJDSUtils::RegisterGuard::RegisterGuard()
 
 MICJDSUtils::RegisterGuard::~RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "unregister JDSUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::initAndReg( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );

@@ -124,8 +124,8 @@ private:
 
     /** Method to count number of lines of a text file and the maximal number of entries in one line 
      *
-     *  @param[out]  number of lines the file has
-     *  @param[out]  nEntries is maximal number of entries
+     *  @param[out]  nLines will will contain the number of lines the file has
+     *  @param[out]  nEntries is maximal number of entries in one line
      *  @param[in]   fileName is the name of the file
      *
      *  Note: it might be possible that one line contains less than 'nEntries' entries

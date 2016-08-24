@@ -492,8 +492,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
 {
     using common::Math;
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     std::srand( 1751 + comm->getRank() * 17 );
@@ -525,15 +523,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
 
         BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
     
-        // some types not supported yet for maxloc
-
-        if ( common::isComplex( stype ) ||  ( stype == common::scalar::LONG_DOUBLE ) )
-        {
-            continue;
-        }
-
         IndexType globalMaxLoc = localMaxLoc;
-        ValueType globalMax = localMax;
+        ValueType globalMax    = localMax;
 
         comm->maxloc( globalMax, globalMaxLoc, root );
 
@@ -547,6 +538,70 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
         BOOST_CHECK( Math::abs( globalMax ) >= Math::abs( localMax ) );
 
         bool any = globalMaxLoc == localMaxLoc;
+
+        any = comm->any( any );
+    
+        BOOST_CHECK( any );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
+{
+    using common::Math;
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    std::srand( 11171 + comm->getRank() * 17 );
+
+    // test it for each processor to be the root
+
+    for ( PartitionId root = 0; root < comm->getSize(); ++root )
+    {
+        IndexType N = 5;
+        LArray<ValueType> vals;
+        HArrayUtils::setRandom( vals, N, 1.0f );
+        ValueType localMin = vals[0];
+        IndexType localMinLoc = 0;
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            ValueType v = vals[i];
+
+            if ( v < localMin )
+            {
+                localMin = v;
+                localMinLoc = i;
+            }
+        }
+    
+        SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, local " << localMin << " @ " << localMinLoc )
+
+        ValueType globalMin1 = comm->min( localMin );
+
+        bool error1 = localMin < globalMin1;
+
+        BOOST_CHECK( !error1 );
+
+        // BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
+    
+        IndexType globalMinLoc = localMinLoc;
+        ValueType globalMin = localMin;
+
+        comm->minloc( globalMin, globalMinLoc, root );
+
+        comm->bcast( &globalMin, 1, root );
+        comm->bcast( &globalMinLoc, 1, root );
+
+        BOOST_CHECK_EQUAL( globalMin1, globalMin );
+
+        SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, global " << globalMin << " @ " << globalMinLoc )
+
+        bool error = localMin < globalMin;
+
+        BOOST_CHECK( !error );
+
+        bool any = globalMinLoc == localMinLoc;
 
         any = comm->any( any );
     
@@ -601,15 +656,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumArrayTest, ValueType, scai_array_test_types )
 
     comm->sumArray( vals );
 
-    { 
-        ReadAccess<ValueType> rLocal( saveVals );
-        ReadAccess<ValueType> rGlobal( vals );
+    saveVals *= size;
 
-        for ( IndexType i = 0; i < N; ++i )
-        {
-            BOOST_CHECK_EQUAL( rLocal[i] * size, rGlobal[i] );
-        }
-    }
+    BOOST_CHECK( vals.maxDiffNorm( saveVals) < 0.0001 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -777,7 +826,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
 
     common::Settings::putEnvironment( "SCAI_NP", "", replace );
 
-    comm->factorize2( 16, 1, procArray );
+    comm->factorize2( procArray, 16, 1 );
     
     BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] );
 
@@ -795,7 +844,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
     BOOST_CHECK_EQUAL( comm->getRank(), posArray[1] * procArray[0] + posArray[0] );
     BOOST_CHECK_EQUAL( nPartition, posArray[2] );
 
-    comm->factorize3( 1, 16, 1, procArray );
+    comm->factorize3( procArray, 1, 16, 1 );
     
     BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] * procArray[2] );
 

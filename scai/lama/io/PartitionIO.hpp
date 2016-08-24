@@ -92,8 +92,9 @@ public:
 
     /** Help routine to get the filename of the partition that is read/written by this processor.
      *
-     *  @param[in,out] fileName, might contain %r that will be substituted by rank_size
+     *  @param[in,out] fileName is the name of the file that might contain %r that will be substituted by rank_size
      *  @param[out] isPartitioned if true data is spread among multiple 'partitoned' files
+     *  @param[in] comm is the communicator needed to get the rank if name contains %r
      */
 
     static void getPartitionFileName( std::string& fileName, bool& isPartitioned, const dmemo::Communicator& comm );
