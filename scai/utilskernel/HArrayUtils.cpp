@@ -558,6 +558,9 @@ void HArrayUtils::axpy(
     const HArray<ValueType>& x,
     ContextPtr prefLoc )
 {
+    SCAI_LOG_INFO( logger, "result += " << alpha << " * x"
+                   ", x = " << x << ", result = " << result )
+
     if ( alpha == scai::common::constants::ZERO )
     {
         return;
@@ -591,7 +594,11 @@ void HArrayUtils::arrayPlusArray(
     const HArray<ValueType>& y,
     ContextPtr prefLoc )
 {
+    SCAI_LOG_INFO( logger, "result = " << alpha << " * x + " << beta << " * y" <<
+                   ", x = " << x << ", y = " << y << ", result = " << result )
+
     // check for zero terms as we do not need read access and assert correct sizes
+
     if ( beta == scai::common::constants::ZERO )
     {
         assignScaled( result, alpha, x, prefLoc );
@@ -601,6 +608,18 @@ void HArrayUtils::arrayPlusArray(
     if ( alpha == scai::common::constants::ZERO )
     {
         assignScaled( result, beta, y, prefLoc );
+        return;
+    }
+
+    if ( &y == &result && beta == scai::common::constants::ONE )
+    {
+        axpy( result, alpha, x, prefLoc );
+        return;
+    }
+
+    if ( &x == &result && alpha == scai::common::constants::ONE )
+    {
+        axpy( result, beta, y, prefLoc );
         return;
     }
 
