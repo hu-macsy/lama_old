@@ -33,15 +33,14 @@
 ###
 
 ### USE_GPI              - if GPI is enabled
-### GPI_FOUND            - if GPI2 and IBVERBS are founds
+### GPI_FOUND            - if GPI2 and required libraries (e.g. IBVERBS) are found
 ### GPI_ENABLED          - if GPI_FOUND AND USE_GPI
-### SCAI_GPI_INCLUDE_DIR - GPI include directories (GPI2_INCLUDE_DIR and IBVERBS_INCLUDE_DIR)
-### SCAI_GPI_LIBRARIES   - all needed GPI libraries (GPI2_LIBRARIES and IBVERBS_LIBRARIES)
+### SCAI_GPI_INCLUDE_DIR - GPI include directories (GPI2_INCLUDE_DIR)
+### SCAI_GPI_LIBRARIES   - all needed GPI libraries (GPI2_LIBRARIES and GPI2_EXTRA_LIBRARIES)
 ### GPI2_VERSION
 ### GPI2_INCLUDE_DIR
-### IBVERBS_INCLUDE_DIR
 
-set( SCAI_CMAKE_VERBOSE True )
+# set( SCAI_CMAKE_VERBOSE True )
 
 find_package ( GPI2 ${SCAI_FIND_PACKAGE_FLAGS} )
 
