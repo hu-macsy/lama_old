@@ -46,6 +46,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/Settings.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
@@ -129,6 +130,7 @@ GPICommunicator::GPICommunicator( )
     SCAI_TRACE_SCOPE( false )   // switch off tracing in this scope as it might call this constructor again
 
     // set gaspi_printf as print routine for logging, no more needed for GPI 2.1.3.0
+
     // logging::GenLogger::myPrintf = &gaspi_printf;
 
     SCAI_LOG_DEBUG( logger, "GPICommunicator(): call init" )
@@ -150,6 +152,11 @@ GPICommunicator::GPICommunicator( )
     // Note: mRank, mSize must be set correctly before
 
     setNodeData();   // determine mNodeRank, mNodeSize, also uses some communication pattern
+
+    std::ostringstream commVal;
+    commVal << *this;
+    common::Settings::putEnvironment( "SCAI_COMM", commVal.str().c_str() );
+    common::Settings::putEnvironment( "SCAI_RANK", mRank );
 }
 
 /* ---------------------------------------------------------------------------------- */
