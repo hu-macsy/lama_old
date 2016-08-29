@@ -198,6 +198,8 @@ void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<Inde
 
     const IndexType n = indexes.size();
 
+    SCAI_LOG_INFO( logger, *this << ": computeOwners for " << n << " indexes" )
+
     ReadAccess<IndexType> rIndexes( indexes, ctx );
     WriteOnlyAccess<IndexType> wOwners( owners, ctx, n );
 
@@ -219,6 +221,8 @@ void Distribution::allOwners( HArray<PartitionId>& owners, PartitionId root ) co
     }
 
     // Note: only master process asks for owners, other processes have 0 indexes
+
+    SCAI_LOG_INFO( logger, *this << ": computeOwners for indexes = " << indexes )
 
     computeOwners( owners, indexes );
 }
