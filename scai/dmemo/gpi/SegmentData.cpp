@@ -65,6 +65,7 @@ SegmentData::SegmentData( common::scalar::ScalarType stype, const GPICommunicato
     mScalarType = stype;
     mTypeSize = common::typeSize( stype );
     mComm = comm;  // GPI communicator not really needed
+    mData = NULL;
     reserve( size );
 }
 
@@ -107,7 +108,16 @@ SegmentData::SegmentData( common::scalar::ScalarType stype, const GPICommunicato
 
 void SegmentData::assign( const void* values, const IndexType n )
 {
+    if ( n == 0 )
+    {
+        return;
+    }
+
+    SCAI_ASSERT( values, "NULL pointer values" )
+
     void* data = get();
+
+    SCAI_ASSERT( data, "assign( n = " << n << "): NULL pointer data, values = " << values )
 
     if ( values == data )
     {
@@ -121,7 +131,16 @@ void SegmentData::assign( const void* values, const IndexType n )
 
 void SegmentData::copyTo( void* values, const IndexType n ) const
 {
+    if ( n == 0 )
+    {
+        return;
+    }
+
+    SCAI_ASSERT( values, "NULL pointer values" )
+
     const void* data = get();
+
+    SCAI_ASSERT( data, "copyTo( n = " << n << "): NULL pointer data, values = " << values )
 
     if ( values == data )
     {
@@ -140,10 +159,12 @@ void SegmentData::release()
         if ( mReleaseFlag )
         {
             GPIMemManager::releaseSegmentData( mId, mOffsetBytes );
+            mReleaseFlag = false;
         }
 
         mComm = NULL;
         mPtr  = NULL;
+        mData = NULL;
     }
 }
 
