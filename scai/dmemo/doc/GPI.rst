@@ -52,10 +52,11 @@ The same for ibverbs: define IBVERBS_ROOT with the cmake call or IBVERBS_INCLUDE
 Restrictions for GPI
 ^^^^^^^^^^^^^^^^^^^^
 
-GPI does not support reducitions for long double values and not for complex values. Therefore only the data
-types float and double can be used as supported value types on host.
+The current implementation for the GPI communicator cannot support the value type ``ComplexLongDouble``.
+The reason is that the memory management of the GASPI segments allocates data on 16-Byte boundaries and so
+there are serious alignment problems for 32-Byte data values.
 
 .. code-block:: bash 
 
-    SCAI_HOST_TYPES_LIST=float;double
+    SCAI_HOST_TYPES_LIST=float;double;long;ComplexFlag;ComplexDouble
 
