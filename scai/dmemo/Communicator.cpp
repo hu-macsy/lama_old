@@ -584,7 +584,8 @@ void Communicator::computeOwners(
 {
     PartitionId rank = getRank();
     PartitionId size = getSize();
-    SCAI_LOG_DEBUG( logger, "need owners for " << nIndexes << " global indexes" )
+
+    SCAI_LOG_INFO( logger, "need owners for " << nIndexes << " global indexes" )
 
     if ( distribution.getCommunicator() != *this )
     {
@@ -594,6 +595,7 @@ void Communicator::computeOwners(
     IndexType nonLocal = 0;
 
     // Check for own ownership. Mark needed Owners. Only exchange requests for unknown indexes.
+
     for ( IndexType i = 0; i < nIndexes; ++i )
     {
         if ( distribution.isLocal( requiredIndexes[i] ) )
@@ -603,11 +605,11 @@ void Communicator::computeOwners(
         else
         {
             nonLocal++;
-            owners[i] = nIndex;
+            owners[i] = nPartition;
         }
     }
 
-    SCAI_LOG_DEBUG( logger, nIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
+    SCAI_LOG_INFO( logger, nIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
     IndexType receiveSize = max( nonLocal ); // --> pure method call
     SCAI_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize )
     // Allocate the maximal needed size for the communication buffers
@@ -633,14 +635,14 @@ void Communicator::computeOwners(
 
         for ( IndexType i = 0; i < receiveSize; ++i )
         {
-            ownersSend[i] = nIndex;
+            ownersSend[i] = nPartition;
         }
     }
     IndexType ownersSize = nIndex;
     IndexType currentSize = nonLocal;
     const int direction = 1; // send to right, recv from left
 
-    for ( int iProc = 0; iProc < size - 1; ++iProc )
+    for ( PartitionId iProc = 0; iProc < size - 1; ++iProc )
     {
         WriteAccess<IndexType> indexesSend( indexesSendArray, contextPtr );
         WriteAccess<IndexType> indexesReceive( indexesReceiveArray, contextPtr );
@@ -704,21 +706,18 @@ void Communicator::computeOwners(
     }
 
     // The Owner Indexes are always passed in the same order, so we can insert them easily.
+
     int nn = 0;
 
     for ( IndexType i = 0; i < nIndexes; ++i )
     {
-        if ( owners[i] == nIndex )
+        if ( owners[i] == nPartition )
         {
             owners[i] = ownersSend[nn++];
-
-            //TODO is this usefull for the speed ?
-            if ( nn == nonLocal )
-            {
-                break;
-            }
         }
     }
+
+    SCAI_ASSERT_EQUAL( nn, nonLocal, "serious mismatch" )
 }
 
 /* -------------------------------------------------------------------------- */
