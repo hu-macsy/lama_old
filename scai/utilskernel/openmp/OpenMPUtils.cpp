@@ -619,7 +619,7 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
     {
         SCAI_LOG_TRACE( logger, "validIndexes, array[ " << i << " ] = " << array[i] )
 
-        if ( ! common::Math::validIndex( array[i], size ) )
+        if ( ! common::Utils::validIndex( array[i], size ) )
         {
             validFlag = false;
         }
