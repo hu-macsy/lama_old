@@ -495,7 +495,7 @@ void csr2jdsKernel(
     const IndexType* const csrJa,
     const CSRValueType* const csrValues )
 {
-    extern __shared__ int dlg[];
+    extern __shared__ IndexType dlg[];
     const IndexType iJDS = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     // copy DLG array into shared memory for faster access
@@ -676,28 +676,28 @@ void CUDAJDSUtils::getCSRValues(
 
 template<bool useTexture, bool useSharedMemory>
 __inline__ __device__
-int fetch_JDSdlg( const int* const dlg_d, int[], const int i )
+IndexType fetch_JDSdlg( const IndexType* const dlg_d, IndexType[], const IndexType i )
 {
     return dlg_d[i];
 }
 
 template<>
 __inline__ __device__
-int fetch_JDSdlg<true, false>( const int* const dlg_d, int[], const int i )
+IndexType fetch_JDSdlg<true, false>( const IndexType* const dlg_d, IndexType[], const IndexType i )
 {
-    return fetchVectorX<int, true>( dlg_d, i );
+    return fetchVectorX<IndexType, true>( dlg_d, i );
 }
 
 template<>
 __inline__ __device__
-int fetch_JDSdlg<true, true>( const int* const, int dlg_sm[], const int i )
+IndexType fetch_JDSdlg<true, true>( const IndexType* const, IndexType dlg_sm[], const IndexType i )
 {
     return dlg_sm[i];
 }
 
 template<>
 __inline__ __device__
-int fetch_JDSdlg<false, true>( const int* const, int dlg_sm[], const int i )
+IndexType fetch_JDSdlg<false, true>( const IndexType* const, IndexType dlg_sm[], const IndexType i )
 {
     return dlg_sm[i];
 }
@@ -706,23 +706,23 @@ template<typename T, bool useTexture, bool useSharedMem>
 __global__
 void jds_jacobi_kernel(
     const T* const jdsValues,
-    const int* const jdsDLG,
-    const int ndlg,
-    const int* const jdsIlg,
-    const int* const jdsJA,
-    const int* const jdsPerm,
-    const int numRows,
+    const IndexType* const jdsDLG,
+    const IndexType ndlg,
+    const IndexType* const jdsIlg,
+    const IndexType* const jdsJA,
+    const IndexType* const jdsPerm,
+    const IndexType numRows,
     const T* const rhs,
     T* const solution,
     const T* const oldSolution,
     const T omega )
 {
-    extern __shared__ int dlg[];
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    extern __shared__ IndexType dlg[];
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < ndlg )
         {
@@ -735,13 +735,13 @@ void jds_jacobi_kernel(
 
     if ( i < numRows )
     {
-        const int perm = jdsPerm[i];
+        const IndexType perm = jdsPerm[i];
         T temp = rhs[perm];
         const T aDiag = jdsValues[i];
-        int pos = i + fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, 0 );
-        const int rowEnd = jdsIlg[i];
+        IndexType pos = i + fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, 0 );
+        const IndexType rowEnd = jdsIlg[i];
 
-        for ( int jj = 1; jj < rowEnd; ++jj )
+        for ( IndexType jj = 1; jj < rowEnd; ++jj )
         {
             temp -= jdsValues[pos] * fetchVectorX<T, useTexture>( oldSolution, jdsJA[pos] );
             pos += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
@@ -903,21 +903,21 @@ __global__
 void jds_jacobi_halo_kernel(
     const T* const diagonal,
     const T* const jdsValuesHalo,
-    const int* const jdsDLGHalo,
-    const int ndlg_halo,
-    const int* const jdsIlgHalo,
-    const int* const jdsJAHalo,
-    const int* const jdsPermHalo,
+    const IndexType* const jdsDLGHalo,
+    const IndexType ndlg_halo,
+    const IndexType* const jdsIlgHalo,
+    const IndexType* const jdsJAHalo,
+    const IndexType* const jdsPermHalo,
     T* const solutionLocal,
     const T* const oldSolutionHalo,
     const T omega )
 {
-    extern __shared__ int dlg[];
-    const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    extern __shared__ IndexType dlg[];
+    const IndexType id = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < ndlg_halo )
         {
@@ -931,11 +931,11 @@ void jds_jacobi_halo_kernel(
     if ( id < fetch_JDSdlg<useTexture, useSharedMem>( jdsDLGHalo, dlg, 0 ) )
     {
         T temp = 0.0;
-        int pos = id;
-        const int rowEnd = jdsIlgHalo[id];
-        const int perm = jdsPermHalo[id];
+        IndexType pos = id;
+        const IndexType rowEnd = jdsIlgHalo[id];
+        const IndexType perm = jdsPermHalo[id];
 
-        for ( int jj = 0; jj < rowEnd; ++jj )
+        for ( IndexType jj = 0; jj < rowEnd; ++jj )
         {
             temp += jdsValuesHalo[pos] * fetchVectorX<T, useTexture>( oldSolutionHalo, jdsJAHalo[pos] );
             pos += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLGHalo, dlg, jj );
@@ -1418,7 +1418,7 @@ void sparse_gemv_kernel(
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < ndlg )
         {
@@ -1433,10 +1433,10 @@ void sparse_gemv_kernel(
     {
         IndexType i = jdsPerm[ii]; // row in matrix
         ValueType value = 0.0;
-        int pos = ii;// position in jdsJA, jdsValues
-        int ni = jdsILG[ii];// number entries in row
+        IndexType pos = ii;// position in jdsJA, jdsValues
+        IndexType ni = jdsILG[ii];// number entries in row
 
-        for ( int jj = 0; jj < ni; ++jj )
+        for ( IndexType jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
             value += jdsValues[pos] * fetchVectorX<ValueType, useTexture>( x_d, j );

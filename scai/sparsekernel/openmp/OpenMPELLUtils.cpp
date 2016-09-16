@@ -191,13 +191,13 @@ void OpenMPELLUtils::check(
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
-            if ( ellSizes[i] >= 0 && ellSizes[i] <= numValuesPerRow )
+            if ( common::Utils::validIndex( ellSizes[i], numValuesPerRow ) )
             {
                 for ( IndexType jj = 0; jj < ellSizes[i]; jj++ )
                 {
                     IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                     IndexType j = ellJA[pos];
-                    integrityJA = integrityJA && ( 0 <= j && j < numColumns );
+                    integrityJA = integrityJA && common::Utils::validIndex( j, numColumns );
                 }
             }
             else

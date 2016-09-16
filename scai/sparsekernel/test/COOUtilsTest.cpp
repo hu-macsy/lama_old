@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         }
         ReadAccess<IndexType> rIA( ia );
 
-        for ( int i = 0; i < numValues; ++i )
+        for ( IndexType i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );
         }
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         }
         ReadAccess<IndexType> rIA( ia );
 
-        for ( int i = 0; i < numValues; ++i )
+        for ( IndexType i = 0; i < numValues; ++i )
         {
             // SCAI_LOG_TRACE( logger,  "rIA[" << i << "] = " << rIA[i] << ", expects " << ia_values[i] )
             BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );

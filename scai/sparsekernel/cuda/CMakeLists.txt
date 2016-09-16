@@ -45,7 +45,6 @@ scai_project(
         CUDADIAUtils
         CUDAELLUtils
         CUDAJDSUtils
-        CUSparseCSRUtils
 
     CUDA_SOURCES   # .cu
 

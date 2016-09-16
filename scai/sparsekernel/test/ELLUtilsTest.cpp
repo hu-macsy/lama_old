@@ -173,7 +173,8 @@ BOOST_AUTO_TEST_CASE( checkTest )
     {
         const IndexType valuesIa[] = { 4, 3, 5, 2 };
         const IndexType nIa = sizeof( valuesIa ) / sizeof( IndexType );
-        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, -1, 4, -1, 4, 0, 0, 0, 5, 0 };
+        const IndexType minusOne = static_cast<IndexType>( -1 );
+        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, minusOne, 4, minusOne, 4, 0, 0, 0, 5, 0 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
@@ -206,7 +207,7 @@ BOOST_AUTO_TEST_CASE( checkTest )
     {
         const IndexType valuesIa[] = { 4, 3, 5, 2 };
         const IndexType nIa = sizeof( valuesIa ) / sizeof( IndexType );
-        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, -1, 3, 3, 3, 0, 4, 0, 4, 0, 0, 0, 5, 0 };
+        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, static_cast<IndexType>( -1 ), 3, 3, 3, 0, 4, 0, 4, 0, 0, 0, 5, 0 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;

@@ -248,7 +248,7 @@ void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType pe
     for ( IndexType ii = 0; ii < n; ii++ )
     {
         IndexType i = perm[ii];
-        SCAI_ASSERT_DEBUG( 0 <= i && i < n, "permutation value out of range, perm[" << ii << "] = " << i )
+        SCAI_ASSERT_VALID_INDEX_DEBUG( i, n, "permutation value out of range, perm[" << ii << "]" )
         inversePerm[i] = ii;
     }
 }
@@ -302,7 +302,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     // later (end of second for):  21  18  14  11   6   5
     IndexType total = 0;
 
-    for ( IndexType i = maxBucket; i >= 0; i-- )
+    for ( IndexType i = maxBucket + 1; i-- > 0; )
     {
         IndexType cnt = bucket[i];
         bucket[i] = total;
@@ -322,7 +322,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     // reorganize of ilg has to wait until after filling of perm array is finished
     total = 0;
 
-    for ( IndexType i = maxBucket; i >= 0; i-- )
+    for ( IndexType i = maxBucket + 1; i-- > 0; )
     {
         SCAI_LOG_DEBUG( logger, "set ilg[" << total << ":" << ( bucket[i] - 1 ) << "] = " << i )
 

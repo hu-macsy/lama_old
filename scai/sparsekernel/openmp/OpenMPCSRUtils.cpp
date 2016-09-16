@@ -1213,8 +1213,10 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
                 {
                     // k is the column of none zero element kk of row j of input matrix b
                     // so we are looking at position b(j,k)
+
                     IndexType k = bJA[kk];
-                    SCAI_ASSERT_DEBUG( 0 <= k && k < n, "invalid k = " << k )
+
+                    SCAI_ASSERT_VALID_INDEX_DEBUG( k, n, "invalid value" )
 
                     // element a(i,j) an b(j,k) will generate the output element c(i,k)
 

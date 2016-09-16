@@ -114,6 +114,8 @@ namespace sparsekernel
 
 SCAI_LOG_DEF_LOGGER( CUDACSRUtils::logger, "CUDA.CSRUtils" )
 
+__device__ const IndexType cudaNIndex = std::numeric_limits<IndexType>::max();
+
 IndexType CUDACSRUtils::sizes2offsets( IndexType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "sizes2offsets " << " #n = " << n )
@@ -234,9 +236,9 @@ void CUDACSRUtils::convertCSR2CSC(
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
-    int numRows,
-    int numColumns,
-    int numValues )
+    IndexType numRows,
+    IndexType numColumns,
+    IndexType numValues )
 {
     SCAI_REGION( "CUDA.CSRUtils.CSR2CSC" )
     SCAI_LOG_INFO( logger, "convertCSR2CSC of " << numRows << " x " << numColumns << ", nnz = " << numValues )
@@ -271,10 +273,10 @@ void scale_kernel(
     ValueType* result,
     const ValueType* y_d,
     const ValueType beta,
-    int numRows )
+    IndexType numRows )
 {
     // result = beta * y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
@@ -292,20 +294,20 @@ void normal_gemv_kernel_beta_zero(
     const ValueType* y_d,
     const ValueType alpha,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows )
 {
     // result = alpha * A * x_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         ValueType value = 0.0;
 
-        for ( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
@@ -324,21 +326,21 @@ void normal_gemv_kernel_alpha_one(
     const ValueType* y_d,
     const ValueType beta,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows )
 {
     // result = A * x_d + beta * y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
         ValueType summand = beta * y_d[i];
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         ValueType value = 0.0;
 
-        for ( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
@@ -357,21 +359,21 @@ void normal_gemv_kernel_beta_one(
     const ValueType* y_d,
     const ValueType alpha,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows )
 {
     // result = alpha * A * x_d + y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
         ValueType summand = y_d[i];
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         ValueType value = 0.0;
 
-        for ( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
@@ -389,20 +391,20 @@ void normal_gemv_kernel_alpha_one_beta_zero(
     const ValueType* x_d,
     const ValueType* y_d,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows )
 {
     // result = A * x_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         ValueType value = 0.0;
 
-        for ( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
@@ -418,10 +420,10 @@ __global__
 void assign_kernel(
     ValueType* result,
     const ValueType* y_d,
-    int numRows )
+    IndexType numRows )
 {
     // result = y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
@@ -438,21 +440,21 @@ void normal_gemv_kernel_alpha_one_beta_one(
     const ValueType* x_d,
     const ValueType* y_d,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows )
 {
     // result = A * x_d + y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
         ValueType summand = y_d[i];
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         ValueType value = 0.0;
 
-        for ( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
@@ -472,21 +474,21 @@ void normal_gemv_kernel(
     const ValueType alpha,
     const ValueType beta,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows )
 {
     // result = alpha * A * x_d + beta * y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
         ValueType summand = beta * y_d[i];
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         ValueType value = 0.0;
 
-        for ( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
@@ -504,25 +506,25 @@ void normal_gevm_kernel_alpha_one_beta_one(
     const ValueType* x_d,
     const ValueType* y_d,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows,
-    int numColumns )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows,
+    IndexType numColumns )
 {
     // result = x_d * A + y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numColumns )
     {
         ValueType summand = y_d[i];
         ValueType value = 0.0;
 
-        for ( int j = 0; j < numRows; ++j )
+        for ( IndexType j = 0; j < numRows; ++j )
         {
-            const int rowStart = csrIA[j];
-            const int rowEnd = csrIA[j + 1];
+            const IndexType rowStart = csrIA[j];
+            const IndexType rowEnd = csrIA[j + 1];
 
-            for ( int k = rowStart; k < rowEnd; ++k )
+            for ( IndexType k = rowStart; k < rowEnd; ++k )
             {
                 if ( csrJA[k] == i )
                 {
@@ -544,24 +546,24 @@ void normal_gevm_kernel_alpha_one_beta_zero(
     const ValueType* x_d,
     const ValueType* y_d,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows,
-    int numColumns )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows,
+    IndexType numColumns )
 {
     // result = x_d * A
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numColumns )
     {
         ValueType value = 0.0;
 
-        for ( int j = 0; j < numRows; ++j )
+        for ( IndexType j = 0; j < numRows; ++j )
         {
-            const int rowStart = csrIA[j];
-            const int rowEnd = csrIA[j + 1];
+            const IndexType rowStart = csrIA[j];
+            const IndexType rowEnd = csrIA[j + 1];
 
-            for ( int k = rowStart; k < rowEnd; ++k )
+            for ( IndexType k = rowStart; k < rowEnd; ++k )
             {
                 if ( csrJA[k] == i )
                 {
@@ -584,25 +586,25 @@ void normal_gevm_kernel_alpha_one(
     const ValueType* y_d,
     const ValueType beta,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows,
-    int numColumns )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows,
+    IndexType numColumns )
 {
     // result = x_d * A + beta * y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numColumns )
     {
         ValueType summand = beta * y_d[i];
         ValueType value = 0.0;
 
-        for ( int j = 0; j < numRows; ++j )
+        for ( IndexType j = 0; j < numRows; ++j )
         {
-            const int rowStart = csrIA[j];
-            const int rowEnd = csrIA[j + 1];
+            const IndexType rowStart = csrIA[j];
+            const IndexType rowEnd = csrIA[j + 1];
 
-            for ( int k = rowStart; k < rowEnd; ++k )
+            for ( IndexType k = rowStart; k < rowEnd; ++k )
             {
                 if ( csrJA[k] == i )
                 {
@@ -625,24 +627,24 @@ void normal_gevm_kernel_beta_one(
     const ValueType* y_d,
     const ValueType alpha,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows,
-    int numColumns )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows,
+    IndexType numColumns )
 {
     // result = alpha * x_d * A + y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numColumns )
     {
         ValueType value = 0.0;
 
-        for ( int j = 0; j < numRows; ++j )
+        for ( IndexType j = 0; j < numRows; ++j )
         {
-            const int rowStart = csrIA[j];
-            const int rowEnd = csrIA[j + 1];
+            const IndexType rowStart = csrIA[j];
+            const IndexType rowEnd = csrIA[j + 1];
 
-            for ( int k = rowStart; k < rowEnd; ++k )
+            for ( IndexType k = rowStart; k < rowEnd; ++k )
             {
                 if ( csrJA[k] == i )
                 {
@@ -665,24 +667,24 @@ void normal_gevm_kernel_beta_zero(
     const ValueType* y_d,
     const ValueType alpha,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows,
-    int numColumns )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows,
+    IndexType numColumns )
 {
     // result = alpha * x_d * A
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numColumns )
     {
         ValueType value = 0.0;
 
-        for ( int j = 0; j < numRows; ++j )
+        for ( IndexType j = 0; j < numRows; ++j )
         {
-            const int rowStart = csrIA[j];
-            const int rowEnd = csrIA[j + 1];
+            const IndexType rowStart = csrIA[j];
+            const IndexType rowEnd = csrIA[j + 1];
 
-            for ( int k = rowStart; k < rowEnd; ++k )
+            for ( IndexType k = rowStart; k < rowEnd; ++k )
             {
                 if ( csrJA[k] == i )
                 {
@@ -706,25 +708,25 @@ void normal_gevm_kernel(
     const ValueType alpha,
     const ValueType beta,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
-    int numRows,
-    int numColumns )
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    IndexType numRows,
+    IndexType numColumns )
 {
     // result = alpha * x_d * A + beta * y_d
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numColumns )
     {
         ValueType summand = beta * y_d[i];
         ValueType value = 0.0;
 
-        for ( int j = 0; j < numRows; ++j )
+        for ( IndexType j = 0; j < numRows; ++j )
         {
-            const int rowStart = csrIA[j];
-            const int rowEnd = csrIA[j + 1];
+            const IndexType rowStart = csrIA[j];
+            const IndexType rowEnd = csrIA[j + 1];
 
-            for ( int k = rowStart; k < rowEnd; ++k )
+            for ( IndexType k = rowStart; k < rowEnd; ++k )
             {
                 if ( csrJA[k] == i )
                 {
@@ -746,22 +748,22 @@ void sparse_gemv_kernel_alpha_one(
     const ValueType* x_d,
     const ValueType alpha,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
+    const IndexType* csrIA,
+    const IndexType* csrJA,
     const IndexType* rowIndexes,
-    int numRows )
+    IndexType numRows )
 {
     // result = A * x_d
-    const int ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( ii < numRows )
     {
         IndexType i = rowIndexes[ii];
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         ValueType value = 0.0;
 
-        for ( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
@@ -779,22 +781,22 @@ void sparse_gemv_kernel(
     const ValueType* x_d,
     const ValueType alpha,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
+    const IndexType* csrIA,
+    const IndexType* csrJA,
     const IndexType* rowIndexes,
-    int numRows )
+    IndexType numRows )
 {
     // result = alpha * A * x_d
-    const int ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( ii < numRows )
     {
         IndexType i = rowIndexes[ii];
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         ValueType value = 0.0;
 
-        for ( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
@@ -812,26 +814,26 @@ void sparse_gevm_kernel(
     const ValueType* x_d,
     const ValueType alpha,
     const ValueType* csrValues,
-    const int* csrIA,
-    const int* csrJA,
+    const IndexType* csrIA,
+    const IndexType* csrJA,
     const IndexType* rowIndexes,
-    int numColumns,
-    int numNonZeroRows )
+    IndexType numColumns,
+    IndexType numNonZeroRows )
 {
     // result += alpha * x_d * A
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numColumns )
     {
         ValueType value = 0.0;
 
-        for ( int jj = 0; jj < numNonZeroRows; ++jj )
+        for ( IndexType jj = 0; jj < numNonZeroRows; ++jj )
         {
-            int j = rowIndexes[jj];
-            const int rowStart = csrIA[j];
-            const int rowEnd = csrIA[j + 1];
+            IndexType j = rowIndexes[jj];
+            const IndexType rowStart = csrIA[j];
+            const IndexType rowEnd = csrIA[j + 1];
 
-            for ( int k = rowStart; k < rowEnd; ++k )
+            for ( IndexType k = rowStart; k < rowEnd; ++k )
             {
                 if ( csrJA[k] == i )
                 {
@@ -856,7 +858,7 @@ void scaleRowsKernel(
     const IndexType numRows,
     const OtherValueType* diagonal )
 {
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
@@ -1426,25 +1428,25 @@ void CUDACSRUtils::sparseGEVM(
 template<typename ValueType, bool useTexture>
 __global__
 void csr_jacobi_kernel(
-    const int* const csrIA,
-    const int* const csrJA,
+    const IndexType* const csrIA,
+    const IndexType* const csrJA,
     const ValueType* const csrValues,
-    const int numRows,
+    const IndexType numRows,
     const ValueType* const rhs,
     ValueType* const solution,
     const ValueType* const oldSolution,
     const ValueType omega )
 {
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
         ValueType temp = rhs[i];
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         const ValueType diag = csrValues[rowStart];
 
-        for ( int jj = rowStart + 1; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart + 1; jj < rowEnd; ++jj )
         {
             temp -= csrValues[jj] * fetchVectorX<ValueType, useTexture>( oldSolution, csrJA[jj] );
         }
@@ -1465,7 +1467,7 @@ void csr_jacobi_kernel(
 }
 
 template<typename ValueType>
-__inline__ __device__ ValueType getSharedValue( ValueType* shared, const ValueType* const value, const int index )
+__inline__ __device__ ValueType getSharedValue( ValueType* shared, const ValueType* const value, const IndexType index )
 {
     if ( index / blockDim.x == blockIdx.x )
     {
@@ -1519,16 +1521,16 @@ struct SharedMemory<double>
 //instead of using the texture memory
 template<typename ValueType>
 __global__ void csr_alternate_jacobi_kernel(
-    const int* const csrIA,
-    const int* const csrJA,
+    const IndexType* const csrIA,
+    const IndexType* const csrJA,
     const ValueType* const csrValues,
-    const int numRows,
+    const IndexType numRows,
     const ValueType* const rhs,
     ValueType* const solution,
     const ValueType* const oldSolution,
     const ValueType omega )
 {
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
     SharedMemory<ValueType> smem;
     ValueType* shared = smem.getPointer();
 
@@ -1538,11 +1540,11 @@ __global__ void csr_alternate_jacobi_kernel(
         shared[threadIdx.x] = oldSolution[i];
         __syncthreads();
         ValueType temp = rhs[i];
-        const int rowStart = csrIA[i];
-        const int rowEnd = csrIA[i + 1];
+        const IndexType rowStart = csrIA[i];
+        const IndexType rowEnd = csrIA[i + 1];
         const ValueType diag = csrValues[rowStart];
 
-        for ( int jj = rowStart + 1; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart + 1; jj < rowEnd; ++jj )
         {
             temp -= csrValues[jj] * getSharedValue<ValueType>( shared, oldSolution, csrJA[jj] );
         }
@@ -1870,7 +1872,7 @@ __global__ void matrixAddSizesKernel(
 
             for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
-                IndexType colA = aColIt < aColEnd ? aJa[aColIt] : -1;
+                IndexType colA = aColIt < aColEnd ? aJa[aColIt] : cudaNIndex;
                 IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIa, rowIt, aColItOffset );
 
                 for ( IndexType k = 0; k < end && k < warpSize; k++ )
@@ -1885,7 +1887,7 @@ __global__ void matrixAddSizesKernel(
                     for ( IndexType bColItOffset = 0; !sFound[localWarpId] && __any( ( bColIt + bColItOffset ) < bColEnd );
                             bColItOffset += warpSize )
                     {
-                        IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJa[bColIt + bColItOffset] : -1;
+                        IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJa[bColIt + bColItOffset] : cudaNIndex;
 
                         if ( sColA[localWarpId] == colB )
                         {
@@ -1942,28 +1944,55 @@ IndexType CUDACSRUtils::matrixAddSizes(
 /*                                             hashTable Methods                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+// ToDo: atomicCAS/atomicADD versions needed for IndexType = long, but not otherwise
+
+#ifdef LONG_AS_INDEX_TYPE
+__device__ inline 
+long atomicCAS( long* address, long compare, long val )
+{
+    typedef unsigned long long int RepT;
+
+    RepT* ptrCompare = reinterpret_cast<RepT*>( &compare );
+    RepT* ptrVal     = reinterpret_cast<RepT*>( &val );
+
+    return atomicCAS( address, *ptrCompare, *ptrVal );
+}
+
+__device__ inline
+long atomicAdd( long* address, long val )
+{
+    typedef unsigned long long int RepT;
+
+    RepT* ptrVal     = reinterpret_cast<RepT*>( &val );
+
+    return atomicAdd( address, *ptrVal );
+}
+#endif
+
 __device__
 inline bool multHlp_insertIndexex( IndexType colB,
                                    IndexType sHashTableIndexes[],
                                    IndexType aRowIt,
                                    IndexType* chunkPtr,
-                                   volatile int chunkList[],
-                                   int numReservedChunks,
+                                   volatile IndexType chunkList[],
+                                   IndexType numReservedChunks,
                                    IndexType* cIA )
 {
-    unsigned int fx = HASH_A * colB;
-    unsigned int gx = ( fx + HASH_B ) % HASH_P;
+    const IndexType one = 1;
+
+    IndexType fx = HASH_A * colB;
+    IndexType gx = ( fx + HASH_B ) % HASH_P;
 
     if ( numReservedChunks == 0 )
     {
         for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
         {
-            int hash = ( gx + HASH_C0 * i + HASH_C1 * ( IndexType ) i * i ) % NUM_ELEMENTS_IN_SHARED;
-            IndexType val = atomicCAS( &sHashTableIndexes[hash], -1, colB );
+            IndexType hash = ( gx + HASH_C0 * i + HASH_C1 *  i * i ) % NUM_ELEMENTS_IN_SHARED;
+            IndexType val = atomicCAS( &sHashTableIndexes[hash], cudaNIndex, colB );
 
-            if ( val == -1 )
+            if ( val == cudaNIndex )
             {
-                atomicAdd( &cIA[aRowIt], 1 );
+                atomicAdd( &cIA[aRowIt], one );
                 return true;
             }
 
@@ -1978,14 +2007,14 @@ inline bool multHlp_insertIndexex( IndexType colB,
 
     for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
     {
-        int globalHash = ( gx + HASH_C0 * i + HASH_C1 * ( IndexType ) i * i ) % ( NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
-        int localHash = globalHash % NUM_ELEMENTS_PER_CHUNK;
-        int chunk = globalHash / NUM_ELEMENTS_PER_CHUNK;
-        IndexType val = atomicCAS( &chunkPtr[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], -1, colB );
+        IndexType globalHash = ( gx + HASH_C0 * i + HASH_C1 * ( IndexType ) i * i ) % ( NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
+        IndexType localHash = globalHash % NUM_ELEMENTS_PER_CHUNK;
+        IndexType chunk = globalHash / NUM_ELEMENTS_PER_CHUNK;
+        IndexType val = atomicCAS( &chunkPtr[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], cudaNIndex, colB );
 
-        if ( val == -1 )
+        if ( val == cudaNIndex )
         {
-            atomicAdd( &cIA[aRowIt], 1 );
+            atomicAdd( &cIA[aRowIt], one );
             return true;
         }
 
@@ -2005,22 +2034,22 @@ inline bool multHlp_insertValues( IndexType colB,
                                   ValueType* sHashTableValues,
                                   IndexType* indexChunks,
                                   ValueType* valueChunks,
-                                  volatile int chunkList[],
-                                  int numReservedChunks,
+                                  volatile IndexType chunkList[],
+                                  IndexType numReservedChunks,
                                   ValueType valB,
                                   ValueType sValA )
 {
-    unsigned int fx = HASH_A * colB;
-    unsigned int gx = ( fx + HASH_B ) % HASH_P;
+    IndexType fx = HASH_A * colB;
+    IndexType gx = ( fx + HASH_B ) % HASH_P;
 
     if ( numReservedChunks == 0 )
     {
         for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
         {
-            int hash = ( gx + HASH_C0 * i + HASH_C1 * ( IndexType ) i * i ) % NUM_ELEMENTS_IN_SHARED;
-            IndexType val = atomicCAS( &sHashTableIndexes[hash], -1, colB );
+            IndexType hash = ( gx + HASH_C0 * i + HASH_C1 * i * i ) % NUM_ELEMENTS_IN_SHARED;
+            IndexType val = atomicCAS( &sHashTableIndexes[hash], cudaNIndex, colB );
 
-            if ( val == -1 )
+            if ( val == cudaNIndex )
             {
                 sHashTableValues[hash] = valB * sValA;
                 return true;
@@ -2038,12 +2067,12 @@ inline bool multHlp_insertValues( IndexType colB,
 
     for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
     {
-        int globalHash = ( gx + HASH_C0 * i + HASH_C1 * ( IndexType ) i * i ) % ( NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
-        int localHash = globalHash % NUM_ELEMENTS_PER_CHUNK;
-        int chunk = globalHash / NUM_ELEMENTS_PER_CHUNK;
-        IndexType val = atomicCAS( &indexChunks[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], -1, colB );
+        IndexType globalHash = ( gx + HASH_C0 * i + HASH_C1 * ( IndexType ) i * i ) % ( NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
+        IndexType localHash = globalHash % NUM_ELEMENTS_PER_CHUNK;
+        IndexType chunk = globalHash / NUM_ELEMENTS_PER_CHUNK;
+        IndexType val = atomicCAS( &indexChunks[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], cudaNIndex, colB );
 
-        if ( val == -1 )
+        if ( val == cudaNIndex )
         {
             valueChunks[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash] = sValA * valB;
             return true;
@@ -2074,11 +2103,12 @@ inline bool multHlp_nextRow( IndexType* row,
 #ifdef USE_LOAD_BALANCING
     IndexType laneId = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
     IndexType localWarpId = threadIdx.x / warpSize;
-    __shared__ volatile int sRowIt[NUM_WARPS];
+    __shared__ volatile IndexType sRowIt[NUM_WARPS];
 
     if ( laneId == 0 )
     {
-        sRowIt[localWarpId] = atomicAdd( rowCounter, 1 );
+        IndexType one = 1;
+        sRowIt[localWarpId] = atomicAdd( rowCounter, one );
     }
 
     *row = sRowIt[localWarpId];
@@ -2118,7 +2148,7 @@ inline void multHlp_releaseChunks ( IndexType* chunkList,
 
     if ( laneId == 0 )
     {
-        for ( int i = *sReservedChunks - 1; i >= *sReservedChunks - chunkCount; --i )
+        for ( IndexType i = *sReservedChunks - 1; i >= *sReservedChunks - chunkCount; --i )
         {
             IndexType headItem;
             IndexType old;
@@ -2127,7 +2157,7 @@ inline void multHlp_releaseChunks ( IndexType* chunkList,
             {
                 headItem = chunkList[0];
                 chunkList[sChunkList[i] + 1] = headItem;
-                old = atomicCAS( const_cast<int*>( &chunkList[0] ), headItem, sChunkList[i] );
+                old = atomicCAS( const_cast<IndexType*>( &chunkList[0] ), headItem, sChunkList[i] );
             }
             while ( old != headItem );
         }
@@ -2154,7 +2184,7 @@ inline bool multHlp_reserveChunks( IndexType* chunkList,
     {
         if ( *sReservedChunks < chunkCount )
         {
-            for ( int i = *sReservedChunks; i < chunkCount; ++i )
+            for ( IndexType i = *sReservedChunks; i < chunkCount; ++i )
             {
                 IndexType headItem;
                 IndexType nextItem;
@@ -2164,11 +2194,12 @@ inline bool multHlp_reserveChunks( IndexType* chunkList,
                 {
                     headItem = chunkList[0];
 
-                    if ( headItem != -1 )
+                    if ( headItem != cudaNIndex )
                     {
                         __threadfence();
                         nextItem = chunkList[headItem + 1];
-                        old = atomicCAS( const_cast<int*>( &chunkList[0] ), headItem, nextItem );
+
+                        old = atomicCAS( const_cast<IndexType*>( &chunkList[0] ), headItem, nextItem );
 
                         if ( old == headItem )
                         {
@@ -2214,20 +2245,20 @@ inline void multHlp_initializeChunks ( IndexType* sHashTable,
         {
             if ( i + laneId < NUM_ELEMENTS_IN_SHARED )
             {
-                sHashTable[i + laneId] = -1;
+                sHashTable[i + laneId] = cudaNIndex;
             }
         }
 
         return;
     }
 
-    for ( int i = 0; i < sReservedChunks; ++i )
+    for ( IndexType i = 0; i < sReservedChunks; ++i )
     {
-        int chunkId = sChunkList[i];
+        IndexType chunkId = sChunkList[i];
 
-        for ( int j = laneId; j < numElementsPerChunk; j += warpSize )
+        for ( IndexType j = laneId; j < numElementsPerChunk; j += warpSize )
         {
-            chunks[chunkId * numElementsPerChunk + j] = -1;
+            chunks[chunkId * numElementsPerChunk + j] = cudaNIndex;
         }
     }
 }
@@ -2278,10 +2309,10 @@ void matrixMultiplySizesKernel(
     bool diagonalProperty )
 {
     __shared__ IndexType sHashTable[NUM_ELEMENTS_IN_SHARED];
-    __shared__ volatile int sReservedChunks;
-    __shared__ volatile int sChunkList[NUM_CHUNKS_PER_WARP];
+    __shared__ volatile IndexType sReservedChunks;
+    __shared__ volatile IndexType sChunkList[NUM_CHUNKS_PER_WARP];
     __shared__ volatile IndexType sColA;
-    __shared__ volatile int sRowIt;
+    __shared__ volatile IndexType sRowIt;
     __shared__ volatile bool sInsertMiss;
     IndexType globalWarpId = ( blockIdx.x * blockDim.x + threadIdx.x ) / warpSize;
     IndexType laneId = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
@@ -2313,7 +2344,7 @@ void matrixMultiplySizesKernel(
 
                 for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
                 {
-                    IndexType colA = aColIt < aColEnd ? aJA[aColIt] : -1;
+                    IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
                     IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIA, aRowIt, offset );
 
                     for ( IndexType k = 0; k < end && k < warpSize; k++ )
@@ -2328,9 +2359,9 @@ void matrixMultiplySizesKernel(
 
                         for ( ; __any( bColIt < bColEnd ); bColIt += warpSize )
                         {
-                            colB = bColIt < bColEnd ? bJA[bColIt] : -1;
+                            colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
 
-                            if ( colB != -1 && ( !diagonalProperty || colB != aRowIt ) )
+                            if ( colB != cudaNIndex && ( !diagonalProperty || colB != aRowIt ) )
                             {
                                 bool inserted = multHlp_insertIndexex( colB,
                                                                        sHashTable,
@@ -2382,17 +2413,17 @@ void matrixMultiplySizesKernel(
 
 struct multHlp_chunkFill
 {
-    const int n;
-    multHlp_chunkFill( int _n )
+    const IndexType n;
+    multHlp_chunkFill( IndexType _n )
         : n( _n )
     {
     }
     __device__
-    IndexType operator()( int i )
+    IndexType operator()( IndexType i )
     {
         if ( i == ( n - 1 ) )
         {
-            return -1;
+            return cudaNIndex;
         }
 
         return i;
@@ -2538,10 +2569,10 @@ void matrixAddKernel(
 // Copy values of b to C
             for ( IndexType bColOffset = 0; __any( ( bColIt + bColOffset ) < bColEnd ); bColOffset += warpSize )
             {
-                IndexType colB = ( bColIt + bColOffset ) < bColEnd ? bJA[bColIt + bColOffset] : -1;
+                IndexType colB = ( bColIt + bColOffset ) < bColEnd ? bJA[bColIt + bColOffset] : cudaNIndex;
                 ValueType valB = ( bColIt + bColOffset ) < bColEnd ? bValues[bColIt + bColOffset] : static_cast<ValueType>( 0 );
 
-                if ( colB != -1 )
+                if ( colB != cudaNIndex )
                 {
                     cJA[cColIt + bColOffset] = colB;
                     cValues[cColIt + bColOffset] = valB * beta;
@@ -2554,7 +2585,7 @@ void matrixAddKernel(
 // Add values of a to c
             for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
-                IndexType colA = aColIt < aColEnd ? aJA[aColIt] : -1;
+                IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
                 ValueType valA = aColIt < aColEnd ? aValues[aColIt] : static_cast<ValueType>( 0 );
                 IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIA, rowIt, aColItOffset );
 
@@ -2564,13 +2595,13 @@ void matrixAddKernel(
                     {
                         sColA[localWarpId] = colA;
                         sValA[localWarpId] = valA;
-                        sFoundJa[localWarpId] = -1;
+                        sFoundJa[localWarpId] = cudaNIndex;
                     }
 
-                    for ( IndexType bColItOffset = 0; ( sFoundJa[localWarpId] == -1 ) && __any( ( bColIt + bColItOffset ) < bColEnd );
+                    for ( IndexType bColItOffset = 0; ( sFoundJa[localWarpId] == cudaNIndex ) && __any( ( bColIt + bColItOffset ) < bColEnd );
                             bColItOffset += warpSize )
                     {
-                        IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJA[bColIt + bColItOffset] : -1;
+                        IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJA[bColIt + bColItOffset] : cudaNIndex;
 
                         if ( sColA[localWarpId] == colB )
                         {
@@ -2580,7 +2611,7 @@ void matrixAddKernel(
 
                     if ( laneId == 0 )
                     {
-                        if ( sFoundJa[localWarpId] == -1 )
+                        if ( sFoundJa[localWarpId] == cudaNIndex )
                         {
                             // Element is new element, add new element
                             cJA[cColIt + cColOffset] = colA;
@@ -2642,15 +2673,17 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
                                     ValueType* sHashTableValues,
                                     IndexType* indexChunks,
                                     ValueType* valueChunks,
-                                    volatile int chunkList[],
-                                    int numReservedChunks,
+                                    volatile IndexType chunkList[],
+                                    IndexType numReservedChunks,
                                     bool diagonalProperty,
                                     ValueType diagonalElement )
 
 {
     // TODO: rename sColA => destinationOffset!
+
     *sColA = 0;
     IndexType rowOffset = cIA[aRowIt];
+    IndexType one = 1;
     IndexType hashCol;
     ValueType hashVal;
 
@@ -2670,10 +2703,10 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
 #if SCAI_CUDA_COMPUTE_CAPABILITY >= 20
             IndexType localOffset;
             // TODO: be carefull here, ballot is warpsize Bit's long!
-            IndexType ballot = __ballot ( hashCol != -1 );
+            IndexType ballot = __ballot ( hashCol != cudaNIndex );
             localOffset = __popc( ballot << ( warpSize - laneId ) );
 
-            if ( hashCol != -1 )
+            if ( hashCol != cudaNIndex )
             {
                 cJA[rowOffset + *sColA + localOffset] = hashCol;
                 cValues[rowOffset + *sColA + localOffset] = hashVal * alpha;
@@ -2682,9 +2715,10 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
             *sColA += __popc( ballot );
 #else
 
-            if ( hashCol != -1 )
+            if ( hashCol != cudaNIndex )
             {
-                IndexType offset = atomicAdd( ( int* )sColA, 1 );
+                // the volatile attribute must be cast away
+                IndexType offset = atomicAdd( const_cast<IndexType*>( sColA ), one );
                 cJA[rowOffset + offset] = hashCol;
                 cValues[rowOffset + offset] = hashVal * alpha;
             }
@@ -2704,10 +2738,10 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
 #if SCAI_CUDA_COMPUTE_CAPABILITY >= 20
             IndexType localOffset;
             // TODO: be carefull here, ballot is warpsize Bit's long!
-            IndexType ballot = __ballot ( hashCol != -1 );
+            IndexType ballot = __ballot ( hashCol != cudaNIndex );
             localOffset = __popc( ballot << ( warpSize - laneId ) );
 
-            if ( hashCol != -1 )
+            if ( hashCol != cudaNIndex )
             {
                 cJA[rowOffset + *sColA + localOffset] = hashCol;
                 cValues[rowOffset + *sColA + localOffset] = hashVal * alpha;
@@ -2720,9 +2754,9 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
 
 #else
 
-            if ( hashCol != -1 )
+            if ( hashCol != cudaNIndex )
             {
-                IndexType offset = atomicAdd( ( int* )sColA, 1 );
+                IndexType offset = atomicAdd( const_cast<IndexType*>( sColA ), 1 );
                 cJA[rowOffset + offset] = hashCol;
                 cValues[rowOffset + offset] = hashVal * alpha;
             }
@@ -2750,17 +2784,17 @@ void matrixMultiplyKernel(
     IndexType* indexChunks,
     ValueType* valueChunks,
     IndexType* chunkList,
-    const int numChunks,
+    const IndexType numChunks,
     bool* hashError,
     bool diagonalProperty )
 {
     __shared__ IndexType sHashTableIndexes[NUM_ELEMENTS_IN_SHARED];
     __shared__ ValueType sHashTableValues[NUM_ELEMENTS_IN_SHARED];
-    __shared__ volatile int sReservedChunks;
+    __shared__ volatile IndexType sReservedChunks;
     __shared__ volatile IndexType sChunkList[NUM_CHUNKS_PER_WARP];
     __shared__ volatile IndexType sColA;
     __shared__ volatile ValueType sValA;
-    __shared__ volatile int sRowIt;
+    __shared__ volatile IndexType sRowIt;
     __shared__ volatile bool sInsertMiss;
     __shared__ volatile ValueType diagonalElement;
     IndexType globalWarpId = ( blockIdx.x * blockDim.x + threadIdx.x ) / warpSize;
@@ -2808,7 +2842,7 @@ void matrixMultiplyKernel(
 
                 for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
                 {
-                    IndexType colA = aColIt < aColEnd ? aJA[aColIt] : -1;
+                    IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
                     ValueType valA = aColIt < aColEnd ? aValues[aColIt] : static_cast<ValueType>( 0 );
                     IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIA, aRowIt, offset );
 
@@ -2825,7 +2859,7 @@ void matrixMultiplyKernel(
 
                         for ( ; __any( bColIt < bColEnd ); bColIt += warpSize )
                         {
-                            colB = bColIt < bColEnd ? bJA[bColIt] : -1;
+                            colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
                             ValueType valB = bColIt < bColEnd ? bValues[bColIt] : static_cast<ValueType>( 0 );
 
                             if ( diagonalProperty && colB == aRowIt )
@@ -2834,7 +2868,7 @@ void matrixMultiplyKernel(
                             }
                             else
                             {
-                                if ( colB != -1 && ( !diagonalProperty || colB != aRowIt ) )
+                                if ( colB != cudaNIndex && ( !diagonalProperty || colB != aRowIt ) )
                                 {
                                     bool inserted = multHlp_insertValues( colB,
                                                                           sHashTableIndexes,
@@ -2926,14 +2960,14 @@ void CUDACSRUtils::matrixMultiply(
     size_t free;
     size_t total;
     cuMemGetInfo( &free, &total );
-    int nnz_a;
-    int nnz_b;
+    IndexType nnz_a;
+    IndexType nnz_b;
     cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnz_b, &bIa[numColumns], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-    int avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
-    int numChunks;
-    int maxNumChunks = ( free - ( 100 * 1024 * 1024 ) ) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
-    int chunksPerWarp = NUM_BLOCKS * ( ( avgDensity * 8 ) / NUM_ELEMENTS_PER_CHUNK + 1 );
+    IndexType avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
+    IndexType numChunks;
+    IndexType maxNumChunks = ( free - ( 100 * 1024 * 1024 ) ) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
+    IndexType chunksPerWarp = NUM_BLOCKS * ( ( avgDensity * 8 ) / NUM_ELEMENTS_PER_CHUNK + 1 );
 
     if ( chunksPerWarp > maxNumChunks )
     {
@@ -2952,7 +2986,8 @@ void CUDACSRUtils::matrixMultiply(
     unsigned int chunkListAllocatedBytes = numChunks * sizeof( IndexType ) + sizeof( IndexType );
     IndexType* chunkList = ( IndexType* ) mem->allocate( chunkListAllocatedBytes );
     thrust::device_ptr<IndexType> chunkListPtr( chunkList );
-    thrust::transform( thrust::make_counting_iterator( 0 ),
+    IndexType zero = 0;
+    thrust::transform( thrust::make_counting_iterator( zero ),
                        thrust::make_counting_iterator( numChunks + 1 ),
                        chunkListPtr,
                        multHlp_chunkFill( numChunks + 1 ) );
