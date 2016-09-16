@@ -571,7 +571,7 @@ void Communicator::computeOwners(
     IndexType nIndexes = requiredIndexes.size();
 
     hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, ctx, nIndexes );
-    hmemo::ReadAccess<PartitionId> rIndexes( requiredIndexes, ctx );
+    hmemo::ReadAccess<IndexType> rIndexes( requiredIndexes, ctx );
 
     computeOwners( wOwners.get(), distribution, rIndexes.get(), nIndexes );
 }
@@ -699,7 +699,7 @@ void Communicator::computeOwners(
 
     WriteAccess<IndexType> ownersSend( ownersSendArray, contextPtr );
 
-    for ( int i = 0; i < nonLocal; ++i )
+    for ( IndexType i = 0; i < nonLocal; ++i )
     {
         SCAI_LOG_TRACE( logger,
                         *this << ": final " << i << " of " << nonLocal << ": " << requiredIndexes[i] << ", owner = " << ownersSend[i] )
@@ -707,7 +707,7 @@ void Communicator::computeOwners(
 
     // The Owner Indexes are always passed in the same order, so we can insert them easily.
 
-    int nn = 0;
+    IndexType nn = 0;
 
     for ( IndexType i = 0; i < nIndexes; ++i )
     {
@@ -1018,7 +1018,7 @@ void Communicator::setNodeData()
 
     const char* ptrAllNodeNames = allNodeNames.get();
 
-    for ( int i = 0; i < mSize; ++i )
+    for ( PartitionId i = 0; i < mSize; ++i )
     {
         if ( strcmp( &ptrAllNodeNames[i * maxNameLength], myNodeName.get() ) )
         {

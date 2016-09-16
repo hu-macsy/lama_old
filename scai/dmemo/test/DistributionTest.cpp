@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
         IndexType nGlobal = dist->getGlobalSize();
 
-        utilskernel::LArray<PartitionId> indexes;
+        utilskernel::LArray<IndexType> indexes;
         utilskernel::HArrayUtils::setOrder( indexes, nGlobal );
 
         utilskernel::LArray<PartitionId> owners1;
@@ -217,9 +217,9 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
             BOOST_REQUIRE_EQUAL( 0, owners3.size() );
         }
 
-        hmemo::ReadAccess<IndexType> rOwners1( owners1 );
-        hmemo::ReadAccess<IndexType> rOwners2( owners2 );
-        hmemo::ReadAccess<IndexType> rOwners3( owners3 );
+        hmemo::ReadAccess<PartitionId> rOwners1( owners1 );
+        hmemo::ReadAccess<PartitionId> rOwners2( owners2 );
+        hmemo::ReadAccess<PartitionId> rOwners3( owners3 );
 
         for ( IndexType i = 0; i < nGlobal; ++i )
         {
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
     IndexType globalSizes[] = { 0, 1, 2, 3, 7, 16 };
 
-    IndexType nCases = sizeof( globalSizes ) / sizeof( IndexType );
+    int nCases = sizeof( globalSizes ) / sizeof( IndexType );
 
     for ( int k = 0; k < nCases; ++k )
     {
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
             IndexType nGlobal = dist->getGlobalSize();
 
-            utilskernel::LArray<PartitionId> indexes;
+            utilskernel::LArray<IndexType> indexes;
             utilskernel::HArrayUtils::setOrder( indexes, nGlobal );
 
             utilskernel::LArray<PartitionId> owners;

@@ -237,8 +237,18 @@ void MPICommunicator::initialize( int& argc, char**& argv )
     MPI_Comm_set_errhandler( mComm, MPI_ERRORS_RETURN );
     MPI_Comm_dup( mCommWorld, &mCommTask );
     SCAI_LOG_INFO( logger, "MPI_Init" )
-    SCAI_MPICALL( logger, MPI_Comm_size( mComm, &mSize ), "MPI_Comm_size" )
-    SCAI_MPICALL( logger, MPI_Comm_rank( mComm, &mRank ), "MPI_Comm_rank" )
+
+    {
+        int mpiRank;
+        int mpiSize;
+
+        SCAI_MPICALL( logger, MPI_Comm_size( mComm, &mpiSize ), "MPI_Comm_size" )
+        SCAI_MPICALL( logger, MPI_Comm_rank( mComm, &mpiRank ), "MPI_Comm_rank" )
+
+        mSize = static_cast<PartitionId>( mSize );
+        mRank = static_cast<PartitionId>( mRank );
+    }
+
     setNodeData(); // determine mNodeRank, mNodeSize
     // set rank, output string in an environment variable
     // so it might be used by logging, tracing, etc.
@@ -440,8 +450,8 @@ void MPICommunicator::exchangeByPlanImpl(
                    *this << ": exchange for values of type " << stype
                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
 
-    int maxReceives = recvPlan.size();
-    int noReceives = 0; // will be incremented
+    PartitionId maxReceives = recvPlan.size();
+    PartitionId noReceives = 0; // will be incremented
     void* recvDataForMe = NULL;
     IndexType recvDataForMeSize = 0;
     scoped_array<MPI_Request> commRequest( new MPI_Request[maxReceives] );
@@ -616,13 +626,13 @@ void MPICommunicator::all2allvImpl( void* recvBuffer[], IndexType recvCount[],
 
     scoped_array<MPI_Request> commRequest( new MPI_Request[mSize] );
 
-    for ( IndexType i = 0; i < mSize; ++i )
+    for ( PartitionId i = 0; i < mSize; ++i )
     {
         commRequest[noReceives] = startrecv( recvBuffer[i], recvCount[i], i, stype );
         noReceives++;
     }
 
-    for ( IndexType i = 0; i < mSize; ++i )
+    for ( PartitionId i = 0; i < mSize; ++i )
     {
         send( sendBuffer[i], sendCount[i], i, stype );
     }
@@ -1038,7 +1048,9 @@ void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
                                 selectMPIComm(), &mpiStatus ),
                   "MPI_Sendrecv<" << stype << "> for swap" )
 
-    SCAI_ASSERT_EQ_ERROR( n, getCount( mpiStatus, stype ), "size mismatch for swap" )
+    IndexType nPartner = getCount( mpiStatus, stype );
+
+    SCAI_ASSERT_EQ_ERROR( n, nPartner, "size mismatch for swap" )
 }
 
 hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray& array ) const

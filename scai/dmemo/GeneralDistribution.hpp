@@ -89,7 +89,7 @@ public:
      */
 
     GeneralDistribution(
-        const hmemo::HArray<IndexType>& owners,
+        const hmemo::HArray<PartitionId>& owners,
         const CommunicatorPtr communicator );
 
     explicit GeneralDistribution( const Distribution& other );

@@ -58,7 +58,7 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     SCAI_LOG_INFO( logger,
                    communicator << ": building halo for " << noPartitions << " partitions, # requiredIndexes = " << requiredIndexes.size() )
     IndexType nIndexes = requiredIndexes.size();
-    HArray<IndexType> owners;
+    HArray<PartitionId> owners;
 
     {
         SCAI_REGION( "HaloBuilder.computeOwners" )
@@ -88,10 +88,12 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
 
     SCAI_LOG_INFO( logger,
                    communicator << ": allocated required plan for " << noPartitions << " partitions, size = " << requiredPlan.size() << ", total quantity = " << requiredPlan.totalQuantity() )
-    // sort required indexes by the owner and define global->local mapping
-    std::vector<IndexType> counts( noPartitions, -1 );
 
-    for ( IndexType p = 0; p < requiredPlan.size(); ++p )
+    // sort required indexes by the owner and define global->local mapping
+
+    std::vector<IndexType> counts( noPartitions, nIndex );  // initialize with illegal index
+
+    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
     {
         SCAI_LOG_TRACE( logger,
                         "requiredPlan[ " << p << "]: offset = " << requiredPlan[p].offset << ", pid = " << requiredPlan[p].partitionId << ", quantity = " << requiredPlan[p].quantity )
@@ -102,7 +104,7 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     // allocate array for the required indexes sorted by owner
     WriteAccess<IndexType> requiredIndexesByOwner( halo.mRequiredIndexes, contextPtr );
     ReadAccess<PartitionId> rOwners( owners, contextPtr );
-    ReadAccess<PartitionId> rIndexes( requiredIndexes, contextPtr );
+    ReadAccess<IndexType> rIndexes( requiredIndexes, contextPtr );
     requiredIndexesByOwner.resize( requiredPlan.totalQuantity() );
 
     // Note: size of requiredIndexesByOwner == requiredPlan.totalQuanitity()
@@ -110,10 +112,10 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     for ( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
     {
         PartitionId owner = rOwners[jj];
-        SCAI_ASSERT( owner >= 0 && owner < noPartitions, "No owner for required Index " << rIndexes[jj] )
+        SCAI_ASSERT( owner != nPartition, "No owner for required Index " << rIndexes[jj] )
         //The offset for the owner
         IndexType haloIndex = counts[owner];
-        SCAI_ASSERT( haloIndex >= 0, "No offset for owner " << owner << " of required Index " << rIndexes[jj] )
+        SCAI_ASSERT( haloIndex != nIndex, "No offset for owner " << owner << " of required Index " << rIndexes[jj] )
         requiredIndexesByOwner[haloIndex] = rIndexes[jj];
         // define the corresponding global->local mapping
         halo.setGlobal2Halo( rIndexes[jj], haloIndex );

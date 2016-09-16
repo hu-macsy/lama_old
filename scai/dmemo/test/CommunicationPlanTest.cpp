@@ -67,8 +67,8 @@ static IndexType required( const PartitionId rankRequires, const PartitionId ran
 
 static void setQuantities( std::vector<IndexType>& quantities, const Communicator& comm )
 {
-    IndexType rank = comm.getRank();
-    IndexType size = comm.getSize();
+    PartitionId rank = comm.getRank();
+    PartitionId size = comm.getSize();
 
     quantities.resize( size );
 
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    IndexType rank = comm->getRank();
+    PartitionId rank = comm->getRank();
 
     std::vector<IndexType> reqQuantities;
 
@@ -128,9 +128,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     setQuantities( reqQuantities, *comm );
 
-    std::vector<IndexType> reqOwners;
+    std::vector<PartitionId> reqOwners;
 
-    for ( size_t owner = 0; owner < reqQuantities.size(); ++owner )
+    for ( PartitionId owner = 0; owner < static_cast<PartitionId>( reqQuantities.size() ); ++owner )
     {
         for ( IndexType k = 0; k < reqQuantities[owner]; ++k )
         {
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
         }
     }
 
-    CommunicationPlan requiredPlan2( comm->getSize(), &reqOwners[0], reqOwners.size() );
+    CommunicationPlan requiredPlan2( comm->getSize(), &reqOwners[0], static_cast<IndexType>( reqOwners.size() ) );
 
     BOOST_CHECK_EQUAL( requiredPlan2.totalQuantity(), static_cast<IndexType>( reqOwners.size() ) );
   
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    IndexType rank = comm->getRank();
+    PartitionId rank = comm->getRank();
 
     std::vector<IndexType> reqQuantities;
 
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE( allocateTransposeTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    IndexType rank = comm->getRank();
+    PartitionId rank = comm->getRank();
 
     std::vector<IndexType> reqQuantities;
 

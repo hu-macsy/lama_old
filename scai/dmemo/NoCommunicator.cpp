@@ -138,7 +138,7 @@ void NoCommunicator::exchangeByPlanImpl(
     // send / recv plan have maximal one value
     SCAI_ASSERT_EQ_ERROR( 1, recvPlan.size(), "maximal one value in recvPlan" )
 
-    int quantity = recvPlan[0].quantity;
+    IndexType quantity = recvPlan[0].quantity;
 
     // recv and send plan must have same quantity
     SCAI_ASSERT_EQ_ERROR( quantity, sendPlan[0].quantity, "quantity mismatch" )

@@ -84,7 +84,7 @@ public:
 
                  // METIS prints warnings if number of elements is less than global size
 
-                 if ( comm->getSize() > globalSize )
+                 if ( static_cast<IndexType>( comm->getSize() ) > globalSize )
                  {
                      continue;
                  }

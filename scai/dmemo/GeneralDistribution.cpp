@@ -43,6 +43,8 @@
 
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
 
 // std
 #include <algorithm>
@@ -91,7 +93,7 @@ GeneralDistribution::GeneralDistribution(
 }
 
 GeneralDistribution::GeneralDistribution(
-    const HArray<IndexType>& owners,
+    const HArray<PartitionId>& owners,
     const CommunicatorPtr communicator ) : 
 
     Distribution( 0, communicator )
@@ -153,7 +155,7 @@ GeneralDistribution::GeneralDistribution(
         SCAI_LOG_DEBUG( logger, "scan done, sum = " << localOffsets[ size ] )
     }
 
-    // Now resort 0, ..., n-1 according to the owners
+    // Now resort 0, ..., n - 1 according to the owners
 
     HArray<IndexType> sortedIndexes;
 
@@ -161,11 +163,17 @@ GeneralDistribution::GeneralDistribution(
     {
         SCAI_LOG_DEBUG( logger, "reorder for indexes" )
 
-        WriteOnlyAccess<IndexType> wIndexes( sortedIndexes, mGlobalSize );
-        WriteAccess<IndexType> wOffsets( localOffsets );
-        ReadAccess<IndexType> rOwners( owners );
+        ContextPtr loc = Context::getHostPtr();
 
-        utilskernel::OpenMPUtils::sortInBuckets( wIndexes.get(), wOffsets.get(), size, rOwners.get(), mGlobalSize );
+        static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::sortInBuckets<PartitionId> > sortInBuckets;
+
+        sortInBuckets.getSupportedContext( loc );
+
+        WriteOnlyAccess<IndexType> wIndexes( sortedIndexes, loc, mGlobalSize );
+        WriteAccess<IndexType> wOffsets( localOffsets, loc );
+        ReadAccess<PartitionId> rOwners( owners, loc );
+
+        sortInBuckets[loc]( wIndexes, wOffsets, size, rOwners, mGlobalSize );
     }
     else
     { 
@@ -308,7 +316,7 @@ IndexType GeneralDistribution::getBlockDistributionSize() const
 
     if ( localSize > 0 )
     {
-        isBlocked = ( rIndexes[0] == lb ) && ( rIndexes[localSize-1] == ub );
+        isBlocked = ( rIndexes[0] == lb ) && ( rIndexes[localSize - 1] == ub );
     }
 
     isBlocked = comm->all( isBlocked );
@@ -373,7 +381,7 @@ static void setOwners( HArray<PartitionId>& owners, const HArray<IndexType>& ind
     IndexType globalSize = indexes.size();
     IndexType nOwners    = offsets.size() - 1;
 
-    WriteOnlyAccess<IndexType> wOwners( owners, indexes.size() );
+    WriteOnlyAccess<PartitionId> wOwners( owners, indexes.size() );
     ReadAccess<IndexType> rOffsets( offsets );
     ReadAccess<IndexType> rIndexes( indexes );
 
@@ -381,7 +389,7 @@ static void setOwners( HArray<PartitionId>& owners, const HArray<IndexType>& ind
 
     for ( IndexType i = 0; i < globalSize; ++i )
     {
-        wOwners[i] = -1;
+        wOwners[i] = nPartition;
     }
 
     for ( IndexType owner = 0; owner < nOwners; ++owner )
@@ -397,8 +405,8 @@ void GeneralDistribution::allOwners( HArray<PartitionId>& owners, const Partitio
 {
     ContextPtr ctx = Context::getHostPtr();
 
-    IndexType rank  = mCommunicator->getRank();
-    IndexType parts = mCommunicator->getSize();
+    PartitionId rank  = mCommunicator->getRank();
+    PartitionId parts = mCommunicator->getSize();
 
     IndexType localSize = getLocalSize();
 

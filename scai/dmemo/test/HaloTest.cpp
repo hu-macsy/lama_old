@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     for ( IndexType i = 0; i < nIndexes; ++i )
     {
         const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
-        BOOST_CHECK( 0 <= haloIndex && haloIndex < halo.getHaloSize() );
+        BOOST_CHECK( common::Utils::validIndex( haloIndex, halo.getHaloSize() ) );
     }
 }
 

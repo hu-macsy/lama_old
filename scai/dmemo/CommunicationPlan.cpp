@@ -233,7 +233,7 @@ void CommunicationPlan::allocate(
     for ( IndexType i = 0; i < nOwners; ++i )
     {
         const PartitionId& p = owners[i];
-        SCAI_ASSERT( p >= 0 && p < noPartitions, "Illegal owner value: " << p << " at Position " << i )
+        SCAI_ASSERT_VALID_INDEX( p, noPartitions, "Illegal owner value at owners[ " << i << "]" )
         ++mEntries[p].quantity;
         SCAI_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
     }

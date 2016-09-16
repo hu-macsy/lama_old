@@ -201,7 +201,7 @@ void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<Inde
     SCAI_LOG_INFO( logger, *this << ": computeOwners for " << n << " indexes" )
 
     ReadAccess<IndexType> rIndexes( indexes, ctx );
-    WriteOnlyAccess<IndexType> wOwners( owners, ctx, n );
+    WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
 
     mCommunicator->computeOwners( wOwners, *this, rIndexes, n );
 }

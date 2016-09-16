@@ -779,13 +779,13 @@ protected:
 
     CommunicatorKind mCommunicatorType; //!< type of this communicator
 
-    int mRank; //!< rank of this processor 
+    PartitionId mRank; //!< rank of this processor 
 
-    int mSize; //!< number of processors in this communicato
+    PartitionId mSize; //!< number of processors in this communicato
 
-    int mNodeRank; //!< rank of this processor on its node
+    PartitionId mNodeRank; //!< rank of this processor on its node
 
-    int mNodeSize; //!< number of processors on same node
+    PartitionId mNodeSize; //!< number of processors on same node
 
     /** This method determines node rank and node size by comparing the names. */
 

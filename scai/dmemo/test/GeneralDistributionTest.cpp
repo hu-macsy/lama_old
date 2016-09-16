@@ -58,7 +58,10 @@ struct GeneralDistributionTestConfig
 
         // get: rank, rank + size, rank + 2 * size, ...
 
-        utilskernel::HArrayUtils::setSequence( localIndexes, rank, size, elemsPerPartition );
+        const IndexType first = static_cast<IndexType>( rank );
+        const IndexType inc   = static_cast<IndexType>( size );
+
+        utilskernel::HArrayUtils::setSequence( localIndexes, first, inc, elemsPerPartition );
 
         dist = DistributionPtr( new GeneralDistribution( globalSize, localIndexes, comm ) );
     }
@@ -103,7 +106,10 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
 
     IndexType N = 2;
 
-    utilskernel::HArrayUtils::setSequence( localIndexes, rank * N, 1, N );
+    const IndexType first = rank * N;
+    const IndexType inc   = 1;
+
+    utilskernel::HArrayUtils::setSequence( localIndexes, first, inc, N );
 
     GeneralDistribution genDist1( size * N, localIndexes, comm );
     const GeneralDistribution& genDist2 = genDist1;

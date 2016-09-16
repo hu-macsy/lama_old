@@ -185,9 +185,9 @@ protected:
 
 private:
 
-    void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType localSizes[] );
+    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType localSizes[] );
 
-    void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType mySize );
+    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType mySize );
 
     GenBlockDistribution(); // disable default destructor
 

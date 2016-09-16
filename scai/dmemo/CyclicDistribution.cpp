@@ -74,7 +74,7 @@ PartitionId CyclicDistribution::getOwner( const IndexType globalIndex ) const
 
 bool CyclicDistribution::isLocal( const IndexType globalIndex ) const
 {
-    IndexType rank = mCommunicator->getRank();
+    const PartitionId rank = mCommunicator->getRank();
 
     if ( getOwner( globalIndex ) == rank )
     {
@@ -111,11 +111,11 @@ void CyclicDistribution::getChunkInfo( IndexType& localChunks, IndexType& extra,
     IndexType remainChunks = chunks % size;
     extra = 0;
 
-    if ( rank < remainChunks )
+    if ( static_cast<IndexType>( rank ) < remainChunks )
     {
         localChunks++;
     }
-    else if ( rank == remainChunks )
+    else if ( static_cast<IndexType>( rank ) == remainChunks )
     {
         extra = mGlobalSize % mChunkSize;
     }

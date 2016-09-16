@@ -122,19 +122,19 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 BOOST_AUTO_TEST_CASE( blockSizeTest )
 {
     // Test smaller sizes
-    for ( IndexType n = 1; n <= size; n++ )
+    for ( IndexType n = 1; n <= static_cast<IndexType>( size ); n++ )
     {
         BlockDistribution small( n, comm );
 
         // only the first n partitions have one element
 
-        if ( rank < n )
+        if ( static_cast<IndexType>( rank ) < n )
         {
-            BOOST_CHECK( small.getLocalSize() == 1 );
+            BOOST_CHECK_EQUAL( small.getLocalSize(), 1 );
         }
         else
         {
-            BOOST_CHECK( small.getLocalSize() == 0 );
+            BOOST_CHECK_EQUAL( small.getLocalSize(), 0 );
         }
     }
 }
