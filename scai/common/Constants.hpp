@@ -87,7 +87,7 @@ inline ValueType getConstant( const constants::ConstantType& c )
 /** Comparison against constant ZERO or ONE uses machine-specific EPS */
 
 template<typename ValueType>
-bool operator==( const ValueType& x, const constants::ConstantType& c )
+inline bool operator==( const ValueType& x, const constants::ConstantType& c )
 {
     typedef typename TypeTraits<ValueType>::AbsType AbsType;
 
@@ -132,6 +132,21 @@ bool operator==( const ValueType& x, const constants::ConstantType& c )
 
             return isRealOne && isImagZero;
         }
+    }
+}
+
+// Use template specialization for IndexType as real/imag might not be available
+
+template<>
+inline bool operator==( const IndexType& x, const constants::ConstantType& c )
+{
+    if ( constants::ZERO == c )
+    {
+        return x == 0;
+    }
+    else
+    {
+        return x == 1;
     }
 }
 
