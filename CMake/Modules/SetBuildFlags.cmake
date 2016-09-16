@@ -52,12 +52,20 @@ set ( CMAKE_VERBOSE_MAKEFILE OFF )
 
 include ( Settings/switchChoices )
 include ( Functions/checkValue )
+include ( Functions/listToString )
 include ( Functions/parseBoolean )
 
 ## define SCAI_HOST_TYPES
 
 set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
 checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
+
+## define SCAI_INDEX_TYPE, used to configure file SCAITypes.hpp
+## uses global variable INDEX_TYPE_OPTIONS, set in switchChoices.cmake
+
+listToString ( ", " "${INDEX_TYPE_OPTIONS}" INDEX_TYPE_OPTIONS1 )
+set ( SCAI_INDEX_TYPE "int" CACHE STRING "IndexType, choose from ${INDEX_TYPE_OPTIONS1}" )
+checkValue( "${SCAI_INDEX_TYPE}" "${INDEX_TYPE_OPTIONS}" )
 
 ## DOC
 
