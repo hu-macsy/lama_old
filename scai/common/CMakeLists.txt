@@ -193,6 +193,7 @@ set ( COMMON_HEADERS
         Math
         OpenMP
         NonCopyable
+        Utils
 )
 
 if    ( ${USE_COMPLEX} )
