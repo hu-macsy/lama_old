@@ -894,7 +894,7 @@ void MICUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistr
 }
 
 template<typename ValueType>
-void MICUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICUtils::RegArrayKernels<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
@@ -908,11 +908,20 @@ void MICUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
+}
+
+template<typename ValueType>
+void MICUtils::RegArithmeticKernels<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+    const common::context::ContextType ctx = common::context::MIC;
+    SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
+                            << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
@@ -937,16 +946,20 @@ MICUtils::RegisterGuard::RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_MIC_LIST, SCAI_ARITHMETIC_ARRAY_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICUtils::RegisterGuard::~RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_MIC_LIST, SCAI_ARITHMETIC_ARRAY_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
 }
 
 MICUtils::RegisterGuard MICUtils::guard;    // guard variable for registration
