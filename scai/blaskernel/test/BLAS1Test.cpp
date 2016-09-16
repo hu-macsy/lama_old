@@ -576,7 +576,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, blas_test_types )
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            swap[loc->getType()]( nValues, wAx.get(), 0, wAy.get(), -1 );
+            swap[loc->getType()]( nValues, wAx.get(), 0, wAy.get(), static_cast<IndexType>( -1 ) );
         }
         {
             ReadAccess<ValueType> rAx( Ax );

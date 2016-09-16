@@ -182,7 +182,7 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
         ValueType maxVal = -std::numeric_limits<ValueType>::max();
         #pragma omp parallel
         {
-            IndexType threadMaxIndex = -1;
+            IndexType threadMaxIndex = 0;
             ValueType threadMaxVal = -std::numeric_limits<ValueType>::max();
             #pragma omp for
 

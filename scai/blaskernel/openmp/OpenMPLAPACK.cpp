@@ -217,7 +217,7 @@ IndexType OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, Value
             }
 
             //Back Substitution to solve x, which is stored in A_inv
-            for ( IndexType j = n - 1; j >= 0; j-- )
+            for ( IndexType j = n; j-- > 0; )
             {
                 for ( IndexType k = j + 1; k < n; k++ )
                 {
@@ -259,7 +259,7 @@ IndexType OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, Value
             }
 
             //Back Substitution to solve x, which is stored in A_inv
-            for ( IndexType j = n - 1; j >= 0; j-- )
+            for ( IndexType j = n ; j-- > 0; )
             {
                 for ( IndexType k = j + 1; k < n; k++ )
                 {
@@ -281,15 +281,6 @@ IndexType OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, Value
     }
 
     delete[] A_inv;
-
-    if ( info < 0 )
-    {
-        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
-    }
-    else if ( info > 0 )
-    {
-        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
-    }
 
     return info;
 }
@@ -324,7 +315,7 @@ IndexType OpenMPLAPACK::tptrs(
                 }
                 else if ( diag == CblasNonUnit )
                 {
-                    for ( IndexType i = n - 1; i >= 0; i-- )
+                    for ( IndexType i = n; i-- > 0; )
                     {
                         for ( IndexType j = n - 1; j > i; j-- )
                         {
@@ -402,7 +393,7 @@ IndexType OpenMPLAPACK::tptrs(
                 else if ( diag == CblasNonUnit )
                 {
                     //Back substition
-                    for ( IndexType i = n - 1; i >= 0; i-- )
+                    for ( IndexType i = n; i-- > 0; )
                     {
                         for ( IndexType j = n - 1; j > i; j-- )
                         {
