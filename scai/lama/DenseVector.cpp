@@ -158,7 +158,7 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
 }
 
 template <typename ValueType>
-void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar inc, const int n )
+void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar inc, const IndexType n )
 {
     setDistributionPtr( DistributionPtr( new NoDistribution( n ) ) );
 

@@ -172,7 +172,7 @@ public:
     template<typename ValueType>
     static void buildReplicatedDiag( SparseMatrix<ValueType>& matrix,
                                      const MatrixStorage<ValueType>& storage,
-                                     const int nRepeat );
+                                     const IndexType nRepeat );
 
     /** Build a (distributed) sparse matrix from a (replicated) sparse storage by 
      *  replicating it m times in the rows and n times in the columns
@@ -200,8 +200,8 @@ public:
     template<typename ValueType>
     static void buildReplicated( SparseMatrix<ValueType>& matrix,
                                  const MatrixStorage<ValueType>& storage,
-                                 const int nRepeatRow,
-                                 const int nRepeatCol );
+                                 const IndexType nRepeatRow,
+                                 const IndexType nRepeatCol );
 
 private:
 

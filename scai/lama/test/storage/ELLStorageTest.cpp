@@ -205,14 +205,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
         {
             //  -> invalid ia     { 1, 1, 3 }
             LArray<IndexType>& ellIA = const_cast<LArray<IndexType>&>( ellStorage.getIA() );
-            HArrayUtils::setVal( ellIA, 2, 3 );
+            HArrayUtils::setVal<IndexType>( ellIA, 2, 3 );
             BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
         else if ( icase == 2 )
         {
             //  -> invalid ja     { 0, 1, 2, 0, 0, 2 }
             LArray<IndexType>& ellJA = const_cast<LArray<IndexType>&>( ellStorage.getJA() );
-            HArrayUtils::setVal( ellJA, 5, 15 );
+            HArrayUtils::setVal<IndexType>( ellJA, 5, 15 );
             BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
     }

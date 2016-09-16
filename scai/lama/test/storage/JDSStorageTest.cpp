@@ -105,35 +105,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
         {
             //  -> invalid ja     { 0, 1, 2, 3, 15, 5, 6, 7, 8 }
             HArray<IndexType>& jdsJA = const_cast<HArray<IndexType>&>( jdsStorage.getJA() );
-            HArrayUtils::setVal( jdsJA, 5, 15 );
+            IndexType idx = 5;
+            IndexType val = 15;
+            HArrayUtils::setVal( jdsJA, idx, val );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
         else if ( icase == 2 )
         {
             //  -> invalid ilg    { 3, 3, 4 }
             HArray<IndexType>& jdsILG = const_cast<HArray<IndexType>&>( jdsStorage.getIlg() );
-            HArrayUtils::setVal( jdsILG, 2, 4 );
+            IndexType idx = 2;
+            IndexType val = 4;
+            HArrayUtils::setValImpl( jdsILG, idx, val );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal ilg" ); }, Exception );
         }
         else if ( icase == 3 )
         {
             //  -> invalid dlg    { 3, 3, 4 }
             HArray<IndexType>& jdsDLG = const_cast<HArray<IndexType>&>( jdsStorage.getDlg() );
-            HArrayUtils::setVal( jdsDLG, 2, 4 );
+            IndexType idx = 2;
+            IndexType val = 4;
+            HArrayUtils::setValImpl( jdsDLG, idx, val );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal dlg" ); }, Exception );
         }
         else if ( icase == 4 )
         {
             //  -> invalid perm   { 5, 0, 2 }
             HArray<IndexType>& jdsPerm = const_cast<HArray<IndexType>&>( jdsStorage.getPerm() );
-            HArrayUtils::setVal( jdsPerm, 0, 5 );
+            HArrayUtils::setVal<IndexType>( jdsPerm, 0, 5 );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
         }
         else if ( icase == 5 )
         {
             //  -> invalid perm   { 0, 0, 2 }
             HArray<IndexType>& jdsPerm = const_cast<HArray<IndexType>&>( jdsStorage.getPerm() );
-            HArrayUtils::setVal( jdsPerm, 0, 0 );
+            IndexType idx = 0;
+            IndexType val = 0;
+            HArrayUtils::setValImpl( jdsPerm, idx, val );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
         }
     } // CASE_LOOP

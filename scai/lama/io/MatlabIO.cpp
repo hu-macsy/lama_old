@@ -164,8 +164,8 @@ void MatlabIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName ) 
 {
-    int n;   // number of lines, size of array
-    int k;   // numbe of entries in one line
+    IndexType n;   // number of lines, size of array
+    IndexType k;   // number of entries in one line
 
     checkTextFile( n, k, fileName.c_str() );
 
@@ -222,8 +222,8 @@ void MatlabIO::readStorageImpl(
     // read coo entries lines by line, similiar to MatrixMarket
     // i , j, val     
 
-    int nnz;
-    int k;
+    IndexType nnz;
+    IndexType k;
 
     checkTextFile( nnz, k, fileName.c_str() );
 

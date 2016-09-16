@@ -323,7 +323,7 @@ void MatrixCreator::buildPoisson(
     // compute local size on this processor
     IndexType localSize = 1;
 
-    for ( int i = 0; i < dimension; i++ )
+    for ( IndexType i = 0; i < dimension; i++ )
     {
         // avoid negative sizes, can happen #procs >> #ndim
         if ( dimLB[i] > dimUB[i] )
@@ -404,7 +404,7 @@ void MatrixCreator::buildPoisson(
                     getStencil( colIndexes, colValues, idX, idY, idZ, dimX, dimY, dimZ, stencilType, length,
                                 maxDistance );
                     // check colIndexes.size() against number of values given by getNStencilValues
-                    SCAI_ASSERT_EQUAL_DEBUG( ( int ) colIndexes.size(),
+                    SCAI_ASSERT_EQUAL_DEBUG( ( IndexType ) colIndexes.size(),
                                              getNStencilValues( idX, idY, idZ, dimX, dimY, dimZ, length, maxDistance ) );
                     SCAI_ASSERT_EQUAL_DEBUG( colIndexes.size(), colValues.size() )
                     SCAI_LOG_TRACE( logger,
@@ -505,9 +505,9 @@ void MatrixCreator::fillRandom( Matrix& matrix, double density )
 
     csrIA[0] = numValues;
 
-    for ( int i = 0; i < localRowSize; ++i )
+    for ( IndexType i = 0; i < localRowSize; ++i )
     {
-        for ( int j = 0; j < colSize; ++j )
+        for ( IndexType j = 0; j < colSize; ++j )
         {
             double value = static_cast<double>( rand() ) / static_cast<double>( RAND_MAX );
 
@@ -639,7 +639,7 @@ static void replicateStorage(
     const IndexType nRepeatRow,
     const IndexType nRepeatCol )
 {
-    int nRepeat = nRepeatRow * nRepeatCol;
+    IndexType nRepeat = nRepeatRow * nRepeatCol;
 
     using namespace hmemo;
     HArray<IndexType> inIA;

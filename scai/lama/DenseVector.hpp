@@ -311,7 +311,7 @@ public:
 
     /** Implementation of pure method Vector::setSequence */
 
-    virtual void setSequence( const Scalar startValue, const Scalar inc, const int n );
+    virtual void setSequence( const Scalar startValue, const Scalar inc, const IndexType n );
 
     /** Implementation of pure method Vector::setSequence */
 
