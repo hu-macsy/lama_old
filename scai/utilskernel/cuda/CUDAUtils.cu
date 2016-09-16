@@ -135,7 +135,7 @@ void setScaleKernel( ValueType* out, const ValueType beta, const OtherValueType*
 
     if ( i < n )
     {
-        out[i] = static_cast<ValueType>( in[i] * beta );
+        out[i] = beta * static_cast<ValueType>( in[i] );
     }
 }
 
@@ -197,7 +197,7 @@ struct InvalidIndex
     __host__ __device__
     bool operator()( ValueType y )
     {
-        return y >= size || y < 0;
+        return ! common::Utils::validIndex( y, size );
     }
 };
 
@@ -891,14 +891,13 @@ void CUDAUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegist
 }
 
 template<typename ValueType>
-void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDAUtils::RegArrayKernels<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
-//    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
@@ -906,13 +905,23 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
+}
+
+template<typename ValueType>
+void CUDAUtils::RegArithmeticKernels<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+    const common::context::ContextType ctx = common::context::CUDA;
+    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
@@ -936,16 +945,20 @@ CUDAUtils::CUDAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
+    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_CUDA_LIST, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDAUtils::~CUDAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
+    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_CUDA_LIST, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
 }
 
 CUDAUtils CUDAUtils::guard;    // guard variable for registration

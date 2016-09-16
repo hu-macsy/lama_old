@@ -371,19 +371,21 @@ public:
      *  Note: in contrary to sort the array remains unchanged
      */
 
+    template<typename BucketType>
     static void bucketSort(
         hmemo::HArray<IndexType>& offsets,
         hmemo::HArray<IndexType>& perm,
-        const hmemo::HArray<IndexType>& array,
-        const IndexType nb,
+        const hmemo::HArray<BucketType>& array,
+        const BucketType nb,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Slighter version of bucketSort, counts only values */
 
+    template<typename BucketType>
     static void bucketCount(
         hmemo::HArray<IndexType>& bucketSizes,
-        const hmemo::HArray<IndexType>& array,
-        const IndexType nb,
+        const hmemo::HArray<BucketType>& array,
+        const BucketType nb,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Initialize an array with the sequence 0, .., n-1

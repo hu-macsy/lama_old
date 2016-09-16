@@ -449,6 +449,7 @@ struct UtilKernelTrait
         }
     };
 
+    template<typename BucketType>
     struct countBuckets
     {
         /** Count bucket sizes for values mapped to buckets 
@@ -466,7 +467,7 @@ struct UtilKernelTrait
          *  Note: sum( bucketSizes ) = n implies that all entries in bucketMap were legal buckets between 0 and nBucket-1
          *        This routine does not throw an exception for illegal entries
          */
-        typedef void ( *FuncType ) ( IndexType bucketSizes[], const IndexType nBuckets, const IndexType bucketMap[], const IndexType n );
+        typedef void ( *FuncType ) ( IndexType bucketSizes[], const BucketType nBuckets, const BucketType bucketMap[], const IndexType n );
 
         static const char* getId()
         {
@@ -474,6 +475,7 @@ struct UtilKernelTrait
         }
     };
 
+    template<typename BucketType>
     struct sortInBuckets
     {
         /** Resort indexes 0, ..., n-1 according to their mapping to buckets 
@@ -494,8 +496,8 @@ struct UtilKernelTrait
 
         typedef void ( *FuncType )( IndexType sortedIndexes[],
                                     IndexType offsets[],
-                                    const IndexType nBuckets,
-                                    const IndexType bucketMap[],
+                                    const BucketType nBuckets,
+                                    const BucketType bucketMap[],
                                     const IndexType n );
 
         static const char* getId()

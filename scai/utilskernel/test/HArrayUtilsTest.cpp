@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
-    ValueType vals[] = { 13, 1, 14, -2 };
+    ValueType vals[] = { 13, 5, 14, 2 };
     const IndexType n = sizeof( vals ) / sizeof( ValueType );
     LArray<ValueType> array( n, vals, loc );
     LArray<IndexType> perm;
@@ -462,7 +462,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setSequenceTest, ValueType, array_types )
     for ( IndexType i = 0; i < n; ++i )
     {
         ValueType elem = array[i];
-        BOOST_CHECK_EQUAL( start + i * inc, elem );
+        BOOST_CHECK_EQUAL( start + static_cast<ValueType>( i ) * inc, elem );
     }
 }
 

@@ -45,6 +45,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/Utils.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/OpenMP.hpp>
 
@@ -431,12 +432,13 @@ void OpenMPUtils::setSequence( ValueType array[], const ValueType startValue, co
 {
     SCAI_REGION( "OpenMP.Utils.setSequence" )
     SCAI_LOG_DEBUG( logger, "setSequence<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = " << startValue
-                            << "..., " << ( startValue + (n-1) * inc ) )
+                            << "..., " << ( startValue + static_cast<ValueType>( n - 1 ) * inc ) )
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; ++i )
     {
-        array[i] = static_cast<ValueType>( startValue + i * inc );
+        // use static cast to avoid any mixed binary operation
+        array[i] = startValue + static_cast<ValueType>( i ) * inc;
     }
 }
 
@@ -617,13 +619,8 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
     {
         SCAI_LOG_TRACE( logger, "validIndexes, array[ " << i << " ] = " << array[i] )
 
-        if ( size <= array[i] || 0 > array[i] )
+        if ( ! common::Math::validIndex( array[i], size ) )
         {
-            // exception only in debug mode
-            /*
-             COMMON_THROWEXCEPTION( "array[" << i << "] = " << array[i]
-             << " is illegal index, size = " << size )
-             */
             validFlag = false;
         }
     }
@@ -919,17 +916,18 @@ IndexType OpenMPUtils::compress(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename BucketType>
 void OpenMPUtils::countBuckets(
     IndexType bucketSizes[],
-    const IndexType nBuckets,
-    const IndexType bucketMap[],
+    const BucketType nBuckets,
+    const BucketType bucketMap[],
     const IndexType n )
 {
     SCAI_LOG_INFO( logger, "countBuckets, #elems = " << n << ", #buckets = " << nBuckets ) 
 
     // initialize size array for each bucket
 
-    for ( IndexType i = 0; i < nBuckets; i++ )
+    for ( BucketType i = 0; i < nBuckets; i++ )
     {
         bucketSizes[i] = 0;
     }
@@ -938,13 +936,13 @@ void OpenMPUtils::countBuckets(
 
     for ( IndexType k = 0; k < n; k++ )
     {
-        IndexType i = bucketMap[k];
+        BucketType iBucket = bucketMap[k];
 
         // No error message here, just count
 
-        if ( i >= 0 && i < nBuckets )
+        if ( scai::common::Utils::validIndex( iBucket, nBuckets ) )
         {
-            bucketSizes[i]++;
+            bucketSizes[iBucket]++;
         }
     }
 
@@ -953,18 +951,19 @@ void OpenMPUtils::countBuckets(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename BucketType>
 void OpenMPUtils::sortInBuckets( IndexType sortedIndexes[],
                                  IndexType offsets[],           // used as tmp, remains unchanged
-                                 const IndexType nBuckets,
-                                 const IndexType bucketMap[],
+                                 const BucketType nBuckets,
+                                 const BucketType bucketMap[],
                                  const IndexType n )
 {
     SCAI_LOG_INFO( logger, "sortInBuckets, #elems = " << n << ", #buckets = " << nBuckets ) 
 
     #pragma omp parallel
     {
-        IndexType lb;
-        IndexType ub;
+        BucketType lb;
+        BucketType ub;
 
         // each thread takes responsability for a range of buckets
 
@@ -974,15 +973,15 @@ void OpenMPUtils::sortInBuckets( IndexType sortedIndexes[],
 
         for ( IndexType k = 0; k < n; k++ )
         {
-            IndexType i = bucketMap[k];
+            BucketType iBucket = bucketMap[k];
 
-            if ( lb <= i && i < ub )
+            if ( lb <= iBucket && iBucket < ub )
             {
-                IndexType& offset = offsets[i];
+                IndexType& offset = offsets[iBucket];
                 SCAI_ASSERT_LT_DEBUG( offset, n, "out of range offset" )
                 sortedIndexes[offset] = k;
                 offset++;
-                SCAI_LOG_TRACE( logger, k << " is in bucket " << i << ", offset = " << offsets[i] )
+                SCAI_LOG_TRACE( logger, k << " is in bucket " << iBucket << ", offset = " << offsets[iBucket] )
             }
         }
     }
@@ -1008,20 +1007,18 @@ void OpenMPUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegi
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::countBuckets>( countBuckets, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::sortInBuckets>( sortInBuckets, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::countBuckets<IndexType> >( countBuckets, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::sortInBuckets<IndexType> >( sortInBuckets, ctx, flag );
 }
 
 template<typename ValueType>
-void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPUtils::RegArrayKernels<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
-    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
@@ -1030,12 +1027,25 @@ void OpenMPUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unscan<ValueType> >( unscan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::compress<ValueType> >( compress, ctx, flag );
+}
+
+template<typename ValueType>
+void OpenMPUtils::RegArithmeticKernels<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+    const common::context::ContextType ctx = common::context::Host;
+
+    SCAI_LOG_DEBUG( logger, "register arithmetic UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
@@ -1060,8 +1070,10 @@ OpenMPUtils::OpenMPUtils()
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host" ) 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
 }
 
 OpenMPUtils::~OpenMPUtils()
@@ -1069,8 +1081,10 @@ OpenMPUtils::~OpenMPUtils()
     SCAI_LOG_INFO( logger, "unregister UtilsKernel OpenMP-routines for Host" ) 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

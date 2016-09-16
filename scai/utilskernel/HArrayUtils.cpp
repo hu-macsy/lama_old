@@ -941,11 +941,12 @@ void HArrayUtils::sort(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename BucketType>
 void HArrayUtils::bucketSort(
     hmemo::HArray<IndexType>& offsets,
     hmemo::HArray<IndexType>& perm,
-    const hmemo::HArray<IndexType>& array,
-    const IndexType nb,
+    const hmemo::HArray<BucketType>& array,
+    const BucketType nb,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
@@ -953,13 +954,14 @@ void HArrayUtils::bucketSort(
     if ( n == 0 )
     {
         perm.clear();
-        offsets.init( 0, nb + 1 );  // offsets = { 0, 0, ..., 0 }
+        IndexType zero = 0;
+        offsets.init( zero, nb + 1 );  // offsets = { 0, 0, ..., 0 }
         return;
     }
 
-    static LAMAKernel<UtilKernelTrait::countBuckets> countBuckets;
+    static LAMAKernel<UtilKernelTrait::countBuckets<BucketType> > countBuckets;
     static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
-    static LAMAKernel<UtilKernelTrait::sortInBuckets> sortInBuckets;
+    static LAMAKernel<UtilKernelTrait::sortInBuckets<BucketType> > sortInBuckets;
 
     ContextPtr loc = prefLoc;
 
@@ -974,8 +976,8 @@ void HArrayUtils::bucketSort(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<IndexType> bucketMap( array, loc );
-    WriteOnlyAccess<IndexType> sizes( offsets, loc, nb + 1 );
+    ReadAccess<BucketType> bucketMap( array, loc );
+    WriteOnlyAccess<IndexType> sizes( offsets, loc, static_cast<IndexType>( nb + 1 ) );
     
     countBuckets[loc]( sizes.get(), nb, bucketMap, n );
     IndexType total = scan[loc]( sizes.get(), nb );
@@ -988,21 +990,23 @@ void HArrayUtils::bucketSort(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename BucketType>
 void HArrayUtils::bucketCount(
-    hmemo::HArray<IndexType>& sizes,
-    const hmemo::HArray<IndexType>& array,
-    const IndexType nb,
+    hmemo::HArray<IndexType>& bucketSizes,
+    const hmemo::HArray<BucketType>& array,
+    const BucketType nb,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
     if ( n == 0 )
     {
-        sizes.init( 0, nb );
+        IndexType zeroVal = 0;
+        bucketSizes.init( zeroVal, nb );
         return;
     }
 
-    static LAMAKernel<UtilKernelTrait::countBuckets> countBuckets;
+    static LAMAKernel<UtilKernelTrait::countBuckets<BucketType> > countBuckets;
 
     ContextPtr loc = prefLoc;
 
@@ -1017,11 +1021,11 @@ void HArrayUtils::bucketCount(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<IndexType> bucketMap( array, loc );
+    ReadAccess<BucketType> bucketMap( array, loc );
 
-    sizes.reserve( loc, nb + 1 );
+    bucketSizes.reserve( loc, nb + 1 );
 
-    WriteOnlyAccess<IndexType> wSizes( sizes, loc, nb );
+    WriteOnlyAccess<IndexType> wSizes( bucketSizes, loc, nb );
 
     countBuckets[loc]( wSizes, nb, bucketMap, n );
 }
@@ -1144,6 +1148,14 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 #undef HARRAUTILS_SPECIFIER_LVL2
+
+// ToDo: template instantiation of bucketSort/bucketCount for PartitionId but only if PartitionId != IndexType
+
+template void HArrayUtils::bucketSort( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& perm,
+                                       const hmemo::HArray<IndexType>& array, const IndexType nb, hmemo::ContextPtr prefLoc );
+
+template void HArrayUtils::bucketCount( hmemo::HArray<IndexType>& sizes, const hmemo::HArray<IndexType>& array,
+                                        const IndexType nb, hmemo::ContextPtr prefLoc );
 
 /* --------------------------------------------------------------------------- */
 

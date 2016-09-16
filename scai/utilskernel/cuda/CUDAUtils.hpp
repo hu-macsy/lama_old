@@ -184,9 +184,28 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct Registrator
+    {
+        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
+
+    template<typename ValueType>
+    struct RegArithmeticKernels
+    {
+        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
+
+    template<typename ValueType>
+    struct RegArrayKernels
+    {
+        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
 
     /** Constructor for registration. */
 
