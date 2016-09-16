@@ -266,7 +266,7 @@ const Memory& WriteAccess<ValueType>::getMemory() const
 template<typename ValueType>
 void WriteAccess<ValueType>::setValue( const ValueType val, const IndexType pos )
 {
-    SCAI_ASSERT_ERROR( 0 <= pos && pos < mArray->size(), "Index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mArray->size(), "Index out of range" )
 
     const Memory& mem = mArray->getMemory( mContextDataIndex );
     const Memory& hostMem = *Context::getHostPtr()->getLocalMemoryPtr();
@@ -278,7 +278,7 @@ void WriteAccess<ValueType>::setValue( const ValueType val, const IndexType pos 
 template<typename ValueType>
 void WriteAccess<ValueType>::getValue( ValueType& val, const IndexType pos ) const
 {
-    SCAI_ASSERT_ERROR( 0 <= pos && pos < mArray->size(), "Index " << pos << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mArray->size(), "Index out of range" )
 
     const Memory& mem = mArray->getMemory( mContextDataIndex );
     const Memory& hostMem = *Context::getHostPtr()->getLocalMemoryPtr();

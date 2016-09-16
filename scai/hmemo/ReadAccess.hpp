@@ -223,7 +223,7 @@ const Memory& ReadAccess<ValueType>::getMemory() const
 template<typename ValueType>
 void ReadAccess<ValueType>::getValue( ValueType& val, const IndexType pos ) const
 {
-    SCAI_ASSERT_DEBUG( 0 <= pos && pos < mArray->size(), "Index " << pos << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mArray->size(), "Index out of range" )
 
     const Memory& mem = mArray->getMemory( mContextDataIndex );
     const Memory& hostMem = *Context::getHostPtr()->getLocalMemoryPtr();
