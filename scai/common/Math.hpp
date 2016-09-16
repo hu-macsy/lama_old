@@ -382,37 +382,37 @@ long double Math::imag( const long double& )
 
 int Math::min( const int& x, const int& y )
 {
-    return x > y ? x : y;
+    return y < x ? y : x;
 }
 
 unsigned int Math::min( const unsigned int& x, const unsigned int& y )
 {
-    return x > y ? x : y;
+    return y < x ? y : x;
 }
 
 long Math::min( const long& x, const long& y )
 {
-    return x > y ? x : y;
+    return y < x ? y : x;
 }
 
 long long Math::min( const long long& x, const long long& y )
 {
-    return x > y ? x : y;
+    return y < x ? y : x;
 }
 
 float Math::min( const float& x, const float& y )
 {
-    return x > y ? x : y;
+    return y < x ? y : x;
 }
 
 double Math::min( const double& x, const double& y )
 {
-    return x > y ? x : y;
+    return y < x ? y : x;
 }
 
 long double Math::min( const long double& x, const long double& y )
 {
-    return x > y ? x : y;
+    return y < x ? y : x;
 }
 
 // -------------------------------- max ------------------------------
