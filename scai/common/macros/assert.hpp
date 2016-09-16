@@ -35,6 +35,7 @@
 
 // local library
 // #include <scai/common/macros/throw.hpp>
+#include <scai/common/Utils.hpp>
 #include <scai/common/exception/AssertException.hpp>
 
 template<typename ValueType>
@@ -106,6 +107,21 @@ static inline void unused( const ValueType1&, const ValueType2& )
             errorStr << "    Message: " << msg << "\n";                                \
             errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";                  \
             errorStr << "    exp_2: " << #exp2 " = " << exp2 << "\n";                  \
+            scai::common::AssertException::addCallStack( errorStr );                   \
+            throw scai::common::AssertException( errorStr.str() );                     \
+        }                                                                              \
+    }
+
+#define SCAI_ASSERT_VALID_INDEX( index, size, msg )                                    \
+    {                                                                                  \
+        if ( ! ( scai::common::Utils::validIndex( index, size ) ) )                    \
+        {                                                                              \
+            std::ostringstream errorStr;                                               \
+            errorStr << "Assert valid index failed in line " << __LINE__;              \
+            errorStr << " of file " << __FILE__ << "\n";                               \
+            errorStr << "    Message: " << msg << "\n";                                \
+            errorStr << "    index: " << #index " = " << index << "\n";                \
+            errorStr << "    size : " << #size " = " << size << "\n";                  \
             scai::common::AssertException::addCallStack( errorStr );                   \
             throw scai::common::AssertException( errorStr.str() );                     \
         }                                                                              \
@@ -186,6 +202,9 @@ static inline void unused( const ValueType1&, const ValueType2& )
 #define SCAI_ASSERT_GE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 #define SCAI_ASSERT_GE_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 
+#define SCAI_ASSERT_VALID_INDEX_DEBUG( index, size, msg ) unused( index, size ); UNUSED_STRING( msg );
+#define SCAI_ASSERT_VALID_INDEX_ERROR( index, size, msg ) unused( index, size ); UNUSED_STRING( msg );
+
 /*
  * SCAI_ASSERT_LEVEL = ERROR
  */
@@ -215,6 +234,9 @@ static inline void unused( const ValueType1&, const ValueType2& )
 #define SCAI_ASSERT_GE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
 #define SCAI_ASSERT_GE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GE( exp1, exp2, msg );
 
+#define SCAI_ASSERT_VALID_INDEX_DEBUG( index, size, msg ) unused( index, size );
+#define SCAI_ASSERT_VALID_INDEX_ERROR( index, size, msg ) SCAI_ASSERT_VALID_INDEX( index, size, msg );
+
 /*
  * SCAI_ASSERT_LEVEL = DEBUG
  */
@@ -243,4 +265,8 @@ static inline void unused( const ValueType1&, const ValueType2& )
 
 #define SCAI_ASSERT_GE_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_GE( exp1, exp2, msg );
 #define SCAI_ASSERT_GE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_GE( exp1, exp2, msg );
+
+#define SCAI_ASSERT_VALID_INDEX_DEBUG( index, size, msg ) SCAI_ASSERT_VALID_INDEX( index, size, msg );
+#define SCAI_ASSERT_VALID_INDEX_ERROR( index, size, msg ) SCAI_ASSERT_VALID_INDEX( index, size, msg );
+
 #endif
