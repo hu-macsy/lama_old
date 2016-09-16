@@ -87,7 +87,11 @@ struct Math
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int abs( const int& x );
 
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned int abs( const unsigned int& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long abs( const long& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long abs( const unsigned long& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long abs( const long long& x );
 
@@ -108,12 +112,6 @@ struct Math
     /*
      * Computes the conjugated value of a given value
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int conj( const int& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long conj( const long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long conj( const long long& x );
-
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float conj( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double conj( const double& x );
@@ -131,8 +129,6 @@ struct Math
     /*
      * Computes the exponential function of a given value
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int exp( const int& x );
-
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float exp( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double exp( const double& x );
@@ -150,12 +146,6 @@ struct Math
     /*
      * Getter for the real part
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int real( const int& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long real( const long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long real( const long long& x );
-
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double real( const double& x );
@@ -173,12 +163,6 @@ struct Math
     /*
      * Getter for the imag part
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int imag( const int& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long imag( const long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long imag( const long long& x );
-
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float imag( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double imag( const double& x );
@@ -196,11 +180,14 @@ struct Math
     /*
      * min operation
      */
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int min( const int& x, const int& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned int min( const unsigned int& x, const unsigned int& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long min( const long& x, const long& y );
 
-    static inline MIC_CALLABLE_MEMBER long long min( const long long& x, const long long& y );
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long min( const long long& x, const long long& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float min( const float& x, const float& y );
 
@@ -220,6 +207,8 @@ struct Math
      * max operation
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int max( const int& x, const int& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned int max( const unsigned int& x, const unsigned int& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long max( const long& x, const long& y );
 
@@ -244,7 +233,11 @@ struct Math
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( int& x );
 
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( unsigned int& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( long& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( unsigned long& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( long long& x );
 
@@ -261,7 +254,6 @@ struct Math
 
     static inline MIC_CALLABLE_MEMBER  void random( Complex<long double>& x );
 #endif
-
 };
 
 // -------------------------------- sqrt ----------------------------
@@ -286,6 +278,11 @@ long double Math::sqrt( const long double& x )
 int Math::abs( const int& x )
 {
     return ::abs( x );
+}
+
+unsigned int Math::abs( const unsigned int& x )
+{
+    return x;
 }
 
 long Math::abs( const long& x )
@@ -315,21 +312,6 @@ long double Math::abs( const long double& x )
 
 // -------------------------------- conj -----------------------------
 
-int Math::conj( const int& x )
-{
-    return x;
-}
-
-long Math::conj( const long& x )
-{
-    return x;
-}
-
-long long Math::conj( const long long& x )
-{
-    return x;
-}
-
 float Math::conj( const float& x )
 {
     return x;
@@ -346,11 +328,6 @@ long double Math::conj( const long double& x )
 }
 
 // -------------------------------- exp -----------------------------
-
-int Math::exp( const int& x )
-{
-    return static_cast<int> ( ::expf( static_cast<float>( x ) ) );
-}
 
 float Math::exp( const float& x )
 {
@@ -369,21 +346,6 @@ long double Math::exp( const long double& x )
 
 // -------------------------------- real -----------------------------
 
-int Math::real( const int& x )
-{
-    return x;
-}
-
-long Math::real( const long& x )
-{
-    return x;
-}
-
-long long Math::real( const long long& x )
-{
-    return x;
-}
-
 float Math::real( const float& x )
 {
     return x;
@@ -400,21 +362,6 @@ long double Math::real( const long double& x )
 }
 
 // -------------------------------- imag -----------------------------
-
-int Math::imag( const int& )
-{
-    return 0;
-}
-
-long Math::imag( const long& )
-{
-    return 0;
-}
-
-long long Math::imag( const long long& )
-{
-    return 0;
-}
 
 float Math::imag( const float& )
 {
@@ -435,37 +382,47 @@ long double Math::imag( const long double& )
 
 int Math::min( const int& x, const int& y )
 {
-    return x < y ? x : y;
+    return x > y ? x : y;
+}
+
+unsigned int Math::min( const unsigned int& x, const unsigned int& y )
+{
+    return x > y ? x : y;
 }
 
 long Math::min( const long& x, const long& y )
 {
-    return x < y ? x : y;
+    return x > y ? x : y;
 }
 
 long long Math::min( const long long& x, const long long& y )
 {
-    return x < y ? x : y;
+    return x > y ? x : y;
 }
 
 float Math::min( const float& x, const float& y )
 {
-    return x < y ? x : y;
+    return x > y ? x : y;
 }
 
 double Math::min( const double& x, const double& y )
 {
-    return x < y ? x : y;
+    return x > y ? x : y;
 }
 
 long double Math::min( const long double& x, const long double& y )
 {
-    return x < y ? x : y;
+    return x > y ? x : y;
 }
 
 // -------------------------------- max ------------------------------
 
 int Math::max( const int& x, const int& y )
+{
+    return x > y ? x : y;
+}
+
+unsigned int Math::max( const unsigned int& x, const unsigned int& y )
 {
     return x > y ? x : y;
 }
@@ -502,7 +459,17 @@ void Math::random( int& x )
     x = rand();
 }
 
+void Math::random( unsigned int& x )
+{
+    x = rand();
+}
+
 void Math::random( long& x )
+{
+    x = rand();
+}
+
+void Math::random( unsigned long& x )
 {
     x = rand();
 }
