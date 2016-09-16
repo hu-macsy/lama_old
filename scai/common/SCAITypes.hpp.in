@@ -76,7 +76,7 @@ namespace scai
  *  int is the good choice, might be long int or long long int for
  *  future versions that deal with very large matrices even on on processor.
  */
-typedef int IndexType;
+typedef ${SCAI_INDEX_TYPE} IndexType;
 
 /** Data type long double to have it as one word. Otherwise certain macros
  *  might fail to work correctly.
@@ -90,6 +90,8 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
  *
+ *  ToDo: currently PartitionId must be same as IndexType as otherwise
+ *  there will be link errors for some not instantiated routines.
  */
 typedef IndexType PartitionId;
 

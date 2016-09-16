@@ -58,6 +58,10 @@ static texture<int2, 1> texVectorDXref;
 
 static texture<int, 1> texVectorIref;
 
+static texture<long, 1> texVectorLref;
+
+static texture<unsigned int, 1> texVectorUref;
+
 __inline__ static void vectorBindTexture( const float* vector )
 {
     SCAI_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorSXref, vector ), "bind float vector x to texture" )
@@ -87,6 +91,16 @@ __inline__ static void vectorBindTexture( const int* vector )
     SCAI_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorIref, vector ), "bind int vector x to texture" )
 }
 
+__inline__ static void vectorBindTexture( const long* vector )
+{
+    SCAI_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorLref, vector ), "bind int vector x to texture" )
+}
+
+__inline__ static void vectorBindTexture( const unsigned int* vector )
+{
+    SCAI_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorUref, vector ), "bind unsigned int vector x to texture" )
+}
+
 __inline__ static void vectorUnbindTexture( const float* )
 {
     SCAI_CUDA_RT_CALL( cudaUnbindTexture( texVectorSXref ), "unbind float vector x from texture" )
@@ -114,6 +128,16 @@ __inline__ static void vectorUnbindTexture( const ComplexDouble* )
 __inline__ static void vectorUnbindTexture( const int* )
 {
     SCAI_CUDA_RT_CALL( cudaUnbindTexture( texVectorIref ), "unbind int vector x from texture" )
+}
+
+__inline__ static void vectorUnbindTexture( const unsigned int* )
+{
+    SCAI_CUDA_RT_CALL( cudaUnbindTexture( texVectorUref ), "unbind unsigned int vector x from texture" )
+}
+
+__inline__ static void vectorUnbindTexture( const long* )
+{
+    SCAI_CUDA_RT_CALL( cudaUnbindTexture( texVectorLref ), "unbind long vector x from texture" )
 }
 
 template<typename ValueType, bool useTexture>
