@@ -37,10 +37,12 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/Utils.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 
 using scai::common::Math;
+using scai::common::Utils;
 
 /* --------------------------------------------------------------------- */
 
@@ -188,6 +190,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_arithmetic_test_types
     BOOST_CHECK( Math::abs( Math::real( random_val ) ) < 1.0 );
     BOOST_CHECK( Math::abs( Math::imag( random_val ) ) < 1.0 );
 }
+
+/* --------------------------------------------------------------------- */
+
+typedef boost::mpl::list<short, unsigned short, int, unsigned int, long, unsigned long> IndexTypes;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( validIndexTest, IndexType, IndexTypes )
+{
+    const IndexType size = 13;
+    IndexType val = 0;
+
+    BOOST_CHECK( Utils::validIndex( val, size ) );
+
+    val = size - 1;
+    BOOST_CHECK( Utils::validIndex( val, size ) );
+
+    val = size;
+    BOOST_CHECK( !Utils::validIndex( val, size ) );
+
+    val = static_cast<IndexType>( -1 );
+    BOOST_CHECK( !Utils::validIndex( val, size ) );
+}
+
+/* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
 
