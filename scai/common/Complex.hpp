@@ -423,8 +423,11 @@
          *
          * @param[in] real the real part this complex should represent
          */
+        COMPLEX_CONSTRUCTOR_CUDA( const short, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const int, COMPLEX_CONSTRUCTOR_REAL )
+        COMPLEX_CONSTRUCTOR_CUDA( const unsigned int, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const long, COMPLEX_CONSTRUCTOR_REAL )
+        COMPLEX_CONSTRUCTOR_CUDA( const unsigned long, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const float, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const double, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_NONCUDA( const long double, COMPLEX_CONSTRUCTOR_REAL )
@@ -565,7 +568,9 @@
          * @brief Casts operator
          */
         COMPLEX_OPERATOR_CAST_CUDA( int, COMPLEX_CAST_REAL( int ) )
+        COMPLEX_OPERATOR_CAST_CUDA( unsigned int, COMPLEX_CAST_REAL( unsigned int ) )
         COMPLEX_OPERATOR_CAST_CUDA( long, COMPLEX_CAST_REAL( long ) )
+        COMPLEX_OPERATOR_CAST_CUDA( unsigned long, COMPLEX_CAST_REAL( unsigned long ) )
         COMPLEX_OPERATOR_CAST_CUDA( float, COMPLEX_CAST_REAL( float ) )
         COMPLEX_OPERATOR_CAST_CUDA( double, COMPLEX_CAST_REAL( double ) )
         COMPLEX_OPERATOR_CAST_NONCUDA( long double, COMPLEX_CAST_REAL( long double ) )
