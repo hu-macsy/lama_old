@@ -202,7 +202,7 @@ void NoCommunicator::minlocImpl( void*, IndexType*, PartitionId root, common::sc
     SCAI_ASSERT_EQ_ERROR( root, 0, "illegal root partition" )
 }
 
-bool NoCommunicator::supportsLocReduction( common::scalar::ScalarType ) const
+bool NoCommunicator::supportsLocReduction( common::scalar::ScalarType, common::scalar::ScalarType ) const
 {
     return true;  
 }

@@ -869,9 +869,10 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
 template<typename ValueType>
 void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    common::scalar::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    common::scalar::ScalarType iType = common::TypeTraits<IndexType>::stype;
 
-    if ( supportsLocReduction( stype ) )
+    if ( supportsLocReduction( vType, iType ) )
     {
 
         // For the virtual routine maxlocImpl we make sure that val and location are stored contiguously
@@ -887,7 +888,7 @@ void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionI
         x.val = val;
         x.loc = location;
     
-        maxlocImpl( &x.val, &x.loc, root, stype );
+        maxlocImpl( &x.val, &x.loc, root, vType );
 
         if ( getRank() == root )
         {
@@ -906,9 +907,10 @@ void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionI
 template<typename ValueType>
 void Communicator::minloc( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    common::scalar::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    common::scalar::ScalarType iType = common::TypeTraits<IndexType>::stype;
 
-    if ( supportsLocReduction( stype ) )
+    if ( supportsLocReduction( vType, iType ) )
     {
 
         // For the virtual routine minlocImpl we make sure that val and location are stored contiguously
@@ -924,7 +926,7 @@ void Communicator::minloc( ValueType& val, IndexType& location, const PartitionI
         x.val = val;
         x.loc = location;
     
-        minlocImpl( &x.val, &x.loc, root, common::TypeTraits<ValueType>::stype );
+        minlocImpl( &x.val, &x.loc, root, vType );
 
         if ( getRank() == root )
         {

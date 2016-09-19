@@ -967,6 +967,8 @@ void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId ro
 {
     SCAI_REGION( "Communicator.MPI.maxloc" )
 
+    MPI_Datatype commType = getMPI2Type( stype, common::TypeTraits<IndexType>::stype );
+
     // verify that the value for location follows directly the location of val
 
     size_t typeSize = common::typeSize( stype );
@@ -974,12 +976,14 @@ void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId ro
 
     void* expectedLoc = reinterpret_cast<char*>( val ) + typeSize;
 
-    SCAI_ASSERT_EQ_ERROR( expectedLoc, location, "val and loc not contiguously in memory" );
+    SCAI_ASSERT_EQ_ERROR( expectedLoc, location, 
+                          "val and loc not contiguously in memory" 
+                          << ": val type = " << stype << ", size = " << typeSize
+                          << ", index type = " << common::TypeTraits<IndexType>::id() << ", size = " << sizeof( IndexType ) )
 
     common::scoped_array<char> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
 
-    MPI_Datatype commType = getMPI2Type( stype, common::scalar::INT );
     MPI_Reduce( tmp.get(), val, 1, commType, MPI_MAXLOC, root, selectMPIComm() );
 }
 
@@ -991,6 +995,8 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
 {
     SCAI_REGION( "Communicator.MPI.minloc" )
 
+    MPI_Datatype commType = getMPI2Type( stype, common::TypeTraits<IndexType>::stype );
+
     // verify that the value for location follows directly the location of val
 
     size_t typeSize = common::typeSize( stype );
@@ -998,12 +1004,14 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
 
     void* expectedLoc = reinterpret_cast<char*>( val ) + typeSize;
 
-    SCAI_ASSERT_EQ_ERROR( expectedLoc, location, "val and loc not contiguously in memory" );
+    SCAI_ASSERT_EQ_ERROR( expectedLoc, location, 
+                          "val and loc not contiguously in memory" 
+                          << ": val type = " << stype << ", size = " << typeSize
+                          << ", index type = " << common::TypeTraits<IndexType>::id() << ", size = " << sizeof( IndexType ) )
 
     common::scoped_array<char> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
 
-    MPI_Datatype commType = getMPI2Type( stype, common::scalar::INT );
     MPI_Reduce( tmp.get(), val, 1, commType, MPI_MINLOC, root, selectMPIComm() );
 }
 
@@ -1011,11 +1019,17 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
 /*          supportsLocReduction                                                      */
 /* ---------------------------------------------------------------------------------- */
 
-bool MPICommunicator::supportsLocReduction( common::scalar::ScalarType stype ) const
+bool MPICommunicator::supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const
 {
+    if ( common::TypeTraits<int>::stype != iType )
+    {
+        // IndexType != int is not supported here
+        return false;
+    }
+
     // min/maxloc reduction not supported for all data types
 
-    switch ( stype )
+    switch ( vType )
     {
         case common::scalar::INT       : return true;
         case common::scalar::FLOAT     : return true;

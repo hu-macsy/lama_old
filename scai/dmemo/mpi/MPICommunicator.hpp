@@ -196,7 +196,7 @@ private:
 
     /** Implementation of Communicator::supportsLocReduction */
 
-    bool supportsLocReduction( common::scalar::ScalarType type ) const;
+    virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const;
 
     /** Implementation of pure method Communicator::exchangeByPlanImpl */
 
@@ -334,7 +334,7 @@ inline MPI_Datatype MPICommunicator::getMPI2Type( common::scalar::ScalarType sty
 {
     if ( stype2 != common::scalar::INT )
     {
-        COMMON_THROWEXCEPTION( "getMPI2Type, 2nd type must be INT, is " << stype1 )
+        COMMON_THROWEXCEPTION( "getMPI2Type, 2nd type must be INT, is " << stype2 )
     }
 
     switch ( stype1 )

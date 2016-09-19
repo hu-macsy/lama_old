@@ -1387,9 +1387,10 @@ void GPICommunicator::gatherVImpl(
 /*           maxloc                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-bool GPICommunicator::supportsLocReduction( common::scalar::ScalarType ) const
+bool GPICommunicator::supportsLocReduction( common::scalar::ScalarType, common::scalar::ScalarType ) const
 {
     // GPI does not support minloc/maxloc, so use default implementation via gather 
+
     return false;
 }
 

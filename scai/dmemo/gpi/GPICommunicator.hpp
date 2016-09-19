@@ -190,7 +190,7 @@ private:
 
     /** Implementation of Communicator::supportsLocReduction */
 
-    virtual bool supportsLocReduction( common::scalar::ScalarType type ) const;
+    virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const;
 
     void maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
 

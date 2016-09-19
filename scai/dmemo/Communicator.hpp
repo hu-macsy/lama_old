@@ -603,8 +603,11 @@ public:
     /**
      *  Predicate that returns true if (derived) Communicator class supports minloc/maxlocImpl for a 
      *  given value type.
+     *
+     *  @param[in] vType specifies the type of the reduction array values
+     *  @param[in] iType specifies the index type used
      */
-    virtual bool supportsLocReduction( common::scalar::ScalarType stype ) const = 0;
+    virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const = 0;
 
     /** Default implementation for maxloc that uses a gather operation instead of reduction. */
 

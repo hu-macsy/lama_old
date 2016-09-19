@@ -130,7 +130,7 @@ public:
 
     /** Implementation of Communicator::supportsLocReduction */
  
-    virtual bool supportsLocReduction( common::scalar::ScalarType type ) const;
+    virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const;
 
     void swapImpl( void* val, const IndexType n, const PartitionId partner, common::scalar::ScalarType stype ) const;
 
