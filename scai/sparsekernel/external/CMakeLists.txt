@@ -34,9 +34,13 @@
 
 ### Add classes and header files ###
 
+### Currently MKL can only be used if IndexType == int is used
+
 if    ( SCAI_BLAS_NAME MATCHES "MKL" )
-	set ( CLASSES ${CLASSES} MKLCSRUtils )
-	set ( HEADERS ${HEADERS} MKLCSRTrait MKLCSRWrapper )
+    if    ( SCAI_INDEX_TYPE MATCHES "int" )
+	    set ( CLASSES ${CLASSES} MKLCSRUtils )
+	    set ( HEADERS ${HEADERS} MKLCSRTrait MKLCSRWrapper )
+    endif ( SCAI_INDEX_TYPE MATCHES "int" )
 endif ( SCAI_BLAS_NAME MATCHES "MKL" )
 
 scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )

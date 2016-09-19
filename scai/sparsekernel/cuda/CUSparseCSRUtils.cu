@@ -352,7 +352,7 @@ void CUSparseCSRUtils::matrixMultiply(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUSparseCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUSparseCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -362,7 +362,7 @@ void CUSparseCSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::Kerne
 }
 
 template<typename ValueType>
-void CUSparseCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUSparseCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -388,8 +388,8 @@ CUSparseCSRUtils::CUSparseCSRUtils()
 
     if ( useCUSparse )
     {
-        Registrator::initAndReg( flag );
-        kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::call( flag );
+        Registrator::registerKernels( flag );
+        kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
     }
 }
 
@@ -401,8 +401,8 @@ CUSparseCSRUtils::~CUSparseCSRUtils()
 
     if ( useCUSparse )
     {
-        Registrator::initAndReg( flag );
-        kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::call( flag );
+        Registrator::registerKernels( flag );
+        kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
     }
 }
 

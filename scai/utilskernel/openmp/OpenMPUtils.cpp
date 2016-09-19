@@ -1000,7 +1000,7 @@ void OpenMPUtils::sortInBuckets( IndexType sortedIndexes[],
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPUtils::BaseKernels::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
@@ -1012,7 +1012,7 @@ void OpenMPUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegi
 }
 
 template<typename ValueType>
-void OpenMPUtils::RegArrayKernels<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
@@ -1035,7 +1035,7 @@ void OpenMPUtils::RegArrayKernels<ValueType>::initAndReg( kregistry::KernelRegis
 }
 
 template<typename ValueType>
-void OpenMPUtils::RegArithmeticKernels<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPUtils::NumericKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
@@ -1049,7 +1049,7 @@ void OpenMPUtils::RegArithmeticKernels<ValueType>::initAndReg( kregistry::Kernel
 }
 
 template<typename ValueType, typename OtherValueType>
-void OpenMPUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPUtils::BinOpKernels<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
@@ -1069,20 +1069,20 @@ OpenMPUtils::OpenMPUtils()
 {
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host" ) 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_NUMERIC_TYPES_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::call( flag );
+    BaseKernels::registerKernels( flag );
+    kregistry::mepr::RegistratorV<ArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorV<NumericKernels, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<BinOpKernels, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPUtils::~OpenMPUtils()
 {
     SCAI_LOG_INFO( logger, "unregister UtilsKernel OpenMP-routines for Host" ) 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_NUMERIC_TYPES_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::call( flag );
+    BaseKernels::registerKernels( flag );
+    kregistry::mepr::RegistratorV<ArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorV<NumericKernels, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<BinOpKernels, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

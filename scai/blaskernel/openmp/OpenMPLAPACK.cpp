@@ -69,7 +69,7 @@ SCAI_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType OpenMPLAPACK::getrf(
+void OpenMPLAPACK::getrf(
     const CBLAS_ORDER order,
     const IndexType m,
     const IndexType n,
@@ -79,7 +79,6 @@ IndexType OpenMPLAPACK::getrf(
 {
     SCAI_REGION( "OpenMP.LAPACK.getrf<ValueType>" )
     SCAI_LOG_INFO( logger, "getrf<" << TypeTraits<ValueType>::id() << "> for A of size " << m << " x " << n )
-    IndexType info = 0;
     IndexType index = 0;
 
     if ( m != n || n != lda )
@@ -158,8 +157,6 @@ IndexType OpenMPLAPACK::getrf(
             }
         }
     }
-
-    return info;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -183,11 +180,10 @@ void OpenMPLAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType* const A, const IndexType lda, IndexType* const ipiv )
+void OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType* const A, const IndexType lda, IndexType* const ipiv )
 {
     SCAI_REGION( "OpenMP.LAPACK.getri<ValueType>" )
     SCAI_LOG_INFO( logger, "getri<" << TypeTraits<ValueType>::id() << "> for A of size " << n << " x " << n )
-    IndexType info = 0;
     ValueType* A_inv = new ValueType[n * n];
 
     for ( IndexType i = 0; i < n * n; i++ )
@@ -281,14 +277,12 @@ IndexType OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, Value
     }
 
     delete[] A_inv;
-
-    return info;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType OpenMPLAPACK::tptrs(
+void OpenMPLAPACK::tptrs(
     const CBLAS_ORDER order,
     const CBLAS_UPLO uplo,
     const CBLAS_TRANSPOSE trans,
@@ -300,7 +294,6 @@ IndexType OpenMPLAPACK::tptrs(
     const IndexType SCAI_UNUSED( ldb ) )
 {
     SCAI_REGION( "OpenMP.LAPACK.tptrs<ValueType>" )
-    IndexType info = 0;
 
     if ( order == CblasColMajor )
     {
@@ -458,8 +451,6 @@ IndexType OpenMPLAPACK::tptrs(
             COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs - rowmajor - conjtrans not implemented" );
         }
     }
-
-    return info;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -513,7 +504,7 @@ void OpenMPLAPACK::laswp(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPLAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPLAPACK::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
@@ -533,7 +524,7 @@ OpenMPLAPACK::OpenMPLAPACK()
 {
     SCAI_LOG_INFO( logger, "register LAPACK OpenMP-routines for Host at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
@@ -541,7 +532,7 @@ OpenMPLAPACK::~OpenMPLAPACK()
 {
     SCAI_LOG_INFO( logger, "unregister LAPACK OpenMP-routines for Host at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

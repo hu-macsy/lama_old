@@ -110,7 +110,7 @@ void CUDALAPACK::laswp(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDALAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDALAPACK::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -124,13 +124,13 @@ void CUDALAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 CUDALAPACK::CUDALAPACK()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDALAPACK::~CUDALAPACK()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

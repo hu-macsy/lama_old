@@ -217,27 +217,27 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    struct Registrator
+    struct BaseKernels
     {
-        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
     };
 
     template<typename ValueType>
-    struct RegArithmeticKernels
+    struct NumericKernels
     {
-        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
     };
 
     template<typename ValueType>
-    struct RegArrayKernels
+    struct ArrayKernels
     {
-        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
     };
 
     template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
+    struct BinOpKernels
     {
-        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
     };
 
     /** Constructor for registration. */

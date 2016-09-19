@@ -1948,8 +1948,7 @@ IndexType CUDACSRUtils::matrixAddSizes(
 
 // ToDo: atomicCAS/atomicADD versions needed for IndexType = long, but not otherwise
 
-#ifdef LONG_AS_INDEX_TYPE
-__device__ inline 
+static  __inline__ __device__ 
 long atomicCAS( long* address, long compare, long val )
 {
     typedef unsigned long long int RepT;
@@ -1957,19 +1956,22 @@ long atomicCAS( long* address, long compare, long val )
     RepT* ptrCompare = reinterpret_cast<RepT*>( &compare );
     RepT* ptrVal     = reinterpret_cast<RepT*>( &val );
 
-    return atomicCAS( address, *ptrCompare, *ptrVal );
+    RepT* t_address = reinterpret_cast<RepT*>( address );
+
+    return __ullAtomicCAS( t_address, *ptrCompare, *ptrVal);
 }
 
-__device__ inline
+static __inline__ __device__ 
 long atomicAdd( long* address, long val )
 {
     typedef unsigned long long int RepT;
 
     RepT* ptrVal     = reinterpret_cast<RepT*>( &val );
 
-    return atomicAdd( address, *ptrVal );
+    RepT* t_address = reinterpret_cast<RepT*>( address );
+
+    return __ullAtomicAdd( t_address, *ptrVal );
 }
-#endif
 
 __device__
 inline bool multHlp_insertIndexex( IndexType colB,
@@ -3034,7 +3036,7 @@ void CUDACSRUtils::matrixMultiply(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDACSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDACSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -3047,7 +3049,7 @@ void CUDACSRUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelReg
 }
 
 template<typename ValueType>
-void CUDACSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -3066,7 +3068,7 @@ void CUDACSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistr
 }
 
 template<typename ValueType, typename OtherValueType>
-void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -3082,17 +3084,17 @@ void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregist
 CUDACSRUtils::CUDACSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDACSRUtils::~CUDACSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDACSRUtils CUDACSRUtils::guard;    // guard variable for registration

@@ -86,9 +86,13 @@ public:
 
 private:
 
-    /** Registration of methods  at kernel registry. */
+    /** Registration of methods at kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

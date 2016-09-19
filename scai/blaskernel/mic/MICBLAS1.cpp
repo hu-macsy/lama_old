@@ -497,7 +497,7 @@ void MICBLAS1::sum(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICBLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
@@ -523,7 +523,7 @@ MICBLAS1::RegisterGuard::RegisterGuard()
 {
     SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for MIC at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
@@ -531,7 +531,7 @@ MICBLAS1::RegisterGuard::~RegisterGuard()
 {
     SCAI_LOG_INFO( logger, "unregister BLAS1 OpenMP-routines for MIC at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

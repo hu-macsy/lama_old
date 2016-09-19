@@ -174,25 +174,25 @@ private:
 
     struct Registrator
     {
-        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     template<typename ValueType>
-    struct RegArithmeticKernels
+    struct RegNumericKernels
     {
-        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     template<typename ValueType>
     struct RegArrayKernels
     {
-        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     template<typename ValueType, typename OtherValueType>
     struct RegistratorVO
     {
-        static void initAndReg( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Helper class for (un) registration of kernel routines at static initialization. */

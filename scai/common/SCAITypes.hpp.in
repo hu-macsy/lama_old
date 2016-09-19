@@ -113,6 +113,7 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 /**
  *  List of all supported types (e.g. for communicator methods)
  *  For all these types TypeTraits<type> must be defined
+ *  Each possible type that can be used for IndexType must appear in this list
  */
 
 #define SCAI_ALL_TYPES int, unsigned int, long, unsigned long, char, SCAI_NUMERIC_TYPES
@@ -133,7 +134,7 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 /*
  * Supported array types on different devices
  *
- * General rule: SCAI_ARRAY_TYPES_XXX   IndexType, SCAI_NUMERIC_TYPES_XXX
+ * General rule: SCAI_ARRAY_TYPES_XXX is IndexType, SCAI_NUMERIC_TYPES_XXX
  */
 
 #define SCAI_ARRAY_TYPES_HOST     ${ARRAY_HOST_TYPES}

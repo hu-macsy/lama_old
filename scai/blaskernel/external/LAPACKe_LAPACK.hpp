@@ -68,7 +68,7 @@ public:
     /** Implementation of BLASKernelTrait::LAPACK::getrf by LAPACKe. */
 
     template<typename ValueType>
-    static IndexType getrf(
+    static void getrf(
         const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
@@ -79,7 +79,7 @@ public:
     /** Implementation of BLASKernelTrait::LAPACK::getri by LAPACKe. */
 
     template<typename ValueType>
-    static IndexType getri(
+    static void getri(
         const CBLAS_ORDER order,
         const IndexType n,
         ValueType* const A,
@@ -94,7 +94,7 @@ public:
     /** Implementation of BLASKernelTrait::LAPACK::tptrs by LAPACKe. */
 
     template<typename ValueType>
-    static IndexType tptrs(
+    static void tptrs(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const CBLAS_TRANSPOSE trans,
@@ -109,7 +109,11 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 
