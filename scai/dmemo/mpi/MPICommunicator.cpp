@@ -239,14 +239,16 @@ void MPICommunicator::initialize( int& argc, char**& argv )
     SCAI_LOG_INFO( logger, "MPI_Init" )
 
     {
+        // temporary variables required as PartitionId can be different from int
+
         int mpiRank;
         int mpiSize;
 
         SCAI_MPICALL( logger, MPI_Comm_size( mComm, &mpiSize ), "MPI_Comm_size" )
         SCAI_MPICALL( logger, MPI_Comm_rank( mComm, &mpiRank ), "MPI_Comm_rank" )
 
-        mSize = static_cast<PartitionId>( mSize );
-        mRank = static_cast<PartitionId>( mRank );
+        mSize = static_cast<PartitionId>( mpiSize );
+        mRank = static_cast<PartitionId>( mpiRank );
     }
 
     setNodeData(); // determine mNodeRank, mNodeSize

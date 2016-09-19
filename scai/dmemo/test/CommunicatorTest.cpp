@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
  
     LArray<IndexType> localIndexes;
 
-    IndexType first = rank;
+    IndexType first = static_cast<IndexType>( rank ) * n;
     IndexType inc   = 1;
 
     HArrayUtils::setSequence( localIndexes, first, inc, n );
