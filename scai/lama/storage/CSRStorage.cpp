@@ -2209,7 +2209,7 @@ const char* CSRStorage<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_NUMERIC_TYPES_HOST )
 
 #define CSR_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void CSRStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
@@ -2228,9 +2228,9 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_ARITHMETIC_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define CSR_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, CSR_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, CSR_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( CSR_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( CSR_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef CSR_STORAGE_INST_LVL2
 #undef CSR_STORAGE_INST_LVL1

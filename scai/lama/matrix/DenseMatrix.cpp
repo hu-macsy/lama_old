@@ -676,13 +676,13 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
     if ( other.getMatrixKind() == Matrix::DENSE )
     {
         SCAI_LOG_INFO( logger, "copy dense matrix" )
-        mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::assignDenseImpl( *this, other );
+        mepr::DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignDenseImpl( *this, other );
         return;
     }
     else if ( other.getMatrixKind() == Matrix::SPARSE )
     {
         SCAI_LOG_INFO( logger, "copy sparse matrix" )
-        mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::assignSparseImpl( *this, other );
+        mepr::DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignSparseImpl( *this, other );
         return;
     }
 
@@ -1205,7 +1205,7 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
     if ( true )
     {
 // Dense vector with this row distribution, so we do not need a temporary array
-        mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::getDiagonalImpl( *this, diagonal );
+        mepr::DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::getDiagonalImpl( *this, diagonal );
         return;
     }
 
@@ -2012,7 +2012,7 @@ const char* DenseMatrix<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseMatrix, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseMatrix, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

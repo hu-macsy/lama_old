@@ -41,7 +41,7 @@
 
 // define the list of types
 
-#define MY_TYPELIST SCAI_TYPELIST( SCAI_ARITHMETIC_HOST )
+#define MY_TYPELIST SCAI_TYPELIST( SCAI_NUMERIC_TYPES_HOST )
 
 using namespace scai;
 using namespace common;

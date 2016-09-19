@@ -53,7 +53,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr context = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "setZeroTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, ValueType, scai_arithmetic_test_type
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr context = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "constructorTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
 {
     SCAI_LOG_INFO( logger, "swapTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << ">" )
     // use template storage test
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_numeric_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << ">" )
     storageTypeNameTest<DenseStorage<ValueType> >( "Dense" );

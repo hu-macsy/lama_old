@@ -56,7 +56,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.L2NormTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_numeric_test_types )
 {
     IndexType n = 4;
     ValueType val = 5.0;

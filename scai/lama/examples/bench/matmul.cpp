@@ -126,7 +126,7 @@ int main()
         {
 #define     DO_BENCH( ValueType ) bench<ValueType>( sizes[i], fillrates[j] );
             // do the benchmark for each supported CUDA type
-            SCAI_COMMON_LOOP( DO_BENCH, SCAI_ARITHMETIC_CUDA )
+            SCAI_COMMON_LOOP( DO_BENCH, SCAI_NUMERIC_TYPES_CUDA )
         }
     }
 }

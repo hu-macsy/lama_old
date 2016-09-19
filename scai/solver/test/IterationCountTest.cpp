@@ -114,7 +114,7 @@ void testIsSatisfiedmethod( IndexType expectedIterationCount )
 }
 ;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, scai_numeric_test_types )
 {
     testIsSatisfiedmethod<ValueType>( 10 );
 }

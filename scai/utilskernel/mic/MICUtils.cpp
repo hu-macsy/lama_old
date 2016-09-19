@@ -946,20 +946,18 @@ MICUtils::RegisterGuard::RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
-    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_NUMERIC_TYPES_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_MIC_LIST, SCAI_ARRAY_TYPES_MIC_LIST>::call( flag );
 }
 
 MICUtils::RegisterGuard::~RegisterGuard()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
-    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_NUMERIC_TYPES_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_MIC_LIST, SCAI_ARRAY_TYPES_MIC_LIST>::call( flag );
 }
 
 MICUtils::RegisterGuard MICUtils::guard;    // guard variable for registration

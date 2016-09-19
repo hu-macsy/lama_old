@@ -370,7 +370,7 @@ const char* CSRSparseMatrix<ValueType>::typeName()
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( CSRSparseMatrix, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( CSRSparseMatrix, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

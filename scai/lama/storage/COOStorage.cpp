@@ -1075,7 +1075,7 @@ const char* COOStorage<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
 
 #define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void COOStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
@@ -1091,9 +1091,9 @@ SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define COO_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-SCAI_COMMON_LOOP( COO_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( COO_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef COO_STORAGE_INST_LVL2
 #undef COO_STORAGE_INST_LVL1

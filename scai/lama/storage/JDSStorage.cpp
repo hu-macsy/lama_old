@@ -1403,7 +1403,7 @@ const char* JDSStorage<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_NUMERIC_TYPES_HOST )
 
 #define JDS_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void JDSStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
@@ -1419,9 +1419,9 @@ SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define JDS_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef JDS_STORAGE_INST_LVL2
 #undef JDS_STORAGE_INST_LVL1

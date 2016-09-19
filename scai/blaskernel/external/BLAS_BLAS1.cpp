@@ -361,7 +361,7 @@ BLAS_BLAS1::BLAS_BLAS1()
 {
     SCAI_LOG_INFO( logger, "register BLAS1 wrapper routines for Host at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
@@ -369,7 +369,7 @@ BLAS_BLAS1::~BLAS_BLAS1()
 {
     SCAI_LOG_INFO( logger, "unregister BLAS1 wrapper routines for Host at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

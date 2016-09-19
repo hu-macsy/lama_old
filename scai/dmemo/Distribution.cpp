@@ -589,9 +589,9 @@ Distribution* Distribution::getDistributionPtr(
 
 #define DMEMO_DISTRIBUTE_INST( ValueType )  \
     template void Distribution::replicateRagged<ValueType>( ValueType*, const ValueType*, const IndexType* ) const;                 \
-    SCAI_COMMON_LOOP_LVL2( ValueType, DMEMO_DISTRIBUTE2_INST, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, DMEMO_DISTRIBUTE2_INST, SCAI_ARRAY_TYPES_HOST )
 
-SCAI_COMMON_LOOP( DMEMO_DISTRIBUTE_INST, SCAI_ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_LOOP( DMEMO_DISTRIBUTE_INST, SCAI_ARRAY_TYPES_HOST )
 
 // template instantiation for the supported data types
 

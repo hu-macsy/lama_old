@@ -370,7 +370,7 @@ const char* DIASparseMatrix<ValueType>::typeName()
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DIASparseMatrix, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DIASparseMatrix, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

@@ -68,7 +68,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayUtilsTest" )
 BOOST_AUTO_TEST_CASE( FactoryTest )
 {
     HArrays allArrays;    // is created by factory
-    size_t nTypes = SCAI_COMMON_COUNT_NARG( SCAI_ARITHMETIC_ARRAY_HOST );
+    size_t nTypes = SCAI_COMMON_COUNT_NARG( SCAI_ARRAY_TYPES_HOST );
     SCAI_LOG_INFO( logger, "Test all arrys of factory to be zero, #arrays = " << allArrays.size() )
     BOOST_CHECK_EQUAL( nTypes, allArrays.size() );
 
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 10;
     const ValueType a = 1;
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_arithmetic_test_ty
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 10;
     const IndexType k = 3;    // one value in range 0 .. N-1
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_arithmetic_test_typ
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_numeric_test_types )
 {
     ValueType sourceVals[] = { 3, 1, 4, 2 };
     IndexType indexVals[]  = { 0, 2, 1, 2, 1, 3 };
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_arithmetic_test_types
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
 {
     ValueType sourceVals[] = { 3, 1, 4, 2 };
     IndexType indexVals[]  = { 0, 2, 1, 3 };
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_arithmetic_test_type
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<IndexType, SCAI_ARITHMETIC_HOST> array_types;
+typedef boost::mpl::list<IndexType, SCAI_NUMERIC_TYPES_HOST> array_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
 {
@@ -468,7 +468,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setSequenceTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ValueType xVals[] = { 3, 1, 4, 2 };
@@ -490,7 +490,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ValueType sourceVals1[] = { 3, 1, 4, 2 };
@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_arithmetic_te
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
@@ -608,7 +608,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_arithmetic_t
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ValueType sourceVals1[] = { 3, 1, 4, 2 };
@@ -670,7 +670,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_arithmet
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ValueType denseValues[] = { 3, 0, 0, 1, 4, 0, 2, 7, 0, -1, -3 };

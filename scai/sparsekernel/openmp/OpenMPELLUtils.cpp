@@ -191,7 +191,8 @@ void OpenMPELLUtils::check(
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
-            if ( common::Utils::validIndex( ellSizes[i], numValuesPerRow ) )
+            // Attention, ellSizes[i] == numValuesPerRow is also valid
+            if ( common::Utils::validIndex( ellSizes[i], numValuesPerRow + 1 ) )
             {
                 for ( IndexType jj = 0; jj < ellSizes[i]; jj++ )
                 {
@@ -1274,8 +1275,8 @@ OpenMPELLUtils::OpenMPELLUtils()
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::call( flag );
 }
 
 OpenMPELLUtils::~OpenMPELLUtils()
@@ -1284,8 +1285,8 @@ OpenMPELLUtils::~OpenMPELLUtils()
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

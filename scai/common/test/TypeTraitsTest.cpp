@@ -136,7 +136,7 @@ static int goodStrings( const std::string& str1, const std::string& str2 )
 
 /* -----------------------------------------------------------------------------*/
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_numeric_test_types )
 {
     if ( isComplex( TypeTraits<ValueType>::stype ) )
     {
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_arithmetic_test_ty
 
 /* -----------------------------------------------------------------------------*/
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_numeric_test_types )
 {
     ValueType small  = TypeTraits<ValueType>::small();
     ValueType eps0   = TypeTraits<ValueType>::eps0();

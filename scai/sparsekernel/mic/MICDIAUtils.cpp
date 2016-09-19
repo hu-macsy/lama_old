@@ -463,7 +463,7 @@ MICDIAUtils::MICDIAUtils()
     SCAI_LOG_INFO( logger, "register DIAUtils routines for MIC(OpenMP,offload) at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::call( flag );
 }
 
 MICDIAUtils::~MICDIAUtils()
@@ -471,7 +471,7 @@ MICDIAUtils::~MICDIAUtils()
     SCAI_LOG_INFO( logger, "unregister DIAUtils routines for MIC(OpenMP,offload) at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::call( flag );
 }
 
 MICDIAUtils MICDIAUtils::guard;    // guard variable for registration

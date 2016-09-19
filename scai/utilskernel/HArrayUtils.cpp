@@ -106,7 +106,7 @@ void HArrayUtils::assignOp(
         }
     }
 
-    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setArray( target, source, op, loc );
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArray( target, source, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -153,7 +153,7 @@ void HArrayUtils::assignGather(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the gather version with the correct value types for target and source
-    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gather( target, source, indexes, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::gather( target, source, indexes, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -166,7 +166,7 @@ void HArrayUtils::assignScatter(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the scatter version with the correct value types for target and source
-    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatter( target, indexes, source, op, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::scatter( target, indexes, source, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -241,7 +241,7 @@ void HArrayUtils::assignScalar(
     const reduction::ReductionOp op,
     ContextPtr prefLoc )
 {
-    mepr::UtilsWrapperT<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setScalar( target, value, op, prefLoc );
+    mepr::UtilsWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setScalar( target, value, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -290,7 +290,7 @@ void HArrayUtils::setVal(
     const ValueType val )
 {
     SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
-    mepr::UtilsWrapperT< ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setValImpl( target, index, val );
+    mepr::UtilsWrapperT< ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setValImpl( target, index, val );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -314,7 +314,7 @@ ValueType HArrayUtils::getVal(
     const _HArray& array,
     const IndexType index )
 {
-    ValueType val = mepr::UtilsWrapperT< ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::getValImpl( array, index );
+    ValueType val = mepr::UtilsWrapperT< ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::getValImpl( array, index );
     return val;
 }
 
@@ -800,7 +800,7 @@ void HArrayUtils::setRandom( hmemo::_HArray& array,
 {
     // use meta-programming to call setRandomImpl<ValueType> with the type of array
 
-    mepr::UtilsWrapper< SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setRandom( array, n, fillRate, prefLoc );
+    mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::setRandom( array, n, fillRate, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1142,9 +1142,9 @@ void HArrayUtils::buildDenseArray(
             const hmemo::HArray<ValueType>&,                                                                                      \
             const hmemo::HArray<IndexType>&, hmemo::ContextPtr );                                                                 \
                                                                                                                                   \
-    SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
 
-SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 #undef HARRAUTILS_SPECIFIER_LVL2

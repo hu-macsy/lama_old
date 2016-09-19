@@ -55,7 +55,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.L1NormTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_numeric_test_types )
 {
     // Note: l1norm( vec ) is same as vec.l1Norm()
 

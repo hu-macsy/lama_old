@@ -1761,7 +1761,7 @@ const char* ELLStorage<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_NUMERIC_TYPES_HOST )
 
 #define ELL_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void ELLStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
@@ -1777,9 +1777,9 @@ SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_ARITHMETIC_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define ELL_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef ELL_STORAGE_INST_LVL2
 #undef ELL_STORAGE_INST_LVL1

@@ -54,7 +54,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.IOStreamTest" );
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 5;
 
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_arithmetic_test_t
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 5;
 
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_arithmetic_test_types
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_types )
 {
     // This test writes an array binary in a file but uses ScalarRepType that has highest precision
 

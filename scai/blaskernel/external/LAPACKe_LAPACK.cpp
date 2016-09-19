@@ -233,7 +233,7 @@ LAPACKe_LAPACK::LAPACKe_LAPACK()
         return;
     }
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
@@ -247,7 +247,7 @@ LAPACKe_LAPACK::~LAPACKe_LAPACK()
         return;
     }
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

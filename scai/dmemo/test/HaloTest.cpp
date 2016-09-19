@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE( copyHaloTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );

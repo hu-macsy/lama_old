@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_SUITE( MathTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_numeric_test_types )
 {
     ValueType x = 9;
     ValueType sqrt_val = Math::sqrt( x );
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( absTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( absTest, ValueType, scai_numeric_test_types )
 {
     typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
     ValueType x;
@@ -74,14 +74,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, scai_arithmetic_test_types )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, scai_numeric_test_types )
 // is tested in ComplexTest
 
 /* --------------------------------------------------------------------- */
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( realTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( realTest, ValueType, scai_numeric_test_types )
 {
     typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
     ValueType x;
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( realTest, ValueType, scai_arithmetic_test_types )
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_numeric_test_types )
 {
     typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
     ValueType x;
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_numeric_test_types )
 {
     ValueType x, y;
     ValueType min_val;
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( maxTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( maxTest, ValueType, scai_numeric_test_types )
 {
     ValueType x, y;
     ValueType max_val;
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_numeric_test_types )
 {
     ValueType random_val;
     Math::random( random_val );

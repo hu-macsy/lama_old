@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE( WriteAtTest )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_types )
 {
     std::vector<std::string> supportedSuffixes;
 
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_arithmetic_test
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types )
 {
     std::vector<std::string> supportedSuffixes;
 
@@ -468,7 +468,7 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 20;
 
@@ -540,7 +540,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_arithmetic_test_t
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 20;
 
@@ -606,7 +606,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_arithmetic_test_type
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
 {
     std::vector<std::string> supportedSuffixes;
 

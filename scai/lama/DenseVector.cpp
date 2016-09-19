@@ -1031,7 +1031,7 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseVector, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseVector, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

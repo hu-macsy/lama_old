@@ -188,7 +188,7 @@ MICBLAS2::RegisterGuard::RegisterGuard()
 {
     SCAI_LOG_INFO( logger, "register BLAS2 OpenMP-routines for MIC at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
@@ -196,7 +196,7 @@ MICBLAS2::RegisterGuard::~RegisterGuard()
 {
     SCAI_LOG_INFO( logger, "unregister BLAS2 OpenMP-routines for MIC at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

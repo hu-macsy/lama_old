@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 }
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_numeric_test_types )
 {
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get4x4SystemA<ValueType>();
     const IndexType n = 4;

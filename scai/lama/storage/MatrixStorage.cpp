@@ -1285,7 +1285,7 @@ void MatrixStorage<ValueType>::setDenseData(
     const ValueType epsilon )
 {
     mEpsilon = epsilon;
-    mepr::MatrixStorageWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
+    mepr::MatrixStorageWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
 }
 
 /* ========================================================================= */
@@ -1475,15 +1475,15 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
             const IndexType, const IndexType, const OtherValueType*, const ValueType );
 
 #define LAMA_MATRIXSTORAGE_INST( ValueType )                                                                                    \
-    SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_NUMERIC_TYPES_HOST )
 
-SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_NUMERIC_TYPES_HOST )
 
 #undef LAMA_MATRIXSTORAGE2_INST
 #undef LAMA_MATRIXSTORAGE_INST
 
 
-SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

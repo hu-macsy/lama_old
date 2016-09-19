@@ -90,7 +90,7 @@ int main()
         std::cout << std::left << std::setw( 15 ) << std::setfill( ' ' ) << std::setprecision( 3 ) << sizes[i];
 #define DO_BENCH( ValueType ) bench<ValueType>( sizes[i] );
         // do the benchmark for each supported A type
-        SCAI_COMMON_LOOP( DO_BENCH, SCAI_ARITHMETIC_HOST )
+        SCAI_COMMON_LOOP( DO_BENCH, SCAI_NUMERIC_TYPES_HOST )
 #undef DO_BENCH
         std::cout << std::endl;
     }

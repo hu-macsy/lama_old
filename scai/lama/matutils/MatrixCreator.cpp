@@ -827,7 +827,7 @@ void MatrixCreator::buildReplicated( SparseMatrix<ValueType>& matrix,
                                                       const MatrixStorage<ValueType>& storage, \
                                                       const IndexType nRepeat ) ;
 
-SCAI_COMMON_LOOP( MATRIX_CREATOR_SPECIFIER, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( MATRIX_CREATOR_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 
 #undef MATRIX_CREATOR_SPECIFIER
 

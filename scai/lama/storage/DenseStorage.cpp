@@ -1042,7 +1042,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
     if ( other.getFormat() == Format::DENSE )
     {
         // more efficient solution for assigment of dense storage
-        if ( mepr::DenseStorageViewWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::assignImpl( *this, other ) )
+        if ( mepr::DenseStorageViewWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignImpl( *this, other ) )
         {
             return;
         }
@@ -1310,8 +1310,8 @@ const char* DenseStorageView<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_ARITHMETIC_HOST )
-SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_NUMERIC_TYPES_HOST )
 
 #define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
     template void DenseStorageView<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
@@ -1327,9 +1327,9 @@ SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_ARITHMETIC_HOST )
             hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define DENSE_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, DENSE_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, DENSE_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef DENSE_STORAGE_INST_LVL2
 #undef DENSE_STORAGE_INST_LVL1

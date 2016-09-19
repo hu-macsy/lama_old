@@ -296,7 +296,7 @@ OpenMPBLAS2::OpenMPBLAS2()
 {
     SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
@@ -304,7 +304,7 @@ OpenMPBLAS2::~OpenMPBLAS2()
 {
     SCAI_LOG_INFO( logger, "unregister BLAS2 routines for OpenMP in Kernel Registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::call(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

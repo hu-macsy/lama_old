@@ -181,7 +181,7 @@ MICMKLCSRUtils::MICMKLCSRUtils()
     SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for MIC at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::call( flag );
 }
 
 MICMKLCSRUtils::~MICMKLCSRUtils()
@@ -199,7 +199,7 @@ MICMKLCSRUtils::~MICMKLCSRUtils()
     SCAI_LOG_INFO( logger, "unregister CSRUtils MKL-routines for MIC at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::call( flag );
 }
 
 MICMKLCSRUtils MICMKLCSRUtils::guard;    // guard variable for registration

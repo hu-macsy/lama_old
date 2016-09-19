@@ -184,7 +184,7 @@ void testIsSatisfied( ResidualThreshold::ResidualThresholdCheckMode checkMode )
     BOOST_CHECK( l2.getValue<AbsType>() <= 1e-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_types )
 {
     testIsSatisfied<ValueType>( ResidualThreshold::Absolute );
     testIsSatisfied<ValueType>( ResidualThreshold::Relative );

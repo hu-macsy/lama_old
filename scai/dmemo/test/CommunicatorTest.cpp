@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE( bcastStringTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_arithmetic_test_types 
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_arithmetic_test_t
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE( bcastFailTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, scai_arithmetic_test_type
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_arithmetic_test_typ
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
@@ -666,7 +666,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumArrayTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
@@ -729,7 +729,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_arithmetic_test_type
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );

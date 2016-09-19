@@ -1070,10 +1070,9 @@ OpenMPUtils::OpenMPUtils()
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host" ) 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_NUMERIC_TYPES_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::call( flag );
 }
 
 OpenMPUtils::~OpenMPUtils()
@@ -1081,10 +1080,9 @@ OpenMPUtils::~OpenMPUtils()
     SCAI_LOG_INFO( logger, "unregister UtilsKernel OpenMP-routines for Host" ) 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    RegistratorVO<IndexType, IndexType>::initAndReg( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegArithmeticKernels, SCAI_NUMERIC_TYPES_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::call( flag );
 }
 
 /* --------------------------------------------------------------------------- */

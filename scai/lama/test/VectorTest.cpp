@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_types )
 {
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();

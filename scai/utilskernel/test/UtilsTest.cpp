@@ -43,7 +43,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-// import scai_arithmetic_test_types, scai_array_test_types
+// import scai_numeric_test_types, scai_array_test_types
 
 #include <scai/common/test/TestMacros.hpp>
 
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
 {
     static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
     ContextPtr loc = testContext;

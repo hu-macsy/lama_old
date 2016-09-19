@@ -60,7 +60,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DenseVectorTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 {
     // replicated dense vector
 
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test_types )
 {
     // Note: here we only test constructor DenseVector( "fileName" ) 
     //       as readFromFile is already tested in PartitionIO
@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE( assignTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_test_types )
 {
     // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
 
