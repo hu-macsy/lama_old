@@ -423,6 +423,7 @@
          *
          * @param[in] real the real part this complex should represent
          */
+        COMPLEX_CONSTRUCTOR_CUDA( const char, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const short, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const int, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const unsigned int, COMPLEX_CONSTRUCTOR_REAL )

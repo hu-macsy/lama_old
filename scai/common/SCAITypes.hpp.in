@@ -27,13 +27,11 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Define all arithmetic types for which SCAI template classes will be instantiated
- * @author Jiri Kraus
+ * @brief Define one index type and all numeric and array types for which SCAI template classes will be instantiated
+ * @author Thomas Brandes, Jiri Kraus
  * @date 23.02.2011
  */
 #pragma once
-
-// local library
 
 // no support of Complex if this file is not included
 
@@ -54,10 +52,6 @@
 
 /** Common namespace for all projects of Fraunhofer SCAI. */
 
-namespace scai
-{
-}
-
 /** LAMA uses for all its classes and routines an own namespace.
  *
  *  Applications using LAMA must either put \c scai::lama:: before the used
@@ -69,6 +63,9 @@ namespace scai
  *     DenseVector<float> V;
  *  \endcode
  */
+namespace scai
+{
+}
 
 /** Data type that is used for indexing in LAMA.
  *
@@ -100,7 +97,7 @@ typedef IndexType PartitionId;
 COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 /*
- * Lists of all supported arithmetic types 
+ * Lists of all supported numeric types 
  */
 
 #ifdef SCAI_COMPLEX_SUPPORTED
@@ -118,14 +115,10 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
  *  For all these types TypeTraits<type> must be defined
  */
 
-#define SCAI_ALL_TYPES int, unsigned int, long, unsigned long, char, SCAI_NUMERIC_TYPES_TYPES
-
-/** these can be used for Complex */
-
-#define SCAI_ALL1_TYPES int, long, SCAI_NUMERIC_TYPES_TYPES
+#define SCAI_ALL_TYPES int, unsigned int, long, unsigned long, char, SCAI_NUMERIC_TYPES
 
 /*
- * Lists of all used arithmetic types for which matrices, storages might be created
+ * Lists of all used numeric types for which matrices, storages might be created
  */
 
 /*
@@ -166,7 +159,7 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 #define SCAI_ALL_TYPES_LIST                SCAI_TYPELIST( SCAI_ALL_TYPES )
 
-/** Representation type for Scalar must be the arithmetic type with highest precision */
+/** Representation type for Scalar must be the numeric type with highest precision */
 
 typedef ${SCAI_SCALAR_REP_TYPE} ScalarRepType;
 

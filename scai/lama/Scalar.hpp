@@ -125,7 +125,7 @@ public:
     inline Scalar( const type value ) : mValue( value ) \
     { }
 
-    SCAI_COMMON_LOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ALL1_TYPES )
+    SCAI_COMMON_LOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ALL_TYPES )
 
 #undef SCAI_LAMA_SCALAR_CONSTRUCTORS
 
