@@ -37,10 +37,10 @@
 ### Currently MKL can only be used if IndexType == int is used
 
 if    ( SCAI_BLAS_NAME MATCHES "MKL" )
-    if    ( SCAI_INDEX_TYPE MATCHES "int" )
+    if    ( SCAI_INDEX_TYPE STREQUAL "int" )
 	    set ( CLASSES ${CLASSES} MKLCSRUtils )
 	    set ( HEADERS ${HEADERS} MKLCSRTrait MKLCSRWrapper )
-    endif ( SCAI_INDEX_TYPE MATCHES "int" )
+    endif ( SCAI_INDEX_TYPE STREQUAL "int" )
 endif ( SCAI_BLAS_NAME MATCHES "MKL" )
 
 scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )
