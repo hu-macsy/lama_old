@@ -77,10 +77,10 @@ BOOST_AUTO_TEST_CASE( asumOpenMPTest )
     {
         ReadAccess<ValueType> rAValues( AValues );
 
-        ValueType sum = OpenMPBLAS1::asum( -1, rAValues.get(), incX1 );
+        ValueType sum = OpenMPBLAS1::asum( 0, rAValues.get(), incX1 );
         BOOST_CHECK_EQUAL( sum, ValueType( 0 ));
 
-        sum = OpenMPBLAS1::asum( 3, rAValues.get(), -incX2 );
+        sum = OpenMPBLAS1::asum( 3, rAValues.get(), 0 );
         BOOST_CHECK_EQUAL( sum, ValueType( 0 ));
 
         sum = OpenMPBLAS1::asum( 6, rAValues.get(), incX1 );
@@ -112,10 +112,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( asumTest, ValueType, blas_test_types )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
             // n <= 0
-            ValueType sum = asum[loc->getType()]( -1, rAValues.get(), incX1 );
+            ValueType sum = asum[loc->getType()]( 0, rAValues.get(), incX1 );
             BOOST_CHECK_EQUAL( sum, 0.0 );
             // incX <= 0
-            sum = asum[loc->getType()]( 3, rAValues.get(), -incX2 );
+            sum = asum[loc->getType()]( 3, rAValues.get(), 0 );
             BOOST_CHECK_EQUAL( sum, 0.0 );
             // std::cout << "test 1 (incX = 1)" << std::endl;
             sum = asum[loc->getType()]( 6, rAValues.get(), incX1 );
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, blas_test_types )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            axpy[loc->getType()]( -2, 5.0, wAx.get(), incX, wAy.get(), incY );
+            axpy[loc->getType()]( 0, 5.0, wAx.get(), incX, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -257,8 +257,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, blas_test_types )
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         ValueType y[] =
         { -9.0, 8.0, -7.0, 6.0, 5.0, -4.0, 3.0, 2.0, -1.0 };
-        const IndexType incX = 2;
-        const IndexType incY = 3;
+        const IndexType incX = 0;
+        const IndexType incY = 0;
         HArray<ValueType> Ax( testContext );
         Ax.init( x, 6 );
         HArray<ValueType> Ay( testContext );
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, blas_test_types )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            copy[loc->getType()]( 3, wAx.get(), -incX, wAy.get(), -incY );
+            copy[loc->getType()]( 3, wAx.get(), incX, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( iamaxTest, ValueType, blas_test_types )
             IndexType smallestIndexOfMax = iamax[loc->getType()]( 0, rAValues.get(), incX1 );
             BOOST_CHECK_EQUAL( smallestIndexOfMax, zero );
             // incX <= 0
-            smallestIndexOfMax = iamax[loc->getType()]( nValues / incX1, rAValues.get(), -incX2 );
+            smallestIndexOfMax = iamax[loc->getType()]( nValues / incX1, rAValues.get(), 0 );
             BOOST_CHECK_EQUAL( smallestIndexOfMax, zero );
             // n > 0 and incX > 0
             smallestIndexOfMax = iamax[loc->getType()]( nValues / incX1, rAValues.get(), incX1 );
@@ -393,12 +393,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( nrm2Test, ValueType, blas_test_types )
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
-            // n <= 0
+            // n <= 0, but be careful if IndexType is unsigned
             ValueType euclideanNorm = nrm2[loc->getType()]( 0, rAValues.get(), incX1 );
-            BOOST_CHECK_EQUAL( euclideanNorm, 0.0 );
+            BOOST_CHECK_EQUAL( euclideanNorm, ValueType( 0 ) );
             // incX <= 0
-            euclideanNorm = nrm2[loc->getType()]( -1, rAValues.get(), 0 );
-            BOOST_CHECK_EQUAL( euclideanNorm, 0.0 );
+            euclideanNorm = nrm2[loc->getType()]( 5, rAValues.get(), 0 );
+            BOOST_CHECK_EQUAL( euclideanNorm, ValueType( 0 ) );
             // n > 0 and incX > 0
             euclideanNorm = nrm2[loc->getType()]( nValues / incX1, rAValues.get(), incX1 );
             SCAI_CHECK_CLOSE( euclideanNorm, common::Math::sqrt( result1 ), 1e-4 );
@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, blas_test_types )
     ContextPtr loc = Context::getContextPtr( sum.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     SCAI_LOG_INFO( logger, "sum< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-    // check with n <= 0
+    // check with n == 0
     {
         ValueType x[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
         ValueType y[] = { 7.0, 6.0, 5.0, 4.0, 3.0 };
@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, blas_test_types )
             ReadAccess<ValueType> rAx( Ax, loc );
             ReadAccess<ValueType> rAy( Ay, loc );
             WriteAccess<ValueType> wAz( Az, loc );
-            sum[loc->getType()]( -1, 3.0, rAx.get(), 4.0, rAy.get(), wAz.get() );
+            sum[loc->getType()]( 0, 3.0, rAx.get(), 4.0, rAy.get(), wAz.get() );
         }
         {
             ReadAccess<ValueType> rAz( Az );
@@ -564,7 +564,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, blas_test_types )
             BOOST_CHECK_EQUAL( 1.0, rAy[6] );
         }
     }
-    // check with incX <= 0 and incY <= 0
+    // check with incX == 0 and inc == 0
     {
         ValueType x[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
         ValueType y[] = { 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
@@ -577,7 +577,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, blas_test_types )
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            swap[loc->getType()]( nValues, wAx.get(), 0, wAy.get(), static_cast<IndexType>( -1 ) );
+            const IndexType incX = 0;
+            const IndexType incY = 0;
+            swap[loc->getType()]( nValues, wAx.get(), incX, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAx( Ax );
