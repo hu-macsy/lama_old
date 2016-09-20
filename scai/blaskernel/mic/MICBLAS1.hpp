@@ -71,25 +71,25 @@ public:
         const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::nrm2
+     * This function is the MIC implementation of BLASKernelTrait::nrm2
      */
     template<typename ValueType>
     static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::asum
+     * This function is the MIC implementation of BLASKernelTrait::asum
      */
     template<typename ValueType>
     static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::iamax
+     * This function is the MIC implementation of BLASKernelTrait::iamax
      */
     template<typename ValueType>
     static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::swap
+     * This function is the MIC implementation of BLASKernelTrait::swap
      */
     template<typename ValueType>
     static void swap(
@@ -100,7 +100,7 @@ public:
         const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::copy
+     * This function is the MIC implementation of BLASKernelTrait::copy
      */
     template<typename ValueType>
     static void copy(
@@ -111,7 +111,7 @@ public:
         const IndexType incY );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::axpy
+     * This function is the MIC implementation of BLASKernelTrait::axpy
      */
     template<typename ValueType>
     static void axpy(
@@ -123,7 +123,7 @@ public:
         const IndexType incY );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::dot
+     * This function is the MIC implementation of BLASKernelTrait::dot
      */
     template<typename ValueType>
     static ValueType dot(
@@ -134,7 +134,7 @@ public:
         const IndexType incY );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::sum
+     * This function is the MIC implementation of BLASKernelTrait::sum
      */
     template<typename ValueType>
     static void sum(
@@ -156,7 +156,7 @@ private:
     template<typename ValueType>
     struct RegistratorV
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Helper class for (un) registration of kernel routines at static initialization. */

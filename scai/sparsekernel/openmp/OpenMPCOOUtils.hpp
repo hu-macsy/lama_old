@@ -168,7 +168,7 @@ private:
 
     struct Registrator
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Struct for registration of methods with one template argument.
@@ -180,7 +180,7 @@ private:
     template<typename ValueType>
     struct RegistratorV
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Struct for registration of methods with two template arguments.
@@ -192,7 +192,7 @@ private:
     template<typename ValueType, typename OtherValueType>
     struct RegistratorVO
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Constructor for registration. */

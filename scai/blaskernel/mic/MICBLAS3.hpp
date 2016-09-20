@@ -91,7 +91,7 @@ private:
     template<typename ValueType>
     struct RegistratorV
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Helper class for (un) registration of kernel routines at static initialization. */

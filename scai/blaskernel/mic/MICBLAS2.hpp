@@ -53,7 +53,7 @@ namespace scai
 namespace blaskernel
 {
 
-/** Implementations of methods for scai::lama::BLAS2Interface with MIC.
+/** Implementations of methods for BLAS2Interface with MIC.
  *
  *  @todo Move all method documentations to LAMAInterface and make references here
  *  @todo Add information here about use of native BLAS1 libraries
@@ -92,7 +92,7 @@ private:
     template<typename ValueType>
     struct RegistratorV
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Helper class for (un) registration of kernel routines at static initialization. */
