@@ -91,6 +91,9 @@ public:
      */
     static bool getEnvironment( long& val, const char* envVarName );
 
+    static bool getEnvironment( unsigned int& val, const char* envVarName );
+    static bool getEnvironment( unsigned long& val, const char* envVarName );
+
     /** Set a string by value of its environment variable
      *
      *  @param[out]  val is string that will be set
@@ -146,24 +149,10 @@ private:
 
     static bool convertYesNoString( bool& flag, const char* value );
 
-    /** convert the string value to an int value
-     *
-     *  @param[out]  number is variable that will be set
-     *  @param[in]   value is string to be converted
-     *  @return      true if string could be converted, false if no legal value has been found
-     */
+    /** Template version of getEnvironment */
 
-    static bool convertValue( int& number, const char* value );
-
-    /** convert the string value to a long value
-     *
-     *  @param[out]  number is variable that will be set
-     *  @param[in]   value is string to be converted
-     *  @return      true if string could be converted, false if no legal value has been found
-     */
-
-    static bool convertValue( long& number, const char* value );
-
+    template<typename ValueType>       
+    static bool getEnvironmentValue( ValueType& val, const char* envVarName );
 
     static int sRank;  //<!  specifies pos to take from comma separated values
 
