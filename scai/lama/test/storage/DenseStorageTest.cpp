@@ -72,9 +72,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, ValueType, scai_numeric_test_types )
     denseStorage.setRawDenseData( numRows, numColumns, values, eps );
     denseStorage.setZero();
 
-    for ( int i = 0; i < denseStorage.getNumRows(); ++i )
+    for ( IndexType i = 0; i < denseStorage.getNumRows(); ++i )
     {
-        for ( int j = 0; j < denseStorage.getNumColumns(); ++j )
+        for ( IndexType j = 0; j < denseStorage.getNumColumns(); ++j )
         {
             BOOST_CHECK_EQUAL( denseStorage.getValue( i, j ), 0.0 );
         }
@@ -95,9 +95,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     BOOST_REQUIRE_EQUAL( numRows, denseStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, denseStorage.getNumColumns() );
 
-    for ( int i = 0; i < denseStorage.getNumRows(); ++i )
+    for ( IndexType i = 0; i < denseStorage.getNumRows(); ++i )
     {
-        for ( int j = 0; j < denseStorage.getNumColumns(); ++j )
+        for ( IndexType j = 0; j < denseStorage.getNumColumns(); ++j )
         {
             BOOST_CHECK_EQUAL( denseStorage.getValue( i, j ), ValueType( 0 ) );
         }

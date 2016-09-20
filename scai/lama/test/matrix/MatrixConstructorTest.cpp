@@ -86,8 +86,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, MatrixType, MatrixTypes )
     MatrixType matrix;   // default constructor
 
     // check zero sizes
-    BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
-    BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), matrix.getNumRows() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), matrix.getNumColumns() );
 
     // check correct format / type
     BOOST_CHECK_EQUAL( common::TypeTraits<ValueType>::stype, matrix.getValueType() );
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, MatrixType, MatrixTypes )
         spMatrix.prefetch();
     } 
 
-    BOOST_CHECK_EQUAL( 0, local.getNumRows() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), local.getNumRows() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -131,8 +131,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sizeConstructorTest, MatrixType, MatrixTypes )
     matrix.clear();
     matrix.purge();
 
-    BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
-    BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), matrix.getNumRows() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), matrix.getNumColumns() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -448,8 +448,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( virtualConstructorTest, MatrixType, MatrixTypes )
    
         const StorageType& newLocalStorage = newMatrix->getLocalStorage();
 
-        BOOST_CHECK_EQUAL( 0, newLocalStorage.getNumRows() );
-        BOOST_CHECK_EQUAL( 0, newLocalStorage.getNumColumns() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), newLocalStorage.getNumRows() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), newLocalStorage.getNumColumns() );
 
         common::unique_ptr<MatrixType > copyMatrix( matrix.copy() );
 
@@ -633,8 +633,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, MatrixType, MatrixTypes )
 
     matrix0.swap( matrix1 );
 
-    BOOST_CHECK_EQUAL( 0, matrix1.getNumRows() );
-    BOOST_CHECK_EQUAL( 0, matrix1.getNumColumns() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), matrix1.getNumRows() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), matrix1.getNumColumns() );
 
     BOOST_CHECK_EQUAL( n1 * n2, matrix0.getNumRows() );
     BOOST_CHECK_EQUAL( n1 * n2, matrix0.getNumColumns() );

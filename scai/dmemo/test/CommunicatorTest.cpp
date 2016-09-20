@@ -233,14 +233,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_numeric_test_type
     token1->wait();
     SCAI_LOG_INFO( logger, "token for shiftAsync after wait : " << *token1 );
     SCAI_LOG_INFO( logger, "async shift without token, should have been synchronized here" );
-    BOOST_CHECK_EQUAL( 2, recvBuffer.size() );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), recvBuffer.size() );
     {
         ReadAccess<ValueType> rbuffer( recvBuffer );
     }
     // dir = 0: should be like assignment
     delete comm->shiftAsync( recvBuffer, sendBuffer, 0 );
     SCAI_LOG_INFO( logger, "async shift dir = 0, self assing" );
-    BOOST_CHECK_EQUAL( 2, recvBuffer.size() );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), recvBuffer.size() );
     {
         ReadAccess<ValueType> sbuffer( sendBuffer );
         ReadAccess<ValueType> rbuffer( recvBuffer );
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_numeric_test_type
     SCAI_LOG_INFO( logger, "async shift : using same send and recv buffer should fail" );
     BOOST_CHECK_THROW( delete comm->shiftAsync( sendBuffer, sendBuffer, 1 ), Exception );
     // We also verify that the exception is thrown before changing the send Buffer
-    BOOST_CHECK_EQUAL( 2, sendBuffer.size() );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), sendBuffer.size() );
     SCAI_LOG_INFO( logger, "async shift : try to access send / receive buffer before synchronization" );
     unique_ptr<SyncToken> token( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
     // read access on send buffer should be possible
@@ -282,7 +282,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_numeric_test_type
         WriteAccess<ValueType> sendBufferWrite( sendBuffer );
         sendBufferWrite.resize( 0 );
     }
-    BOOST_CHECK_EQUAL( 2, recvBuffer.size() );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), recvBuffer.size() );
     {
         ReadAccess<ValueType> rbuffer( recvBuffer );
         ValueType value0 = static_cast<ValueType>( comm->getNeighbor( -1 ) );
@@ -377,10 +377,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, scai_numeric_test_types )
     if ( rank == root )
     {
         // fill the send data
-        for ( int i = 0; i < size; i++ )
+        for ( IndexType i = 0; i < size; i++ )
         {
             allvals[2 * i] = static_cast<ValueType>( i );
-            allvals[2 * i + 1] = dummyVal + i;
+            allvals[2 * i + 1] = dummyVal + static_cast<ValueType>( i );
         }
     }
 
@@ -735,7 +735,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
     BOOST_REQUIRE( comm );
     PartitionId rank = comm->getRank();
     PartitionId size = comm->getSize();
-    int n = 10;
+    IndexType n = 10;
     scoped_array<ValueType> vector( new ValueType[n] );
 
     // initialize vector individually for each processor
@@ -807,25 +807,25 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
     
     Communicator::getUserProcArray( procArray );
 
-    BOOST_CHECK_EQUAL( procArray[0], 1 );
-    BOOST_CHECK_EQUAL( procArray[1], 3 );
-    BOOST_CHECK_EQUAL( procArray[2], 2 );
+    BOOST_CHECK_EQUAL( procArray[0], PartitionId( 1 ) );
+    BOOST_CHECK_EQUAL( procArray[1], PartitionId( 3 ) );
+    BOOST_CHECK_EQUAL( procArray[2], PartitionId( 2 ) );
 
     common::Settings::putEnvironment( "SCAI_NP", "2", replace );
     
     Communicator::getUserProcArray( procArray );
 
-    BOOST_CHECK_EQUAL( procArray[0], 2 );
-    BOOST_CHECK_EQUAL( procArray[1], 0 );
-    BOOST_CHECK_EQUAL( procArray[2], 0 );
+    BOOST_CHECK_EQUAL( procArray[0], PartitionId( 2 ) );
+    BOOST_CHECK_EQUAL( procArray[1], PartitionId( 0 ) );
+    BOOST_CHECK_EQUAL( procArray[2], PartitionId( 0 ) );
 
     common::Settings::putEnvironment( "SCAI_NP", "5_1", replace );
     
     Communicator::getUserProcArray( procArray );
 
-    BOOST_CHECK_EQUAL( procArray[0], 5 );
-    BOOST_CHECK_EQUAL( procArray[1], 1 );
-    BOOST_CHECK_EQUAL( procArray[2], 0 );
+    BOOST_CHECK_EQUAL( procArray[0], PartitionId( 5 ) );
+    BOOST_CHECK_EQUAL( procArray[1], PartitionId( 1 ) );
+    BOOST_CHECK_EQUAL( procArray[2], PartitionId( 0 ) );
 
     common::Settings::putEnvironment( "SCAI_NP", "", replace );
 

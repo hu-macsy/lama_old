@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
         IndexType count = countNonEmptyRowsBySizes[loc->getType()]( rSizes.get(), n );
-        BOOST_CHECK_EQUAL( 4, count );
+        BOOST_CHECK_EQUAL( IndexType( 4 ), count );
     }
     // count empty array
     {
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
         IndexType count = countNonEmptyRowsBySizes[loc->getType()]( rSizes.get(), sizes.size() );
-        BOOST_CHECK_EQUAL( 0, count );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), count );
     }
 }
 

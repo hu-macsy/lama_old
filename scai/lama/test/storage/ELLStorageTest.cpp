@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     ELLStorage<ValueType> ellStorage( numRows, numColumns, context );
     BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
-    BOOST_REQUIRE_EQUAL( 0, ellStorage.getNumValues() );
+    BOOST_REQUIRE_EQUAL( IndexType( 0 ), ellStorage.getNumValues() );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {

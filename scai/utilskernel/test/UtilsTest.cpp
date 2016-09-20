@@ -145,9 +145,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 
         for ( IndexType i = 0; i < n; i++ )
         {
-            BOOST_CHECK_EQUAL( 0, rValues.get()[i + 0 * n] );
-            BOOST_CHECK_EQUAL( 10, rValues.get()[i + 1 * n] );
-            BOOST_CHECK_EQUAL( 0, rValues.get()[i + 2 * n] );
+            BOOST_CHECK_EQUAL( ValueType( 0 ), rValues.get()[i + 0 * n] );
+            BOOST_CHECK_EQUAL( ValueType( 10 ), rValues.get()[i + 1 * n] );
+            BOOST_CHECK_EQUAL( ValueType( 0 ), rValues.get()[i + 2 * n] );
         }
     }
     {

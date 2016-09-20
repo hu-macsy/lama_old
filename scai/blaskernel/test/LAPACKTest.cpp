@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
         ContextPtr host = Context::getHostPtr();
         ReadAccess<ValueType> rA( a, host );
 
-        for ( int i = 0; i < n * n; ++i )
+        for ( IndexType i = 0; i < n * n; ++i )
         {
             typedef typename TypeTraits<ValueType>::AbsType CompareType;
             CompareType x1 = common::Math::abs( rA[i] );
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {
             ReadAccess<ValueType> rA( a );
 
-            for ( int i = 0; i < n * n; ++i )
+            for ( IndexType i = 0; i < n * n; ++i )
             {
                 BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
             }
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {
             ReadAccess<ValueType> rA( a );
 
-            for ( int i = 0; i < n * n; ++i )
+            for ( IndexType i = 0; i < n * n; ++i )
             {
                 BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
             }
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             ReadAccess<ValueType> rX1( b1 );
             ReadAccess<ValueType> rX2( b2 );
 
-            for ( int i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
 //            printf("Lower:");
                 BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             ReadAccess<ValueType> rX1( b1 );
             ReadAccess<ValueType> rX2( b2 );
 
-            for ( int i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
                 BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
                 BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             ReadAccess<ValueType> rX1( b1 );
             ReadAccess<ValueType> rX2( b2 );
 
-            for ( int i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
 //            printf("Lower:");
                 BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );

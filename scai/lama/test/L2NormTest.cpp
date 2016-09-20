@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_numeric_test_t
     ValueType val = 5.0;
     DenseVector<ValueType> vec( n, val );
     L2Norm l2norm;
-    ValueType expected = common::Math::sqrt( n * val * val );
+    ValueType expected = common::Math::sqrt( ValueType( n ) * val * val );
     BOOST_CHECK_EQUAL( expected, l2norm( vec ) );
     BOOST_CHECK_EQUAL( vec.l2Norm(), l2norm( vec ) );
     WriteAccess<ValueType> hwa( vec.getLocalValues() );

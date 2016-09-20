@@ -1147,9 +1147,9 @@ BOOST_AUTO_TEST_CASE( buildCSRDataTest )
         BOOST_REQUIRE_EQUAL( numValues, csrJA.size() );
         BOOST_REQUIRE_EQUAL( numValues, csrValues.size() );
         // check the IA array ( csrIA are offsets, matrixRowSizes was converted to offsets
-        BOOST_CHECK_EQUAL( 0, matrixRowSizes.maxDiffNorm( csrIA ) );
-        BOOST_CHECK_EQUAL( 0, matrixJA.maxDiffNorm( csrJA ) );
-        BOOST_CHECK_EQUAL( 0, matrixValues.maxDiffNorm( csrValues ) );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), matrixRowSizes.maxDiffNorm( csrIA ) );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), matrixJA.maxDiffNorm( csrJA ) );
+        BOOST_CHECK_EQUAL( ValueType( 0 ), matrixValues.maxDiffNorm( csrValues ) );
     }
 }
 

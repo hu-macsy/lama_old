@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
         dist->getOwnedIndexes( myIndexes1 );
         newDist->getOwnedIndexes( myIndexes2 );
         BOOST_REQUIRE_EQUAL( myIndexes1.size(), myIndexes2.size() );
-        BOOST_CHECK_EQUAL( 0, myIndexes1.maxDiffNorm( myIndexes2 ) );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), myIndexes1.maxDiffNorm( myIndexes2 ) );
 
 #ifdef DELETE_OUTPUT_FILES
         // only one processor should delete the file
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         dist->allOwners( owners1, 0 );
         newDist->allOwners( owners2, 0 );
         BOOST_REQUIRE_EQUAL( owners1.size(), owners2.size() );
-        BOOST_CHECK_EQUAL( 0, owners1.maxDiffNorm( owners2 ) );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), owners1.maxDiffNorm( owners2 ) );
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = PartitionIO::removeFile( fileName, *comm );

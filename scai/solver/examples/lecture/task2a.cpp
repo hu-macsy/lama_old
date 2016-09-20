@@ -86,7 +86,7 @@ int main( int argc, char* argv[] )
     std::cout << "The solution is: ";
     ReadAccess<ValueType> hra( solution.getLocalValues() );
 
-    for ( int i = 0; i < solution.size(); i++ )
+    for ( IndexType i = 0; i < solution.size(); i++ )
     {
         std::cout << hra[i] << " ";
     }

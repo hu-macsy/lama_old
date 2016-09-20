@@ -280,7 +280,7 @@ void MPICommunicator::max_operator( void* in, void* out, int* count, MPI_Datatyp
     ValueType* a = reinterpret_cast<ValueType*>( in );
     ValueType* b = reinterpret_cast<ValueType*>( out );
 
-    for ( IndexType i = 0; i < *count; ++i )
+    for ( int i = 0; i < *count; ++i )
     {
         b[i] = common::Math::max( a[i], b[i] );
     }
@@ -292,7 +292,7 @@ void MPICommunicator::min_operator( void* in, void* out, int* count, MPI_Datatyp
     ValueType* a = reinterpret_cast<ValueType*>( in );
     ValueType* b = reinterpret_cast<ValueType*>( out );
 
-    for ( IndexType i = 0; i < *count; ++i )
+    for ( int i = 0; i < *count; ++i )
     {
         b[i] = common::Math::min( a[i], b[i] );
     }

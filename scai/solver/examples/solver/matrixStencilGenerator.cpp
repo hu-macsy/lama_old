@@ -146,7 +146,7 @@ struct CommandLineArguments
             ss >> dimZ;
         }
 
-        if ( argc != ( dimension + 4 ) )
+        if ( static_cast<IndexType>( argc ) != ( dimension + 4 ) )
         {
             HOST_PRINT( myRank, "Missing values for dim = " << dimension
                         << ", argc = " << argc << ", expected " << ( dimension + 3 ) );

@@ -597,13 +597,13 @@ void MatrixStorage<ValueType>::joinRows(
 
         // initialize counters (Attention: sizes.size() != rowSizes.size())
 
-        for ( int i = 0; i < sizes.size(); ++i )
+        for ( IndexType i = 0; i < sizes.size(); ++i )
         {
             sizes[i] = 0;
         }
 
         // count elements for each row
-        for ( int i = 0; i < rowSizes.size(); ++i )
+        for ( IndexType i = 0; i < rowSizes.size(); ++i )
         {
             sizes[indexes[i]] += rowSizes[i];
         }
@@ -629,11 +629,11 @@ void MatrixStorage<ValueType>::joinRows(
     // insert rows
     IndexType dataIndex = 0;
 
-    for ( int i = 0; i < rowSizes.size(); ++i )
+    for ( IndexType i = 0; i < rowSizes.size(); ++i )
     {
         IndexType currentRow = indexes[i];
 
-        for ( int ii = 0; ii < rowSizes[i]; ++ii )
+        for ( IndexType ii = 0; ii < rowSizes[i]; ++ii )
         {
             // insert data at old position 'dataIndex' in row 'currentRow'
             // at new position 'tmpIA[currentRow]'
@@ -708,7 +708,7 @@ void MatrixStorage<ValueType>::joinHalo(
 
     if ( attemptDiagonalProperty && localData.hasDiagonalProperty() )
     {
-        numKeepDiagonals = std::min( localData.getNumRows(), localData.getNumColumns() );
+        numKeepDiagonals = common::Math::min( localData.getNumRows(), localData.getNumColumns() );
         SCAI_LOG_INFO( logger, localData << ": has diagonal property, numKeepDiagonals = " << numKeepDiagonals );
     }
 

@@ -52,6 +52,7 @@
 
 #include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/cuda/CUDASettings.hpp>
+#include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
@@ -116,7 +117,7 @@ SCAI_LOG_DEF_LOGGER( CUDACSRUtils::logger, "CUDA.CSRUtils" )
 
 // not yet: __device__ const IndexType cudaNIndex = std::numeric_limits<IndexType>::max();
 
-#define cudaNIndex ( -1 )
+#define cudaNIndex static_cast<IndexType>( -1 )
 
 IndexType CUDACSRUtils::sizes2offsets( IndexType array[], const IndexType n )
 {
@@ -1946,33 +1947,6 @@ IndexType CUDACSRUtils::matrixAddSizes(
 /*                                             hashTable Methods                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-// ToDo: atomicCAS/atomicADD versions needed for IndexType = long, but not otherwise
-
-static  __inline__ __device__ 
-long atomicCAS( long* address, long compare, long val )
-{
-    typedef unsigned long long int RepT;
-
-    RepT* ptrCompare = reinterpret_cast<RepT*>( &compare );
-    RepT* ptrVal     = reinterpret_cast<RepT*>( &val );
-
-    RepT* t_address = reinterpret_cast<RepT*>( address );
-
-    return __ullAtomicCAS( t_address, *ptrCompare, *ptrVal);
-}
-
-static __inline__ __device__ 
-long atomicAdd( long* address, long val )
-{
-    typedef unsigned long long int RepT;
-
-    RepT* ptrVal     = reinterpret_cast<RepT*>( &val );
-
-    RepT* t_address = reinterpret_cast<RepT*>( address );
-
-    return __ullAtomicAdd( t_address, *ptrVal );
-}
-
 __device__
 inline bool multHlp_insertIndexex( IndexType colB,
                                    IndexType sHashTableIndexes[],
@@ -1992,11 +1966,11 @@ inline bool multHlp_insertIndexex( IndexType colB,
         for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
         {
             IndexType hash = ( gx + HASH_C0 * i + HASH_C1 *  i * i ) % NUM_ELEMENTS_IN_SHARED;
-            IndexType val = atomicCAS( &sHashTableIndexes[hash], cudaNIndex, colB );
+            IndexType val = common::CUDAUtils::atomicCAS( &sHashTableIndexes[hash], cudaNIndex, colB );
 
             if ( val == cudaNIndex )
             {
-                atomicAdd( &cIA[aRowIt], one );
+                common::CUDAUtils::atomicAdd( &cIA[aRowIt], one );
                 return true;
             }
 
@@ -2014,11 +1988,11 @@ inline bool multHlp_insertIndexex( IndexType colB,
         IndexType globalHash = ( gx + HASH_C0 * i + HASH_C1 * ( IndexType ) i * i ) % ( NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
         IndexType localHash = globalHash % NUM_ELEMENTS_PER_CHUNK;
         IndexType chunk = globalHash / NUM_ELEMENTS_PER_CHUNK;
-        IndexType val = atomicCAS( &chunkPtr[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], cudaNIndex, colB );
+        IndexType val = common::CUDAUtils::atomicCAS( &chunkPtr[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], cudaNIndex, colB );
 
         if ( val == cudaNIndex )
         {
-            atomicAdd( &cIA[aRowIt], one );
+            common::CUDAUtils::atomicAdd( &cIA[aRowIt], one );
             return true;
         }
 
@@ -2051,7 +2025,7 @@ inline bool multHlp_insertValues( IndexType colB,
         for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
         {
             IndexType hash = ( gx + HASH_C0 * i + HASH_C1 * i * i ) % NUM_ELEMENTS_IN_SHARED;
-            IndexType val = atomicCAS( &sHashTableIndexes[hash], cudaNIndex, colB );
+            IndexType val = common::CUDAUtils::atomicCAS( &sHashTableIndexes[hash], cudaNIndex, colB );
 
             if ( val == cudaNIndex )
             {
@@ -2074,7 +2048,7 @@ inline bool multHlp_insertValues( IndexType colB,
         IndexType globalHash = ( gx + HASH_C0 * i + HASH_C1 * ( IndexType ) i * i ) % ( NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
         IndexType localHash = globalHash % NUM_ELEMENTS_PER_CHUNK;
         IndexType chunk = globalHash / NUM_ELEMENTS_PER_CHUNK;
-        IndexType val = atomicCAS( &indexChunks[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], cudaNIndex, colB );
+        IndexType val = common::CUDAUtils::atomicCAS( &indexChunks[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], cudaNIndex, colB );
 
         if ( val == cudaNIndex )
         {
@@ -2112,7 +2086,7 @@ inline bool multHlp_nextRow( IndexType* row,
     if ( laneId == 0 )
     {
         IndexType one = 1;
-        sRowIt[localWarpId] = atomicAdd( rowCounter, one );
+        sRowIt[localWarpId] = common::CUDAUtils::atomicAdd( rowCounter, one );
     }
 
     *row = sRowIt[localWarpId];
@@ -2161,7 +2135,7 @@ inline void multHlp_releaseChunks ( IndexType* chunkList,
             {
                 headItem = chunkList[0];
                 chunkList[sChunkList[i] + 1] = headItem;
-                old = atomicCAS( const_cast<IndexType*>( &chunkList[0] ), headItem, sChunkList[i] );
+                old = common::CUDAUtils::atomicCAS( const_cast<IndexType*>( &chunkList[0] ), headItem, sChunkList[i] );
             }
             while ( old != headItem );
         }
@@ -2203,7 +2177,7 @@ inline bool multHlp_reserveChunks( IndexType* chunkList,
                         __threadfence();
                         nextItem = chunkList[headItem + 1];
 
-                        old = atomicCAS( const_cast<IndexType*>( &chunkList[0] ), headItem, nextItem );
+                        old = common::CUDAUtils::atomicCAS( const_cast<IndexType*>( &chunkList[0] ), headItem, nextItem );
 
                         if ( old == headItem )
                         {
@@ -2722,7 +2696,7 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
             if ( hashCol != cudaNIndex )
             {
                 // the volatile attribute must be cast away
-                IndexType offset = atomicAdd( const_cast<IndexType*>( sColA ), one );
+                IndexType offset = common::CUDAUtils::atomicAdd( const_cast<IndexType*>( sColA ), one );
                 cJA[rowOffset + offset] = hashCol;
                 cValues[rowOffset + offset] = hashVal * alpha;
             }
@@ -2760,7 +2734,7 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
 
             if ( hashCol != cudaNIndex )
             {
-                IndexType offset = atomicAdd( const_cast<IndexType*>( sColA ), 1 );
+                IndexType offset = common::CUDAUtils::atomicAdd( const_cast<IndexType*>( sColA ), IndexType( 1 ) );
                 cJA[rowOffset + offset] = hashCol;
                 cValues[rowOffset + offset] = hashVal * alpha;
             }

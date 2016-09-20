@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapLocalStorageTest, MatrixType, SparseMatrixTyp
 
     BOOST_CHECK_EQUAL( &haloStorage, &matrix.getHaloStorage() );
 
-    BOOST_CHECK_EQUAL( 0, storage.getNumValues() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), storage.getNumValues() );
 
     storage.clear(); // resizes to 0 x 0
 
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FlatCopyTest, MatrixType, SparseMatrixTypes )
 
     matrix.swapLocalStorage( storage );
 
-    BOOST_CHECK_EQUAL( 0, storage.getNumValues() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), storage.getNumValues() );
 
     storage.clear(); // resizes to 0 x 0
 

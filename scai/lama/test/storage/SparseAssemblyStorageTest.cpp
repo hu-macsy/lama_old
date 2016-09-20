@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_typ
     SparseAssemblyStorage<ValueType> assemblyStorage( numRows, numColumns );
     BOOST_REQUIRE_EQUAL( numRows, assemblyStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, assemblyStorage.getNumColumns() );
-    BOOST_REQUIRE_EQUAL( 0, assemblyStorage.getNumValues() );
+    BOOST_REQUIRE_EQUAL( IndexType( 0 ), assemblyStorage.getNumValues() );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {

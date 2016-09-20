@@ -413,7 +413,7 @@ inline void IOStream::readBinConverted( hmemo::HArray<DataType>& data,
 template<typename ValueType>
 void IOStream::writeFormatted( const hmemo::HArray<ValueType>& val, int prec )
 {
-    int n = val.size();
+    IndexType n = val.size();
 
     SCAI_LOG_INFO( logger, "writeFormatted<" 
                            << common::TypeTraits<ValueType>::id() << ":" << prec 
@@ -447,7 +447,7 @@ void IOStream::writeFormatted(
     const hmemo::HArray<ValueType2>& val2, int prec2,
     const hmemo::HArray<ValueType3>& val3, int prec3 )
 {
-    int n = val1.size();
+    IndexType n = val1.size();
 
     SCAI_ASSERT_EQUAL( n, val2.size(), "size mismatch" );
     SCAI_ASSERT_EQUAL( n, val3.size(), "size mismatch" );
@@ -486,7 +486,7 @@ void IOStream::writeFormatted(
     const hmemo::HArray<ValueType1>& val1, int prec1,
     const hmemo::HArray<ValueType2>& val2, int prec2 )
 {
-    int n = val1.size();
+    IndexType n = val1.size();
 
     SCAI_ASSERT_EQUAL( n, val2.size(), "size mismatch" );
 

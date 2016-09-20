@@ -841,7 +841,7 @@ void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.sort" )
 
-    for ( int i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         perm[i] = i;
     }
@@ -859,12 +859,12 @@ void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
     std::sort( perm, perm + n, compare::f );
     common::scoped_array<ValueType> tmp( new ValueType[n] );
 
-    for ( int i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         tmp[i] = array[i];
     }
 
-    for ( int i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         array[i] = tmp[perm[i]];
     }

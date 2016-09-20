@@ -1665,7 +1665,7 @@ void OpenMPCSRUtils::matrixMultiply(
             IndexType j = cJA[jj];
             cValues[jj] = static_cast<ValueType>( 0.0 );
 
-            if ( j == -1 )
+            if ( j == nIndex )
             {
                 continue;
             }

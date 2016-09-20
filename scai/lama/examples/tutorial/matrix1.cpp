@@ -69,7 +69,7 @@ int main()
 {
     IndexType perm [] = { 5, 2, 1, 0, 3, 4 };
     const IndexType irow = 3;
-    const int N = sizeof( perm ) / sizeof( IndexType );
+    const IndexType N = sizeof( perm ) / sizeof( IndexType );
     CSRSparseMatrix<ValueType> a;
     common::scoped_array<ValueType> values( new ValueType[ N * N ] );
 

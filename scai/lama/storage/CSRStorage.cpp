@@ -711,8 +711,8 @@ ValueType CSRStorage<ValueType>::getValue( const IndexType i, const IndexType j 
     for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
     {
         IndexType col = ja[jj];
-        SCAI_ASSERT_DEBUG( 0 <= col && col < mNumColumns,
-                           "column index at pos " << jj << " = " << col << " out of range" )
+
+        SCAI_ASSERT_VALID_INDEX_DEBUG( col, mNumColumns, "column index at ja[" << jj << "] out of range" )
 
         if ( col == j )
         {
@@ -844,7 +844,8 @@ template<typename ValueType>
 template<typename OtherType>
 void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    
     IndexType n1;     // offset for row i in ja, values
     IndexType nrow;   // number of nonzero entries in row i
     {

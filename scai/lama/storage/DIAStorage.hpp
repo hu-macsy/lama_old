@@ -406,11 +406,9 @@ private:
         const IndexType numRows,
         const IndexType numDiagonals )
     {
-        SCAI_ASSERT_ERROR( irow >= 0, "irow = " << irow );
-        SCAI_ASSERT_ERROR( idiag >= 0, "idiag = " << idiag );
-        SCAI_ASSERT_ERROR( irow < numRows, "irow = " << irow << " out of range, numRows = " << numRows );
-        SCAI_ASSERT_ERROR( idiag < numDiagonals,
-                           "idiag = " << idiag << " out of range, numDiagonals = " << numDiagonals );
+        SCAI_ASSERT_VALID_INDEX_ERROR( irow, numRows, "illegal row index" )
+        SCAI_ASSERT_VALID_INDEX_ERROR( idiag, numDiagonals, "illegal diag" )
+
         return idiag * numRows + irow;
     }
 

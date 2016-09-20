@@ -321,7 +321,7 @@ void DenseMatrix<ValueType>::setDenseData(
     {
         splitColumns( colDist );
 
-        for ( int i = 0; i < colDist->getCommunicator().getSize(); ++i )
+        for ( PartitionId i = 0; i < colDist->getCommunicator().getSize(); ++i )
         {
             SCAI_LOG_DEBUG( logger, "mData[" << i << "] = " << *mData[i] );
         }
@@ -1341,8 +1341,8 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     ContextPtr localContext = mData[0]->getContextPtr();
     const Distribution& colDist = getColDistribution();
     const Communicator& comm = colDist.getCommunicator();
-    int rank = comm.getRank();
-    int n = colDist.getNumPartitions();
+    PartitionId rank = comm.getRank();
+    PartitionId n = colDist.getNumPartitions();
     mData[0]->prefetch();
 
     // It makes no sense to prefetch denseX because, if a transfer is started
@@ -1382,7 +1382,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
         WriteOnlyAccess<ValueType> wSendValues( *sendValues, contextPtr, size );
         ReadAccess<ValueType> rLocalX( localX, contextPtr );
 // fill send buffer with local X of this processor
-        int i = 0;
+        IndexType i = 0;
 
         for ( ; i < localX.size(); ++i )
         {

@@ -237,7 +237,7 @@ void MatlabIO::readStorageImpl(
 
     bool readPattern = mScalarTypeData == common::scalar::PATTERN;
 
-    int nEntries = 2;   
+    IndexType nEntries = 2;   
 
     if ( !readPattern )
     {
@@ -271,7 +271,7 @@ void MatlabIO::readStorageImpl(
     SCAI_LOG_DEBUG( logger, "read ja  : " << ja  )
     SCAI_LOG_DEBUG( logger, "read val : " << val )
 
-    int minRowIndex = ia.min();
+    IndexType minRowIndex = ia.min();
 
     if ( minRowIndex == 0 )
     {

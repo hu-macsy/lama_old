@@ -166,7 +166,7 @@ template<typename ValueType>
 template<typename OtherType>
 void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     static LAMAKernel<DenseKernelTrait::getRow<OtherType, ValueType> > getRow;
     ContextPtr loc = this->getContextPtr();
     getRow.getSupportedContext( loc );
@@ -182,7 +182,7 @@ template<typename ValueType>
 template<typename OtherType>
 void DenseStorageView<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
-    IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonalValues = common::Math::min( mNumColumns, mNumRows );
     static LAMAKernel<DenseKernelTrait::getDiagonal<OtherType, ValueType> > getDiagonal;
     ContextPtr loc = this->getContextPtr();
     getDiagonal.getSupportedContext( loc );
@@ -198,7 +198,7 @@ template<typename ValueType>
 template<typename OtherType>
 void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
-    IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonalValues = common::Math::min( mNumColumns, mNumRows );
     static LAMAKernel<DenseKernelTrait::setDiagonal<ValueType, OtherType> > setDiagonal;
     ContextPtr loc = this->getContextPtr();
     setDiagonal.getSupportedContext( loc );
@@ -827,9 +827,10 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         }
     }
 
-    int m = a.getNumRows();
-    int k = b.getNumRows();
-    int n = b.getNumColumns();
+    IndexType m = a.getNumRows();
+    IndexType k = b.getNumRows();
+    IndexType n = b.getNumColumns();
+
     SCAI_ASSERT_EQUAL_ERROR( k, a.getNumColumns() )
     mNumRows = m;
     mNumColumns = n;

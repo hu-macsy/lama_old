@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE( FactoryTest )
     for ( size_t i = 0; i < allArrays.size(); ++i )
     {
         _HArray& array = *allArrays[i];
-        BOOST_CHECK_EQUAL( 0, array.size() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), array.size() );
     }
 }
 
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
     ValueType total = HArrayUtils::scan( array );
     ValueType lastVal = array[n];
     BOOST_CHECK_EQUAL( array.size(), n + 1 );
-    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), 0 );
+    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), ValueType( 0 ) );
     BOOST_CHECK_EQUAL( total, lastVal );
 }
 
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
     ValueType returnVal = HArrayUtils::unscan( array );
 
     BOOST_REQUIRE_EQUAL( array.size(), n - 1 );
-    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), 0 );
+    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), ValueType( 0 ) );
     BOOST_CHECK_EQUAL( firstVal, returnVal );
 }
 
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
         typedef typename TypeTraits<ValueType>::AbsType AbsType;
         AbsType asum = Math::abs( sum );
         // random numbers are between -1.0 and 1.0, so should sum up approximately to 0
-        BOOST_CHECK( asum / AbsType( n ) < AbsType( 0.2 ) );
+        BOOST_CHECK( asum  < AbsType( n / 20 ) );
     }
 }
 
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
     LArray<ValueType> origArray( n, vals, loc );
     LArray<ValueType> array1;
     HArrayUtils::gather( array1, origArray, perm );
-    BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), 0 );
+    BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), ValueType( 0 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
 
     HArrayUtils::bucketSort( offsets, perm, emptyArray, numBuckets, loc );
 
-    BOOST_CHECK_EQUAL( perm.size(), 0 );
+    BOOST_CHECK_EQUAL( perm.size(), IndexType( 0 ) );
     BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
 
     IndexType vals[] = { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 };
@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
 
     numBuckets = 1;
     HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
-    BOOST_CHECK_EQUAL( perm.size(), 2 );
+    BOOST_CHECK_EQUAL( perm.size(), IndexType( 2 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -423,11 +423,11 @@ BOOST_AUTO_TEST_CASE( bucketCountTest )
     BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
     BOOST_CHECK_EQUAL( sizes.sum(), n );
 
-    BOOST_CHECK_EQUAL( 4, numBuckets );
-    BOOST_CHECK_EQUAL( 2, sizes[0] );
-    BOOST_CHECK_EQUAL( 4, sizes[1] );
-    BOOST_CHECK_EQUAL( 2, sizes[2] );
-    BOOST_CHECK_EQUAL( 2, sizes[3] );
+    BOOST_CHECK_EQUAL( IndexType( 4 ), numBuckets );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[0] );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[1] );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[2] );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[3] );
 }
 
 /* --------------------------------------------------------------------- */
@@ -543,7 +543,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_numeric_test_
             if ( alpha == ValueType( 0 ) && beta == ValueType( 0 ) )
             {
                 // target should be unchanged, size was 0 due to purge
-                BOOST_CHECK_EQUAL( 0, target.size() );
+                BOOST_CHECK_EQUAL( IndexType( 0 ), target.size() );
                 continue;
             }
 
@@ -583,7 +583,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_numeric_test
     {
         BOOST_CHECK_EQUAL( NCASE, target.size() );
         ReadAccess<ValueType> rTarget( target, host );
-        for ( int i = 0; i < NCASE; ++i )
+        for ( IndexType i = 0; i < NCASE; ++i )
         {
             BOOST_CHECK_EQUAL( factors[i], rTarget[i] );
         }
@@ -594,7 +594,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_numeric_test
     {
         BOOST_CHECK_EQUAL( NCASE, target.size() );
         ReadAccess<ValueType> rTarget( target, host );
-        for ( int i = 0; i < NCASE; ++i )
+        for ( IndexType i = 0; i < NCASE; ++i )
         {
             BOOST_CHECK_EQUAL( beta * factors[i], rTarget[i] );
         }
@@ -680,7 +680,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
     LArray<ValueType> sparseArray( loc );
     LArray<IndexType> sparseIndexes( loc );
     HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, denseArray, loc );
-    BOOST_CHECK_EQUAL( sparseArray.size(), 7 );
+    BOOST_CHECK_EQUAL( sparseArray.size(), IndexType( 7 ) );
     BOOST_REQUIRE_EQUAL( sparseArray.size(), sparseIndexes.size() );
     // The spare indexes must be sorted, ascending = true
     BOOST_CHECK( HArrayUtils::isSorted( sparseIndexes, true, loc ) );

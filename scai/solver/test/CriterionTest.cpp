@@ -79,8 +79,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CriterionTest" );
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), 10 );
-    BOOST_CHECK_EQUAL( mIterationCountCriterion2->getIterationExtrema(), 8 );
+    BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), IndexType( 10 ) );
+    BOOST_CHECK_EQUAL( mIterationCountCriterion2->getIterationExtrema(), IndexType( 8 ) );
     Criterion* boolcondition1 = new Criterion();
     CriterionPtr testcriterion1 = CriterionPtr( boolcondition1 );
     BOOST_CHECK_EQUAL( testcriterion1->getOperation(), Criterion::AND );
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( ConditionTest )
 BOOST_AUTO_TEST_CASE( AssignmentTest )
 {
     mIterationCountCriterion1 = mIterationCountCriterion2;
-    BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), 8 );
+    BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), IndexType( 8 ) );
 }
 
 /* ---------------------------------------------------------------------- */

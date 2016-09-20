@@ -188,8 +188,8 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     csrStorage.setContextPtr( context );
     csrStorage.allocate( numRows, numColumns );
     csrStorage.swap( csrIA, csrJA, csrValues );
-    BOOST_CHECK_EQUAL( 0, csrJA.size() );
-    BOOST_CHECK_EQUAL( 0, csrValues.size() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), csrJA.size() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), csrValues.size() );
     BOOST_CHECK_EQUAL( numValues, csrStorage.getNumValues() );
     bool diagonalProperty = csrStorage.hasDiagonalProperty();
     csrStorage.sortRows( diagonalProperty );

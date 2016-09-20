@@ -234,11 +234,11 @@ static inline void getStencil(
 
     for ( IndexType jz = idZ - leftZ; jz <= idZ + rightZ; ++jz )
     {
-        IndexType distZ = std::abs( jz - idZ );
+        IndexType distZ = common::Math::abs( jz - idZ );
 
         for ( IndexType jy = idY - leftY; jy <= idY + rightY; ++jy )
         {
-            IndexType distYZ = distZ + std::abs( jy - idY );
+            IndexType distYZ = distZ + common::Math::abs( jy - idY );
 
             if ( distYZ > maxDistance )
             {
@@ -247,7 +247,7 @@ static inline void getStencil(
 
             for ( IndexType jx = idX - leftX; jx <= idX + rightX; ++jx )
             {
-                IndexType distXYZ = distYZ + std::abs( jx - idX );
+                IndexType distXYZ = distYZ + common::Math::abs( jx - idX );
 
                 if ( distXYZ > maxDistance )
                 {

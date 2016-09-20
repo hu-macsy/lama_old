@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
         iterativeSolver.initialize( matrix );
         iterativeSolver.solve( solution, rhs );
 
-        BOOST_CHECK_EQUAL( iterativeSolver.getIterationCount(), 1 );
+        BOOST_CHECK_EQUAL( iterativeSolver.getIterationCount(), IndexType( 1 ) );
     }
 }
 

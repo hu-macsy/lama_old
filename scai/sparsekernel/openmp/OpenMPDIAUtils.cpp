@@ -89,7 +89,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
             {
                 const IndexType j = i + diaOffsets[d];
 
-                if ( ( j < 0 ) || ( j >= numColumns ) )
+                if ( ! common::Utils::validIndex( j, numColumns ) )
                 {
                     continue;
                 }
@@ -197,12 +197,7 @@ void OpenMPDIAUtils::getCSRValues(
             {
                 IndexType j = i + diaOffsets[ii];
 
-                if ( j < 0 )
-                {
-                    continue;
-                }
-
-                if ( j >= numColumns )
+                if ( !common::Utils::validIndex( j, numColumns ) )
                 {
                     continue;
                 }
@@ -256,12 +251,7 @@ void OpenMPDIAUtils::getCSRSizes(
         {
             IndexType j = i + diaOffsets[ii]; // column index
 
-            if ( j < 0 )
-            {
-                continue;
-            }
-
-            if ( j >= numColumns )
+            if ( !common::Utils::validIndex( j, numColumns ) )
             {
                 continue;
             }
@@ -350,12 +340,7 @@ void OpenMPDIAUtils::normalGEMV(
             {
                 const IndexType j = i + diaOffsets[ii];
 
-                if ( j >= numColumns )
-                {
-                    break;
-                }
-
-                if ( j >= 0 )
+                if ( common::Utils::validIndex( j, numColumns ) )
                 {
                     accu += diaValues[ii * numRows + i] * x[j];
                 }
@@ -516,12 +501,7 @@ void OpenMPDIAUtils::jacobi(
             {
                 const IndexType j = i + diaOffset[ii];
 
-                if ( j >= numColumns )
-                {
-                    break;
-                }
-
-                if ( j >= 0 )
+                if ( common::Utils::validIndex( j, numColumns ) )
                 {
                     temp -= diaValues[ii * numRows + i] * oldSolution[j];
                 }

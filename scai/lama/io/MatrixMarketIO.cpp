@@ -470,7 +470,7 @@ void MatrixMarketIO::readArrayImpl(
     IndexType i;
     ValueType* vPtr = vector.get();
 
-    for ( int l = 0; l < numValues && !inFile.eof(); ++l )
+    for ( IndexType l = 0; l < numValues && !inFile.eof(); ++l )
     {
         std::getline( inFile, line );
         std::istringstream reader( line );

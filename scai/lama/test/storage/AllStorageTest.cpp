@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     for ( size_t i = 0; i < allMatrixStorages.size(); ++i )
     {
         _MatrixStorage& storage = *allMatrixStorages[i];
-        BOOST_CHECK_EQUAL( 0, storage.getNumRows() );
-        BOOST_CHECK_EQUAL( 0, storage.getNumColumns() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), storage.getNumRows() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), storage.getNumColumns() );
     }
 }
 
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
         SCAI_LOG_DEBUG( logger, "Zero matrix " << numRows << " x " << numColumns << " : " << storage )
         BOOST_REQUIRE_EQUAL( numRows, storage.getNumRows() );
         BOOST_REQUIRE_EQUAL( numColumns, storage.getNumColumns() );
-        BOOST_REQUIRE_EQUAL( 0, storage.getNumValues() );
+        BOOST_REQUIRE_EQUAL( IndexType( 0 ), storage.getNumValues() );
         LArray<ScalarRepType> row;
 
         for ( IndexType i = 0; i < numRows; ++i )

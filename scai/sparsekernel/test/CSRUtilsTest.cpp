@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
         WriteAccess<IndexType> wCSCJA( cscJA );
         WriteAccess<ValueType> wCSCValues( cscValues );
 
-        for ( int j = 0; j <= numColumns; ++j )
+        for ( IndexType j = 0; j <= numColumns; ++j )
         {
             BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
         }
@@ -167,12 +167,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
         bool diagonalFlag = false;
         OpenMPCSRUtils::sortRowElements( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
 
-        for ( int j = 0; j < numValues; ++j )
+        for ( IndexType j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCJA[j], ja2[j] );
         }
 
-        for ( int j = 0; j < numValues; ++j )
+        for ( IndexType j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCValues[j], values2[j] );
         }
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
         WriteAccess<IndexType> wCSCJA( cscJA, loc );
         WriteAccess<ValueType> wCSCValues( cscValues, loc );
 
-        for ( int j = 0; j <= numColumns; ++j )
+        for ( IndexType j = 0; j <= numColumns; ++j )
         {
             BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
         }
@@ -252,17 +252,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
         ReadAccess<IndexType> wCSCJA( cscJA, host );
         ReadAccess<ValueType> wCSCValues( cscValues, host );
 
-        for ( int j = 0; j <= numColumns; ++j )
+        for ( IndexType j = 0; j <= numColumns; ++j )
         {
             BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
         }
 
-        for ( int j = 0; j < numValues; ++j )
+        for ( IndexType j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCJA[j], ja2[j] );
         }
 
-        for ( int j = 0; j < numValues; ++j )
+        for ( IndexType j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCValues[j], values2[j] );
         }

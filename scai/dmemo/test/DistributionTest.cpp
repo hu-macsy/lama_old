@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
         }
         else
         {
-            BOOST_REQUIRE_EQUAL( 0, owners3.size() );
+            BOOST_REQUIRE_EQUAL( IndexType( 0 ), owners3.size() );
         }
 
         hmemo::ReadAccess<PartitionId> rOwners1( owners1 );

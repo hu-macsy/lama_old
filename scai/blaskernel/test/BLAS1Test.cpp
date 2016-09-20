@@ -353,16 +353,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( iamaxTest, ValueType, blas_test_types )
         const IndexType incX2 = 2; // { 1, 3, 5}
         const IndexType result1 = 3;
         const IndexType result2 = 2;
+        const IndexType zero = 0;
         HArray<ValueType> AValues( nValues, values, testContext );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
             // n <= 0
             IndexType smallestIndexOfMax = iamax[loc->getType()]( 0, rAValues.get(), incX1 );
-            BOOST_CHECK_EQUAL( smallestIndexOfMax, 0 );
+            BOOST_CHECK_EQUAL( smallestIndexOfMax, zero );
             // incX <= 0
             smallestIndexOfMax = iamax[loc->getType()]( nValues / incX1, rAValues.get(), -incX2 );
-            BOOST_CHECK_EQUAL( smallestIndexOfMax, 0 );
+            BOOST_CHECK_EQUAL( smallestIndexOfMax, zero );
             // n > 0 and incX > 0
             smallestIndexOfMax = iamax[loc->getType()]( nValues / incX1, rAValues.get(), incX1 );
             BOOST_CHECK_EQUAL( smallestIndexOfMax, result1 );

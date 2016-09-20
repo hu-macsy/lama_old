@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
 
     requiredPlan.clear();
 
-    BOOST_CHECK_EQUAL( 0, requiredPlan.size() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), requiredPlan.size() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     requiredPlan.purge();
 
-    BOOST_CHECK_EQUAL( 0, requiredPlan.size() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), requiredPlan.size() );
 }
 
 /* --------------------------------------------------------------------- */

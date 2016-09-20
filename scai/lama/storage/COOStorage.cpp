@@ -878,7 +878,8 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const
 {
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
     hmemo::ContextPtr hostContext = hmemo::Context::getHostPtr();
     hmemo::WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
     const hmemo::ReadAccess<IndexType> ia( mIA, hostContext );

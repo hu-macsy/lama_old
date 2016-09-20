@@ -453,8 +453,8 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
 
             // The storage read can have less columns 
 
-            BOOST_CHECK_EQUAL( 0, m.getNumColumns() );
-            BOOST_CHECK_EQUAL( 0, m.getNumRows() );
+            BOOST_CHECK_EQUAL( IndexType( 0 ), m.getNumColumns() );
+            BOOST_CHECK_EQUAL( IndexType( 0 ), m.getNumRows() );
 
 #ifdef DELETE_OUTPUT_FILES
             int rc = FileIO::removeFile( fileName );
@@ -646,11 +646,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
 
         fileIO->readArray( inArray, fileName );
 
-        BOOST_CHECK_EQUAL( 0, inArray.size() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), inArray.size() );
 
         // due to binary output and using same data type there should be no loss
 
-        BOOST_CHECK_EQUAL( 0, array.maxDiffNorm( inArray ) );
+        BOOST_CHECK_EQUAL( ValueType( 0 ), array.maxDiffNorm( inArray ) );
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );

@@ -220,12 +220,12 @@ BOOST_AUTO_TEST_CASE( copyHaloTest )
 
     halo.clear();  // -> halo1.clear()
 
-    BOOST_CHECK_EQUAL( 0, halo1.getProvidesIndexes().size() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), halo1.getProvidesIndexes().size() );
     BOOST_CHECK_EQUAL( nIndexes, halo2.getProvidesIndexes().size() );
 
     halo2.purge();
 
-    BOOST_CHECK_EQUAL( 0, halo2.getProvidesIndexes().size() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), halo2.getProvidesIndexes().size() );
 }
 
 /* --------------------------------------------------------------------- */

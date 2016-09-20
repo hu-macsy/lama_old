@@ -116,9 +116,10 @@ int main( int argc, char** argv )
         HArray<ValueType> values;
         const _MatrixStorage& local = mat.getLocalStorage();
         local.buildCSRData( ia, ja, values );
-        int m = nRows;
-        int n = nColumns;
-        int s = nZoom;
+
+        IndexType m = nRows;
+        IndexType n = nColumns;
+        IndexType s = nZoom;
 
         if ( m > local.getNumRows() )
         {
@@ -165,9 +166,10 @@ int main( int argc, char** argv )
         HArray<ValueType> values;
         const _MatrixStorage& local = mat.getLocalStorage();
         local.buildCSRData( ia, ja, values );
-        int m = nRows;
-        int n = nRows * local.getNumColumns() / local.getNumRows();
-        int s = nZoom;
+
+        IndexType m = nRows;
+        IndexType n = nRows * local.getNumColumns() / local.getNumRows();
+        IndexType s = nZoom;
 
         if ( m > local.getNumRows() )
         {

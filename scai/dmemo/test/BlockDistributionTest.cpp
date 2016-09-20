@@ -130,11 +130,11 @@ BOOST_AUTO_TEST_CASE( blockSizeTest )
 
         if ( static_cast<IndexType>( rank ) < n )
         {
-            BOOST_CHECK_EQUAL( small.getLocalSize(), 1 );
+            BOOST_CHECK_EQUAL( small.getLocalSize(), IndexType( 1 ) );
         }
         else
         {
-            BOOST_CHECK_EQUAL( small.getLocalSize(), 0 );
+            BOOST_CHECK_EQUAL( small.getLocalSize(), IndexType( 0 ) );
         }
     }
 }

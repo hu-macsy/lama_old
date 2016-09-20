@@ -103,8 +103,8 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     for ( size_t i = 0; i < allMatrices.size(); ++i )
     {
         Matrix& matrix = *allMatrices[i];
-        BOOST_CHECK_EQUAL( 0, matrix.getNumRows() );
-        BOOST_CHECK_EQUAL( 0, matrix.getNumColumns() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), matrix.getNumRows() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), matrix.getNumColumns() );
     }
 }
 
@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
             dist->getOwnedIndexes( myGlobalIndexes2 );
 
             BOOST_CHECK_EQUAL( myGlobalIndexes1.size(), myGlobalIndexes2.size() );
-            BOOST_CHECK_EQUAL( 0, myGlobalIndexes1.maxDiffNorm( myGlobalIndexes2 ) );
+            BOOST_CHECK_EQUAL( IndexType( 0 ), myGlobalIndexes1.maxDiffNorm( myGlobalIndexes2 ) );
         }
     }
 }
