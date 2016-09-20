@@ -329,6 +329,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     BOOST_CHECK_EQUAL( array.size(), n );
     ValueType sum = array.sum();
 
+    SCAI_LOG_INFO( logger, "Draw " << n << " random values of type " << common::TypeTraits<ValueType>::id()
+                            << ", sum up to " << sum )
+
     if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
     {
         // no check for integer types
@@ -338,7 +341,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
         typedef typename TypeTraits<ValueType>::AbsType AbsType;
         AbsType asum = Math::abs( sum );
         // random numbers are between -1.0 and 1.0, so should sum up approximately to 0
-        BOOST_CHECK( asum  < AbsType( n / 20 ) );
+        BOOST_CHECK( asum  < AbsType( n / 5 ) );
     }
 }
 
@@ -425,7 +428,7 @@ BOOST_AUTO_TEST_CASE( bucketCountTest )
 
     BOOST_CHECK_EQUAL( IndexType( 4 ), numBuckets );
     BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[0] );
-    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[1] );
+    BOOST_CHECK_EQUAL( IndexType( 4 ), sizes[1] );
     BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[2] );
     BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[3] );
 }
