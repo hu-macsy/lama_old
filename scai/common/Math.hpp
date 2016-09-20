@@ -93,8 +93,6 @@ struct Math
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long abs( const unsigned long& x );
 
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long abs( const long long& x );
-
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float abs( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double abs( const double& x );
@@ -187,7 +185,7 @@ struct Math
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long min( const long& x, const long& y );
 
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long min( const long long& x, const long long& y );
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long min( const unsigned long& x, const unsigned long& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float min( const float& x, const float& y );
 
@@ -212,7 +210,7 @@ struct Math
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long max( const long& x, const long& y );
 
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long max( const long long& x, const long long& y );
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long max( const unsigned long& x, const unsigned long& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float max( const float& x, const float& y );
 
@@ -238,8 +236,6 @@ struct Math
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( long& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( unsigned long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( long long& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( float& x );
 
@@ -290,7 +286,7 @@ long Math::abs( const long& x )
     return ::labs( x );
 }
 
-long long Math::abs( const long long& x )
+unsigned long Math::abs( const unsigned long& x )
 {
     return ::llabs( x );
 }
@@ -395,7 +391,7 @@ long Math::min( const long& x, const long& y )
     return y < x ? y : x;
 }
 
-long long Math::min( const long long& x, const long long& y )
+unsigned long Math::min( const unsigned long& x, const unsigned long& y )
 {
     return y < x ? y : x;
 }
@@ -432,7 +428,7 @@ long Math::max( const long& x, const long& y )
     return x > y ? x : y;
 }
 
-long long Math::max( const long long& x, const long long& y )
+unsigned long Math::max( const unsigned long& x, const unsigned long& y )
 {
     return x > y ? x : y;
 }
@@ -470,11 +466,6 @@ void Math::random( long& x )
 }
 
 void Math::random( unsigned long& x )
-{
-    x = rand();
-}
-
-void Math::random( long long& x )
 {
     x = rand();
 }
