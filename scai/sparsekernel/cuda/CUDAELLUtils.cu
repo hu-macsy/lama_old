@@ -106,18 +106,12 @@ struct greaterThan
 };
 
 template<typename T>
-struct notEqual
+struct changeIndexWithZeroSize
 {
-    const T x;
-    notEqual( T _x )
-        : x( _x )
-    {
-    }
-
     __host__ __device__
     T operator()( const IndexType& value, const IndexType& index )
     {
-        if ( value > x )
+        if ( value > 0 )
         {
             return index;
         }
@@ -129,17 +123,12 @@ struct notEqual
 };
 
 template<typename T>
-struct greaterThanEqual
+struct isOkay
 {
-    const T x;
-    greaterThanEqual( T _x )
-        : x( _x )
-    {
-    }
     __host__ __device__
-    T operator()( T y )
+    bool operator()( T y )
     {
-        return y >= x;
+        return y != T( - 1 );
     }
 };
 
@@ -195,9 +184,11 @@ void CUDAELLUtils::setNonEmptyRowsBySizes(
     thrust::device_ptr<IndexType> sizes_ptr( const_cast<IndexType*>( sizes ) );
     thrust::counting_iterator<IndexType> sequence( 0 );
     thrust::device_vector<IndexType> tmp( numRows );
-    // transform array
-    thrust::transform( sizes_ptr, sizes_ptr + numRows, sequence, tmp.begin(), notEqual<IndexType>( 0 ) );
-    thrust::copy_if( tmp.begin(), tmp.end(), rowIndexes_ptr, greaterThanEqual<IndexType>( 0 ) );
+    // transform array, replace in sequence all non-zero entries with -1
+    // e.g. sizes = [ 0, 2, 0, 1, 3 ], sequence = [ 0, 1, 2, 3, 4 ] -> [ -1, 1, -1, 3, 4 ]
+    thrust::transform( sizes_ptr, sizes_ptr + numRows, sequence, tmp.begin(), changeIndexWithZeroSize<IndexType>() );
+    // now compact all row indexes with positive sizes
+    thrust::copy_if( tmp.begin(), tmp.end(), rowIndexes_ptr, isOkay<IndexType>() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
