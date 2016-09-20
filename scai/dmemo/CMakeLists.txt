@@ -101,9 +101,9 @@ include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 addInternalAndExternalIncludes()
 
 if    ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
-    if    ( SCAI_INDEX_TYPE MATCHES "int" )
+    if    ( SCAI_INDEX_TYPE STREQUAL "int" )
         set ( METISDISTRIBUTION MetisDistribution )
-    endif ( SCAI_INDEX_TYPE MATCHES "int" )
+    endif ( SCAI_INDEX_TYPE STREQUAL "int" )
 endif ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
