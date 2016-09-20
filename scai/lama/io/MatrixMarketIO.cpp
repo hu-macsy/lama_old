@@ -832,10 +832,10 @@ void MatrixMarketIO::readStorageImpl(
 
     inFile.closeCheck();
 
-    // we shape the matrix by maximal appearing indexes
+    // we shape the matrix by maximal appearing indexes, apply max only if size > 0 
 
-    int nrows = ia.max() + 1;
-    int ncols = ja.max() + 1;
+    IndexType nrows = ia.size() ? ia.max() + 1 : 0;
+    IndexType ncols = ja.size() ? ja.max() + 1 : 0;
 
     SCAI_LOG_INFO( logger, "size from header: " << numRows << " x " << numColumns
                            << ", size by indexes: " << nrows << " x " << ncols )
