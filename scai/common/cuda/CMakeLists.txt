@@ -34,7 +34,7 @@
 
 if    ( CUDA_FOUND AND USE_CUDA )
     set ( CUDACLASSES CUDAError CUDASettings CUDACtx CUDAAccess )
-    set ( CUDAHEADERS CUDATexVector )
+    set ( CUDAHEADERS CUDATexVector CUDAUtils )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 # add source and header files to the current project
