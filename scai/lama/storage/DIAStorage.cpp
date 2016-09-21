@@ -596,6 +596,8 @@ void DIAStorage<ValueType>::setOffsets(
     const bool upperDiagonalUsed[],
     const bool lowerDiagonalUsed[] )
 {
+    SCAI_LOG_INFO( logger, "setOffsets, max diagonals = " << maxNumDiagonals << ", " << *this )
+
     // Help routine to set offsets from used diagonals
     mNumDiagonals = 0;
     IndexType firstIndex = 0;
@@ -620,6 +622,7 @@ void DIAStorage<ValueType>::setOffsets(
     }
 
     SCAI_LOG_INFO( logger, "storage data requires " << mNumDiagonals << " diagonals a " << mNumRows << " values" )
+
     WriteOnlyAccess<IndexType> wOffset( mOffset, mNumDiagonals );
 
     if ( mNumDiagonals > 0 )
@@ -633,11 +636,14 @@ void DIAStorage<ValueType>::setOffsets(
             firstIndex = 1;
         }
 
-        for ( IndexType i = maxNumDiagonals - 1; i > 0; i-- )
+        if ( maxNumDiagonals )  // otherwise maxNumDiagonals - 1 is illegal for unsigned
         {
-            if ( lowerDiagonalUsed[i] )
+            for ( IndexType i = maxNumDiagonals - 1; i > 0; i-- )
             {
-                wOffset[mNumDiagonals++] = -i;
+                if ( lowerDiagonalUsed[i] )
+                {
+                    wOffset[mNumDiagonals++] = -i;
+                }
             }
         }
 
