@@ -144,7 +144,7 @@ static inline IndexType getMatrixPosition(
 template<typename IndexType>
 static inline int getNumNeighbors( IndexType id, IndexType dim, int shift )
 {
-    int neighbors = ::abs( shift );
+    int neighbors = common::Math::abs( shift );
 
     if ( shift < 0 )
     {
@@ -166,6 +166,7 @@ static inline int getNumNeighbors( IndexType id, IndexType dim, int shift )
     }
 
     // printf("%d of %d, shift = %d, has %d neighbors\n", id, dim, shift, neighbors );
+
     return neighbors;
 }
 
@@ -183,9 +184,11 @@ static inline IndexType getNStencilValues(
     SCAI_ASSERT_DEBUG( idX < dimX, "idX = " << idX << " out of range, dimX = " << dimX )
     SCAI_ASSERT_DEBUG( idY < dimY, "idY = " << idY << " out of range, dimY = " << dimY )
     SCAI_ASSERT_DEBUG( idZ < dimZ, "idZ = " << idZ << " out of range, dimZ = " << dimZ )
+
     IndexType nX = getNumNeighbors( idX, dimX, -length ) + getNumNeighbors( idX, dimX, length );
     IndexType nY = getNumNeighbors( idY, dimY, -length ) + getNumNeighbors( idY, dimY, length );
     IndexType nZ = getNumNeighbors( idZ, dimZ, -length ) + getNumNeighbors( idZ, dimZ, length );
+
     // SCAI_LOG_DEBUG( logger, idX << "," << idY << "," << idZ << ": neighbors = "
     //                   << nX << "," << nY << "," << nZ )
     // printf("%d,%d,%d has %d,%d,%d neighbors\n", idX, idY, idZ, nX, nY, nZ);
@@ -204,6 +207,10 @@ static inline IndexType getNStencilValues(
         // dimension cannot be 1, 2
         numValues += nX * nY * nZ;
     }
+
+    // std::cout << "getNStencilValues( idX = " << idX << ", idY = " << idY << ", idZ = " << idZ
+    //                         << ", dimX = " << dimX << ", dimY = " << dimY << ", dimZ = " << dimZ 
+    //                         << ", len = " << length << ", maxDist = " << maxDistance  << " ) -> " << numValues << std::endl;
 
     return numValues;
 }
@@ -225,29 +232,33 @@ static inline void getStencil(
     values.clear(); // reset
     positions.push_back( getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) );
     values.push_back( stencilType - 1 );
-    IndexType leftX = getNumNeighbors( idX, dimX, -length );
-    IndexType rightX = getNumNeighbors( idX, dimX, length );
-    IndexType leftY = getNumNeighbors( idY, dimY, -length );
-    IndexType rightY = getNumNeighbors( idY, dimY, length );
-    IndexType leftZ = getNumNeighbors( idZ, dimZ, -length );
-    IndexType rightZ = getNumNeighbors( idZ, dimZ, length );
 
-    for ( IndexType jz = idZ - leftZ; jz <= idZ + rightZ; ++jz )
+    int leftX = getNumNeighbors( idX, dimX, -length );
+    int rightX = getNumNeighbors( idX, dimX, length );
+    int leftY = getNumNeighbors( idY, dimY, -length );
+    int rightY = getNumNeighbors( idY, dimY, length );
+    int leftZ = getNumNeighbors( idZ, dimZ, -length );
+    int rightZ = getNumNeighbors( idZ, dimZ, length );
+
+    // std::cout << "range [ " << leftX << ":" << rightX << ", " << leftY << ":" << rightY << ", " << leftZ << ":" << rightZ << "]"
+    //           << " for " << idX << ":" << idY << ":" << idZ << std::endl;
+
+    for ( int dz = -leftZ; dz <= rightZ; ++dz )
     {
-        IndexType distZ = common::Math::abs( jz - idZ );
+        IndexType distZ = common::Math::abs( dz );
 
-        for ( IndexType jy = idY - leftY; jy <= idY + rightY; ++jy )
+        for ( int dy = -leftY; dy <= rightY; ++dy )
         {
-            IndexType distYZ = distZ + common::Math::abs( jy - idY );
+            IndexType distYZ = distZ + common::Math::abs( dy );
 
             if ( distYZ > maxDistance )
             {
                 continue; // can already skip next loop
             }
 
-            for ( IndexType jx = idX - leftX; jx <= idX + rightX; ++jx )
+            for ( int dx = -leftX; dx <= rightX; ++dx )
             {
-                IndexType distXYZ = distYZ + common::Math::abs( jx - idX );
+                IndexType distXYZ = distYZ + common::Math::abs( dx);
 
                 if ( distXYZ > maxDistance )
                 {
@@ -261,7 +272,7 @@ static inline void getStencil(
                     continue;
                 }
 
-                positions.push_back( getMatrixPosition( jx, jy, jz, dimX, dimY, dimZ ) );
+                positions.push_back( getMatrixPosition( idX + dx, idY + dy, idZ + dz, dimX, dimY, dimZ ) );
                 values.push_back( -1 );
             }
         }
