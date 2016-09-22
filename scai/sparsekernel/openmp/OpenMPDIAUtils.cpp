@@ -431,11 +431,6 @@ void OpenMPDIAUtils::normalGEVM(
                 {
                     const IndexType j = i + diaOffsets[ii];
 
-                    if ( j >= numColumns )
-                    {
-                        break;
-                    }
-
                     if ( j == k )
                     {
                         accu += diaValues[ii * numRows + i] * x[i];
