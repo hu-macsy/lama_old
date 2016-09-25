@@ -611,22 +611,30 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 {
     SCAI_REGION( "OpenMP.Utils.validIndexes" )
     SCAI_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
-    bool validFlag = true;
+
+    IndexType invalid = 0;
 
     // #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE) reduction( & : validFlag )
 
-    for ( IndexType i = 0; i < n; i++ )
+    #pragma omp parallel
     {
-        SCAI_LOG_TRACE( logger, "validIndexes, array[ " << i << " ] = " << array[i] )
+        IndexType tInvalid = 0;  // each thread counts invalid indexes for its part
 
-        if ( ! common::Utils::validIndex( array[i], size ) )
+        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE ) 
+        for ( IndexType i = 0; i < n; i++ )
         {
-            validFlag = false;
+            if ( ! common::Utils::validIndex( array[i], size ) )
+            {
+                tInvalid++;
+            }
         }
+
+        atomicAdd( invalid, tInvalid );
     }
 
-    SCAI_LOG_INFO( logger, "validFlag = " << validFlag )
-    return validFlag;
+    SCAI_LOG_INFO( logger, "#invalid indexes = " << invalid )
+
+    return invalid == 0;
 }
 
 /* --------------------------------------------------------------------------- */
