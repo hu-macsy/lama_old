@@ -169,7 +169,9 @@ bool Settings::getEnvironmentValue( ValueType& val, const char* envVarName )
 
     std::istringstream input( envVal );
 
-    return input >> val;
+    input >> val;
+
+    return input.fail() == 0;
 }
 
 /* ----------------------------------------------------------------------------- */
