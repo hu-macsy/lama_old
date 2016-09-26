@@ -71,9 +71,9 @@ SCAI_LOG_DEF_LOGGER( LAPACK_LAPACK::logger, "LAPACK.LAPACK" )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType LAPACK_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
-                                const IndexType n, ValueType* const A, const IndexType lda,
-                                IndexType* const ipiv )
+void LAPACK_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
+                           const IndexType n, ValueType* const A, const IndexType lda,
+                           IndexType* const ipiv )
 {
     SCAI_REGION( "LAPACK.LAPACK.getrf<float>" )
     SCAI_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
@@ -135,8 +135,6 @@ IndexType LAPACK_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
         COMMON_THROWEXCEPTION(
             "value(" << info << "," << info << ")" << " is exactly zero" )
     }
-
-    return info;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -179,8 +177,8 @@ void LAPACK_LAPACK::getinv( const IndexType n, ValueType* a,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
-                                ValueType* const a, const IndexType lda, IndexType* const ipiv )
+void LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
+                           ValueType* const a, const IndexType lda, IndexType* const ipiv )
 {
     SCAI_REGION( "LAPACK.LAPACK.getri<float>" )
     SCAI_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
@@ -244,20 +242,17 @@ IndexType LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
         COMMON_THROWEXCEPTION(
             "value(" << info << "," << info << ")" << " is exactly zero" )
     }
-
-    return info;
 }
 
 template<typename ValueType>
-IndexType LAPACK_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
-                                const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
-                                const IndexType nrhs, const ValueType* AP, ValueType* B,
-                                const IndexType ldb )
+void LAPACK_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
+                           const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
+                           const IndexType nrhs, const ValueType* AP, ValueType* B,
+                           const IndexType ldb )
 {
     SCAI_REGION( "LAPACK.LAPACK.tptrs<float>" )
     typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
     typedef LAPACKTrait::LAPACKFlag LAPACKFlag;
-    LAPACKIndexType info = 0;
     LAPACKFlag UL = LAPACKTrait::enum2char( uplo );
     LAPACKFlag TA = LAPACKTrait::enum2char( trans );
     LAPACKFlag DI = LAPACKTrait::enum2char( diag );
@@ -276,8 +271,6 @@ IndexType LAPACK_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
         // TODO: transpose matrix.
         COMMON_THROWEXCEPTION( "row major order not supported for tptrs" );
     }
-
-    return info;
 }
 
 /* --------------------------------------------------------------------------- */
