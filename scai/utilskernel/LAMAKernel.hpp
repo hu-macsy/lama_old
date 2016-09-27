@@ -131,6 +131,6 @@ public:
     }
 };
 
-}
+} /* end namespace utilskernel */
 
-}
+} /* end namespace scai */

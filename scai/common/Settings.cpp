@@ -90,31 +90,6 @@ void Settings::parseArgs( int& argc, const char* argv[] )
 
 /* ----------------------------------------------------------------------------- */
 
-bool Settings::convertValue( int& flag, const char* stringVal )
-{
-    int nread = sscanf( stringVal, "%d", &flag );
-
-    if ( nread == 1 )
-    {
-        return true;
-    }
-
-    return false;
-}
-
-bool Settings::convertValue( long& flag, const char* stringVal )
-{
-    int nread = sscanf( stringVal, "%ld", &flag );
-
-    if ( nread == 1 )
-    {
-        return true;
-    }
-
-    return false;
-}
-
-
 bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 {
     char key = static_cast<char>( toupper( stringVal[0] ) );
@@ -182,46 +157,44 @@ bool Settings::getEnvironment( bool& flag, const char* envVarName )
 
 /* ----------------------------------------------------------------------------- */
 
-bool Settings::getEnvironment( int& val, const char* envVarName )
+template<typename ValueType> 
+bool Settings::getEnvironmentValue( ValueType& val, const char* envVarName )
 {
     std::string envVal;
 
-    if ( !getEnvironment( envVal, envVarName ) )
+    if ( !Settings::getEnvironment( envVal, envVarName ) )
     {
         return false; // no initialization by environment
     }
 
-    bool done = convertValue( val, envVal.c_str() );
+    std::istringstream input( envVal );
 
-    if ( !done )
-    {
-        return false;
-    }
+    input >> val;
 
-    return true; // environment variable was available
+    return input.fail() == 0;
 }
 
 /* ----------------------------------------------------------------------------- */
 
-bool Settings::getEnvironment( long& val, const char* envVarName )
+bool Settings::getEnvironment( int& val, const char* envVarName )
 {
-    std::string envVal;
-
-    if ( !getEnvironment( envVal, envVarName ) )
-    {
-        return false; // no initialization by environment
-    }
-
-    bool done = convertValue( val, envVal.c_str() );
-
-    if ( !done )
-    {
-        return false;
-    }
-
-    return true; // environment variable was available
+    return getEnvironmentValue<int>( val, envVarName );
 }
 
+bool Settings::getEnvironment( long& val, const char* envVarName )
+{
+    return getEnvironmentValue<long>( val, envVarName );
+}
+
+bool Settings::getEnvironment( unsigned int& val, const char* envVarName )
+{
+    return getEnvironmentValue<unsigned int>( val, envVarName );
+}
+
+bool Settings::getEnvironment( unsigned long& val, const char* envVarName )
+{
+    return getEnvironmentValue<unsigned long>( val, envVarName );
+}
 
 /* ----------------------------------------------------------------------------- */
 

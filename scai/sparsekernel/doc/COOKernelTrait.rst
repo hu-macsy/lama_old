@@ -61,7 +61,6 @@ Conversion
 ====================== ============================================================= ==== ==== ===
 **Functionname**       **Description**                                               Host CUDA MIC
 ====================== ============================================================= ==== ==== ===
-getCSRSizes            COO --> CSR: get sparse row sizes                             *         *
 offsets2ia             CSR --> COO: converting offset array (CSR) to ia array (COO)  *    *    *
 getCSRValues           COO --> CSR: conversion COO to CSR                            *
 setCSRData             CSR --> COO: conversion CSR to COO                            *    *    *

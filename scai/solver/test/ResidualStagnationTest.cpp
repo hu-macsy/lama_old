@@ -43,7 +43,7 @@
 #include <scai/solver/Jacobi.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
-#include <scai/lama/test/EquationHelper.hpp>
+#include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 using namespace scai::solver;
@@ -79,14 +79,14 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ResidualStagnationTest" )
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    BOOST_CHECK_EQUAL( mCriterionDouble->getLookback(), 6 );
-    BOOST_CHECK_EQUAL( mCriterionFloat->getLookback(), 4 );
+    BOOST_CHECK_EQUAL( mCriterionDouble->getLookback(), IndexType( 6 ) );
+    BOOST_CHECK_EQUAL( mCriterionFloat->getLookback(), IndexType( 4 ) );
     NormPtr norm( new MaxNorm() );
     ResidualStagnation* testcriterion = new ResidualStagnation( norm );
-    BOOST_CHECK_EQUAL( testcriterion->getLookback(), 1 );
+    BOOST_CHECK_EQUAL( testcriterion->getLookback(), IndexType( 1 ) );
     BOOST_CHECK_EQUAL( testcriterion->getPrecision(), 0.1 );
     ResidualStagnation* testcriterion2 = new ResidualStagnation( *testcriterion );
-    BOOST_CHECK_EQUAL( testcriterion2->getLookback(), 1 );
+    BOOST_CHECK_EQUAL( testcriterion2->getLookback(), IndexType( 1 ) );
     BOOST_CHECK_EQUAL( testcriterion2->getPrecision(), 0.1 );
 }
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 {
     ResidualStagnation* testcriterion;
     testcriterion = ( ResidualStagnation* ) mCriterionFloat->copy();
-    BOOST_CHECK_EQUAL( testcriterion->getLookback(), 4 );
+    BOOST_CHECK_EQUAL( testcriterion->getLookback(), IndexType( 4 ) );
     BOOST_CHECK_EQUAL( testcriterion->getPrecision(), 10.0 );
 }
 
@@ -124,17 +124,17 @@ BOOST_AUTO_TEST_CASE( SetAndGetPrecisionTest )
 
 BOOST_AUTO_TEST_CASE ( GetAndSetLookBackTest )
 {
-    BOOST_CHECK_EQUAL( mCriterionDouble->getLookback(), 6 );
-    BOOST_CHECK_EQUAL( mCriterionFloat->getLookback(), 4 );
+    BOOST_CHECK_EQUAL( mCriterionDouble->getLookback(), IndexType( 6 ) );
+    BOOST_CHECK_EQUAL( mCriterionFloat->getLookback(), IndexType( 4 ) );
     mCriterionDouble->setLookback( 4 );
     mCriterionFloat->setLookback( 2 );
-    BOOST_CHECK_EQUAL( mCriterionDouble->getLookback(), 4 );
-    BOOST_CHECK_EQUAL( mCriterionFloat->getLookback(), 2 );
+    BOOST_CHECK_EQUAL( mCriterionDouble->getLookback(), IndexType( 4 ) );
+    BOOST_CHECK_EQUAL( mCriterionFloat->getLookback(), IndexType( 2 ) );
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, ValueType, scai_numeric_test_types )
 {
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, ValueType, scai_arithmetic_test_
     solver.setStoppingCriterion( criterion );
     solver.initialize( coefficients );
     solver.solve( solution, rhs );
-    BOOST_CHECK_EQUAL( 1, solver.getIterationCount() );
+    BOOST_CHECK_EQUAL( IndexType( 1 ), solver.getIterationCount() );
 }
 
 /* --------------------------------------------------------------------- */

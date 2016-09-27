@@ -79,8 +79,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CriterionTest" );
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), 10 );
-    BOOST_CHECK_EQUAL( mIterationCountCriterion2->getIterationExtrema(), 8 );
+    BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), IndexType( 10 ) );
+    BOOST_CHECK_EQUAL( mIterationCountCriterion2->getIterationExtrema(), IndexType( 8 ) );
     Criterion* boolcondition1 = new Criterion();
     CriterionPtr testcriterion1 = CriterionPtr( boolcondition1 );
     BOOST_CHECK_EQUAL( testcriterion1->getOperation(), Criterion::AND );
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( ConditionTest )
 BOOST_AUTO_TEST_CASE( AssignmentTest )
 {
     mIterationCountCriterion1 = mIterationCountCriterion2;
-    BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), 8 );
+    BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), IndexType( 8 ) );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE ( isSatisfiedTest )
     typedef SCAI_TEST_TYPE ValueType;
     const IndexType N = 40;
     scai::lama::CSRSparseMatrix<ValueType> coefficients;
-    scai::lama::MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N, N );
+    scai::lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
     scai::lama::DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
     scai::lama::DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
     CG cgsolver( "CriterionTestSolver" );

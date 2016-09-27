@@ -39,7 +39,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/L1Norm.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -55,7 +55,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.L1NormTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_numeric_test_types )
 {
     // Note: l1norm( vec ) is same as vec.l1Norm()
 
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_arithmetic_tes
     ValueType val = 5.0;
     DenseVector<ValueType> vec( n, val );
     L1Norm l1norm;
-    ValueType expected = n * val;
+    ValueType expected = ValueType( n ) * val;
     BOOST_CHECK_EQUAL( expected, l1norm( vec ) );
     BOOST_CHECK_EQUAL( vec.l1Norm(), l1norm( vec ) );
     WriteAccess<ValueType> hwa( vec.getLocalValues() );

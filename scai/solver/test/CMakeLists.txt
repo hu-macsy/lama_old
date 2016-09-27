@@ -32,13 +32,13 @@
  # @date 25.01.2016
 ###
 
-add_subdirectory( distributed )
-
 scai_project ( 
 
 	CLASSES
 
 	HEADERS
+
+        EquationHelper
 
 	SOURCES
 
@@ -64,16 +64,17 @@ scai_project (
         RichardsonTest
         SimpleAMGTest
         SolutionProxyTest
-        SolverTest
-        SolverTest1
+        AllSolverTest
         TFQMRTest
         TimerTest
-        
+        VersionTest
+
+        solverTest
    )
    
 ### set include directories ###
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 ### add definitions ###
 

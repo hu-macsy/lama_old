@@ -279,7 +279,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const ValueType value )
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
     ContextPtr loc = this->getContextPtr();
     setVal.getSupportedContext( loc );
-    IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonalValues = common::Math::min( mNumColumns, mNumRows );
     // Note: diagonal is first column in mValues ( stored column-wise )
     // values[i] = scalar
     WriteAccess<ValueType> wValues( mValues, loc );
@@ -298,7 +298,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
     static LAMAKernel<UtilKernelTrait::setGather<ValueType, OtherValueType> > setGather;
     ContextPtr loc = this->getContextPtr();
     setGather.getSupportedContext( loc );
-    IndexType numDiagonal = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonal = common::Math::min( mNumColumns, mNumRows );
     SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
     ReadAccess<IndexType> rJa( mJa, loc );
@@ -316,7 +316,7 @@ template<typename OtherValueType>
 void JDSStorage<ValueType>::getRowImpl( HArray<OtherValueType>& row, const IndexType i ) const
 {
     SCAI_LOG_INFO( logger, "getRowImpl with i = " << i )
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     static LAMAKernel<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
     ContextPtr loc = this->getContextPtr();
     getRow.getSupportedContext( loc );
@@ -341,14 +341,14 @@ void JDSStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) 
     static LAMAKernel<UtilKernelTrait::setScatter<OtherValueType, ValueType> > setScatter;
     ContextPtr loc = this->getContextPtr();
     setScatter.getSupportedContext( loc );
-    IndexType numDiagonal = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonal = common::Math::min( mNumColumns, mNumRows );
     SCAI_CONTEXT_ACCESS( loc )
     WriteOnlyAccess<OtherValueType> wDiagonal( diagonal, loc, numDiagonal );
     ReadAccess<IndexType> rPerm( mPerm, loc );
     ReadAccess<ValueType> rValues( mValues, loc );
     // diagonal is first column in JDS data
     // wDiagonal[ rJa[ i ] ] = rValues[ i ];
-    setScatter[loc]( wDiagonal.get(), rPerm.get(), rValues.get(), numDiagonal );
+    setScatter[loc]( wDiagonal.get(), rPerm.get(), rValues.get(), utilskernel::reduction::COPY, numDiagonal );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -394,7 +394,7 @@ template<typename ValueType>
 bool JDSStorage<ValueType>::checkDiagonalProperty() const
 {
     SCAI_LOG_INFO( logger, "checkDiagonalProperty" )
-    IndexType n = std::min( mNumRows, mNumColumns );
+    IndexType n = common::Math::min( mNumRows, mNumColumns );
     bool diagonalProperty = false; // initialization just for safety
 
     if ( n == 0 )
@@ -602,7 +602,7 @@ void JDSStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> wCsrIA( ia, loc, mNumRows + 1 );
     SCAI_CONTEXT_ACCESS( loc )
     // rowValues[ perm[i] ] = ilg[i]
-    setScatter[loc]( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), mNumRows );
+    setScatter[loc]( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), utilskernel::reduction::COPY, mNumRows );
 
     if ( ja == NULL || values == NULL )
     {
@@ -1403,7 +1403,7 @@ const char* JDSStorage<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_NUMERIC_TYPES_HOST )
 
 #define JDS_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void JDSStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
@@ -1419,9 +1419,9 @@ SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_ARITHMETIC_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define JDS_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef JDS_STORAGE_INST_LVL2
 #undef JDS_STORAGE_INST_LVL1

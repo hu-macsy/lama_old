@@ -100,7 +100,7 @@ void printIt( const Array& a )
 
 int main()
 {
-    static int N = 10;
+    static IndexType N = 10;
     Array a, b, c;
     // initialize b and c
     ContextPtr host = Context::getHostPtr();

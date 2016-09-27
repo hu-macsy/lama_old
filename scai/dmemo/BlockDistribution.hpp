@@ -91,9 +91,17 @@ public:
 
     virtual IndexType getLocalSize() const;
 
+    /** Override default implementation Distribution::getMaxLocalSize() */
+
+    virtual IndexType getMaxLocalSize() const;
+
     virtual IndexType local2global( const IndexType localIndex ) const;
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
+
+    /** Implementation of pure function Distribution::getBlockDistributionSize, here same as getLocalSize */
+
+    virtual IndexType getBlockDistributionSize() const;
 
     virtual bool isEqual( const Distribution& other ) const;
 

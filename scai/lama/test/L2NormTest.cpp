@@ -39,7 +39,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -56,13 +56,13 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.L2NormTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_numeric_test_types )
 {
     IndexType n = 4;
     ValueType val = 5.0;
     DenseVector<ValueType> vec( n, val );
     L2Norm l2norm;
-    ValueType expected = common::Math::sqrt( n * val * val );
+    ValueType expected = common::Math::sqrt( ValueType( n ) * val * val );
     BOOST_CHECK_EQUAL( expected, l2norm( vec ) );
     BOOST_CHECK_EQUAL( vec.l2Norm(), l2norm( vec ) );
     WriteAccess<ValueType> hwa( vec.getLocalValues() );

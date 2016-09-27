@@ -254,7 +254,7 @@ template<typename ValueType>
 bool ELLStorage<ValueType>::checkDiagonalProperty() const
 {
     SCAI_LOG_INFO( logger, "checkDiagonalProperty" )
-    IndexType numDiagonals = std::min( mNumRows, mNumColumns );
+    IndexType numDiagonals = common::Math::min( mNumRows, mNumColumns );
     bool diagonalProperty = true;
 
     if ( numDiagonals == 0 )
@@ -561,7 +561,7 @@ template<typename OtherType>
 void ELLStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
     SCAI_LOG_TRACE( logger, "getRowImpl # row = " << row << ", i = " << i )
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     static LAMAKernel<ELLKernelTrait::getRow<ValueType, OtherType> > getRow;
     ContextPtr loc = this->getContextPtr();
     getRow.getSupportedContext( loc );
@@ -580,7 +580,7 @@ template<typename OtherType>
 void ELLStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     SCAI_LOG_INFO( logger, "getDiagonalImpl # diagonal = " << diagonal )
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonalElements = common::Math::min( mNumColumns, mNumRows );
     // OtherType is output type, so use it as first template argument
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
     ContextPtr loc = this->getContextPtr();
@@ -1761,7 +1761,7 @@ const char* ELLStorage<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_NUMERIC_TYPES_HOST )
 
 #define ELL_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void ELLStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
@@ -1777,9 +1777,9 @@ SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_ARITHMETIC_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define ELL_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef ELL_STORAGE_INST_LVL2
 #undef ELL_STORAGE_INST_LVL1

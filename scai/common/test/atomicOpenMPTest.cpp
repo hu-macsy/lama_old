@@ -45,7 +45,7 @@ using namespace common;
 
 /* -------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, scai_numeric_test_types )
 {
     int size = 100;
     ValueType globalResult = 0;
@@ -57,6 +57,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, scai_arithmetic_test_ty
         atomicAdd( globalResult, localResult );
     }
 
-    int res = ( size * ( size + 1 ) ) / 2;
+    ValueType res = ( size * ( size + 1 ) ) / static_cast<ValueType> ( 2 );
     BOOST_CHECK_EQUAL( globalResult, res );
 }

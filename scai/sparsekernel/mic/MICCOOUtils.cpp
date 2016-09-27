@@ -82,45 +82,6 @@ SCAI_LOG_DEF_LOGGER( MICCOOUtils::logger, "MIC.COOUtils" )
 /*     Template implementations                                                */
 /* --------------------------------------------------------------------------- */
 
-void MICCOOUtils::getCSRSizes(
-    IndexType csrSizes[],
-    const IndexType numRows,
-    const IndexType numValues,
-    const IndexType cooIA[] )
-{
-    SCAI_LOG_INFO( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues )
-    void* csrSizesPtr = csrSizes;
-    const void* cooIAPtr = cooIA;
-    // load distribution is done implicitly by block distribution of csrSizes
-    int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device ) in( numRows, numValues, csrSizesPtr, cooIAPtr )
-    {
-        IndexType* csrSizes = ( IndexType* ) csrSizesPtr;
-        const IndexType* cooIA = ( const IndexType* ) cooIAPtr;
-        #pragma omp parallel
-        {
-            // initialize size array for each row
-            #pragma omp for
-            for ( IndexType i = 0; i <= numRows; i++ )
-            {
-                csrSizes[i] = 0;
-            }
-
-            // increment size of a row for each used row value
-            #pragma omp for
-
-            for ( IndexType k = 0; k < numValues; k++ )
-            {
-                IndexType i = cooIA[k];
-                #pragma omp atomic
-                csrSizes[i]++;
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename COOValueType, typename CSRValueType>
 void MICCOOUtils::getCSRValuesP(
     IndexType csrJA[],
@@ -207,8 +168,9 @@ void MICCOOUtils::getCSRValuesS(
 #pragma offload target( mic : device ) in( numRows, numValues, csrJAPtr, csrValuesPtr, csrIAPtr, cooIAPtr, cooJAPtr, cooValuesPtr )
     {
         std::vector<IndexType> rowOffset( numRows ); // temp copy of csrIA
-        IndexType* csrJA = ( IndexType* ) cooJAPtr;
-        CSRValueType* csrValues = ( CSRValueType* ) csrValuesPtr;
+
+        IndexType* csrJA = reinterpret_cast<IndexType*>( cooJAPtr );
+        CSRValueType* csrValues = reinterpret_cast<CSRValueType*>( csrValuesPtr );
         const IndexType* csrIA = ( IndexType* ) csrIAPtr;
         const IndexType* cooIA = ( const IndexType* ) cooIAPtr;
         const IndexType* cooJA = ( const IndexType* ) cooJAPtr;
@@ -417,7 +379,8 @@ void MICCOOUtils::jacobi(
     const void* oldSolutionPtr = oldSolution;
     const void* rhsPtr = rhs;
     int device = MICContext::getCurrentDevice();
-#pragma offload target( mic ), in( numRows, cooNumValues, solutionPtr, cooIAPtr, cooJAPtr, cooValuesPtr, \
+
+    #pragma offload target( mic ), in( numRows, cooNumValues, solutionPtr, cooIAPtr, cooJAPtr, cooValuesPtr, \
                                        rhsPtr, oldSolutionPtr, omega )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
@@ -426,15 +389,14 @@ void MICCOOUtils::jacobi(
         const IndexType* cooIA = static_cast<const IndexType*>( cooIAPtr );
         const IndexType* cooJA = static_cast<const IndexType*>( cooJAPtr );
         const ValueType* cooValues = static_cast<const ValueType*>( cooValuesPtr );
-        #pragma omp parallel for
 
+        #pragma omp parallel for
         for ( IndexType i = 0; i < numRows; ++i )
         {
             solution[i] = omega * rhs[i] / cooValues[i] + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
         }
 
         #pragma omp parallel for
-
         for ( IndexType k = numRows; k < cooNumValues; ++k )
         {
             IndexType i = cooIA[k];
@@ -451,34 +413,39 @@ void MICCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICCOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICCOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: untyped routines" )
+
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx, flag );
 }
 
 template<typename ValueType>
-void MICCOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICCOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: T = " << common::TypeTraits<ValueType>::id() )
+
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
-void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register COOUtils OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
+                            common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
+
     // ToDo: routine does not work yet
     // KernelRegistry::set<COOKernelTrait::getCSRValues<float, float> >( getCSRValuesS, ctx, flag );
     // KernelRegistry::set<COOKernelTrait::getCSRValues<float, double> >( getCSRValuesS, ctx, flag );
@@ -495,18 +462,22 @@ void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
 
 MICCOOUtils::RegisterGuard::RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "register COOUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_MIC_LIST, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
 }
 
 MICCOOUtils::RegisterGuard::~RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "unregister COOUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_MIC_LIST, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
 }
 
 MICCOOUtils::RegisterGuard MICCOOUtils::guard;    // guard variable for registration

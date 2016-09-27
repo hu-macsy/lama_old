@@ -47,10 +47,9 @@
 
 #include <scai/hmemo/test/ContextFix.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/OpenMP.hpp>
 
 #include <iostream>
-
-#include <scai/lama/test/TestMacros.hpp>
 
 BOOST_GLOBAL_FIXTURE( ContextFix );
 
@@ -62,6 +61,13 @@ scai::hmemo::ContextPtr ContextFix::testContext;
 
 bool init_function()
 {
+    int nThreads;
+
+    if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    {
+        omp_set_num_threads( nThreads );
+    }
+
     try
     {
         scai::hmemo::ContextPtr testContext = scai::hmemo::Context::getContextPtr();

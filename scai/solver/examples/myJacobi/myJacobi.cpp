@@ -56,7 +56,7 @@ int main( int , char** )
     int stencil = 7;
     int size = 100;
     CSRSparseMatrix<ValueType> matrix;
-    MatrixCreator<ValueType>::buildPoisson( matrix, dim, stencil, size, size, size );
+    MatrixCreator::buildPoisson( matrix, dim, stencil, size, size, size );
     int vectorSize = static_cast<int>( std::pow( size, dim ) );
     DenseVector<ValueType> exactSolution( vectorSize, 1.0 );
     DenseVector<ValueType> rhs = matrix * exactSolution;

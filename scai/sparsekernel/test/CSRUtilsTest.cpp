@@ -59,7 +59,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
     kregistry::KernelTraitContextFunction<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_arithmetic_tes
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
     kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_arithmetic_t
         WriteAccess<IndexType> wCSCJA( cscJA );
         WriteAccess<ValueType> wCSCValues( cscValues );
 
-        for ( int j = 0; j <= numColumns; ++j )
+        for ( IndexType j = 0; j <= numColumns; ++j )
         {
             BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
         }
@@ -167,12 +167,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_arithmetic_t
         bool diagonalFlag = false;
         OpenMPCSRUtils::sortRowElements( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
 
-        for ( int j = 0; j < numValues; ++j )
+        for ( IndexType j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCJA[j], ja2[j] );
         }
 
-        for ( int j = 0; j < numValues; ++j )
+        for ( IndexType j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCValues[j], values2[j] );
         }
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_arithmetic_t
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
     kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_arithmeti
         WriteAccess<IndexType> wCSCJA( cscJA, loc );
         WriteAccess<ValueType> wCSCValues( cscValues, loc );
 
-        for ( int j = 0; j <= numColumns; ++j )
+        for ( IndexType j = 0; j <= numColumns; ++j )
         {
             BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
         }
@@ -252,17 +252,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_arithmeti
         ReadAccess<IndexType> wCSCJA( cscJA, host );
         ReadAccess<ValueType> wCSCValues( cscValues, host );
 
-        for ( int j = 0; j <= numColumns; ++j )
+        for ( IndexType j = 0; j <= numColumns; ++j )
         {
             BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
         }
 
-        for ( int j = 0; j < numValues; ++j )
+        for ( IndexType j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCJA[j], ja2[j] );
         }
 
-        for ( int j = 0; j < numValues; ++j )
+        for ( IndexType j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCValues[j], values2[j] );
         }

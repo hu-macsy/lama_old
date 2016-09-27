@@ -725,8 +725,6 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
     // copy ja, values
     WriteOnlyAccess<IndexType> csrJA( *ja, mNumValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, mNumValues );
-    #pragma omp parallel for
-
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
         IndexType offset = 0;
@@ -776,7 +774,7 @@ template<typename ValueType>
 template<typename OtherType>
 void SparseAssemblyStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
     for ( IndexType j = 0; j < mNumColumns; ++j )
@@ -791,8 +789,8 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const
     for ( size_t k = 0; k < ja.size(); ++k )
     {
         const IndexType j = ja[k];
-        SCAI_ASSERT_DEBUG( j >= 0 && j < mNumColumns,
-                           "col index " << j << " out of range" << " is at row " << i << ":" << k )
+
+        SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "illegal col index at row " << i << ", ja[" << k << "]" )
         wRow[j] = static_cast<OtherType>( values[k] );
     }
 }
@@ -802,7 +800,7 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
-    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    const IndexType numDiagonalElements = common::Math::min( mNumColumns, mNumRows );
 
     for ( IndexType i = 0; i < numDiagonalElements; ++i )
     {
@@ -838,7 +836,7 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseAssemblyStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& diagonal )
 {
-    IndexType n = std::min( mNumRows, diagonal.size() );
+    IndexType n = common::Math::min( mNumRows, diagonal.size() );
     ReadAccess<OtherValueType> rDiagonal( diagonal );
 
     for ( IndexType i = 0; i < n; ++i )
@@ -888,7 +886,7 @@ const char* SparseAssemblyStorage<ValueType>::typeName()
 /*       Template specializattions and instantiations                        */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( SparseAssemblyStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( SparseAssemblyStorage, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

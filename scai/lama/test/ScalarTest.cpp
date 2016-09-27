@@ -37,18 +37,17 @@
 
 #include <scai/lama/Scalar.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 //#include <complex>
 
 using namespace scai::lama;
-using namespace scai::hmemo;
 using namespace scai::common;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices
 // and vectors have not been instantiated for these types
 
-typedef boost::mpl::list< SCAI_ARITHMETIC_HOST> test_types;
+typedef boost::mpl::list< SCAI_NUMERIC_TYPES_HOST> test_types;
 
 /* --------------------------------------------------------------------- */
 

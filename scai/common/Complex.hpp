@@ -423,8 +423,12 @@
          *
          * @param[in] real the real part this complex should represent
          */
+        COMPLEX_CONSTRUCTOR_CUDA( const char, COMPLEX_CONSTRUCTOR_REAL )
+        COMPLEX_CONSTRUCTOR_CUDA( const short, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const int, COMPLEX_CONSTRUCTOR_REAL )
+        COMPLEX_CONSTRUCTOR_CUDA( const unsigned int, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const long, COMPLEX_CONSTRUCTOR_REAL )
+        COMPLEX_CONSTRUCTOR_CUDA( const unsigned long, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const float, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_CUDA( const double, COMPLEX_CONSTRUCTOR_REAL )
         COMPLEX_CONSTRUCTOR_NONCUDA( const long double, COMPLEX_CONSTRUCTOR_REAL )
@@ -565,7 +569,9 @@
          * @brief Casts operator
          */
         COMPLEX_OPERATOR_CAST_CUDA( int, COMPLEX_CAST_REAL( int ) )
+        COMPLEX_OPERATOR_CAST_CUDA( unsigned int, COMPLEX_CAST_REAL( unsigned int ) )
         COMPLEX_OPERATOR_CAST_CUDA( long, COMPLEX_CAST_REAL( long ) )
+        COMPLEX_OPERATOR_CAST_CUDA( unsigned long, COMPLEX_CAST_REAL( unsigned long ) )
         COMPLEX_OPERATOR_CAST_CUDA( float, COMPLEX_CAST_REAL( float ) )
         COMPLEX_OPERATOR_CAST_CUDA( double, COMPLEX_CAST_REAL( double ) )
         COMPLEX_OPERATOR_CAST_NONCUDA( long double, COMPLEX_CAST_REAL( long double ) )
@@ -1070,6 +1076,54 @@
         s = ::sinl( a.imag() );
         c = ::cosl( a.imag() );
         return Complex<long double>( c * e, s * e );
+    }
+
+// ------------------ Math::pow --------------------------------
+    Complex<float> Math::pow( const Complex<float>& base, const Complex<float>& exponent )
+    {
+        return Math::exp( exponent * Math::log( base ) );
+    }
+
+    Complex<double> Math::pow( const Complex<double>& base, const Complex<double>& exponent )
+    {
+        return Math::exp( exponent * Math::log( base ) );
+    }
+
+    Complex<long double> Math::pow( const Complex<long double>& base, const Complex<long double>& exponent )
+    {
+        return Math::exp( exponent * Math::log( base ) );
+    }
+
+// ------------------ Math::log --------------------------------
+    Complex<float> Math::log( const Complex<float>& x )
+    {
+        return Complex<float>( Math::log( Math::abs(x) ), Math::arg(x) );
+    }
+
+    Complex<double> Math::log( const Complex<double>& x )
+    {
+        return Complex<double>( Math::log( Math::abs(x) ), Math::arg(x) );
+    }
+
+    Complex<long double> Math::log( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::log( Math::abs(x) ), Math::arg(x) );
+    }
+
+// ------------------ Math::arg --------------------------------
+    float Math::arg( const Complex<float>& x )
+    {
+        return Math::atan2( x.imag(), x.real() );
+    }
+
+    double Math::arg( const Complex<double>& x )
+    {
+        return Math::atan2( x.imag(), x.real() );
+    }
+
+    long double Math::arg( const Complex<long double>& x )
+    {
+        return Math::atan2( x.imag(), x.real() );
     }
 
 // ------------------ Math::real --------------------------------

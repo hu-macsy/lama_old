@@ -53,7 +53,7 @@ namespace scai
 namespace blaskernel
 {
 
-/** Implementations of methods for scai::lama::BLAS2Interface with MIC.
+/** Implementations of methods for BLAS2Interface with MIC.
  *
  *  @todo Move all method documentations to LAMAInterface and make references here
  *  @todo Add information here about use of native BLAS1 libraries
@@ -83,9 +83,17 @@ public:
 
 private:
 
-    /** Routine that registers all methods at the kernel registry. */
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template 
+     *  argument for metaprogramming classes to expand for each supported type
+     */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Helper class for (un) registration of kernel routines at static initialization. */
 

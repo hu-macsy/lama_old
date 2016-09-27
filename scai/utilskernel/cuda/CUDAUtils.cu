@@ -135,7 +135,7 @@ void setScaleKernel( ValueType* out, const ValueType beta, const OtherValueType*
 
     if ( i < n )
     {
-        out[i] = static_cast<ValueType>( in[i] * beta );
+        out[i] = beta * static_cast<ValueType>( in[i] );
     }
 }
 
@@ -197,7 +197,7 @@ struct InvalidIndex
     __host__ __device__
     bool operator()( ValueType y )
     {
-        return y >= size || y < 0;
+        return ! common::Utils::validIndex( y, size );
     }
 };
 
@@ -556,12 +556,24 @@ void scatter_kernel( ValueType* out, const IndexType* indexes, const OtherValueT
 
     if ( i < n )
     {
-        out[indexes[i]] = in[i];
+        out[indexes[i]] = static_cast<ValueType>( in[i] );
+    }
+}
+
+template<typename ValueType, typename OtherValueType>
+__global__
+void scatter_add_kernel( ValueType* out, const IndexType* indexes, const OtherValueType* in, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[indexes[i]] += static_cast<ValueType>( in[i] );
     }
 }
 
 template<typename ValueType1, typename ValueType2>
-void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
+void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const reduction::ReductionOp op, const IndexType n )
 {
     SCAI_LOG_INFO( logger,
                    "setScatter<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
@@ -572,7 +584,47 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
         const int blockSize = 256;
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( n, dimBlock.x );
-        scatter_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+     
+        if ( op == reduction::COPY )
+        {
+            scatter_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+        }
+        else if ( op == reduction::ADD )
+        {
+            scatter_add_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+        }
+
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void scatterVal_kernel( ValueType* out, const IndexType* indexes, const ValueType value, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[indexes[i]] = value;
+    }
+}
+
+template<typename ValueType>
+void CUDAUtils::scatterVal( ValueType out[], const IndexType indexes[], const ValueType val, const IndexType n  )
+{
+    SCAI_LOG_INFO( logger,
+                   "scatterVal<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+
+    if ( n > 0 )
+    {
+        SCAI_CHECK_CUDA_ACCESS
+        const int blockSize = 256;
+        dim3 dimBlock( blockSize, 1, 1 );
+        dim3 dimGrid = makeGrid( n, dimBlock.x );
+        scatterVal_kernel <<< dimGrid, dimBlock>>>( out, indexes, val, n );
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
 }
@@ -829,7 +881,7 @@ void CUDAUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDAUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDAUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -839,14 +891,13 @@ void CUDAUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegist
 }
 
 template<typename ValueType>
-void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
-//    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
@@ -854,16 +905,27 @@ void CUDAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
+}
+
+template<typename ValueType>
+void CUDAUtils::RegNumericKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+    const common::context::ContextType ctx = common::context::CUDA;
+    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
+                   << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
-void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -882,17 +944,19 @@ void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry:
 CUDAUtils::CUDAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegNumericKernels, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_CUDA_LIST, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDAUtils::~CUDAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_ARRAY_CUDA_LIST, SCAI_ARITHMETIC_ARRAY_CUDA_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegNumericKernels, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_CUDA_LIST, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDAUtils CUDAUtils::guard;    // guard variable for registration

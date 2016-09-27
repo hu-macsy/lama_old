@@ -89,24 +89,27 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueTy
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage )
-    :
+SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage ) :
 
     CRTPMatrix<SparseMatrix<ValueType>, ValueType>( storage->getNumRows(), storage->getNumColumns() )
 {
     mLocalData = storage;
-    // create empty halo with same storage format
+
+    // create halo ( nLocalRows x 0 ) with same storage format
+
     mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->newMatrixStorage() );
+    mHaloData->allocate( mLocalData->getNumRows(), 0 );
 }
 
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist )
-    :
+SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist ) :
 
     CRTPMatrix<SparseMatrix<ValueType>, ValueType>(
-       rowDist, DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
+       rowDist, 
+       DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
+
 {
     mLocalData = storage;
     // create empty halo with same storage format
@@ -114,7 +117,8 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 
     if ( storage->getNumRows() == rowDist->getLocalSize() )
     {
-        // data fits, no more to do
+        // halo is #localRows x 0
+        mHaloData->allocate( storage->getNumRows(), 0 );
     }
     else if ( storage->getNumRows() == rowDist->getGlobalSize() )
     {
@@ -133,8 +137,7 @@ template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix(
     common::shared_ptr<MatrixStorage<ValueType> > localData,
     DistributionPtr rowDist,
-    DistributionPtr colDist )
-    :
+    DistributionPtr colDist ) :
 
     CRTPMatrix<SparseMatrix<ValueType>, ValueType>( rowDist, colDist )
 {
@@ -226,8 +229,9 @@ bool SparseMatrix<ValueType>::isConsistent() const
         mHaloData->check( "check for consistency" );
         // ToDo: check Halo
     }
-    catch ( ... )
+    catch ( common::Exception& e )
     {
+        SCAI_LOG_ERROR( logger, *this << " not consistent: " << e.what() )
         consistencyErrors = 1;
     }
 
@@ -239,37 +243,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( const Matrix& other, const bool transposeFlag /* = false */ )
-
-{
-    Matrix::inheritAttributes( other ); // context, communication, compute kind
-
-    if ( transposeFlag )
-    {
-        assignTranspose( other );
-    }
-    else
-    {
-        assign( other );
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
-
-{
-    Matrix::inheritAttributes( other ); // context, communication, compute kind
-    assign( other );
-    this->redistribute( rowDist, colDist );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other )
-    :
+SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other ) :
 
     CRTPMatrix<SparseMatrix<ValueType>, ValueType>( other )
 
@@ -1065,127 +1039,68 @@ void SparseMatrix<ValueType>::haloOperationSync(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::vectorHaloOperationSync(
+void SparseMatrix<ValueType>::invHaloOperationSync(
     HArray<ValueType>& localResult,
     const HArray<ValueType>& localX,
-    const HArray<ValueType>& localY,
+    HArray<ValueType>& haloX,
     common::function <
     void(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
-        const HArray<ValueType>& localX ) > calcF,
+        const HArray<ValueType>& localX ) > localF,
     common::function <
     void(
+        const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
-        const HArray<ValueType>& localX,
-        const HArray<ValueType>& localY ) > addF ) const
+        const HArray<ValueType>& haloX ) > haloF ) const
 {
-    DistributionPtr rowDist = getRowDistributionPtr();
-    DistributionPtr colDist = getColDistributionPtr();
-    const Communicator& comm = rowDist->getCommunicator();
-    IndexType numParts = comm.getSize();
-    IndexType myPart = comm.getRank();
-    ContextPtr hostContext = Context::getHostPtr();
-    ContextPtr localContext = mLocalData->getContextPtr();
-    ContextPtr haloContext = mLocalData->getContextPtr();
-    IndexType xSize = localX.size();
-    SCAI_ASSERT( xSize == rowDist->getLocalSize(),
-                 "size mismatch of localX and rowDistribution " << xSize << " != " << rowDist->getLocalSize() )
-    IndexType ySize = localY.size();
-    IndexType resultSize = localResult.size();
-    SCAI_ASSERT( ySize == resultSize, "size mismatch of localY and localResult" << ySize << " != " << resultSize )
-    SCAI_ASSERT( ySize == colDist->getLocalSize(),
-                 "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
-    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-    // will be done on the host
-    std::vector<IndexType> sizes( numParts );
-    std::vector<IndexType> offsets;
-    comm.allgather( &sizes[0], 1, &xSize );
-    offsets = sizes;
-    offsets.resize( numParts + 1 );
-    sizes2offsets[ hostContext ]( &offsets[0], numParts );
-    HArray<ValueType> haloResult( mHalo.getHaloSize() );
-    HArray<ValueType> toOthersResult( xSize * numParts );
-    HArray<ValueType> fromOthersResult( xSize * numParts );
-
-    if ( numParts != 1 )
+    if ( getRowDistribution().getCommunicator().getSize() == 1 )
     {
-        // calc halo vector parts
-        {
-            SCAI_REGION( "Vec.Times.Mat.others" )
-            SCAI_LOG_INFO( logger,
-                           comm << ": synchronous computation othersResult[ " << toOthersResult.size() << "] = localF( haloMatrix, localX[ " << xSize << "] ) on " << haloContext )
-            calcF( mHaloData.get(), haloResult, localX );
-            // reassemble halo computation to global indices
-            {
-                ReadAccess<ValueType> h( haloResult, hostContext );
-                WriteAccess<ValueType> o( toOthersResult, hostContext );
+        // the full matrix is replicated, the result is distributed, compute just its part
 
-                for ( IndexType i = 0; i < toOthersResult.size(); ++i )
-                {
-                    IndexType localIndex = mHalo.global2halo( i );
+        localF( mLocalData.get(), localResult, localX );
 
-                    if ( localIndex != nIndex )
-                    {
-                        o[i] = h[localIndex];
-                    }
-                    else
-                    {
-                        o[i] = static_cast<ValueType>( 0.0 );
-                    }
-                }
-            }
-        }
-        // start vector part exchange
-        {
-            SCAI_REGION( "vector.swapping" )
-            ReadAccess<ValueType> toOthers( toOthersResult, hostContext );
-            WriteAccess<ValueType> fromOthers( fromOthersResult, hostContext );
-
-            for ( IndexType i = 0; i < numParts; ++i )
-            {
-                comm.gather( &fromOthers[0], sizes[i], i, &toOthers[offsets[i]] );
-            }
-        }
-        toOthersResult.prefetch( localContext );
+        return;
     }
 
-    // calc local vector parts
+    const Communicator& comm = getColDistribution().getCommunicator();
+
+    HArray<ValueType> haloResult;  // compute the values for other processors
+
+    if ( !mHalo.isEmpty() )
     {
-        SCAI_REGION( "Vec.Times.Mat.local" )
+        SCAI_LOG_INFO( logger, comm << ": compute halo vals for other procs, halo matrix = " << *mHaloData << ", localX = " << localX )
+
+        haloF( mHaloData.get(), haloX, localX );
+
+        SCAI_LOG_DEBUG( logger, comm << ": haloX = " << haloX )
+
+        // send other processors their values, use inverse schedule of halo
+
+        comm.exchangeByPlan( haloResult, mHalo.getProvidesPlan(), haloX, mHalo.getRequiredPlan() );
+
+        SCAI_LOG_DEBUG( logger, comm << ": now exchanged: haloResult = " << haloResult )
+    }
+
+    {
+        SCAI_REGION( "Mat.Sp.syncLocal" )
+
         SCAI_LOG_INFO( logger,
-                       comm << ": synchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
-        calcF( mLocalData.get(), localResult, localX );
+                       comm << ": synchronous computation localResult[ " << localResult.size() << "]" << 
+                               " = localF( localMatrix, localX[ " << localX.size() << "] )" << 
+                               " on " << * ( mLocalData->getContextPtr() ) )
+
+        localF( mLocalData.get(), localResult, localX );
     }
-    // alpha * ( sum up local vector parts with halo vector parts ) + beta * y
+
+    // Now we have to add the received values from other processors
+
+    if ( haloResult.size() > 0 )
     {
-        SCAI_REGION( "Vec.Vec.add" )
-        SCAI_LOG_INFO( logger,
-                       comm << ": synchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
-
-        if ( numParts != 1 )
-        {
-            ContextPtr contextPtr = Context::getHostPtr();
-            WriteAccess<ValueType> localData( localResult, contextPtr );
-            ReadAccess<ValueType> otherData( fromOthersResult, contextPtr );
-
-            for ( IndexType i = 0; i < numParts; ++i )
-            {
-                if ( i == myPart )
-                {
-                    continue;
-                }
-
-                for ( IndexType j = 0; j < xSize; ++j )
-                {
-                    localData[j] += otherData[i * xSize + j];
-                }
-            }
-        }
-
-        addF( localResult, localResult, localY );
+        HArrayUtils::scatter( localResult, mHalo.getProvidesIndexes(), haloResult, utilskernel::reduction::ADD );
     }
-    SCAI_LOG_DEBUG( logger, "vectorHaloOperationSync done" )
+
+    SCAI_LOG_DEBUG( logger, "invHaloOpSync done" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1272,138 +1187,6 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::vectorHaloOperationAsync(
-    HArray<ValueType>& localResult,
-    const HArray<ValueType>& localX,
-    const HArray<ValueType>& localY,
-    common::function <
-    tasking::SyncToken * (
-        const MatrixStorage<ValueType>* localMatrix,
-        HArray<ValueType>& localResult,
-        const HArray<ValueType>& localX ) > calcF,
-    common::function <
-    /*tasking::SyncToken**/void(
-        HArray<ValueType>& localResult,
-        const HArray<ValueType>& localX,
-        const HArray<ValueType>& localY ) > addF ) const
-{
-    DistributionPtr rowDist = getRowDistributionPtr();
-    DistributionPtr colDist = getColDistributionPtr();
-    const Communicator& comm = rowDist->getCommunicator();
-    IndexType numParts = comm.getSize();
-    IndexType myPart = comm.getRank();
-    ContextPtr hostContext = Context::getHostPtr();
-    ContextPtr localContext = mLocalData->getContextPtr();
-    ContextPtr haloContext = mLocalData->getContextPtr();
-    IndexType xSize = localX.size();
-    SCAI_ASSERT( xSize == rowDist->getLocalSize(),
-                 "size mismatch of localX and rowDistribution " << xSize << " != " << rowDist->getLocalSize() )
-    IndexType ySize = localY.size();
-    IndexType resultSize = localResult.size();
-    SCAI_ASSERT( ySize == resultSize, "size mismatch of localY and localResult" << ySize << " != " << resultSize )
-    SCAI_ASSERT( ySize == colDist->getLocalSize(),
-                 "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
-    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-    std::vector<IndexType> sizes( numParts );
-    std::vector<IndexType> offsets;
-    comm.allgather( &sizes[0], 1, &xSize );
-    offsets = sizes;
-    offsets.resize( numParts + 1 );
-    sizes2offsets[ hostContext ]( &offsets[0], numParts );
-    HArray<ValueType> haloResult( mHalo.getHaloSize() );
-    HArray<ValueType> toOthersResult( xSize * numParts );
-    HArray<ValueType> fromOthersResult( xSize * numParts );
-
-    if ( numParts != 1 )
-    {
-        // calc halo vector parts
-        {
-            SCAI_REGION( "Vec.Times.Mat.others" )
-            SCAI_LOG_INFO( logger,
-                           comm << ": asynchronous computation othersResult[" << toOthersResult.size() << "] = localF( haloMatrix, localX[" << xSize << "] ) on " << haloContext )
-            delete calcF( mHaloData.get(), haloResult, localX );
-            toOthersResult.prefetch( hostContext );
-            ReadAccess<ValueType> h( haloResult, hostContext );
-            WriteAccess<ValueType> o( toOthersResult, hostContext );
-
-            for ( IndexType i = 0; i < toOthersResult.size(); ++i )
-            {
-                IndexType localIndex = mHalo.global2halo( i );
-
-                if ( localIndex != nIndex )
-                {
-                    o[i] = h[localIndex];
-                }
-                else
-                {
-                    o[i] = static_cast<ValueType>( 0.0 );
-                }
-            }
-        }
-    }
-
-    common::unique_ptr<tasking::SyncToken> localComputation;
-    // calc local vector parts
-    {
-        SCAI_REGION( "Vec.Times.Mat.local" )
-        SCAI_LOG_INFO( logger,
-                       comm << ": asynchronous computation localResult[" << resultSize << "] = localF( localMatrix, localX[" << xSize << "] ) on " << localContext )
-        localComputation.reset( calcF( mLocalData.get(), localResult, localX ) );
-    }
-    ContextPtr contextPtr = Context::getHostPtr();
-
-    if ( numParts != 1 )
-    {
-        // start vector part exchange
-        {
-            SCAI_REGION( "vector.swapping" )
-            SCAI_LOG_INFO( logger,
-                           comm << " vector swapping: toOthers[" << toOthersResult.size() << "], fromOthersResult[" << fromOthersResult.size() << "]" )
-            ReadAccess<ValueType> toOthers( toOthersResult, contextPtr );
-            WriteAccess<ValueType> fromOthers( fromOthersResult, contextPtr );
-
-            for ( IndexType i = 0; i < numParts; ++i )
-            {
-                comm.gather( &fromOthers[0], sizes[i], i, &toOthers[offsets[i]] );
-            }
-        }
-        toOthersResult.prefetch( localContext );
-    }
-
-    localComputation->wait();
-    // alpha * ( sum up local vector parts with halo vector parts ) + beta * y
-    {
-        SCAI_REGION( "Vec.Vec.add" )
-        SCAI_LOG_INFO( logger,
-                       comm << ": asynchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
-
-        if ( numParts != 1 )
-        {
-            WriteAccess<ValueType> localData( localResult, contextPtr );
-            ReadAccess<ValueType> otherData( fromOthersResult, contextPtr );
-
-            for ( IndexType i = 0; i < numParts; ++i )
-            {
-                if ( i == myPart )
-                {
-                    continue;
-                }
-
-                for ( IndexType j = 0; j < xSize; ++j )
-                {
-                    localData[j] += otherData[i * xSize + j];
-                }
-            }
-        }
-
-        addF( localResult, localResult, localY );
-    }
-    SCAI_LOG_DEBUG( logger, "vectorHaloOperationAsync done" )
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     DenseVector<ValueType>& denseResult,
     const ValueType alphaValue,
@@ -1411,33 +1194,45 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
+    using namespace scai::common;
+
     SCAI_REGION( "Mat.Sp.timesVector" )
+
     HArray<ValueType>& localResult = denseResult.getLocalValues();
     const HArray<ValueType>& localY = denseY.getLocalValues();
     const HArray<ValueType>& localX = denseX.getLocalValues();
+
     HArray<ValueType>& haloX = denseX.getHaloValues();
+
     // if halo is empty, asynchronous execution is not helpful
+
+    // matrixTimesVector :  use for bind requires choosing the correct signature here
+
     void ( scai::lama::MatrixStorage<ValueType>::*matrixTimesVector )(
         HArray<ValueType>& result,
         const ValueType alpha,
         const HArray<ValueType>& x,
         const ValueType beta,
         const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVector;
+
+    // matrixTimesVectorAsyn :  use for bind requires choosing the correct signature here
+
     tasking::SyncToken* ( scai::lama::MatrixStorage<ValueType>::*matrixTimesVectorAsync )(
         HArray<ValueType>& result,
         const ValueType alpha,
         const HArray<ValueType>& x,
         const ValueType beta,
         const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVectorAsync;
-    // routine for halo matrix is same for sync and async version
-    using namespace scai::common;
+
+    // haloF: routine for halo matrix is same for sync and async version
+
     function <
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF =
             // bind( matrixTimesVector, _1, _2, alphaValue, _3, one, cref( localResult ) );
-            bind( matrixTimesVector, _1, _2, alphaValue, _3, static_cast<ValueType>( 1.0 ), _2 );
+            bind( matrixTimesVector, _1, _2, alphaValue, _3, ValueType( 1 ), _2 );
 
     if ( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {
@@ -1447,6 +1242,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX ) > localF =
                 bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
+
         haloOperationSync( localResult, localX, haloX, localF, haloF );
     }
     else
@@ -1471,77 +1267,42 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
-    SCAI_REGION( "Vec.timesMat.Sp" )
+    SCAI_LOG_INFO( logger, "result = " << alphaValue << " * x * A + " << betaValue << " * y"
+                            ", x = " << denseX << ", y = " << denseY << ", A = " << *this )
+
     HArray<ValueType>& localResult = denseResult.getLocalValues();
+
     const HArray<ValueType>& localX = denseX.getLocalValues();
     const HArray<ValueType>& localY = denseY.getLocalValues();
-    // if halo is empty, asynchronous execution is not helpful
-    // vectorTimesMatrix: x^ = x * A
+
     void ( MatrixStorage<ValueType>::*vectorTimesMatrix )(
         HArray<ValueType>& result,
         const ValueType alpha,
         const HArray<ValueType>& x,
         const ValueType beta,
         const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrix;
-    tasking::SyncToken* ( MatrixStorage<ValueType>::*vectorTimesMatrixAsync )(
-        HArray<ValueType>& result,
-        const ValueType alpha,
-        const HArray<ValueType>& x,
-        const ValueType beta,
-        const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrixAsync;
-    // vectorPlusVector: result = alpha * x^ + beta * y
-    void ( *vPlusV )(
-        HArray<ValueType>& result,
-        const ValueType alpha,
-        const HArray<ValueType>& x,
-        const ValueType beta,
-        const HArray<ValueType>& y,
-        ContextPtr context ) = &HArrayUtils::arrayPlusArray<ValueType>;
-    /*tasking::SyncToken**/void ( *vPlusVAsync )(
-        HArray<ValueType>& result,
-        const ValueType alpha,
-        const HArray<ValueType>& x,
-        const ValueType beta,
-        const HArray<ValueType>& y,
-        ContextPtr context ) = &HArrayUtils::arrayPlusArray<ValueType>; //TODO use async: Exception not yet implemented
-    // after gather of vector values x^ is on the host
-    // todo: think about this if its useful to upload the vector (again)
-    ContextPtr hostContext = Context::getHostPtr();
+
     using namespace scai::common;
 
-    if ( Matrix::SYNCHRONOUS == getCommunicationKind() )
-    {
-        function <
-        void(
-            const MatrixStorage<ValueType>* localMatrix,
-            HArray<ValueType>& localResult,
-            const HArray<ValueType>& localX ) > calcF = bind( vectorTimesMatrix, _1, _2, static_cast<ValueType>( 1.0 ),
-                    _3, static_cast<ValueType>( 0.0 ), _2 );
-        function <
-        void(
-            HArray<ValueType>& localResult,
-            const HArray<ValueType>& localX,
-            const HArray<ValueType>& localY ) > addF = bind( vPlusV, _1,
-                    alphaValue, _2, betaValue, _3, hostContext );
-        vectorHaloOperationSync( localResult, localX, localY, calcF, addF );
-    }
-    else
-    {
-        function <
-        tasking::SyncToken*(
-            const MatrixStorage<ValueType>* localMatrix,
-            HArray<ValueType>& localResult,
-            const HArray<ValueType>& localX ) > calcAsyncF = bind( vectorTimesMatrixAsync, _1,
-                    _2, static_cast<ValueType>( 1.0 ), _3, static_cast<ValueType>( 0.0 ), _2 );
-        function <
-        /*tasking::SyncToken**/void(
-            HArray<ValueType>& localResult,
-            const HArray<ValueType>& localX,
-            const HArray<ValueType>& localY ) > addAsyncF = bind( vPlusVAsync, _1,
-                    alphaValue, _2, betaValue,
-                    _3, hostContext );
-        vectorHaloOperationAsync( localResult, localX, localY, calcAsyncF, addAsyncF );
-    }
+    function <
+    void(
+        const MatrixStorage<ValueType>* localMatrix,
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& localX ) > localF =
+            bind( vectorTimesMatrix, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
+
+    // haloF: localResult = alpha * haloX * haloMatrix
+
+    function <
+    void(
+        const MatrixStorage<ValueType>* haloMatrix,
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& haloX ) > haloF =
+            bind( vectorTimesMatrix, _1, _2, alphaValue, _3, ValueType( 0 ), _2 );
+
+    HArray<ValueType>& haloX = denseX.getHaloValues();  // reuse this array to keep halo values
+
+    invHaloOperationSync( localResult, localX, haloX, localF, haloF );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1570,84 +1331,6 @@ void SparseMatrix<ValueType>::matrixTimesVectorNImpl(
     const HArray<ValueType>& yData = y.getLocalStorage().getData();
     const IndexType n = result.getLocalStorage().getNumColumns();
     mLocalData->matrixTimesVectorN( resultData, n, alpha, xData, beta, yData );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void SparseMatrix<ValueType>::matrixTimesVector(
-    Vector& result,
-    const Scalar alpha,
-    const Vector& x,
-    const Scalar beta,
-    const Vector& y ) const
-{
-    SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
-
-    if ( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
-    {
-        SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
-    }
-    else if ( &result == &x )
-    {
-        COMMON_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
-    }
-    else
-    {
-        // we inherit the row distribution of this matrix to result
-        result.allocate( getRowDistributionPtr() );
-        // no more to check: result.size() == mNumRows, getRowDistribution() == result.getRowDistribution()
-    }
-
-    SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getColDistribution() )
-    SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getRowDistribution() )
-    const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
-    const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
-    DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
-    SCAI_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-    // Note: in case of beta == 0, we might skip this test
-    SCAI_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-    SCAI_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-    matrixTimesVectorImpl( *denseResult, alpha.getValue<ValueType>(), *denseX, beta.getValue<ValueType>(), *denseY );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void SparseMatrix<ValueType>::vectorTimesMatrix(
-    Vector& result,
-    const Scalar alpha,
-    const Vector& x,
-    const Scalar beta,
-    const Vector& y ) const
-{
-    SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << x << " * " << *this << " + " << beta << " * " << y )
-
-    if ( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
-    {
-        SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
-    }
-    else if ( &result == &x )
-    {
-        COMMON_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
-    }
-    else
-    {
-        // we inherit the column distribution of this matrix to result
-        result.allocate( getColDistributionPtr() );
-        // no more to check: result.size() == mNumColumns, getRowDistribution() == result.getColDistribution()
-    }
-
-    SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getRowDistribution() )
-    SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getColDistribution() )
-    const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
-    const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
-    DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
-    SCAI_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-    // Note: in case of beta == 0, we might skip this test
-    SCAI_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-    SCAI_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-    vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX, beta.getValue<ValueType>(), *denseY );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1740,7 +1423,10 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     else
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
-        SparseMatrix<ValueType> typedOther( other, getRowDistributionPtr(), getColDistributionPtr() );
+        common::shared_ptr<MatrixStorage<ValueType> > tmpPtr( getLocalStorage().newMatrixStorage() );
+        SparseMatrix<ValueType> typedOther( tmpPtr );
+        typedOther.assign( other );
+        typedOther.redistribute( getRowDistributionPtr(), getColDistributionPtr() );
         return Scalar( maxDiffNormImpl( typedOther ) );
     }
 }
@@ -2071,7 +1757,7 @@ const char* SparseMatrix<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( SparseMatrix, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( SparseMatrix, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

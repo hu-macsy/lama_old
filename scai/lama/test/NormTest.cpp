@@ -40,15 +40,18 @@
 #include <scai/lama/norm/Norm.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 typedef SCAI_TEST_TYPE ValueType;
 
 using namespace scai;
 using namespace lama;
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 /** Class for vector of all registered Norm objects in factory */
 
@@ -80,6 +83,8 @@ public:
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( NormTest );
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.NormTest" )
 
@@ -142,6 +147,50 @@ BOOST_AUTO_TEST_CASE( zeroVectorTest )
         // zero test
 
         BOOST_CHECK_EQUAL( norm.apply( x ), Scalar( 0 ) );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( zeroMatrixTest )
+{
+    scai::lama::DenseMatrix<ValueType> m( 3, 4 );
+
+    m.getLocalStorage().setZero();
+
+    Norms allNorms;
+
+    for ( size_t i = 0; i < allNorms.size(); ++i )
+    {
+        Norm& norm = *allNorms[i];
+
+        // zero test
+
+        BOOST_CHECK_EQUAL( norm.apply( m ), Scalar( 0 ) );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( writeTest )
+{
+    Norms allNorms;
+
+    for ( size_t i = 0; i < allNorms.size(); ++i )
+    {
+        Norm& norm = *allNorms[i];
+
+        std::ostringstream out;
+        std::ostringstream outB;
+        std::ostringstream outD;
+
+        out << norm;
+        norm.Norm::writeAt( outB );
+        norm.writeAt( outD );
+
+        BOOST_CHECK( out.str().length() > 0 );
+        BOOST_CHECK( outD.str() == out.str() );
+        BOOST_CHECK( outB.str() != outD.str() );
     }
 }
 

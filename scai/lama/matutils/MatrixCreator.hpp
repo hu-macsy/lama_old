@@ -61,11 +61,8 @@ namespace lama
 /**
  * @brief This class provides some static methods to build or create sparse matrices for
  *        certain problem classes.
- *
- * @tparam ValueType is the value type of the matrix values.
  */
 
-template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT MatrixCreator
 {
 public:
@@ -79,14 +76,14 @@ public:
 
     static void fillRandom( Matrix& matrix, double density );
 
-    /** Builds a block distributed CSR matrix with random values.
+    /** Builds a block distributed matrix with random values.
      *
      *  param[out] matrix will be new defined as required
      *  param[in] size is the size of the square matrix (number of rows and number of columns)
      *  param[in] density specifies the density of sparse entries (0.0 is empty, 1.0 is full )
      */
 
-    static void buildRandom( CSRSparseMatrix<ValueType>& matrix, const IndexType size, const double density );
+    static void buildRandom( Matrix& matrix, const IndexType size, const double density );
 
     /** Build a sparse matrix representing the discretization of the Laplacian operator
      *  on a one-dimensional structured grid.
@@ -96,18 +93,18 @@ public:
      *  @param[in] dim is the grid size
      */
 
-    static void buildPoisson1D( CSRSparseMatrix<ValueType>& matrix, const IndexType stencilType, const IndexType dim );
+    static void buildPoisson1D( Matrix& matrix, const IndexType stencilType, const IndexType dim );
 
     /** Build a sparse matrix representing the discretization of the Laplacian operator
      *  on a two-dimensional structured grid.
      *
-     *  @param[out] matrix in CSR format
+     *  @param[out] matrix in any format
      *  @param[in] stencilType must be 5, or 9
      *  @param[in] dim1, dim2 are the sizes of the two-dimensional grid
      */
 
     static void buildPoisson2D(
-        CSRSparseMatrix<ValueType>& matrix,
+        Matrix& matrix,
         const IndexType stencilType,
         const IndexType dim1,
         const IndexType dim2 );
@@ -121,7 +118,7 @@ public:
      */
 
     static void buildPoisson3D(
-        CSRSparseMatrix<ValueType>& matrix,
+        Matrix& matrix,
         const IndexType stencilType,
         const IndexType dim1,
         const IndexType dim2,
@@ -138,7 +135,7 @@ public:
      *  Note: dimZ is ignored for dimension < 3, dimY is ignored for dimension < 2.
      */
     static void buildPoisson(
-        CSRSparseMatrix<ValueType>& matrix,
+        Matrix& matrix,
         const IndexType dimension,
         const IndexType stencilType,
         const IndexType dimX,
@@ -172,9 +169,10 @@ public:
      *  \endcode
      */
 
+    template<typename ValueType>
     static void buildReplicatedDiag( SparseMatrix<ValueType>& matrix,
                                      const MatrixStorage<ValueType>& storage,
-                                     const int nRepeat );
+                                     const IndexType nRepeat );
 
     /** Build a (distributed) sparse matrix from a (replicated) sparse storage by 
      *  replicating it m times in the rows and n times in the columns
@@ -199,10 +197,11 @@ public:
      *  \endcode
      */
 
+    template<typename ValueType>
     static void buildReplicated( SparseMatrix<ValueType>& matrix,
                                  const MatrixStorage<ValueType>& storage,
-                                 const int nRepeatRow,
-                                 const int nRepeatCol );
+                                 const IndexType nRepeatRow,
+                                 const IndexType nRepeatCol );
 
 private:
 

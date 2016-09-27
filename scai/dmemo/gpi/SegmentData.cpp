@@ -54,35 +54,38 @@ namespace dmemo
 /*           Logger                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SegmentData<ValueType>::logger, "SegmentData" )
+SCAI_LOG_DEF_LOGGER( SegmentData::logger, "SegmentData" )
 
 /* ---------------------------------------------------------------------------------- */
 /*           Constructor                                                              */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size )
+SegmentData::SegmentData( common::scalar::ScalarType stype, const GPICommunicator* comm, const IndexType size )
 {
+    mScalarType = stype;
+    mTypeSize = common::typeSize( stype );
     mComm = comm;  // GPI communicator not really needed
+    mData = NULL;
     reserve( size );
 }
 
-template<typename T>
-void SegmentData<T>::reserve( const IndexType size )
+void SegmentData::reserve( const IndexType size )
 {
     SCAI_REGION( "GASPI.SegmentData.reserve" )
-    GPIMemManager::getSegmentData( mId, mPtr, mOffsetBytes, size * sizeof( T ) );
-    SCAI_ASSERT_EQUAL_ERROR( 0, mOffsetBytes % sizeof( T ) )
-    mData  = static_cast<T*>( mPtr );  // mData will allow for pointer arithmetic helpful for arrays
+    GPIMemManager::getSegmentData( mId, mPtr, mOffsetBytes, size * mTypeSize );
+    SCAI_ASSERT_EQ_ERROR( 0, mOffsetBytes % mTypeSize, "unaligned data" )
+    mData  = mPtr;  // mData will allow for pointer arithmetic helpful for arrays
     mSize = size;
     SCAI_LOG_DEBUG( logger, "SegmentData ( size = " << size << " ), uses id = " << static_cast<int>( mId )
                     << ", offset = " << mOffsetBytes << ", mPtr = " << mPtr )
     mReleaseFlag = true;
 }
 
-template<typename T>
-SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size, T* data )
+SegmentData::SegmentData( common::scalar::ScalarType stype, const GPICommunicator* comm, const IndexType size, void* data )
 {
+    mScalarType = stype;
+    mTypeSize = common::typeSize( stype );
+
     mComm = comm;  // GPI communicator not really needed
     bool found = GPIMemManager::findSegment( mId, mOffsetBytes, data );
     SCAI_LOG_DEBUG( logger, "SegmentData( size = " << size << ", data = " << data
@@ -103,10 +106,18 @@ SegmentData<T>::SegmentData( const GPICommunicator* comm, const IndexType size, 
     }
 }
 
-template<typename T>
-void SegmentData<T>::assign( const T values[], const IndexType n )
+void SegmentData::assign( const void* values, const IndexType n )
 {
-    T* data = get();
+    if ( n == 0 )
+    {
+        return;
+    }
+
+    SCAI_ASSERT( values, "NULL pointer values" )
+
+    void* data = get();
+
+    SCAI_ASSERT( data, "assign( n = " << n << "): NULL pointer data, values = " << values )
 
     if ( values == data )
     {
@@ -115,13 +126,21 @@ void SegmentData<T>::assign( const T values[], const IndexType n )
         return;
     }
 
-    memcpy( data, values, n * sizeof( T ) );
+    memcpy( data, values, n * mTypeSize );
 }
 
-template<typename T>
-void SegmentData<T>::copyTo( T values[], const IndexType n ) const
+void SegmentData::copyTo( void* values, const IndexType n ) const
 {
-    const T* data = get();
+    if ( n == 0 )
+    {
+        return;
+    }
+
+    SCAI_ASSERT( values, "NULL pointer values" )
+
+    const void* data = get();
+
+    SCAI_ASSERT( data, "copyTo( n = " << n << "): NULL pointer data, values = " << values )
 
     if ( values == data )
     {
@@ -130,40 +149,32 @@ void SegmentData<T>::copyTo( T values[], const IndexType n ) const
         return;
     }
 
-    memcpy( values, data, n * sizeof( T ) );
+    memcpy( values, data, n * mTypeSize );
 }
 
-template<typename T>
-void SegmentData<T>::release()
+void SegmentData::release()
 {
     if ( mComm )
     {
         if ( mReleaseFlag )
         {
             GPIMemManager::releaseSegmentData( mId, mOffsetBytes );
+            mReleaseFlag = false;
         }
 
         mComm = NULL;
         mPtr  = NULL;
+        mData = NULL;
     }
 }
 
-template<typename T>
-void SegmentData<T>::writeAt( std::ostream& stream ) const
+void SegmentData::writeAt( std::ostream& stream ) const
 {
-    stream << "Segment( id = " << static_cast<int>( mId )
+    stream << "Segment<" << mScalarType<< ">( id = " << static_cast<int>( mId )
            << ", offs = " << mOffsetBytes << ", ptr = " << mPtr << " )";
 }
 
 /* --------------------------------------------------------------------------- */
-
-// Note: char is not one of the SCAI supported array types
-
-template class COMMON_DLL_IMPORTEXPORT SegmentData<char> ;
-
-// generic template instantiation for the supported data types
-
-SCAI_COMMON_INST_CLASS( SegmentData, SCAI_ARITHMETIC_HOST_CNT, SCAI_ARITHMETIC_HOST )
 
 } // namespace dmemo
 

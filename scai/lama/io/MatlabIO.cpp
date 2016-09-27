@@ -98,13 +98,13 @@ void MatlabIO::writeAt( std::ostream& stream ) const
 
 /** Method to count number of lines of a text file and the maximal number of entries in one line 
  *
- *  @param[out]  number of lines the file has
+ *  @param[out]  nLines is number of lines the file has
  *  @param[out]  nEntries is maximal number of entries
  *  @param[in]   fileName is the name of the file
  *
  *  Note: it might be possible that one line contains less than 'nEntries' entries
  */
-void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
+void MatlabIO::checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
 {
     nLines   = 0;
     nEntries = 0;
@@ -133,6 +133,8 @@ void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName
             // LOG_DEBUG: cout << "max tokens = " << nEntries << " at line " << nLines << endl;
         }
     }
+
+    SCAI_LOG_INFO( logger, "checkTextFile " << fileName << ": #lines = " << nLines << ", #entries = " << nEntries )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -162,8 +164,8 @@ void MatlabIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName ) 
 {
-    int n;   // number of lines, size of array
-    int k;   // numbe of entries in one line
+    IndexType n;   // number of lines, size of array
+    IndexType k;   // number of entries in one line
 
     checkTextFile( n, k, fileName.c_str() );
 
@@ -198,7 +200,14 @@ void MatlabIO::writeStorageImpl(
     int precIndex = 0;
     int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
-    outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
+    if ( mScalarTypeData == common::scalar::PATTERN )
+    {
+        outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex );
+    }
+    else
+    {
+        outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -213,14 +222,29 @@ void MatlabIO::readStorageImpl(
     // read coo entries lines by line, similiar to MatrixMarket
     // i , j, val     
 
-    int nnz;
-    int k;
+    IndexType nnz;
+    IndexType k;
 
     checkTextFile( nnz, k, fileName.c_str() );
 
     SCAI_LOG_INFO( logger, "File : " << fileName << ", #lines = " << nnz << ", #entries = " << k )
 
-    SCAI_ASSERT_GE( k, 3, "#entries/row in file " << fileName << " must be at least 3" )
+    if ( nnz == 0 )
+    {
+        storage.clear();
+        return;
+    }
+
+    bool readPattern = mScalarTypeData == common::scalar::PATTERN;
+
+    IndexType nEntries = 2;   
+
+    if ( !readPattern )
+    {
+        nEntries = 3;
+    }
+
+    SCAI_ASSERT_GE( k, nEntries, "#entries/row in file " << fileName << " must be at least " << nEntries )
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
@@ -230,7 +254,15 @@ void MatlabIO::readStorageImpl(
 
     IOStream inFile( fileName, std::ios::in );
 
-    inFile.readFormatted( dIA, dJA, val, nnz );
+    if ( readPattern )
+    {
+        inFile.readFormatted( dIA, dJA, nnz );
+        val.init( ValueType( 1 ), nnz );
+    }
+    else
+    {
+        inFile.readFormatted( dIA, dJA, val, nnz );
+    }
 
     LArray<IndexType> ia( dIA );
     LArray<IndexType> ja( dJA );
@@ -239,7 +271,7 @@ void MatlabIO::readStorageImpl(
     SCAI_LOG_DEBUG( logger, "read ja  : " << ja  )
     SCAI_LOG_DEBUG( logger, "read val : " << val )
 
-    int minRowIndex = ia.min();
+    IndexType minRowIndex = ia.min();
 
     if ( minRowIndex == 0 )
     {

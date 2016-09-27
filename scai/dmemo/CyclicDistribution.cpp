@@ -74,7 +74,7 @@ PartitionId CyclicDistribution::getOwner( const IndexType globalIndex ) const
 
 bool CyclicDistribution::isLocal( const IndexType globalIndex ) const
 {
-    IndexType rank = mCommunicator->getRank();
+    const PartitionId rank = mCommunicator->getRank();
 
     if ( getOwner( globalIndex ) == rank )
     {
@@ -96,6 +96,12 @@ IndexType CyclicDistribution::getLocalSize() const
     return elements;
 }
 
+IndexType CyclicDistribution::getMaxLocalSize() const
+{
+    // processor 0 has always the most elemements
+    return getPartitionSize( 0 );
+}
+
 void CyclicDistribution::getChunkInfo( IndexType& localChunks, IndexType& extra, const PartitionId rank ) const
 {
     const PartitionId size = mCommunicator->getSize();
@@ -105,11 +111,11 @@ void CyclicDistribution::getChunkInfo( IndexType& localChunks, IndexType& extra,
     IndexType remainChunks = chunks % size;
     extra = 0;
 
-    if ( rank < remainChunks )
+    if ( static_cast<IndexType>( rank ) < remainChunks )
     {
         localChunks++;
     }
-    else if ( rank == remainChunks )
+    else if ( static_cast<IndexType>( rank ) == remainChunks )
     {
         extra = mGlobalSize % mChunkSize;
     }
@@ -149,6 +155,8 @@ IndexType CyclicDistribution::getNumTotalChunks() const
     return numChunks;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType CyclicDistribution::getPartitionSize( const PartitionId partition ) const
 {
     IndexType localChunks = 0;
@@ -157,6 +165,8 @@ IndexType CyclicDistribution::getPartitionSize( const PartitionId partition ) co
     IndexType elements = localChunks * mChunkSize + extra;
     return elements;
 }
+
+/* ---------------------------------------------------------------------- */
 
 IndexType CyclicDistribution::local2global( const IndexType localIndex ) const
 {
@@ -170,6 +180,8 @@ IndexType CyclicDistribution::local2global( const IndexType localIndex ) const
                     "local Index " << localIndex << " is with chunkSize " << mChunkSize << " and " << size << " partitions on partition " << rank << ": " << globalIndex )
     return globalIndex;
 }
+
+/* ---------------------------------------------------------------------- */
 
 IndexType CyclicDistribution::allGlobal2local( const IndexType globalIndex ) const
 {
@@ -253,6 +265,29 @@ void CyclicDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInde
     }
 
     SCAI_ASSERT_EQ_ERROR( pos, nLocal, "count mismatch" )
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType CyclicDistribution::getBlockDistributionSize() const
+{   
+    const PartitionId nPartitions = getCommunicator().getSize();
+
+    if ( nPartitions == 1 )
+    {
+        return mGlobalSize;
+    }
+
+    // the following bool expression is evaluated by all processor with the same result
+
+    if ( mGlobalSize <= mChunkSize * nPartitions )
+    {
+        return getLocalSize();
+    }
+    else
+    {
+        return nIndex;
+    }
 }
 
 /* ---------------------------------------------------------------------- */

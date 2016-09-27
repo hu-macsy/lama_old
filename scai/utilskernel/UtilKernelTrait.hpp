@@ -202,7 +202,7 @@ struct UtilKernelTrait
          *  @param x[in]       first input array
          *  @param y[in]       second input array
          *  @param n           size of all three arrays
-         *  @returns           result[i] = alpha * x[i] * y[i], \f$ 0 \le i < n \f$
+         *  @returns           result[i] = x[i] * y[i], \f$ 0 \le i < n \f$
          *
          *  Function is helpful to compute maximum norm for vectors and matrices
          */
@@ -221,9 +221,9 @@ struct UtilKernelTrait
          *
          *  Set out[i] = scale * in[i],  0 <= i < n
          *
-         *  @param[in,out]  outValues  is the output array
+         *  @param[out]     outValues  is the output array
          *  @param[in]      scaleValue scaling factor
-         *  @param[in,out]  inValues   is the array with entries to scale
+         *  @param[in]      inValues   is the array with entries to scale
          *  @param[in]      n          is the number of entries
          */
         typedef void ( *FuncType ) (
@@ -290,19 +290,23 @@ struct UtilKernelTrait
          *  @param[in,out] out is the array in which values will be inserted
          *  @param[in]     indexes are the positions where values are written
          *  @param[in]     in is the array with the output values.
+         *  @param[in]     op specifies how the set element is combined with available element
          *  @param[in]     n is the number of values
          *
          *  Note: Not all values might be set in 'out'. There should be no double
          *        values in indexes as this might result in non-ambiguous results
          *        by a parallel execution.
          *
-         *  out[ indexes[i] ] = in [i] , i = 0, ..., n-1
+         *  out[ indexes[i] ] = in [i] , i = 0, ..., n-1   for op == recution::COPY
+         *  out[ indexes[i] ] += in [i] , i = 0, ..., n-1   for op == recution::ADD
+         *  out[ indexes[i] ] *= in [i] , i = 0, ..., n-1   for op == recution::MULT
          */
 
         typedef void ( *FuncType ) (
             ValueType1 out[],
             const IndexType indexes[],
             const ValueType2 in[],
+            const reduction::ReductionOp op,
             const IndexType n );
 
         static const char* getId()
@@ -445,6 +449,7 @@ struct UtilKernelTrait
         }
     };
 
+    template<typename BucketType>
     struct countBuckets
     {
         /** Count bucket sizes for values mapped to buckets 
@@ -462,7 +467,7 @@ struct UtilKernelTrait
          *  Note: sum( bucketSizes ) = n implies that all entries in bucketMap were legal buckets between 0 and nBucket-1
          *        This routine does not throw an exception for illegal entries
          */
-        typedef void ( *FuncType ) ( IndexType bucketSizes[], const IndexType nBuckets, const IndexType bucketMap[], const IndexType n );
+        typedef void ( *FuncType ) ( IndexType bucketSizes[], const BucketType nBuckets, const BucketType bucketMap[], const IndexType n );
 
         static const char* getId()
         {
@@ -470,6 +475,7 @@ struct UtilKernelTrait
         }
     };
 
+    template<typename BucketType>
     struct sortInBuckets
     {
         /** Resort indexes 0, ..., n-1 according to their mapping to buckets 
@@ -484,14 +490,14 @@ struct UtilKernelTrait
          *           bucketSizes [nBuckets = 3]     =  {  4  3  3 }
          *           offsets     [nBuckets + 1 = 4] =  {  0           4        7        10  }
          *           sortedIndexes [n=10]           =  {  0  3  8  9  1  4  6  2  5  7 }
-         *  \endcod
+         *  \endcode
          *
          */
 
         typedef void ( *FuncType )( IndexType sortedIndexes[],
                                     IndexType offsets[],
-                                    const IndexType nBuckets,
-                                    const IndexType bucketMap[],
+                                    const BucketType nBuckets,
+                                    const BucketType bucketMap[],
                                     const IndexType n );
 
         static const char* getId()

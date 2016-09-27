@@ -136,7 +136,7 @@ public:
         ValueType minval =  10000.0;
         ValueType maxval = -100000.0;
 
-        for ( int k = 0; k < ia[nRows]; ++k )
+        for ( IndexType k = 0; k < ia[nRows]; ++k )
         {
             ValueType v = values[k];
 
@@ -155,9 +155,9 @@ public:
         double multCol = double( width ) / double( nCols );
         setMinMax( minval, maxval );
 
-        for ( int i = 0; i < nRows; ++i )
+        for ( IndexType i = 0; i < nRows; ++i )
         {
-            for ( int j = static_cast<int>(ia[i]); j < static_cast<int>(ia[i + 1]); ++j )
+            for ( IndexType j = ia[i]; j < ia[i + 1]; ++j )
             {
                 set( static_cast<int>( i * multRow ), static_cast<int>( ja[j] * multCol ), values[j] );
             }
@@ -165,9 +165,9 @@ public:
 
         // diagonals drawn at the end
 
-        for ( int i = 0; i < nRows; ++i )
+        for ( IndexType i = 0; i < nRows; ++i )
         {
-            for ( int j = static_cast<int>(ia[i]); j < static_cast<int>(ia[i + 1]); ++j )
+            for ( IndexType j = ia[i]; j < ia[i + 1]; ++j )
             {
                 if ( ja[j] == i )
                 {

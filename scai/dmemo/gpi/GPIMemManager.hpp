@@ -97,6 +97,10 @@ public:
 
 private:
 
+    /** Help routine to get default/defined size of a memory segment */
+
+    static size_t getSegmentSize();
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 

@@ -598,18 +598,19 @@ SyncToken* ContextDataManager::fetchAsync( ContextData& target, const ContextDat
     }
     catch ( common::Exception& ex )
     {
-        SCAI_LOG_INFO( logger, target << " async copy from " << source << " not supported" )
+        SCAI_LOG_ERROR( logger, target << " async copy from " << source << " to " << target
+                                << " not supported, or has thrown exception" )
+
         ContextPtr hostContextPtr = Context::getHostPtr();
 
-        if ( target.getMemory().getType() == memtype::HostMemory )
+        if (     target.getMemory().getType() == memtype::HostMemory 
+             ||  source.getMemory().getType() == memtype::HostMemory )
         {
-            COMMON_THROWEXCEPTION( "unsupported" )
+            COMMON_THROWEXCEPTION( "copyAsync from " << source << " to " << target 
+                                    << " must be supported with HostMemory, exception = " << ex.what() )
         }
 
-        if ( source.getMemory().getType() == memtype::HostMemory )
-        {
-            COMMON_THROWEXCEPTION( "unsupported" )
-        }
+        // as neither source nor target are HostMemory, try it via host 
 
         ContextData& hostEntry = ( *this )[hostContextPtr];
 

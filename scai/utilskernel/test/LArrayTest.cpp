@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_ARRAY_CUDA> ArrayRedTypes;
+typedef boost::mpl::list<SCAI_ARRAY_TYPES_CUDA> ArrayRedTypes;
 
 // ToDo: introduce a predicate in COMMON to check if a certain type is supported on a context
 
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_CUDA> ArithmeticRedTypes;
+typedef boost::mpl::list<SCAI_NUMERIC_TYPES_CUDA> ArithmeticRedTypes;
 
 // ToDo: introduce a predicate in COMMON to check if a certain type is supported on a context
 

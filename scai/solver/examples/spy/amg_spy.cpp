@@ -36,11 +36,13 @@
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
+#include <scai/dmemo/Communicator.hpp>
 #include <scai/solver/SimpleAMG.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using namespace scai::solver;
 
 typedef RealType ValueType;
@@ -78,7 +80,20 @@ int main( int argc, char** argv )
         sscanf( argv[4], "%d",  &nZoom );
     }
 
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    if ( comm->getSize() > 1 )
+    {
+        std::cout << "This program runs only serial." << std::endl;
+        return -1;
+    }
+
     matrix.readFromFile( filename.c_str() );
+ 
+    // amg solver uses Jacobi solver so we force diagonal property
+
+    matrix.setDiagonalProperty();
+
     // Build matrix hierarchy for Multigrid
     std::string loggerName = "<AMG>";
     LoggerPtr amgLogger( new CommonLogger ( loggerName, LogLevel::completeInformation,
@@ -101,9 +116,10 @@ int main( int argc, char** argv )
         HArray<ValueType> values;
         const _MatrixStorage& local = mat.getLocalStorage();
         local.buildCSRData( ia, ja, values );
-        int m = nRows;
-        int n = nColumns;
-        int s = nZoom;
+
+        IndexType m = nRows;
+        IndexType n = nColumns;
+        IndexType s = nZoom;
 
         if ( m > local.getNumRows() )
         {
@@ -150,9 +166,10 @@ int main( int argc, char** argv )
         HArray<ValueType> values;
         const _MatrixStorage& local = mat.getLocalStorage();
         local.buildCSRData( ia, ja, values );
-        int m = nRows;
-        int n = nRows * local.getNumColumns() / local.getNumRows();
-        int s = nZoom;
+
+        IndexType m = nRows;
+        IndexType n = nRows * local.getNumColumns() / local.getNumRows();
+        IndexType s = nZoom;
 
         if ( m > local.getNumRows() )
         {

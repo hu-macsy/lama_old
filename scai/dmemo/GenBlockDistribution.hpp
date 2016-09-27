@@ -144,6 +144,10 @@ public:
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
 
+    /** Implementation of pure function Distribution::getBlockDistributionSize, here same as getLocalSize */
+
+    virtual IndexType getBlockDistributionSize() const;
+
     virtual bool isEqual( const Distribution& other ) const;
 
     virtual void writeAt( std::ostream& stream ) const;
@@ -181,9 +185,9 @@ protected:
 
 private:
 
-    void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType localSizes[] );
+    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType localSizes[] );
 
-    void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType mySize );
+    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType mySize );
 
     GenBlockDistribution(); // disable default destructor
 

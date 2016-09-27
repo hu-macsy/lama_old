@@ -118,7 +118,7 @@ public:
         return 0;
     }
 
-    static inline int getMin()
+    static inline int getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<int>::max();
     }
@@ -128,6 +128,53 @@ public:
     static inline const char* id()
     {
         return scalarType2str( scalar::INT );
+    }
+};
+
+/** Type specific traits for char */
+
+template<>
+class TypeTraits<char>
+{
+public:
+
+    typedef char AbsType;
+
+    static inline char eps1()
+    {
+        return 0;
+    }
+
+    static inline char small()
+    {
+        return 0;
+    }
+
+    static inline char eps0()
+    {
+        return std::numeric_limits<char>::min();
+    }
+
+    static inline char getMax()
+    {
+        return std::numeric_limits<char>::max();
+    }
+
+    static inline int precision()
+    {
+        return 0;
+    }
+
+    static inline char getMin() // with C++11: use lowest instead
+    {
+        return static_cast<char> (- std::numeric_limits<char>::max() );
+    }
+
+    static const scalar::ScalarType stype = scalar::CHAR;
+
+    static inline const char* id()
+    {
+        return scalarType2str( scalar::CHAR );
     }
 };
 
@@ -164,7 +211,7 @@ public:
         return 0;
     }
 
-    static inline long getMin()
+    static inline long getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<long>::max();
     }
@@ -174,6 +221,98 @@ public:
     static inline const char* id()
     {
         return scalarType2str( scalar::LONG );
+    }
+};
+
+/** Type specific traits for unsigned int */
+
+template<>
+class TypeTraits<unsigned int>
+{
+public:
+    typedef unsigned int AbsType;
+
+    static inline unsigned int eps1()
+    {
+        return 0;
+    }
+
+    static inline unsigned int small()
+    {
+        return 0;
+    }
+
+    static inline unsigned int eps0()
+    {
+        return std::numeric_limits<unsigned int>::min();
+    }
+
+    static inline unsigned int getMax()
+    {
+        return std::numeric_limits<unsigned int>::max();
+    }
+
+    static inline int precision()
+    {
+        return 0;
+    }
+
+    static inline unsigned int getMin() // with C++11: use lowest instead
+    {
+        return 0;
+    }
+
+    static const scalar::ScalarType stype = scalar::UNSIGNED_INT;
+
+    static inline const char* id()
+    {
+        return scalarType2str( scalar::UNSIGNED_INT );
+    }
+};
+
+/** Type specific traits for unsigned long */
+
+template<>
+class TypeTraits<unsigned long>
+{
+public:
+    typedef unsigned long AbsType;
+
+    static inline unsigned long eps1()
+    {
+        return 0;
+    }
+
+    static inline unsigned long small()
+    {
+        return 0;
+    }
+
+    static inline unsigned long eps0()
+    {
+        return std::numeric_limits<unsigned long>::min();
+    }
+
+    static inline unsigned long getMax()
+    {
+        return std::numeric_limits<unsigned long>::max();
+    }
+
+    static inline int precision()
+    {
+        return 0;
+    }
+
+    static inline unsigned long getMin() // with C++11: use lowest instead
+    {
+        return 0;
+    }
+
+    static const scalar::ScalarType stype = scalar::UNSIGNED_LONG;
+
+    static inline const char* id()
+    {
+        return scalarType2str( scalar::UNSIGNED_LONG );
     }
 };
 
@@ -210,7 +349,7 @@ public:
         return std::numeric_limits<long double>::digits10;
     }
 
-    static inline long double getMin()
+    static inline long double getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<long double>::max();
     }
@@ -256,7 +395,7 @@ public:
         return std::numeric_limits<double>::digits10;
     }
 
-    static inline double getMin()
+    static inline double getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<double>::max();
     }
@@ -301,7 +440,7 @@ public:
     {
         return std::numeric_limits<float>::max();
     }
-    static inline float getMin()
+    static inline float getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<float>::max();
     }
@@ -349,7 +488,7 @@ public:
         return std::numeric_limits<float>::max();
     }
 
-    static inline ComplexFloat getMin()
+    static inline ComplexFloat getMin() // with C++11: use lowest instead
     {
         return 0;
     }
@@ -395,7 +534,7 @@ public:
         return std::numeric_limits<double>::max();
     }
 
-    static inline ComplexDouble getMin()
+    static inline ComplexDouble getMin() // with C++11: use lowest instead
     {
         return 0;
     }
@@ -441,7 +580,7 @@ public:
         return std::numeric_limits<long double>::max();
     }
 
-    static inline ComplexLongDouble getMin()
+    static inline ComplexLongDouble getMin() // with C++11: use lowest instead
     {
         return 0;
     }

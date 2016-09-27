@@ -878,7 +878,8 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const
 {
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
     hmemo::ContextPtr hostContext = hmemo::Context::getHostPtr();
     hmemo::WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
     const hmemo::ReadAccess<IndexType> ia( mIA, hostContext );
@@ -1075,7 +1076,7 @@ const char* COOStorage<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
 
 #define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void COOStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
@@ -1091,9 +1092,9 @@ SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define COO_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-SCAI_COMMON_LOOP( COO_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( COO_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef COO_STORAGE_INST_LVL2
 #undef COO_STORAGE_INST_LVL1

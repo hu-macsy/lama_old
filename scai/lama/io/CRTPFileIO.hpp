@@ -195,7 +195,7 @@ void CRTPFileIO<Derived>::writeStorage( const _MatrixStorage& storage, const std
     SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
                  fileName << " illegal file name for storage, must have suffix " << getMatrixFileSuffix() )
 
-    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::writeStorageImpl( ( Derived& ) *this, storage, fileName );
+    FileIOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( Derived& ) *this, storage, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -210,7 +210,7 @@ void CRTPFileIO<Derived>::readStorage( _MatrixStorage& storage, const std::strin
 
     // just call the corresponding typed routine 
 
-    FileIOWrapper<Derived, SCAI_ARITHMETIC_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName );
+    FileIOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -225,7 +225,7 @@ void CRTPFileIO<Derived>::writeArray( const hmemo::_HArray& array, const std::st
 
     // now call the corresponding typed routine, use meta-programming to get the correct type
     
-    FileIOWrapper<Derived, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::writeArrayImpl( ( Derived& ) *this, array, fileName );
+    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( Derived& ) *this, array, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -240,7 +240,7 @@ void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& f
 
     // just call the corresponding typed routine 
 
-    FileIOWrapper<Derived, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName );
+    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */

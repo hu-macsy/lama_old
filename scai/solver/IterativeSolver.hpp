@@ -146,7 +146,7 @@ public:
      * @brief returns the number of iterations, this solver has done so far.
      *
      */
-    int getIterationCount() const;
+    IndexType getIterationCount() const;
 
     /**
      * @brief Copies the status indepedent solver informations to create a new instance of the same

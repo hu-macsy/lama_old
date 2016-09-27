@@ -75,28 +75,28 @@ SCAI_LOG_DEF_LOGGER( CUDADIAUtils::logger, "CUDA.DIAUtils" )
 
 template<bool useTexture, bool useSharedMemory>
 __inline__ __device__
-int fetchOffset( const int* const offset_d, int[], const int i )
+IndexType fetchOffset( const IndexType* const offset_d, IndexType[], const IndexType i )
 {
     return offset_d[i];
 }
 
 template<>
 __inline__ __device__
-int fetchOffset<true, false>( const int* const offset_d, int[], const int i )
+IndexType fetchOffset<true, false>( const IndexType* const offset_d, IndexType[], const IndexType i )
 {
-    return fetchVectorX<int, true>( offset_d, i );
+    return fetchVectorX<IndexType, true>( offset_d, i );
 }
 
 template<>
 __inline__ __device__
-int fetchOffset<true, true>( const int* const, int offset_sm[], const int i )
+IndexType fetchOffset<true, true>( const IndexType* const, IndexType offset_sm[], const IndexType i )
 {
     return offset_sm[i];
 }
 
 template<>
 __inline__ __device__
-int fetchOffset<false, true>( const int* const, int offset_sm[], const int i )
+IndexType fetchOffset<false, true>( const IndexType* const, IndexType offset_sm[], const IndexType i )
 {
     return offset_sm[i];
 }
@@ -120,7 +120,7 @@ __global__ void normal_gemv_kernel(
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < numDiagonals )
         {
@@ -142,7 +142,7 @@ __global__ void normal_gemv_kernel(
         {
             IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
 
-            if ( j >= 0 && j < numColumns )
+            if ( common::Utils::validIndex( j, numColumns ) )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
                 temp += val * fetchVectorX<ValueType, useTexture>( x, j );
@@ -170,7 +170,7 @@ __global__ void normal_gemv_kernel_alpha_one_beta_one(
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < numDiagonals )
         {
@@ -192,7 +192,7 @@ __global__ void normal_gemv_kernel_alpha_one_beta_one(
         {
             IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
 
-            if ( j >= 0 && j < numColumns )
+            if ( common::Utils::validIndex( j, numColumns ) )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
                 temp += val * fetchVectorX<ValueType, useTexture>( x, j );
@@ -220,7 +220,7 @@ __global__ void normal_gemv_kernel_alpha_one_beta_zero(
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < numDiagonals )
         {
@@ -241,7 +241,7 @@ __global__ void normal_gemv_kernel_alpha_one_beta_zero(
         {
             IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
 
-            if ( j >= 0 && j < numColumns )
+            if ( common::Utils::validIndex( j, numColumns ) )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
                 temp += val * fetchVectorX<ValueType, useTexture>( x, j );
@@ -287,7 +287,7 @@ __global__ void normal_gemv_kernel_alpha_one(
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < numDiagonals )
         {
@@ -315,7 +315,7 @@ __global__ void normal_gemv_kernel_alpha_one(
         {
             IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
 
-            if ( j >= 0 && j < numColumns )
+            if ( common::Utils::validIndex( j, numColumns ) )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
                 temp += val * fetchVectorX<ValueType, useTexture>( x, j );
@@ -344,7 +344,7 @@ __global__ void normal_gemv_kernel_alpha_zero(
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < numDiagonals )
         {
@@ -381,7 +381,7 @@ __global__ void normal_gemv_kernel_beta_one(
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < numDiagonals )
         {
@@ -403,7 +403,7 @@ __global__ void normal_gemv_kernel_beta_one(
         {
             IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
 
-            if ( j >= 0 && j < numColumns )
+            if ( common::Utils::validIndex( j, numColumns ) )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
                 temp += val * fetchVectorX<ValueType, useTexture>( x, j );
@@ -432,7 +432,7 @@ __global__ void normal_gemv_kernel_beta_zero(
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < numDiagonals )
         {
@@ -453,7 +453,7 @@ __global__ void normal_gemv_kernel_beta_zero(
         {
             IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
 
-            if ( j >= 0 && j < numColumns )
+            if ( common::Utils::validIndex( j, numColumns ) )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
                 temp += val * fetchVectorX<ValueType, useTexture>( x, j );
@@ -744,7 +744,7 @@ __global__ void normal_gevm_kernel(
 
     if ( useSharedMem )
     {
-        int k = threadIdx.x;
+        IndexType k = threadIdx.x;
 
         while ( k < numDiagonals )
         {
@@ -772,7 +772,7 @@ __global__ void normal_gevm_kernel(
         {
             IndexType i = k - fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, ii );
 
-            if ( i >= 0 && i < numRows )
+            if ( common::Utils::validIndex( i, numRows ) )
             {
                 temp += diagonalValues[ numRows * ii + i ] * fetchVectorX<ValueType, useTexture>( x, i );
             }
@@ -895,7 +895,7 @@ void CUDADIAUtils::normalGEVM(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDADIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDADIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     SCAI_LOG_INFO( logger, "register DIAUtils CUDA-routines for CUDA at kernel registry [" << flag
@@ -912,13 +912,13 @@ void CUDADIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistr
 CUDADIAUtils::CUDADIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDADIAUtils::~CUDADIAUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDADIAUtils CUDADIAUtils::guard;    // guard variable for registration

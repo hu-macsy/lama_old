@@ -295,7 +295,7 @@ void MKLCSRUtils::decomposition(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MKLCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     const common::context::ContextType ctx = common::context::Host;
     using kregistry::KernelRegistry;
@@ -325,7 +325,7 @@ MKLCSRUtils::MKLCSRUtils()
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::registerKernels( flag );
 }
 
 MKLCSRUtils::~MKLCSRUtils()
@@ -341,7 +341,7 @@ MKLCSRUtils::~MKLCSRUtils()
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

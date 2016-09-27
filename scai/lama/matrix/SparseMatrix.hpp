@@ -144,10 +144,6 @@ public:
         dmemo::DistributionPtr rowDist,
         dmemo::DistributionPtr colDist );
 
-    SparseMatrix( const Matrix& matrix, const bool transposeFlag = false );
-
-    SparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
-
     /** Override also the default copy constructor that does not make a
      *  deep copy of the input matrix due to the use of shared pointers.
      */
@@ -331,21 +327,7 @@ public:
         const ValueType beta,
         const DenseMatrix<ValueType>& y ) const;
 
-    /* Implemenation of pure method of class Matrix */
-
-    virtual void matrixTimesVector(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const;
-
-    void vectorTimesMatrix(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const;
+    /* Implementation of method needed for CRTPMatrix */
 
     void vectorTimesMatrixImpl(
         DenseVector<ValueType>& result,
@@ -395,6 +377,35 @@ public:
             const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
 
     /**
+     * @brief Operation on transposed distributed matrix with halo exchange, sync version
+     *
+     * @param[out]    localResult is the result array
+     * @param[in]     localX is the array with local values
+     * @param[in,out] haloX is a temporary array keeping the non-local halo values of X
+     * @param[in]     localF is the operation called with local matrix and localX
+     * @param[in]     haloF is the operation called with halo matrix and haloX
+     *
+     * Very similiar to haloOperationSync but here the halo computations are done for
+     * the other processors (as this processor owns it) and the results are sent to the other
+     * processors. Uses inverse halo communication schedule, scatters the received values instead
+     * of gathering the send values.
+     */
+    void invHaloOperationSync(
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        hmemo::HArray<ValueType>& haloX,
+        common::function <
+        void(
+            const MatrixStorage<ValueType>* localMatrix,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX ) > localF,
+        common::function <
+        void(
+            const MatrixStorage<ValueType>* haloMatrix,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
+
+    /**
      * @brief Operation on distributed matrix with halo exchange, async version
      *
      * The asynchronous version starts the local computation asynchronously so it
@@ -414,36 +425,6 @@ public:
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
-
-    void vectorHaloOperationSync(
-        hmemo::HArray<ValueType>& localResult,
-        const hmemo::HArray<ValueType>& localX,
-        const hmemo::HArray<ValueType>& localY,
-        common::function <
-        void(
-            const MatrixStorage<ValueType>* localMatrix,
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX ) > calcF,
-        common::function <
-        void(
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX,
-            const hmemo::HArray<ValueType>& localY ) > addF ) const;
-
-    void vectorHaloOperationAsync(
-        hmemo::HArray<ValueType>& localResult,
-        const hmemo::HArray<ValueType>& localX,
-        const hmemo::HArray<ValueType>& localY,
-        common::function <
-        tasking::SyncToken * (
-            const MatrixStorage<ValueType>* localMatrix,
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX ) > calcF,
-        common::function <
-        /*tasking::SyncToken**/void(
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX,
-            const hmemo::HArray<ValueType>& localY ) > addF ) const;
 
     /* Implemenation of pure method of class Matrix */
 

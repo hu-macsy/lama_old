@@ -52,12 +52,10 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/matutils/MatrixCreator.hpp>
-
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/lama/test/EquationHelper.hpp>
+#include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
@@ -201,7 +199,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     BOOST_CHECK( l2norm.getValue<ValueType>() < 1e-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, scai_numeric_test_types )
 {
     ContextPtr context = Context::getContextPtr();
     testSolveMethod<CSRSparseMatrix<ValueType> >( "<JacobiCSR> ", context );

@@ -470,7 +470,7 @@ void MatrixMarketIO::readArrayImpl(
     IndexType i;
     ValueType* vPtr = vector.get();
 
-    for ( int l = 0; l < numValues && !inFile.eof(); ++l )
+    for ( IndexType l = 0; l < numValues && !inFile.eof(); ++l )
     {
         std::getline( inFile, line );
         std::istringstream reader( line );
@@ -478,7 +478,7 @@ void MatrixMarketIO::readArrayImpl(
         if ( mmType == common::scalar::PATTERN )
         {
             reader >> i;
-            val = 1.0;
+            val = ValueType( 1 );
             i--;
         }
         else
@@ -785,9 +785,12 @@ void MatrixMarketIO::readStorageImpl(
     
     if ( common::scalar::PATTERN == mmType )
     {
+        // to be consistent with other FileIO handlers throw an exception if not Pattern expected
+
+        SCAI_ASSERT_EQ_ERROR( common::scalar::PATTERN, mScalarTypeData, "File " << fileName << " has only matrix pattern" )
+
         inFile.readFormatted( ia, ja, numValuesFile );
-        val.resize( numValuesFile );
-        val = ValueType( 1 );
+        val.init( ValueType( 1 ), numValuesFile );
     }
     else
     {
@@ -829,10 +832,10 @@ void MatrixMarketIO::readStorageImpl(
 
     inFile.closeCheck();
 
-    // we shape the matrix by maximal appearing indexes
+    // we shape the matrix by maximal appearing indexes, apply max only if size > 0 
 
-    int nrows = ia.max() + 1;
-    int ncols = ja.max() + 1;
+    IndexType nrows = ia.size() ? ia.max() + 1 : 0;
+    IndexType ncols = ja.size() ? ja.max() + 1 : 0;
 
     SCAI_LOG_INFO( logger, "size from header: " << numRows << " x " << numColumns
                            << ", size by indexes: " << nrows << " x " << ncols )
@@ -848,15 +851,7 @@ void MatrixMarketIO::readStorageImpl(
 
     coo.swap( ia, ja, val );
 
-    // make CSR data out of it to get it sorted
-
-    CSRStorage<ValueType> csr( coo );  
-
-    bool diagonalProperty = true;
-
-    csr.sortRows( diagonalProperty );
-
-    storage = csr;
+    storage = coo;
 }
 
 /* --------------------------------------------------------------------------------- */

@@ -49,7 +49,6 @@
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/common/macros/throw.hpp>
-#include <scai/common/mepr/TemplateSpecifier.hpp>
 
 // std
 #include <fstream>
@@ -135,8 +134,8 @@ public:
      *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
      * 
      * @param[in] distribution  the distribution to use for the new vector.
-     * @param[in] startValue the first value of the new DenseVector
-     * @param[in] inc        the increment for the sequence of values 
+     * @param[in] startValue    the first value of the new DenseVector
+     * @param[in] inc           the increment for the sequence of values 
      * @param[in] context    specifies optionally the context where dense vector should reside
      */
     DenseVector( dmemo::DistributionPtr distribution, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
@@ -251,37 +250,45 @@ public:
      *
      * @param[in] expression     alpha * A * x
      */
-    DenseVector( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
+    DenseVector( const Expression_SMV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A.
      *
      * @param[in] expression     alpha * x * A
      */
-    DenseVector( const Expression<Scalar, Expression<Vector, Matrix, Times>, Times>& expression );
+    DenseVector( const Expression_SVM& expression );
 
     /**
      * @brief creates a DenseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
-    DenseVector( const Expression<Matrix, Vector, Times>& expression );
+    DenseVector( const Expression_MV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression x * A.
      *
      * @param[in] expression     x * A
      */
-    DenseVector( const Expression<Vector, Matrix, Times>& expression );
+    DenseVector( const Expression_VM& expression );
 
     /**
      * @brief releases all allocated resources.
      */
     virtual ~DenseVector();
 
+    /** Implementation of pure method Vector::getVectorKind() */
+
+    inline virtual VectorKind getVectorKind() const;
+
     /** Implememenation of pure routine Vector::allocate. */
 
     virtual void allocate( dmemo::DistributionPtr distribution );
+
+    /** Implememenation of pure routine Vector::allocate. */
+
+    virtual void allocate( const IndexType n );
 
     /** Override the default assignment operator.
      *
@@ -290,7 +297,7 @@ public:
 
     DenseVector& operator=( const DenseVector<ValueType>& other );
 
-    /** Reimplement scalar assignment as otherwise type conversion rules do not apply. */
+    /** Reimplement Vector::operator= as otherwise a constructor of DenseVector might be called */
 
     DenseVector& operator=( const Scalar );
 
@@ -301,6 +308,14 @@ public:
      * @param[in] fillRate for the number of non-zeros
      */
     virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 );
+
+    /** Implementation of pure method Vector::setSequence */
+
+    virtual void setSequence( const Scalar startValue, const Scalar inc, const IndexType n );
+
+    /** Implementation of pure method Vector::setSequence */
+
+    virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution );
 
     virtual common::scalar::ScalarType getValueType() const;
 
@@ -356,31 +371,18 @@ public:
     }
 
     /**
-     * @brief get a reference to halo values of this Dense Vector.
+     * @brief Get a reference to the halo temp array of this Dense Vector.
      *
      * @return  a reference to the halo values of this.
      *
-     * Note: halo of a vector can also be used for writes in case of const vectors.
+     * The halo array can be used as temporary array to keep values of neighbored
+     * processors. It avoids reallocation of memory for the values.
      */
+
     utilskernel::LArray<ValueType>& getHaloValues() const
     {
         return mHaloValues;
     }
-
-    /**
-     * @brief update the halo values according to the passed Halo.
-     *
-     * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
-     */
-    void updateHalo( const dmemo::Halo& halo ) const;
-
-    /**
-     * @brief update the halo values according to the passed Halo asynchronously.
-     *
-     * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
-     * @return          a SyncToken which can be used to synchronize to the asynchronous update.
-     */
-    tasking::SyncToken* updateHaloAsync( const dmemo::Halo& halo ) const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -389,6 +391,8 @@ public:
     virtual Scalar min() const;
 
     virtual Scalar max() const;
+
+    virtual Scalar sum() const;
 
     virtual Scalar l1Norm() const;
 
@@ -412,11 +416,15 @@ public:
 
     virtual void assign( const Scalar value );
 
+    virtual void add( const Scalar value );
+
     /** Assign this vector with another vector, inherits size and distribution. */
 
     virtual void assign( const Vector& other );
 
     virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr dist );
+
+    virtual void assign( const hmemo::_HArray& globalValues );
 
     virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
 
@@ -446,7 +454,9 @@ private:
 
     utilskernel::LArray<ValueType> mLocalValues; //!< my local values of vector
 
-    mutable utilskernel::LArray<ValueType> mHaloValues;//!< my halo values of vector
+    /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
+
+    mutable utilskernel::LArray<ValueType> mHaloValues; 
 
 public:
 
@@ -460,6 +470,14 @@ public:
 
     virtual VectorCreateKeyType getCreateValue() const;
 };
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Vector::VectorKind DenseVector<ValueType>::getVectorKind() const
+{
+    return Vector::DENSE;
+}
 
 /* ------------------------------------------------------------------------- */
 

@@ -49,9 +49,9 @@ Coming back to practice: We have created a filled CSRSparseMatrix. For our
 equation system we still need a righthandside-vector and a solution-vector.
 Now, your exercise is to create two objects of type DenseVector and fill them
 with elements. To fill a DenseVector with data, you have to use a 
-HostWriteAccess. The Constructor of this HostWriteAccess expects a LAMA-Array.
+WriteAccess. The Constructor of this WriteAccess expects a LAMA-Array.
 You can receive it from your vectors by calling getLocalValues(). With a 
-HostWriteAccess it is very simple to set your data using the overloaded
+WriteAccess it is very simple to set your data using the overloaded
 operator[]. The access to data was implemented by the programming technique RAII
 (Ressource Acquisition is initialization). This technique is used to assure the
 consistency of data across multiple contexts. The concept of a context is

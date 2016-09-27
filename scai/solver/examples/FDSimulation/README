@@ -1,0 +1,10 @@
+You can execute this example by simply calling
+$ ./FDSimulation.exe
+
+By default it would execute it on the host (CPU).
+You can switch to GPU when you set SCAI_CONTEXT=CUDA before (bash: $ export SCAI_CONTEXT=CUDA).
+
+It should print the configuration of the example and the actual steps to console.
+
+It creates the file seismogram.mtx with the seismogram data. You can plot it by calling gnuplot, creating seismogram.png
+$ gnuplot seismogram.gnuplot

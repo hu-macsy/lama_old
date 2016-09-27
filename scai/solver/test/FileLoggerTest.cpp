@@ -40,16 +40,19 @@
 
 #include <scai/solver/test/TestMacros.hpp>
 
+#include <scai/logging.hpp>
+
 #include <scai/common/test/Configuration.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
 
-using namespace scai::solver;
-using namespace scai::hmemo;
+using namespace scai;
 
-using scai::common::Exception;
-using scai::common::unique_ptr;
-using scai::common::scoped_array;
+using namespace solver;
+
+using common::Exception;
+using common::unique_ptr;
+using common::scoped_array;
 
 /* --------------------------------------------------------------------- */
 

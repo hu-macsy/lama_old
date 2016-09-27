@@ -546,12 +546,14 @@ void OpenMPBLAS1::sum(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPBLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPBLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_DEBUG( logger, "register BLAS1 OpenMP-routines for Host at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS1 OpenMP-routines for Host at kernel registry: " << 
+                            "T = " << common::TypeTraits<ValueType>::id() )
+
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( OpenMPBLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( OpenMPBLAS1::nrm2, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( OpenMPBLAS1::asum, ctx, flag );
@@ -571,7 +573,7 @@ OpenMPBLAS1::OpenMPBLAS1()
 {
     SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for Host at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
@@ -579,7 +581,7 @@ OpenMPBLAS1::~OpenMPBLAS1()
 {
     SCAI_LOG_INFO( logger, "unregister BLAS1 OpenMP-routines for Host at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

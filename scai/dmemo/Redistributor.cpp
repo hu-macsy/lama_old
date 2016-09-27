@@ -120,9 +120,10 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     haloSourceIndexes.resize( providesPlan.totalQuantity() );
     IndexType offset = 0; // runs through halo source indexes
 
-    for ( IndexType i = 0; i < providesPlan.size(); i++ )
+    for ( PartitionId i = 0; i < providesPlan.size(); i++ )
     {
         IndexType n = providesPlan[i].quantity;
+
         const IndexType* pindexes = haloProvidesIndexes.get() + providesPlan[i].offset;
 
         for ( IndexType j = 0; j < n; j++ )

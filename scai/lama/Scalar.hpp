@@ -71,11 +71,11 @@ namespace lama
  * these operations should be avoided in all critical code parts.
  *
  * ScalarRepType is used internally for the representation of
- * the value. For each supported arithmetic type SCAI_ARITHMETIC_TYPE the following
+ * the value. For each supported arithmetic type SCAI_NUMERIC_TYPES_TYPE the following
  * conversions must be supported:
  *
- *    - ScalarRepType( SCAI_ARITHMETIC_TYPE v )
- *    - SCAI_ARITHMETIC_TYPE( ScalarRepType v )
+ *    - ScalarRepType( SCAI_NUMERIC_TYPES_TYPE v )
+ *    - SCAI_NUMERIC_TYPES_TYPE( ScalarRepType v )
  *
  * Conversion into the representation type and back should be lossless, i. e. the
  * following relation must / should  hold:
@@ -125,7 +125,7 @@ public:
     inline Scalar( const type value ) : mValue( value ) \
     { }
 
-    SCAI_COMMON_LOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ARITHMETIC_TYPES )
+    SCAI_COMMON_LOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ALL_TYPES )
 
 #undef SCAI_LAMA_SCALAR_CONSTRUCTORS
 
@@ -345,7 +345,7 @@ inline bool operator<( const Scalar& a, const Scalar& b )
         common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
 	{
 		// no complex number
-		return (a.getValue<ScalarRepType>()).real() < (b.getValue<ScalarRepType>()).real();
+		return common::Math::real( a.getValue<ScalarRepType>() ) < common::Math::real( b.getValue<ScalarRepType>() );
 	}
 	else
 	{
@@ -359,7 +359,7 @@ inline bool operator>( const Scalar& a, const Scalar& b )
         common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
 	{
 		// no complex number
-		return (a.getValue<ScalarRepType>()).real() > (b.getValue<ScalarRepType>()).real();
+		return common::Math::real( a.getValue<ScalarRepType>() ) > common::Math::real( b.getValue<ScalarRepType>() );
 	}
 	else
 	{
@@ -477,12 +477,12 @@ struct TypeTraitAccess<common::mepr::TypeList<H, T> >
 
 Scalar Scalar::eps0( const common::scalar::ScalarType type )
 {
-    return TypeTraitAccess<SCAI_ARITHMETIC_HOST_LIST>::eps0( type );
+    return TypeTraitAccess<SCAI_NUMERIC_TYPES_HOST_LIST>::eps0( type );
 }
 
 Scalar Scalar::eps1( const common::scalar::ScalarType type )
 {
-    return TypeTraitAccess<SCAI_ARITHMETIC_HOST_LIST>::eps1( type );
+    return TypeTraitAccess<SCAI_NUMERIC_TYPES_HOST_LIST>::eps1( type );
 }
 
 } /* end namespace lama */

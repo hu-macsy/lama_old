@@ -41,6 +41,7 @@
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/ScalarType.hpp>
 
 #include <cstring>
 
@@ -237,7 +238,7 @@ void SAMGIO::readVectorHeader( IndexType& n, IndexType& typeSize, bool& binary, 
     if ( inFile.fail() )
     {
         COMMON_THROWEXCEPTION( "Invalid SAMG vector header file: " << fileName
-                               << "could not read '[f|b] <n> <typeSize>" )
+                               << ", could not read '[f|b] <n> <typeSize>" )
     }
 
     inFile.close();
@@ -376,7 +377,11 @@ void SAMGIO::writeStorageImpl(
 
         outFile.writeBinary( csrIA, mScalarTypeIndex );
         outFile.writeBinary( csrJA, mScalarTypeIndex ); 
-        outFile.writeBinary( csrValues, mScalarTypeData );
+
+        if ( mScalarTypeData != common::scalar::PATTERN )
+        {
+            outFile.writeBinary( csrValues, mScalarTypeData );
+        }
     }
     else
     {
@@ -387,7 +392,11 @@ void SAMGIO::writeStorageImpl(
 
         outFile.writeFormatted( csrIA, precIndex );
         outFile.writeFormatted( csrJA, precIndex );
-        outFile.writeFormatted( csrValues, precData );
+
+        if ( mScalarTypeData != common::scalar::PATTERN )
+        {
+            outFile.writeFormatted( csrValues, precData );
+        }
     }
 
     outFile.close();
@@ -481,14 +490,9 @@ void SAMGIO::readStorageImpl(
 
         size_t expectedSize = numRows + 1 + numValues;
 
-        if ( mScalarTypeIndex == common::scalar::INDEX_TYPE )
-        {
-            expectedSize *= sizeof( IndexType );
-        }
-        else
-        {
-            expectedSize *= mScalarTypeIndex;
-        }
+        expectedSize *= common::typeSize( mScalarTypeIndex );
+
+        // common::typeSize( INTERNAL ) not possible, ValueType must be known
 
         if ( mScalarTypeData == common::scalar::INTERNAL )
         {
@@ -496,6 +500,8 @@ void SAMGIO::readStorageImpl(
         }
         else
         {
+            // Note: works fine for PATTERN as typeSize( PATTERN ) == 0
+
             expectedSize += numValues * common::typeSize( mScalarTypeData ) ;
         }
 
@@ -505,14 +511,27 @@ void SAMGIO::readStorageImpl(
 
         if ( expectedSize != realSize )
         {
-            SCAI_LOG_WARN( logger, "Binary file: real size = " << realSize << ", expected size = " << expectedSize )
+            SCAI_LOG_WARN( logger, "Binary file " << fileName << ": real size = " << realSize << 
+                                    ", expected size = " << expectedSize << ", #rows = " << numRows << ", #nnz = " << numValues <<
+                                    ", IndexType = " << mScalarTypeIndex << ", DataType = " << mScalarTypeData <<
+                                    ", ValueType = " << common::TypeTraits<ValueType>::id() );
         }
 
         // Note: read operations can deal with scalar::INTERNAL, scalar::INDEX_TYPE
 
         inFile.readBinary( csrIA, numRows + 1, mScalarTypeIndex );
         inFile.readBinary( csrJA, numValues, mScalarTypeIndex );
-        inFile.readBinary( csrValues, numValues, mScalarTypeData );
+
+        if ( mScalarTypeData != common::scalar::PATTERN )
+        {
+            inFile.readBinary( csrValues, numValues, mScalarTypeData );
+        }
+        else
+        { 
+            // set values with default value
+
+            csrValues.init( ValueType( 1 ), numValues );
+        }
     }
     else
     {
@@ -520,17 +539,34 @@ void SAMGIO::readStorageImpl(
 
         inFile.readFormatted( csrIA, numRows + 1 );
         inFile.readFormatted( csrJA, numValues );
-        inFile.readFormatted( csrValues, numValues );
+
+        if ( mScalarTypeData != common::scalar::PATTERN )
+        {
+            inFile.readFormatted( csrValues, numValues );
+        }
+        else
+        { 
+            // set values with default value
+
+            csrValues.init( ValueType( 1 ), numValues );
+        }
     }
 
     inFile.closeCheck();   // gives a warning if not complete file has been read
+
+    IndexType maxColumn = csrJA.max();   // maximal appearing column
 
     csrIA -= 1;
     csrJA -= 1;
 
     SCAI_LOG_INFO( logger, "CSR data: ia = " << csrIA << ", ja = " << csrJA << ", valaues = " << csrValues )
 
-    IndexType numColumns = numRows;  // SAMG expects always square matrices
+    IndexType numColumns = numRows;  // Usuallly, SAMG expects always square matrices
+    
+    if ( maxColumn > numColumns )
+    {
+        numColumns = maxColumn;      // but might be bigger for partitioned data
+    }
 
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }

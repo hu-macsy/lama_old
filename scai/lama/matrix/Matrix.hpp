@@ -120,7 +120,7 @@ public:
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
      * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
-     * @param[in] valuesType representation type for output values, default is same type as matrix values
+     * @param[in] dataType representation type for output values, default is same type as matrix values
      * @param[in] indexType representation type for col/row index values
      * @param[in] fileMode can be used to forche BINARY or FORMATTED output
      */
@@ -155,18 +155,6 @@ public:
      */
     virtual const char* getTypeName() const = 0;
 
-    /** @brief Creates a LAMA array with the same value type as the matrix.
-     *
-     *  @return an auto pointer to the LAMA array.
-     *
-     *  Same as hmemo::_HArray::create( this.getValueType() )
-     *
-     *  Value type is known only at runtime, so pointer to the base class
-     *  is returned. Auto pointer indicates that calling routine takes ownership of
-     *  the allocated array.
-     */
-    hmemo::_HArray* createArray() const;
-
     /**
      * @brief Clears the full matrix, resets global and local sizes to 0.
      *
@@ -176,8 +164,16 @@ public:
      *     a.clear();                          \\ same functionality, clears involved arrays
      *
      * \endcode
+     *
+     * This routine will not free any allocated memory. It is especially helpful to invalidate
+     * all data before it is defined again.
      */
     virtual void clear() = 0;
+
+    /**
+     * @brief Same as clear but here all data is freed.
+     */
+    virtual void purge() = 0;
 
     /** @brief Reallocates this matrix to a replicated zero-matrix of the given shape.
      *
@@ -213,7 +209,12 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution ) = 0;
 
-    /** Set matrix to a (replicated) identity matrix with same row and column distribution. */
+    /** Set matrix to a (replicated) identity matrix with same row and column distribution. 
+     *
+     *  \code
+     *    m.setIdentitiy( n ) ->  m.setIdentity( DistributionPtr( new NoDistribution( n ) ) );
+     *  \code
+     */
 
     void setIdentity( const IndexType n );
 
@@ -248,6 +249,15 @@ public:
      *   \endcode
      */
     void readFromFile( const std::string& matrixFileName, const std::string& distributionFileName );
+
+    /** This method resorts column indexes in such a way that the diagonal element is always the 
+     *  first one in a row. 
+     *
+     *  This method throws an exception if row and column distribution are not equal. Furhtermore
+     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
+     *  element in a sparse format.
+     */
+    void setDiagonalProperty();
 
     /** This method sets a matrix with the values owned by this partition in dense format
      *
@@ -288,11 +298,11 @@ public:
 
     /** This method set a matrix with the values owned by this partition in DIA format
      *
-     *  @param[in] rowDist distributon of rows for the matrix
-     *  @param[in] colDist distributon of columns for the matrix
+     *  @param[in] rowDist      distributon of rows for the matrix
+     *  @param[in] colDist      distributon of columns for the matrix
      *  @param[in] numDiagonals number of stored diagonals
-     *  @param[in] offsets offsets of the stored diagonals to the main diagonal
-     *  @param[in] values contains the matrix values for each diagonal
+     *  @param[in] offsets      offsets of the stored diagonals to the main diagonal
+     *  @param[in] values       contains the local matrix values for each diagonal
      *
      *  Note: only the row distribution decides which data is owned by this processor
      *
@@ -351,11 +361,11 @@ public:
         const IndexType* offsets,
         const ValueType* values )
     {
-        //const IndexType numRows    = rowDist->getLocalSize(); // not needed
-        const IndexType numColumns = colDist->getLocalSize();
+        const IndexType numRows    = rowDist->getLocalSize();
+        //const IndexType numColumns = colDist->getGlobalSize();
         // use of HArrayRef instead of HArray avoids additional copying of values
         const hmemo::HArrayRef<IndexType> offsetArray( numDiagonals, offsets );
-        const hmemo::HArrayRef<ValueType> valueArray( numColumns * numDiagonals, values );
+        const hmemo::HArrayRef<ValueType> valueArray( numRows * numDiagonals, values );
         setDIAData( rowDist, colDist, numDiagonals, offsetArray, valueArray );
     }
 
@@ -1068,7 +1078,11 @@ protected:
 
     void readFromSingleFile( const std::string& fileName );
  
-    void readFromPartitionedFile( const std::string& fileName, dmemo::DistributionPtr dist );
+    void readFromPartitionedFile( const std::string& fileName );
+
+    void resetRowDistribution( dmemo::DistributionPtr distribution );
+
+    void resetRowDistributionByFirstColumn();
 
     dmemo::DistributionPtr mColDistribution;
 

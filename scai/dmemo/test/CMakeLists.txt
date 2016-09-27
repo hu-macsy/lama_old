@@ -46,8 +46,12 @@ scai_project (
     SOURCES
 
         CommunicatorTest
+        CommunicationPlanTest
 
+        DistributedTest
         DistributionTest
+
+        HaloTest
 
         NoDistributionTest
         BlockDistributionTest
@@ -57,6 +61,10 @@ scai_project (
         ${MetisDistributionTest}
 
         RedistributorTest
+
+    HEADERS
+
+        TestDistributions
     )
 
 ### checks ####
@@ -65,7 +73,7 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
 ### set include directories ###
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 ### add link directories ###
 if ( WIN32 )

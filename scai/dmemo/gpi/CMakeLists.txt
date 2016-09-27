@@ -49,3 +49,13 @@ set ( HEADERS
 
 scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )
 
+### set include directories ###
+
+### Current implementation needs Boost interprocess management of memory
+
+include( Package/Boost )
+
+message( STATUS "add BOOST_INCLUDE_DIR=${BOOST_INCLUDE_DIR}" )
+
+include_directories ( ${BOOST_INCLUDE_DIR} )
+

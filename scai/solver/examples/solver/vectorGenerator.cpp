@@ -287,8 +287,10 @@ int main( int argc, const char* argv[] )
         float fillRate = 1.0f;          // full fill, no zero entries
 
         utilskernel::HArrayUtils::setRandom( vLocal, n, fillRate );
+
         // scale random numbers from -1 .. 1 with options.value
-        utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<ScalarRepType>(), utilskernel::reduction::MULT );
+
+        utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<RealType>(), utilskernel::reduction::MULT );
     }
     else
     {

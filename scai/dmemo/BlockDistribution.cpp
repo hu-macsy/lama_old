@@ -87,10 +87,14 @@ bool BlockDistribution::isLocal( const IndexType globalIndex ) const
     return globalIndex >= mLB && globalIndex <= mUB;
 }
 
+/* ---------------------------------------------------------------------- */
+
 PartitionId BlockDistribution::getOwner( const IndexType globalIndex ) const
 {
     return globalIndex / mBlockSize;
 }
+
+/* ---------------------------------------------------------------------- */
 
 IndexType BlockDistribution::getLocalSize() const
 {
@@ -104,10 +108,28 @@ IndexType BlockDistribution::getLocalSize() const
     return localSize;
 }
 
+/* ---------------------------------------------------------------------- */
+
+IndexType BlockDistribution::getMaxLocalSize() const
+{
+    return mBlockSize;
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType BlockDistribution::getBlockDistributionSize() const
+{
+    return getLocalSize();
+}
+
+/* ---------------------------------------------------------------------- */
+
 IndexType BlockDistribution::local2global( const IndexType localIndex ) const
 {
     return mLB + localIndex;
 }
+
+/* ---------------------------------------------------------------------- */
 
 IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
 {

@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
         ContextPtr host = Context::getHostPtr();
         ReadAccess<ValueType> rA( a, host );
 
-        for ( int i = 0; i < n * n; ++i )
+        for ( IndexType i = 0; i < n * n; ++i )
         {
             typedef typename TypeTraits<ValueType>::AbsType CompareType;
             CompareType x1 = common::Math::abs( rA[i] );
@@ -117,15 +117,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
-            int error = getrf[loc->getType()]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
-            BOOST_CHECK_EQUAL( 0, error );
-            error = getri[loc->getType()]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
-            BOOST_CHECK_EQUAL( 0, error );
+            getrf[loc->getType()]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
+            getri[loc->getType()]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
         }
         {
             ReadAccess<ValueType> rA( a );
 
-            for ( int i = 0; i < n * n; ++i )
+            for ( IndexType i = 0; i < n * n; ++i )
             {
                 BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
             }
@@ -143,15 +141,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
-            int error = getrf[loc->getType()]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
-            BOOST_CHECK_EQUAL( 0, error );
-            error = getri[loc->getType()]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
-            BOOST_CHECK_EQUAL( 0, error );
+            getrf[loc->getType()]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
+            getri[loc->getType()]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
         }
         {
             ReadAccess<ValueType> rA( a );
 
-            for ( int i = 0; i < n * n; ++i )
+            for ( IndexType i = 0; i < n * n; ++i )
             {
                 BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
             }
@@ -186,22 +182,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  1  0   0     1    1
             //  1  1   0     1    2
             //  1  1   1     1    3
-            int error = tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                                               n, 1, rA.get(), wB1.get(), n );
-            BOOST_CHECK_EQUAL( 0, error );
+            tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+                                   n, 1, rA.get(), wB1.get(), n );
+
             //  A            X    B
             //  1  1   1     1    3
             //  0  1   1     1    2
             //  0  0   1     1    1
-            error = tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                                           n, 1, rA.get(), wB2.get(), n );
-            BOOST_CHECK_EQUAL( 0, error );
+            tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                                   n, 1, rA.get(), wB2.get(), n );
         }
         {
             ReadAccess<ValueType> rX1( b1 );
             ReadAccess<ValueType> rX2( b2 );
 
-            for ( int i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
 //            printf("Lower:");
                 BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
@@ -246,23 +241,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  2  3  0  0   3    11
             //  4  5  6  0   5    49
             //  7  8  9  10  7    146
-            int error1 = tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                                                n, 1, rA1.get(), wB1.get(), n );
+            tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+                                   n, 1, rA1.get(), wB1.get(), n );
             //  A            X    B
             //  1  2  3  4   1    50
             //  0  5  6  7   3    94
             //  0  0  8  9   5    103
             //  0  0  0  10  7    70
-            int error2 = tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                                                n, 1, rA2.get(), wB2.get(), n );
-            BOOST_CHECK_EQUAL( 0, error1 );
-            BOOST_CHECK_EQUAL( 0, error2 );
+            tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                                   n, 1, rA2.get(), wB2.get(), n );
         }
         {
             ReadAccess<ValueType> rX1( b1 );
             ReadAccess<ValueType> rX2( b2 );
 
-            for ( int i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
                 BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
                 BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
@@ -361,22 +354,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  1.2  0      0      2    2.4
             //  2.3  4.5    0      3    18.1
             //  6.7  8.11   10.13  5    88.38
-            int error = tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                                               n, 1, rA.get(), wB1.get(), n );
-            BOOST_CHECK_EQUAL( 0, error );
+            tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+                                   n, 1, rA.get(), wB1.get(), n );
+
             //  A                  X    B
             //  1.2  2.3   4.5     2    31.8
             //  0    6.7   8.11    3    60.65
             //  0    0     10.13   5    50.65
-            error = tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                                           n, 1, rA.get(), wB2.get(), n );
-            BOOST_CHECK_EQUAL( 0, error );
+            tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                                   n, 1, rA.get(), wB2.get(), n );
         }
         {
             ReadAccess<ValueType> rX1( b1 );
             ReadAccess<ValueType> rX2( b2 );
 
-            for ( int i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
 //            printf("Lower:");
                 BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );

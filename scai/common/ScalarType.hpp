@@ -78,6 +78,9 @@ struct scalar
         COMPLEX,             //!<  synonymous for complex
         DOUBLE_COMPLEX,      //!<  synonymous for double complex
         LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
+        CHAR,                //!<  synonymous for char(signed 8 bit)
+        UNSIGNED_INT,        //!<  synonymous for uint(unsigned 32 bit)
+        UNSIGNED_LONG,       //!<  synonymous for size_t(unsigned 64 bit)
 
         INDEX_TYPE,          //!<  take the type as defined for IndexType, getScalarType<IndexType>()
         PATTERN,             //!<  dummy type of size 0

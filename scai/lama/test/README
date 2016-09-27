@@ -2,37 +2,43 @@
 |  Infos about running LAMA Unit Tests                |
 =======================================================
 
-1. How to start
+1. Test Exectuables
 
-This command runs all tests:
+./lamaTest                    !  for Vector, Norm, PartitonedIO, ...
+./storage/lamaStorageTest     !  for FileIO, matrix storage classes
+./matrix/lamaMatrixTest       !  for FileIO, matrix storage classes
 
-./lama_btests
+2. Parallel Execution
 
-This command runs specific tests:
+Note: Do not run storage/lamaStorageTest with multiple processors.
+      It might cause serious failures as processors might use same input/output files.
 
-./lama_btests --run_test=FileLoggerTest
-./lama_btests --run_test=FileLoggerTest/testLogging
+All other tests are written in such a way that they can be executed with distributed
+vectors and matrices where different supported distributions are exploited.
 
-2. Avoiding messages of exceptions
+mpirun -np 3 ./lamaTest
+mpirun -np 3 ./matrix/lamaMatrixTest
 
-As many tests throw exceptions to test for failures, messages of exceptions
-should be disabled.
+3. Additional Arguments for Tests
 
-export SCAI_LOG=config
+  --SCAI_NUM_THREADS=<nt>    !  number of threads
+  --SCAI_CONTEXT=Host        !  run tests on Host context, default
+  --SCAI_CONTEXT=CUDA        !  run tests on CUDA context wherever possible
 
-and in config:
+4. Run Specific Tests
 
-Exception = ERROR
+./lamaTest --run_test=VectorTest --log_level=test_suite
+./lamaTest -p 
 
-3. Useful runtime options
+5. Code Coverage
 
-Some useful runtime options for running tests:
+Recommended scenario:
 
-a) progress information
+./lamaTest
+./storage/lamaStorageTest
+./matrix/lamaMatrixTest
 
-lama_btests --show_progress
-lama_btests -p
+mpirun -np 3 ./lamaTest --SCAI_NUM_THREADS=1
+mpirun -np 3 ./matrix/lamaMatrixTest --SCAI_NUM_THREADS=1
 
-b) log info about executed tests
-
-lama_btests --log_level=test_suite
+Note: --SCAI_CONTEXT=CUDA will not affect the code coverage in the LAMA project.
