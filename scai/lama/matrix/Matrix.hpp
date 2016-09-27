@@ -298,11 +298,11 @@ public:
 
     /** This method set a matrix with the values owned by this partition in DIA format
      *
-     *  @param[in] rowDist distributon of rows for the matrix
-     *  @param[in] colDist distributon of columns for the matrix
+     *  @param[in] rowDist      distributon of rows for the matrix
+     *  @param[in] colDist      distributon of columns for the matrix
      *  @param[in] numDiagonals number of stored diagonals
-     *  @param[in] offsets offsets of the stored diagonals to the main diagonal
-     *  @param[in] values contains the matrix values for each diagonal
+     *  @param[in] offsets      offsets of the stored diagonals to the main diagonal
+     *  @param[in] values       contains the local matrix values for each diagonal
      *
      *  Note: only the row distribution decides which data is owned by this processor
      *
@@ -361,11 +361,11 @@ public:
         const IndexType* offsets,
         const ValueType* values )
     {
-        //const IndexType numRows    = rowDist->getLocalSize(); // not needed
-        const IndexType numColumns = colDist->getLocalSize();
+        const IndexType numRows    = rowDist->getLocalSize();
+        //const IndexType numColumns = colDist->getGlobalSize();
         // use of HArrayRef instead of HArray avoids additional copying of values
         const hmemo::HArrayRef<IndexType> offsetArray( numDiagonals, offsets );
-        const hmemo::HArrayRef<ValueType> valueArray( numColumns * numDiagonals, values );
+        const hmemo::HArrayRef<ValueType> valueArray( numRows * numDiagonals, values );
         setDIAData( rowDist, colDist, numDiagonals, offsetArray, valueArray );
     }
 

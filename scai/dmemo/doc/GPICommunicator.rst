@@ -31,13 +31,13 @@ times in the file if more processes per node should be started.
 
 The gaspi_run utility is invoked as follows:
 
-.. code-block:: c++
+.. code-block:: bash
 
     gaspi_run -m <machinefile> [OPTIONS] <path GASPI program>
 
 The actual communicator can be specified at runtime.
 
-.. code-block:: c++
+.. code-block:: bash
 
     gaspi_run -m machines $PWD/lamaApplication.exe --SCAI_COMMUNICATOR=GPI
 
@@ -66,7 +66,7 @@ Environment variables used during the static initialization cannot be passed.
 For the configuration of the logging please use the file ``${HOME}/.loggingrc``. For 
 debugging of applicatins the following entries are very helpful:
 
-.. code-block:: 
+.. code-block:: bash
 
   format = "#SCAI_COMM #date, #time #name @ #thread ( #func -> #file::#line ) #level #msg"
   flush  = 1

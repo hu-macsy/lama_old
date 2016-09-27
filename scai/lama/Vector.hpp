@@ -421,6 +421,8 @@ public:
      */
     virtual Scalar max() const = 0;
 
+    virtual Scalar sum() const = 0;
+
     /**
      * @brief Returns the L1 norm of this.
      *

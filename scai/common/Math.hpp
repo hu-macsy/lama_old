@@ -142,6 +142,62 @@ struct Math
 #endif
 
     /*
+     * pow-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int pow( const int& base, const int& exponent );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float pow( const float& base, const float& exponent );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double pow( const double& base, const double& exponent );
+
+    static inline MIC_CALLABLE_MEMBER long double pow( const long double& base, const long double& exponent );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> pow( const Complex<float>& base, const Complex<float>& exponent );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> pow( const Complex<double>& base, const Complex<double>& exponent );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> pow( const Complex<long double>& base, const Complex<long double>& exponent );
+#endif
+
+    /*
+     * log-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float log( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double log( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double log( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> log( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> log( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<long double> log( const Complex<long double>& x );
+#endif
+
+    /*
+     * arg-function for ValueType
+     */
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float arg( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double arg( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER long double arg( const Complex<long double>& x );
+#endif
+
+    /*
+     * atan-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float atan2( const float& y, const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double atan2( const double& y, const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double atan2( const long double& y, const long double& x );
+
+    /*
      * Getter for the real part
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const float& x );
@@ -338,6 +394,69 @@ double Math::exp( const double& x )
 long double Math::exp( const long double& x )
 {
     return ::expl(x);
+}
+
+// -------------------------------- pow -----------------------------
+
+int Math::pow( const int& base, const int& exponent )
+{
+    int r = 1;
+
+    for( int i = 0; i < exponent; ++i )
+    {
+        r *= base;
+    }
+
+    return r;
+}
+
+float Math::pow( const float& base, const float& exponent )
+{
+    return powf( base, exponent );
+}
+
+double Math::pow( const double& base, const double& exponent )
+{
+    return ::pow( base, exponent );
+}
+
+long double Math::pow( const long double& base, const long double& exponent )
+{
+    return powl( base, exponent );
+}
+
+// -------------------------------- log -----------------------------
+
+float Math::log( const float& x )
+{
+    return logf( x );
+}
+
+double Math::log( const double& x )
+{
+    return ::log( x );
+}
+
+long double Math::log( const long double& x )
+{
+    return logl( x );
+}
+
+// -------------------------------- atan2 -----------------------------
+
+float Math::atan2( const float& y, const float& x )
+{
+    return atan2f( y, x );
+}
+
+double Math::atan2( const double& y, const double& x )
+{
+    return ::atan2( y, x );
+}
+
+long double Math::atan2( const long double& y, const long double& x )
+{
+    return atan2l( y, x );
 }
 
 // -------------------------------- real -----------------------------

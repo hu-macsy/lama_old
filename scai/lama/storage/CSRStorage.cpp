@@ -340,14 +340,15 @@ void CSRStorage<ValueType>::setDIADataImpl(
     const HArray<OtherValueType>& values,
     const ContextPtr /* loc */ )
 {
-    SCAI_ASSERT_EQUAL_ERROR( numDiagonals, offsets.size() );
+    SCAI_ASSERT_EQUAL_ERROR( numDiagonals,           offsets.size() );
     SCAI_ASSERT_EQUAL_ERROR( numRows * numDiagonals, values.size() );
 
-    mNumRows = numRows;
+    mNumRows    = numRows;
     mNumColumns = numColumns;
 
-    // TODO: check
-    mDiagonalProperty = true;
+    // need this false for distributed initialization with 'fake' offsets
+    // where the global main diagonal is not the local one
+    mDiagonalProperty = false;
 
     static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
     static LAMAKernel<DIAKernelTrait::getCSRSizes<OtherValueType> > getCSRSizes;

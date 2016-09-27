@@ -392,6 +392,8 @@ public:
 
     virtual Scalar max() const;
 
+    virtual Scalar sum() const;
+
     virtual Scalar l1Norm() const;
 
     virtual Scalar l2Norm() const;

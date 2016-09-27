@@ -1078,6 +1078,54 @@
         return Complex<long double>( c * e, s * e );
     }
 
+// ------------------ Math::pow --------------------------------
+    Complex<float> Math::pow( const Complex<float>& base, const Complex<float>& exponent )
+    {
+        return Math::exp( exponent * Math::log( base ) );
+    }
+
+    Complex<double> Math::pow( const Complex<double>& base, const Complex<double>& exponent )
+    {
+        return Math::exp( exponent * Math::log( base ) );
+    }
+
+    Complex<long double> Math::pow( const Complex<long double>& base, const Complex<long double>& exponent )
+    {
+        return Math::exp( exponent * Math::log( base ) );
+    }
+
+// ------------------ Math::log --------------------------------
+    Complex<float> Math::log( const Complex<float>& x )
+    {
+        return Complex<float>( Math::log( Math::abs(x) ), Math::arg(x) );
+    }
+
+    Complex<double> Math::log( const Complex<double>& x )
+    {
+        return Complex<double>( Math::log( Math::abs(x) ), Math::arg(x) );
+    }
+
+    Complex<long double> Math::log( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::log( Math::abs(x) ), Math::arg(x) );
+    }
+
+// ------------------ Math::arg --------------------------------
+    float Math::arg( const Complex<float>& x )
+    {
+        return Math::atan2( x.imag(), x.real() );
+    }
+
+    double Math::arg( const Complex<double>& x )
+    {
+        return Math::atan2( x.imag(), x.real() );
+    }
+
+    long double Math::arg( const Complex<long double>& x )
+    {
+        return Math::atan2( x.imag(), x.real() );
+    }
+
 // ------------------ Math::real --------------------------------
     float Math::real( const Complex<float>& a )
     {
