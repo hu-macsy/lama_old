@@ -288,7 +288,7 @@ long Math::abs( const long& x )
 
 unsigned long Math::abs( const unsigned long& x )
 {
-    return ::llabs( x );
+    return x;
 }
 
 float Math::abs( const float& x )
