@@ -48,6 +48,11 @@ using scai::common::Utils;
 
 BOOST_AUTO_TEST_SUITE( MathTest )
 
+typedef boost::mpl::list<float, double, long double> scai_math_scalar_test_types;
+#ifdef SCAI_COMPLEX_SUPPORTED
+typedef boost::mpl::list<scai::common::Complex<float>, scai::common::Complex<double>, scai::common::Complex<long double> > scai_math_complex_test_types;
+#endif
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_numeric_test_types )
@@ -189,6 +194,62 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_numeric_test_types )
     Math::random( random_val );
     BOOST_CHECK( Math::abs( Math::real( random_val ) ) < 1.0 );
     BOOST_CHECK( Math::abs( Math::imag( random_val ) ) < 1.0 );
+}
+
+/* --------------------------------------------------------------------- */
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( powTest, ValueType, scai_numeric_test_types )
+{
+    ValueType x1 = ValueType( 2 );
+
+    ValueType x1p10 = Math::pow( x1, ValueType( 10 ) );
+
+    BOOST_CHECK_SMALL( x1p10 - ValueType( 1024 ), ValueType( scai::common::TypeTraits<ValueType>::small() ) );
+
+    ValueType y = ValueType( 16 );
+
+    ValueType y_r = Math::pow( y, ValueType( 0.5 ) );
+
+    BOOST_CHECK_SMALL( y_r - ValueType( 4 ), ValueType( scai::common::TypeTraits<ValueType>::small() ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( atan2Test, ValueType, scai_math_scalar_test_types )
+{
+    ValueType x = ValueType( -10 );
+    ValueType y = ValueType( 10 );
+
+    ValueType r = Math::atan2( y, x ) * 180 / ValueType( M_PI );
+
+    BOOST_CHECK_SMALL( r - ValueType( 135 ), scai::common::TypeTraits<ValueType>::small() );
+}
+
+/* --------------------------------------------------------------------- */
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+BOOST_AUTO_TEST_CASE_TEMPLATE( argTest, ValueType, scai_math_complex_test_types )
+{
+    typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
+    ValueType x = ValueType( 3, 4 );
+
+    AbsType y = Math::arg( x );
+
+    BOOST_CHECK_SMALL( y - AbsType( 0.927295218001612 ), scai::common::TypeTraits<ValueType>::small() );
+} 
+#endif
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
+{
+    ValueType x = ValueType( 10 );
+
+    ValueType y = Math::log( x );
+
+    BOOST_CHECK_SMALL( y - ValueType( 2.30258509299405 ), ValueType( scai::common::TypeTraits<ValueType>::small() ) );
+
 }
 
 /* --------------------------------------------------------------------- */

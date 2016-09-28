@@ -1,0 +1,32 @@
+// format has to be exactly name=value (without any whitespaces)
+// expects exactly these number of arguments (16) and these names
+
+// define spatial sampling: number of grid points in direction
+NZ=100 // depth
+NX=100 // horizontal 1
+NY=100 // horizontal 2
+
+// define distance between two grid points in meter
+DH=50
+
+// define temporal sampling
+DT=2.0e-03 // temporal sampling in seconds
+T=2.0      // total simulation time
+
+// define material parameter
+velocity=3500 // Density in kilo gramms per cubic meter
+rho=2000      // P-wave velocity in meter per seconds
+
+// define source wavelet
+fc=5  // Center frequency of ricker wavelet
+amp=5 // Amplitude of source signal
+
+// source position in grid points
+source_z=50
+source_x=50
+source_y=50
+
+// seismogram position in grid points
+seismogram_z=70
+seismogram_x=70
+seismogram_y=70

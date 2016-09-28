@@ -501,6 +501,14 @@ Scalar DenseVector<ValueType>::l1Norm() const
     return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
 }
 
+/*---------------------------------------------------------------------------*/
+template<typename ValueType>
+Scalar DenseVector<ValueType>::sum() const
+{
+    ValueType localsum = mLocalValues.sum();
+    return Scalar( getDistribution().getCommunicator().sum( localsum ) );
+}
+
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>

@@ -57,6 +57,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, scai_numeric_test_types
         atomicAdd( globalResult, localResult );
     }
 
-    int res = ( size * ( size + 1 ) ) / 2;
+    ValueType res = ( size * ( size + 1 ) ) / static_cast<ValueType> ( 2 );
     BOOST_CHECK_EQUAL( globalResult, res );
 }
