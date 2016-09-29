@@ -41,7 +41,7 @@
     retType CUSPARSE_BLAS_NAME( name, prefix )( definition );
 
 #define CUSPARSE_BLAS_CALL( name, prefix, ... ) \
-    SCAI_CUSPARSE_CALL( CUBLAS_CUSPARSE_NAME( name, prefix ), __VAR_ARGS__ )
+    SCAI_CUSPARSE_CALL( CUSPARSE_BLAS_NAME( name, prefix ), __VAR_ARGS__ )
 
 // external
 #include <cusparse_v2.h>
