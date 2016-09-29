@@ -2435,14 +2435,15 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     size_t free;
     size_t total;
     cuMemGetInfo( &free, &total );
-    int nnz_a;
-    int nnz_b;
+    IndexType nnz_a;
+    IndexType nnz_b;
     cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnz_b, &bIa[numColumns], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-    int avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
-    int numChunks;
-    int maxNumChunks = ( free - ( 100 * 1024 * 1024 ) ) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
-    int chunksPerWarp = NUM_BLOCKS * ( ( avgDensity * 8 ) / NUM_ELEMENTS_PER_CHUNK + 1 );
+
+    IndexType avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
+    IndexType numChunks;
+    IndexType maxNumChunks = ( free - ( 100 * 1024 * 1024 ) ) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
+    IndexType chunksPerWarp = NUM_BLOCKS * ( ( avgDensity * 8 ) / NUM_ELEMENTS_PER_CHUNK + 1 );
 
     if ( chunksPerWarp > maxNumChunks )
     {
@@ -2453,13 +2454,18 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
         numChunks = chunksPerWarp;
     }
 
-    unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * sizeof( IndexType );
-    IndexType* hashTable = ( IndexType* ) mem->allocate( hashTableAllocatedBytes );
-    // chunkList table needs one integers per chunk plus 1 start pointer
-    unsigned int chunkListAllocatedBytes = numChunks * sizeof( IndexType ) + sizeof( IndexType );
-    IndexType* chunkList = ( IndexType* ) mem->allocate( chunkListAllocatedBytes );
+    size_t hashTableAllocatedBytes = static_cast<size_t>( numChunks ) * NUM_ELEMENTS_PER_CHUNK * sizeof( IndexType );
+
+    IndexType* hashTable = reinterpret_cast<IndexType*>( mem->allocate( hashTableAllocatedBytes ) );
+
+    // chunkList table needs one integer per chunk plus 1 start pointer
+
+    size_t chunkListAllocatedBytes = static_cast<size_t>( numChunks ) * sizeof( IndexType ) + sizeof( IndexType );
+
+    IndexType* chunkList = reinterpret_cast<IndexType*>( mem->allocate( chunkListAllocatedBytes ) );
+
     thrust::device_ptr<IndexType> chunkListPtr( chunkList );
-    thrust::transform( thrust::make_counting_iterator( 0 ),
+    thrust::transform( thrust::make_counting_iterator( IndexType( 0 ) ),
                        thrust::make_counting_iterator( numChunks + 1 ),
                        chunkListPtr,
                        multHlp_chunkFill( numChunks + 1 ) );
@@ -2485,9 +2491,11 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     }
 
     // Free hashTable and hashError
+
     mem->free( ( void* ) hashError, sizeof( bool ) );
     mem->free( ( void* ) hashTable, hashTableAllocatedBytes );
     mem->free( ( void* ) chunkList, chunkListAllocatedBytes );
+
     // Convert sizes array to offset array
     thrust::exclusive_scan( cIaPtr, cIaPtr + numRows + 1, cIaPtr );
     IndexType numValues;
