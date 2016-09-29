@@ -34,8 +34,12 @@
 
 #include <stdio.h>
 
+#ifdef __APPLE__
+#include <glut.h>
+#else
 #include <GL/gl.h>
 #include <GL/glut.h>
+#endif
 
 #include <scai/lama.hpp>
 
