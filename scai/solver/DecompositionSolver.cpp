@@ -117,7 +117,7 @@ void DecompositionSolver::solveImpl()
             return;                                                                                 \
         }                                                                                           \
     }
-    SCAI_COMMON_LOOP( SCAI_SOLVER_TYPE_CAST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( SCAI_SOLVER_TYPE_CAST, SCAI_NUMERIC_TYPES_HOST )
 #undef SCAI_SOLVER_TYPE_CAST
     // has already been check in initialize, but in any case
     COMMON_THROWEXCEPTION        (

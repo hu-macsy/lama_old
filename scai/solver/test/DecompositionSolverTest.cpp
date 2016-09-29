@@ -53,7 +53,7 @@
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 
-#include <scai/lama/test/EquationHelper.hpp>
+#include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 }
 // ---------------------------------------------------------------------------------------------------------------
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_EXT_HOST> scai_ext_test_types;
+typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> scai_ext_test_types;
 typedef boost::mpl::list<float> scai_my_test_types;
 
 // BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types )

@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 
 /* ------------------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_EXT_HOST> scai_ext_test_types;
+typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> scai_ext_test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_ext_test_types )
 {
