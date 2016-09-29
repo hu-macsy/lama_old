@@ -672,8 +672,8 @@ void CUDACOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
+                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( CUDACOOUtils::normalGEVM, ctx, flag );
 }
@@ -683,8 +683,8 @@ void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
+                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( CUDACOOUtils::setCSRData, ctx, flag );
 }
 
@@ -694,6 +694,8 @@ void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
 
 CUDACOOUtils::CUDACOOUtils()
 {
+    SCAI_LOG_INFO( logger, "register COOUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
@@ -702,6 +704,8 @@ CUDACOOUtils::CUDACOOUtils()
 
 CUDACOOUtils::~CUDACOOUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister COOUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );

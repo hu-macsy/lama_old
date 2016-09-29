@@ -136,7 +136,7 @@ IndexType CUDACSRUtils::sizes2offsets( IndexType array[], const IndexType n )
 __global__
 static void offsets2sizes_kernel( IndexType sizes[], const IndexType offsets[], const IndexType n )
 {
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
     {
@@ -3014,7 +3014,7 @@ void CUDACSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
+    SCAI_LOG_DEBUG( logger, "set CSR routines for CUDA in Interface" )
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
@@ -3027,8 +3027,8 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
+                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
@@ -3046,7 +3046,7 @@ void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
+    SCAI_LOG_DEBUG( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
@@ -3057,6 +3057,8 @@ void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
 
 CUDACSRUtils::CUDACSRUtils()
 {
+    SCAI_LOG_INFO( logger, "register CSRUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
@@ -3065,6 +3067,8 @@ CUDACSRUtils::CUDACSRUtils()
 
 CUDACSRUtils::~CUDACSRUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister CSRUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
