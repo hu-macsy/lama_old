@@ -134,7 +134,8 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
     dist1.getLocalRange( lb2, ub2 );
     BOOST_CHECK( lb1 == lb2 );
     BOOST_CHECK( ub1 == ub2 );
-    GenBlockDistribution dist3( globalSize, lb1, ub1, comm );
+    SCAI_LOG_INFO( logger, "lb = " << lb1 << ", ub = " << ub1 << ", global = " << globalSize )
+    GenBlockDistribution dist3( globalSize, lb1, ub1, true, comm );
 }
 
 /* --------------------------------------------------------------------- */

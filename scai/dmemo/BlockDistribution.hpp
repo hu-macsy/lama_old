@@ -72,7 +72,7 @@ public:
      *  arbitrary rank and communicators.
      */
 
-    static void getRange(
+    static void getLocalRange(
         IndexType& lb,
         IndexType& ub,
         const IndexType n,
@@ -142,8 +142,8 @@ private:
     BlockDistribution(); // disable default constructor as it has no size
 
     IndexType mBlockSize;//!< block size of each partition
-    IndexType mLB;//!< lower bound value of local range
-    IndexType mUB;//!< upper bound value of local range
+    IndexType mLB;  //!< lower bound value of local range
+    IndexType mUB;  //!< upper bound value of local range, mUB is not in this range
 };
 
 } /* end namespace dmemo */
