@@ -157,8 +157,7 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
     IndexType numSecondary = globalSize - secondaryIndex;
 
     int lb, ub;
-    dmemo::BlockDistribution::getRange( lb, ub, dist->getGlobalSize(), myRank, numRanks );
-    ub += 1; // for right range indexing
+    dmemo::BlockDistribution::getLocalRange( lb, ub, dist->getGlobalSize(), myRank, numRanks );
 
     size = dist->getLocalSize(); //getGlobalSize();
 

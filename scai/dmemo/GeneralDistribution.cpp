@@ -316,7 +316,7 @@ IndexType GeneralDistribution::getBlockDistributionSize() const
 
     if ( localSize > 0 )
     {
-        isBlocked = ( rIndexes[0] == lb ) && ( rIndexes[localSize - 1] == ub );
+        isBlocked = ( rIndexes[0] == lb ) && ( rIndexes[localSize - 1] == ub - 1 );
     }
 
     isBlocked = comm->all( isBlocked );

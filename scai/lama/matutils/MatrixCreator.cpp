@@ -293,7 +293,7 @@ void MatrixCreator::buildPoisson(
     PartitionId gridSize[3] = { 1, 1, 1 };
     PartitionId gridRank[3] = { 0, 0, 0 };
     PartitionId dimLB[3]    = { 0, 0, 0 };
-    PartitionId dimUB[3]    = { dimX - 1, dimY - 1, dimZ - 1 };
+    PartitionId dimUB[3]    = { dimX, dimY, dimZ };
 
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
 
@@ -303,22 +303,22 @@ void MatrixCreator::buildPoisson(
     {
         gridSize[0] = comm->getSize();
         gridRank[0] = comm->getRank();
-        dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
+        dmemo::BlockDistribution::getLocalRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
     }
     else if ( dimension == 2 )
     {
         comm->factorize2( gridSize, static_cast<double>( dimX ), static_cast<double>( dimY ) );
         comm->getGrid2Rank( gridRank, gridSize );
-        dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
-        dmemo::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
+        dmemo::BlockDistribution::getLocalRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
+        dmemo::BlockDistribution::getLocalRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
     }
     else if ( dimension == 3 )
     {
         comm->factorize3( gridSize, static_cast<double>( dimX ), static_cast<double>( dimY ), static_cast<double>( dimZ ) );
         comm->getGrid3Rank( gridRank, gridSize );
-        dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
-        dmemo::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
-        dmemo::BlockDistribution::getRange( dimLB[2], dimUB[2], dimZ, gridRank[2], gridSize[2] );
+        dmemo::BlockDistribution::getLocalRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
+        dmemo::BlockDistribution::getLocalRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
+        dmemo::BlockDistribution::getLocalRange( dimLB[2], dimUB[2], dimZ, gridRank[2], gridSize[2] );
     }
 
     SCAI_LOG_INFO( logger,
@@ -336,14 +336,7 @@ void MatrixCreator::buildPoisson(
 
     for ( IndexType i = 0; i < dimension; i++ )
     {
-        // avoid negative sizes, can happen #procs >> #ndim
-        if ( dimLB[i] > dimUB[i] )
-        {
-            localSize = 0;
-            break;
-        }
-
-        localSize *= ( dimUB[i] - dimLB[i] + 1 );
+        localSize *= dimUB[i] - dimLB[i];
     }
 
     SCAI_LOG_DEBUG( logger, *comm << ": has local size = " << localSize )
@@ -360,11 +353,11 @@ void MatrixCreator::buildPoisson(
     // compute global indexes this processor is responsibile for and number of non-zero values
     // of the rows owned by this processor
 
-    for ( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
+    for ( IndexType idZ = dimLB[2]; idZ < dimUB[2]; ++idZ )
     {
-        for ( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
+        for ( IndexType idY = dimLB[1]; idY < dimUB[1]; ++idY )
         {
-            for ( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
+            for ( IndexType idX = dimLB[0]; idX < dimUB[0]; ++idX )
             {
                 const IndexType iPos = getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ );
                 myGlobalIndexes.push_back( iPos );
@@ -405,11 +398,11 @@ void MatrixCreator::buildPoisson(
         IndexType rowCounter = 0; // count local rows
         IndexType nnzCounter = 0; // count local non-zero elements
 
-        for ( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
+        for ( IndexType idZ = dimLB[2]; idZ < dimUB[2]; ++idZ )
         {
-            for ( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
+            for ( IndexType idY = dimLB[1]; idY < dimUB[1]; ++idY )
             {
-                for ( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
+                for ( IndexType idX = dimLB[0]; idX < dimUB[0]; ++idX )
                 {
                     // get column positions and values of matrix, diagonal element is first
                     getStencil( colIndexes, colValues, idX, idY, idZ, dimX, dimY, dimZ, stencilType, length,
