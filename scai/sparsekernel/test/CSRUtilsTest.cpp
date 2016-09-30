@@ -269,6 +269,96 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
     }
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
+
+    ContextPtr loc = Context::getContextPtr( matrixMultiplySizes.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    SCAI_LOG_INFO( logger, "matmul< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
+
+    //       array 1             array 2
+    //    1.0   -   2.0       1.0  0.5   -    4.0
+    //    0.5  0.3   -         -   0.3   -    1.5
+    //     -    -   3.0       2.0   -   3.0    -
+    //    4.0  1.5   -
+
+    const IndexType ia1[] = { 0, 2, 4, 5, 7 };
+    const IndexType ja1[] = { 0, 2, 0, 1, 2, 0, 1 };
+    const ValueType values1[] = { 1.0, 2.0, 0.5, 0.3, 3.0, 4.0, 1.5 };
+
+    const IndexType ia2[] = { 0, 3, 5, 7 };
+    const IndexType ja2[] = { 0, 1, 3, 1, 3, 0, 2 };
+    const ValueType values2[] = { 1.0, 0.5, 4.0, 0.3, 1.5, 2.0, 3.0 };
+
+    //       array3 ( 4 x 4 )
+    //
+    //     5.0  0.5  6.0  4.0 
+    //     0.5  0.34  -   2.95
+    //     6.0   -    9.0   - 
+    //     4.0  2.95   -   18.25
+
+    const IndexType ia3[] = { 0, 4, 7, 9, 12 };
+
+    const IndexType n1 = 4;
+    const IndexType n2 = 3;
+    const IndexType n3 = 4;
+
+    const IndexType nnz1 = sizeof( ja1 ) / sizeof( IndexType );
+    const IndexType nnz2 = sizeof( ja2 ) / sizeof( IndexType );
+
+    // csr arrays for matrix a
+
+    HArray<IndexType> aIA( n1 + 1, ia1, testContext );
+    HArray<IndexType> aJA( nnz1, ja1, testContext );
+    HArray<ValueType> aValues( nnz1, values1, testContext );
+
+    // csr arrays for matrix b
+
+    HArray<IndexType> bIA( n2 + 1, ia2, testContext );
+    HArray<IndexType> bJA( nnz2, ja2, testContext );
+    HArray<ValueType> bValues( nnz2, values2, testContext );
+
+    bool diagonalProperty = false;
+
+    IndexType nnz3;
+    HArray<IndexType> cSizes;
+
+    {
+        ReadAccess<IndexType> rAIA( aIA, loc );
+        ReadAccess<IndexType> rAJA( aJA, loc );
+        ReadAccess<IndexType> rBIA( bIA, loc );
+        ReadAccess<IndexType> rBJA( bJA, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        WriteOnlyAccess<IndexType> wSizes( cSizes, loc, n1 + 1 );
+
+        nnz3 = matrixMultiplySizes[loc->getType()]( wSizes.get(), n1, n3, n2, diagonalProperty, 
+                                                    rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
+    }
+
+    BOOST_CHECK_EQUAL( ia3[ n1 ], nnz3 );
+
+    // check sizes
+    {
+        ContextPtr host = Context::getHostPtr();
+
+        ReadAccess<IndexType> rSizes( cSizes, host );
+
+        for ( IndexType j = 0; j <= n1; ++j )
+        {
+            BOOST_CHECK_EQUAL( rSizes[j], ia3[j] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END()
