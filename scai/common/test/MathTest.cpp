@@ -198,32 +198,31 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( powTest, ValueType, scai_numeric_test_types )
 {
-    ValueType x1 = ValueType( 2 );
+    ValueType x1 = 2;
 
     ValueType x1p10 = Math::pow( x1, ValueType( 10 ) );
 
-    BOOST_CHECK_SMALL( x1p10 - ValueType( 1024 ), ValueType( scai::common::TypeTraits<ValueType>::small() ) );
+    BOOST_CHECK( Math::abs( x1p10 - ValueType( 1024 ) ) < 0.01);
 
-    ValueType y = ValueType( 16 );
+    ValueType y = 16;
 
     ValueType y_r = Math::pow( y, ValueType( 0.5 ) );
 
-    BOOST_CHECK_SMALL( y_r - ValueType( 4 ), ValueType( scai::common::TypeTraits<ValueType>::small() ) );
+    BOOST_CHECK( Math::abs( y_r - ValueType( 4 ) ) < 0.01 );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( atan2Test, ValueType, scai_math_scalar_test_types )
 {
-    ValueType x = ValueType( -10 );
-    ValueType y = ValueType( 10 );
+    ValueType x = -10;
+    ValueType y = 10;
 
-    ValueType r = Math::atan2( y, x ) * 180 / ValueType( M_PI );
+    ValueType r = Math::atan2( y, x ) * ValueType( 180 ) / ValueType( M_PI );
 
-    BOOST_CHECK_SMALL( r - ValueType( 135 ), scai::common::TypeTraits<ValueType>::small() );
+    BOOST_CHECK( Math::abs( r - ValueType( 135 ) ) < 0.01 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -248,8 +247,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
 
     ValueType y = Math::log( x );
 
-    BOOST_CHECK_SMALL( y - ValueType( 2.30258509299405 ), ValueType( scai::common::TypeTraits<ValueType>::small() ) );
-
+    BOOST_CHECK( Math::abs( y - ValueType( 2.30258509299405 ) ) < 0.001 );
 }
 
 /* --------------------------------------------------------------------- */
