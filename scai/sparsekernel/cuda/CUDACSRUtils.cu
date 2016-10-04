@@ -2413,7 +2413,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     IndexType cIa[],
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType /* k */,
+    const IndexType k,
     bool diagonalProperty,
     const IndexType aIa[],
     const IndexType aJa[],
@@ -2436,13 +2436,15 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     size_t free;
     size_t total;
     cuMemGetInfo( &free, &total );
+    SCAI_LOG_DEBUG( logger, "free = " << free << ", total = " << total )
     IndexType nnz_a;
     IndexType nnz_b;
     cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnz_b, &bIa[numColumns], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnz_b, &bIa[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
     IndexType avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
     IndexType numChunks;
+    SCAI_ASSERT_GT_ERROR ( free, static_cast<IndexType>( 100 * 1024 * 1024 ), "insufficient free memory" );
     IndexType maxNumChunks = ( free - ( 100 * 1024 * 1024 ) ) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
     IndexType chunksPerWarp = NUM_BLOCKS * ( ( avgDensity * 8 ) / NUM_ELEMENTS_PER_CHUNK + 1 );
 
@@ -2455,7 +2457,11 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
         numChunks = chunksPerWarp;
     }
 
+    SCAI_LOG_DEBUG( logger, "numChunks = " << numChunks << ", max = " << maxNumChunks << ", per warp = " << chunksPerWarp )
+
     size_t hashTableAllocatedBytes = static_cast<size_t>( numChunks ) * NUM_ELEMENTS_PER_CHUNK * sizeof( IndexType );
+
+    SCAI_LOG_DEBUG( logger, "hashTableAllcoatedBytes= " << hashTableAllocatedBytes )
 
     IndexType* hashTable = reinterpret_cast<IndexType*>( mem->allocate( hashTableAllocatedBytes ) );
 
