@@ -47,6 +47,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/tracing.hpp>
 
 // external
 #include <mkl_lapacke.h>
@@ -73,7 +74,9 @@ IndexType LAPACKe_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
                                  const IndexType n, ValueType* const A, const IndexType lda,
                                  IndexType* const ipiv )
 {
-    SCAI_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
+    SCAI_REGION( "LAPACKe.getrf" )
+
+    SCAI_LOG_INFO( logger, "getrf<" << common::TypeTraits<ValueType>::id() << "> for A of size " << m << " x " << n )
     typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
     if ( TypeTraits<IndexType>::stype
@@ -109,23 +112,29 @@ template<typename ValueType>
 void LAPACKe_LAPACK::getinv( const IndexType n, ValueType* a,
                              const IndexType lda )
 {
+    SCAI_REGION( "LAPACKe.getinv" )
+
     typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
-    LAPACKIndexType info = 0;
-    // scoped_array, will also be freed in case of exception
-    scoped_array<LAPACKIndexType> ipiv(
-        new LAPACKIndexType[n] );
+
+    scoped_array<LAPACKIndexType> ipiv( new LAPACKIndexType[n] );  // freed by destructor
+
     SCAI_LOG_INFO( logger,
                    "getinv<float> for " << n << " x " << n << " matrix, uses MKL" )
-    info = LAPACKeWrapper<ValueType>::getrf( LAPACK_COL_MAJOR,
-            static_cast<LAPACKIndexType>( n ),
-            static_cast<LAPACKIndexType>( n ), a,
-            static_cast<LAPACKIndexType>( lda ), ipiv.get() );
 
-    // return error if factorization did not work
+    LAPACKIndexType info = 0;
+
+    info = LAPACKeWrapper<ValueType>::getrf( LAPACK_COL_MAJOR,
+                                             static_cast<LAPACKIndexType>( n ),
+                                             static_cast<LAPACKIndexType>( n ),
+                                             a,
+                                             static_cast<LAPACKIndexType>( lda ),
+                                             ipiv.get() );
+
+    // throw exception if factorization did not work
 
     if ( info )
     {
-        COMMON_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
+        COMMON_THROWEXCEPTION( "LAPACKe getrf failed, info = " << info )
     }
 
     info = LAPACKeWrapper<ValueType>::getri( LAPACK_COL_MAJOR,
@@ -146,11 +155,12 @@ template<typename ValueType>
 int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
                            ValueType* const a, const IndexType lda, IndexType* const ipiv )
 {
+    SCAI_REGION( "LAPACKe.getri" )
+
     typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
     SCAI_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
-    if ( TypeTraits<IndexType>::stype
-            != TypeTraits<LAPACKIndexType>::stype )
+    if ( TypeTraits<IndexType>::stype != TypeTraits<LAPACKIndexType>::stype )
     {
         // ToDo: convert ipiv array
         COMMON_THROWEXCEPTION( "indextype mismatch" );
@@ -184,6 +194,8 @@ int LAPACKe_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
                            const IndexType nrhs, const ValueType* AP, ValueType* B,
                            const IndexType ldb )
 {
+    SCAI_REGION( "LAPACKe.tptrs" )
+
     typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
     LAPACKeTrait::LAPACKFlag UL = LAPACKeTrait::enum2char( uplo );
     LAPACKeTrait::LAPACKFlag TA = LAPACKeTrait::enum2char( trans );
