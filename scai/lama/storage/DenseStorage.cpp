@@ -45,6 +45,7 @@
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/ElementwiseOp.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/common/Constants.hpp>
@@ -228,7 +229,7 @@ void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DenseStorageView<ValueType>::conj()
 {
-    HArrayUtils::conj( mData, this->getContextPtr() );
+    HArrayUtils::execElementwise( mData, utilskernel::elementwise::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

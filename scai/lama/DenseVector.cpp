@@ -479,22 +479,6 @@ Scalar DenseVector<ValueType>::max() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::conj()
-{
-    HArrayUtils::conj( mLocalValues, mContext );
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DenseVector<ValueType>::exp()
-{
-    HArrayUtils::exp( mLocalValues, mContext );
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
 Scalar DenseVector<ValueType>::l1Norm() const
 {
     ValueType localL1Norm = mLocalValues.l1Norm();
@@ -787,7 +771,68 @@ void DenseVector<ValueType>::wait() const
 template<typename ValueType>
 void DenseVector<ValueType>::invert()
 {
-    utilskernel::HArrayUtils::invert( mLocalValues, this->getContextPtr() );
+    mLocalValues.invert();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::conj()
+{
+    mLocalValues.conj();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::exp()
+{
+    mLocalValues.exp();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::sqrt()
+{
+    mLocalValues.sqrt();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::sin()
+{
+    mLocalValues.sin();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::cos()
+{
+    mLocalValues.cos();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::tan()
+{
+    mLocalValues.tan();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::atan()
+{
+    mLocalValues.atan();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::pow( const Vector& other )
+{
+    const DenseVector<ValueType>& denseOther = dynamic_cast<const DenseVector<ValueType>&>( other );
+    mLocalValues.pow( denseOther.mLocalValues );
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::powBase( Scalar base )
+{
+    mLocalValues.powBase( base.getValue<ValueType>() );
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::powExp( Scalar exp )
+{
+    mLocalValues.powExp( exp.getValue<ValueType>() );
 }
 
 template<typename ValueType>
