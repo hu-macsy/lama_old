@@ -41,6 +41,7 @@
 #include <scai/sparsekernel/DIAKernelTrait.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
+#include <scai/lama/Scalar.hpp>
 
 #include <scai/dmemo/Redistributor.hpp>
 
@@ -346,9 +347,19 @@ void CSRStorage<ValueType>::setDIADataImpl(
     mNumRows    = numRows;
     mNumColumns = numColumns;
 
-    // need this false for distributed initialization with 'fake' offsets
-    // where the global main diagonal is not the local one
-    mDiagonalProperty = false;
+    {
+        ContextPtr hostCtx = Context::getContextPtr( Context::Host );
+        ReadAccess<IndexType> rOffsets( offsets, hostCtx );
+
+        if ( rOffsets[0] == 0 )
+        {
+            mDiagonalProperty = true;
+        }
+        else
+        {
+            mDiagonalProperty = false;
+        }
+    }
 
     static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
     static LAMAKernel<DIAKernelTrait::getCSRSizes<OtherValueType> > getCSRSizes;

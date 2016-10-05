@@ -34,11 +34,14 @@
 
 set ( TRUE_FALSE_CHOICES ON OFF )
 
+# Possible and default choices for numeric types and IndexType 
+
 set ( NONE_COMPLEX_VALUES "float" "double" "long double" )
 set ( COMPLEX_VALUES      "ComplexFloat" "ComplexDouble" "ComplexLongDouble" )
 set ( TYPE_LIST_VALUES    ${NONE_COMPLEX_VALUES} ${COMPLEX_VALUES} )
 set ( LONG_DOUBLE_VALUES  "long double" "ComplexLongDouble" )
 set ( INDEX_TYPE_OPTIONS  "int" "long" "unsigned int" "unsigned long" )
+set ( INDEX_TYPE_DEFAULT  "int" )
 
 set ( BUILD_DOC_DEFAULT ON )
 set ( BUILD_EXAMPLES_DEFAULT ON )

@@ -95,6 +95,7 @@ public:
         const IndexType globalSize,
         const IndexType firstGlobalIdx,
         const IndexType lastGlobalIdx,
+        bool dummy,
         const CommunicatorPtr communicator );
 
     /** Construct a general block distribution by individual localSize
@@ -122,7 +123,14 @@ public:
 
     virtual ~GenBlockDistribution();
 
-    /** Get the local range of the calling partition. */
+    /** Get the local range of the calling partition. 
+     *
+     *  @param[out] lb, ub is the local range, i.e all elements i with lb <= i < ub 
+     *
+     *  Note: lb == ub stands for zero size, ub < lb can never happen
+     *
+     *  Be careful: older version returned ub with lb <= i <= ub
+     */
 
     void getLocalRange( IndexType& lb, IndexType& ub ) const;
 
@@ -193,9 +201,11 @@ private:
 
     common::scoped_array<IndexType> mOffsets;  //!< offset for each partition
 
-    IndexType mLB, mUB;//!< local range of full size in global values
-};
+    // this processor owns mLB, ..., mUB - 1
 
+    IndexType mLB;
+    IndexType mUB;   //!< local range of full size in global values
+};
 
 const char* GenBlockDistribution::getKind() const
 {

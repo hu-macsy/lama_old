@@ -51,7 +51,7 @@ indent_message ( "1" "${PROJECT_TEXT}" )
 emptyline()
 indent_message ( "1" "Build Type          : ${CMAKE_BUILD_TYPE}" )
 indent_message ( "1" "Library Type        : ${SCAI_LIBRARY_TYPE}" )
-indent_message ( "1" "Arithmetic Types    : ${INST_LIST}" )
+indent_message ( "1" "Numeric Types       : ${INST_LIST}" )
 indent_message ( "1" "IndexType           : ${SCAI_INDEX_TYPE}" )
 indent_message ( "1" "ASSERT Level        : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
 

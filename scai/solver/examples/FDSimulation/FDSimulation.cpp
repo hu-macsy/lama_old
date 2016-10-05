@@ -28,13 +28,13 @@ using namespace scai;
 
 #define MASTER 0
 
-#define HOST_PRINT( comm, msg )     \
-{                                   \
-    int myRank = comm->getRank();   \
-    if ( myRank == MASTER )         \
-    {                               \
-        std::cout << msg;           \
-    }                               \
+#define HOST_PRINT( comm, msg )             \
+{                                           \
+    PartitionId myRank = comm->getRank();   \
+    if ( myRank == MASTER )                 \
+    {                                       \
+        std::cout << msg;                   \
+    }                                       \
 }
 
 /*
@@ -148,23 +148,23 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
     // create matrix C
     // initialize by diagonals
 
-    int myRank   = comm->getRank();
-    int numRanks = comm->getSize();
+    PartitionId myRank   = comm->getRank();
+    PartitionId numRanks = comm->getSize();
 
     IndexType globalSize = dist->getGlobalSize();
     IndexType numDiagonals = 2;
     IndexType secondaryIndex = NZ * NX; // = remaining part of secondary diagonal
     IndexType numSecondary = globalSize - secondaryIndex;
 
-    int lb, ub;
-    dmemo::BlockDistribution::getRange( lb, ub, dist->getGlobalSize(), myRank, numRanks );
-    ub += 1; // for right range indexing
+    IndexType lb;
+    IndexType ub;
+    dmemo::BlockDistribution::getLocalRange( lb, ub, dist->getGlobalSize(), myRank, numRanks );
 
     size = dist->getLocalSize(); //getGlobalSize();
 
     IndexType myStart = lb;
     IndexType myEnd   = std::min( ub, numSecondary );
-    IndexType mySize  = std::max( myEnd - myStart, 0 );
+    IndexType mySize  = std::max( myEnd - myStart, IndexType( 0 ) );
     IndexType myRemaining = size - mySize;
 
     std::vector<IndexType> offsets;

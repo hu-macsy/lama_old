@@ -91,8 +91,6 @@ class COMMON_DLL_IMPORTEXPORT _HArray:
 
 protected:
 
-    // use of 64bit unsigned datatype instead of IndexType (32bit signed)
-
     IndexType mSize;        //!< number of entries for the context array, common for all contexts
     IndexType mValueSize;   //!< number of bytes needed for one data element
 

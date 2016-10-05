@@ -2739,8 +2739,8 @@ void CUDAJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
+                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
@@ -2753,8 +2753,8 @@ void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
+                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
@@ -2767,6 +2767,8 @@ void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
 
 CUDAJDSUtils::CUDAJDSUtils()
 {
+    SCAI_LOG_INFO( logger, "register JDSUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
@@ -2775,6 +2777,8 @@ CUDAJDSUtils::CUDAJDSUtils()
 
 CUDAJDSUtils::~CUDAJDSUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister JDSUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
