@@ -189,7 +189,108 @@ struct Math
 #endif
 
     /*
+     * sin-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float sin( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double sin( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double sin( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> sin( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> sin( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> sin( const Complex<long double>& x );
+#endif
+    /*
+     * sinh-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float sinh( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double sinh( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double sinh( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> sinh( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> sinh( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> sinh( const Complex<long double>& x );
+#endif
+
+    /*
+     * cos-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float cos( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double cos( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double cos( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> cos( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> cos( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> cos( const Complex<long double>& x );
+#endif
+
+    /*
+     * cos-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float cosh( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double cosh( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double cosh( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> cosh( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> cosh( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> cosh( const Complex<long double>& x );
+#endif
+
+    /*
+     * tan-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float tan( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double tan( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double tan( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> tan( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> tan( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> tan( const Complex<long double>& x );
+#endif
+
+    /*
      * atan-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float atan( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double atan( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double atan( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> atan( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> atan( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> atan( const Complex<long double>& x );
+#endif
+
+    /*
+     * atan2-function for ValueType
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float atan2( const float& y, const float& x );
 
@@ -440,6 +541,108 @@ double Math::log( const double& x )
 long double Math::log( const long double& x )
 {
     return logl( x );
+}
+
+// -------------------------------- sin -----------------------------
+
+float Math::sin( const float& x )
+{
+    return sinf( x );
+}
+
+double Math::sin( const double& x )
+{
+    return ::sin( x );
+}
+
+long double Math::sin( const long double& x )
+{
+    return sinl( x );
+}
+
+// -------------------------------- sinh -----------------------------
+
+float Math::sinh( const float& x )
+{
+    return sinhf( x );
+}
+
+double Math::sinh( const double& x )
+{
+    return ::sinh( x );
+}
+
+long double Math::sinh( const long double& x )
+{
+    return sinhl( x );
+}
+
+// -------------------------------- cos -----------------------------
+
+float Math::cos( const float& x )
+{
+    return cosf( x );
+}
+
+double Math::cos( const double& x )
+{
+    return ::cos( x );
+}
+
+long double Math::cos( const long double& x )
+{
+    return cosl( x );
+}
+
+// -------------------------------- cosh -----------------------------
+
+float Math::cosh( const float& x )
+{
+    return coshf( x );
+}
+
+double Math::cosh( const double& x )
+{
+    return ::cosh( x );
+}
+
+long double Math::cosh( const long double& x )
+{
+    return coshl( x );
+}
+
+// -------------------------------- tan -----------------------------
+
+float Math::tan( const float& x )
+{
+    return tanf( x );
+}
+
+double Math::tan( const double& x )
+{
+    return ::tan( x );
+}
+
+long double Math::tan( const long double& x )
+{
+    return tanl( x );
+}
+
+// -------------------------------- atan -----------------------------
+
+float Math::atan( const float& x )
+{
+    return atanf( x );
+}
+
+double Math::atan( const double& x )
+{
+    return ::atan( x );
+}
+
+long double Math::atan( const long double& x )
+{
+    return atanl( x );
 }
 
 // -------------------------------- atan2 -----------------------------
