@@ -1,5 +1,9 @@
+#ifdef __APPLE__
+#include <glut.h>
+#else
 #include <GL/gl.h>
 #include <GL/glut.h>
+#endif
 
 GLfloat xRotated, yRotated, zRotated;
 GLdouble radius=1;
