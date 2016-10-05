@@ -885,7 +885,7 @@ void CUDAUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelR
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
 }
@@ -895,9 +895,12 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
-    // we keep the registrations for IndexType as we do not need conversions
+
+    SCAI_LOG_DEBUG( logger, "registerV array UtilsKernel CUDA [" << flag
+                   << "] --> ValueType = " << common::getScalarType<ValueType>() )
+
+    // Note: these kernels will be instantiated for numeric types + IndexType
+
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
@@ -916,8 +919,9 @@ void CUDAUtils::RegNumericKernels<ValueType>::registerKernels( kregistry::Kernel
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "registerV numeric UtilsKernel CUDA [" << flag
+                   << "] --> ValueType = " << common::getScalarType<ValueType>() )
 
     KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
@@ -929,8 +933,9 @@ void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregi
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "registerVO UtilsKernel CUDA [" << flag 
+                     << "] --> ValueType = " << common::getScalarType<ValueType>() 
+                     << ", OtherValueType = " << common::getScalarType<OtherValueType>() )
     KernelRegistry::set<UtilKernelTrait::setScale<ValueType, OtherValueType> >( setScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
@@ -943,6 +948,7 @@ void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregi
 
 CUDAUtils::CUDAUtils()
 {
+    SCAI_LOG_INFO( logger, "register UtilsKernel CUDA version" )
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );
@@ -952,6 +958,7 @@ CUDAUtils::CUDAUtils()
 
 CUDAUtils::~CUDAUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister UtilsKernel CUDA version" )
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );

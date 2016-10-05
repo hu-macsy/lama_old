@@ -79,6 +79,7 @@ static void bench( IndexType size, double fillRate )
     b.prefetch();
     a.wait();
     b.wait();
+    c1.setContextPtr( gpu );
     double timeGPU = Walltime::get();
     c1 = a + b;
     timeGPU = Walltime::get() - timeGPU;

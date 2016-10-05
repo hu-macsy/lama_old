@@ -898,8 +898,8 @@ template<typename ValueType>
 void CUDADIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    SCAI_LOG_INFO( logger, "register DIAUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register DIAUtils CUDA-routines for CUDA at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     const common::context::ContextType ctx = common::context::CUDA;
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
@@ -911,12 +911,16 @@ void CUDADIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
 
 CUDADIAUtils::CUDADIAUtils()
 {
+    SCAI_LOG_INFO( logger, "register DIAUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDADIAUtils::~CUDADIAUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister DIAUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }

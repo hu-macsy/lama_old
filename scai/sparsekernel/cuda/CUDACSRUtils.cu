@@ -136,7 +136,7 @@ IndexType CUDACSRUtils::sizes2offsets( IndexType array[], const IndexType n )
 __global__
 static void offsets2sizes_kernel( IndexType sizes[], const IndexType offsets[], const IndexType n )
 {
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
     {
@@ -1850,7 +1850,6 @@ __global__ void matrixAddSizesKernel(
     IndexType localWarpId = threadIdx.x / warpSize;
     IndexType globalWarpId = ( blockIdx.x * blockDim.x + threadIdx.x ) / warpSize;
     IndexType laneId = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
-//IndexType numWarpsLocal  = blockDim.x / warpSize;
     IndexType numWarpsGlobal = ( blockDim.x * gridDim.x ) / warpSize;
     IndexType rowIt = globalWarpId;
 
@@ -2124,9 +2123,11 @@ inline void multHlp_releaseChunks ( IndexType* chunkList,
 {
     IndexType laneId = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
 
-    if ( laneId == 0 )
+    if ( laneId == 0 && chunkCount > 0 )
     {
-        for ( IndexType i = *sReservedChunks - 1; i >= *sReservedChunks - chunkCount; --i )
+        // This loop should also work for unsigned index type
+
+        for ( IndexType i = *sReservedChunks; --i > ( *sReservedChunks - chunkCount ); )
         {
             IndexType headItem;
             IndexType old;
@@ -2412,7 +2413,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     IndexType cIa[],
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType /* k */,
+    const IndexType k,
     bool diagonalProperty,
     const IndexType aIa[],
     const IndexType aJa[],
@@ -2435,14 +2436,17 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     size_t free;
     size_t total;
     cuMemGetInfo( &free, &total );
-    int nnz_a;
-    int nnz_b;
+    SCAI_LOG_DEBUG( logger, "free = " << free << ", total = " << total )
+    IndexType nnz_a;
+    IndexType nnz_b;
     cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnz_b, &bIa[numColumns], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-    int avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
-    int numChunks;
-    int maxNumChunks = ( free - ( 100 * 1024 * 1024 ) ) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
-    int chunksPerWarp = NUM_BLOCKS * ( ( avgDensity * 8 ) / NUM_ELEMENTS_PER_CHUNK + 1 );
+    cudaMemcpy( &nnz_b, &bIa[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+
+    IndexType avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
+    IndexType numChunks;
+    SCAI_ASSERT_GT_ERROR ( free, static_cast<IndexType>( 100 * 1024 * 1024 ), "insufficient free memory" );
+    IndexType maxNumChunks = ( free - ( 100 * 1024 * 1024 ) ) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
+    IndexType chunksPerWarp = NUM_BLOCKS * ( ( avgDensity * 8 ) / NUM_ELEMENTS_PER_CHUNK + 1 );
 
     if ( chunksPerWarp > maxNumChunks )
     {
@@ -2453,16 +2457,26 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
         numChunks = chunksPerWarp;
     }
 
-    unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * sizeof( IndexType );
-    IndexType* hashTable = ( IndexType* ) mem->allocate( hashTableAllocatedBytes );
-    // chunkList table needs one integers per chunk plus 1 start pointer
-    unsigned int chunkListAllocatedBytes = numChunks * sizeof( IndexType ) + sizeof( IndexType );
-    IndexType* chunkList = ( IndexType* ) mem->allocate( chunkListAllocatedBytes );
+    SCAI_LOG_DEBUG( logger, "numChunks = " << numChunks << ", max = " << maxNumChunks << ", per warp = " << chunksPerWarp )
+
+    size_t hashTableAllocatedBytes = static_cast<size_t>( numChunks ) * NUM_ELEMENTS_PER_CHUNK * sizeof( IndexType );
+
+    SCAI_LOG_DEBUG( logger, "hashTableAllcoatedBytes= " << hashTableAllocatedBytes )
+
+    IndexType* hashTable = reinterpret_cast<IndexType*>( mem->allocate( hashTableAllocatedBytes ) );
+
+    // chunkList table needs one integer per chunk plus 1 start pointer
+
+    size_t chunkListAllocatedBytes = static_cast<size_t>( numChunks ) * sizeof( IndexType ) + sizeof( IndexType );
+
+    IndexType* chunkList = reinterpret_cast<IndexType*>( mem->allocate( chunkListAllocatedBytes ) );
+
     thrust::device_ptr<IndexType> chunkListPtr( chunkList );
-    thrust::transform( thrust::make_counting_iterator( 0 ),
+    thrust::transform( thrust::make_counting_iterator( IndexType( 0 ) ),
                        thrust::make_counting_iterator( numChunks + 1 ),
                        chunkListPtr,
                        multHlp_chunkFill( numChunks + 1 ) );
+
     matrixMultiplySizesKernel <<< NUM_BLOCKS, NUM_THREADS>>>( aIa,
             aJa,
             bIa,
@@ -2475,8 +2489,9 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
             numChunks,
             hashError,
             diagonalProperty );
-    cudaStreamSynchronize( 0 );
-    SCAI_CHECK_CUDA_ERROR
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "snyc after matrixMultiplySizesKernel" );
+
     cudaMemcpy( &hashErrorHost, hashError, sizeof( bool ), cudaMemcpyDeviceToHost );
 
     if ( hashErrorHost )
@@ -2485,9 +2500,11 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     }
 
     // Free hashTable and hashError
+
     mem->free( ( void* ) hashError, sizeof( bool ) );
     mem->free( ( void* ) hashTable, hashTableAllocatedBytes );
     mem->free( ( void* ) chunkList, chunkListAllocatedBytes );
+
     // Convert sizes array to offset array
     thrust::exclusive_scan( cIaPtr, cIaPtr + numRows + 1, cIaPtr );
     IndexType numValues;
@@ -2525,7 +2542,6 @@ void matrixAddKernel(
     IndexType localWarpId = threadIdx.x / warpSize;
     IndexType globalWarpId = ( blockIdx.x * blockDim.x + threadIdx.x ) / warpSize;
     IndexType laneId = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
-//IndexType numWarpsLocal  = blockDim.x / warpSize;
     IndexType numWarpsGlobal = ( blockDim.x * gridDim.x ) / warpSize;
     IndexType rowIt = globalWarpId;
 
@@ -2631,9 +2647,10 @@ void CUDACSRUtils::matrixAdd(
     SCAI_CHECK_CUDA_ACCESS
     matrixAddKernel<ValueType, NUM_WARPS> <<< NUM_BLOCKS, NUM_THREADS>>>( cJA, cValues, cIA, numRows, numColumns,
             diagonalProperty, alpha, aIA, aJA, aValues, beta, bIA, bJA, bValues );
-    cudaStreamSynchronize( 0 );
-    SCAI_CHECK_CUDA_ERROR
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync after matrixAdd kernel" )
 }
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                             matrixMultiply                                                         */
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -2987,8 +3004,9 @@ void CUDACSRUtils::matrixMultiply(
             numChunks,
             hashError,
             diagonalProperty );
-    cudaStreamSynchronize( 0 );
-    SCAI_CHECK_CUDA_ERROR
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync after matrixMultiply kernel" )
+
     cudaMemcpy( &hashErrorHost, hashError, sizeof( bool ), cudaMemcpyDeviceToHost );
 
     if ( hashErrorHost )
@@ -3014,7 +3032,7 @@ void CUDACSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
+    SCAI_LOG_DEBUG( logger, "set CSR routines for CUDA in Interface" )
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
@@ -3027,8 +3045,8 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
+                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
@@ -3046,7 +3064,7 @@ void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
+    SCAI_LOG_DEBUG( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
@@ -3057,6 +3075,8 @@ void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
 
 CUDACSRUtils::CUDACSRUtils()
 {
+    SCAI_LOG_INFO( logger, "register CSRUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
@@ -3065,6 +3085,8 @@ CUDACSRUtils::CUDACSRUtils()
 
 CUDACSRUtils::~CUDACSRUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister CSRUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );

@@ -1021,7 +1021,12 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         storage.clear();
 
         // with diagonal element shifting
-        const IndexType offsets[] = { 0, -5, -4, -3, -2, -1, 1, 3 }; // --> with diagonal property
+        const IndexType minus5 = -5;
+        const IndexType minus4 = -4;
+        const IndexType minus3 = -3;
+        const IndexType minus2 = -2;
+        const IndexType minus1 = -1;
+        const IndexType offsets[] = { 0, minus5, minus4, minus3, minus2, minus1, 1, 3 }; // --> with diagonal property
         const ValueType values[] = { 6.0, 0.0, 9.0, 3.0, 0.0, 0.0, 0.0,
                                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
                                      0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0,
@@ -1061,7 +1066,8 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         MatrixStorage<ValueType>& storage2 = *allMatrixStorages[s];
         storage2.clear();
 
-        const IndexType offsets2[] = { -5, -4, -3, -2, -1, 0, 1, 3 }; // --> without diagonal property
+        const IndexType offsets2[] = { minus5, minus4, minus3, minus2, minus1, 0, 1, 3 }; // --> with diagonal property
+
         nonzeroValues = 12; // 12 without explicit '0' on the diagonal
 
         const ValueType values2[] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
