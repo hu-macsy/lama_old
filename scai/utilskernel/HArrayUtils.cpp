@@ -1136,6 +1136,7 @@ void HArrayUtils::buildDenseArray(
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                                                                                        \
     template void HArrayUtils::setVal<ValueType>( hmemo::_HArray&, const IndexType, const ValueType );                            \
+    template void HArrayUtils::setValImpl<ValueType>( hmemo::HArray<ValueType>&, const IndexType, const ValueType );                            \
     template ValueType HArrayUtils::getVal<ValueType>( const hmemo::_HArray&, const IndexType );                                  \
     template ValueType HArrayUtils::getValImpl<ValueType>( const hmemo::HArray<ValueType>&, const IndexType );                    \
     template void HArrayUtils::assignScalar<ValueType>( hmemo::_HArray&, const ValueType,                                         \

@@ -35,8 +35,12 @@
 
 #include <stdio.h>
 
+#ifdef __APPLE__
+#include <glut.h>
+#else
 #include <GL/gl.h>
 #include <GL/glut.h>
+#endif
 
 #include <scai/lama.hpp>
 
@@ -59,21 +63,21 @@ using scai::dmemo::Distributed;
 using scai::common::Math;
 
 
-typedef float ValueType;
+typedef double ValueType;
 
 
 #define DIMx 900                // dimension of displayed window
 #define DIMy 900
 #define maxIteration 500        // max. number of iteration
 #define nBodies 200             // number of bodies in the system
-#define maxMass 1.98892e30      // max. mass of biggest body
-#define dt 1e11                 // time step
-#define softening 3e4f          // softening parameter (used for force computation to avoid infinities)
-#define G 6.673e-11             // gravity constant
 
+ValueType maxMass  = 1.98892e30;  // max. mass of biggest body
+ValueType dt = 1e11;              // time step
+ValueType softening = 3e4f;       // softening parameter (used for force computation to avoid infinities)
+ValueType G = 6.673e-11;            // gravity constant
+ValueType radius = 1e18;           // radius of the universe
 
-ValueType radius= 1e18;     // radius of the universe
-IndexType iter = 0;         // global iteration count
+IndexType iter = 0;               // global iteration count
 
 DenseVector<ValueType> x( nBodies, 0.0 );
 DenseVector<ValueType> y( nBodies, 0.0 );
@@ -92,10 +96,10 @@ void randomBodies( )
 {
         // Random Positions (relative to the radius of the universe at the beginning)     
         x.setRandom( x.getDistributionPtr() );
-        x *= radius * Math::exp(-1.8) ;
+        x *= radius * (ValueType)Math::exp(-1.8) ;
 
         y.setRandom( y.getDistributionPtr() );
-        y *= radius * Math::exp(-1.8) ;
+        y *= radius * (ValueType)Math::exp(-1.8) ;
         
 
         // circular velocities for each particle depenent on particle position
@@ -108,10 +112,10 @@ void randomBodies( )
             ValueType num = (6.67e-11) * 1e6 * maxMass;
             ValueType magv = Math::sqrt( num / denum );
 
-            ValueType thetav = M_PI / 2.0 - atan( Math::abs(py/px) );
+            ValueType thetav = (ValueType)M_PI / 2.0 - (ValueType)atan( Math::abs(py/px) );
 
-            vx.setValue( i, -1.0 * copysign(1.0, py) * cos(thetav) * magv );
-            vy.setValue( i, copysign(1.0,px) * sin(thetav) * magv );
+            vx.setValue( i, -1.0 * copysign(1.0, py) * (ValueType)cos(thetav) * magv );
+            vy.setValue( i, copysign(1.0,px) * (ValueType)sin(thetav) * magv );
         }
         
 
@@ -221,7 +225,7 @@ void onDisplay()
         
         glBegin(GL_POLYGON);
         for(float a = 0; a < 2*M_PI; a+=0.1)
-            glVertex2f(5.0*m*cos(a) + xpos, 5.0*m*sin(a) + ypos);
+            glVertex2f((GLfloat)(5.0*m*cos(a) + xpos),(GLfloat)(5.0*m*sin(a) + ypos));
         glEnd();       
     }
 
@@ -231,8 +235,8 @@ void onDisplay()
 
 
 
-// rtimer function to redisplay changes
-void timer(int t)
+// timer function to redisplay changes
+void timer(int /*t*/)
 {
     onDisplay();
 

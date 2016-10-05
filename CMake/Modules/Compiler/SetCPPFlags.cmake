@@ -55,7 +55,7 @@ set ( SCAI_LINKER_FLAGS "" )
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES GNU )
 
-    set ( SCAI_WARNING_FLAGS       "-Wextra -Wall -Werror" )
+    set ( SCAI_WARNING_FLAGS       "-Wextra -Wall -Werror -Wno-deprecated-declarations" )
     set ( SCAI_CXX_FLAGS           "" )
     set ( SCAI_CXX_FLAGS_DEBUG     "" )
     set ( SCAI_CXX_FLAGS_RELEASE   "-ffast-math -msse4a " )
@@ -103,7 +103,7 @@ endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
 
-    set ( SCAI_WARNING_FLAGS       "-Wall -Werror" ) # "-Weverything" # wow this creates so much warnings
+    set ( SCAI_WARNING_FLAGS       "-Wall -Werror -Wno-deprecated-declarations" ) # "-Weverything" # wow this creates so much warnings
 
 	if    ( CXX_SUPPORTS_C11 )
 	    set ( SCAI_CXX_FLAGS           "-stdlib=libc++" )
