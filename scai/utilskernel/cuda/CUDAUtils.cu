@@ -74,9 +74,40 @@ namespace utilskernel
 
 SCAI_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                exp                                                                 */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* --------------------------------------------------------------------------- */
+/*                                 elementwise kernel                          */
+/* --------------------------------------------------------------------------- */
+
+/* invert / reciprocal */
+
+template<typename ValueType>
+__global__
+void invertVectorComponents_kernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    ValueType one = 1.0;
+
+    if ( i < n )
+    {
+        array[i] = one / array[i];
+    }
+}
+
+/* conj */
+
+template<typename ValueType>
+__global__
+void conjKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::conj( array[i] );
+    }
+}
+
+/* exp */
 
 template<typename ValueType>
 __global__
@@ -90,19 +121,87 @@ void expKernel( ValueType* array, const IndexType n )
     }
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                conj                                                                 */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* sqrt */
 
 template<typename ValueType>
 __global__
-void conjKernel( ValueType* array, const IndexType n )
+void sqrtKernel( ValueType* array, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
     {
-        array[i] = Math::conj( array[i] );
+        array[i] = Math::sqrt( array[i] );
+    }
+}
+
+/* sin */
+
+template<typename ValueType>
+__global__
+void sinKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::sin( array[i] );
+    }
+}
+
+/* cos */
+
+template<typename ValueType>
+__global__
+void cosKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::cos( array[i] );
+    }
+}
+
+/* tan */
+
+template<typename ValueType>
+__global__
+void tanKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::tan( array[i] );
+    }
+}
+
+/* atan */
+
+template<typename ValueType>
+__global__
+void atanKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::atan( array[i] );
+    }
+}
+
+/* log */
+
+template<typename ValueType>
+__global__
+void logKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::log( array[i] );
     }
 }
 
@@ -739,12 +838,15 @@ void CUDAUtils::set( ValueType out[], const OtherValueType in[], const IndexType
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void CUDAUtils::exp( ValueType array[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "exp, #n = " << n )
 
-    if ( n == 0 )
+template<typename ValueType, typename OtherValueType>
+void CUDAUtils::execElementwise( ValueType array, const IndexType n, const elementwise::ElementwiseOp op )
+{
+    SCAI_LOG_INFO( logger,
+                   "execElementwise<" << TypeTraits<ValueType>::id() << "," << TypeTraits<OtherValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_DEBUG( logger, "array = " << array << ", in = " << in )
+
+    if ( n <= 0 )
     {
         return;
     }
@@ -753,28 +855,78 @@ void CUDAUtils::exp( ValueType array[], const IndexType n )
     const int blockSize = CUDASettings::getBlockSize( n );
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-    expKernel <<< dimGrid, dimBlock>>>( array, n );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-}
 
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CUDAUtils::conj( ValueType array[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "conj, #n = " << n )
-
-    if ( n == 0 )
+    switch ( op )
     {
-        return;
+        case elementwise::INVERT :
+        {
+            invertVectorComponents_kernel <<< dimGrid, dimBlock>>>( array, n );
+
+            break;
+        }
+
+        case elementwise::CONJ :
+        {
+            conjKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::EXP :
+        {
+            expKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::SQRT :
+        {
+            sqrtKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::SIN :
+        {
+            sinKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::COS :
+        {
+            cosKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::TAN :
+        {
+            tanKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::ATAN :
+        {
+            atanKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::LOG :
+        {
+            logKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
     }
 
-    SCAI_CHECK_CUDA_ACCESS
-    const int blockSize = CUDASettings::getBlockSize( n );
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( n, dimBlock.x );
-    conjKernel <<< dimGrid, dimBlock>>>( array, n );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CHECK_CUDA_ERROR
 }
 
 /* --------------------------------------------------------------------------- */
@@ -806,43 +958,6 @@ void CUDAUtils::setScale( ValueType out[],
     dim3 dimGrid = makeGrid( n, dimBlock.x );
     setScaleKernel <<< dimGrid, dimBlock>>>( out, beta, in, n );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-__global__
-void invertVectorComponents_kernel( ValueType* array, const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    ValueType one = 1.0;
-
-    if ( i < n )
-    {
-        array[i] = one / array[i];
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CUDAUtils::invert( ValueType array[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger,
-                   "invert Vector components for vector of type " << TypeTraits<ValueType>::id() << " and size n = " << n << "." )
-
-    if ( n <= 0 )
-    {
-        return;
-    }
-
-    SCAI_CHECK_CUDA_ACCESS
-    const int blockSize = 256;
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( n, dimBlock.x );
-    invertVectorComponents_kernel <<< dimGrid, dimBlock>>>( array, n );
-    cudaStreamSynchronize( 0 );
-    SCAI_CHECK_CUDA_ERROR
 }
 
 /* --------------------------------------------------------------------------- */
@@ -923,9 +1038,7 @@ void CUDAUtils::RegNumericKernels<ValueType>::registerKernels( kregistry::Kernel
     SCAI_LOG_DEBUG( logger, "registerV numeric UtilsKernel CUDA [" << flag
                    << "] --> ValueType = " << common::getScalarType<ValueType>() )
 
-    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::execElementwise<ValueType> >( conj, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

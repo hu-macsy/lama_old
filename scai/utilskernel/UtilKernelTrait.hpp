@@ -193,6 +193,18 @@ struct UtilKernelTrait
         }
     };
 
+    template<typename ValueType>
+    struct execElementwise
+    {
+        /** Execute sin/cos/sqrt/... function elementwise on vector */
+
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op );
+        static const char* getId()
+        {
+            return "Util.execElementwise";
+        }
+    };
+
     template <typename ValueType>
     struct vectorScale
     {
@@ -312,59 +324,6 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Util.setScatter";
-        }
-    };
-
-    template<typename ValueType>
-    struct invert
-    {
-        /** @brief Set array[i] = 1.0 / array[i],  0 <= i < n
-         *
-         *  @param[in,out] array is the array to invert
-         *  @param         n     is the number of entries to invert
-         */
-
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n );
-
-        static const char* getId()
-        {
-            return "Util.invert";
-        }
-    };
-
-    template<typename ValueType>
-    struct conj
-    {
-        /** @brief replace complex values with their conjugate value
-         *
-         *  @param[in,out]  values is the array with entries to conj
-         *  @param[in]      n      is the number of entries in values
-         */
-        typedef void ( *FuncType ) (
-            ValueType values[],
-            const IndexType n );
-
-        static const char* getId()
-        {
-            return "Util.conj";
-        }
-    };
-
-    template<typename ValueType>
-    struct exp
-    {
-        /** @brief Calculates the exponentional function of the elements
-         *
-         *  @param[in,out]  values is the array with entries to exp
-         *  @param[in]      n      is the number of entries in values
-         */
-        typedef void ( *FuncType ) (
-            ValueType values[],
-            const IndexType n );
-
-        static const char* getId()
-        {
-            return "Util.exp";
         }
     };
 
@@ -552,6 +511,62 @@ struct UtilKernelTrait
         }
     };
 
+    template<typename ValueType>
+    struct pow
+    {
+        /** @brief Calculates elementwise pow(array1, array2)
+         *
+         *  @param[out] result is the result array
+         *  @param[in]  array1 is the base array
+         *  @param[in]  array2 is the exponent array
+         *  @param      n      is the number of entries
+         */
+
+        typedef void ( *FuncType ) ( ValueType array1[], const ValueType array2[], const IndexType n );
+
+        static const char* getId()
+        {
+            return "Util.pow";
+        }
+    };
+
+    template<typename ValueType>
+    struct powBase
+    {
+        /** @brief Calculates elementwise pow(array1, array2)
+         *
+         *  @param[out] result is the result array
+         *  @param[in]  array is the exponent array
+         *  @param[in]  base  is the base
+         *  @param      n     is the number of entries
+         */
+
+        typedef void ( *FuncType ) ( ValueType array[], ValueType base, const IndexType n );
+
+        static const char* getId()
+        {
+            return "Util.powBase";
+        }
+    };
+
+    template<typename ValueType>
+    struct powExp
+    {
+        /** @brief Calculates elementwise pow(array1, array2)
+         *
+         *  @param[out] result is the result array
+         *  @param[in]  array is the base array
+         *  @param[in]  exp   is the exponent
+         *  @param      n     is the number of entries
+         */
+
+        typedef void ( *FuncType ) ( ValueType array[], ValueType exp, const IndexType n );
+
+        static const char* getId()
+        {
+            return "Util.powExp";
+        }
+    };
 };
 
 } /* end namespace utilskernel */

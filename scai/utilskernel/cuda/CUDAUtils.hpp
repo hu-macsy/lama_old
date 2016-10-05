@@ -58,16 +58,6 @@ class COMMON_DLL_IMPORTEXPORT CUDAUtils
 {
 public:
 
-    /** CUDA implementation for UtilKernelTrait::exp */
-
-    template<typename ValueType>
-    static void exp( ValueType mValues[], const IndexType n );
-
-    /** CUDA implementation for UtilKernelTrait::conj */
-
-    template<typename ValueType>
-    static void conj( ValueType mValues[], const IndexType n );
-
     /** CUDA implementation for UtilKernelTrait::vectorScale */
 
     template<typename ValueType>
@@ -136,6 +126,26 @@ public:
     template<typename ValueType, typename otherValueType>
     static void set( ValueType out[], const otherValueType in[], const IndexType n, const reduction::ReductionOp op );
 
+   /** CUDA implementation for UtilKernelTrait::execElementwise */
+
+    template<typename ValueType>
+    static void execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op );
+
+   /** CUDA implementation for UtilKernelTrait::pow */
+
+    template<typename ValueType>
+    static void pow( ValueType array1[], const ValueType array2[], const IndexType n );
+
+    /** CUDA implementation for UtilKernelTrait::powBasw */
+
+    template<typename ValueType>
+    static void powBase( ValueType array[], const ValueType base, const IndexType n );
+
+    /** CUDA implementation for UtilKernelTrait::powExp */
+
+    template<typename ValueType>
+    static void powExp( ValueType array[], const ValueType exp, const IndexType n );
+
     /** CUDA implementation for UtilKernelTrait::setGather, out[i]] = in[ indexes[i] ] */
 
     template<typename ValueType, typename otherValueType>
@@ -150,11 +160,6 @@ public:
 
     template<typename ValueType>
     static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
-
-    /** CUDA implementation for UtilKernelTrait::invert */
-
-    template<typename ValueType>
-    static void invert( ValueType array[], const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::scan */
 

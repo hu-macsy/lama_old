@@ -62,44 +62,6 @@ SCAI_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
-{
-    SCAI_REGION( "OpenMP.Utils.conj" )
-
-    if ( n > 0 && common::isComplex( TypeTraits<ValueType>::stype ) )
-    {
-        SCAI_LOG_INFO( logger, "conj, #n = " << n )
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-        for ( IndexType i = 0; i < n; i++ )
-        {
-            mValues[i] = common::Math::conj( mValues[i] );
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPUtils::exp( ValueType mValues[], const IndexType n )
-{
-    SCAI_REGION( "OpenMP.Utils.exp" )
-
-    if ( n > 0 )
-    {
-        SCAI_LOG_INFO( logger, "exp, #n = " << n )
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-        for ( IndexType i = 0; i < n; i++ )
-        {
-            mValues[i] = common::Math::exp( mValues[i] );
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void OpenMPUtils::vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.vectorScale" )
@@ -607,6 +569,188 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void OpenMPUtils::execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.execElementwise" )
+    SCAI_LOG_DEBUG( logger,
+                    "execElementwise: array<" << TypeTraits<ValueType>::id() << "[" << n << "]"
+                    << ", op = " << op )
+
+
+    if ( n <= 0 )
+        return;
+
+    switch ( op )
+    {
+        case elementwise::INVERT :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                array[i] = static_cast<ValueType>( 1.0 ) / array[i];
+            }
+
+            break;
+        }
+
+        case elementwise::CONJ :
+        {
+            if ( common::isComplex( TypeTraits<ValueType>::stype ) )
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    array[i] = common::Math::conj( array[i] );
+                }
+            }
+
+            break;
+        }
+
+        case elementwise::EXP :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::exp( array[i] );
+            }
+
+            break;
+        }
+
+        case elementwise::SQRT :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::sqrt( array[i] );
+            }
+
+            break;
+        }
+        
+        case elementwise::SIN :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::sin( array[i] );
+            }
+
+            break;
+        }
+
+        case elementwise::COS :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::cos( array[i] );
+            }
+
+            break;
+        }
+
+        case elementwise::TAN :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::tan( array[i] );
+            }
+
+            break;
+        }
+
+        case elementwise::ATAN :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::atan( array[i] );
+            }
+
+            break;
+        }
+
+        case elementwise::LOG :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::log( array[i] );
+            }
+
+            break;
+        }
+
+        default:
+        {
+            COMMON_THROWEXCEPTION( "unsupported reduction op in set: " << op )
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::pow( ValueType array1[], const ValueType array2[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.pow" )
+    SCAI_LOG_DEBUG( logger, "pow<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        array1[i] = common::Math::pow( array1[i], array2[i] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::powBase( ValueType array[], const ValueType base, const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.powBase" )
+    SCAI_LOG_DEBUG( logger, "powBase<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        array[i] = common::Math::pow( base, array[i] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::powExp( ValueType array[], const ValueType exp, const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.powExp" )
+    SCAI_LOG_DEBUG( logger, "powExp<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        array[i] = common::Math::pow( array[i], exp);
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
 {
     SCAI_REGION( "OpenMP.Utils.validIndexes" )
@@ -708,21 +852,6 @@ void OpenMPUtils::setScatter(
     else
     {
         COMMON_THROWEXCEPTION( "Unsupported reduce op " << op << " for setScatter" )
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPUtils::invert( ValueType array[], const IndexType n )
-{
-    SCAI_REGION( "OpenMP.Utils.invert" )
-    SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        array[i] = static_cast<ValueType>( 1.0 ) / array[i];
     }
 }
 
@@ -1051,9 +1180,10 @@ void OpenMPUtils::NumericKernels<ValueType>::registerKernels( kregistry::KernelR
     SCAI_LOG_DEBUG( logger, "register arithmetic UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<UtilKernelTrait::conj<ValueType> >( conj, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::exp<ValueType> >( exp, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::invert<ValueType> >( invert, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::execElementwise<ValueType> >( execElementwise, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::pow<ValueType> >( pow, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::powBase<ValueType> >( powBase, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::powExp<ValueType> >( powExp, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

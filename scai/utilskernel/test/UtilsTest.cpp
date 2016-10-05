@@ -243,9 +243,9 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
 {
-    static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
+    static LAMAKernel<UtilKernelTrait::execElementwise<ValueType> > execElementwise;
     ContextPtr loc = testContext;
-    invert.getSupportedContext( loc );
+    execElementwise.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     SCAI_LOG_INFO( logger, "invertTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
     {
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            invert[loc]( wValues.get(), nValues );
+            execElementwise[loc]( wValues.get(), nValues, elementwise::INVERT );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            invert[loc]( wValues.get(), n );
+            execElementwise[loc]( wValues.get(), n, elementwise::INVERT );
         }
     }
 }
