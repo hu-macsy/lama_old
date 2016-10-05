@@ -231,8 +231,8 @@ void onDisplay()
 
 
 
-// rtimer function to redisplay changes
-void timer(int t)
+// timer function to redisplay changes
+void timer(int /*t*/)
 {
     onDisplay();
 
