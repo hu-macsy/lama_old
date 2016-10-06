@@ -125,12 +125,16 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ValueType* a,
 
     LAPACKIndexType info = 0;
 
-    info = LAPACKeWrapper<ValueType>::getrf( LAPACK_COL_MAJOR,
-                                             static_cast<LAPACKIndexType>( n ),
-                                             static_cast<LAPACKIndexType>( n ),
-                                             a,
-                                             static_cast<LAPACKIndexType>( lda ),
-                                             ipiv.get() );
+    {
+        SCAI_REGION( "LAPACKe.getrf" )
+
+        info = LAPACKeWrapper<ValueType>::getrf( LAPACK_COL_MAJOR,
+                                                 static_cast<LAPACKIndexType>( n ),
+                                                 static_cast<LAPACKIndexType>( n ),
+                                                 a,
+                                                 static_cast<LAPACKIndexType>( lda ),
+                                                 ipiv.get() );
+    }
 
     // throw exception if factorization did not work
 
@@ -139,13 +143,19 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ValueType* a,
         COMMON_THROWEXCEPTION( "LAPACKe getrf failed, info = " << info )
     }
 
-    info = LAPACKeWrapper<ValueType>::getri( LAPACK_COL_MAJOR,
-            static_cast<LAPACKIndexType>( n ), a,
-            static_cast<LAPACKIndexType>( lda ), ipiv.get() );
+    {
+        SCAI_REGION( "LAPACKe.getri" )
+
+        info = LAPACKeWrapper<ValueType>::getri( LAPACK_COL_MAJOR,
+                                                 static_cast<LAPACKIndexType>( n ), 
+                                                 a,
+                                                 static_cast<LAPACKIndexType>( lda ), 
+                                                 ipiv.get() );
+    }
 
     if ( info )
     {
-        COMMON_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
+        COMMON_THROWEXCEPTION( "LAPACKe getri failed, info = " << info )
     }
 }
 
