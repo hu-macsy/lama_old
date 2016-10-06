@@ -838,13 +838,11 @@ void CUDAUtils::set( ValueType out[], const OtherValueType in[], const IndexType
 
 /* --------------------------------------------------------------------------- */
 
-
-template<typename ValueType, typename OtherValueType>
-void CUDAUtils::execElementwise( ValueType array, const IndexType n, const elementwise::ElementwiseOp op )
+template<typename ValueType>
+void CUDAUtils::execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op )
 {
-    SCAI_LOG_INFO( logger,
-                   "execElementwise<" << TypeTraits<ValueType>::id() << "," << TypeTraits<OtherValueType>::id() << ">( ..., n = " << n << ")" )
-    SCAI_LOG_DEBUG( logger, "array = " << array << ", in = " << in )
+    SCAI_LOG_INFO( logger, "execElementwise<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_DEBUG( logger, "array = " << array )
 
     if ( n <= 0 )
     {
@@ -1038,7 +1036,10 @@ void CUDAUtils::RegNumericKernels<ValueType>::registerKernels( kregistry::Kernel
     SCAI_LOG_DEBUG( logger, "registerV numeric UtilsKernel CUDA [" << flag
                    << "] --> ValueType = " << common::getScalarType<ValueType>() )
 
-    KernelRegistry::set<UtilKernelTrait::execElementwise<ValueType> >( conj, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::execElementwise<ValueType> >( execElementwise, ctx, flag );
+    //KernelRegistry::set<UtilKernelTrait::pow<ValueType> >( pow, ctx, flag );
+    //KernelRegistry::set<UtilKernelTrait::powBase<ValueType> >( powBase, ctx, flag );
+    //KernelRegistry::set<UtilKernelTrait::powExp<ValueType> >( powExp, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

@@ -174,7 +174,7 @@ struct Math
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> log( const Complex<double>& x );
 
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<long double> log( const Complex<long double>& x );
+    static inline MIC_CALLABLE_MEMBER Complex<long double> log( const Complex<long double>& x );
 #endif
 
     /*

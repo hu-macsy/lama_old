@@ -38,6 +38,7 @@
 #include <scai/common/config.hpp>
 
 #include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/ElementwiseOp.hpp>
 
 // internal scai libraries
 #include <scai/logging.hpp>
