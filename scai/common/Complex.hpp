@@ -1239,17 +1239,17 @@
 // ------------------ Math::copysign --------------------------------
     Complex<float> Math::copysign( const Complex<float>& x, const Complex<float>& y )
     {
-        return copysign( x, y );
+        return Complex<float>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
     }
 
     Complex<double> Math::copysign( const Complex<double>& x, const Complex<double>& y )
     {
-        return copysign( x, y );
+        return Complex<double>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
     }
 
     Complex<long double> Math::copysign( const Complex<long double>& x, const Complex<long double>& y )
     {
-        return copysign( x, y );
+        return Complex<long double>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
     }
 
 // ------------------ Math::arg --------------------------------

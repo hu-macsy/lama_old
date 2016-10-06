@@ -206,18 +206,18 @@ void logKernel( ValueType* array, const IndexType n )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                            copySign                                                                */
+/*                                            copysign                                                                */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 __global__
-void copySignKernel( ValueType* result, const ValueType* x, const ValueType* y, const IndexType n )
+void copysignKernel( ValueType* result, const ValueType* x, const ValueType* y, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
     {
-        result[i] = copySign( x[i], y[i] ); // copySign not from Math.hpp, CUDA has own implementation
+        result[i] = copysign( x[i], y[i] ); // copysign not from Math.hpp, CUDA has own implementation
     }
 }
 
@@ -577,9 +577,9 @@ ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType ar
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDAUtils::copySign( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
+void CUDAUtils::copysign( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
 {
-    SCAI_LOG_INFO( logger, "copySign<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_INFO( logger, "copysign<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
     SCAI_LOG_DEBUG( logger, "result = " << result << ", x = " << x << ", y = " << y )
 
     if ( n <= 0 )
@@ -591,7 +591,7 @@ void CUDAUtils::copySign( ValueType result[], const ValueType x[], const ValueTy
     const int blockSize = CUDASettings::getBlockSize( n );
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-    copySignKernel<ValueType, true> <<< dimGrid, dimBlock>>> ( result, x, y, n );
+    copysignKernel<ValueType, true> <<< dimGrid, dimBlock>>> ( result, x, y, n );
 }
 
 /* --------------------------------------------------------------------------- */

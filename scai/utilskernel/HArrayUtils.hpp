@@ -285,7 +285,7 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static void copySign(
+    static void copysign(
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
         const hmemo::HArray<ValueType>& y,

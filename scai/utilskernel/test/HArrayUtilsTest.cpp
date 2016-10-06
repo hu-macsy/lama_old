@@ -300,22 +300,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copysignTest, ValueType, scai_numeric_test_types 
 {
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
-    const ValueType magnitude[] = { 1.0, 1.2, 1.3, 1.0 };
+    const ValueType magnitude[] = {  1.0, 1.2,  1.3, 1.0 };
     const ValueType sign[]      = { -1.0, 1.0, -2.0, 2.0 };
     const ValueType result[]    = { -1.0, 1.2, -1.3, 1.0 };
-    const IndexType n = sizeof( values ) / sizeof( ValueType );
+    const IndexType n = sizeof( magnitude ) / sizeof( ValueType );
     HArray<ValueType> magArray( ctx );
     HArray<ValueType> signArray( ctx );
     HArray<ValueType> resultArray( ctx );
     magArray.init( magnitude, n );
     signArray.init( sign, n );
     resultArray.init( result, n );
-    HArrayUtils::copysign( array, elementwise::SQRT, ctx );
+    HArrayUtils::copysign( resultArray, magArray, signArray, ctx );
     {
-        ReadAccess<ValueType> read( array, host );
+        ReadAccess<ValueType> readMag( magArray, host );
+        ReadAccess<ValueType> readSign( signArray, host );
+        ReadAccess<ValueType> readResult( resultArray, host );
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType x = read[i] - common::Math::copysign(values[i]);
+            ValueType x = readResult[i] - common::Math::copysign(readMag[i], readSign[i]);
             BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
             BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }

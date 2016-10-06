@@ -112,7 +112,7 @@ struct UtilKernelTrait
     };
 
     template <typename ValueType>
-    struct copySign
+    struct copysign
     {
         /** @brief Composes a floating point value with the magnitude of x and the sign of y
          *
@@ -127,7 +127,7 @@ struct UtilKernelTrait
         typedef void ( *FuncType ) ( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
         static const char* getId()
         {
-            return "Util.copySign";
+            return "Util.copysign";
         }
     };
 

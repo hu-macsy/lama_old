@@ -482,7 +482,7 @@ ValueType HArrayUtils::absMaxDiffVal(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::copySign(
+void HArrayUtils::copysign(
     hmemo::HArray<ValueType>& result,
     const hmemo::HArray<ValueType>& x,
     const hmemo::HArray<ValueType>& y,
@@ -490,7 +490,7 @@ void HArrayUtils::copySign(
 {
     SCAI_ASSERT_EQUAL( result.size(), x.size(), "array size mismatch for building differences" )
     SCAI_ASSERT_EQUAL( x.size(), y.size(), "array size mismatch for building differences" )
-    static LAMAKernel<UtilKernelTrait::copySign<ValueType> > copySign;
+    static LAMAKernel<UtilKernelTrait::copysign<ValueType> > copysign;
     ContextPtr loc = prefLoc;
 
     // Rule for default location: where array1 has valid values
@@ -500,12 +500,12 @@ void HArrayUtils::copySign(
         loc = x.getValidContext();
     }
 
-    copySign.getSupportedContext( loc );
+    copysign.getSupportedContext( loc );
     WriteAccess<ValueType> writeResult( result, loc );
     ReadAccess<ValueType> readX( x, loc );
     ReadAccess<ValueType> readY( y, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    copySign[loc]( writeResult.get(), readX.get(), readY.get(), readX.size() );
+    copysign[loc]( writeResult.get(), readX.get(), readY.get(), readX.size() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1177,6 +1177,8 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::scale<ValueType>( hmemo::HArray<ValueType>&, const ValueType, hmemo::ContextPtr );                 \
     template void HArrayUtils::execElementwise<ValueType>( hmemo::HArray<ValueType>&, const elementwise::ElementwiseOp,           \
                                                            hmemo::ContextPtr);                                                    \
+    template void HArrayUtils::copysign<ValueType>( hmemo::HArray<ValueType>&, const hmemo::HArray<ValueType>&,                   \
+                                                    const hmemo::HArray<ValueType>&, hmemo::ContextPtr);                          \
     template void HArrayUtils::pow<ValueType>( hmemo::HArray<ValueType>&, const hmemo::HArray<ValueType>&, hmemo::ContextPtr);    \
     template void HArrayUtils::powBase<ValueType>( hmemo::HArray<ValueType>&, ValueType, hmemo::ContextPtr);                      \
     template void HArrayUtils::powExp<ValueType>( hmemo::HArray<ValueType>&, ValueType, hmemo::ContextPtr);                       \

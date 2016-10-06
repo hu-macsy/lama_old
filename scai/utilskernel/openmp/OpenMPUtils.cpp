@@ -452,14 +452,13 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::copySign( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
+void OpenMPUtils::copysign( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
 {
-    SCAI_REGION( "OpenMP.Utils.copySign" )
-    SCAI_LOG_DEBUG( logger, "copySign<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
+    SCAI_REGION( "OpenMP.Utils.copysign" )
+    SCAI_LOG_DEBUG( logger, "copysign<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < n; ++i )
@@ -1201,6 +1200,7 @@ void OpenMPUtils::NumericKernels<ValueType>::registerKernels( kregistry::KernelR
                     << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<UtilKernelTrait::execElementwise<ValueType> >( execElementwise, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::copysign<ValueType> >( copysign, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::pow<ValueType> >( pow, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::powBase<ValueType> >( powBase, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::powExp<ValueType> >( powExp, ctx, flag );
