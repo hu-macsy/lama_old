@@ -137,7 +137,11 @@ public:
     /** OpenMP implementation for UtilKernelTrait::setScatter */
 
     template<typename ValueType1, typename ValueType2>
-    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
+    static void setScatter( ValueType1 out[], 
+                            const IndexType indexes[], 
+                            const ValueType2 in[], 
+                            const reduction::ReductionOp op, 
+                            const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::invert */
 
@@ -165,14 +169,16 @@ public:
 
     /** Count bucket sizes for values mapped to buckets, see UtilKernelTrait::countBuckets */
 
-    static void countBuckets( IndexType bucketSizes[], const IndexType nBuckets, const IndexType bucketMap[], const IndexType n );
+    template<typename BucketType>
+    static void countBuckets( IndexType bucketSizes[], const BucketType nBuckets, const BucketType bucketMap[], const IndexType n );
 
     /** Resort indexes 0, ..., n-1 according to their mapping to buckets, see UtilKernelTrait::sortInBuckets */
 
+    template<typename BucketType>
     static void sortInBuckets( IndexType sortedIndexes[],
                                IndexType offsets[],         
-                               const IndexType nBuckets,
-                               const IndexType bucketMap[],
+                               const BucketType nBuckets,
+                               const BucketType bucketMap[],
                                const IndexType n );
 private:
 
@@ -211,9 +217,28 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct BaseKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
+
+    template<typename ValueType>
+    struct NumericKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
+
+    template<typename ValueType>
+    struct ArrayKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
+
+    template<typename ValueType, typename OtherValueType>
+    struct BinOpKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
 
     /** Constructor for registration. */
 

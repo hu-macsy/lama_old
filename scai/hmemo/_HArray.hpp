@@ -91,9 +91,8 @@ class COMMON_DLL_IMPORTEXPORT _HArray:
 
 protected:
 
-    // use of 64bit unsigned datatype instead of IndexType (32bit signed)
-    size_t mSize;        //!< number of entries for the context array, common for all contexts
-    size_t mValueSize;   //!< number of bytes needed for one data element
+    IndexType mSize;        //!< number of entries for the context array, common for all contexts
+    IndexType mValueSize;   //!< number of bytes needed for one data element
 
     bool constFlag;         //!< if true the array cannot be written
 
@@ -279,7 +278,9 @@ inline IndexType _HArray::size() const
 
 inline void _HArray::prefetch( ContextPtr context ) const
 {
-    mContextDataManager.prefetch( context, mSize * mValueSize );
+    size_t memSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
+
+    mContextDataManager.prefetch( context, memSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -293,14 +294,18 @@ inline bool _HArray::isValid( ContextPtr context ) const
 
 inline void _HArray::resize( IndexType size )
 {
-    size_t newSize = size;
+    IndexType newSize = size;
 
     // resize on all valid locations
 
     if ( newSize  > mSize )
     {
-        mContextDataManager.resize( newSize * mValueSize, mSize * mValueSize );
+        size_t oldMemSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
+        size_t newMemSize = static_cast<size_t>( newSize ) * static_cast<size_t>( mValueSize );
+
+        mContextDataManager.resize( newMemSize, oldMemSize );
     }
+
     mSize = newSize;
 }
 
@@ -353,8 +358,11 @@ inline ContextPtr _HArray::getFirstTouchContextPtr() const
 
 inline ContextDataIndex _HArray::acquireReadAccess( ContextPtr context ) const
 {
-    size_t allocSize = mSize * mValueSize;
+    // use of size_t for bytes allows to allocate larger memory sizes
+
+    size_t allocSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
     size_t validSize = allocSize;                   // read access needs valid data in any case
+
     return mContextDataManager.acquireAccess( context, common::context::Read, allocSize, validSize );
 }
 
@@ -369,7 +377,10 @@ inline void _HArray::releaseReadAccess( ContextDataIndex index ) const
 
 inline ContextDataIndex _HArray::acquireWriteAccess( ContextPtr context, bool keepFlag )
 {
-    size_t allocSize = mSize * mValueSize;
+    // use of size_t for bytes allows to allocate larger memory sizes
+
+    size_t allocSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
+
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
     return mContextDataManager.acquireAccess( context, common::context::Write, allocSize, validSize );
 }

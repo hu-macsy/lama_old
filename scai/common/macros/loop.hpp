@@ -50,6 +50,10 @@
 #define SCAI_COMMON_LOOP_6( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_5( _macro, __VA_ARGS__ )
 #define SCAI_COMMON_LOOP_7( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_6( _macro, __VA_ARGS__ )
 #define SCAI_COMMON_LOOP_8( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_7( _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_9( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_8( _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_10( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_9( _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_11( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_10( _macro, __VA_ARGS__ )
+#define SCAI_COMMON_LOOP_12( _macro, type, ... ) _macro( type ) SCAI_COMMON_LOOP_11( _macro, __VA_ARGS__ )
 
 #define ___SCAI_COMMON_LOOP( _cnt, _macro, ... ) SCAI_COMMON_LOOP_##_cnt( _macro, __VA_ARGS__ )
 #define __SCAI_COMMON_LOOP( _cnt, _macro, ... ) ___SCAI_COMMON_LOOP( _cnt, _macro, __VA_ARGS__ )

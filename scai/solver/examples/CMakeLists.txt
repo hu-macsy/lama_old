@@ -32,6 +32,7 @@
  # @date 25.01.2016
 ###
 
+add_subdirectory ( FDSimulation )
 add_subdirectory ( lecture )
 if ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
     add_subdirectory ( myJacobi )

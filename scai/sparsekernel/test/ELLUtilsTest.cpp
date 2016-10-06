@@ -61,7 +61,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_arithmetic_test_types )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
 {
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
         IndexType count = countNonEmptyRowsBySizes[loc->getType()]( rSizes.get(), n );
-        BOOST_CHECK_EQUAL( 4, count );
+        BOOST_CHECK_EQUAL( IndexType( 4 ), count );
     }
     // count empty array
     {
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
         IndexType count = countNonEmptyRowsBySizes[loc->getType()]( rSizes.get(), sizes.size() );
-        BOOST_CHECK_EQUAL( 0, count );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), count );
     }
 }
 
@@ -173,7 +173,8 @@ BOOST_AUTO_TEST_CASE( checkTest )
     {
         const IndexType valuesIa[] = { 4, 3, 5, 2 };
         const IndexType nIa = sizeof( valuesIa ) / sizeof( IndexType );
-        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, -1, 4, -1, 4, 0, 0, 0, 5, 0 };
+        const IndexType minusOne = static_cast<IndexType>( -1 );
+        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, minusOne, 4, minusOne, 4, 0, 0, 0, 5, 0 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
@@ -206,7 +207,7 @@ BOOST_AUTO_TEST_CASE( checkTest )
     {
         const IndexType valuesIa[] = { 4, 3, 5, 2 };
         const IndexType nIa = sizeof( valuesIa ) / sizeof( IndexType );
-        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, -1, 3, 3, 3, 0, 4, 0, 4, 0, 0, 0, 5, 0 };
+        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, static_cast<IndexType>( -1 ), 3, 3, 3, 0, 4, 0, 4, 0, 0, 0, 5, 0 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
@@ -248,7 +249,7 @@ BOOST_AUTO_TEST_CASE( checkTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 {
     typedef float OtherValueType;
     ContextPtr testContext = Context::getContextPtr();
@@ -325,7 +326,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_arithmetic_test_types
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
     KernelTraitContextFunction<ELLKernelTrait::getValue<ValueType> > getValue;
@@ -365,7 +366,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_arithmetic_test_typ
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_numeric_test_types )
 {
     typedef float OtherValueType;
     ContextPtr testContext = Context::getContextPtr();
@@ -404,7 +405,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_arithmetic_test_t
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_numeric_test_types )
 {
     typedef float OtherValueType;
     ContextPtr testContext = Context::getContextPtr();
@@ -461,7 +462,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_arithmetic_test
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_numeric_test_types )
 
 {
     typedef float OtherValueType;
@@ -518,7 +519,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_arithmetic_test
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_numeric_test_types )
 
 {
     ContextPtr testContext = Context::getContextPtr();
@@ -634,7 +635,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_arithmetic_test_t
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     KernelTraitContextFunction<ELLKernelTrait::compressValues<ValueType> > compressValues;
@@ -888,7 +889,7 @@ BOOST_AUTO_TEST_CASE( matrixMultiplySizesTest )
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrixMultiplyTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     KernelTraitContextFunction<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
@@ -1159,7 +1160,7 @@ BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     KernelTraitContextFunction<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;

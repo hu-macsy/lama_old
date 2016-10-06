@@ -243,6 +243,7 @@
 #define SCAI_LOG_FATAL_ON(logger) (false)
 
 #endif // SCAI_LOG_FATAL_ENABLED
+
 /*******************************************************
  *   SCAI_LOG_TRACE                                    *
  *******************************************************/
@@ -260,7 +261,13 @@
         }                                                   \
     }
 #else
-#define SCAI_LOG_TRACE(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_TRACE( logger, msg )                       \
+    {                                                       \
+        if ( false )                                        \
+        {                                                   \
+            std::cout << msg;                               \
+        }                                                   \
+    }
 #endif
 
 /*******************************************************
@@ -329,7 +336,13 @@
         }                                                   \
     }
 #else
-#define SCAI_LOG_WARN( logger, msg ) { if ( false ) { std::cout << msg; }  }
+#define SCAI_LOG_WARN( logger, msg )                        \
+    {                                                       \
+        if ( false )                                        \
+        {                                                   \
+            std::cout << msg;                               \
+        }                                                   \
+    }
 #endif
 
 /*******************************************************
@@ -388,7 +401,7 @@
 
 #ifdef SCAI_LOG_LEVEL_OFF
 
-#define SCAI_LOG_THREAD( name )                  \
+#define SCAI_LOG_THREAD( name )                      \
     {                                                \
         if ( false )                                 \
         {                                            \
@@ -402,7 +415,7 @@
 
 // macro defines a name for the current thread
 
-#define SCAI_LOG_THREAD( name )                                            \
+#define SCAI_LOG_THREAD( name )                                                \
     {                                                                          \
         std::ostringstream oname;                                              \
         oname << name;                                                         \

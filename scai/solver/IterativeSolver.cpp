@@ -172,7 +172,7 @@ const SolverPtr IterativeSolver::getPreconditioner() const
     return mPreconditioner;
 }
 
-int IterativeSolver::getIterationCount() const
+IndexType IterativeSolver::getIterationCount() const
 {
     return getConstRuntime().mIterations;
 }

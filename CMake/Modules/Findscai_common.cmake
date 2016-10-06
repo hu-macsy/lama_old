@@ -79,7 +79,7 @@ if    ( SCAI_COMMON_FOUND )
         # add Boost to SCAI_COMMON_INCLUDE_DIR
 
         include ( Package/Boost )
-        list ( APPEND SCAI_COMMON_INCLUDE_DIR ${SCAI_BOOST_INCLUDE_DIR} )
+        list ( APPEND SCAI_COMMON_INCLUDE_DIR ${BOOST_INCLUDE_DIR} )
 
     endif ( NOT CXX_SUPPORTS_C11 )
     

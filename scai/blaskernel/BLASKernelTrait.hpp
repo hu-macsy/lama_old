@@ -533,15 +533,10 @@ struct BLASKernelTrait
          *                       first incremented and afterwards decremented, to fit
          *                       the Fortran interface.
          *
-         * @return info         If info=0, the execution is successful.
-         *                      If info = -i, the i-th parameter had an illegal value.
-         *                      If info = i, uii is 0. The factorization has been
-         *                       completed, but U is exactly singular. Division by 0
-         *                       will occur if you use the factor U for solving a
-         *                       system of linear equations.
+         * @throws common::Exception for illegal arguments or incomplete factorization
          */
 
-        typedef IndexType ( *FuncType ) (
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER order,
             const IndexType m,
             const IndexType n,
@@ -588,7 +583,7 @@ struct BLASKernelTrait
     template<typename ValueType>
     struct getri
     {
-        typedef IndexType ( *FuncType ) (
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER ,
             const IndexType n,
             ValueType* a,
@@ -614,7 +609,7 @@ struct BLASKernelTrait
          *  where op(A) is either A, AT or AH;
          *  and B is a matrix of right hand sides and will contain the solution of all
          *  equations on output.
-         *
+         
          * @param[in] order   Specifies, whether the matrix is stored in column major
          *                    order (i.e. CblasColMajor) or in row major order (i.e.
          *                    CblasRowMajor).
@@ -641,7 +636,7 @@ struct BLASKernelTrait
          *                     of B.
          */
 
-        typedef IndexType ( *FuncType ) (
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER order,
             const CBLAS_UPLO uplo,
             const CBLAS_TRANSPOSE trans,

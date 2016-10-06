@@ -94,7 +94,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
 BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
     utilskernel::LArray<IndexType> indexes;
-    utilskernel::LArray<IndexType> owners;
+    utilskernel::LArray<PartitionId> owners;
   
     utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 
@@ -126,15 +126,16 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
 
     IndexType globalSize = size * ( size + 1 );
     GenBlockDistribution dist1( globalSize, mlocalSizes, comm );
-    BOOST_CHECK( dist1.getLocalSize() == 2 * ( rank + 1 ) );
+    BOOST_CHECK( dist1.getLocalSize() == static_cast<IndexType>( 2 * ( rank + 1 ) ) );
     IndexType lb1, ub1;
     dist1.getLocalRange( lb1, ub1 );
-    GenBlockDistribution dist2( globalSize, 2 * ( rank + 1 ), comm );
+    GenBlockDistribution dist2( globalSize, static_cast<IndexType>( 2 * ( rank + 1 ) ), comm );
     IndexType lb2, ub2;
     dist1.getLocalRange( lb2, ub2 );
     BOOST_CHECK( lb1 == lb2 );
     BOOST_CHECK( ub1 == ub2 );
-    GenBlockDistribution dist3( globalSize, lb1, ub1, comm );
+    SCAI_LOG_INFO( logger, "lb = " << lb1 << ", ub = " << ub1 << ", global = " << globalSize )
+    GenBlockDistribution dist3( globalSize, lb1, ub1, true, comm );
 }
 
 /* --------------------------------------------------------------------- */

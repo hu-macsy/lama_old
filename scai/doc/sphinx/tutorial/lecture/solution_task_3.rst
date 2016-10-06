@@ -5,7 +5,8 @@ Solution Task 3
 
 .. literalinclude:: ../../../../solver/examples/lecture/task3.cpp 
    :language: c++
-   :emphasize-lines: 50-54
+   :lines: 37-98
+   :emphasize-lines: 45,46,48
 
 (1) Creating a Timer
 (2) Creating a CommonLogger

@@ -42,7 +42,6 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
-#include <scai/common/mepr/TemplateSpecifier.hpp>
 #include <scai/common/Factory.hpp>
 
 // std
@@ -259,6 +258,15 @@ public:
 
     virtual void setIdentity( const IndexType n ) = 0;
 
+    /** This method resorts column indexes in such a way that the diagonal element is always the 
+     *  first one in a row. 
+     *
+     *  This method throws an exception if the matrix storage is not square. Furthermore
+     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
+     *  element in a sparse format.
+     */
+    virtual void setDiagonalProperty();
+
     /** This method returns the i-th row of the matrix
      *
      * @param[out] row is the destination array that will contain the row
@@ -277,6 +285,14 @@ public:
      */
 
     virtual void getDiagonal( hmemo::_HArray& diagonal ) const = 0;
+
+    /** Get for each row the first column index with value entry.
+     *  If diagonal flag is set, the column index will be the same as the (global) row
+     *  index. I.e. for a local storage this routine gives the owned indexes to reconstruct
+     *  the distribution.
+     */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
 
     /** This method sets the diagonal of a matrix storage.
      *
@@ -515,10 +531,14 @@ public:
      * @brief write the matrix storage to an output file
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
-     * @param[in] valuesType representation type for output values, default is same type as matrix values
+     * @param[in] type format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
+     * @param[in] dataType representation type for output values, default is same type as matrix values
      * @param[in] indexType representation type for row/col index values (default is settings of FileIO)
-     * @param[in] mode, use BINARY or FORMATTED to force a certain mode
+     * @param[in] fileMode, use BINARY or FORMATTED to force a certain mode
+     *
+     * If one of the arguments dataType, indexType or fileMode is set, it will overwrite
+     * any setting specified by the corresponding environment variables SCAI_IO_TYPE_DATA, SCAI_IO_TYPE_INDEX
+     * or SCAI_IO_BINARY
      */
 
     virtual void writeToFile(
@@ -865,6 +885,8 @@ public:
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void readFromFile( const std::string& fileName );
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /******************************************************************
      *   invert                                                        *

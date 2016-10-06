@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         }
         ReadAccess<IndexType> rIA( ia );
 
-        for ( int i = 0; i < numValues; ++i )
+        for ( IndexType i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );
         }
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         }
         ReadAccess<IndexType> rIA( ia );
 
-        for ( int i = 0; i < numValues; ++i )
+        for ( IndexType i = 0; i < numValues; ++i )
         {
             // SCAI_LOG_TRACE( logger,  "rIA[" << i << "] = " << rIA[i] << ", expects " << ia_values[i] )
             BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_numeric_test_types )
 {
     typedef float CSRValueType;
     ContextPtr testContext = ContextFix::testContext;
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_arithmetic_test_t
         const IndexType numOffsets = sizeof( offsets_values ) / sizeof( IndexType );
         const IndexType numRows = numOffsets - 1;
         const IndexType numDiagonals = 3;
-        const IndexType numValues = sizeof( csrja_values ) / sizeof( IndexType );
+        const IndexType numValues = sizeof( csrja_values ) / sizeof( CSRValueType );
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
         BOOST_REQUIRE( numDiagonals <= numRows );
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_arithmetic_test_t
         }
         ReadAccess<ValueType> rCOOJA( cooJA );
 
-        for ( int i = 0; i < numValues; ++i )
+        for ( IndexType i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( rCOOJA[i], cooja_values[i] );
         }

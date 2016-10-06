@@ -78,12 +78,13 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     ContextPtr contextPtr = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "constructorTest on " << *contextPtr );
     const IndexType N = 100;
+    const IndexType zero = 0;
     HArray<float> array;
-    BOOST_CHECK_EQUAL( array.size(), 0 );
+    BOOST_CHECK_EQUAL( array.size(), zero );
     BOOST_CHECK_EQUAL( array.isValid( contextPtr ), false );
     array.resize( N );
     BOOST_CHECK_EQUAL( array.size(), N );
-    BOOST_CHECK_EQUAL( array.capacity( contextPtr ), 0 );
+    BOOST_CHECK_EQUAL( array.capacity( contextPtr ), zero );
     BOOST_CHECK_EQUAL( array.isValid( contextPtr ), false );
     {
         WriteAccess<float> write( array, contextPtr );
@@ -239,22 +240,23 @@ BOOST_AUTO_TEST_CASE( capacityTest )
     ContextPtr contextPtr = Context::getContextPtr();  // test context
     ContextPtr hostPtr    = Context::getHostPtr();
     SCAI_LOG_INFO( logger, "capacityTest on " << *contextPtr );
-    static IndexType N = 10;
+    const IndexType N = 10;
+    const IndexType zero = 0;
     HArray<IndexType> hArray; // default, not allocated at all
     hArray.reserve( contextPtr, N );
-    BOOST_CHECK_EQUAL( hArray.size(), 0 );
+    BOOST_CHECK_EQUAL( hArray.size(), zero );
     BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), N );
     {
         WriteAccess<IndexType> access( hArray, contextPtr );
         BOOST_CHECK_EQUAL( access.capacity(), N );
         access.reserve( 2 * N );
     }
-    BOOST_CHECK_EQUAL( hArray.size(), 0 );
+    BOOST_CHECK_EQUAL( hArray.size(), zero );
     BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), 2 * N );
     hArray.clear();
     BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), 2 * N );
     hArray.purge();
-    BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), 0 );
+    BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), zero );
     {
         WriteOnlyAccess<IndexType> access( hArray, hostPtr, N );
     }

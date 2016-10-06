@@ -78,7 +78,7 @@ static void setupMatrix( CSRSparseMatrix<ValueType>& matrix, const IndexType N1,
 {
     ContextPtr context   = Context::getContextPtr();
 
-    MatrixCreator<ValueType>::buildPoisson2D( matrix, 9, N1, N2 );
+    MatrixCreator::buildPoisson2D( matrix, 9, N1, N2 );
 
     matrix.setContextPtr( context );
 }
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
         iterativeSolver.initialize( matrix );
         iterativeSolver.solve( solution, rhs );
 
-        BOOST_CHECK_EQUAL( iterativeSolver.getIterationCount(), 1 );
+        BOOST_CHECK_EQUAL( iterativeSolver.getIterationCount(), IndexType( 1 ) );
     }
 }
 
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE( ConservativeTest )
 
         SCAI_LOG_INFO( logger, "ConservativeTest: solver " << iterativeSolver << ", maxDiff = " << maxDiff )
 
-        BOOST_CHECK( maxDiff < 1e-5 );
+        BOOST_CHECK( maxDiff < 1e-4 );
     }
 }
 

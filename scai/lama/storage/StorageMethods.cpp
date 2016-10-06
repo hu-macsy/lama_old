@@ -547,7 +547,7 @@ void StorageMethods<ValueType>::joinCSR(
 
 /* -------------------------------------------------------------------------- */
 
-SCAI_COMMON_INST_CLASS( StorageMethods, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( StorageMethods, SCAI_NUMERIC_TYPES_HOST )
 
 /* -------------------------------------------------------------------------- */
 

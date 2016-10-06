@@ -54,8 +54,8 @@ BOOST_AUTO_TEST_CASE( WalltimeTest )
     INTEGER_8 i1 = Walltime::timestamp();
     // time in seconds
     double time = t1 - t0;
-    // should be rather accurate one second
-    BOOST_CHECK_CLOSE( 1.0, time, 1 );
+    // should be rather accurate one second, but we give it 2 percent
+    BOOST_CHECK_CLOSE( 1.0, time, 2 );
     // using timestamp instead of get() should give same result
     BOOST_CHECK_CLOSE( double( i1 - i0 ) / double( Walltime::timerate() ), time, 1 );
 }

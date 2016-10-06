@@ -68,14 +68,14 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayUtilsTest" )
 BOOST_AUTO_TEST_CASE( FactoryTest )
 {
     HArrays allArrays;    // is created by factory
-    size_t nTypes = SCAI_COMMON_COUNT_NARG( SCAI_ARITHMETIC_ARRAY_HOST );
+    size_t nTypes = SCAI_COMMON_COUNT_NARG( SCAI_ARRAY_TYPES_HOST );
     SCAI_LOG_INFO( logger, "Test all arrys of factory to be zero, #arrays = " << allArrays.size() )
     BOOST_CHECK_EQUAL( nTypes, allArrays.size() );
 
     for ( size_t i = 0; i < allArrays.size(); ++i )
     {
         _HArray& array = *allArrays[i];
-        BOOST_CHECK_EQUAL( 0, array.size() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), array.size() );
     }
 }
 
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
             HArrayUtils::assignGather( array2, array1, perm, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
             tmp->resize( n ); // no init required as all values are set
-            HArrayUtils::assignScatter( *tmp, perm, array1, ctx );
+            HArrayUtils::assignScatter( *tmp, perm, array1, reduction::COPY, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same
 
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 10;
     const ValueType a = 1;
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_arithmetic_test_ty
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 10;
     const IndexType k = 3;    // one value in range 0 .. N-1
@@ -178,11 +178,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_arithmetic_test_typ
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
-    const ValueType values[] = { 1.0, 1.1, 1.3, 1.0 };
+    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_numeric_test_types )
 {
     ValueType sourceVals[] = { 3, 1, 4, 2 };
     IndexType indexVals[]  = { 0, 2, 1, 2, 1, 3 };
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_arithmetic_test_types
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
 {
     ValueType sourceVals[] = { 3, 1, 4, 2 };
     IndexType indexVals[]  = { 0, 2, 1, 3 };
@@ -250,11 +250,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_arithmetic_test_type
     BOOST_CHECK_THROW (
     {
         LArray<ValueType> target;
-        HArrayUtils::scatter( target, indexes, source );
+        HArrayUtils::scatter( target, indexes, source, reduction::COPY );
 
     }, Exception );
     LArray<ValueType> target( M );
-    HArrayUtils::scatter( target, indexes, source );
+    HArrayUtils::scatter( target, indexes, source, reduction::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_arithmetic_test_type
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<IndexType, SCAI_ARITHMETIC_HOST> array_types;
+typedef boost::mpl::list<IndexType, SCAI_NUMERIC_TYPES_HOST> array_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
 {
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
     ValueType total = HArrayUtils::scan( array );
     ValueType lastVal = array[n];
     BOOST_CHECK_EQUAL( array.size(), n + 1 );
-    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), 0 );
+    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), ValueType( 0 ) );
     BOOST_CHECK_EQUAL( total, lastVal );
 }
 
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
     ValueType returnVal = HArrayUtils::unscan( array );
 
     BOOST_REQUIRE_EQUAL( array.size(), n - 1 );
-    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), 0 );
+    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), ValueType( 0 ) );
     BOOST_CHECK_EQUAL( firstVal, returnVal );
 }
 
@@ -329,6 +329,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     BOOST_CHECK_EQUAL( array.size(), n );
     ValueType sum = array.sum();
 
+    SCAI_LOG_INFO( logger, "Draw " << n << " random values of type " << common::TypeTraits<ValueType>::id()
+                            << ", sum up to " << sum )
+
     if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
     {
         // no check for integer types
@@ -338,7 +341,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
         typedef typename TypeTraits<ValueType>::AbsType AbsType;
         AbsType asum = Math::abs( sum );
         // random numbers are between -1.0 and 1.0, so should sum up approximately to 0
-        BOOST_CHECK( asum / AbsType( n ) < AbsType( 0.2 ) );
+        BOOST_CHECK( asum  < AbsType( n / 5 ) );
     }
 }
 
@@ -347,7 +350,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
-    ValueType vals[] = { 13, 1, 14, -2 };
+    ValueType vals[] = { 13, 5, 14, 2 };
     const IndexType n = sizeof( vals ) / sizeof( ValueType );
     LArray<ValueType> array( n, vals, loc );
     LArray<IndexType> perm;
@@ -356,7 +359,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
     LArray<ValueType> origArray( n, vals, loc );
     LArray<ValueType> array1;
     HArrayUtils::gather( array1, origArray, perm );
-    BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), 0 );
+    BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), ValueType( 0 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -374,7 +377,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
 
     HArrayUtils::bucketSort( offsets, perm, emptyArray, numBuckets, loc );
 
-    BOOST_CHECK_EQUAL( perm.size(), 0 );
+    BOOST_CHECK_EQUAL( perm.size(), IndexType( 0 ) );
     BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
 
     IndexType vals[] = { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 };
@@ -395,7 +398,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
 
     numBuckets = 1;
     HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
-    BOOST_CHECK_EQUAL( perm.size(), 2 );
+    BOOST_CHECK_EQUAL( perm.size(), IndexType( 2 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -423,11 +426,11 @@ BOOST_AUTO_TEST_CASE( bucketCountTest )
     BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
     BOOST_CHECK_EQUAL( sizes.sum(), n );
 
-    BOOST_CHECK_EQUAL( 4, numBuckets );
-    BOOST_CHECK_EQUAL( 2, sizes[0] );
-    BOOST_CHECK_EQUAL( 4, sizes[1] );
-    BOOST_CHECK_EQUAL( 2, sizes[2] );
-    BOOST_CHECK_EQUAL( 2, sizes[3] );
+    BOOST_CHECK_EQUAL( IndexType( 4 ), numBuckets );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[0] );
+    BOOST_CHECK_EQUAL( IndexType( 4 ), sizes[1] );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[2] );
+    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[3] );
 }
 
 /* --------------------------------------------------------------------- */
@@ -462,13 +465,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setSequenceTest, ValueType, array_types )
     for ( IndexType i = 0; i < n; ++i )
     {
         ValueType elem = array[i];
-        BOOST_CHECK_EQUAL( start + i * inc, elem );
+        BOOST_CHECK_EQUAL( start + static_cast<ValueType>( i ) * inc, elem );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ValueType xVals[] = { 3, 1, 4, 2 };
@@ -490,7 +493,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ValueType sourceVals1[] = { 3, 1, 4, 2 };
@@ -543,7 +546,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_arithmetic_te
             if ( alpha == ValueType( 0 ) && beta == ValueType( 0 ) )
             {
                 // target should be unchanged, size was 0 due to purge
-                BOOST_CHECK_EQUAL( 0, target.size() );
+                BOOST_CHECK_EQUAL( IndexType( 0 ), target.size() );
                 continue;
             }
 
@@ -560,7 +563,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_arithmetic_te
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
@@ -583,7 +586,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_arithmetic_t
     {
         BOOST_CHECK_EQUAL( NCASE, target.size() );
         ReadAccess<ValueType> rTarget( target, host );
-        for ( int i = 0; i < NCASE; ++i )
+        for ( IndexType i = 0; i < NCASE; ++i )
         {
             BOOST_CHECK_EQUAL( factors[i], rTarget[i] );
         }
@@ -594,7 +597,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_arithmetic_t
     {
         BOOST_CHECK_EQUAL( NCASE, target.size() );
         ReadAccess<ValueType> rTarget( target, host );
-        for ( int i = 0; i < NCASE; ++i )
+        for ( IndexType i = 0; i < NCASE; ++i )
         {
             BOOST_CHECK_EQUAL( beta * factors[i], rTarget[i] );
         }
@@ -608,7 +611,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_arithmetic_t
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ValueType sourceVals1[] = { 3, 1, 4, 2 };
@@ -670,7 +673,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_arithmet
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ValueType denseValues[] = { 3, 0, 0, 1, 4, 0, 2, 7, 0, -1, -3 };
@@ -680,7 +683,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_arithmetic_test_types
     LArray<ValueType> sparseArray( loc );
     LArray<IndexType> sparseIndexes( loc );
     HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, denseArray, loc );
-    BOOST_CHECK_EQUAL( sparseArray.size(), 7 );
+    BOOST_CHECK_EQUAL( sparseArray.size(), IndexType( 7 ) );
     BOOST_REQUIRE_EQUAL( sparseArray.size(), sparseIndexes.size() );
     // The spare indexes must be sorted, ascending = true
     BOOST_CHECK( HArrayUtils::isSorted( sparseIndexes, true, loc ) );

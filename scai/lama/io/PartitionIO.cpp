@@ -84,6 +84,101 @@ void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, c
 
 /* --------------------------------------------------------------------------------- */
 
+bool PartitionIO::isPartitionFileName( const string& fileName )
+{
+    size_t pos = fileName.find( "%r" );
+    
+    if ( pos == string::npos )
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+int PartitionIO::removeFile( const std::string& fileName, const dmemo::Communicator& comm )
+{
+    int rc = 0;
+
+    std::string pFileName = fileName;
+
+    bool isPartitioned;
+
+    getPartitionFileName( pFileName, isPartitioned, comm );
+
+    if ( isPartitioned )
+    {
+        // partitoned file name, each processor deletes its part, sync results
+
+        rc = FileIO::removeFile( pFileName );
+
+        bool okay = rc == 0;
+
+        okay = comm.all( okay );
+
+        if ( !okay )
+        {
+            rc = -1;
+        }
+    }
+    else
+    {
+        // serial file name, only root processor deletes and bcasts the result
+
+        const PartitionId root = 0;
+
+        if ( comm.getRank() == root )
+        {
+            rc = FileIO::removeFile( pFileName );
+        }
+
+        comm.bcast( &rc, 1, root );
+    }
+
+    return rc;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+bool PartitionIO::fileExists( const std::string& fileName, const dmemo::Communicator& comm )
+{
+    bool exists = true;
+
+    std::string pFileName = fileName;
+
+    bool isPartitioned;
+
+    getPartitionFileName( pFileName, isPartitioned, comm );
+
+    if ( isPartitioned )
+    {
+        // partitoned file name, each processor deletes its part, sync results
+
+        exists = FileIO::fileExists( pFileName );
+
+        exists = comm.all( exists );
+    }
+    else
+    {
+        const PartitionId root = 0;
+
+        if ( comm.getRank() == root )
+        {
+            exists = FileIO::fileExists( pFileName );
+        }
+
+        comm.bcast( reinterpret_cast<int*>( &exists ), 1, root );
+    }
+
+    return exists;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 DistributionPtr PartitionIO::readSDistribution( const string& inFileName, CommunicatorPtr comm )
 {
     SCAI_LOG_INFO( logger, "read distribution from one single file " << inFileName )
@@ -151,7 +246,7 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
     {
         IndexType localSize;
         hmemo::ReadAccess<IndexType> rSizes( localSizes );
-        comm->scatter( &localSize, 1, MASTER, rSizes );
+        comm->scatter( &localSize, 1, MASTER, rSizes.get() );
         dist.reset( new GenBlockDistribution ( globalSize, localSize, comm ) );
     }
     else
@@ -170,7 +265,7 @@ DistributionPtr PartitionIO::readPDistribution( const string& inFileName, Commun
 {
     utilskernel::LArray<IndexType> owners;
 
-    cout << *comm << ", read distribution from " << inFileName << endl;
+    SCAI_LOG_INFO( logger, *comm << ", read partitioned distribution from " << inFileName )
 
     hmemo::HArray<IndexType> myIndexes;
 
@@ -232,7 +327,7 @@ void PartitionIO::write( const Distribution& distribution, const string& fileNam
 
     getPartitionFileName( distFileName, writePartitions, distribution.getCommunicator() );
 
-    SCAI_LOG_ERROR( logger, distribution.getCommunicator() << ": write ( partitioned = " << writePartitions << " ) to " << distFileName )
+    SCAI_LOG_INFO( logger, distribution.getCommunicator() << ": write ( partitioned = " << writePartitions << " ) to " << distFileName )
 
     if ( writePartitions )
     {
@@ -250,7 +345,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 {
     using namespace hmemo;
 
-    CommunicatorPtr comm = distribution.getCommunicatorPtr();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
  
     PartitionId rank = comm->getRank();
 
@@ -274,16 +369,31 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 
     SCAI_LOG_INFO( logger, *comm << ", owner computation for " << distribution << " finished, owners = " << owners )
 
+    int errorFlag = 0;
+
     if ( rank == MASTER )
     {
         SCAI_LOG_INFO( logger, *comm << ", MASTER, write distribution to " << fileName )
 
-        FileIO::write( owners, fileName );
+        try
+        {
+            FileIO::write( owners, fileName );
+        }
+        catch ( common::Exception& e )
+        {
+            SCAI_LOG_ERROR( logger, "master process could not write owner file " << fileName << "\n" << e.what() )
+            errorFlag = 1;
+        }
     }
 
-    // just make sure that no other process starts anything before write is finished
+    // bcast error status, implies also synchronization
 
-    comm->synchronize();
+    comm->bcast( &errorFlag, 1, MASTER );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "Error @ writing distrubution to " << fileName )
+    }
 }
 
 /* --------------------------------------------------------------------------------- */

@@ -50,15 +50,52 @@ BOOST_AUTO_TEST_SUITE( TypeTraitsTest );
 
 /* -----------------------------------------------------------------------------*/
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( IdTest, ValueType, scai_arithmetic_test_types )
+/** For type traits test use all types for which they are available */
+
+typedef boost::mpl::list<SCAI_ALL_TYPES> TraitTypes;
+
+/* -----------------------------------------------------------------------------*/
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( IdTest, ValueType, TraitTypes )
 {
     scalar::ScalarType stype = TypeTraits<ValueType>::stype;
     std::ostringstream out1;
     std::ostringstream out2;
     out1 << TypeTraits<ValueType>::id();
     out2 << stype;
-    // std::cout << "out1 = " << out1.str() << ", out2 = " << out2.str() << std::endl;
     BOOST_CHECK_EQUAL( out1.str(), out2.str() );
+}
+
+/* -----------------------------------------------------------------------------*/
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( TypeSizeTest, ValueType, TraitTypes )
+{
+    // this test is essential as otherwise certain copy routines might fail
+
+    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    BOOST_CHECK_EQUAL( sizeof( ValueType ), typeSize( stype ) );
+}
+
+
+/* -----------------------------------------------------------------------------*/
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( IsComplexTest, ValueType, TraitTypes )
+{
+    // this test is essential as otherwise certain copy routines might fail
+
+    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+
+    bool v1 = isComplex( stype );
+
+    std::ostringstream out;
+    
+    out << stype;
+
+    std::size_t pos = out.str().find( "omplex");
+
+    bool v2 = pos != std::string::npos;
+
+    BOOST_CHECK_EQUAL( v1, v2);
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -97,7 +134,9 @@ static int goodStrings( const std::string& str1, const std::string& str2 )
     return val;
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_arithmetic_test_types )
+/* -----------------------------------------------------------------------------*/
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_numeric_test_types )
 {
     if ( isComplex( TypeTraits<ValueType>::stype ) )
     {
@@ -140,7 +179,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_arithmetic_test_ty
 
 /* -----------------------------------------------------------------------------*/
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_numeric_test_types )
 {
     ValueType small  = TypeTraits<ValueType>::small();
     ValueType eps0   = TypeTraits<ValueType>::eps0();

@@ -27,19 +27,19 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Define all arithmetic types for which SCAI template classes will be instantiated
- * @author Jiri Kraus
+ * @brief Define one index type and all numeric and array types for which SCAI template classes will be instantiated
+ * @author Thomas Brandes, Jiri Kraus
  * @date 23.02.2011
  */
 #pragma once
-
-// local library
 
 // no support of Complex if this file is not included
 
 #if ${SCAI_USE_COMPLEX}
 #include <scai/common/Complex.hpp>
 #endif
+
+#include <scai/common/config.hpp>
 
 #include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/mepr/TypeList.hpp>
@@ -52,10 +52,6 @@
 
 /** Common namespace for all projects of Fraunhofer SCAI. */
 
-namespace scai
-{
-}
-
 /** LAMA uses for all its classes and routines an own namespace.
  *
  *  Applications using LAMA must either put \c scai::lama:: before the used
@@ -67,6 +63,9 @@ namespace scai
  *     DenseVector<float> V;
  *  \endcode
  */
+namespace scai
+{
+}
 
 /** Data type that is used for indexing in LAMA.
  *
@@ -74,7 +73,7 @@ namespace scai
  *  int is the good choice, might be long int or long long int for
  *  future versions that deal with very large matrices even on on processor.
  */
-typedef int IndexType;
+typedef ${SCAI_INDEX_TYPE} IndexType;
 
 /** Data type long double to have it as one word. Otherwise certain macros
  *  might fail to work correctly.
@@ -88,6 +87,8 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
  *
+ *  ToDo: currently PartitionId must be same as IndexType as otherwise
+ *  there will be link errors for some not instantiated routines.
  */
 typedef IndexType PartitionId;
 
@@ -96,64 +97,73 @@ typedef IndexType PartitionId;
 COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 /*
- * Lists of all supported arithmetic types 
+ * Lists of all supported numeric types 
  */
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-#define SCAI_ARITHMETIC_TYPES float, double, LongDouble, ComplexFloat, ComplexDouble, ComplexLongDouble
+#define SCAI_NUMERIC_TYPES float, double, LongDouble, ComplexFloat, ComplexDouble, ComplexLongDouble
 
 #else
 
-#define SCAI_ARITHMETIC_TYPES float, double, LongDouble
+#define SCAI_NUMERIC_TYPES float, double, LongDouble
 
 #endif
 
 /**
  *  List of all supported types (e.g. for communicator methods)
+ *  For all these types TypeTraits<type> must be defined
+ *  Each possible type that can be used for IndexType must appear in this list
  */
-#define SCAI_ALL_TYPES IndexType, SCAI_ARITHMETIC_TYPES
+
+#define SCAI_ALL_TYPES int, unsigned int, long, unsigned long, char, SCAI_NUMERIC_TYPES
 
 /*
- * Lists of all used arithmetic types for which matrices, storages might be created
+ * Lists of all used numeric types for which matrices, storages might be created
  */
 
 /*
- * Kernel
+ * Supported numeric types on different devices
  */
 
-#define SCAI_ARITHMETIC_HOST     ${ALL_HOST_TYPES}
-#define SCAI_ARITHMETIC_EXT_HOST ${EXT_HOST_TYPES}
-#define SCAI_ARITHMETIC_CUDA     ${CUDA_TYPES}
-#define SCAI_ARITHMETIC_MIC      ${MIC_TYPES}
+#define SCAI_NUMERIC_TYPES_HOST     ${ALL_HOST_TYPES}
+#define SCAI_NUMERIC_TYPES_EXT_HOST ${EXT_HOST_TYPES}
+#define SCAI_NUMERIC_TYPES_CUDA     ${CUDA_TYPES}
+#define SCAI_NUMERIC_TYPES_MIC      ${MIC_TYPES}
 
 /*
- * Array
+ * Supported array types on different devices
+ *
+ * General rule: SCAI_ARRAY_TYPES_XXX is IndexType, SCAI_NUMERIC_TYPES_XXX
  */
 
-#define SCAI_ARITHMETIC_ARRAY_HOST     ${ARRAY_HOST_TYPES}
-#define SCAI_ARITHMETIC_ARRAY_EXT_HOST ${ARRAY_EXT_HOST_TYPES}
-#define SCAI_ARITHMETIC_ARRAY_CUDA     ${ARRAY_CUDA_TYPES}
-#define SCAI_ARITHMETIC_ARRAY_MIC      ${ARRAY_MIC_TYPES}
+#define SCAI_ARRAY_TYPES_HOST     ${ARRAY_HOST_TYPES}
+#define SCAI_ARRAY_TYPES_EXT_HOST ${ARRAY_EXT_HOST_TYPES}
+#define SCAI_ARRAY_TYPES_CUDA     ${ARRAY_CUDA_TYPES}
+#define SCAI_ARRAY_TYPES_MIC      ${ARRAY_MIC_TYPES}
 
 /*
  * List creation
+ *
+ * General rule: SCAI_XXX_TYPES_YYY_LIST SCAI_TYPELIST( SCAI_XXX_TYPES_YYY )
  */
 
-#define SCAI_ARITHMETIC_HOST_LIST           SCAI_TYPELIST( SCAI_ARITHMETIC_HOST )
-#define SCAI_ARITHMETIC_EXT_HOST_LIST       SCAI_TYPELIST( SCAI_ARITHMETIC_EXT_HOST )
-#define SCAI_ARITHMETIC_CUDA_LIST           SCAI_TYPELIST( SCAI_ARITHMETIC_CUDA )
-#define SCAI_ARITHMETIC_MIC_LIST            SCAI_TYPELIST( SCAI_ARITHMETIC_MIC )
+#define SCAI_NUMERIC_TYPES_HOST_LIST       SCAI_TYPELIST( SCAI_NUMERIC_TYPES_HOST )
+#define SCAI_NUMERIC_TYPES_EXT_HOST_LIST   SCAI_TYPELIST( SCAI_NUMERIC_TYPES_EXT_HOST )
+#define SCAI_NUMERIC_TYPES_CUDA_LIST       SCAI_TYPELIST( SCAI_NUMERIC_TYPES_CUDA )
+#define SCAI_NUMERIC_TYPES_MIC_LIST        SCAI_TYPELIST( SCAI_NUMERIC_TYPES_MIC )
 
-#define SCAI_ARITHMETIC_ARRAY_HOST_LIST     SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_HOST )
-#define SCAI_ARITHMETIC_ARRAY_EXT_HOST_LIST SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_EXT_HOST )
-#define SCAI_ARITHMETIC_ARRAY_CUDA_LIST     SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_CUDA )
-#define SCAI_ARITHMETIC_ARRAY_MIC_LIST      SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_MIC )
+#define SCAI_ARRAY_TYPES_HOST_LIST         SCAI_TYPELIST( SCAI_ARRAY_TYPES_HOST )
+#define SCAI_ARRAY_TYPES_EXT_HOST_LIST     SCAI_TYPELIST( SCAI_ARRAY_TYPES_EXT_HOST )
+#define SCAI_ARRAY_TYPES_CUDA_LIST         SCAI_TYPELIST( SCAI_ARRAY_TYPES_CUDA )
+#define SCAI_ARRAY_TYPES_MIC_LIST          SCAI_TYPELIST( SCAI_ARRAY_TYPES_MIC )
 
-/** Representation type for Scalar must be the arithmetic type with highest precision */
+#define SCAI_ALL_TYPES_LIST                SCAI_TYPELIST( SCAI_ALL_TYPES )
+
+/** Representation type for Scalar must be the numeric type with highest precision */
 
 typedef ${SCAI_SCALAR_REP_TYPE} ScalarRepType;
 
 /** RealType: taken for example programs, usually double, but can also be float or LongDouble  */
 
-typedef scai::common::mepr::TypeListUtilsVLL<double, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::ValueType RealType;
+typedef scai::common::mepr::TypeListUtilsVLL<double, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::ValueType RealType;

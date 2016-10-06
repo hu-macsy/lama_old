@@ -186,6 +186,8 @@ void CommunicationPlan::purge()
 
 void CommunicationPlan::allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag )
 {
+    mCompressed = false;
+
     SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from quantities" )
     mEntries.resize( noPartitions );
     mQuantity = 0; // counts total quantity
@@ -217,6 +219,8 @@ void CommunicationPlan::allocate(
     const IndexType nOwners,
     bool compressFlag )
 {
+    mCompressed = false;
+
     mEntries.resize( noPartitions );
     SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" )
 
@@ -229,7 +233,7 @@ void CommunicationPlan::allocate(
     for ( IndexType i = 0; i < nOwners; ++i )
     {
         const PartitionId& p = owners[i];
-        SCAI_ASSERT( p >= 0 && p < noPartitions, "Illegal owner value: " << p << " at Position " << i )
+        SCAI_ASSERT_VALID_INDEX( p, noPartitions, "Illegal owner value at owners[ " << i << "]" )
         ++mEntries[p].quantity;
         SCAI_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
     }

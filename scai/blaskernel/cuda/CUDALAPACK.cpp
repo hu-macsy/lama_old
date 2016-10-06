@@ -67,13 +67,10 @@ void CUDALAPACK::laswp(
     const IndexType* ipiv_h,
     const IndexType incx )
 {
-    IndexType info = 0;
     IndexType i = k1;
 
     if ( order == CblasRowMajor )
     {
-        IndexType feedback = 0;
-
         for ( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
         {
             if ( ipiv_h[i * incx] == i )
@@ -84,25 +81,15 @@ void CUDALAPACK::laswp(
             CUDABLAS1::swap( n, &A_d[ipiv_h[i * incx] * lda], incx, &A_d[i * lda], incx );
             SCAI_CHECK_CUDA_ERROR
         }
-
-        info = -1 * ( IndexType ) feedback;
     }
     else if ( order == CblasColMajor )
     {
-        info = n + lda;
+        COMMON_THROWEXCEPTION( "order not supported yet: " << order )
     }
     else
     {
-        info = 1;
         COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
-
-    if ( info < 0 )
-    {
-        //TODO: throw exception
-    }
-
-//        return info;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -110,7 +97,7 @@ void CUDALAPACK::laswp(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDALAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDALAPACK::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -124,13 +111,13 @@ void CUDALAPACK::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 CUDALAPACK::CUDALAPACK()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDALAPACK::~CUDALAPACK()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

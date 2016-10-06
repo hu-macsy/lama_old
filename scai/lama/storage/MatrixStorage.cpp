@@ -180,6 +180,20 @@ _MatrixStorage& _MatrixStorage::operator=( const _MatrixStorage& other )
 
 /* --------------------------------------------------------------------------- */
 
+void _MatrixStorage::setDiagonalProperty()
+{
+    // default implementation just throw an exception if diagonal property is not given
+
+    mDiagonalProperty = checkDiagonalProperty();
+
+    if ( !mDiagonalProperty )
+    {
+        COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set it" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 void _MatrixStorage::resetDiagonalProperty()
 {
     mDiagonalProperty = checkDiagonalProperty();
@@ -448,6 +462,39 @@ void MatrixStorage<ValueType>::buildCSCData(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
+{
+    utilskernel::LArray<IndexType> csrIA;
+    utilskernel::LArray<IndexType> csrJA;
+    utilskernel::LArray<ValueType> csrValues;
+
+    buildCSRData( csrIA, csrJA, csrValues );
+
+    // ToDo: csrIA[i] == csrIA[i+1], no entry in row at all
+    // ToDo: csrIA[numRows-1] == numValues possible, out of range addressing
+
+    // gather: colIndexes[i] = csrJA[ csrIA[i] ]
+
+    if ( mNumRows > 0 )
+    {
+        SCAI_ASSERT_LT_ERROR( csrIA[mNumRows - 1], csrJA.size(), "last row without any entry" )
+    }
+
+    static LAMAKernel<UtilKernelTrait::setGather<IndexType, IndexType> > setGather;
+
+    ContextPtr loc = getContextPtr();
+    setGather.getSupportedContext( loc );
+
+    WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, mNumRows );
+    SCAI_CONTEXT_ACCESS( loc )
+    ReadAccess<IndexType> ja( csrJA, loc );
+    ReadAccess<IndexType> ia( csrIA, loc );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), mNumRows );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
 {
     SCAI_REGION( "Storage.assign" )
@@ -550,13 +597,13 @@ void MatrixStorage<ValueType>::joinRows(
 
         // initialize counters (Attention: sizes.size() != rowSizes.size())
 
-        for ( int i = 0; i < sizes.size(); ++i )
+        for ( IndexType i = 0; i < sizes.size(); ++i )
         {
             sizes[i] = 0;
         }
 
         // count elements for each row
-        for ( int i = 0; i < rowSizes.size(); ++i )
+        for ( IndexType i = 0; i < rowSizes.size(); ++i )
         {
             sizes[indexes[i]] += rowSizes[i];
         }
@@ -582,11 +629,11 @@ void MatrixStorage<ValueType>::joinRows(
     // insert rows
     IndexType dataIndex = 0;
 
-    for ( int i = 0; i < rowSizes.size(); ++i )
+    for ( IndexType i = 0; i < rowSizes.size(); ++i )
     {
         IndexType currentRow = indexes[i];
 
-        for ( int ii = 0; ii < rowSizes[i]; ++ii )
+        for ( IndexType ii = 0; ii < rowSizes[i]; ++ii )
         {
             // insert data at old position 'dataIndex' in row 'currentRow'
             // at new position 'tmpIA[currentRow]'
@@ -661,7 +708,7 @@ void MatrixStorage<ValueType>::joinHalo(
 
     if ( attemptDiagonalProperty && localData.hasDiagonalProperty() )
     {
-        numKeepDiagonals = std::min( localData.getNumRows(), localData.getNumColumns() );
+        numKeepDiagonals = common::Math::min( localData.getNumRows(), localData.getNumColumns() );
         SCAI_LOG_INFO( logger, localData << ": has diagonal property, numKeepDiagonals = " << numKeepDiagonals );
     }
 
@@ -1238,7 +1285,7 @@ void MatrixStorage<ValueType>::setDenseData(
     const ValueType epsilon )
 {
     mEpsilon = epsilon;
-    mepr::MatrixStorageWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
+    mepr::MatrixStorageWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
 }
 
 /* ========================================================================= */
@@ -1428,15 +1475,15 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
             const IndexType, const IndexType, const OtherValueType*, const ValueType );
 
 #define LAMA_MATRIXSTORAGE_INST( ValueType )                                                                                    \
-    SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_NUMERIC_TYPES_HOST )
 
-SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_NUMERIC_TYPES_HOST )
 
 #undef LAMA_MATRIXSTORAGE2_INST
 #undef LAMA_MATRIXSTORAGE_INST
 
 
-SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

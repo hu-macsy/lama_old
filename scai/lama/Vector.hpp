@@ -74,31 +74,31 @@ struct _Vector
 {
 
     /**
-     * @brief VectorFormat describes if a vector is dense or sparse.
+     * @brief VectorKind describes if a vector is dense or sparse.
      */
     typedef enum
     {
         DENSE,      //!< vector format for a dense vector
         SPARSE,     //!< vector format for a sparse vector, not supported yet
         UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
-    } VectorFormat;
+    } VectorKind;
 
-    static COMMON_DLL_IMPORTEXPORT const char* kind2Str( const VectorFormat vectorKind );
+    static COMMON_DLL_IMPORTEXPORT const char* kind2Str( const VectorKind vectorKind );
 
-    static COMMON_DLL_IMPORTEXPORT VectorFormat str2Kind( const char* str );
+    static COMMON_DLL_IMPORTEXPORT VectorKind str2Kind( const char* str );
 
 };  // struct _Vector
 
-/** @brief Output operator<< for VectorFormat prints meaningful names instead of int values */
+/** @brief Output operator<< for VectorKind prints meaningful names instead of int values */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kind );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _Vector::VectorKind& kind );
 
 /** Type definition for the key type used for the Vector factory.
  *
  *  The key for vector create is a pair of vector format and the value type.
  */
 
-typedef std::pair<_Vector::VectorFormat, common::scalar::ScalarType> VectorCreateKeyType;
+typedef std::pair<_Vector::VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
 
 /**
  * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
@@ -127,13 +127,18 @@ public:
 
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
-    static Vector* getVector( const VectorFormat format, const common::scalar::ScalarType valueType );
+    static Vector* getVector( const VectorKind format, const common::scalar::ScalarType valueType );
 
-    /** @brief Create a dense vector of a certain value type and a given distribution.
+    /** @brief More convenient routine to create a dense vector with certain properties.
      *
-     *  This method keeps compatibility with an older method that did know which vectors were supported.
+     *  @param[in] valueType specifies the type of the Vector to be created
+     *  @param[in] distribution becomes the distribution of the new vector
+     *  @param[in] context optional, becomes the context of the new vector
      */
-    static Vector* getDenseVector( const common::scalar::ScalarType valueType, dmemo::DistributionPtr distribution );
+    static Vector* getDenseVector( 
+        const common::scalar::ScalarType valueType, 
+        dmemo::DistributionPtr distribution,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -144,6 +149,10 @@ public:
      * @brief Releases all allocated resources.
      */
     virtual ~Vector();
+
+    /** Each derived vector must give info about its kind (DENSE or SPARSE). */
+
+    virtual VectorKind getVectorKind() const = 0;
 
     /**
      * @brief The assignment operator assigns the result of the passed expression
@@ -158,9 +167,6 @@ public:
      * @return               a reference to this.
      * @throws               Exceptions thrown by the Allocator
      */
-    Vector& operator=( const Expression_MV& expression );
-
-    Vector& operator=( const Expression_VM& expression );
 
     /** this = alpha * A * x */
 
@@ -197,6 +203,8 @@ public:
     /** this +=  alpha * A * x */
 
     Vector& operator+=( const Expression_SMV& expression );
+
+    /** this +=  alpha * x * A */
 
     Vector& operator+=( const Expression_SVM& expression );
 
@@ -255,6 +263,14 @@ public:
     Vector& operator+=( const Vector& other );
 
     /**
+     * @brief Add a scalar value to all elements of this vector.
+     *
+     * @param[in] value   the value to add all elements of this with.
+     * @return            a reference to this.
+     */
+    Vector& operator+=( const Scalar value );
+
+    /**
      * @brief Returns the subtraction of this and other.
      *
      * @param[in] other the vector to do the subtraction with.
@@ -306,6 +322,24 @@ public:
      * @param[in] fillRate for the number of non-zeros
      */
     virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 ) = 0;
+
+    /**
+     * @brief This method initializes a (replicated) vector with a sequence of values.
+     *
+     * @param[in] startValue value for the first element
+     * @param[in] inc increment between the elements
+     * @param[in] n will be the size of this replicated vector.
+     */
+    virtual void setSequence( const Scalar startValue, const Scalar inc, const IndexType n ) = 0;
+
+    /**
+     * This method initializes a (distributed) vector with a sequence of values
+     *
+     * @param[in] startValue value for the first element
+     * @param[in] inc increment between the element
+     * @param[in] distribution determines global/local size of the vector
+     */
+    virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution ) = 0;
 
     /**
      * This method sets a vector by reading its values from one or multiple files.
@@ -386,6 +420,8 @@ public:
      * @return the global maximum value of this vector.
      */
     virtual Scalar max() const = 0;
+
+    virtual Scalar sum() const = 0;
 
     /**
      * @brief Returns the L1 norm of this.
@@ -491,6 +527,13 @@ public:
     virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution ) = 0;
 
     /**
+     *  Define a non-distributed vector by an array with all its values.
+     *
+     *  Note: for a correct replication all processors must set the same values.
+     */
+    virtual void assign( const hmemo::_HArray& globalValues ) = 0;
+
+    /**
      *  Builds an array with local values of a distributed vector.
      *
      *  @param[out] localValues   will be an array that contains local values of the vector
@@ -506,6 +549,11 @@ public:
      * @param[in] value   the value to assign to all elements of this.
      */
     virtual void assign( const Scalar value ) = 0;
+
+    /**
+     * @brief Add a scalar value element-wise to the elements of a vector
+     */
+    virtual void add( const Scalar value ) = 0;
 
     /**
      * @brief Assignment of a 'full' vector expression.
@@ -576,8 +624,16 @@ public:
      *  @brief Allocates or reallocates this vector for a given distribution.
      *
      *  All elements of the vector are undefined after this operation.
+     *  This operation will allocate memory at the context of this vector.
      */
     virtual void allocate( dmemo::DistributionPtr distributionPtr ) = 0;
+
+    /**
+     *  @brief Allocates or reallocates this vector as replicted with the given size.
+     *
+     *  All elements of the vector are undefined after this operation.
+     */
+    virtual void allocate( const IndexType n ) = 0;
 
     /**
      * @brief Redistributes this vector to the new passed distribution.

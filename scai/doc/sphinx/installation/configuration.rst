@@ -72,6 +72,7 @@ CMake variable                 Signification
 ``SCAI_CMAKE_VERBOSE``         Set to TRUE for more detailed informations about the configuration
 ``SCAI_HOST_TYPES_LIST``       Set data types for instatitions
                                (default: float;double;long double;ComplexFloat;ComplexDouble;ComplexLongDouble (all))
+``SCAI_INDEX_TYPE``            Set data type used as IndexType, valid for all libraries (default: int)
 ``SCAI_LIBRARY_TYPE``          SHARED (default) or STATIC
 ``SCAI_LOGGING_LEVEL``         INFO recommended, alternatively DEBUG or even more detailed TRACE
 ``SCAI_TRACING``               ON or OFF, enable/disable region tracing

@@ -46,7 +46,7 @@ using namespace common;
 
 /* -------------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> ValueTypes;
+typedef boost::mpl::list<SCAI_NUMERIC_TYPES_HOST> ValueTypes;
 
 /* -------------------------------------------------------------------------------- */
 

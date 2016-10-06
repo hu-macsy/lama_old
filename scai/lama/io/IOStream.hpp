@@ -43,7 +43,6 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/mepr/TemplateSpecifier.hpp>
 #include <scai/common/macros/loop.hpp>
 #include <scai/common/exception/IOException.hpp>
 
@@ -250,7 +249,7 @@ inline void IOStream::writeBinary( const hmemo::HArray<ValueType>& data,
     }
     else
     {
-        Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_HOST ) >::writeBinResolved( *this, data, type );
+        Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARRAY_TYPES_HOST ) >::writeBinResolved( *this, data, type );
     }
 }
 
@@ -271,7 +270,7 @@ inline void IOStream::readBinary( hmemo::HArray<ValueType>& data,
     {
         // use meta programming to call the template routine belonging to type
 
-        Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARITHMETIC_ARRAY_HOST ) >::readBinResolved( *this, data, size, type );
+        Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARRAY_TYPES_HOST ) >::readBinResolved( *this, data, size, type );
     }
 }
 
@@ -414,7 +413,7 @@ inline void IOStream::readBinConverted( hmemo::HArray<DataType>& data,
 template<typename ValueType>
 void IOStream::writeFormatted( const hmemo::HArray<ValueType>& val, int prec )
 {
-    int n = val.size();
+    IndexType n = val.size();
 
     SCAI_LOG_INFO( logger, "writeFormatted<" 
                            << common::TypeTraits<ValueType>::id() << ":" << prec 
@@ -448,7 +447,7 @@ void IOStream::writeFormatted(
     const hmemo::HArray<ValueType2>& val2, int prec2,
     const hmemo::HArray<ValueType3>& val3, int prec3 )
 {
-    int n = val1.size();
+    IndexType n = val1.size();
 
     SCAI_ASSERT_EQUAL( n, val2.size(), "size mismatch" );
     SCAI_ASSERT_EQUAL( n, val3.size(), "size mismatch" );
@@ -487,7 +486,7 @@ void IOStream::writeFormatted(
     const hmemo::HArray<ValueType1>& val1, int prec1,
     const hmemo::HArray<ValueType2>& val2, int prec2 )
 {
-    int n = val1.size();
+    IndexType n = val1.size();
 
     SCAI_ASSERT_EQUAL( n, val2.size(), "size mismatch" );
 

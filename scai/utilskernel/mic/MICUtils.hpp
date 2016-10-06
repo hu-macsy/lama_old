@@ -74,6 +74,15 @@ public:
     template<typename ValueType>
     static void scale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
 
+    /** MIC implementation for UtilKernelTrait::Copy::vectorScale */
+
+    template<typename ValueType>
+    static void vectorScale(
+        ValueType result[],
+        const ValueType x[],
+        const ValueType y[],
+        const IndexType n );
+
     /** MIC implementation for UtilKernelTrait::Copy::setScale */
 
     template<typename ValueType, typename OtherValueType>
@@ -133,7 +142,10 @@ public:
     /** Set out[ indexes[i] ] = in [i] */
 
     template<typename ValueType1, typename ValueType2>
-    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
+    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const reduction::ReductionOp op, const IndexType n );
+
+    template<typename ValueType>
+    static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
 
     /** MIC implementation for UtilKernelTrait::invert */
 
@@ -160,10 +172,28 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct Registrator
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
+    template<typename ValueType>
+    struct RegNumericKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    template<typename ValueType>
+    struct RegArrayKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Helper class for (un) registration of kernel routines at static initialization. */
 

@@ -70,8 +70,8 @@ void storageSwapTest()
     // now check sizes
     BOOST_CHECK_EQUAL( n, csr2.getNumRows() );
     BOOST_CHECK_EQUAL( m, csr2.getNumColumns() );
-    BOOST_CHECK_EQUAL( 0, csr1.getNumRows() );
-    BOOST_CHECK_EQUAL( 0, csr1.getNumColumns() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), csr1.getNumRows() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), csr1.getNumColumns() );
     // now check that the other matrix contains the right values
     csr2.matrixTimesVector( z2, alpha, x, beta, y );
     typedef typename common::TypeTraits<ValueType>::AbsType AbsType;

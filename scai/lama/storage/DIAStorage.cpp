@@ -159,14 +159,9 @@ void DIAStorage<ValueType>::print( std::ostream& stream ) const
         {
             const IndexType j = i + offset[ii];
 
-            if ( j < 0 )
+            if ( !common::Utils::validIndex( j, mNumColumns ) )
             {
                 continue;
-            }
-
-            if ( j >= mNumColumns )
-            {
-                break;
             }
 
             stream << " " << j << ":" << values[i + ii * mNumRows];
@@ -203,7 +198,7 @@ template<typename ValueType>
 void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": has not diagonal property, cannot set diagonal" )
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonalElements = common::Math::min( mNumColumns, mNumRows );
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
     // take context of this storage to set
     ContextPtr loc = this->getContextPtr();
@@ -223,7 +218,8 @@ template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
     const ReadAccess<IndexType> offset( mOffset );
     const ReadAccess<ValueType> values( mValues );
@@ -237,12 +233,10 @@ void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
     {
         IndexType j = i + offset[d];
 
-        if ( j < 0 || j >= mNumColumns )
+        if ( common::Utils::validIndex( j, mNumColumns ) )
         {
-            continue;
+            wRow[j] = static_cast<OtherType>( values[diaindex( i, d, mNumRows, mNumDiagonals )] );
         }
-
-        wRow[j] = static_cast<OtherType>( values[diaindex( i, d, mNumRows, mNumDiagonals )] );
     }
 }
 
@@ -255,7 +249,7 @@ void DIAStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
     ContextPtr loc = this->getContextPtr();
     set.getSupportedContext( loc );
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonalElements = common::Math::min( mNumColumns, mNumRows );
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
@@ -269,8 +263,8 @@ template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
-    numDiagonalElements = std::min( numDiagonalElements, diagonal.size() );
+    IndexType numDiagonalElements = common::Math::min( mNumColumns, mNumRows );
+    numDiagonalElements = common::Math::min( numDiagonalElements, diagonal.size() );
     static LAMAKernel<UtilKernelTrait::set<ValueType, OtherType> > set;
     ContextPtr loc = this->getContextPtr();
     set.getSupportedContext( loc );
@@ -313,12 +307,7 @@ void DIAStorage<ValueType>::scaleImpl( const HArray<OtherType>& diagonal )
             {
                 const IndexType j = i + rOffset[ii];
 
-                if ( j >= mNumColumns )
-                {
-                    break;
-                }
-
-                if ( j >= 0 )
+                if ( common::Utils::validIndex( j, mNumColumns ) )
                 {
                     wValues[ii * mNumRows + i] *= static_cast<ValueType>( rDiagonal[j] );
                 }
@@ -370,9 +359,9 @@ bool DIAStorage<ValueType>::checkDiagonalProperty() const
 template<typename ValueType>
 void DIAStorage<ValueType>::check( const char* /* msg */ ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( mNumDiagonals, mOffset.size() )
+    SCAI_ASSERT_EQ_ERROR( mNumDiagonals, mOffset.size(), "size mismatch for array with diagonal offsets" )
 
-    if ( mNumDiagonals == 0 )
+    if ( mNumDiagonals == 0 && mNumRows > 0 )
     {
         SCAI_ASSERT_EQUAL_ERROR( false, mDiagonalProperty )
     }
@@ -484,6 +473,14 @@ void DIAStorage<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DIAStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
+{
+    COMMON_THROWEXCEPTION( "getFirstColumnIndexes not possible for DENSE format" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherValueType>
 void DIAStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
@@ -519,7 +516,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     _MatrixStorage::setDimension( numRows, numColumns );
     SCAI_LOG_DEBUG( logger, "fill DIA sparse matrix " << mNumRows << " x " << mNumColumns << " from csr data" )
     // build a set of all used lower and upper diagonals
-    IndexType maxNumDiagonals = std::max( mNumRows, mNumColumns );
+    IndexType maxNumDiagonals = common::Math::max( mNumRows, mNumColumns );
     scoped_array<bool> upperDiagonalUsed( new bool[maxNumDiagonals] );
     scoped_array<bool> lowerDiagonalUsed( new bool[maxNumDiagonals] );
 
@@ -549,7 +546,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
         WriteOnlyAccess<ValueType> myValues( mValues, mNumDiagonals * mNumRows );
         #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
-        for ( int i = 0; i < mNumRows; i++ )
+        for ( IndexType i = 0; i < mNumRows; i++ )
         {
             for ( IndexType d = 0; d < mNumDiagonals; d++ )
             {
@@ -558,7 +555,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
                 addrValue = ValueType( 0 );
                 IndexType j = i + offset[d];
 
-                if ( j < 0 || j >= mNumColumns )
+                if ( !common::Utils::validIndex( j, mNumColumns ) )
                 {
                     continue;
                 }
@@ -599,6 +596,8 @@ void DIAStorage<ValueType>::setOffsets(
     const bool upperDiagonalUsed[],
     const bool lowerDiagonalUsed[] )
 {
+    SCAI_LOG_INFO( logger, "setOffsets, max diagonals = " << maxNumDiagonals << ", " << *this )
+
     // Help routine to set offsets from used diagonals
     mNumDiagonals = 0;
     IndexType firstIndex = 0;
@@ -623,6 +622,7 @@ void DIAStorage<ValueType>::setOffsets(
     }
 
     SCAI_LOG_INFO( logger, "storage data requires " << mNumDiagonals << " diagonals a " << mNumRows << " values" )
+
     WriteOnlyAccess<IndexType> wOffset( mOffset, mNumDiagonals );
 
     if ( mNumDiagonals > 0 )
@@ -636,11 +636,14 @@ void DIAStorage<ValueType>::setOffsets(
             firstIndex = 1;
         }
 
-        for ( IndexType i = maxNumDiagonals - 1; i > 0; i-- )
+        if ( maxNumDiagonals )  // otherwise maxNumDiagonals - 1 is illegal for unsigned
         {
-            if ( lowerDiagonalUsed[i] )
+            for ( IndexType i = maxNumDiagonals - 1; i > 0; i-- )
             {
-                wOffset[mNumDiagonals++] = -i;
+                if ( lowerDiagonalUsed[i] )
+                {
+                    wOffset[mNumDiagonals++] = -i;
+                }
             }
         }
 
@@ -1131,7 +1134,7 @@ MatrixStorageCreateKeyType DIAStorage<ValueType>::createValue()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_NUMERIC_TYPES_HOST )
 
 #define DIA_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void DIAStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
@@ -1147,9 +1150,9 @@ SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_ARITHMETIC_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define DIA_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, DIA_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, DIA_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( DIA_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( DIA_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef DIA_STORAGE_INST_LVL2
 #undef DIA_STORAGE_INST_LVL1

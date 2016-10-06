@@ -50,18 +50,18 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( BlockDistribution::logger, "Distribution.BlockDistribution" )
 
-void BlockDistribution::getRange(
+void BlockDistribution::getLocalRange(
     IndexType& lb,
     IndexType& ub,
     const IndexType n,
     const PartitionId rank,
     const PartitionId size )
 {
-    SCAI_ASSERT_DEBUG( rank < size, "illegal rank = " << rank << ", size = " << size )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( rank, size, "illegal rank specified" )
     IndexType blockSize = ( n + size - 1 ) / size;
     lb = rank * blockSize;
-    ub = ( rank + 1 ) * blockSize - 1;
-    ub = std::min( ub, n - 1 );
+    ub = ( rank + 1 ) * blockSize;
+    ub = std::min( ub, n );
 }
 
 BlockDistribution::~BlockDistribution()
@@ -77,43 +77,65 @@ BlockDistribution::BlockDistribution( const IndexType globalSize, const Communic
     PartitionId rank = mCommunicator->getRank();
     SCAI_LOG_DEBUG( logger, "BlockDistribution of " << getGlobalSize() << " elements" )
     mBlockSize = ( globalSize + size - 1 ) / size;
-    getRange( mLB, mUB, globalSize, rank, size );
+    getLocalRange( mLB, mUB, globalSize, rank, size );
     SCAI_LOG_INFO( logger,
                    "BlockDistribution of " << getGlobalSize() << " elements" << ", me has " << mLB << " : " << mUB )
 }
 
 bool BlockDistribution::isLocal( const IndexType globalIndex ) const
 {
-    return globalIndex >= mLB && globalIndex <= mUB;
+    return globalIndex >= mLB && globalIndex < mUB;
 }
+
+/* ---------------------------------------------------------------------- */
 
 PartitionId BlockDistribution::getOwner( const IndexType globalIndex ) const
 {
     return globalIndex / mBlockSize;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType BlockDistribution::getLocalSize() const
 {
     IndexType localSize = 0;
 
-    if ( mLB <= mUB )
+    if ( mLB < mUB )
     {
-        localSize = mUB - mLB + 1;
+        localSize = mUB - mLB;
     }
 
     return localSize;
 }
+
+/* ---------------------------------------------------------------------- */
+
+IndexType BlockDistribution::getMaxLocalSize() const
+{
+    return mBlockSize;
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType BlockDistribution::getBlockDistributionSize() const
+{
+    return getLocalSize();
+}
+
+/* ---------------------------------------------------------------------- */
 
 IndexType BlockDistribution::local2global( const IndexType localIndex ) const
 {
     return mLB + localIndex;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
 {
     IndexType localIndex = nIndex;
 
-    if ( globalIndex >= mLB && globalIndex <= mUB )
+    if ( globalIndex >= mLB && globalIndex < mUB )
     {
         localIndex = globalIndex - mLB;
     }
@@ -150,7 +172,7 @@ void BlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndex
 
     WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
 
-    for ( IndexType i = mLB; i <= mUB; ++i )
+    for ( IndexType i = mLB; i < mUB; ++i )
     {
         wGlobalIndexes[ i - mLB ] = i;
     }

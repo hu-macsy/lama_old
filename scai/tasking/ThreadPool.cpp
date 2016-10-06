@@ -229,12 +229,12 @@ void ThreadPool::worker( int id )
             }
             catch ( common::Exception& ex )
             {
-                SCAI_LOG_INFO( logger, "worker thread got exception, has been caught: " << ex.what() )
+                SCAI_LOG_WARN( logger, "worker thread got exception, has been caught: " << ex.what() )
                 task->mException = true;
             }
             catch ( ... )
             {
-                SCAI_LOG_INFO( logger, "worker thread got exception, has been caught" )
+                SCAI_LOG_WARN( logger, "worker thread got exception, has been caught" )
                 task->mException = true;
             }
 

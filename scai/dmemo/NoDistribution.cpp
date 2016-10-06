@@ -93,6 +93,13 @@ IndexType NoDistribution::global2local( const IndexType globalIndex ) const
 
 /* ---------------------------------------------------------------------- */
 
+IndexType NoDistribution::getBlockDistributionSize() const
+{
+    return mGlobalSize;
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool NoDistribution::isEqual( const Distribution& other ) const
 {
     bool isSame = false;
@@ -119,7 +126,8 @@ void NoDistribution::writeAt( std::ostream& stream ) const
 
 void NoDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
-    owners.init( IndexType( 0 ), indexes.size() );  // set all values to 0
+    PartitionId root = 0;
+    owners.init( root, indexes.size() ); 
 }
 
 /* ---------------------------------------------------------------------------------*

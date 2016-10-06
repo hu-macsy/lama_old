@@ -65,8 +65,8 @@ GenBlockDistribution::~GenBlockDistribution()
 /* ---------------------------------------------------------------------- */
 
 void GenBlockDistribution::setOffsets(
-    const IndexType rank,
-    const IndexType numPartitions,
+    const PartitionId rank,
+    const PartitionId numPartitions,
     const IndexType localSizes[] )
 {
     mOffsets.reset( new IndexType[numPartitions] );
@@ -82,13 +82,15 @@ void GenBlockDistribution::setOffsets(
 
     SCAI_ASSERT_EQUAL( sumSizes, getGlobalSize(), "sum over local sizes must be global size" )
 
-    mUB = mOffsets[rank] - 1;
+    // mUB is first element not in the local range
+
+    mUB = mOffsets[rank];
     mLB = mOffsets[rank] - localSizes[rank];
 }
 
 /* ---------------------------------------------------------------------- */
 
-void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType mySize )
+void GenBlockDistribution::setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType mySize )
 {
     common::scoped_array<IndexType> localSizes( new IndexType[numPartitions] );
     // rank 0 is root
@@ -121,13 +123,16 @@ GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const IndexType firstGlobalIdx,
     const IndexType lastGlobalIdx,
+    bool,
     const CommunicatorPtr communicator )
 
     : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] )
 {
+    SCAI_ASSERT_LE_ERROR( firstGlobalIdx, lastGlobalIdx, "illegal local range" )
+
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
-    setOffsets( rank, size, lastGlobalIdx - firstGlobalIdx + 1 );
+    setOffsets( rank, size, lastGlobalIdx - firstGlobalIdx );
     SCAI_ASSERT_EQUAL( mLB, firstGlobalIdx, "serious mismatch in index range" )
     SCAI_ASSERT_EQUAL( mUB, lastGlobalIdx, "serious mismatch in index range" )
     SCAI_LOG_INFO( logger, *this << ": constructed by local range " << firstGlobalIdx << ":" << lastGlobalIdx )
@@ -155,8 +160,8 @@ GenBlockDistribution::GenBlockDistribution(
 
     : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] )
 {
-    int size = mCommunicator->getSize();
-    int rank = mCommunicator->getRank();
+    PartitionId size = mCommunicator->getSize();
+    PartitionId rank = mCommunicator->getRank();
     SCAI_LOG_DEBUG( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" << ", my weight = " << weight )
     std::vector<float> allWeights( size );
     communicator->allgather( &allWeights[0], 1, &weight );
@@ -184,7 +189,7 @@ GenBlockDistribution::GenBlockDistribution(
     }
 
     mLB = 0;
-    mUB = mOffsets[rank] - 1;
+    mUB = mOffsets[rank];
 
     if ( rank > 0 )
     {
@@ -196,11 +201,13 @@ GenBlockDistribution::GenBlockDistribution(
 
 bool GenBlockDistribution::isLocal( const IndexType globalIndex ) const
 {
-    return globalIndex >= mLB && globalIndex <= mUB;
+    return globalIndex >= mLB && globalIndex < mUB;
 }
 
 void GenBlockDistribution::getLocalRange( IndexType& lb, IndexType& ub ) const
 {
+    // keep in mind that lb == ub implies zero range, ub < lb can never happen 
+
     lb = mLB;
     ub = mUB;
 }
@@ -211,24 +218,19 @@ PartitionId GenBlockDistribution::getOwner( const IndexType globalIndex ) const
 {
     // owner of an index can be computed by each processor without communication 
 
-    int first = 0;
-    int last  = mCommunicator->getSize() - 1;
+    PartitionId first = 0;
+    PartitionId last  = mCommunicator->getSize() - 1;
 
-    if ( globalIndex < 0 )
+    if ( ! common::Utils::validIndex( globalIndex, mOffsets[last] ) )
     {
-        return -1; // out of range
-    }
-
-    if ( globalIndex >= mOffsets[last] )
-    {
-        return -1; // out of range
+        return nPartition; // out of range
     }
 
     // binary search in the array mOffsets
 
     while ( first < last )
     {
-        int mid = ( first + last + 1 ) / 2;
+        PartitionId mid = ( first + last + 1 ) / 2;
 
         if ( globalIndex < mOffsets[mid - 1] )
         {
@@ -254,9 +256,9 @@ IndexType GenBlockDistribution::getLocalSize() const
 {
     IndexType localSize = 0;
 
-    if ( mLB <= mUB )
+    if ( mLB < mUB )
     {
-        localSize = mUB - mLB + 1;
+        localSize = mUB - mLB;
     }
 
     return localSize;
@@ -275,7 +277,7 @@ IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) cons
 {
     IndexType localIndex = nIndex;   // default value if globalIndex is not local
 
-    if ( globalIndex >= mLB && globalIndex <= mUB )
+    if ( globalIndex >= mLB && globalIndex < mUB )
     {
         localIndex = globalIndex - mLB;
     }
@@ -310,7 +312,16 @@ void GenBlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIn
 
     SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
 
-    utilskernel::HArrayUtils::setSequence( myGlobalIndexes, mLB, 1, nLocal );
+    const IndexType one = 1;   // avoids cast in argument list of setSequence
+
+    utilskernel::HArrayUtils::setSequence( myGlobalIndexes, mLB, one, nLocal );
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType GenBlockDistribution::getBlockDistributionSize() const
+{
+    return getLocalSize();
 }
 
 /* ---------------------------------------------------------------------- */

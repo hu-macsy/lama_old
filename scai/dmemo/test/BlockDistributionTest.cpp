@@ -94,10 +94,27 @@ BOOST_AUTO_TEST_CASE( factoryTest )
 
 BOOST_AUTO_TEST_CASE( createTest )
 {
-    DistributionPtr bdist ( BlockDistribution::create( DistributionArguments( comm, 1, NULL, 1.0 ) ) );
-    BOOST_CHECK_EQUAL( bdist->getGlobalSize(), 1 );
-    bdist.reset( Distribution::getDistributionPtr( "BLOCK", comm, 1 ) );
-    BOOST_CHECK_EQUAL( bdist->getGlobalSize(), 1 );
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    const IndexType globalSize = 5;
+
+    DistributionPtr bdist ( BlockDistribution::create( DistributionArguments( comm, globalSize, NULL, 1.0 ) ) );
+    BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
+    bdist.reset( Distribution::getDistributionPtr( "BLOCK", comm, globalSize ) );
+    BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( constructorTest )
+{
+    CommunicatorPtr comm;
+    const IndexType globalSize = 17;
+
+    BOOST_CHECK_THROW(
+    { 
+        BlockDistribution bdist( globalSize, comm );
+    }, 
+    common::Exception );
 }
 
 /* --------------------------------------------------------------------- */
@@ -105,19 +122,19 @@ BOOST_AUTO_TEST_CASE( createTest )
 BOOST_AUTO_TEST_CASE( blockSizeTest )
 {
     // Test smaller sizes
-    for ( IndexType n = 1; n <= size; n++ )
+    for ( IndexType n = 1; n <= static_cast<IndexType>( size ); n++ )
     {
         BlockDistribution small( n, comm );
 
         // only the first n partitions have one element
 
-        if ( rank < n )
+        if ( static_cast<IndexType>( rank ) < n )
         {
-            BOOST_CHECK( small.getLocalSize() == 1 );
+            BOOST_CHECK_EQUAL( small.getLocalSize(), IndexType( 1 ) );
         }
         else
         {
-            BOOST_CHECK( small.getLocalSize() == 0 );
+            BOOST_CHECK_EQUAL( small.getLocalSize(), IndexType( 0 ) );
         }
     }
 }

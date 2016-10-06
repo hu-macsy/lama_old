@@ -141,10 +141,15 @@ public:
     template<typename ValueType, typename otherValueType>
     static void setGather( ValueType out[], const otherValueType in[], const IndexType indexes[], const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::setScatter, out[ indexes[i] ] = in [i] */
+    /** CUDA implementation for UtilKernelTrait::setScatter, out[ indexes[i] ] op= in [i] */
 
     template<typename ValueType, typename otherValueType>
-    static void setScatter( ValueType out[], const IndexType indexes[], const otherValueType in[], const IndexType n );
+    static void setScatter( ValueType out[], const IndexType indexes[], const otherValueType in[], const reduction::ReductionOp op, const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::scatterVal */
+
+    template<typename ValueType>
+    static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::invert */
 
@@ -179,9 +184,28 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct Registrator
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
+
+    template<typename ValueType>
+    struct RegNumericKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
+
+    template<typename ValueType>
+    struct RegArrayKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+    };
 
     /** Constructor for registration. */
 

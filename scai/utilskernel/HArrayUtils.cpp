@@ -106,7 +106,7 @@ void HArrayUtils::assignOp(
         }
     }
 
-    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setArray( target, source, op, loc );
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArray( target, source, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -153,7 +153,7 @@ void HArrayUtils::assignGather(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the gather version with the correct value types for target and source
-    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::gather( target, source, indexes, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::gather( target, source, indexes, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -162,10 +162,11 @@ void HArrayUtils::assignScatter(
     _HArray& target,
     const HArray<IndexType>& indexes,
     const _HArray& source,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the scatter version with the correct value types for target and source
-    mepr::UtilsWrapperTT1<SCAI_ARITHMETIC_ARRAY_HOST_LIST, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::scatter( target, indexes, source, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::scatter( target, indexes, source, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -204,9 +205,13 @@ void HArrayUtils::scatter(
     HArray<TargetValueType>& target,
     const HArray<IndexType>& indexes,
     const HArray<SourceValueType>& source,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     SCAI_REGION( "HArray.scatter" )
+
+    SCAI_ASSERT( ( op == reduction::COPY ) || ( op == reduction::ADD ), "Unsupported reduction op " << op  )
+
     SCAI_ASSERT( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
                  "illegal scatter index, target has size " << target.size() )
     static LAMAKernel<UtilKernelTrait::setScatter<TargetValueType, SourceValueType> > setScatter;
@@ -224,7 +229,7 @@ void HArrayUtils::scatter(
     ReadAccess<SourceValueType> rSource( source, loc );
     ReadAccess<IndexType> rIndexes( indexes, loc );
     //  target[ indexes[i] ] = source[i]
-    setScatter[loc] ( wTarget.get(), rIndexes.get(), rSource.get(), n );
+    setScatter[loc] ( wTarget.get(), rIndexes.get(), rSource.get(), op, n );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -236,7 +241,7 @@ void HArrayUtils::assignScalar(
     const reduction::ReductionOp op,
     ContextPtr prefLoc )
 {
-    mepr::UtilsWrapperT<ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setScalar( target, value, op, prefLoc );
+    mepr::UtilsWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setScalar( target, value, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -285,7 +290,7 @@ void HArrayUtils::setVal(
     const ValueType val )
 {
     SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
-    mepr::UtilsWrapperT< ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setValImpl( target, index, val );
+    mepr::UtilsWrapperT< ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setValImpl( target, index, val );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -309,7 +314,7 @@ ValueType HArrayUtils::getVal(
     const _HArray& array,
     const IndexType index )
 {
-    ValueType val = mepr::UtilsWrapperT< ValueType, SCAI_ARITHMETIC_ARRAY_HOST_LIST>::getValImpl( array, index );
+    ValueType val = mepr::UtilsWrapperT< ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::getValImpl( array, index );
     return val;
 }
 
@@ -553,6 +558,9 @@ void HArrayUtils::axpy(
     const HArray<ValueType>& x,
     ContextPtr prefLoc )
 {
+    SCAI_LOG_INFO( logger, "result += " << alpha << " * x"
+                   ", x = " << x << ", result = " << result )
+
     if ( alpha == scai::common::constants::ZERO )
     {
         return;
@@ -586,7 +594,11 @@ void HArrayUtils::arrayPlusArray(
     const HArray<ValueType>& y,
     ContextPtr prefLoc )
 {
+    SCAI_LOG_INFO( logger, "result = " << alpha << " * x + " << beta << " * y" <<
+                   ", x = " << x << ", y = " << y << ", result = " << result )
+
     // check for zero terms as we do not need read access and assert correct sizes
+
     if ( beta == scai::common::constants::ZERO )
     {
         assignScaled( result, alpha, x, prefLoc );
@@ -596,6 +608,18 @@ void HArrayUtils::arrayPlusArray(
     if ( alpha == scai::common::constants::ZERO )
     {
         assignScaled( result, beta, y, prefLoc );
+        return;
+    }
+
+    if ( &y == &result && beta == scai::common::constants::ONE )
+    {
+        axpy( result, alpha, x, prefLoc );
+        return;
+    }
+
+    if ( &x == &result && alpha == scai::common::constants::ONE )
+    {
+        axpy( result, beta, y, prefLoc );
         return;
     }
 
@@ -776,7 +800,7 @@ void HArrayUtils::setRandom( hmemo::_HArray& array,
 {
     // use meta-programming to call setRandomImpl<ValueType> with the type of array
 
-    mepr::UtilsWrapper< SCAI_ARITHMETIC_ARRAY_HOST_LIST>::setRandom( array, n, fillRate, prefLoc );
+    mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::setRandom( array, n, fillRate, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -917,11 +941,12 @@ void HArrayUtils::sort(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename BucketType>
 void HArrayUtils::bucketSort(
     hmemo::HArray<IndexType>& offsets,
     hmemo::HArray<IndexType>& perm,
-    const hmemo::HArray<IndexType>& array,
-    const IndexType nb,
+    const hmemo::HArray<BucketType>& array,
+    const BucketType nb,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
@@ -929,13 +954,14 @@ void HArrayUtils::bucketSort(
     if ( n == 0 )
     {
         perm.clear();
-        offsets.init( 0, nb + 1 );  // offsets = { 0, 0, ..., 0 }
+        IndexType zero = 0;
+        offsets.init( zero, nb + 1 );  // offsets = { 0, 0, ..., 0 }
         return;
     }
 
-    static LAMAKernel<UtilKernelTrait::countBuckets> countBuckets;
+    static LAMAKernel<UtilKernelTrait::countBuckets<BucketType> > countBuckets;
     static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
-    static LAMAKernel<UtilKernelTrait::sortInBuckets> sortInBuckets;
+    static LAMAKernel<UtilKernelTrait::sortInBuckets<BucketType> > sortInBuckets;
 
     ContextPtr loc = prefLoc;
 
@@ -950,8 +976,8 @@ void HArrayUtils::bucketSort(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<IndexType> bucketMap( array, loc );
-    WriteOnlyAccess<IndexType> sizes( offsets, loc, nb + 1 );
+    ReadAccess<BucketType> bucketMap( array, loc );
+    WriteOnlyAccess<IndexType> sizes( offsets, loc, static_cast<IndexType>( nb + 1 ) );
     
     countBuckets[loc]( sizes.get(), nb, bucketMap, n );
     IndexType total = scan[loc]( sizes.get(), nb );
@@ -964,21 +990,23 @@ void HArrayUtils::bucketSort(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename BucketType>
 void HArrayUtils::bucketCount(
-    hmemo::HArray<IndexType>& sizes,
-    const hmemo::HArray<IndexType>& array,
-    const IndexType nb,
+    hmemo::HArray<IndexType>& bucketSizes,
+    const hmemo::HArray<BucketType>& array,
+    const BucketType nb,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
     if ( n == 0 )
     {
-        sizes.init( 0, nb );
+        IndexType zeroVal = 0;
+        bucketSizes.init( zeroVal, nb );
         return;
     }
 
-    static LAMAKernel<UtilKernelTrait::countBuckets> countBuckets;
+    static LAMAKernel<UtilKernelTrait::countBuckets<BucketType> > countBuckets;
 
     ContextPtr loc = prefLoc;
 
@@ -993,11 +1021,11 @@ void HArrayUtils::bucketCount(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<IndexType> bucketMap( array, loc );
+    ReadAccess<BucketType> bucketMap( array, loc );
 
-    sizes.reserve( loc, nb + 1 );
+    bucketSizes.reserve( loc, nb + 1 );
 
-    WriteOnlyAccess<IndexType> wSizes( sizes, loc, nb );
+    WriteOnlyAccess<IndexType> wSizes( bucketSizes, loc, nb );
 
     countBuckets[loc]( wSizes, nb, bucketMap, n );
 }
@@ -1052,7 +1080,7 @@ void HArrayUtils::buildDenseArray(
     denseArray.clear();
     denseArray.resize( denseN );
     HArrayUtils::setScalar( denseArray, ValueType( 0 ), reduction::COPY, prefLoc );
-    HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, prefLoc );
+    HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, reduction::COPY, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1069,6 +1097,7 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::scatter<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                           \
             const hmemo::HArray<IndexType>&,                                                                            \
             const hmemo::HArray<OtherValueType>&,                                                                       \
+            const reduction::ReductionOp,                                                                               \
             const hmemo::ContextPtr );
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                                                                                        \
@@ -1113,12 +1142,20 @@ void HArrayUtils::buildDenseArray(
             const hmemo::HArray<ValueType>&,                                                                                      \
             const hmemo::HArray<IndexType>&, hmemo::ContextPtr );                                                                 \
                                                                                                                                   \
-    SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
 
-SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 #undef HARRAUTILS_SPECIFIER_LVL2
+
+// ToDo: template instantiation of bucketSort/bucketCount for PartitionId but only if PartitionId != IndexType
+
+template void HArrayUtils::bucketSort( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& perm,
+                                       const hmemo::HArray<IndexType>& array, const IndexType nb, hmemo::ContextPtr prefLoc );
+
+template void HArrayUtils::bucketCount( hmemo::HArray<IndexType>& sizes, const hmemo::HArray<IndexType>& array,
+                                        const IndexType nb, hmemo::ContextPtr prefLoc );
 
 /* --------------------------------------------------------------------------- */
 

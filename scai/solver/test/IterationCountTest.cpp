@@ -41,7 +41,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
-#include <scai/lama/test/EquationHelper.hpp>
+#include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 using namespace scai::solver;
@@ -76,24 +76,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.IterationCountTest" )
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    BOOST_CHECK_EQUAL( mCriterionDouble->getIterationExtrema(), 5 );
-    BOOST_CHECK_EQUAL( mCriterionFloat->getIterationExtrema(), 10 );
+    BOOST_CHECK_EQUAL( mCriterionDouble->getIterationExtrema(), IndexType( 5 ) );
+    BOOST_CHECK_EQUAL( mCriterionFloat->getIterationExtrema(), IndexType( 10 ) );
     IterationCount* testcriterion = new IterationCount();
-    BOOST_CHECK_EQUAL( testcriterion->getIterationExtrema(), 1 );
+    BOOST_CHECK_EQUAL( testcriterion->getIterationExtrema(), IndexType( 1 ) );
     IterationCount* testcriterion2 = new IterationCount( *testcriterion );
-    BOOST_CHECK_EQUAL( testcriterion2->getIterationExtrema(), 1 );
+    BOOST_CHECK_EQUAL( testcriterion2->getIterationExtrema(), IndexType( 1 ) );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( SetAndGetIterationCountTest )
 {
-    BOOST_CHECK_EQUAL( 5, mCriterionDouble->getIterationExtrema() );
+    BOOST_CHECK_EQUAL( IndexType( 5 ), mCriterionDouble->getIterationExtrema() );
     mCriterionDouble->setIterationExtrema( 15 );
-    BOOST_CHECK_EQUAL( 15, mCriterionDouble->getIterationExtrema() );
-    BOOST_CHECK_EQUAL( 10, mCriterionFloat->getIterationExtrema() );
+    BOOST_CHECK_EQUAL( IndexType( 15 ), mCriterionDouble->getIterationExtrema() );
+    BOOST_CHECK_EQUAL( IndexType( 10 ), mCriterionFloat->getIterationExtrema() );
     mCriterionFloat->setIterationExtrema( 3 );
-    BOOST_CHECK_EQUAL( 3, mCriterionFloat->getIterationExtrema() );
+    BOOST_CHECK_EQUAL( IndexType( 3 ), mCriterionFloat->getIterationExtrema() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -114,7 +114,7 @@ void testIsSatisfiedmethod( IndexType expectedIterationCount )
 }
 ;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, scai_numeric_test_types )
 {
     testIsSatisfiedmethod<ValueType>( 10 );
 }

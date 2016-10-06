@@ -373,10 +373,12 @@ void GMRES::updateX( unsigned int i )
     // ContextPtr context = getCoefficients().getContextPtr();
     hmemo::ContextPtr context = hmemo::Context::getHostPtr();
     static LAMAKernel<blaskernel::BLASKernelTrait::tptrs<double> > tptrs;
-    int info = tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
-                               runtime.mY.get(), i + 1 );
-    SCAI_LOG_DEBUG( logger, "tptrs returned with code = " << info )
+
+    tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
+                    runtime.mY.get(), i + 1 );
+
     // Update of solution vector
+
     Vector& x = runtime.mSolution.getReference();
 
     // reset x to x0

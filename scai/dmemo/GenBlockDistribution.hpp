@@ -95,6 +95,7 @@ public:
         const IndexType globalSize,
         const IndexType firstGlobalIdx,
         const IndexType lastGlobalIdx,
+        bool dummy,
         const CommunicatorPtr communicator );
 
     /** Construct a general block distribution by individual localSize
@@ -122,7 +123,14 @@ public:
 
     virtual ~GenBlockDistribution();
 
-    /** Get the local range of the calling partition. */
+    /** Get the local range of the calling partition. 
+     *
+     *  @param[out] lb, ub is the local range, i.e all elements i with lb <= i < ub 
+     *
+     *  Note: lb == ub stands for zero size, ub < lb can never happen
+     *
+     *  Be careful: older version returned ub with lb <= i <= ub
+     */
 
     void getLocalRange( IndexType& lb, IndexType& ub ) const;
 
@@ -143,6 +151,10 @@ public:
     virtual IndexType local2global( const IndexType localIndex ) const;
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
+
+    /** Implementation of pure function Distribution::getBlockDistributionSize, here same as getLocalSize */
+
+    virtual IndexType getBlockDistributionSize() const;
 
     virtual bool isEqual( const Distribution& other ) const;
 
@@ -181,17 +193,19 @@ protected:
 
 private:
 
-    void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType localSizes[] );
+    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType localSizes[] );
 
-    void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType mySize );
+    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType mySize );
 
     GenBlockDistribution(); // disable default destructor
 
     common::scoped_array<IndexType> mOffsets;  //!< offset for each partition
 
-    IndexType mLB, mUB;//!< local range of full size in global values
-};
+    // this processor owns mLB, ..., mUB - 1
 
+    IndexType mLB;
+    IndexType mUB;   //!< local range of full size in global values
+};
 
 const char* GenBlockDistribution::getKind() const
 {

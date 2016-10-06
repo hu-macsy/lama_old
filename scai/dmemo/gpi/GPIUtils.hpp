@@ -40,6 +40,7 @@
 #include <cstdio>
 #include <iostream>
 #include <GASPI.h>
+#include <GASPI_Ext.h>
 
 /** This directive might be enabled for debugging  */
 

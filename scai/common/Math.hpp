@@ -87,9 +87,11 @@ struct Math
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int abs( const int& x );
 
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned int abs( const unsigned int& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long abs( const long& x );
 
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long abs( const long long& x );
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long abs( const unsigned long& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float abs( const float& x );
 
@@ -108,12 +110,6 @@ struct Math
     /*
      * Computes the conjugated value of a given value
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int conj( const int& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long conj( const long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long conj( const long long& x );
-
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float conj( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double conj( const double& x );
@@ -131,8 +127,6 @@ struct Math
     /*
      * Computes the exponential function of a given value
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int exp( const int& x );
-
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float exp( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double exp( const double& x );
@@ -148,14 +142,64 @@ struct Math
 #endif
 
     /*
+     * pow-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int pow( const int& base, const int& exponent );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float pow( const float& base, const float& exponent );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double pow( const double& base, const double& exponent );
+
+    static inline MIC_CALLABLE_MEMBER long double pow( const long double& base, const long double& exponent );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> pow( const Complex<float>& base, const Complex<float>& exponent );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> pow( const Complex<double>& base, const Complex<double>& exponent );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> pow( const Complex<long double>& base, const Complex<long double>& exponent );
+#endif
+
+    /*
+     * log-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float log( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double log( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double log( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> log( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> log( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<long double> log( const Complex<long double>& x );
+#endif
+
+    /*
+     * arg-function for ValueType
+     */
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float arg( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double arg( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER long double arg( const Complex<long double>& x );
+#endif
+
+    /*
+     * atan-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float atan2( const float& y, const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double atan2( const double& y, const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double atan2( const long double& y, const long double& x );
+
+    /*
      * Getter for the real part
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int real( const int& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long real( const long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long real( const long long& x );
-
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double real( const double& x );
@@ -173,12 +217,6 @@ struct Math
     /*
      * Getter for the imag part
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int imag( const int& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long imag( const long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long imag( const long long& x );
-
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float imag( const float& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double imag( const double& x );
@@ -196,11 +234,14 @@ struct Math
     /*
      * min operation
      */
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int min( const int& x, const int& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned int min( const unsigned int& x, const unsigned int& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long min( const long& x, const long& y );
 
-    static inline MIC_CALLABLE_MEMBER long long min( const long long& x, const long long& y );
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long min( const unsigned long& x, const unsigned long& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float min( const float& x, const float& y );
 
@@ -221,9 +262,11 @@ struct Math
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int max( const int& x, const int& y );
 
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned int max( const unsigned int& x, const unsigned int& y );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long max( const long& x, const long& y );
 
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long long max( const long long& x, const long long& y );
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long max( const unsigned long& x, const unsigned long& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float max( const float& x, const float& y );
 
@@ -244,9 +287,11 @@ struct Math
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( int& x );
 
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( unsigned int& x );
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( long& x );
 
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( long long& x );
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( unsigned long& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( float& x );
 
@@ -261,7 +306,6 @@ struct Math
 
     static inline MIC_CALLABLE_MEMBER  void random( Complex<long double>& x );
 #endif
-
 };
 
 // -------------------------------- sqrt ----------------------------
@@ -288,14 +332,19 @@ int Math::abs( const int& x )
     return ::abs( x );
 }
 
+unsigned int Math::abs( const unsigned int& x )
+{
+    return x;
+}
+
 long Math::abs( const long& x )
 {
     return ::labs( x );
 }
 
-long long Math::abs( const long long& x )
+unsigned long Math::abs( const unsigned long& x )
 {
-    return ::llabs( x );
+    return x;
 }
 
 float Math::abs( const float& x )
@@ -315,21 +364,6 @@ long double Math::abs( const long double& x )
 
 // -------------------------------- conj -----------------------------
 
-int Math::conj( const int& x )
-{
-    return x;
-}
-
-long Math::conj( const long& x )
-{
-    return x;
-}
-
-long long Math::conj( const long long& x )
-{
-    return x;
-}
-
 float Math::conj( const float& x )
 {
     return x;
@@ -347,11 +381,6 @@ long double Math::conj( const long double& x )
 
 // -------------------------------- exp -----------------------------
 
-int Math::exp( const int& x )
-{
-    return static_cast<int> ( ::expf( static_cast<float>( x ) ) );
-}
-
 float Math::exp( const float& x )
 {
     return ::expf(x);
@@ -367,22 +396,70 @@ long double Math::exp( const long double& x )
     return ::expl(x);
 }
 
+// -------------------------------- pow -----------------------------
+
+int Math::pow( const int& base, const int& exponent )
+{
+    int r = 1;
+
+    for( int i = 0; i < exponent; ++i )
+    {
+        r *= base;
+    }
+
+    return r;
+}
+
+float Math::pow( const float& base, const float& exponent )
+{
+    return powf( base, exponent );
+}
+
+double Math::pow( const double& base, const double& exponent )
+{
+    return ::pow( base, exponent );
+}
+
+long double Math::pow( const long double& base, const long double& exponent )
+{
+    return powl( base, exponent );
+}
+
+// -------------------------------- log -----------------------------
+
+float Math::log( const float& x )
+{
+    return logf( x );
+}
+
+double Math::log( const double& x )
+{
+    return ::log( x );
+}
+
+long double Math::log( const long double& x )
+{
+    return logl( x );
+}
+
+// -------------------------------- atan2 -----------------------------
+
+float Math::atan2( const float& y, const float& x )
+{
+    return atan2f( y, x );
+}
+
+double Math::atan2( const double& y, const double& x )
+{
+    return ::atan2( y, x );
+}
+
+long double Math::atan2( const long double& y, const long double& x )
+{
+    return atan2l( y, x );
+}
+
 // -------------------------------- real -----------------------------
-
-int Math::real( const int& x )
-{
-    return x;
-}
-
-long Math::real( const long& x )
-{
-    return x;
-}
-
-long long Math::real( const long long& x )
-{
-    return x;
-}
 
 float Math::real( const float& x )
 {
@@ -400,21 +477,6 @@ long double Math::real( const long double& x )
 }
 
 // -------------------------------- imag -----------------------------
-
-int Math::imag( const int& )
-{
-    return 0;
-}
-
-long Math::imag( const long& )
-{
-    return 0;
-}
-
-long long Math::imag( const long long& )
-{
-    return 0;
-}
 
 float Math::imag( const float& )
 {
@@ -435,32 +497,37 @@ long double Math::imag( const long double& )
 
 int Math::min( const int& x, const int& y )
 {
-    return x < y ? x : y;
+    return y < x ? y : x;
+}
+
+unsigned int Math::min( const unsigned int& x, const unsigned int& y )
+{
+    return y < x ? y : x;
 }
 
 long Math::min( const long& x, const long& y )
 {
-    return x < y ? x : y;
+    return y < x ? y : x;
 }
 
-long long Math::min( const long long& x, const long long& y )
+unsigned long Math::min( const unsigned long& x, const unsigned long& y )
 {
-    return x < y ? x : y;
+    return y < x ? y : x;
 }
 
 float Math::min( const float& x, const float& y )
 {
-    return x < y ? x : y;
+    return y < x ? y : x;
 }
 
 double Math::min( const double& x, const double& y )
 {
-    return x < y ? x : y;
+    return y < x ? y : x;
 }
 
 long double Math::min( const long double& x, const long double& y )
 {
-    return x < y ? x : y;
+    return y < x ? y : x;
 }
 
 // -------------------------------- max ------------------------------
@@ -470,12 +537,17 @@ int Math::max( const int& x, const int& y )
     return x > y ? x : y;
 }
 
+unsigned int Math::max( const unsigned int& x, const unsigned int& y )
+{
+    return x > y ? x : y;
+}
+
 long Math::max( const long& x, const long& y )
 {
     return x > y ? x : y;
 }
 
-long long Math::max( const long long& x, const long long& y )
+unsigned long Math::max( const unsigned long& x, const unsigned long& y )
 {
     return x > y ? x : y;
 }
@@ -502,12 +574,17 @@ void Math::random( int& x )
     x = rand();
 }
 
+void Math::random( unsigned int& x )
+{
+    x = rand();
+}
+
 void Math::random( long& x )
 {
     x = rand();
 }
 
-void Math::random( long long& x )
+void Math::random( unsigned long& x )
 {
     x = rand();
 }

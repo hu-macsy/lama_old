@@ -67,16 +67,16 @@ SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
 /* ---------------------------------------------------------------------------------- */
 
-const char* _Vector::kind2Str( const VectorFormat vectorKind )
+const char* _Vector::kind2Str( const VectorKind vectorKind )
 {
     switch ( vectorKind )
     {
         case DENSE:
-            return "Dense";
+            return "DENSE";
             break;
 
         case SPARSE:
-            return "Sparse";
+            return "SPARSE";
             break;
 
         case UNDEFINED:
@@ -84,17 +84,17 @@ const char* _Vector::kind2Str( const VectorFormat vectorKind )
             break;
     }
 
-    return "Undefined";
+    return "<illegal_vector_kind>";
 }
 
-_Vector::VectorFormat _Vector::str2Kind( const char* str )
+_Vector::VectorKind _Vector::str2Kind( const char* str )
 
 {
     for ( int kind = DENSE; kind < UNDEFINED; ++kind )
     {
-        if ( strcmp( kind2Str( VectorFormat( kind ) ), str ) == 0 )
+        if ( strcmp( kind2Str( VectorKind( kind ) ), str ) == 0 )
         {
-            return VectorFormat( kind );
+            return VectorKind( kind );
         }
     }
 
@@ -105,7 +105,7 @@ _Vector::VectorFormat _Vector::str2Kind( const char* str )
 /*    VectorKind opertor<<                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kind )
+std::ostream& operator<<( std::ostream& stream, const _Vector::VectorKind& kind )
 {
     stream << _Vector::kind2Str( kind );
     return stream;
@@ -115,17 +115,26 @@ std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kin
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector* Vector::getVector( const VectorFormat format, const common::scalar::ScalarType valueType )
+Vector* Vector::getVector( const VectorKind kind, const common::scalar::ScalarType valueType )
 {
-    VectorCreateKeyType vectype( format, valueType );
+    VectorCreateKeyType vectype( kind, valueType );
     return Vector::create( vectype );
 }
 
-Vector* Vector::getDenseVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
+Vector* Vector::getDenseVector( 
+    const common::scalar::ScalarType valueType, 
+    DistributionPtr distribution,
+    ContextPtr context )
 {
     VectorCreateKeyType vectype( Vector::DENSE, valueType );
     Vector* v = Vector::create( vectype );
     v->allocate( distribution );
+
+    if ( context )
+    {
+        v->setContextPtr( context );
+    }
+
     return v;
 }
 
@@ -191,6 +200,8 @@ void Vector::readFromSingleFile( const std::string& fileName )
 
     if ( myRank == MASTER )
     {
+        SCAI_LOG_INFO( logger, *comm << ": read array from single file " << fileName )
+
         FileIO::read( localValues, fileName );
 
         vectorSize = localValues.size();
@@ -320,32 +331,6 @@ void Vector::readFromFile( const std::string& fileName, DistributionPtr distribu
 /* ---------------------------------------------------------------------------------------*/
 /*    Assignment operator                                                                 */
 /* ---------------------------------------------------------------------------------------*/
-
-Vector& Vector::operator=( const Expression_MV& expression )
-{
-    SCAI_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * matrix * vector1 + 0.0 * this" )
-    // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
-    // but be careful: this might not be allocated correctly, so we do it here
-    const Expression_SMV exp1( Scalar( 1.0 ), expression );
-    const Expression_SV exp2( Scalar( 0.0 ), *this );
-    const Expression_SMV_SV tempExpression( exp1, exp2 );
-    // due to alias of result/vector2 resize already here
-    allocate( expression.getArg1().getRowDistributionPtr() );
-    return *this = tempExpression;
-}
-
-Vector& Vector::operator=( const Expression_VM& expression )
-{
-    SCAI_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * vector1 * matrix + 0.0 * this" )
-    // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
-    // but be careful: this might not be resized correctly, so we do it here
-    const Expression_SVM exp1( Scalar( 1.0 ), expression );
-    const Expression_SV exp2( Scalar( 0.0 ), *this );
-    const Expression_SVM_SV tempExpression( exp1, exp2 );
-    // due to alias of result/vector2 resize already here
-    allocate( expression.getArg1().getDistributionPtr() );
-    return *this = tempExpression;
-}
 
 Vector& Vector::operator=( const Expression_SV_SV& expression )
 {
@@ -527,6 +512,12 @@ Vector& Vector::operator/=( const Scalar value )
 Vector& Vector::operator+=( const Vector& other )
 {
     return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ), Expression_SV( Scalar( 1 ), *this ) ) );
+}
+
+Vector& Vector::operator+=( const Scalar value )
+{
+    add( value );
+    return *this;
 }
 
 Vector& Vector::operator+=( const Expression_SV& exp )

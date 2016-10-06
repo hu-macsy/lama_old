@@ -37,5 +37,10 @@
 
 int main()
 {
-    printf("%d.%d.%d", GASPI_MAJOR_VERSION, GASPI_MINOR_VERSION, GASPI_REVISION );
+    // call the standardized synchronous local blocking routine
+    // Note: this program requires include file 'AND' linking with a GASPI library
+
+    float version;
+    gaspi_version( &version );
+    printf("%4.2f", version );
 }

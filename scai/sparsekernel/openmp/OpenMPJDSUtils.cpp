@@ -248,7 +248,7 @@ void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType pe
     for ( IndexType ii = 0; ii < n; ii++ )
     {
         IndexType i = perm[ii];
-        SCAI_ASSERT_DEBUG( 0 <= i && i < n, "permutation value out of range, perm[" << ii << "] = " << i )
+        SCAI_ASSERT_VALID_INDEX_DEBUG( i, n, "permutation value out of range, perm[" << ii << "]" )
         inversePerm[i] = ii;
     }
 }
@@ -302,7 +302,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     // later (end of second for):  21  18  14  11   6   5
     IndexType total = 0;
 
-    for ( IndexType i = maxBucket; i >= 0; i-- )
+    for ( IndexType i = maxBucket + 1; i-- > 0; )
     {
         IndexType cnt = bucket[i];
         bucket[i] = total;
@@ -322,7 +322,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     // reorganize of ilg has to wait until after filling of perm array is finished
     total = 0;
 
-    for ( IndexType i = maxBucket; i >= 0; i-- )
+    for ( IndexType i = maxBucket + 1; i-- > 0; )
     {
         SCAI_LOG_DEBUG( logger, "set ilg[" << total << ":" << ( bucket[i] - 1 ) << "] = " << i )
 
@@ -812,7 +812,7 @@ void OpenMPJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
@@ -824,7 +824,7 @@ void OpenMPJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelR
 }
 
 template<typename ValueType>
-void OpenMPJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
@@ -838,7 +838,7 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
 }
 
 template<typename ValueType, typename OtherValueType>
-void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
@@ -861,9 +861,9 @@ OpenMPJDSUtils::OpenMPJDSUtils()
     SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPJDSUtils::~OpenMPJDSUtils()
@@ -871,9 +871,9 @@ OpenMPJDSUtils::~OpenMPJDSUtils()
     SCAI_LOG_INFO( logger, "unregister JDSUtils OpenMP-routines for Host at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

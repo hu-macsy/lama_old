@@ -41,7 +41,6 @@
 
 #include <scai/logging.hpp>
 #include <scai/utilskernel/ReductionOp.hpp>
-#include <scai/common/mepr/TemplateSpecifier.hpp>
 
 namespace scai
 {
@@ -112,16 +111,20 @@ public:
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::_HArray& source,
+        const reduction::ReductionOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
      *  @brief Scatter (unstructured write of values) with HArrays, template typed version
+     * 
+     *  target[index[i]] = source[i]
      */
     template<typename TargetValueType, typename SourceValueType>
     static void scatter(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::HArray<SourceValueType>& source,
+        const reduction::ReductionOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -201,12 +204,15 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Multiplication of two arrays: result = x * y
+    /** Multiplication of two arrays: result = alpha * x * y
      *
      *  @param[out] result  output array
-     *  @param[in]  x       source array
-     *  @param[in]  y       source array
+     *  @param[in]  alpha   scalar that is multiplied for each element
+     *  @param[in]  x       first input array
+     *  @param[in]  y       second input array
      *  @param[in]  prefLoc location where operation should be done if possible
+     *
+     *  Any alias of the arrays x, y, result is supported.
      */
 
     template<typename ValueType>
@@ -339,8 +345,8 @@ public:
 
     /** Sort an array of values
      *
-     *  @param[in,out] is the array of values to be sorted
-     *  @param[out] is the permutation that gives the sorted array
+     *  @param[in,out] array is the array of values to be sorted
+     *  @param[out] perm is the permutation that gives the sorted array
      *  @param[in] prefLoc is the preferred context where computation should be done
      * 
      *  Note: array_out = array_in[ perm ]
@@ -354,7 +360,7 @@ public:
     /** Bucket sort of an array with integer values
      *
      *  @param[out] perm is permutation to get array sorted
-     *  @param[out] offset is an offset array for perm to sort it bucketwise, size is nb + 1
+     *  @param[out] offsets is an offset array for perm to sort it bucketwise, size is nb + 1
      *  @param[in] nb is the number of buckets
      *  @param[in] array contains bucket indexes, 0 <= array[i] < nb
      *  @param[in] prefLoc is the preferred context where computation should be done
@@ -365,19 +371,21 @@ public:
      *  Note: in contrary to sort the array remains unchanged
      */
 
+    template<typename BucketType>
     static void bucketSort(
         hmemo::HArray<IndexType>& offsets,
         hmemo::HArray<IndexType>& perm,
-        const hmemo::HArray<IndexType>& array,
-        const IndexType nb,
+        const hmemo::HArray<BucketType>& array,
+        const BucketType nb,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Slighter version of bucketSort, counts only values */
 
+    template<typename BucketType>
     static void bucketCount(
         hmemo::HArray<IndexType>& bucketSizes,
-        const hmemo::HArray<IndexType>& array,
-        const IndexType nb,
+        const hmemo::HArray<BucketType>& array,
+        const BucketType nb,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Initialize an array with the sequence 0, .., n-1

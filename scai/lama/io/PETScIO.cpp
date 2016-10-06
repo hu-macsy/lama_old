@@ -123,7 +123,7 @@ void PETScIO::writeArrayImpl(
     // int    number of rows
     // type   values
 
-    int nrows = array.size();
+    IndexType nrows = array.size();
 
     std::ios::openmode flags = std::ios::out | std::ios::binary;
 
@@ -167,12 +167,12 @@ void PETScIO::readArrayImpl(
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<int> headerVals;
+    utilskernel::LArray<IndexType> headerVals;
 
     inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
 
-    int classid = headerVals[0];
-    int n       = headerVals[1];
+    IndexType classid = headerVals[0];
+    IndexType n       = headerVals[1];
 
     SCAI_LOG_INFO( logger, "Read: id = " << classid << ", #n = " << n )
 
@@ -199,8 +199,8 @@ void PETScIO::writeStorageImpl(
     // int    *number nonzeros in each row
     // int    *column indices of all nonzeros (starting index is zero)
 
-    int nrows = storage.getNumRows();
-    int ncols = storage.getNumColumns();
+    IndexType nrows = storage.getNumRows();
+    IndexType ncols = storage.getNumColumns();
 
     HArray<IndexType> csrIA;    // first offsets, later sizes
     HArray<IndexType> csrJA;
@@ -208,7 +208,7 @@ void PETScIO::writeStorageImpl(
 
     storage.buildCSRData( csrIA, csrJA, csrValues );
 
-    int nnz = csrJA.size();
+    IndexType nnz = csrJA.size();
 
     // we need the CSR sizes, not the offsets
 
@@ -243,7 +243,13 @@ void PETScIO::writeStorageImpl(
     outFile.writeBinary( headValues, mScalarTypeIndex );
     outFile.writeBinary( csrIA, mScalarTypeIndex );
     outFile.writeBinary( csrJA , mScalarTypeIndex ); 
-    outFile.writeBinary( csrValues, mScalarTypeData );
+
+    // output of values is skipped for PATTERN 
+
+    if ( mScalarTypeData != common::scalar::PATTERN )
+    {
+        outFile.writeBinary( csrValues, mScalarTypeData );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -266,14 +272,14 @@ void PETScIO::readStorageImpl(
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<int> headerVals;
+    utilskernel::LArray<IndexType> headerVals;
 
-    inFile.readBinary( headerVals, 4, common::TypeTraits<int>::stype );
+    inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
 
-    int classid = headerVals[0];
-    int nrows   = headerVals[1];
-    int ncols   = headerVals[2];
-    int nnz     = headerVals[3];
+    IndexType classid = headerVals[0];
+    IndexType nrows   = headerVals[1];
+    IndexType ncols   = headerVals[2];
+    IndexType nnz     = headerVals[3];
 
     SCAI_LOG_INFO( logger, "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << nrows 
                            << ", #cols = " << ncols << ", #nnz = " << nnz )
@@ -286,7 +292,15 @@ void PETScIO::readStorageImpl(
 
     inFile.readBinary( csrSizes, nrows, mScalarTypeIndex );
     inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
-    inFile.readBinary( csrValues, nnz, mScalarTypeData );
+
+    if ( mScalarTypeData != common::scalar::PATTERN )
+    {
+        inFile.readBinary( csrValues, nnz, mScalarTypeData );
+    }
+    else
+    {
+        csrValues.init( ValueType( 1 ), nnz );
+    }
 
     storage.setCSRData( nrows, ncols, nnz, csrSizes, csrJA, csrValues );
 }

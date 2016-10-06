@@ -7,7 +7,8 @@ Setting a Context was realized as simple as possible:
 
 .. literalinclude:: ../../../../solver/examples/lecture/task5.cpp 
    :language: c++
-   :emphasize-lines: 37,38,50,52
+   :lines: 37-94
+   :emphasize-lines: 36,37,48,50
 
 (1) : Getting a CudaContext for cuda device 0.
 (2) : Setting a CudaContext to matrix and vectors.

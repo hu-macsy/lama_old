@@ -91,7 +91,7 @@ int main( int argc, char* argv[] )
     cgSolver.solve( solution, rhs );
     std::cout << "The solution is: ";
 
-    for ( int i = 0; i < solution.size(); ++i )
+    for ( IndexType i = 0; i < solution.size(); ++i )
     {
         std::cout << solution.getValue( i ) << " ";
     }

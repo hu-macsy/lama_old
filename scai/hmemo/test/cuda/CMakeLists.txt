@@ -44,7 +44,7 @@ scai_project (
         HArrayTest
 )
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 cuda_add_executable ( hmemoCUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
 

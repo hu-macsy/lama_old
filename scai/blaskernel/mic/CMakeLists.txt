@@ -39,8 +39,8 @@ scai_project (
     CLASSES
 
           MICBLAS1
-          MICBLAS2
-          MICBLAS3
+          # MICBLAS2  not really own implementation, just calls BLAS2
+          # MICBLAS3  not really own implementation, just calls BLAS3
           
     HEADERS
     

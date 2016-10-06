@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ###
  # @file scai_test_xml.sh
  #
@@ -27,7 +29,7 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief ToDo: Missing description in ./scai_test_xml.sh
+ # @brief Script to run all tests with XML result files
  # @author Lauretta Schubert
  # @date 22.03.2016
 ###
@@ -39,10 +41,15 @@ mkdir ${dirname}
 
 ERROR_LEVEL=test_suite
 
-# Use MPI
-MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
-
 declare -a CONTEXTS
+
+if [ -d dmemo/mpi ]
+then
+    # Lama has been built with MPI support so it should be available
+    MPI_PROCS="2 4"
+else
+    MPI_PROCS=""
+fi
 
 # Use Host Context
 CONTEXTS+=(Host)
@@ -59,11 +66,16 @@ then
 	CONTEXTS+=(MIC)
 fi
 
-echo "## Used Contexts: ${CONTEXTS[*]}"
+# Define some recurring arguments
+
+BOOST_TEST_ARGS="--output_format=XML --log_level=${ERROR_LEVEL} --report_level=no"
+MPI_TEST_ARGS="--SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1"
+
+echo "## Used Contexts: ${CONTEXTS[*]}, MPI_PROCS=${MPI_PROCS}"
 
 # Common tests
 echo "### commonTest"
-./common/test/commonTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/commonTest.xml
+./common/test/commonTest ${BOOST_TEST_ARGS} 1> ${dirname}/commonTest.xml
 
 # Logging tests
 echo "### loggingTest"
@@ -79,96 +91,92 @@ echo "### tracingTest"
     ./test.sh
 )
 # KRegistry tests
-echo "### kregistryTest on ${CTX}"
+echo "### kregistryTest"
 (
-    cd kregistry/test/
-    ./kregistryTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest_${CTX}.xml
+    ./kregistry/test/kregistryTest ${BOOST_TEST_ARGS} 1> ${dirname}/kregistryTest.xml
 )
 	
 for CTX in ${CONTEXTS[*]}
 do
+    export SCAI_CONTEXT=${CTX}
+
 	# Tasking tests
 	echo "### taskingTest on ${CTX}"
-	./tasking/test/taskingTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/taskingTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	./tasking/test/taskingTest ${BOOST_TEST_ARGS} 1> ${dirname}/taskingTest_${CTX}.xml
 	
 	# HMemo tests
 	echo "### hmemoTest on ${CTX}"
-	./hmemo/test/hmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/hmemoTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	./hmemo/test/hmemoTest ${BOOST_TEST_ARGS} 1> ${dirname}/hmemoTest_${CTX}.xml 
 	
 	# BLASKernel tests
 	echo "### blaskernelTest on ${CTX}"
-	./blaskernel/test/blaskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/kregistryTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	./blaskernel/test/blaskernelTest ${BOOST_TEST_ARGS} 1> ${dirname}/kregistryTest_${CTX}.xml
 	
 	# UtilsKernel tests
 	echo "### utilskernelTest on ${CTX}"
-	./utilskernel/test/utilskernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/utilskernelTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	./utilskernel/test/utilskernelTest ${BOOST_TEST_ARGS} 1>${dirname}/utilskernelTest_${CTX}.xml
 	
 	# SparseKernel tests
 	echo "### sparsekernelTest on ${CTX}"
-	./sparsekernel/test/sparsekernelTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/sparsekernelTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
+	./sparsekernel/test/sparsekernelTest ${BOOST_TEST_ARGS} 1>${dirname}/sparsekernelTest_${CTX}.xml
 	
 	# DMemo tests
 	echo "### dmemoTest on ${CTX}"
-	export SCAI_COMMUNICATOR=NO
-	./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemoTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	if [ "${MPI_FOUND}" != "" ]
-	then
-	    export SCAI_COMMUNICATOR=MPI
-	    mpirun -np 1 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo1Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	    mpirun -np 2 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo2Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	    mpirun -np 3 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo3Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	    mpirun -np 4 ./dmemo/test/dmemoTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dmemo4Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	fi
+	./dmemo/test/dmemoTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=NO 1>${dirname}/dmemoTest_${CTX}.xml
+    for np in ${MPI_PROCS} ;
+    do 
+	    echo "### dmemoTest on ${CTX} with ${np} MPI processes"
+	    mpirun -np ${np} -output-filename ${dirname}/dmemoTest_${CTX}_${np}.xml ./dmemo/test/dmemoTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 
+    done
 	
 	# LAMA tests
-	echo "### lama_test on ${CTX}"
+	echo "### lamaTest on ${CTX}"
 	( # lamaTest
-		./lama/test/lamaTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
+		./lama/test/lamaTest ${BOOST_TEST_ARGS} 1>${dirname}/lamaTest_${CTX}.xml
+        for np in ${MPI_PROCS} ;
+        do 
+	        echo "### lamaTest on ${CTX} with ${np} MPI processes"
+	        mpirun -np ${np} -output-filename ${dirname}/lamaTest_${CTX}_${np}.xml ./lama/test/lamaTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 
+        done
 	)
+	echo "### lamaStorageTest on ${CTX}"
 	( # Storage Test
-		./lama/test/storage/lamaStorageTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaStorageTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
+		./lama/test/storage/lamaStorageTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=NO 1> ${dirname}/lamaStorageTest_${CTX}.xml
 	)
-# # LAMA Distributed test removed?
-#	(
-#	    export SCAI_COMMUNICATOR=NO
-#	    ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDistTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
-#	    if [ "${MPI_FOUND}" != "" ]
-#	    then
-#	        export SCAI_COMMUNICATOR=MPI
-#	        mpirun -np 1 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist1Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-#	        mpirun -np 2 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist2Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-#	        mpirun -np 3 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist3Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-#	        mpirun -np 4 ./lama/test/distributed/lamaDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaDist4Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-#	    fi
-#    )
+	echo "### lamaMatrixTest on ${CTX}"
  	( # Matrix Test   
-	    export SCAI_COMMUNICATOR=NO
-	    ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrixTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	    if [ "${MPI_FOUND}" != "" ]
-	    then
-	        export SCAI_COMMUNICATOR=MPI
-	        mpirun -np 1 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix1Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	        mpirun -np 2 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix2Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	        mpirun -np 3 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix3Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	        mpirun -np 4 ./lama/test/matrix/lamaMatrixTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/lamaMatrix4Test_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	    fi
+	    ./lama/test/matrix/lamaMatrixTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=NO 1> ${dirname}/lamaMatrixTest_${CTX}.xml
+        for np in ${MPI_PROCS} ;
+        do 
+	        echo "### lamaMatrixTest on ${CTX} with ${np} MPI processes"
+	        mpirun -np ${np} -output-filename ${dirname}/lamaMatrixTest_${CTX}_${np}.xml ./lama/test/matrix/lamaMatrixTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 
+        done
     )
 	
 	# Solver tests
 	echo "### solverTest on ${CTX}"
-	export SCAI_COMMUNICATOR=NO
-	./solver/test/solverTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverTest_${CTX}.xml --SCAI_CONTEXT=${CTX}
-	export SCAI_COMMUNICATOR=NO
-	./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDistTest_${CTX}.xml #--SCAI_CONTEXT=${CTX}
-	if [ "${MPI_FOUND}" != "" ]
-	then
-	    export SCAI_COMMUNICATOR=MPI
-	    mpirun -np 1 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist1Test_${CTX}.xml #--SCAI_CONTEXT=${CTX}
-	    mpirun -np 2 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist2Test_${CTX}.xml #--SCAI_CONTEXT=${CTX}
-	    mpirun -np 3 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist3Test_${CTX}.xml #--SCAI_CONTEXT=${CTX}
-	    mpirun -np 4 ./solver/test/distributed/solverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/solverDist4Test_${CTX}.xml #--SCAI_CONTEXT=${CTX}
-	fi
+	./solver/test/solverTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=NO 1> ${dirname}/solverTest_${CTX}.xml
+    for np in ${MPI_PROCS} ;
+    do 
+        if [ "$CTX" == "CUDA" ]; then
+            echo "skip MPI solver test with CUDA"
+        else
+	        echo "### solverTest on ${CTX} with ${np} MPI processes"
+	        echo "mpirun -np ${np} ./solver/test/solverTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS}"
+	        mpirun -np ${np} -output-filename ${dirname}/solverTest_${CTX}_${np}.xml ./solver/test/solverTest ${BOOST_TEST_ARGS} ${MPI_TEST_ARGS} 
+        fi
+	done
 done
 
+echo "All tests are finished, for XML result files see ${dirname}"
+
+# rename the MPI output file to end with xml
+
+for filename in ${dirname}/*.xml.* ;
+do
+    # rename <filename>.xml.<rank> to <filename>.<rank>.xml
+    newname=${filename/\.xml/}.xml
+    mv $filename $newname
+done
 
 unset CONTEXTS

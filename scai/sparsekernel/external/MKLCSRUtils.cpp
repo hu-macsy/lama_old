@@ -63,11 +63,10 @@
 #include <mkl.h>
 #include <mkl_spblas.h>
 
-using namespace scai::utilskernel;
-
 namespace scai
 {
 
+using namespace utilskernel;
 using tasking::TaskSyncToken;
 
 namespace sparsekernel
@@ -99,8 +98,7 @@ void MKLCSRUtils::normalGEMV(
     typedef MKLCSRTrait::BLASMatrix BLASMatrix;
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if ( common::TypeTraits<IndexType>::stype
-            != common::TypeTraits<BLASIndexType>::stype )
+    if ( common::TypeTraits<IndexType>::stype != common::TypeTraits<BLASIndexType>::stype )
     {
         COMMON_THROWEXCEPTION( "indextype mismatch" );
     }
@@ -111,7 +109,7 @@ void MKLCSRUtils::normalGEMV(
         // ToDo: workaround required as boost::bind supports only up to 9 arguments
     }
 
-    if ( y != result && beta != scai::common::constants::ZERO )
+    if ( y != result && beta != common::constants::ZERO )
     {
         OpenMPUtils::set( result, y, numRows, utilskernel::reduction::COPY );
     }
@@ -170,13 +168,17 @@ void MKLCSRUtils::decomposition(
     const ValueType rhs[],
     const IndexType numRows,
     const IndexType nnz,
-    const bool isSymmetic )
+    const bool isSymmetric )
 {
-    SCAI_LOG_INFO( logger, "decomposition of matrix with numRows=" << numRows << ", nnz=" << nnz )
+    SCAI_REGION( "MKL.decomposition" )
+
+    SCAI_LOG_INFO( logger, "decomposition<" << common::TypeTraits<ValueType>::id() << "> of matrix,"
+                           << " numRows = " << numRows << ", nnz = " << nnz << ", isSymmetric = " << isSymmetric )
 
     // dummy variables
+
     ValueType vDum;
-    MKL_INT iDum;
+    MKL_INT   iDum;
 
     /* -------------------------------------------------------------------- */
     /* .. Initialize the internal solver memory pointer. This is only       */
@@ -200,9 +202,9 @@ void MKLCSRUtils::decomposition(
     // 11: Real unsymmetric matrix
     // 13: Complex unsymmetric matrix
     MKL_INT mtype;
-    if( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) ) // Complex
+    if( common::isComplex( common::TypeTraits<ValueType>::stype ) ) // Complex
     {
-        if( isSymmetic )
+        if( isSymmetric )
         {
             mtype = 6;
             // also may be: 3, 4, -4
@@ -214,7 +216,7 @@ void MKLCSRUtils::decomposition(
     }
     else // Real
     {
-        if ( isSymmetic )
+        if ( isSymmetric )
         {
             mtype = 1;
             // also may be: 2, -2
@@ -226,19 +228,41 @@ void MKLCSRUtils::decomposition(
     }
 
     MKL_INT iparm[64];   /* control parameters */
-    pardisoinit( pt, &mtype, iparm );
-    iparm[0]  = 1;  /* No solver default */
 
-    if ( ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::FLOAT ) ||
-         ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::COMPLEX ) ) 
+    for ( int i = 0; i < 64; ++i ) 
+    {
+        iparm[i] = 0;
+    }
+
+    SCAI_LOG_INFO( logger, "call pardisoinit, mtype = " << mtype )
+
+    pardisoinit( pt, &mtype, iparm );
+
+    for ( int i =0; i < 64; ++i )
+    {
+        if ( iparm[i] != 0 )
+        {
+            SCAI_LOG_DEBUG( logger, "iparm[" << i << "] = " << iparm[i] )
+        }
+    }
+
+    // iparm has now default values but some changes are required
+
+    if ( ( common::TypeTraits<ValueType>::stype == common::scalar::FLOAT ) ||
+         ( common::TypeTraits<ValueType>::stype == common::scalar::COMPLEX ) ) 
     {
         iparm[27] = 1;  /* float */
     }
-    else if( ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::DOUBLE ) ||
-             ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::DOUBLE_COMPLEX ) )
+    else if( ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE ) ||
+             ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE_COMPLEX ) )
     {
         iparm[27] = 2;  /* double */
     }
+    else
+    {
+        COMMON_THROWEXCEPTION( "unsupported value type " << common::TypeTraits<ValueType>::stype )
+    }
+
     iparm[34] = 1;  /* PARDISO use C-style indexing for ia and ja arrays */
 
     MKL_INT phase;
@@ -254,22 +278,30 @@ void MKLCSRUtils::decomposition(
     /* .. Reordering and Symbolic Factorization. This step also allocates */
     /* all memory that is necessary for the factorization. */
     /* -------------------------------------------------------------------- */
+
     phase = 11;
+
     pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
              const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
              const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+
+    SCAI_LOG_INFO( logger, "pardiso completed, error = " << error )
+
     SCAI_PARDISO_ERROR_CHECK ( error, "ERROR during symbolic factorization" )
     SCAI_LOG_INFO( logger, "Reordering completed ... " )
-    SCAI_LOG_DEBUG( logger, "Number of nonzeros in factors = " << iparm[17] );
+    SCAI_LOG_INFO( logger, "Number of nonzeros in factors = " << iparm[17] );
 
     /* -------------------------------------------------------------------- */
     /* .. Numerical factorization.                                          */
     /* -------------------------------------------------------------------- */
+
     phase = 22;
+
     pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
              const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
              const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
-    SCAI_PARDISO_ERROR_CHECK ( error, "ERROR during numerical factorization" )
+
+    SCAI_PARDISO_ERROR_CHECK( error, "ERROR during numerical factorization" )
     SCAI_LOG_INFO( logger, "Factorization completed ... " )
 
     /* -------------------------------------------------------------------- */
@@ -280,13 +312,16 @@ void MKLCSRUtils::decomposition(
              const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
              const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl,
              const_cast<ValueType*> (rhs), solution, &error );
-    SCAI_PARDISO_ERROR_CHECK ( error, "ERROR during back substitution" )
+
+    SCAI_LOG_INFO( logger, "pardiso 33 completed, error = " << error )
+    SCAI_PARDISO_ERROR_CHECK( error, "ERROR during back substitution" )
     SCAI_LOG_INFO( logger, "Solve completed ... " )
 
     phase = -1; /* Release internal memory. */
     pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
              &vDum, const_cast<IndexType*> (csrIA), const_cast<IndexType*> (csrJA),
              &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+
     SCAI_LOG_INFO( logger, "decomposition completed" )
 }
 
@@ -295,7 +330,7 @@ void MKLCSRUtils::decomposition(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MKLCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     const common::context::ContextType ctx = common::context::Host;
     using kregistry::KernelRegistry;
@@ -325,7 +360,7 @@ MKLCSRUtils::MKLCSRUtils()
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::registerKernels( flag );
 }
 
 MKLCSRUtils::~MKLCSRUtils()
@@ -341,7 +376,7 @@ MKLCSRUtils::~MKLCSRUtils()
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

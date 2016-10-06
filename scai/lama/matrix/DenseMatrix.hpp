@@ -79,6 +79,8 @@ public:
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
+    typedef DenseStorage<ValueType> StorageType;
+
     typedef common::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
 
     /** Getter for the type name of the class. */
@@ -99,17 +101,13 @@ public:
     /**
      * Constructor of a distributed dense matrix.
      *
-     * @param[in] rowDist   TODO[doxy] Complete Description.
-     * @param[in] colDist   TODO[doxy] Complete Description.
+     * @param[in] rowDist   size and distribution of rows
+     * @param[in] colDist   size and distribution of columns
+     *
+     * For consistency with the constructors of sparse matrices the values 
+     * of the dense matrix are initialized with 0 here.
      */
     DenseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
-
-    /**
-     * Constructor of a square unity matrix.
-     *
-     * @param[in] dist   TODO[doxy] Complete Description.
-     */
-    explicit DenseMatrix( dmemo::DistributionPtr dist );
 
     /** Overwrites default copy constructor so it uses other copy constructor.
      *
@@ -121,10 +119,15 @@ public:
     /** Constructs a dense matrix from any other matrix that can be of a different type.
      *
      *  @param[in] other   input matrix.
-     *
-     *  New dense matrix has the same size and the same distribution.
+     *  @param[in] transposeFlag if true the input matrix will be transposed
      */
-    DenseMatrix( const Matrix& other );
+    DenseMatrix( const Matrix& other, bool transposeFlag = false );
+
+    /** Constructor of a (replicated) dense matrix by global storage.
+     *
+     *  @param[in] globalData  contains the matrix storage
+     */
+    explicit DenseMatrix( const _MatrixStorage& globalData );
 
     /** Constructs a dense matrix from any other matrix with new distributions.
      *
@@ -189,23 +192,28 @@ public:
         const OtherValueType* const values );
 
     /**
-     * Contructor of a dense matrix by matrix expression alhpa * A * B + beta * C
+     * Contructor of a dense matrix by matrix expression alpha * A * B + beta * C
      *
-     * @param[in] expression  matrix expression alhpa * A * B + beta * C
+     * @param[in] expression  matrix expression alpha * A * B + beta * C
      */
     DenseMatrix( const Expression_SMM_SM& expression );
 
     /**
-     * Constructor of a dense matrix by matrix espression alhpa * A * B
+     * Constructor of a dense matrix by matrix expression alpha * A * B
      *
-     * @param[in] expression   matrix espression alhpa * A * B
+     * @param[in] expression   matrix espression alpha * A * B
      */
     DenseMatrix( const Expression_SMM& expression );
 
+    /**
+     * Constructor of a dense matrix by matrix expression alpha * A + beta * b
+     *
+     * @param[in] expression   matrix espression scalar * matrix + scalar * matrix
+     */
     DenseMatrix( const Expression_SM_SM& expression );
 
     /**
-     * Constructor of a dense matrix by matrix expression alhpa * A
+     * Constructor of a dense matrix by matrix expression alpha * A
      *
      * @param[in] expression   matrix expression alpha * A where alpha is a Scalar and A a matrix
      */
@@ -320,6 +328,10 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual void clear();
+
+    /* Implementation of pure method Matrix::purge. */
+
+    virtual void purge();
 
     /* Implementation of pure method of class Matrix. */
 
@@ -512,10 +524,6 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual IndexType getNumValues() const;
-
-    std::vector<DenseStoragePtr>& getCyclicLocalValues();
-
-    const std::vector<DenseStoragePtr>& getCyclicLocalValues() const;
 
     /* Implementation of pure method of class Matrix. */
 

@@ -155,8 +155,8 @@ public:
         }
         else
         {
-            // we inherit the row distribution of this matrix to result
-            result.allocate( getRowDistributionPtr() );
+            // we inherit the col distribution of this matrix to result
+            result.allocate( getColDistributionPtr() );
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
@@ -169,8 +169,20 @@ public:
         // Note: in case of beta == 0, we might skip this test
         SCAI_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
         SCAI_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-        static_cast<const Derived*>( this )->vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
-                beta.getValue<ValueType>(), *denseY );
+
+        if ( getColDistribution().getCommunicator().getSize() == 1 )
+        {
+            // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
+            // use routine provided by this CRTP 
+
+            vectorTimesMatrixRepCols( *denseResult, alpha.getValue<ValueType>(), *denseX,
+                                      beta.getValue<ValueType>(), *denseY );
+        }
+        else
+        {
+            static_cast<const Derived*>( this )->vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
+                    beta.getValue<ValueType>(), *denseY );
+        }
     }
 
     /** @brief Get the row of a matrix
@@ -252,6 +264,51 @@ public:
             // if we have used a temporary vector, then we copy it back
             row = *tmpVector;   // implicit conversion
             SCAI_LOG_INFO( logger, "copy from tmp vector to result vector done" )
+        }
+    }
+
+    /** This method is the same for dense/sparse matrices as column distribution is replicated */
+
+    void vectorTimesMatrixRepCols(
+        DenseVector<ValueType>& denseResult,
+        const ValueType alphaValue,
+        const DenseVector<ValueType>& denseX,
+        const ValueType betaValue,
+        const DenseVector<ValueType>& denseY ) const
+    {
+        SCAI_REGION( "Mat.Sp.vectorTimesMatrixRepCols" )
+
+        const hmemo::HArray<ValueType>& localY = denseY.getLocalValues();
+        const hmemo::HArray<ValueType>& localX = denseX.getLocalValues();
+
+        hmemo::HArray<ValueType>& localResult = denseResult.getLocalValues();
+
+        const dmemo::Distribution& colDist = getColDistribution();
+
+        // this routine is only for non-replicated columns, i.e. mHaloData is empty
+
+        SCAI_ASSERT( 1, colDist.getNumPartitions() );
+    
+        const dmemo::Distribution& rowDist = getRowDistribution();
+        const dmemo::Communicator& comm = rowDist.getCommunicator();
+    
+        const MatrixStorage<ValueType>& localData = static_cast<const Derived*>( this )->getLocalStorage();
+
+        if ( comm.getRank() == 0 )
+        {
+            // only one single processor adds beta * y
+            localData.vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
+        }
+        else
+        {
+            localData.vectorTimesMatrix( localResult, alphaValue, localX, ValueType( 0 ), localY );
+        }
+    
+        if ( comm.getSize() >  1 )
+        {
+            // Sum up all incarnations of localResult 
+    
+            comm.sumArray( localResult );
         }
     }
 

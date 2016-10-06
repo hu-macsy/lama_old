@@ -37,6 +37,7 @@
 #include <scai/hmemo/Access.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/ScalarType.hpp>
 #include <scai/dmemo/gpi/GPIMemManager.hpp>
 
 // logging
@@ -65,18 +66,17 @@ class GPICommunicator;
  *        that is managed here itself.
  */
 
-template<typename T>
 class SegmentData : public hmemo::Access
 {
 public:
 
     /** Constructor for an array of type T with size elements. */
 
-    SegmentData( const GPICommunicator* comm, const IndexType size );
+    SegmentData( const common::scalar::ScalarType stype, const GPICommunicator* comm, const IndexType size );
 
     /** Constructor for an array of type T with available data */
 
-    SegmentData( const GPICommunicator* comm, const IndexType size, T* data );
+    SegmentData( const common::scalar::ScalarType stype, const GPICommunicator* comm, const IndexType size, void* data );
 
     /** Destructor will release the used memory for other usage. */
 
@@ -98,14 +98,14 @@ public:
      *
      *  Note: assert n <= mSize
      */
-    void assign( const T values[], const IndexType n );
+    void assign( const void* values, const IndexType n );
 
     /** Copy data from SegmentData array to other memory
      *
      *  @param[out] values points to data to be filled
      *  @param[in] n  number of data values to be copied
      */
-    void copyTo( T values[], const IndexType n ) const;
+    void copyTo( void* values, const IndexType n ) const;
 
     /** Query the segment id to use routines for remote write/read. */
 
@@ -124,29 +124,54 @@ public:
     IndexType getOffset() const
     {
         // get rid of this routine as it does not work for unaligned data
-        return mOffsetBytes / sizeof( T );
+
+        return mOffsetBytes / mTypeSize;
+    }
+
+    IndexType typeSize() const
+    {
+        return mTypeSize;
+    }
+
+    common::scalar::ScalarType scalarType() const
+    {
+        return mScalarType;
     }
 
     // return typed pointer to the segment data
 
-    T* get()
+    void* get()
     {
         return mData;
+    }
+
+    void* get( IndexType offset )
+    {
+        char* ptr = reinterpret_cast<char*>( mData );
+        return ptr + offset * mTypeSize;
     }
 
     /** Get const typed pointer to the segment data. */
 
-    const T* get() const
+    const void* get() const
     {
         return mData;
     }
 
+    const void* get( IndexType offset ) const
+    {
+        const char* ptr = reinterpret_cast<const char*>( mData );
+        return ptr + offset * mTypeSize;
+    }
+
     /** Operator [] allows access to single values of the array. */
 
+    /*
     T& operator[]( const IndexType i )
     {
         return mData[i];
     }
+    */
 
     /** Useful info about object written into a stream. */
 
@@ -158,8 +183,12 @@ private:
 
     const GPICommunicator* mComm;
 
+    common::scalar::ScalarType mScalarType;
+ 
+    IndexType mTypeSize;
+
     gaspi_pointer_t    mPtr;    // pointer to the allocated segment data
-    T*                 mData;   // might be aligned, i.e. mPtr + <align_bytes>
+    void*              mData;   // might be aligned, i.e. mPtr + <align_bytes>
 
     gaspi_segment_id_t mId;
     gaspi_offset_t     mOffsetBytes;   // mPtr = segmentPtr<mId> + mOffsetBytes

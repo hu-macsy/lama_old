@@ -72,7 +72,7 @@ public:
      *  arbitrary rank and communicators.
      */
 
-    static void getRange(
+    static void getLocalRange(
         IndexType& lb,
         IndexType& ub,
         const IndexType n,
@@ -91,9 +91,17 @@ public:
 
     virtual IndexType getLocalSize() const;
 
+    /** Override default implementation Distribution::getMaxLocalSize() */
+
+    virtual IndexType getMaxLocalSize() const;
+
     virtual IndexType local2global( const IndexType localIndex ) const;
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
+
+    /** Implementation of pure function Distribution::getBlockDistributionSize, here same as getLocalSize */
+
+    virtual IndexType getBlockDistributionSize() const;
 
     virtual bool isEqual( const Distribution& other ) const;
 
@@ -134,8 +142,8 @@ private:
     BlockDistribution(); // disable default constructor as it has no size
 
     IndexType mBlockSize;//!< block size of each partition
-    IndexType mLB;//!< lower bound value of local range
-    IndexType mUB;//!< upper bound value of local range
+    IndexType mLB;  //!< lower bound value of local range
+    IndexType mUB;  //!< upper bound value of local range, mUB is not in this range
 };
 
 } /* end namespace dmemo */

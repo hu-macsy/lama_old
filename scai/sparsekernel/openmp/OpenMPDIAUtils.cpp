@@ -89,7 +89,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
             {
                 const IndexType j = i + diaOffsets[d];
 
-                if ( ( j < 0 ) || ( j >= numColumns ) )
+                if ( ! common::Utils::validIndex( j, numColumns ) )
                 {
                     continue;
                 }
@@ -197,12 +197,7 @@ void OpenMPDIAUtils::getCSRValues(
             {
                 IndexType j = i + diaOffsets[ii];
 
-                if ( j < 0 )
-                {
-                    continue;
-                }
-
-                if ( j >= numColumns )
+                if ( !common::Utils::validIndex( j, numColumns ) )
                 {
                     continue;
                 }
@@ -256,12 +251,7 @@ void OpenMPDIAUtils::getCSRSizes(
         {
             IndexType j = i + diaOffsets[ii]; // column index
 
-            if ( j < 0 )
-            {
-                continue;
-            }
-
-            if ( j >= numColumns )
+            if ( !common::Utils::validIndex( j, numColumns ) )
             {
                 continue;
             }
@@ -350,12 +340,7 @@ void OpenMPDIAUtils::normalGEMV(
             {
                 const IndexType j = i + diaOffsets[ii];
 
-                if ( j >= numColumns )
-                {
-                    break;
-                }
-
-                if ( j >= 0 )
+                if ( common::Utils::validIndex( j, numColumns ) )
                 {
                     accu += diaValues[ii * numRows + i] * x[j];
                 }
@@ -446,11 +431,6 @@ void OpenMPDIAUtils::normalGEVM(
                 {
                     const IndexType j = i + diaOffsets[ii];
 
-                    if ( j >= numColumns )
-                    {
-                        break;
-                    }
-
                     if ( j == k )
                     {
                         accu += diaValues[ii * numRows + i] * x[i];
@@ -516,12 +496,7 @@ void OpenMPDIAUtils::jacobi(
             {
                 const IndexType j = i + diaOffset[ii];
 
-                if ( j >= numColumns )
-                {
-                    break;
-                }
-
-                if ( j >= 0 )
+                if ( common::Utils::validIndex( j, numColumns ) )
                 {
                     temp -= diaValues[ii * numRows + i] * oldSolution[j];
                 }
@@ -535,7 +510,7 @@ void OpenMPDIAUtils::jacobi(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPDIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
@@ -549,7 +524,7 @@ void OpenMPDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
 }
 
 template<typename ValueType, typename OtherValueType>
-void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
@@ -567,8 +542,8 @@ OpenMPDIAUtils::OpenMPDIAUtils()
     SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPDIAUtils::~OpenMPDIAUtils()
@@ -576,8 +551,8 @@ OpenMPDIAUtils::~OpenMPDIAUtils()
     SCAI_LOG_INFO( logger, "unregister DIAUtils OpenMP-routines for Host at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

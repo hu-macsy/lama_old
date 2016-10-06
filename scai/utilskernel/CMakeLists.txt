@@ -73,7 +73,7 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## Boost for Test
 if ( BUILD_TEST )
-    include( Package/Boost )
+    include( Package/BoostTest )
 endif ( BUILD_TEST )
 
 ### include all search packages
@@ -119,6 +119,7 @@ scai_project (
         
 )
 
+
 ## add subdirectories
 
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -136,6 +137,8 @@ add_subdirectory ( mepr )
 
 if ( USE_MIC )
     add_subdirectory ( mic )
+    # ToDo: this is currently just a workaround to fix a symbol error
+    SET_SOURCE_FILES_PROPERTIES( HArrayUtils.cpp PROPERTIES COMPILE_FLAGS -no-offload )
 endif ( USE_MIC )
 
 add_subdirectory ( openmp )
@@ -143,6 +146,11 @@ add_subdirectory ( openmp )
 if    ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+
+### set link directories ###
+if ( WIN32 )
+    link_directories ( ${Boost_LIBRARY_DIRS} )
+endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )

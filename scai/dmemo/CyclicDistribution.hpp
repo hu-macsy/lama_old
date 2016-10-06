@@ -89,6 +89,10 @@ public:
      */
     virtual IndexType getLocalSize() const;
 
+    /** Override default implementation Distribution::getMaxLocalSize() */
+
+    virtual IndexType getMaxLocalSize() const;
+
     /**
      * @brief get number of elements nb in chunk as defined by Cyclic( nb )
      */
@@ -128,6 +132,13 @@ public:
     virtual IndexType local2global( const IndexType localIndex ) const;
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
+
+    /** Implementation of pure function Distribution::getBlockDistributionSize.
+     *
+     *  A cyclic distribution Cyclic( globalSize, chunkSize ) is a block distribution 
+     *  iff chunkSize * nPartitions <= globalSize, i.e. each processor has maximal one chunk
+     */
+    virtual IndexType getBlockDistributionSize() const;
 
     virtual bool isEqual( const Distribution& other ) const;
 

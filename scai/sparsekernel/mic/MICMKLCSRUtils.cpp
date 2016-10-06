@@ -42,6 +42,8 @@
 
 // internal scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tracing.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tasking/mic/MICSyncToken.hpp>
@@ -84,10 +86,12 @@ void MICMKLCSRUtils::normalGEMV(
 {
     // SCAI_REGION( "MIC.MKLscsrmv" )
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+                   "normalGEMV<" << common::TypeTraits<ValueType>::id() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+
     typedef MKLCSRTrait::BLASIndexType BLASIndexType;
     typedef MKLCSRTrait::BLASTrans BLASTrans;
     typedef MKLCSRTrait::BLASMatrix BLASMatrix;
+
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -97,18 +101,46 @@ void MICMKLCSRUtils::normalGEMV(
 
     if ( y != result && beta != 0 )
     {
-        MICUtils::set( result, y, numRows, common::reduction::COPY );
+        MICUtils::set( result, y, numRows, utilskernel::reduction::COPY );
     }
 
     // performs y = alpha * A * x + beta * y
+
     BLASTrans transa = 'n';
+
     // General, - triangular, Non-Unit, C for zero-indexing
-    BLASMatrix matdescra;
-    matdescra[0] = 'g';
-    matdescra[1] = ' ';
-    matdescra[2] = 'n';
-    matdescra[3] = 'c';
-    MICMKLCSRWrapper<ValueType>::csrmv( transa, numRows, numColumns, alpha, matdescra, csrValues, csrJA, csrIA, csrIA + 1, x, beta, result );
+
+    const void *iaPtr = csrIA;
+    const void *jaPtr = csrJA;
+    const void *valPtr = csrValues;
+    const void *xPtr = x;
+    void *resultPtr = result;
+    const ValueType* alphaPtr = &alpha;
+    const ValueType* betaPtr = &beta;
+
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( transa, numRows, numColumns, alphaPtr[0:1], valPtr, jaPtr, iaPtr, xPtr, betaPtr[0:1], resultPtr )
+    {
+        BLASMatrix matdescra;
+
+        ValueType alpha = alphaPtr[0];
+        ValueType beta = betaPtr[0];
+
+        matdescra[0] = 'g';
+        matdescra[1] = ' ';
+        matdescra[2] = 'n';
+        matdescra[3] = 'c';
+
+        const IndexType* csrIA = reinterpret_cast<const IndexType*>( iaPtr );
+        const IndexType* csrJA = reinterpret_cast<const IndexType*>( jaPtr );
+        const ValueType* csrValues = reinterpret_cast<const ValueType*>( valPtr );
+
+        const ValueType* x = reinterpret_cast<const ValueType*>( xPtr );
+        ValueType* result = reinterpret_cast<ValueType*>( resultPtr );
+
+        MICMKLCSRWrapper<ValueType>::csrmv( transa, numRows, numColumns, alpha, matdescra, csrValues, csrJA, csrIA, csrIA + 1, x, beta, result );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -116,12 +148,15 @@ void MICMKLCSRUtils::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICMKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICMKLCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     const common::context::ContextType ctx = common::context::MIC;
+
     using kregistry::KernelRegistry;
-    SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "] CSRUtils MKL-routines for MIC at kernel registry: "
+                            << " --> " << common::getScalarType<ValueType>() << "]" )
+
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
 
@@ -131,34 +166,40 @@ void MICMKLCSRUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
 
 MICMKLCSRUtils::MICMKLCSRUtils()
 {
-    bool useMKL = true;
-    // using MKL for CSR might be disabled explicitly by environment variable
-    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
-    int level = 0;
+    bool useMKL = true;   // default is enabled
 
-    if ( !useMKL || ( level <= 0 ) )
+    // using MKL for CSR might be disabled explicitly by environment variable
+
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
+
+    if ( !useMKL )
     {
+        SCAI_LOG_INFO( logger, "disabled: CSRUtils MKL-routines for MIC at kernel registry" )
         return;
     }
 
+    SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for MIC at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
 }
 
 MICMKLCSRUtils::~MICMKLCSRUtils()
 {
     bool useMKL = true;
-    // using MKL for CSR might be disabled explicitly by environment variable
-    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
-    int level = 0;
 
-    if ( !useMKL || ( level <= 0 ) )
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
+
+    if ( !useMKL )
     {
+        SCAI_LOG_INFO( logger, "disabled: CSRUtils MKL-routines for MIC at kernel registry" )
         return;
     }
 
+    SCAI_LOG_INFO( logger, "unregister CSRUtils MKL-routines for MIC at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
 }
 
 MICMKLCSRUtils MICMKLCSRUtils::guard;    // guard variable for registration

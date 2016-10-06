@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
             chunkOffset = 0;
             chunkNr++;
 
-            if ( chunkNr == size )
+            if ( chunkNr == static_cast<IndexType>( size ) )
             {
                 chunkNr = 0;
             }
