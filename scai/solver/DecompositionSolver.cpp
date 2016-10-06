@@ -45,6 +45,7 @@
 #include <scai/hmemo/Context.hpp>
 
 #include <scai/tracing.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 // std
 #include <sstream>
@@ -105,7 +106,7 @@ void DecompositionSolver::initialize( const lama::Matrix& coefficients )
 
 void DecompositionSolver::solveImpl()
 {
-	SCAI_REGION( "Solver.DecompositionSolver.solveImpl" )
+    SCAI_REGION( "Solver.DecompositionSolver.solveImpl" )
     // for each supported arithmetic type we have to dynamic cast and instantiate typed version
 #define SCAI_SOLVER_TYPE_CAST( _type )                                                                                  \
     {                                                                                               \
@@ -130,54 +131,84 @@ template <typename ValueType>
 void DecompositionSolver::solveImplTyped( const lama::SparseMatrix<ValueType>& coefficients )
 {
     SCAI_REGION( "Solver.DecompositionSolver.solve" )
-    SCAI_LOG_INFO( logger, "solveImplTyped for ValueType=" << scai::common::TypeTraits<ValueType>::stype )
+
+    SCAI_LOG_TRACE( logger, "solveImplTyped<" << scai::common::TypeTraits<ValueType>::stype
+                    << ">, coefficients = " << coefficients )
 
     DecompositionSolverRuntime& runtime = getRuntime();
+
     logStartSolve();
 
     // only implemented for replicated matrices
 
-    if( coefficients.getRowDistribution().isReplicated() && coefficients.getColDistribution().isReplicated() )
+    if ( !coefficients.getRowDistribution().isReplicated() )
     {
-    	// need CSR storage
-    	const lama::CSRStorage<ValueType>* csrStorage;
+        COMMON_THROWEXCEPTION( "DecompositionSolver not implemented for distributed matrices yet." )
+    }
 
-    	if( coefficients.getLocalStorage().getFormat() == lama::Format::CSR )
-    	{
-    		csrStorage = dynamic_cast<const lama::CSRStorage<ValueType>* >( &coefficients.getLocalStorage() );
-    	}
-    	else
-    	{
-    		csrStorage = new lama::CSRStorage<ValueType>( coefficients.getLocalStorage() );
-    	}
+    if ( !coefficients.getColDistribution().isReplicated() )
+    {
+        COMMON_THROWEXCEPTION( "DecompositionSolver not implemented for matrices with distributed columns yet." )
+    }
 
-        lama::DenseVector<ValueType>& denseSolution = dynamic_cast<lama::DenseVector<ValueType>&>( *getRuntime().mSolution );
-        const lama::DenseVector<ValueType>& denseRhs = dynamic_cast<const lama::DenseVector<ValueType>&>( *getRuntime().mRhs );
+    // from now on we do it all on storage, but we need CSR storage for the solver
 
-    	// call decompostion
-    	IndexType numRows = csrStorage->getNumRows();
-    	IndexType nnz = csrStorage->getNumValues();
+    common::unique_ptr<lama::CSRStorage<ValueType> > tmpCSRStorage;
 
-	    hmemo::ContextPtr prefContext = csrStorage->getContextPtr();
-    	kregistry::KernelTraitContextFunction<sparsekernel::CSRKernelTrait::decomposition<ValueType> > decomposition;
-    	hmemo::ContextPtr loc = hmemo::Context::getContextPtr( decomposition.validContext( prefContext->getType() ) );
+    const lama::CSRStorage<ValueType>* csrStorage;
 
-    	std::cout << "prefContext=" << *prefContext << " loc=" << *loc << std::endl;
-
-    	hmemo::ReadAccess<IndexType> rCSRIA( csrStorage->getIA(), loc );
-        hmemo::ReadAccess<IndexType> rCSRJA( csrStorage->getJA(), loc );
-        hmemo::ReadAccess<ValueType> rCSRValues( csrStorage->getValues(), loc );
-        hmemo::ReadAccess<ValueType> rRHS( denseRhs.getLocalValues(), loc );
-        hmemo::WriteOnlyAccess<ValueType> wSol( denseSolution.getLocalValues(), loc, numRows );
-
-        SCAI_CONTEXT_ACCESS( loc );
-        decomposition[loc->getType()]( wSol.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
-            rRHS.get(), numRows, nnz, runtime.mIsSymmetric );
+    if ( coefficients.getLocalStorage().getFormat() == lama::Format::CSR )
+    {
+        csrStorage = dynamic_cast<const lama::CSRStorage<ValueType>* >( &coefficients.getLocalStorage() );
     }
     else
     {
-    	COMMON_THROWEXCEPTION( "DecompositionSolver not implemented for distributed matrices yet." )
+        tmpCSRStorage.reset( new lama::CSRStorage<ValueType>( coefficients.getLocalStorage() ) );
+        SCAI_LOG_ERROR( logger, "new tmp csr storage = " << *tmpCSRStorage )
+        csrStorage = tmpCSRStorage.get();
     }
+
+    // we must sort the column indexes for solving the matrix, no diagonal flag
+
+    lama::CSRStorage<ValueType>* xCSRStorage = const_cast<lama::CSRStorage<ValueType>*>( csrStorage );
+    bool diagonalFlag = false;
+    xCSRStorage->sortRows( diagonalFlag );
+
+    SCAI_LOG_INFO( logger, "csrStorage = " << *csrStorage )
+
+    lama::DenseVector<ValueType>& denseSolution = dynamic_cast<lama::DenseVector<ValueType>&>( *getRuntime().mSolution );
+    const lama::DenseVector<ValueType>& denseRhs = dynamic_cast<const lama::DenseVector<ValueType>&>( *getRuntime().mRhs );
+
+    SCAI_LOG_INFO( logger, "solution = " << denseSolution << ", rhs = " << denseRhs )
+
+    // call decompostion
+
+    IndexType numRows = csrStorage->getNumRows();
+    IndexType nnz = csrStorage->getNumValues();
+
+    hmemo::ContextPtr prefContext = csrStorage->getContextPtr();
+
+    kregistry::KernelTraitContextFunction<sparsekernel::CSRKernelTrait::decomposition<ValueType> > decomposition;
+
+    hmemo::ContextPtr loc = hmemo::Context::getContextPtr( decomposition.validContext( prefContext->getType() ) );
+
+    SCAI_LOG_INFO( logger, "prefContext=" << *prefContext << " loc=" << *loc )
+
+    {
+        hmemo::ReadAccess<IndexType> rCSRIA( csrStorage->getIA(), loc );
+        hmemo::ReadAccess<IndexType> rCSRJA( csrStorage->getJA(), loc );
+        hmemo::ReadAccess<ValueType> rCSRValues( csrStorage->getValues(), loc );
+        hmemo::ReadAccess<ValueType> rRHS( denseRhs.getLocalValues(), loc );
+
+        hmemo::WriteOnlyAccess<ValueType> wSol( denseSolution.getLocalValues(), loc, numRows );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        decomposition[loc->getType()]( wSol.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
+                                       rRHS.get(), numRows, nnz, runtime.mIsSymmetric );
+    }
+
+    // Note: accesses must be released before the next call
 
     logEndSolve();
 }
