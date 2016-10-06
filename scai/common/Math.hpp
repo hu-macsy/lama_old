@@ -204,6 +204,7 @@ struct Math
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> sin( const Complex<long double>& x );
 #endif
+
     /*
      * sinh-function for ValueType
      */
@@ -297,6 +298,23 @@ struct Math
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double atan2( const double& y, const double& x );
 
     static inline MIC_CALLABLE_MEMBER long double atan2( const long double& y, const long double& x );
+
+    /*
+     * copysign-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float copysign( const float& x, const float& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double copysign( const double& x, const double& y );
+
+    static inline MIC_CALLABLE_MEMBER long double copysign( const long double& x, const long double& y );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> copysign( const Complex<float>& x, const Complex<float>& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> copysign( const Complex<double>& x, const Complex<double>& y );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> copysign( const Complex<long double>& x, const Complex<long double>& y );
+#endif
 
     /*
      * Getter for the real part
@@ -660,6 +678,23 @@ double Math::atan2( const double& y, const double& x )
 long double Math::atan2( const long double& y, const long double& x )
 {
     return atan2l( y, x );
+}
+
+// -------------------------------- copysign -----------------------------
+
+float Math::copysign( const float& y, const float& x )
+{
+    return copysignf( y, x );
+}
+
+double Math::copysign( const double& y, const double& x )
+{
+    return ::copysign( y, x );
+}
+
+long double Math::copysign( const long double& y, const long double& x )
+{
+    return copysignl( y, x );
 }
 
 // -------------------------------- real -----------------------------

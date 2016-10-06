@@ -117,6 +117,11 @@ public:
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
+    /** CUDA implementation for UtilKernelTrait::copySign */
+
+    template<typename ValueType>
+    static void copySign( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
+
     /** CUDA implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>

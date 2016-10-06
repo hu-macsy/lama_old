@@ -482,6 +482,35 @@ ValueType HArrayUtils::absMaxDiffVal(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void HArrayUtils::copySign(
+    hmemo::HArray<ValueType>& result,
+    const hmemo::HArray<ValueType>& x,
+    const hmemo::HArray<ValueType>& y,
+    hmemo::ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQUAL( result.size(), x.size(), "array size mismatch for building differences" )
+    SCAI_ASSERT_EQUAL( x.size(), y.size(), "array size mismatch for building differences" )
+    static LAMAKernel<UtilKernelTrait::copySign<ValueType> > copySign;
+    ContextPtr loc = prefLoc;
+
+    // Rule for default location: where array1 has valid values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = x.getValidContext();
+    }
+
+    copySign.getSupportedContext( loc );
+    WriteAccess<ValueType> writeResult( result, loc );
+    ReadAccess<ValueType> readX( x, loc );
+    ReadAccess<ValueType> readY( y, loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    copySign[loc]( writeResult.get(), readX.get(), readY.get(), readX.size() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType HArrayUtils::dotProduct(
     const HArray<ValueType>& array1,
     const HArray<ValueType>& array2,

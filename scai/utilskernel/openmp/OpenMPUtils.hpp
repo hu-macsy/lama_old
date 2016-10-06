@@ -105,6 +105,11 @@ public:
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::copySign */
+
+    template<typename ValueType>
+    static void copySign( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
+
     /** OpenMP implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>

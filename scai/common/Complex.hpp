@@ -1236,6 +1236,22 @@
                                static_cast<long double>( 0.25 ) * log( num / den) );
     }
 
+// ------------------ Math::copysign --------------------------------
+    Complex<float> Math::copysign( const Complex<float>& x, const Complex<float>& y )
+    {
+        return copysign( x, y );
+    }
+
+    Complex<double> Math::copysign( const Complex<double>& x, const Complex<double>& y )
+    {
+        return copysign( x, y );
+    }
+
+    Complex<long double> Math::copysign( const Complex<long double>& x, const Complex<long double>& y )
+    {
+        return copysign( x, y );
+    }
+
 // ------------------ Math::arg --------------------------------
     float Math::arg( const Complex<float>& x )
     {

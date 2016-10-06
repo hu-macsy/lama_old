@@ -452,6 +452,26 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPUtils::copySign( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.copySign" )
+    SCAI_LOG_DEBUG( logger, "copySign<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
+
+    #pragma omp parallel
+    {
+        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            result[i] = common::Math::copysign( x[i], y[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
     SCAI_REGION( "OpenMP.Utils.isSorted" )

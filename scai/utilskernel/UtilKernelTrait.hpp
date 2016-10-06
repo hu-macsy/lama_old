@@ -112,6 +112,26 @@ struct UtilKernelTrait
     };
 
     template <typename ValueType>
+    struct copySign
+    {
+        /** @brief Composes a floating point value with the magnitude of x and the sign of y
+         *
+         *  @param x[out] result array
+         *  @param x[in]  first array giving the magnitude of the result vector
+         *  @param y[in]  second array giving the sign of the result vector
+         *  @param n      size of the arrays
+         *
+         *  Function is helpful to compute maximum norm for vectors and matrices
+         */
+
+        typedef void ( *FuncType ) ( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
+        static const char* getId()
+        {
+            return "Util.copySign";
+        }
+    };
+
+    template <typename ValueType>
     struct isSorted
     {
         /** @brief Predicate that tests whether a sequene is sorted.

@@ -285,6 +285,13 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
+    static void copySign(
+        hmemo::HArray<ValueType>& result,
+        const hmemo::HArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& y,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
     static ValueType dotProduct(
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
