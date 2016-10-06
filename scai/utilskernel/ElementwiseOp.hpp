@@ -71,7 +71,9 @@ struct elementwise
         COS,     // call cos on each vector element
         TAN,     // call tan on each vector element
         ATAN,    // call atan on each vector element
-        LOG     // call log on each vector element
+        LOG,     // call log on each vector element
+
+        MAX_ELEMENTWISE_OP // only for tests, leave this at the end
     } ElementwiseOp;
 
 };
@@ -118,6 +120,10 @@ inline std::ostream& operator<<( std::ostream& stream, const elementwise::Elemen
 
         case elementwise::LOG:
             stream << "LOG";
+            break;
+
+        case elementwise::MAX_ELEMENTWISE_OP:
+            stream << "MAX_ELEMENTWISE_OP-only for tests";
             break;
 
         default:
