@@ -83,14 +83,15 @@ void CUSolverCSRUtils::decomposition(
     const IndexType nnz,
     const bool isSymmetic )
 {
-    SCAI_LOG_INFO( logger,
-                   "decomposition<" << common::getScalarType<ValueType>() << ", matrix numRows = "
-                   << numRows << ", nnz = " << nnz )
+    SCAI_LOG_ERROR( logger,
+                    "decomposition<" << common::getScalarType<ValueType>() << ", matrix numRows = "
+                    << numRows << ", nnz = " << nnz )
+
+    SCAI_REGION( "CUDA.cuSolver.decomposition" )
 
     typedef CUSOLVERTrait::BLASIndexType BLASIndexType;
 
-    if ( common::TypeTraits<IndexType>::stype
-            != common::TypeTraits<BLASIndexType>::stype )
+    if ( common::TypeTraits<IndexType>::stype != common::TypeTraits<BLASIndexType>::stype )
     {
         COMMON_THROWEXCEPTION( "indextype mismatch" );
     }
@@ -134,22 +135,16 @@ void CUSolverCSRUtils::decomposition(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUSolverCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    /*
-    using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag << "]" )
-    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
-    */
-}
-
 template<typename ValueType>
 void CUSolverCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
+
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register CUSolverCSRUtils CUSolver-routines for CUDA at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    SCAI_LOG_INFO( logger, "register CUSolverCSRUtils CUSolver-routines for CUDA at kernel registry [" 
+                            << flag << " --> " << common::getScalarType<ValueType>() << "]" )
+
     KernelRegistry::set<CSRKernelTrait::decomposition<ValueType> >( decomposition, ctx, flag );
 }
 
@@ -161,15 +156,13 @@ CUSolverCSRUtils::CUSolverCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
-    SCAI_LOG_INFO( logger, "Constructor" )
-    Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUSolverCSRUtils::~CUSolverCSRUtils()
 {
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::registerKernels( flag );
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
