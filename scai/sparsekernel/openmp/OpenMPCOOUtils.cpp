@@ -63,6 +63,26 @@ SCAI_LOG_DEF_LOGGER( OpenMPCOOUtils::logger, "OpenMP.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 
+IndexType OpenMPCOOUtils::getValuePos( const IndexType i, const IndexType j, 
+                                       const IndexType cooIA[], const IndexType cooJA[],
+                                       const IndexType numValues )
+{
+    IndexType pos = nIndex;
+
+    for ( IndexType k = 0; k < numValues; ++k )
+    {
+        if ( cooJA[k] == j && cooIA[k] == i )
+        {
+            pos = k;
+            break;
+        }
+    }
+
+    return pos;
+}
+
+/* --------------------------------------------------------------------------- */
+
 bool OpenMPCOOUtils::hasDiagonalProperty(
     const IndexType cooIA[],
     const IndexType cooJA[],
@@ -379,9 +399,10 @@ void OpenMPCOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
-    KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( OpenMPCOOUtils::hasDiagonalProperty, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( OpenMPCOOUtils::offsets2ia, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( OpenMPCOOUtils::setCSRData, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );
 }
 
 template<typename ValueType>
@@ -391,9 +412,9 @@ void OpenMPCOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( OpenMPCOOUtils::normalGEMV, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( OpenMPCOOUtils::normalGEVM, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( OpenMPCOOUtils::jacobi, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

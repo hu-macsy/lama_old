@@ -329,8 +329,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
-    KernelTraitContextFunction<ELLKernelTrait::getValue<ValueType> > getValue;
-    ContextPtr loc = Context::getContextPtr( getValue.validContext( testContext->getType() ) );
+    KernelTraitContextFunction<ELLKernelTrait::getValuePos> getValuePos;
+    ContextPtr loc = Context::getContextPtr( getValuePos.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     ValueType valuesValues[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
@@ -358,8 +358,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
     {
         for ( IndexType j = 0; j < valuesIa[i]; j++ )
         {
-            ValueType result = getValue[loc->getType()]( i, j, numRows, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
-            BOOST_CHECK_EQUAL( expectedValues[j * numRows + i], result );
+            IndexType pos = getValuePos[loc->getType()]( i, j, numRows, numValuesPerRow, rIa.get(), rJa.get() );
+            BOOST_CHECK_EQUAL( expectedValues[j * numRows + i], valuesValues[ pos ] );
         }
     }
 }

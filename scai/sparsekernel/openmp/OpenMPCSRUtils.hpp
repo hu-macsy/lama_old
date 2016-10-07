@@ -42,6 +42,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 namespace scai
 {
@@ -55,6 +56,14 @@ namespace sparsekernel
 class COMMON_DLL_IMPORTEXPORT OpenMPCSRUtils
 {
 public:
+
+    /** Implementation for CSRKernelTrait::getValuePos */
+
+    static IndexType getValuePos(
+        const IndexType i,
+        const IndexType j,
+        const IndexType csrIA[],
+        const IndexType csrJA[] );
 
     /** This method computes the total number of non-zero rows by the offset array
      *

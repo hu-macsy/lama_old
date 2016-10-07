@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -291,18 +292,17 @@ void OpenMPELLUtils::getRow(
     }
 }
 
-template<typename ValueType>
-ValueType OpenMPELLUtils::getValue(
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPELLUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const IndexType ellSizes[],
-    const IndexType ellJA[],
-    const ValueType ellValues[] )
+    const IndexType ellJA[] )
 {
-    SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
-    ValueType val = 0.0;
+    IndexType vPos = nIndex;
 
     for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
@@ -310,12 +310,12 @@ ValueType OpenMPELLUtils::getValue(
 
         if ( ellJA[pos] == j )
         {
-            val = ellValues[pos];
+            vPos = pos;
             break;
         }
     }
-
-    return val;
+  
+    return vPos;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1222,6 +1222,7 @@ void OpenMPELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    KernelRegistry::set<ELLKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
@@ -1248,7 +1249,6 @@ void OpenMPELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
 }
 

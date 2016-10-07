@@ -116,17 +116,15 @@ private:
         const IndexType ellJA[],
         const ValueType ellValues[] );
 
-    /** Returns one value of the matrix */
+    /** Host implementation for ELLKernelTrait::getValuePos */
 
-    template<typename ValueType>
-    static ValueType getValue(
+    static IndexType getValuePos(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
-        const IndexType ellJA[],
-        const ValueType ellValues[] );
+        const IndexType ellJA[] );
 
     /** check diagonal property */
 

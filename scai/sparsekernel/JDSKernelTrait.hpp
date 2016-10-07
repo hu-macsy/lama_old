@@ -36,6 +36,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 namespace scai
 {
@@ -325,21 +326,19 @@ struct JDSKernelTrait
         }
     };
 
-    template<typename ValueType>
-    struct getValue
+    struct getValuePos
     {
-        typedef ValueType ( *FuncType ) ( const IndexType i,
+        typedef IndexType ( *FuncType ) ( const IndexType i,
                                           const IndexType j,
                                           const IndexType numRows,
-                                          const IndexType* dlg,
-                                          const IndexType* ilg,
-                                          const IndexType* perm,
-                                          const IndexType* ja,
-                                          const ValueType* values );
+                                          const IndexType dlg[],
+                                          const IndexType ilg[],
+                                          const IndexType perm[],
+                                          const IndexType ja[] );
 
         static const char* getId()
         {
-            return "JDS.getValue";
+            return "JDS.getValuePos";
         }
     };
 

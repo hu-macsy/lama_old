@@ -116,8 +116,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
-    KernelTraitContextFunction<JDSKernelTrait::getValue<ValueType> > getValue;
-    ContextPtr loc = Context::getContextPtr( getValue.validContext( testContext->getType() ) );
+    KernelTraitContextFunction<JDSKernelTrait::getValuePos> getValuePos;
+    ContextPtr loc = Context::getContextPtr( getValuePos.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     ValueType valuesValues[] =
     { 1, 5, 4, 3, 1, 3, 2, 2, 2, 8, 4, 9, 9, 7, 8, 7, 2 };
@@ -155,15 +155,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
     ReadAccess<IndexType> rIlg( ilg, loc );
     ReadAccess<IndexType> rPerm( perm, loc );
 
+    IndexType nnz = 0;
+
     for ( IndexType i = 0; i < numRows; i++ )
     {
         for ( IndexType j = 0; j < numColumns; j++ )
         {
             SCAI_CONTEXT_ACCESS( loc );
-            ValueType value = getValue[loc->getType()]( i, j, numRows, rDlg.get(), rIlg.get(), rPerm.get(), rJa.get(), rValues.get() );
-            BOOST_CHECK_EQUAL( expectedValues[i][j], value );
+            IndexType pos = getValuePos[loc->getType()]( i, j, numRows, rDlg.get(), rIlg.get(), rPerm.get(), rJa.get() );
+            if ( pos == nIndex )
+            {
+                BOOST_CHECK_EQUAL( expectedValues[i][j], 0 );
+            }
+            else
+            {
+                BOOST_CHECK_EQUAL( expectedValues[i][j], valuesValues[pos] );
+                nnz++;
+            }
         }
     }
+
+    BOOST_CHECK_EQUAL( nValues, nnz );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

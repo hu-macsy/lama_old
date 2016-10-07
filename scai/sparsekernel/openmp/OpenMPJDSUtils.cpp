@@ -113,16 +113,14 @@ void OpenMPJDSUtils::getRow(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-ValueType OpenMPJDSUtils::getValue(
+IndexType OpenMPJDSUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
-    const IndexType* dlg,
-    const IndexType* ilg,
-    const IndexType* perm,
-    const IndexType* ja,
-    const ValueType* values )
+    const IndexType dlg[],
+    const IndexType ilg[],
+    const IndexType perm[],
+    const IndexType ja[] )
 {
     IndexType ii;
 
@@ -136,21 +134,31 @@ ValueType OpenMPJDSUtils::getValue(
         }
     }
 
+    if ( ii == numRows )
+    {
+        COMMON_THROWEXCEPTION( "row index " << i << " not found in perm array" )
+    }
+
     SCAI_LOG_TRACE( logger, "row " << i << " is now " << ii << ", has " << ilg[ii] << " elements" )
+
     // search in the found row
+
     IndexType k = 0;
+
+    IndexType pos = nIndex;
 
     for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
     {
         if ( ja[ii + k] == j )
         {
-            return values[ii + k];
+            pos = ii + k;
+            break;
         }
 
         k += dlg[jj];
     }
 
-    return static_cast<ValueType>( 0.0 );
+    return pos;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -821,6 +829,7 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
 }
 
 template<typename ValueType>
@@ -830,7 +839,6 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );

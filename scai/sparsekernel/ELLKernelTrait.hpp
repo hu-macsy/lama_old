@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 namespace scai
 {
@@ -268,31 +269,29 @@ struct ELLKernelTrait
         }
     };
 
-    template<typename ValueType>
-    struct getValue
+    struct getValuePos
     {
         /** Returns one element of the matrix
          *
          *  @param[in] i is the row of the returned element
          *  @param[in] j is the column of the returned element
          *  @param[in] numRows is the number of rows of the matrix
+         *  @param[in] numValuesPerRow is the maximal number of entries in one row
          *  @param[in] ellSizes is the ELL sizes array
          *  @param[in] ellJA is the ELL ja array
-         *  @param[in] ellValues is the ELL values array
          */
 
-        typedef ValueType ( *FuncType ) (
+        typedef IndexType ( *FuncType ) (
             const IndexType i,
             const IndexType j,
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
-            const IndexType ellJA[],
-            const ValueType ellValues[] );
+            const IndexType ellJA[] );
 
         static const char* getId()
         {
-            return "ELL.getValue";
+            return "ELL.getValuePos";
         }
     };
 

@@ -39,8 +39,8 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
-
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
@@ -473,6 +473,24 @@ void OpenMPCSRUtils::scaleRows(
             csrValues[j] *= tmp;
         }
     }
+}
+
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPCSRUtils::getValuePos( const IndexType i, const IndexType j, const IndexType csrIA[], const IndexType csrJA[] )
+{
+    IndexType pos = nIndex;
+
+    for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+    {
+        if ( csrJA[jj] == j )
+        {
+            pos = jj;
+            break;
+        }
+    }
+
+    return pos;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1930,6 +1948,7 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    KernelRegistry::set<CSRKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );

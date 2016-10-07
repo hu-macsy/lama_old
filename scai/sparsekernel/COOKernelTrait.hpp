@@ -46,6 +46,30 @@ namespace sparsekernel
 
 struct COOKernelTrait
 {
+    struct getValuePos
+    {
+        /** Returns position of element (i,j) in ja/values array
+         *
+         *  @param[in] i is the row of the element
+         *  @param[in] j is the column of the element
+         *  @param[in] cooIA is the COO ia array
+         *  @param[in] cooJA is the COO ja array
+         *  @returns  offset of element in values array, nIndex if not found
+         */
+
+        typedef IndexType ( *FuncType ) (
+            const IndexType i,
+            const IndexType j,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "COO.getValuePos";
+        }
+    };
+
     struct hasDiagonalProperty
     {
         /** Routine checks for diagonal property, first n entries are the diagonal elements.

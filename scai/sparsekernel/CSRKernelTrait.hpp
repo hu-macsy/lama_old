@@ -35,7 +35,9 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 namespace scai
 {
@@ -49,6 +51,29 @@ namespace sparsekernel
 
 struct CSRKernelTrait
 {
+    struct getValuePos
+    {
+        /** Returns position of element (i,j) in ja/values array
+         *
+         *  @param[in] i is the row of the element
+         *  @param[in] j is the column of the element
+         *  @param[in] csrIA is the CSR offset array
+         *  @param[in] csrJA is the CSR ja array
+         *  @returns  offset of element in values array, nIndex if not found
+         */
+
+        typedef IndexType ( *FuncType ) (
+            const IndexType i,
+            const IndexType j,
+            const IndexType csrIA[],
+            const IndexType csrJA[] );
+
+        static const char* getId()
+        {
+            return "CSR.getValuePos";
+        }
+    };
+
     /** Structure defining function types for operations on CSR data
      *
      *  @tparam ValueType is the value type of the matrix element, e.g. float, double

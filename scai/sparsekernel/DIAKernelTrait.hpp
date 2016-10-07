@@ -46,6 +46,30 @@ namespace sparsekernel
 
 struct DIAKernelTrait
 {
+    struct getValuePos
+    {
+        /** Returns position of element (i,j) in values array
+         *
+         *  @param[in] i is the row of the element
+         *  @param[in] j is the column of the element
+         *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
+         *  @param[in] numDiagonals number of stored diagonals
+         *  @returns  offset of element in values array, nIndex if not found
+         */
+
+        typedef IndexType ( *FuncType ) (
+            const IndexType i,
+            const IndexType j,
+            const IndexType numRows,
+            const IndexType diaOffsets[],
+            const IndexType numDiagonals );
+
+        static const char* getId()
+        {
+            return "DIA.getValuePos";
+        }
+    };
+
     template<typename ValueType>
     struct getCSRSizes
     {
