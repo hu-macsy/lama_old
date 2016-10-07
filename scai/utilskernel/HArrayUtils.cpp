@@ -299,12 +299,28 @@ template<typename ValueType>
 void HArrayUtils::setValImpl(
     HArray<ValueType>& target,
     const IndexType index,
-    const ValueType val )
+    const ValueType val,
+    const reduction::ReductionOp op )
 {
     // setting single value will directly copy to the device with the valid incarnation
+
     ContextPtr loc = target.getValidContext();  
-    WriteAccess<ValueType> wTarget( target, loc );
-    wTarget.setValue( val, index );
+
+    if ( op == reduction::COPY )
+    {
+        WriteAccess<ValueType> wTarget( target, loc );
+        wTarget.setValue( val, index );
+    }
+    else
+    {
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        setVal.getSupportedContext( loc );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteAccess<ValueType> wTarget( target, loc );
+        setVal[loc]( wTarget.get() + index, 1, val, op );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1102,7 +1118,8 @@ void HArrayUtils::buildDenseArray(
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                                                                                        \
     template void HArrayUtils::setVal<ValueType>( hmemo::_HArray&, const IndexType, const ValueType );                            \
-    template void HArrayUtils::setValImpl<ValueType>( hmemo::HArray<ValueType>&, const IndexType, const ValueType );                            \
+    template void HArrayUtils::setValImpl<ValueType>( hmemo::HArray<ValueType>&, const IndexType, const ValueType,                \
+                                                      const reduction::ReductionOp );                                             \
     template ValueType HArrayUtils::getVal<ValueType>( const hmemo::_HArray&, const IndexType );                                  \
     template ValueType HArrayUtils::getValImpl<ValueType>( const hmemo::HArray<ValueType>&, const IndexType );                    \
     template void HArrayUtils::assignScalar<ValueType>( hmemo::_HArray&, const ValueType,                                         \

@@ -265,7 +265,8 @@ public:
     static void setValImpl(
         hmemo::HArray<ValueType>& target,
         const IndexType index,
-        const ValueType val );
+        const ValueType val,
+        const reduction::ReductionOp op );
 
     template<typename ValueType>
     static ValueType getValImpl(
