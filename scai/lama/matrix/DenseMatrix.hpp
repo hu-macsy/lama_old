@@ -585,6 +585,14 @@ public:
 
     void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
 
+    void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType iLocal ) const;
+
+    void setLocalRow( const hmemo::HArray<ValueType>& row, const IndexType iLocal );
+
+    void getLocalColumn( hmemo::HArray<ValueType>& col, const IndexType colIndex ) const;
+
+    void setLocalColumn( const hmemo::HArray<ValueType>& column, const IndexType colIndex );
+
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 
     template<typename otherT>

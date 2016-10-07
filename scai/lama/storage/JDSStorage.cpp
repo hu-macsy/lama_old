@@ -777,17 +777,70 @@ void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ") from " << *this )
-    static LAMAKernel<JDSKernelTrait::getValue<ValueType> > getValue;
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<JDSKernelTrait::getValuePos> getValuePos;
+
     ContextPtr loc = this->getContextPtr();
-    getValue.getSupportedContext( loc );
+    getValuePos.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
+
     ReadAccess<IndexType> dlg( mDlg, loc );
     ReadAccess<IndexType> ilg( mIlg, loc );
     ReadAccess<IndexType> perm( mPerm, loc );
     ReadAccess<IndexType> ja( mJa, loc );
-    ReadAccess<ValueType> values( mValues, loc );
-    return getValue[loc]( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get(), values.get() );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get() );
+
+    ValueType val = 0;
+
+    if ( pos != nIndex )
+    {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+
+        val = utilskernel::HArrayUtils::getVal<ValueType>( mValues, pos );
+    }
+
+    return val;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void JDSStorage<ValueType>::setValue( const IndexType i,
+                                      const IndexType j,
+                                      const ValueType val,
+                                      const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_DEBUG( logger, "set value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<JDSKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> dlg( mDlg, loc );
+    ReadAccess<IndexType> ilg( mIlg, loc );
+    ReadAccess<IndexType> perm( mPerm, loc );
+    ReadAccess<IndexType> ja( mJa, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get() );
+
+    if ( pos == nIndex )
+    {
+        COMMON_THROWEXCEPTION( "ELL storage has no entry ( " << i << ", " << j << " ) " )
+    }
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+
+    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

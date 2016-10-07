@@ -38,6 +38,7 @@
 // internal scai libraries
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -447,17 +448,14 @@ void SparseAssemblyStorage<ValueType>::print( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j, const ValueType value )
+void SparseAssemblyStorage<ValueType>::setValue( 
+    const IndexType i,
+    const IndexType j,
+    const ValueType val,
+    const utilskernel::reduction::ReductionOp op )
 {
-    if ( i >= mNumRows )
-    {
-        COMMON_THROWEXCEPTION( "Passed row Index " << i << " exceeds row count " << mNumRows << "." )
-    }
-
-    if ( j >= mNumColumns )
-    {
-        COMMON_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." )
-    }
+    SCAI_ASSERT_VALID_INDEX( i, mNumRows, "illegal row index" )
+    SCAI_ASSERT_VALID_INDEX( j, mNumColumns, "illegal col index" )
 
     {
         const std::vector<IndexType>& rJA = mRows[i].ja;
@@ -467,18 +465,21 @@ void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j
             if ( j == rJA[k] )
             {
                 std::vector<ValueType>& wValues = mRows[i].values;
-                SCAI_LOG_TRACE( logger,
-                                "set( " << i << ", " << j << ", " << value << ") : override existing value " << wValues[k] )
-                wValues[k] = value;
+                ValueType* opnd = &wValues[k];
+                utilskernel::OpenMPUtils::setVal( opnd, 1, val, op );
                 return;
             }
         }
     }
 
-    SCAI_LOG_TRACE( logger, "set( " << i << ", " << j << ", " << value << ") : new entry " )
+    ValueType newValue = 0;
+
+    utilskernel::OpenMPUtils::setVal( &newValue, 1, val, op );
+
+    SCAI_LOG_TRACE( logger, "set( " << i << ", " << j << ", " << val << ") : new entry " )
     std::vector<IndexType>& wJA = mRows[i].ja;
     std::vector<ValueType>& wValues = mRows[i].values;
-    wValues.push_back( value );
+    wValues.push_back( newValue );
     wJA.push_back( j );
     ++mNumValues;
 
@@ -491,6 +492,12 @@ void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j
         std::swap( wValues[0], wValues[wValues.size() - 1] );
         std::swap( wJA[0], wJA[wJA.size() - 1] );
     }
+}
+
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j, const ValueType value )
+{
+    setValue( i, j, value );
 }
 
 template<typename ValueType>

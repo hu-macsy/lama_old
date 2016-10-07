@@ -178,6 +178,11 @@ public:
         return ( *this )( i, j );
     }
 
+    /** Implementation of pure method MatrixStorage<ValueType>::setValue for ELL storage */
+
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
+                   const utilskernel::reduction::ReductionOp op = utilskernel::reduction::COPY );
+
     /** Getter routine for the enum value that stands for this format. */
 
     virtual Format::MatrixStorageFormat getFormat() const;

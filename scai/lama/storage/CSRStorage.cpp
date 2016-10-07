@@ -713,28 +713,65 @@ void CSRStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType CSRStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
-    const ReadAccess<IndexType> ia( mIa );
-    const ReadAccess<IndexType> ja( mJa );
-    const ReadAccess<ValueType> values( mValues );
-    ValueType myValue = static_cast<ValueType>( 0.0 );
-    SCAI_LOG_TRACE( logger, "search column in ja from " << ia[i] << ":" << ia[i + 1] )
 
-    for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+    static LAMAKernel<CSRKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIa( mIa, loc );
+    ReadAccess<IndexType> rJa( mJa, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get() );
+
+    ValueType val = 0;
+
+    if ( pos != nIndex )
     {
-        IndexType col = ja[jj];
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
 
-        SCAI_ASSERT_VALID_INDEX_DEBUG( col, mNumColumns, "column index at ja[" << jj << "] out of range" )
-
-        if ( col == j )
-        {
-            SCAI_LOG_TRACE( logger, "found column j = " << j << " at " << jj << ", value = " << values[jj] )
-            myValue = values[jj];
-            break;
-        }
+        val = mValues[ pos ];
     }
 
-    return myValue;
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::setValue( const IndexType i, 
+                                      const IndexType j, 
+                                      const ValueType val, 
+                                      const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_DEBUG( logger, "set value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<CSRKernelTrait::getValuePos> getValuePos;
+    
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc ) 
+    
+    ReadAccess<IndexType> rIa( mIa, loc );
+    ReadAccess<IndexType> rJa( mJa, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get() );
+
+    if ( pos == nIndex )
+    {
+        COMMON_THROWEXCEPTION( "CSR storage has no entry ( " << i << ", " << j << " ) " )
+    }
+
+    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
 }
 
 /* --------------------------------------------------------------------------- */

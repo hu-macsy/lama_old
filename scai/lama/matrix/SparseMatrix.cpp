@@ -726,6 +726,87 @@ void SparseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const In
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const IndexType globalColIndex ) const
+{
+    IndexType jLocal = getColDistribution().global2local( globalColIndex );
+
+    const IndexType localRowSize = getRowDistribution().getLocalSize();
+
+    WriteOnlyAccess<ValueType> colAccess( column, localRowSize );
+
+    if ( nIndex != jLocal )
+    {
+        for ( IndexType i = 0; i < localRowSize; ++i )
+        {
+            colAccess[i] = mLocalData->getValue( i, jLocal );
+        }
+    }
+    else
+    {
+        IndexType jHalo = mHalo.global2halo( globalColIndex );
+
+        for ( IndexType i = 0; i < localRowSize; ++i )
+        {
+            colAccess[i] = mHaloData->getValue( i, jHalo );
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column, const IndexType colIndex )
+{
+    const IndexType localRowSize = getRowDistribution().getLocalSize();
+
+    SCAI_ASSERT_EQ_ERROR( column.size(), localRowSize, "serious size mismatch of local column" )
+
+    IndexType jLocal = getColDistribution().global2local( colIndex );
+
+    ReadAccess<ValueType> colAccess( column );
+
+    if ( nIndex != jLocal )
+    {
+        for ( IndexType i = 0; i < localRowSize; ++i )
+        {
+            mLocalData->setValue( i, jLocal, colAccess[i] );
+        }
+    }
+    else
+    {
+        IndexType jHalo = mHalo.global2halo( colIndex );
+
+        for ( IndexType i = 0; i < localRowSize; ++i )
+        {
+            mHaloData->setValue( i, jHalo, colAccess[i] );
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row, const IndexType localRowIndex )
+{
+    const IndexType nCols = this->getNumColumns();
+
+    SCAI_ASSERT_EQ_ERROR( row.size(), nCols, "serious size mismatch of local column" )
+
+    ReadAccess<ValueType> rowAccess( row );
+
+    COMMON_THROWEXCEPTION( "setLocalRow: not available yet" )
+
+    // this works only for replicated column distribution
+
+    for ( IndexType j = 0; j < nCols; ++j )
+    {
+        mLocalData->setValue( localRowIndex, j, rowAccess[j] );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 {
     if ( getRowDistribution() != getColDistribution() )

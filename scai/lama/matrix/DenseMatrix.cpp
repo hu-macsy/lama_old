@@ -58,6 +58,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/unsupported.hpp>
+#include <scai/common/macros/unused.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
@@ -1180,6 +1181,30 @@ void DenseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const Ind
     SCAI_LOG_INFO( logger, "joined row value array = " << row.getLocalValues() )
     // just make sure that there is no mismatch of sizes
     SCAI_ASSERT_EQUAL_ERROR( row.getLocalValues().size(), row.size() );
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::getLocalRow( hmemo::HArray<ValueType>& SCAI_UNUSED( row ), const IndexType SCAI_UNUSED( iLocal ) ) const
+{
+    COMMON_THROWEXCEPTION( "not available yet" )
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setLocalRow( const hmemo::HArray<ValueType>& SCAI_UNUSED( row ), const IndexType SCAI_UNUSED( iLocal ) )
+{
+    COMMON_THROWEXCEPTION( "not available yet" )
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::getLocalColumn( hmemo::HArray<ValueType>& SCAI_UNUSED( col ), const IndexType SCAI_UNUSED( colIndex ) ) const
+{
+    COMMON_THROWEXCEPTION( "not available yet" )
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setLocalColumn( const hmemo::HArray<ValueType>& SCAI_UNUSED( col ), const IndexType SCAI_UNUSED( colIndex ) ) 
+{
+    COMMON_THROWEXCEPTION( "not available yet" )
 }
 
 template<typename ValueType>

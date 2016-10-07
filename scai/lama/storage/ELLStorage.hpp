@@ -325,6 +325,11 @@ public:
 
     ValueType getValue( const IndexType i, const IndexType j ) const;
 
+    /** Implementation of pure method MatrixStorage<ValueType>::setValue for ELL storage */
+
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
+                   const utilskernel::reduction::ReductionOp op = utilskernel::reduction::COPY );
+
     /** Initiate an asynchronous data transfer to a specified context. */
 
     void prefetch( const hmemo::ContextPtr context ) const;

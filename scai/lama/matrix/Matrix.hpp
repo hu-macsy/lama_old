@@ -453,6 +453,40 @@ public:
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
 
+    /** @brief This method returns one column of the matrix.
+     *
+     * @param[out] col              is a distributed vector with all values of the col
+     * @param[in]  globalColIndex   global column index of the col that should be extracted
+     *
+     * - the vector col might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - the distribution of col will be the same as the row distribution of the matrix
+     */
+    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const = 0;
+
+    /** @brief This method sets one row of the matrix.
+     *
+     * @param[in]  row              is a non-distributed vector
+     * @param[in]  globalRowIndex   global row index of the row that should be set
+     *
+     * - the vector row might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - this method throws an exception for a sparse matrix if the pattern must be changed
+     */
+    virtual void setRow( const Vector& row, const IndexType globalRowIndex ) = 0;
+
+    /** @brief This method sets one column of the matrix.
+     *
+     * @param[in]  col              is a distributed vector with all values of the col
+     * @param[in]  globalColIndex   global column index of the col that should be set
+     *
+     * - the vector col might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - the distribution of col must be the same as the row distribution of the matrix
+     * - this method throws an exception for a sparse matrix if the pattern must be changed
+     */
+    virtual void setColumn( const Vector& column, const IndexType globalColIndex ) = 0;
+
     /** @brief This method returns the diagonal.
      *
      * @param[out]   diagonal is the destination array

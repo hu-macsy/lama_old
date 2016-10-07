@@ -181,6 +181,11 @@ public:
 
     ValueType getValue( const IndexType i, const IndexType j ) const;
 
+    /** Implementation of pure method MatrixStorage<ValueType>::setValue for dense storage */
+
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
+                   const utilskernel::reduction::ReductionOp op = utilskernel::reduction::COPY );
+
     /** Initiate an asynchronous data transfer to a specified location. */
 
     void prefetch( const hmemo::ContextPtr location ) const;

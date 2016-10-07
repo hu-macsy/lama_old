@@ -339,22 +339,66 @@ void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    // only supported on Host at this time
-    ContextPtr loc = Context::getHostPtr();
-    const ReadAccess<IndexType> ia( mIA, loc );
-    const ReadAccess<IndexType> ja( mJA, loc );
-    const ReadAccess<ValueType> values( mValues, loc );
-    SCAI_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
-    for ( IndexType kk = 0; kk < mNumValues; ++kk )
+    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<COOKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIa( mIA, loc );
+    ReadAccess<IndexType> rJa( mJA, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), mNumValues );
+
+    ValueType val = 0;
+
+    if ( pos != nIndex )
     {
-        if ( ia[kk] == i && ja[kk] == j )
-        {
-            return values[kk];
-        }
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+
+        val = utilskernel::HArrayUtils::getVal<ValueType>( mValues, pos );
     }
 
-    return static_cast<ValueType>( 0.0 );
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::setValue( const IndexType i,
+                                      const IndexType j,
+                                      const ValueType val,
+                                      const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<COOKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIa( mIA, loc );
+    ReadAccess<IndexType> rJa( mJA, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), mNumValues );
+
+    if ( pos == nIndex )
+    {
+        COMMON_THROWEXCEPTION( "COO storage has no entry ( " << i << ", " << j << " ) " )
+    }
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+
+    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
 }
 
 /* --------------------------------------------------------------------------- */

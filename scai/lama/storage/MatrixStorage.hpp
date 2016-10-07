@@ -40,6 +40,7 @@
 #include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/ReductionOp.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/common/Factory.hpp>
@@ -779,11 +780,20 @@ public:
     /** Get a value of the matrix.
      *
      * @param[in] i is the row index, 0 <= i < mNumRows
-     * @param[in] j is the colum index, 0 <= j < mNumRows
+     * @param[in] j is the colum index, 0 <= j < mNumColumns
      * @throw Exception out-of-range is enabled for ASSERT_LEVEL=DEBUG.
      */
 
     virtual ValueType getValue( const IndexType i, const IndexType j ) const = 0;
+
+    /** Set/update an existing value of the matrix. 
+     *
+     *  @param[in] i is the row index, 0 <= i < mNumRows 
+     *  @param[in] j is the col index, 0 <= j < mNumColumns
+     *  @throw Exception if value is non-zero and sparse pattern does not contain element
+     */
+    virtual void setValue( const IndexType i, const IndexType j, const ValueType val, 
+                           const utilskernel::reduction::ReductionOp = utilskernel::reduction::COPY ) = 0;
 
     /**
      *  This method builds CSC sparse data (column sizes, row indexes and data values) for a matrix storage.

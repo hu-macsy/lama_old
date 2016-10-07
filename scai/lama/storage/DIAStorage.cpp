@@ -749,26 +749,64 @@ ValueType DIAStorage<ValueType>::maxNorm() const
 template<typename ValueType>
 ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    SCAI_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
-    const ReadAccess<IndexType> offset( mOffset );
-    ValueType myValue = 0;
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
-    // check for a matching diagonal element in the row i
+    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
 
-    for ( IndexType d = 0; d < mNumDiagonals; ++d )
+    static LAMAKernel<DIAKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rOffset( mOffset, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, rOffset.get(), mNumDiagonals );
+
+    ValueType val = 0;
+
+    if ( pos != nIndex )
     {
-        if ( i + offset[d] == j )
-        {
-            const ReadAccess<ValueType> values( mValues );
-            SCAI_LOG_DEBUG( logger,
-                            "get value (" << i << ", " << j << ") is diag = " << d << ", offset = " << offset[d]
-                            << ", index = " << diaindex( i, d, mNumRows, mNumDiagonals ) )
-            myValue = values[diaindex( i, d, mNumRows, mNumDiagonals )];
-            break;
-        }
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumRows * mNumDiagonals, "illegal value position for ( " << i << ", " << j << " )" );
+
+        val = utilskernel::HArrayUtils::getVal<ValueType>( mValues, pos );
     }
 
-    return myValue;
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::setValue( const IndexType i,
+                                      const IndexType j,
+                                      const ValueType val,
+                                      const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_TRACE( logger, "set value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<DIAKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rOffset( mOffset, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, rOffset.get(), mNumDiagonals );
+
+    if ( pos == nIndex )
+    {
+        COMMON_THROWEXCEPTION( "DIA storage has no entry ( " << i << ", " << j << " ) " )
+    }
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumRows * mNumDiagonals, "illegal value position for ( " << i << ", " << j << " )" );
+
+    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
 }
 
 /* --------------------------------------------------------------------------- */

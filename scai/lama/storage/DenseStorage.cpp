@@ -1079,10 +1079,28 @@ void DenseStorageView<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType DenseStorageView<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    const ReadAccess<ValueType> data( mData );
-    SCAI_LOG_TRACE( logger,
-                    "get value (" << i << ", " << j << ")--> " << i * mNumColumns + j << "= " << data[i * mNumColumns + j] )
-    return data[i * mNumColumns + j];
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    const IndexType pos = i * mNumColumns + j;
+
+    return utilskernel::HArrayUtils::getVal<ValueType>( mData, pos );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorageView<ValueType>::setValue( const IndexType i,
+                                            const IndexType j,
+                                            const ValueType val,
+                                            const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    const IndexType pos = i * mNumColumns + j;
+
+    utilskernel::HArrayUtils::setValImpl( mData, pos, val, op );
 }
 
 /* --------------------------------------------------------------------------- */

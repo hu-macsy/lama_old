@@ -715,16 +715,65 @@ void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
-    SCAI_LOG_TRACE( logger, "sizes: ia = " << mIA.size() << ", ja = " << mJA.size() << ", data = " << mValues.size() )
-    static LAMAKernel<ELLKernelTrait::getValue<ValueType> > getValue;
+
+    static LAMAKernel<ELLKernelTrait::getValuePos> getValuePos;
+
     ContextPtr loc = this->getContextPtr();
-    getValue.getSupportedContext( loc );
+    getValuePos.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
-    const ReadAccess<IndexType> rIa( mIA, loc );
-    const ReadAccess<IndexType> rJa( mJA, loc );
-    const ReadAccess<ValueType> rValues( mValues, loc );
-    return getValue[loc]( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
+
+    ReadAccess<IndexType> rIa( mIA, loc );
+    ReadAccess<IndexType> rJa( mJA, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get() );
+
+    ValueType val = 0;
+
+    if ( pos != nIndex )
+    {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumRows * mNumValuesPerRow,
+                                       "illegal value position for ( " << i << ", " << j << " )" );
+
+        val = mValues[ pos ];
+    }
+
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::setValue( const IndexType i,
+                                      const IndexType j,
+                                      const ValueType val,
+                                      const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_DEBUG( logger, "set value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<ELLKernelTrait::getValuePos> getValuePos;
+    
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    
+    ReadAccess<IndexType> rIa( mIA, loc );
+    ReadAccess<IndexType> rJa( mJA, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get() );
+
+    if ( pos == nIndex )
+    {
+        COMMON_THROWEXCEPTION( "ELL storage has no entry ( " << i << ", " << j << " ) " )
+    }
+
+    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
 }
 
 /* --------------------------------------------------------------------------- */
