@@ -386,16 +386,60 @@ public:
 
     void invert()
     {
-        HArrayUtils::invert( *this );
+        HArrayUtils::execElementwise( *this, elementwise::INVERT );
     }
 
     /** Compute the conj in-place */
 
     void conj()
     {
-        HArrayUtils::conj( *this );
+        HArrayUtils::execElementwise( *this, elementwise::CONJ );
     }
 
+    void exp()
+    {
+        HArrayUtils::execElementwise( *this, elementwise::EXP );
+    }
+
+    void sqrt()
+    {
+        HArrayUtils::execElementwise( *this, elementwise::SQRT );
+    }
+
+    void sin()
+    {
+        HArrayUtils::execElementwise( *this, elementwise::SIN );
+    }
+
+    void cos()
+    {
+        HArrayUtils::execElementwise( *this, elementwise::COS );
+    }
+
+    void tan()
+    {
+        HArrayUtils::execElementwise( *this, elementwise::TAN );
+    }
+
+    void atan()
+    {
+        HArrayUtils::execElementwise( *this, elementwise::ATAN );
+    }
+
+    void powBase( ValueType base )
+    {
+        HArrayUtils::powBase( *this, base );
+    }
+
+    void powExp( ValueType exp )
+    {
+        HArrayUtils::powExp( *this, exp );
+    }
+
+    void pow( const hmemo::HArray<ValueType>& other )
+    {
+        return HArrayUtils::pow( *this, other );
+    }
 };
 
 } /* end namespace utilskernel */

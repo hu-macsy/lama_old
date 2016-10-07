@@ -42,6 +42,7 @@ scai_project (
 
     SOURCES
 
+        ElementwiseOpTest
         ReductionOpTest
         UtilsKernelTest
         HArrayUtilsTest

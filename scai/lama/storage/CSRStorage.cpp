@@ -51,6 +51,8 @@
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/ElementwiseOp.hpp>
+
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/hmemo.hpp>
@@ -951,7 +953,7 @@ void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void CSRStorage<ValueType>::conj()
 {
-    HArrayUtils::conj( mValues, this->getContextPtr() );
+    HArrayUtils::execElementwise( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

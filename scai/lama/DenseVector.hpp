@@ -400,10 +400,6 @@ public:
 
     virtual Scalar maxNorm() const;
 
-    virtual void conj();
-
-    virtual void exp();
-
     virtual void swap( Vector& other );
 
     virtual void writeAt( std::ostream& stream ) const;
@@ -439,6 +435,26 @@ public:
     virtual void wait() const;
 
     virtual void invert();
+
+    virtual void conj();
+
+    virtual void exp();
+
+    virtual void sqrt();
+
+    virtual void sin();
+
+    virtual void cos();
+
+    virtual void tan();
+
+    virtual void atan();
+
+    virtual void pow( const Vector& other );
+
+    virtual void powBase( const Scalar base );
+
+    virtual void powExp( const Scalar exp );
 
     virtual size_t getMemoryUsage() const;
 

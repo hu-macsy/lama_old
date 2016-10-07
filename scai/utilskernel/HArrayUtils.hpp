@@ -41,6 +41,7 @@
 
 #include <scai/logging.hpp>
 #include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/ElementwiseOp.hpp>
 
 namespace scai
 {
@@ -232,17 +233,6 @@ public:
     template<typename ValueType>
     static void scale( hmemo::HArray<ValueType>& array, const ValueType beta, hmemo::ContextPtr prefLoc );
 
-    /** Replace in a complex array its values with the conjugate values */
-
-    template<typename ValueType>
-    static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-
-    /** Calculates the exponentional function of the vector elements in place. */
-
-    template<typename ValueType>
-    static void exp( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
     /*
      * Implementation of functions
      */
@@ -296,15 +286,47 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
+    static void copysign(
+        hmemo::HArray<ValueType>& result,
+        const hmemo::HArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& y,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
     static ValueType dotProduct(
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** array = 1.0 / array elementwise */
+    /** execute elementwise functions */
 
     template<typename ValueType>
-    static void invert( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void execElementwise(
+        hmemo::HArray<ValueType>& array,
+        const elementwise::ElementwiseOp op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** execute elementwise pow with base and exponent array */
+
+    template<typename ValueType>
+    static void pow( 
+        hmemo::HArray<ValueType>& array1,
+        const hmemo::HArray<ValueType>& array2,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** execute elementwise pow with base array and */
+
+    template<typename ValueType>
+    static void powBase( 
+        hmemo::HArray<ValueType>& array,
+        const ValueType base,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static void powExp( 
+        hmemo::HArray<ValueType>& array,
+        const ValueType exp,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Check for an index array whether all values are smaller than n */
 

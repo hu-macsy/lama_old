@@ -111,6 +111,7 @@ scai_project (
 
     HEADERS                  # .hpp only
 
+        ElementwiseOp
         LAMAKernel
         LArray
         LArrayRef
