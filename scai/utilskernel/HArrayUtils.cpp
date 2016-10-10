@@ -146,6 +146,37 @@ void HArrayUtils::setArray(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename TargetValueType, typename SourceValueType>
+void HArrayUtils::setArraySection(
+    HArray<TargetValueType>& target,
+        const IndexType targetOffset,
+        const IndexType targetStride,
+    const HArray<SourceValueType>& source,
+        const IndexType sourceOffset,
+        const IndexType sourceStride,
+        const IndexType n,
+    const reduction::ReductionOp op,
+    const ContextPtr prefLoc )
+{
+    // in contrary to setArray we assume correctly allocated target
+
+    static LAMAKernel<UtilKernelTrait::setSection<TargetValueType, SourceValueType> > setSection;
+
+    ContextPtr loc = prefLoc;
+    setSection.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<SourceValueType> sourceVals( source, loc );
+    WriteAccess<TargetValueType> targetVals( target, loc );
+
+    setSection[loc]( targetVals.get() + targetOffset, targetStride,
+                     sourceVals.get() + sourceOffset, sourceStride, 
+                     n, op );
+}
+
+/* --------------------------------------------------------------------------- */
+
 void HArrayUtils::assignGather(
     _HArray& target,
     const _HArray& source,

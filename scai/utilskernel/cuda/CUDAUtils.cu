@@ -874,6 +874,122 @@ void CUDAUtils::set( ValueType out[], const OtherValueType in[], const IndexType
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType, typename OtherValueType>
+__global__
+void setKernelCopySection( ValueType* out, const IndexType inc1, 
+                           const OtherValueType* in, const IndexType inc2, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i * inc1] = static_cast<ValueType>( in[i * inc2] );
+    }
+}
+
+template<typename ValueType, typename OtherValueType>
+__global__
+void setKernelAddSection( ValueType* out, const IndexType inc1,
+                          const OtherValueType* in, const IndexType inc2, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i * inc1] += static_cast<ValueType>( in[i * inc2] );
+    }
+}
+
+template<typename ValueType, typename OtherValueType>
+__global__
+void setKernelSubSection( ValueType* out, const IndexType inc1,
+                          const OtherValueType* in, const IndexType inc2, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i * inc1] -= static_cast<ValueType>( in[i * inc2] );
+    }
+}
+
+template<typename ValueType, typename OtherValueType>
+__global__
+void setKernelMultSection( ValueType* out, const IndexType inc1,
+                           const OtherValueType* in, const IndexType inc2, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i * inc1] *= static_cast<ValueType>( in[i * inc2] );
+    }
+}
+
+template<typename ValueType, typename OtherValueType>
+__global__
+void setKernelDivideSection( ValueType* out, const IndexType inc1,
+                             const OtherValueType* in, const IndexType inc2, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i * inc1] /= static_cast<ValueType>( in[i * inc2] );
+    }
+}
+
+template<typename ValueType, typename OtherValueType>
+void CUDAUtils::setSection( ValueType out[], const IndexType inc1,
+                            const OtherValueType in[], const IndexType inc2,
+                            const IndexType n, const reduction::ReductionOp op )
+{
+    SCAI_LOG_INFO( logger,
+                   "setSection<" << TypeTraits<ValueType>::id() << "," << TypeTraits<OtherValueType>::id() << ">( ..., n = " << n << ")" )
+
+    SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    switch ( op )
+    {
+        case reduction::COPY :
+            setKernelCopySection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
+            break;
+
+        case reduction::ADD :
+            setKernelAddSection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
+            break;
+
+        case reduction::SUB :
+            setKernelSubSection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
+            break;
+
+        case reduction::MULT :
+            setKernelMultSection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
+            break;
+
+        case reduction::DIVIDE :
+            setKernelDivideSection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
+            break;
+
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
+    }
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void CUDAUtils::execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op )
 {
@@ -1090,6 +1206,7 @@ void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregi
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setSection<ValueType, OtherValueType> >( setSection, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

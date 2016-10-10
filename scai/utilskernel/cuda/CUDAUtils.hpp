@@ -132,7 +132,13 @@ public:
     template<typename ValueType, typename otherValueType>
     static void set( ValueType out[], const otherValueType in[], const IndexType n, const reduction::ReductionOp op );
 
-   /** CUDA implementation for UtilKernelTrait::execElementwise */
+    /** CUDA implementation for UtilKernelTrait::setSection */
+
+    template<typename ValueType, typename otherValueType>
+    static void setSection( ValueType out[], const IndexType inc_out, 
+                            const otherValueType in[], const IndexType inc_in, const IndexType n, const reduction::ReductionOp op );
+
+    /** CUDA implementation for UtilKernelTrait::execElementwise */
 
     template<typename ValueType>
     static void execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op );

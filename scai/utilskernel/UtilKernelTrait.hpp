@@ -213,6 +213,20 @@ struct UtilKernelTrait
         }
     };
 
+    template<typename ValueType1, typename ValueType2>
+    struct setSection
+    {
+        /** Set out[i + inc_out] _op= in[i + inc_in],  0 <= i < n , op = +, -, *, /, min, max, ... */
+
+        typedef void ( *FuncType ) ( ValueType1 out[], const IndexType inc_out,
+                                     const ValueType2 in[], const IndexType inc_in,
+                                     const IndexType n, const reduction::ReductionOp op );
+        static const char* getId()
+        {
+            return "Util.setSection";
+        }
+    };
+
     template<typename ValueType>
     struct execElementwise
     {

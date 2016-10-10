@@ -120,7 +120,14 @@ public:
     template<typename ValueType1, typename ValueType2>
     static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
 
-   /** OpenMP implementation for UtilKernelTrait::execElementwise */
+    /** OpenMP implementation for UtilKernelTrait::setSection */
+
+    template<typename ValueType1, typename ValueType2>
+    static void setSection( ValueType1 out[], const IndexType inc1,
+                            const ValueType2 in[], const IndexType inc2,
+                            const IndexType n, const reduction::ReductionOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::execElementwise */
 
     template<typename ValueType>
     static void execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op );

@@ -588,6 +588,91 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType1, typename ValueType2>
+void OpenMPUtils::setSection( ValueType1 out[], const IndexType inc1, 
+                              const ValueType2 in[], const IndexType inc2,
+                              const IndexType n, const reduction::ReductionOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.setSection" )
+
+    SCAI_LOG_DEBUG( logger,
+                    "setSection: out<" << TypeTraits<ValueType1>::id() << "[" << n << "]"
+                    << ", op = " << op << "  in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
+
+    switch ( op )
+    {
+        case reduction::COPY :
+        {
+            if ( in != reinterpret_cast<ValueType2*> ( out ) )
+            {
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i * inc1] = static_cast<ValueType1>( in[i * inc2] );
+                }
+            }
+
+            break;
+        }
+
+        case reduction::ADD :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc1] += static_cast<ValueType1>( in[i * inc2] );
+            }
+
+            break;
+        }
+
+        case reduction::SUB :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc1] -= static_cast<ValueType1>( in[i * inc2] );
+            }
+
+            break;
+        }
+
+        case reduction::DIVIDE :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc1] /= static_cast<ValueType1>( in[i * inc2] );
+            }
+
+            break;
+        }
+
+        case reduction::MULT :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc1] *= static_cast<ValueType1>( in[i * inc2] );
+            }
+
+            break;
+        }
+
+        default:
+        {
+            COMMON_THROWEXCEPTION( "unsupported reduction op in set: " << op )
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void OpenMPUtils::execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op )
 {
@@ -1217,6 +1302,7 @@ void OpenMPUtils::BinOpKernels<ValueType, OtherValueType>::registerKernels( kreg
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setSection<ValueType, OtherValueType> >( setSection, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

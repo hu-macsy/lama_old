@@ -243,6 +243,30 @@ public:
         const reduction::ReductionOp op,
         hmemo::ContextPtr context );
 
+    /** General version for setting sectioned arrays. 
+     *
+     *  @param target is the target array
+     *  @param targetOffset is the offset in the target array
+     *  @param targetStride is the stride used in target array
+     *  @param source is the source array
+     *  @param sourceOffset is the offset in the source array
+     *  @param sourceStride is the stride used in source array
+     *  @param n is the number of elements to set
+     *  @param op specifies how to combine old and new value
+     */
+
+    template<typename TargetValueType, typename SourceValueType>
+    static void setArraySection(
+        hmemo::HArray<TargetValueType>& target,
+        const IndexType targetOffset,
+        const IndexType targetStride,
+        const hmemo::HArray<SourceValueType>& source,
+        const IndexType sourceOffset,
+        const IndexType sourceStride,
+        const IndexType n,
+        const reduction::ReductionOp op,
+        hmemo::ContextPtr context );
+
     template<typename ValueType>
     static void setScalar(
         hmemo::HArray<ValueType>& target,
