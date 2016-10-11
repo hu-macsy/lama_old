@@ -65,6 +65,23 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[] );
 
+    /** Implementation for CSRKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol( 
+        IndexType row[], 
+        IndexType pos[],
+        const IndexType j, 
+        const IndexType numRows,
+        const IndexType csrIA[], 
+        const IndexType csrJA[] );
+
+    static IndexType getValuePosRow( 
+        IndexType col[], 
+        IndexType pos[],
+        const IndexType i,
+        const IndexType csrIA[], 
+        const IndexType csrJA[] );
+
     /** This method computes the total number of non-zero rows by the offset array
      *
      */

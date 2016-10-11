@@ -500,6 +500,34 @@ static inline IndexType atomicInc( IndexType& var )
     return __sync_fetch_and_add( &var, 1 );
 }
 
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPCSRUtils::getValuePosCol( IndexType row[], IndexType pos[], 
+                                          const IndexType j, const IndexType numRows,
+                                          const IndexType csrIA[], const IndexType csrJA[] )
+{
+    IndexType cnt  = 0;       // counts number of available row entries
+
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        {
+            if ( csrJA[jj] == j )
+            {
+                IndexType k = atomicInc( cnt );
+                row[k] = i;
+                pos[k] = jj;
+                break;
+            }
+        }
+    }
+
+    return cnt;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void OpenMPCSRUtils::convertCSR2CSC(
     IndexType cscIA[],
@@ -1949,6 +1977,7 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<CSRKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );

@@ -181,6 +181,84 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( getValuePosColTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = Context::getContextPtr( getValuePosCol.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    //    1.0   -   2.0      
+    //    0.5  0.3   -       
+    //     -    -   3.0      
+
+    const IndexType ia[] = { 0, 2, 4, 5 };
+    const IndexType ja[] = { 0, 2, 0, 1, 2 };
+
+    const IndexType numRows = 3;
+    const IndexType numValues = 5;
+
+    HArray<IndexType> csrIA( numRows + 1, ia, testContext );
+    HArray<IndexType> csrJA( numValues, ja, testContext );
+
+    HArray<IndexType> row;   // result for rowIndexes 
+    HArray<IndexType> pos;   // result for positions
+
+    IndexType cnt;
+
+    IndexType columnIndex = 1;   // has 1 entry
+
+    {
+        ReadAccess<IndexType> rCSRIA( csrIA, loc );
+        ReadAccess<IndexType> rCSRJA( csrJA, loc );
+        WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
+        WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
+        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, numRows, rCSRIA.get(), rCSRJA.get() );
+    }
+
+    BOOST_REQUIRE_EQUAL( cnt, 1 );   //  only one entry for column 1
+
+    {
+        ReadAccess<IndexType> rPos( pos );
+        ReadAccess<IndexType> rRow( row );
+
+        BOOST_CHECK_EQUAL( 1, rRow[0] );   // is in entry row
+        BOOST_CHECK_EQUAL( 3, rPos[0] );   // value of for (1,1) is at pos 3
+    }
+
+    columnIndex = 2;
+    {
+        ReadAccess<IndexType> rCSRIA( csrIA, loc );
+        ReadAccess<IndexType> rCSRJA( csrJA, loc );
+        WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
+        WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
+        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, numRows, rCSRIA.get(), rCSRJA.get() );
+    }
+
+    BOOST_REQUIRE_EQUAL( cnt, 2 );   //  two entries for column 2, order might be arbitrary
+
+    {
+        ReadAccess<IndexType> rPos( pos );
+        ReadAccess<IndexType> rRow( row );
+        ReadAccess<IndexType> rJA( csrJA );
+        ReadAccess<IndexType> rIA( csrIA );
+
+        for ( IndexType k = 0; k < cnt; ++k )
+        {
+            IndexType p = rPos[k];
+            IndexType i = rRow[k];
+            BOOST_CHECK_EQUAL( rJA[ p ], columnIndex );
+            BOOST_CHECK( rIA[i] <= p );
+            BOOST_CHECK( p < rIA[i+1] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
