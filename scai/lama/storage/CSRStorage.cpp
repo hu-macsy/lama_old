@@ -951,43 +951,84 @@ void CSRStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 
 template<typename ValueType>
 template<typename OtherType>
-void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-                                           const utilskernel::reduction::ReductionOp op )
+void CSRStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
-    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
 
-    // ToDo write more efficient kernel routine for setting a column
+    static LAMAKernel<CSRKernelTrait::getValuePosCol> getValuePosCol;
 
-    ReadAccess<OtherType> rColumn( column );
+    ContextPtr loc = this->getContextPtr();
 
-    for ( IndexType i = 0; i < mNumRows; ++i )
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
     {
-        if ( rColumn[i] == common::constants::ZERO )
-        {
-            continue;
-        }
+        SCAI_CONTEXT_ACCESS( loc )
 
-        setValue( i, j, static_cast<ValueType>( rColumn[i] ), op );
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+        ReadAccess<IndexType> rIA( mIa, loc );
+        ReadAccess<IndexType> rJA( mJa, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(),
+                                             j, mNumRows, rIA.get(), rJA.get() );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
     }
+
+    column.init( ValueType( 0 ), mNumRows );
+
+    // column[ row ] = mValues[ pos ];
+
+    HArrayUtils::gather( colValues, mValues, valuePos, loc );
+    HArrayUtils::scatter( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 template<typename OtherType>
-void CSRStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
+                                           const utilskernel::reduction::ReductionOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
 
-    // ToDo write more efficient kernel routine for getting a column
+    static LAMAKernel<CSRKernelTrait::getValuePosCol> getValuePosCol;
 
-    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+    ContextPtr loc = this->getContextPtr();
 
-    for ( IndexType i = 0; i < mNumRows; ++i )
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+    
     {
-        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+        SCAI_CONTEXT_ACCESS( loc )
+
+        // allocate rowIndexes, valuePos with maximal possible size
+
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+        ReadAccess<IndexType> rIA( mIa, loc );
+        ReadAccess<IndexType> rJA( mJa, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(),
+                                             j, mNumRows, rIA.get(), rJA.get() );
+        
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
     }
+
+    //  mValues[ pos ] op= column[row]
+    
+    HArrayUtils::gather( colValues, column, rowIndexes, loc );
+    HArrayUtils::scatter( mValues, valuePos, colValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */

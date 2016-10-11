@@ -707,6 +707,18 @@ void scatter_add_kernel( ValueType* out, const IndexType* indexes, const OtherVa
     }
 }
 
+template<typename ValueType, typename OtherValueType>
+__global__
+void scatter_sub_kernel( ValueType* out, const IndexType* indexes, const OtherValueType* in, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[indexes[i]] -= static_cast<ValueType>( in[i] );
+    }
+}
+
 template<typename ValueType1, typename ValueType2>
 void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const reduction::ReductionOp op, const IndexType n )
 {
@@ -728,7 +740,10 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
         {
             scatter_add_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
         }
-
+        else if ( op == reduction::SUB )
+        {
+            scatter_sub_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+        }
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
 }

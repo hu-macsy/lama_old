@@ -953,6 +953,15 @@ void OpenMPUtils::setScatter(
             atomicAdd( out[indexes[i]], static_cast<ValueType1>( in[i] ) );
         }
     }
+    else if ( op == reduction::SUB )
+    {
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            atomicAdd( out[indexes[i]], - static_cast<ValueType1>( in[i] ) );
+        }
+    }
     else
     {
         COMMON_THROWEXCEPTION( "Unsupported reduce op " << op << " for setScatter" )

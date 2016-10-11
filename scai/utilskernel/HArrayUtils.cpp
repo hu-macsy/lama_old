@@ -241,7 +241,9 @@ void HArrayUtils::scatter(
 {
     SCAI_REGION( "HArray.scatter" )
 
-    SCAI_ASSERT( ( op == reduction::COPY ) || ( op == reduction::ADD ), "Unsupported reduction op " << op  )
+    SCAI_ASSERT(      ( op == reduction::COPY ) 
+                   || ( op == reduction::ADD )
+                   || ( op == reduction::SUB ) , "Unsupported reduction op " << op  )
 
     SCAI_ASSERT( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
                  "illegal scatter index, target has size " << target.size() )
