@@ -117,7 +117,7 @@ For optional features you may also install the following:
 
 .. |apidoc| raw:: html
 
-  <a href="https://test.libama.org/doxygen/index.html" target="_blank">here</a>
+  <a href="https://libama.org/doxygen/index.html" target="_blank">here</a>
 
 .. _supported:
 
