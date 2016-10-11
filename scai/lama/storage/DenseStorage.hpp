@@ -308,7 +308,18 @@ public:
     /** Template method for getting row. */
 
     template<typename OtherType>
-    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType rowIndex ) const;
+
+    template<typename OtherType>
+    void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType rowIndex,
+                     const utilskernel::reduction::ReductionOp op );
+
+    template<typename OtherType>
+    void getColumnImpl( hmemo::HArray<OtherType>& row, const IndexType colIndex ) const;
+
+    template<typename OtherType>
+    void setColumnImpl( const hmemo::HArray<OtherType>& row, const IndexType colIndex, 
+                        const utilskernel::reduction::ReductionOp op );
 
     /** Template method for getting diagonal. */
 

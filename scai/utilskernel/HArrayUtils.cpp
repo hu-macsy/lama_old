@@ -1204,6 +1204,12 @@ void HArrayUtils::buildDenseArray(
             const hmemo::HArray<OtherValueType>&,                                                                       \
             const reduction::ReductionOp,                                                                               \
             hmemo::ContextPtr );                                                                                        \
+    template void HArrayUtils::setArraySection<ValueType, OtherValueType>(                                              \
+            hmemo::HArray<ValueType>&, const IndexType, const IndexType,                                                \
+            const hmemo::HArray<OtherValueType>&, const IndexType, const IndexType,                                     \
+            const IndexType,                                                                                            \
+            const reduction::ReductionOp,                                                                               \
+            hmemo::ContextPtr );                                                                                        \
     template void HArrayUtils::scatter<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                           \
             const hmemo::HArray<IndexType>&,                                                                            \
             const hmemo::HArray<OtherValueType>&,                                                                       \

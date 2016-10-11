@@ -583,15 +583,17 @@ public:
 
     /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
 
-    void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
-
     void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType iLocal ) const;
 
-    void setLocalRow( const hmemo::HArray<ValueType>& row, const IndexType iLocal );
+    void setLocalRow( const hmemo::HArray<ValueType>& row, 
+                      const IndexType localRowIndex,
+                      const utilskernel::reduction::ReductionOp op  );
 
     void getLocalColumn( hmemo::HArray<ValueType>& col, const IndexType colIndex ) const;
 
-    void setLocalColumn( const hmemo::HArray<ValueType>& column, const IndexType colIndex );
+    void setLocalColumn( const hmemo::HArray<ValueType>& column, 
+                         const IndexType colIndex,
+                         const utilskernel::reduction::ReductionOp op  );
 
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 

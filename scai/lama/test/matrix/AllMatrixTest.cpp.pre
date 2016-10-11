@@ -348,7 +348,7 @@ BOOST_AUTO_TEST_CASE( assignAddTest )
         matrix1 -= matrix3;
         matrix1 += matrix3;
         matrix1 -= 3 * matrix3;
-
+ 
         BOOST_CHECK_EQUAL( Scalar( 0 ), matrix1.maxNorm() );
 
         matrix1 = matrix2;
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE( assignMultTest )
     {
         Matrix& matrix1 = *allMatrices[s];
 
-        if ( matrix1.getMatrixKind() == Matrix::DENSE )
+        if ( matrix1.getMatrixKind() == Matrix::DENSE ) 
         {
             continue;
         }
@@ -433,7 +433,7 @@ BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
 
     Matrices allMatrices( context );    // is created by factory
 
-    TestDistributions testDistributions( n1 * n2 );
+    TestDistributions testDistributions( n1 * n2 );  
     DistributionPtr repDist( new NoDistribution( n1 * n2 ) );
 
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for checkSymmetry" )
@@ -528,12 +528,12 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
             y1 = matrix * x;
 
             matrix.getDiagonal( d );
-
+            
             BOOST_CHECK_EQUAL( d.getDistribution(), matrix.getRowDistribution() );
 
             matrix.setDiagonal( 0 );
 
-            // Now we can prove y2 = matrix * x + diagonal must be same as y1
+            // Now we can prove y2 = matrix * x + diagonal must be same as y1 
 
             y2 = matrix * x + d;
             y2 = y2 - y1;
@@ -562,31 +562,29 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<double> csr( nRows, nCols );
-    MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
-    for ( size_t i = 0; i < rowDistributions.size(); ++i )
-    {
-        DistributionPtr rowDist = rowDistributions[i];
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for checkSymmetry" )
 
-        for ( size_t j = 0; j < colDistributions.size(); ++j )
+        for ( size_t i = 0; i < rowDistributions.size(); ++i )
         {
-            DistributionPtr colDist = colDistributions[j];
+            DistributionPtr rowDist = rowDistributions[i];
 
-            Matrices allMatrices( context );    // is created by factory
-
-            for ( size_t s = 0; s < allMatrices.size(); ++s )
+            for ( size_t j = 0; j < colDistributions.size(); ++j )
             {
-                Matrix& matrix = *allMatrices[s];
+                DistributionPtr colDist = colDistributions[j];
 
-                matrix = csr;
+    Matrices allMatrices( context );    // is created by factory
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix& matrix = *allMatrices[s];
+
+                MatrixCreator::fillRandom( matrix, 0.2f );
 
                 matrix.redistribute( rowDist, colDist );
-
-                SCAI_LOG_INFO( logger, "getRowTest for this matrix: " << matrix )
 
                 // get each row and subtract it
 
@@ -594,71 +592,13 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
                 for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
                 {
-                      matrix.getRow( *row, iRow );
-                      matrix.setRow( *row, iRow, utilskernel::reduction::SUB );
+                    matrix->getRow( *row, iRow );
+                    matrix->setRow( *row, iRow, utilskernel::reduction::SUB );
                 }
 
                 // the final matrix should be zero
 
-                BOOST_ASSERT( matrix.maxNorm() < Scalar( 0.001 ) );
-            }
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE( getColTest )
-{
-    const IndexType nRows = 10;
-    const IndexType nCols = 8;
-
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-
-    CSRSparseMatrix<double> csr( nRows, nCols );
-    MatrixCreator::fillRandom( csr, 0.1f );
-
-    TestDistributions rowDistributions( nRows );
-    TestDistributions colDistributions( nCols );
-
-    for ( size_t i = 0; i < rowDistributions.size(); ++i )
-    {
-        DistributionPtr rowDist = rowDistributions[i];
-
-        for ( size_t j = 0; j < colDistributions.size(); ++j )
-        {
-            DistributionPtr colDist = colDistributions[j];
-
-            Matrices allMatrices( context );    // is created by factory
-
-            for ( size_t s = 0; s < allMatrices.size(); ++s )
-            {
-                Matrix& matrix = *allMatrices[s];
-
-                if ( matrix.getMatrixKind() != Matrix::DENSE )
-                {
-                    // continue;
-                }
-
-                matrix = csr;
-
-                matrix.redistribute( rowDist, colDist );
-
-                // get each row and subtract it
-
-                VectorPtr col ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
-
-                SCAI_LOG_INFO( logger, "getColTest for this matrix: " << matrix )
-
-                for ( IndexType iCol = 0; iCol < matrix.getNumColumns(); ++iCol )
-                {
-                    matrix.getColumn( *col, iCol );
-                    matrix.setColumn( *col, iCol, utilskernel::reduction::SUB );
-                }
-
-                // the final matrix should be zero
-
-                BOOST_ASSERT( matrix.maxNorm() < Scalar( 0.001 ) );
+                BOOST_ASSERT( matrix->maxNorm() < Scalar( 0.001 ) )
             }
         }
     }

@@ -165,16 +165,90 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
+void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType rowIndex ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
-    static LAMAKernel<DenseKernelTrait::getRow<OtherType, ValueType> > getRow;
-    ContextPtr loc = this->getContextPtr();
-    getRow.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    WriteOnlyAccess<OtherType> wRow( row, loc, mNumColumns );
-    ReadAccess<ValueType> rData( mData, loc );
-    getRow[loc]( wRow.get(), rData.get(), i, mNumRows, mNumColumns );
+    SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, mNumRows, "row index out of range" )
+
+    row.clear();                    // make all data invalid 
+    row.resize( mNumColumns );      // resize it
+
+    // inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+    // first = denseindex( rowIndex, 0, numRows, numColumns )
+
+    const IndexType inc   = 1;
+    const IndexType first = rowIndex * mNumColumns;
+
+    HArrayUtils::setArraySection( row, 0, 1,             // row (:) 
+                                  mData, first, inc,
+                                  mNumColumns, utilskernel::reduction::COPY, mData.getValidContext() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void DenseStorageView<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType rowIndex,
+                                              const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, mNumRows, "row index out of range" )
+
+    // inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+    // first = denseindex( i, 0, numRows, numColumns )
+
+    const IndexType inc   = 1;
+    const IndexType first = rowIndex * mNumColumns;
+
+    HArrayUtils::setArraySection( mData, first, inc, 
+                                  row, 0, 1,
+                                  mNumColumns, 
+                                  op, 
+                                  mData.getValidContext() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void DenseStorageView<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType colIndex ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( colIndex, mNumColumns, "column index out of range" )
+
+    column.clear();                 // make all data invalid 
+    column.resize( mNumRows );      // resize it
+
+    // inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+    // first = denseindex( 0, j, numRows, numColumns )
+
+    const IndexType inc   = mNumColumns;
+    const IndexType first = colIndex;
+
+    HArrayUtils::setArraySection( column, 0, 1,
+                                  mData, first, inc, 
+                                  mNumRows,    
+                                  utilskernel::reduction::COPY, 
+                                  mData.getValidContext() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void DenseStorageView<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType colIndex,
+                                                 const utilskernel::reduction::ReductionOp op ) 
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( colIndex, mNumColumns, "column index out of range" )
+
+    // inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+    // first = denseindex( 0, j, numRows, numColumns )
+
+    const IndexType inc   = mNumColumns;
+    const IndexType first = colIndex;
+
+    HArrayUtils::setArraySection( mData, first, inc ,
+                                  column, 0, 1,
+                                  mNumRows, 
+                                  op, 
+                                  mData.getValidContext() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -184,13 +258,21 @@ template<typename OtherType>
 void DenseStorageView<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     IndexType numDiagonalValues = common::Math::min( mNumColumns, mNumRows );
-    static LAMAKernel<DenseKernelTrait::getDiagonal<OtherType, ValueType> > getDiagonal;
-    ContextPtr loc = this->getContextPtr();
-    getDiagonal.getSupportedContext( loc );
-    WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalValues );
-    ReadAccess<ValueType> rData( mData, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    getDiagonal[loc]( wDiagonal.get(), numDiagonalValues, rData.get(), mNumRows, mNumColumns );
+
+    diagonal.clear();                       // make all data invalid 
+    diagonal.resize( numDiagonalValues );   // resize it
+
+    // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+    // first = denseindex( 0, 0, numRows, numColumns )
+
+    const IndexType inc   = mNumRows + 1;
+    const IndexType first = 0;
+
+    HArrayUtils::setArraySection( diagonal, 0, 1,  
+                                  mData, first, inc,
+                                  numDiagonalValues,
+                                  utilskernel::reduction::COPY,
+                                  mData.getValidContext() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -200,13 +282,20 @@ template<typename OtherType>
 void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
     IndexType numDiagonalValues = common::Math::min( mNumColumns, mNumRows );
-    static LAMAKernel<DenseKernelTrait::setDiagonal<ValueType, OtherType> > setDiagonal;
-    ContextPtr loc = this->getContextPtr();
-    setDiagonal.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<OtherType> rDiagonal( diagonal, loc );
-    WriteAccess<ValueType> wData( mData, loc );
-    setDiagonal[loc]( wData.get(), mNumRows, mNumColumns, rDiagonal.get(), numDiagonalValues );
+
+    SCAI_ASSERT_GE_DEBUG( diagonal.size(), numDiagonalValues, "diagonal array has insufficient size" )
+
+    // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+    // first = denseindex( 0, 0, numRows, numColumns )
+
+    const IndexType inc   = mNumRows + 1;
+    const IndexType first = 0;
+
+    HArrayUtils::setArraySection( mData, first, inc,
+                                  diagonal, 0, 1,  
+                                  numDiagonalValues,
+                                  utilskernel::reduction::COPY,
+                                  mData.getValidContext() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1333,17 +1422,22 @@ const char* DenseStorageView<ValueType>::typeName()
 SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_NUMERIC_TYPES_HOST )
 SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_NUMERIC_TYPES_HOST )
 
-#define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
-    template void DenseStorageView<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
-    template void DenseStorageView<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
-    template void DenseStorageView<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
-    template void DenseStorageView<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
-    template void DenseStorageView<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-    template void DenseStorageView<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
-    template void DenseStorageView<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
+#define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                             \
+    template void DenseStorageView<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,        \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                            \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                             \
+    template void DenseStorageView<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,        \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );            \
+    template void DenseStorageView<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;      \
+    template void DenseStorageView<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,        \
+                                                           const utilskernel::reduction::ReductionOp );                  \
+    template void DenseStorageView<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;   \
+    template void DenseStorageView<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,     \
+                                                              const utilskernel::reduction::ReductionOp );               \
+    template void DenseStorageView<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                  \
+    template void DenseStorageView<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                  \
+    template void DenseStorageView<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                        \
+    template void DenseStorageView<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,           \
             hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define DENSE_STORAGE_INST_LVL1( ValueType )                                                                                  \
