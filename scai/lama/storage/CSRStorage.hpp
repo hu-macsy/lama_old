@@ -292,15 +292,27 @@ public:
      */
     virtual void setDiagonalProperty();
 
-    /** Template method for getting row. */
+    /** Template version of getRow */
 
     template<typename OtherType>
     void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
+
+    /** Template version of setRow */
+
+    template<typename OtherType>
+    void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
+                     const utilskernel::reduction::ReductionOp op );
 
     /** Template version of getColumn */
 
     template<typename OtherType>
     void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
+
+    /** Template version of setColumn */
+
+    template<typename OtherType>
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j, 
+                        const utilskernel::reduction::ReductionOp op );
 
     /** Typed version of getDiagonal
      *

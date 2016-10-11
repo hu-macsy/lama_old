@@ -926,6 +926,56 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
 template<typename ValueType>
 template<typename OtherType>
+void CSRStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
+                                        const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
+
+    // ToDo write more efficient kernel routine for setting a row
+
+    ReadAccess<OtherType> rRow( row );
+
+    for ( IndexType j = 0; j < mNumColumns; ++j )
+    {
+        if ( rRow[j] == common::constants::ZERO )
+        {
+            continue;
+        }
+
+        setValue( i, j, static_cast<ValueType>( rRow[j] ), op );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
+                                           const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
+
+    // ToDo write more efficient kernel routine for setting a column
+
+    ReadAccess<OtherType> rColumn( column );
+
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        if ( rColumn[i] == common::constants::ZERO )
+        {
+            continue;
+        }
+
+        setValue( i, j, static_cast<ValueType>( rColumn[i] ), op );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
 void CSRStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -2289,7 +2339,11 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_NUMERIC_TYPES_HOST )
             hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>&,                                                          \
             hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                                     \
     template void CSRStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void CSRStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
+                                                     const utilskernel::reduction::ReductionOp );                          \
     template void CSRStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
+    template void CSRStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
+                                                        const utilskernel::reduction::ReductionOp );                       \
     template void CSRStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void CSRStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void CSRStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
@@ -2307,6 +2361,6 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_NUMERIC_TYPES_HOST )
 #undef CSR_STORAGE_INST_LVL1
 
 
-    } /* end namespace lama */
+} /* end namespace lama */
 
-    } /* end namespace scai */
+} /* end namespace scai */

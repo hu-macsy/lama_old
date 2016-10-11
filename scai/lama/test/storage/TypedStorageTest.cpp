@@ -240,6 +240,62 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagonalTest, ValueType, scai_numeric_test_types 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    TypedStorages<ValueType> allMatrixStorages( context );    
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages assign dense data" )
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        setDenseData( storage );
+
+        LArray<ScalarRepType> row;
+
+        for ( IndexType i = 0; i < storage.getNumRows(); ++i )
+        {
+            storage.getRow( row, i );
+            storage.setRow( row, i, utilskernel::reduction::SUB );
+        }
+
+        BOOST_CHECK( storage.maxNorm() < ValueType( 0.0001 ) );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    TypedStorages<ValueType> allMatrixStorages( context );
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages assign dense data" )
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        setDenseData( storage );
+
+        LArray<ScalarRepType> column;
+
+        for ( IndexType j = 0; j < storage.getNumColumns(); ++j )
+        {
+            storage.getColumn( column, j );
+            storage.setColumn( column, j, utilskernel::reduction::SUB );
+        }
+
+        BOOST_CHECK( storage.maxNorm() < ValueType( 0.0001 ) );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( getFirstColTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // value type does not matter at all here

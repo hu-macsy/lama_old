@@ -276,6 +276,11 @@ public:
      */
     virtual void getRow( hmemo::_HArray& row, const IndexType i ) const = 0;
 
+    virtual void setRow( const hmemo::_HArray& row, const IndexType i, utilskernel::reduction::ReductionOp op ) = 0;
+
+    virtual void setColumn( const hmemo::_HArray& column, const IndexType j, 
+                            utilskernel::reduction::ReductionOp op            ) = 0;
+
     /** This method returns the j-th column of the matrix
      *
      * @param[out] column is the destination array that will contain the column

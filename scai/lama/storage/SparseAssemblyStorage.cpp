@@ -43,6 +43,7 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/Constants.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
 namespace scai
@@ -817,6 +818,56 @@ void SparseAssemblyStorage<ValueType>::getColumnImpl( HArray<OtherType>& column,
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
         wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void SparseAssemblyStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
+                                                   const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
+
+    // ToDo write more efficient kernel routine for setting a row
+
+    ReadAccess<OtherType> rRow( row );
+
+    for ( IndexType j = 0; j < mNumColumns; ++j )
+    {   
+        if ( rRow[j] == common::constants::ZERO )
+        {
+            continue;
+        }
+
+        setValue( i, j, static_cast<ValueType>( rRow[j] ), op );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void SparseAssemblyStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
+                                                      const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
+
+    // ToDo write more efficient kernel routine for setting a column
+
+    ReadAccess<OtherType> rColumn( column );
+
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        if ( rColumn[i] == common::constants::ZERO )
+        {
+            continue;
+        }
+
+        setValue( i, j, static_cast<ValueType>( rColumn[i] ), op );
     }
 }
 

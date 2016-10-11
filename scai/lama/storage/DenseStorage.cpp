@@ -55,7 +55,6 @@
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
-using namespace scai::hmemo;
 
 using std::abs;
 // so we can use abs for float and double and own abs for Complex
@@ -65,6 +64,8 @@ namespace scai
 
 using common::shared_ptr;
 using common::TypeTraits;
+
+using namespace hmemo;
 
 using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
@@ -660,7 +661,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
     // using BLAS2 interface requires result and y to be aliased
 
-    if ( beta == scai::common::constants::ZERO )
+    if ( beta == common::constants::ZERO )
     {
         result.resize( mNumRows );
         utilskernel::HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, this->getContextPtr() );
@@ -680,11 +681,11 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     {
         SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
-        if ( beta == scai::common::constants::ZERO )
+        if ( beta == common::constants::ZERO )
         {
             // nothing more to do, y is already 0
         }
-        else if ( beta == scai::common::constants::ONE )
+        else if ( beta == common::constants::ONE )
         {
             // no scaling required
         }
@@ -742,7 +743,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
     // using BLAS2 interface requires result and y to be aliased
 
-    if ( beta == scai::common::constants::ZERO )
+    if ( beta == common::constants::ZERO )
     {
         result.resize( mNumColumns );
         utilskernel::HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, this->getContextPtr() );
@@ -763,11 +764,11 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     {
         SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
-        if ( beta == scai::common::constants::ZERO )
+        if ( beta == common::constants::ZERO )
         {
             // nothing more to do, y is already 0
         }
-        else if ( beta == scai::common::constants::ONE )
+        else if ( beta == common::constants::ONE )
         {
             // no scaling required
         }
@@ -925,7 +926,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     mNumRows = m;
     mNumColumns = n;
 
-    if ( beta == scai::common::constants::ZERO )
+    if ( beta == common::constants::ZERO )
     {
         // do not care at all about C as it might be any dummy, or aliased to result
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;

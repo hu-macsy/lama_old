@@ -972,9 +972,9 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
         const ValueType,
         const HArray<ValueType>& ) const
         = &MatrixStorage<ValueType>::matrixTimesVector;
-    using scai::common::bind;
-    using scai::common::ref;
-    using scai::common::cref;
+    using common::bind;
+    using common::ref;
+    using common::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -997,9 +997,9 @@ SyncToken* MatrixStorage<ValueType>::vectorTimesMatrixAsync(
         const ValueType,
         const HArray<ValueType>& ) const
         = &MatrixStorage<ValueType>::vectorTimesMatrix;
-    using scai::common::bind;
-    using scai::common::ref;
-    using scai::common::cref;
+    using common::bind;
+    using common::ref;
+    using common::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -1033,9 +1033,9 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
         const HArray<ValueType>&,
         const ValueType ) const
         = &MatrixStorage<ValueType>::jacobiIterate;
-    using scai::common::bind;
-    using scai::common::cref;
-    using scai::common::ref;
+    using common::bind;
+    using common::cref;
+    using common::ref;
     return new TaskSyncToken( bind( pf, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
 }
 
