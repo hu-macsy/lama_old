@@ -274,8 +274,15 @@ public:
      * @param[in] i is the row index
      *
      */
-
     virtual void getRow( hmemo::_HArray& row, const IndexType i ) const = 0;
+
+    /** This method returns the j-th column of the matrix
+     *
+     * @param[out] column is the destination array that will contain the column
+     * @param[in] j is the row index
+     *
+     */
+    virtual void getColumn( hmemo::_HArray& column, const IndexType j ) const = 0;
 
     /** This method returns the diagonal of the matrix.
      *

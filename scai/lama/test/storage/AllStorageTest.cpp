@@ -249,6 +249,35 @@ BOOST_AUTO_TEST_CASE( assignDenseTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( getColTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+    DenseStorage<ValueType> denseStorage;
+    initStorage( denseStorage );
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+    Storages allMatrixStorages( context );    // is created by factory
+    SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages assign dense data" )
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        _MatrixStorage& storage = *allMatrixStorages[s];
+        initStorage( storage );
+
+        LArray<ValueType> col1;
+        LArray<ValueType> col2;
+
+        for ( IndexType j = 0; j < denseStorage.getNumColumns(); ++j )
+        {
+            storage.getColumn( col1, j );
+            denseStorage.getColumn( col2, j );
+ 
+            BOOST_CHECK( col1.maxDiffNorm( col2 ) < ValueType( 0.0001 ) );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( printTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context

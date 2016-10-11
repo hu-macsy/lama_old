@@ -323,6 +323,11 @@ public:
     template<typename OtherType>
     void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
 
+    /** Template version of getColumn */
+
+    template<typename OtherType>
+    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const __attribute( ( noinline ) );
+
     /** This method returns the diagonal
      *
      * @param[in] diagonal  is the destination array

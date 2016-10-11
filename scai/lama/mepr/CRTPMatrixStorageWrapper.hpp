@@ -92,6 +92,12 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
         const IndexType )
     {}
 
+    static void getColumnImpl(
+        const Derived*,
+        hmemo::_HArray&,
+        const IndexType )
+    {}
+
     static void getDiagonalImpl(
         const Derived*,
         hmemo::_HArray& )
@@ -182,6 +188,21 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H, T> >
         else
         {
             CRTPMatrixStorageWrapper<Derived, T>::getRowImpl( obj, row, irow );
+        }
+    }
+
+    static void getColumnImpl(
+        const Derived* obj,
+        hmemo::_HArray& column,
+        const IndexType j )
+    {
+        if ( column.getValueType() == common::getScalarType<H>() )
+        {
+            obj->getColumnImpl( reinterpret_cast<hmemo::HArray<H>& >( column ), j );
+        }
+        else
+        {
+            CRTPMatrixStorageWrapper<Derived, T>::getColumnImpl( obj, column, j );
         }
     }
 

@@ -794,14 +794,9 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
 
     const IndexType localRowSize = getRowDistribution().getLocalSize();
 
-    WriteOnlyAccess<ValueType> colAccess( column, localRowSize );
-
     if ( nIndex != jLocal )
     {
-        for ( IndexType i = 0; i < localRowSize; ++i )
-        {
-            colAccess[i] = mLocalData->getValue( i, jLocal );
-        }
+        mLocalData->getColumn( column, jLocal );
     }
     else
     {
@@ -809,17 +804,11 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
 
         if ( nIndex != jHalo )
         {
-            for ( IndexType i = 0; i < localRowSize; ++i )
-            {
-                colAccess[i] = mHaloData->getValue( i, jHalo );
-            }
+            mHaloData->getColumn( column, jHalo );
         }
         else
         {
-            for ( IndexType i = 0; i < localRowSize; ++i )
-            {
-                colAccess[i] = static_cast<ValueType>( 0 );
-            }
+            column.init( ValueType( 0 ), localRowSize );
         }
     }
 }

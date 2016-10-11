@@ -805,6 +805,24 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+template<typename OtherType>
+void SparseAssemblyStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    // ToDo write more efficient kernel routine for getting a column
+
+    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     const IndexType numDiagonalElements = common::Math::min( mNumColumns, mNumRows );

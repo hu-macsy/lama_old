@@ -209,9 +209,9 @@ void DenseStorageView<ValueType>::setRowImpl( const HArray<OtherType>& row, cons
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType colIndex ) const
+void DenseStorageView<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( colIndex, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
     column.clear();                 // make all data invalid 
     column.resize( mNumRows );      // resize it
@@ -220,7 +220,7 @@ void DenseStorageView<ValueType>::getColumnImpl( HArray<OtherType>& column, cons
     // first = denseindex( 0, j, numRows, numColumns )
 
     const IndexType inc   = mNumColumns;
-    const IndexType first = colIndex;
+    const IndexType first = j;
 
     HArrayUtils::setArraySection( column, 0, 1,
                                   mData, first, inc, 

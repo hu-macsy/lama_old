@@ -578,6 +578,24 @@ void ELLStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
 template<typename ValueType>
 template<typename OtherType>
+void ELLStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    // ToDo write more efficient kernel routine for getting a column
+
+    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
 void ELLStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     SCAI_LOG_INFO( logger, "getDiagonalImpl # diagonal = " << diagonal )
@@ -1818,6 +1836,7 @@ SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void ELLStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void ELLStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void ELLStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void ELLStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void ELLStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \

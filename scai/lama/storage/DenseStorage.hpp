@@ -315,10 +315,10 @@ public:
                      const utilskernel::reduction::ReductionOp op );
 
     template<typename OtherType>
-    void getColumnImpl( hmemo::HArray<OtherType>& row, const IndexType colIndex ) const;
+    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
 
     template<typename OtherType>
-    void setColumnImpl( const hmemo::HArray<OtherType>& row, const IndexType colIndex, 
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j, 
                         const utilskernel::reduction::ReductionOp op );
 
     /** Template method for getting diagonal. */

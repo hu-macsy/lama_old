@@ -949,6 +949,26 @@ void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const Ind
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void COOStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    
+    // ToDo write more efficient kernel routine for getting a column
+    
+    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
@@ -1130,6 +1150,7 @@ SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void COOStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \

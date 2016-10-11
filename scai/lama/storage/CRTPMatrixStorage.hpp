@@ -140,11 +140,18 @@ public:
             static_cast<const Derived*>( this ), csrIA, csrJA, csrValues, this->getContextPtr() );
     }
 
-    /** Get the i-th row of a storage as LAMA array. */
+    /** Common implementation for MatrixStorage::getRow via getRowImpl */
 
-    void getRow( hmemo::_HArray& row, const IndexType irow ) const
+    void getRow( hmemo::_HArray& row, const IndexType i ) const
     {
-        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::getRowImpl( static_cast<const Derived*>( this ), row, irow );
+        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::getRowImpl( static_cast<const Derived*>( this ), row, i );
+    }
+
+    /** Common implementation for MatrixStorage::getColumn via getColumnImpl */
+
+    void getColumn( hmemo::_HArray& column, const IndexType j ) const
+    {
+        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::getColumnImpl( static_cast<const Derived*>( this ), column, j );
     }
 
     void getDiagonal( hmemo::_HArray& diagonal ) const

@@ -297,6 +297,11 @@ public:
     template<typename OtherType>
     void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
 
+    /** Template version of getColumn */
+
+    template<typename OtherType>
+    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
+
     /** Typed version of getDiagonal
      *
      * @param[out] diagonal is the typed LAMA array for output

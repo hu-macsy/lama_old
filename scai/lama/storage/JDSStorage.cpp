@@ -331,6 +331,24 @@ void JDSStorage<ValueType>::getRowImpl( HArray<OtherValueType>& row, const Index
     getRow[loc]( wRow.get(), i, mNumColumns, mNumRows, perm.get(), ilg.get(), dlg.get(), ja.get(), values.get() );
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    // ToDo write more efficient kernel routine for getting a column
+
+    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+    }
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
@@ -1464,6 +1482,7 @@ SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void JDSStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void JDSStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void JDSStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
