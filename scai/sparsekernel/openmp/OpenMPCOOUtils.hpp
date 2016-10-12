@@ -70,6 +70,17 @@ public:
         const IndexType cooJA[],
         const IndexType numValues );
 
+    /** Implementation for COOKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType cooIA[],
+        const IndexType numRows,
+        const IndexType cooJA[],
+        const IndexType numValues );
+
     /** OpenMP implementation for COOKernelTrait::hasDiagonalProperty */
 
     static bool hasDiagonalProperty (

@@ -70,6 +70,36 @@ struct COOKernelTrait
         }
     };
 
+    struct getValuePosCol
+    {
+        /** This method returns for a certain column of the COO matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the cooIA/cooJA/cooValues array
+         *
+         *  @param[out] row indexes of rows that have an entry for column j
+         *  @param[out] pos positions of entries with col = j in csrJA, 
+         *  @param[in] j is the column of which positions are required
+         *  @param[in] cooIA is the COO array with row indexes
+         *  @param[in] numRows is the number of rows
+         *  @param[in] cooJA is the COO array with col indexes
+         *  @param[in] numValues is the number of non-zero values
+         *  @returns  number of entries with col index = j
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType row[],
+            IndexType pos[],
+            const IndexType j,
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const IndexType csrJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "COO.getValuePosCol";
+        }
+    };
+
     struct hasDiagonalProperty
     {
         /** Routine checks for diagonal property, first n entries are the diagonal elements.

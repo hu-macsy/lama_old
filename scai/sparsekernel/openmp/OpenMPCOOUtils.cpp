@@ -83,6 +83,42 @@ IndexType OpenMPCOOUtils::getValuePos( const IndexType i, const IndexType j,
 
 /* --------------------------------------------------------------------------- */
 
+static inline IndexType atomicInc( IndexType& var )
+{
+    return __sync_fetch_and_add( &var, 1 );
+}
+
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPCOOUtils::getValuePosCol( IndexType row[], IndexType pos[],
+                                          const IndexType j,
+                                          const IndexType cooIA[], const IndexType,
+                                          const IndexType cooJA[], const IndexType numValues )
+{
+    SCAI_REGION( "OpenMP.COOUtils.getValuePosCol" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    #pragma omp parallel for
+
+    for ( IndexType n = 0; n < numValues; ++n )
+    {
+        if ( cooJA[n] == j )
+        {
+            // found a new entry for column j, save its position and row index
+
+            IndexType k = atomicInc( cnt ); 
+
+            row[k] = cooIA[n];
+            pos[k] = n;
+        }
+    }
+
+    return cnt;
+}
+
+/* --------------------------------------------------------------------------- */
+
 bool OpenMPCOOUtils::hasDiagonalProperty(
     const IndexType cooIA[],
     const IndexType cooJA[],
@@ -400,6 +436,7 @@ void OpenMPCOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<COOKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
     KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );
