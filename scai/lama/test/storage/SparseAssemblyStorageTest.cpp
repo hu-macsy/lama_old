@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, ValueType, scai_numeric_test_types )
             wJa[0] = i;
             wValues[0] = 1.0;
         }
-        assemblyStorage.setRow( i, ja, values );
+        assemblyStorage.setSparseRow( i, ja, values );
     }
 
     for ( IndexType i = 0; i < n; ++i )
