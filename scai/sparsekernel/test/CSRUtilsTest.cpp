@@ -212,11 +212,13 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
     IndexType columnIndex = 1;   // has 1 entry
 
     {
+        SCAI_CONTEXT_ACCESS( loc );
+
         ReadAccess<IndexType> rCSRIA( csrIA, loc );
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
         WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, numRows, rCSRIA.get(), rCSRJA.get() );
+        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, 1 );   //  only one entry for column 1
@@ -231,11 +233,13 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
 
     columnIndex = 2;
     {
+        SCAI_CONTEXT_ACCESS( loc );
+
         ReadAccess<IndexType> rCSRIA( csrIA, loc );
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
         WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, numRows, rCSRIA.get(), rCSRJA.get() );
+        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, 2 );   //  two entries for column 2, order might be arbitrary

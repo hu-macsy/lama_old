@@ -165,32 +165,49 @@ void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], 
 /*     getValuePosCol                                                          */
 /* --------------------------------------------------------------------------- */
 
-  struct notEqual
+  struct isColumn
   {
-    const IndexType mOutOfRange;
+    const IndexType mCol;
 
-    notEqual( const IndexType val ) : mOutOfRange( val ) 
+    isColumn( const IndexType col ) : mCol( col ) 
     {
     }
 
     __host__ __device__
     bool operator()(const IndexType x)
     {
-      return x != mOutOfRange;
+      return x == mCol;
     }
   };
 
 __global__
-static void get_col_pos_kernel( IndexType row[], IndexType pos[], const IndexType j, 
-                                const IndexType csrIA[], const IndexType numRows,
-                                const IndexType csrJA[], const IndexType numValues )
+static void get_row_kernel( IndexType row[], const IndexType pos[], const IndexType n, const IndexType csrIA[], const IndexType numRows )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        row[i] = 0;
+
+        for ( IndexType k = 0; k < numRows; ++k )
+        {
+            if ( pos[i] >= csrIA[k] )
+            {
+                row[i] = k;
+            }
+        }
+    }
+}
+
+__global__
+static void kernel1( IndexType row[], IndexType pos[], const IndexType n, const IndexType csrIA[], const IndexType numRows )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
     
-    if ( i < numRows )
+    if ( i < n )
     {
-        row[i] = numRows;     // out of range value indicates not found
-        pos[i] = numValues;   // out of range value indicates not found
+        row[i] = numRows;     // out of range value
+        pos[i] = numValues;   // out of range value
 
         for ( IndexType k = csrIA[i]; k < csrIA[i+1]; ++k )
         {   
@@ -203,44 +220,41 @@ static void get_col_pos_kernel( IndexType row[], IndexType pos[], const IndexTyp
     }
 }
 
-/* --------------------------------------------------------------------------- */
-
-IndexType CUDACSRUtils::getValuePosCol( IndexType row[], IndexType pos[], const IndexType j, 
-                                        const IndexType csrIA[], const IndexType numRows, 
-                                        const IndexType csrJA[], const IndexType numValues )
+IndexType CUDACSRUtils::getValuePosCol( IndexType row[], IndexType pos[],
+                                        const IndexType j, const IndexType numRows,
+                                        const IndexType csrIA[], const IndexType csrJA[] )
 {
-    SCAI_REGION( "CUDA.CSRUtils.getValuePosCol" )
-
-    SCAI_LOG_INFO( logger, "getValuePosCol: j = " << j << ", #rows = " << numRows << ", #nnz = " << numValues )
+    SCAI_LOG_ERROR( logger, "getValuePosCol: j = " << j << ", #rows = " << numRows )
 
     SCAI_CHECK_CUDA_ACCESS
 
-    // compute 'full' row, pos arrays 
+    IndexType numValues = CUDAUtils::getValue( csrIA, numRows );
+
+    SCAI_LOG_ERROR( logger, "numValues = " << numValues )
+
+    thrust::device_ptr<IndexType> d_ja( const_cast<IndexType*>( csrJA ) );
+    thrust::device_ptr<IndexType> d_pos( pos );
+
+    // d_pos : must it be of size numValues, as it is filled with 0
+
+    IndexType cnt = thrust::copy_if( thrust::make_counting_iterator( 0 ), 
+                                     thrust::make_counting_iterator( numValues ), 
+                                     d_ja, 
+                                     d_pos, 
+                                     isColumn( j ) ) - d_pos;
+
+    SCAI_LOG_ERROR( logger, "cnt = " << cnt )
+
+    // now we have all positions, but we need also row
 
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
-    get_col_pos_kernel<<< dimGrid, dimBlock>>>( row, pos, j, csrIA, numRows, csrJA, numValues );
+    dim3 dimGrid = makeGrid( cnt, dimBlock.x );
+    get_row_kernel<<< dimGrid, dimBlock>>>( row, pos, cnt, csrIA, numRows );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "get_row_kernel" )
 
-    thrust::device_ptr<IndexType> d_pos( pos );
-    thrust::device_ptr<IndexType> d_row( row );
-
-    IndexType cnt1 = thrust::copy_if( d_pos,
-                                      d_pos + numRows,
-                                      d_pos,
-                                      notEqual( numValues ) ) - d_pos;
-
-    IndexType cnt2 = thrust::copy_if( d_row,
-                                      d_row + numRows,
-                                      d_row, 
-                                      notEqual( numRows ) ) - d_row;
-
-    SCAI_ASSERT_EQ_ERROR( cnt1, cnt2, "serious size mismatch of row/pos arrays" )
-
-    return cnt1;
+    return cnt;
 }
 
 /* --------------------------------------------------------------------------- */

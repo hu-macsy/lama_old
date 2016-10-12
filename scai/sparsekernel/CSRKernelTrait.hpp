@@ -76,23 +76,27 @@ struct CSRKernelTrait
 
     struct getValuePosCol
     {
-        /** Returns positions of element (:,j) in ja/values array
+        /** This method returns for a certain column of the CSR matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the csrJA/csrValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
          *  @param[out] pos positions of entries with col = j in csrJA, 
          *  @param[in] j is the column of which positions are required
-         *  @param[in] numRows is the number of rows
          *  @param[in] csrIA is the CSR offset array
+         *  @param[in] numRows is the number of rows
          *  @param[in] csrJA is the CSR ja array
+         *  @param[in] numValues is the number of non-zero values
          *  @returns  number of entries with col index = j
          */
         typedef IndexType ( *FuncType ) (
             IndexType row[],
             IndexType pos[],
             const IndexType j,
-            const IndexType numRows,
             const IndexType csrIA[],
-            const IndexType csrJA[] );
+            const IndexType numRows,
+            const IndexType csrJA[],
+            const IndexType numValues );
 
         static const char* getId()
         {

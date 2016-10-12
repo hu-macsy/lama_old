@@ -503,10 +503,13 @@ static inline IndexType atomicInc( IndexType& var )
 /* --------------------------------------------------------------------------- */
 
 IndexType OpenMPCSRUtils::getValuePosCol( IndexType row[], IndexType pos[], 
-                                          const IndexType j, const IndexType numRows,
-                                          const IndexType csrIA[], const IndexType csrJA[] )
+                                          const IndexType j, 
+                                          const IndexType csrIA[], const IndexType numRows,
+                                          const IndexType csrJA[], const IndexType )
 {
-    IndexType cnt  = 0;       // counts number of available row entries
+    SCAI_REGION( "OpenMP.CSRUtils.getValuePosCol" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
 
     #pragma omp parallel for
     for ( IndexType i = 0; i < numRows; ++i )

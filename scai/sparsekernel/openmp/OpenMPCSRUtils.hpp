@@ -71,16 +71,10 @@ public:
         IndexType row[], 
         IndexType pos[],
         const IndexType j, 
+        const IndexType csrIA[], 
         const IndexType numRows,
-        const IndexType csrIA[], 
-        const IndexType csrJA[] );
-
-    static IndexType getValuePosRow( 
-        IndexType col[], 
-        IndexType pos[],
-        const IndexType i,
-        const IndexType csrIA[], 
-        const IndexType csrJA[] );
+        const IndexType csrJA[],
+        const IndexType numValues );
 
     /** This method computes the total number of non-zero rows by the offset array
      *
