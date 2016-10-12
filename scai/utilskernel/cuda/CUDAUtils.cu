@@ -42,6 +42,8 @@
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
 
+#include <scai/tracing.hpp>
+
 #include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
@@ -671,6 +673,8 @@ void gatherKernel( ValueType1* out, const ValueType2* in, const IndexType* index
 template<typename ValueType1, typename ValueType2>
 void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
+    SCAI_REGION( "CUDA.Utils.setGather" )
+
     SCAI_LOG_INFO( logger,
                    "setGather<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
     SCAI_CHECK_CUDA_ACCESS
@@ -722,6 +726,8 @@ void scatter_sub_kernel( ValueType* out, const IndexType* indexes, const OtherVa
 template<typename ValueType1, typename ValueType2>
 void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const reduction::ReductionOp op, const IndexType n )
 {
+    SCAI_REGION( "CUDA.Utils.setScatter" )
+
     SCAI_LOG_INFO( logger,
                    "setScatter<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
 
@@ -844,6 +850,8 @@ void setKernelDivide( ValueType* out, const OtherValueType* in, const IndexType 
 template<typename ValueType, typename OtherValueType>
 void CUDAUtils::set( ValueType out[], const OtherValueType in[], const IndexType n, const reduction::ReductionOp op )
 {
+    SCAI_REGION( "CUDA.Utils.set" )
+
     SCAI_LOG_INFO( logger,
                    "set<" << TypeTraits<ValueType>::id() << "," << TypeTraits<OtherValueType>::id() << ">( ..., n = " << n << ")" )
     SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
@@ -884,7 +892,7 @@ void CUDAUtils::set( ValueType out[], const OtherValueType in[], const IndexType
             COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
     }
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setKernel<Op>" );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -959,8 +967,11 @@ void CUDAUtils::setSection( ValueType out[], const IndexType inc1,
                             const OtherValueType in[], const IndexType inc2,
                             const IndexType n, const reduction::ReductionOp op )
 {
+    SCAI_REGION( "CUDA.Utils.setSection" )
+
     SCAI_LOG_INFO( logger,
-                   "setSection<" << TypeTraits<ValueType>::id() << "," << TypeTraits<OtherValueType>::id() << ">( ..., n = " << n << ")" )
+                   "setSection<" << TypeTraits<ValueType>::id() << "," << TypeTraits<OtherValueType>::id() 
+                    << "> : out(:" << inc2 << ") <- in(:" << inc1 << "), n = " << n << ", op = " << op )
 
     SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 

@@ -822,6 +822,8 @@ void DenseMatrix<ValueType>::joinColumnData(
     const IndexType firstRow,
     const IndexType nRows ) const
 {
+    SCAI_REGION( "Mat.Dense.joinColumnData" )
+
     SCAI_LOG_DEBUG( logger, "join column data, firstRow = " << firstRow << ", nRows = " << nRows << ", result = " << result )
     const IndexType ncol = getNumColumns();
     // make sure that the array mOwners is set correctly
@@ -1167,6 +1169,8 @@ void DenseMatrix<ValueType>::setContextPtr( const ContextPtr context )
 template<typename ValueType>
 void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexType localRowIndex ) const
 {
+    SCAI_REGION( "Mat.Dense.getLocalRow" )
+
     SCAI_ASSERT_VALID_INDEX_DEBUG( localRowIndex, getRowDistribution().getLocalSize(), "illegal local row index" );
 
     SCAI_LOG_INFO( logger, "get local row " << localRowIndex << " from this matrix: " << *this )
@@ -1193,6 +1197,8 @@ void DenseMatrix<ValueType>::setLocalRow(
     const IndexType localRowIndex,
     const utilskernel::reduction::ReductionOp op )
 {
+    SCAI_REGION( "Mat.Dense.setLocalRow" )
+
     SCAI_ASSERT_VALID_INDEX_DEBUG( localRowIndex, getRowDistribution().getLocalSize(), "illegal local row index" )
     SCAI_ASSERT_EQ_DEBUG( row.size(), mNumColumns, "size of row illegal" )
 
@@ -1272,6 +1278,8 @@ static IndexType getLocalIndex( const IndexType globalIndex, const Distribution&
 template<typename ValueType>
 void DenseMatrix<ValueType>::getLocalColumn( hmemo::HArray<ValueType>& column, const IndexType colIndex ) const
 {
+    SCAI_REGION( "Mat.Dense.getLocalColumn" )
+
     // find the owner and local column index of col
 
     const Distribution& colDist = getColDistribution();
@@ -1296,6 +1304,8 @@ void DenseMatrix<ValueType>::setLocalColumn(
     const IndexType colIndex,
     const utilskernel::reduction::ReductionOp op )
 {
+    SCAI_REGION( "Mat.Dense.setLocalColumn" )
+
     // find the owner and local column index of col
     
     const Distribution& colDist = getColDistribution();

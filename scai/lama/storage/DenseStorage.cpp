@@ -181,7 +181,7 @@ void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const Inde
 
     HArrayUtils::setArraySection( row, 0, 1,             // row (:) 
                                   mData, first, inc,
-                                  mNumColumns, utilskernel::reduction::COPY, mData.getValidContext() );
+                                  mNumColumns, utilskernel::reduction::COPY, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -203,7 +203,7 @@ void DenseStorageView<ValueType>::setRowImpl( const HArray<OtherType>& row, cons
                                   row, 0, 1,
                                   mNumColumns, 
                                   op, 
-                                  mData.getValidContext() );
+                                  this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -227,7 +227,7 @@ void DenseStorageView<ValueType>::getColumnImpl( HArray<OtherType>& column, cons
                                   mData, first, inc, 
                                   mNumRows,    
                                   utilskernel::reduction::COPY, 
-                                  mData.getValidContext() );
+                                  this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -249,7 +249,7 @@ void DenseStorageView<ValueType>::setColumnImpl( const HArray<OtherType>& column
                                   column, 0, 1,
                                   mNumRows, 
                                   op, 
-                                  mData.getValidContext() );
+                                  this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

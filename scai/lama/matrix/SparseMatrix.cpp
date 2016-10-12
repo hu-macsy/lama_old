@@ -696,6 +696,8 @@ SparseMatrix<ValueType>::~SparseMatrix()
 template<typename ValueType>
 void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexType localRowIndex ) const
 {
+    SCAI_REGION( "Mat.Sp.getLocalRow" )
+
     SCAI_LOG_INFO( logger, "getLocalRow( " << localRowIndex << " ) of this matrix: " << *this )
 
     const Distribution& distributionCol = getColDistribution();
@@ -748,7 +750,21 @@ void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row,
                                            const IndexType localRowIndex,
                                            const utilskernel::reduction::ReductionOp op )
 {
+    SCAI_REGION( "Mat.Sp.setLocalRow" )
+
     const Distribution& distributionCol = getColDistribution();
+
+    if ( distributionCol.isReplicated() )
+    {
+        mLocalData->setRow( row, localRowIndex, op );
+        return;
+    }
+
+    // ToDo: 
+    //   - build (local) row for mLocalData to set
+    //      * gather regarding the local indexes    
+    //   - build (halo) row for mHaloData to set
+    //      * gather regarding the halo indexes    
 
     ReadAccess<ValueType> rRow( row );
 
@@ -790,6 +806,8 @@ void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row,
 template<typename ValueType>
 void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const IndexType globalColIndex ) const
 {
+    SCAI_REGION( "Mat.Sp.getLocalCol" )
+
     IndexType jLocal = getColDistribution().global2local( globalColIndex );
 
     const IndexType localRowSize = getRowDistribution().getLocalSize();
@@ -820,6 +838,8 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
                                               const IndexType colIndex,
                                               const utilskernel::reduction::ReductionOp op )
 {
+    SCAI_REGION( "Mat.Sp.setLocalCol" )
+
     const IndexType localRowSize = getRowDistribution().getLocalSize();
 
     SCAI_ASSERT_EQ_ERROR( column.size(), localRowSize, "serious size mismatch of local column" )
@@ -830,15 +850,7 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 
     if ( nIndex != jLocal )
     {
-        for ( IndexType i = 0; i < localRowSize; ++i )
-        {
-            if ( colAccess[i] == common::constants::ZERO )
-            {
-                continue;    // zero elements are not set, but be careful about MULT
-            }
-
-            mLocalData->setValue( i, jLocal, colAccess[i], op );
-        }
+        mLocalData->setColumn( column, jLocal, op );
     }
     else
     {
@@ -846,15 +858,7 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 
         if ( nIndex != jHalo )
         {
-            for ( IndexType i = 0; i < localRowSize; ++i )
-            {
-                if ( colAccess[i] == common::constants::ZERO )
-                {
-                    continue;    // zero elements are not set, but be careful about MULT
-                }
-
-                mHaloData->setValue( i, jHalo, colAccess[i], op );
-            }
+            mHaloData->setColumn( column, jHalo,  op );
         }
     }
 }

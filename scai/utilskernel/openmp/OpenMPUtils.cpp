@@ -510,6 +510,7 @@ template<typename ValueType1, typename ValueType2>
 void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op )
 {
     SCAI_REGION( "OpenMP.Utils.set" )
+
     SCAI_LOG_DEBUG( logger,
                     "set: out<" << TypeTraits<ValueType1>::id() << "[" << n << "]"
                     << ", op = " << op << "  in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
