@@ -119,6 +119,35 @@ IndexType OpenMPCOOUtils::getValuePosCol( IndexType row[], IndexType pos[],
 
 /* --------------------------------------------------------------------------- */
 
+IndexType OpenMPCOOUtils::getValuePosRow( IndexType col[], IndexType pos[],
+                                          const IndexType i,
+                                          const IndexType cooIA[], const IndexType,
+                                          const IndexType cooJA[], const IndexType numValues )
+{
+    SCAI_REGION( "OpenMP.COOUtils.getValuePosRow" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    #pragma omp parallel for
+
+    for ( IndexType n = 0; n < numValues; ++n )
+    {
+        if ( cooIA[n] == i )
+        {
+            // found a new entry for column j, save its position and row index
+
+            IndexType k = atomicInc( cnt );
+
+            col[k] = cooJA[n];
+            pos[k] = n;
+        }
+    }
+
+    return cnt;
+}
+
+/* --------------------------------------------------------------------------- */
+
 bool OpenMPCOOUtils::hasDiagonalProperty(
     const IndexType cooIA[],
     const IndexType cooJA[],
@@ -437,6 +466,7 @@ void OpenMPCOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<COOKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<COOKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::getValuePosRow>( getValuePosRow, ctx, flag );
     KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );

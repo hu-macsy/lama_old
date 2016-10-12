@@ -81,6 +81,17 @@ public:
         const IndexType cooJA[],
         const IndexType numValues );
 
+    /** Implementation for COOKernelTrait::getValuePosRow */
+
+    static IndexType getValuePosRow(
+        IndexType col[],
+        IndexType pos[],
+        const IndexType i,
+        const IndexType cooIA[],
+        const IndexType numColumns,
+        const IndexType cooJA[],
+        const IndexType numValues );
+
     /** OpenMP implementation for COOKernelTrait::hasDiagonalProperty */
 
     static bool hasDiagonalProperty (
