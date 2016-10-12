@@ -255,7 +255,7 @@ public:
      * @param[in] ja    the column vector of row i.
      * @param[in] a     the values of row i.
      */
-    void setRow( const IndexType i, const hmemo::HArray<IndexType>& ja, const hmemo::HArray<ValueType>& a );
+    void setSparseRow( const IndexType i, const hmemo::HArray<IndexType>& ja, const hmemo::HArray<ValueType>& a );
 
     /**
      * @brief fixDiagonalProperty fixes the diagonal property of row.
