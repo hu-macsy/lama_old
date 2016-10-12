@@ -527,7 +527,7 @@ IndexType SparseAssemblyStorage<ValueType>::getNumValues() const
 }
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::setRow(
+void SparseAssemblyStorage<ValueType>::setSparseRow(
     const IndexType i,
     const HArray<IndexType>& ja,
     const HArray<ValueType>& values )
