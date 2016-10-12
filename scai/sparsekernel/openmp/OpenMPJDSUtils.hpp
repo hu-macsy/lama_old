@@ -87,8 +87,20 @@ public:
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
-        const IndexType dlg[],
         const IndexType ilg[],
+        const IndexType dlg[],
+        const IndexType perm[],
+        const IndexType ja[] );
+
+    /** Implementation for JDSKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType numRows,
+        const IndexType ilg[],
+        const IndexType dlg[],
         const IndexType perm[],
         const IndexType ja[] );
 

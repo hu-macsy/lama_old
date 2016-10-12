@@ -295,6 +295,36 @@ struct ELLKernelTrait
         }
     };
 
+    struct getValuePosCol
+    {
+        /** This method returns for a certain column of the CSR matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the ellJA/ellValues array
+         *
+         *  @param[out] row indexes of rows that have an entry for column j
+         *  @param[out] pos positions of entries with col = j in csrJA, 
+         *  @param[in] j is the column of which positions are required
+         *  @param[in] ellIA is the ELL sizes array
+         *  @param[in] numRows is the number of rows
+         *  @param[in] csrJA is the CSR ja array
+         *  @param[in] numValuesPerRow is maximal size of one row
+         *  @returns  number of entries with col index = j
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType row[],
+            IndexType pos[],
+            const IndexType j,
+            const IndexType ellIA[],
+            const IndexType numRows,
+            const IndexType ellJA[],
+            const IndexType numValuesPerRow );
+
+        static const char* getId()
+        {
+            return "ELL.getValuePosCol";
+        }
+    };
+
     struct countNonEmptyRowsBySizes
     {
         /** Returns the number of non-empty rows 

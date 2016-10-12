@@ -52,7 +52,7 @@ int main( int argc, const char* argv[] )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    CSRSparseMatrix<double> mat( size, size );
+    JDSSparseMatrix<double> mat( size, size );
 
     mat.setContextPtr( ctx );
 

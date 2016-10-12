@@ -121,7 +121,7 @@ IndexType OpenMPCOOUtils::getValuePosCol( IndexType row[], IndexType pos[],
 
 IndexType OpenMPCOOUtils::getValuePosRow( IndexType col[], IndexType pos[],
                                           const IndexType i,
-                                          const IndexType cooIA[], const IndexType,
+                                          const IndexType cooIA[], const IndexType numColumns,
                                           const IndexType cooJA[], const IndexType numValues )
 {
     SCAI_REGION( "OpenMP.COOUtils.getValuePosRow" )
@@ -142,6 +142,8 @@ IndexType OpenMPCOOUtils::getValuePosRow( IndexType col[], IndexType pos[],
             pos[k] = n;
         }
     }
+
+    SCAI_ASSERT_LE_ERROR( cnt, numColumns, "too many column entries in row " << i )
 
     return cnt;
 }

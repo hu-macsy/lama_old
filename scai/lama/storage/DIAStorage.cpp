@@ -222,14 +222,17 @@ void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
 
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
+
     const ReadAccess<IndexType> offset( mOffset );
     const ReadAccess<ValueType> values( mValues );
 
+    #pragma omp parallel for
     for ( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = static_cast<OtherType>( 0.0 );
+        wRow[j] = static_cast<OtherType>( 0 );
     }
 
+    #pragma omp parallel for
     for ( IndexType d = 0; d < mNumDiagonals; ++d )
     {
         IndexType j = i + offset[d];
@@ -245,17 +248,37 @@ void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
 template<typename ValueType>
 template<typename OtherType>
-void DIAStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+void DIAStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
+                                        const utilskernel::reduction::ReductionOp op )
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
 
-    // ToDo write more efficient kernel routine for getting a column
+    ReadAccess<OtherType> rRow( row );
 
-    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+    ReadAccess<IndexType> offset( mOffset );
+    WriteAccess<ValueType> values( mValues );
 
-    for ( IndexType i = 0; i < mNumRows; ++i )
+    #pragma omp parallel for
+    for ( IndexType d = 0; d < mNumDiagonals; ++d )
     {
-        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+        IndexType j = i + offset[d];
+
+        if ( common::Utils::validIndex( j, mNumColumns ) )
+        {
+            ValueType val = static_cast<ValueType>( rRow[j] );
+            ValueType& loc = values[diaindex( i, d, mNumRows, mNumDiagonals )];
+
+            switch ( op ) 
+            {
+               case utilskernel::reduction::COPY : loc = val; break;
+               case utilskernel::reduction::ADD  : loc += val; break;
+               case utilskernel::reduction::SUB  : loc -= val; break;
+               case utilskernel::reduction::MULT : loc *= val; break;
+               case utilskernel::reduction::DIVIDE : loc /= val; break;
+               default:  break;
+            }
+        }
     }
 }
 
@@ -263,24 +286,30 @@ void DIAStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
 
 template<typename ValueType>
 template<typename OtherType>
-void DIAStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
-                                        const utilskernel::reduction::ReductionOp op )
+void DIAStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
-    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
-    // ToDo write more efficient kernel routine for setting a row
+    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
 
-    ReadAccess<OtherType> rRow( row );
+    const ReadAccess<IndexType> offset( mOffset );
+    const ReadAccess<ValueType> values( mValues );
 
-    for ( IndexType j = 0; j < mNumColumns; ++j )
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
-        if ( rRow[j] == common::constants::ZERO )
-        {
-            continue;
-        }
+        wColumn[i] = static_cast<OtherType>( 0 );
+    }
 
-        setValue( i, j, static_cast<ValueType>( rRow[j] ), op );
+    #pragma omp parallel for
+    for ( IndexType d = 0; d < mNumDiagonals; ++d )
+    {
+        IndexType i = j - offset[d];
+
+        if ( common::Utils::validIndex( i, mNumRows ) )
+        {
+            wColumn[i] = static_cast<OtherType>( values[diaindex( i, d, mNumRows, mNumDiagonals )] );
+        }
     }
 }
 
@@ -294,18 +323,31 @@ void DIAStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
     SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
 
-    // ToDo write more efficient kernel routine for setting a column
-
     ReadAccess<OtherType> rColumn( column );
 
-    for ( IndexType i = 0; i < mNumRows; ++i )
-    {
-        if ( rColumn[i] == common::constants::ZERO )
-        {
-            continue;
-        }
+    ReadAccess<IndexType> offset( mOffset );
+    WriteAccess<ValueType> values( mValues );
 
-        setValue( i, j, static_cast<ValueType>( rColumn[i] ), op );
+    #pragma omp parallel for
+    for ( IndexType d = 0; d < mNumDiagonals; ++d )
+    {
+        IndexType i = j - offset[d];
+
+        if ( common::Utils::validIndex( i, mNumRows ) )
+        {
+            ValueType val = static_cast<ValueType>( rColumn[i] );
+            ValueType& loc = values[diaindex( i, d, mNumRows, mNumDiagonals )];
+
+            switch ( op ) 
+            {
+               case utilskernel::reduction::COPY : loc = val; break;
+               case utilskernel::reduction::ADD  : loc += val; break;
+               case utilskernel::reduction::SUB  : loc -= val; break;
+               case utilskernel::reduction::MULT : loc *= val; break;
+               case utilskernel::reduction::DIVIDE : loc /= val; break;
+               default:  break;
+            }
+        }
     }
 }
 
@@ -560,7 +602,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     const HArray<OtherValueType>& values,
     ContextPtr prefLoc )
 {
-    SCAI_REGION( "Storage.DIA<-CSR" )
+    SCAI_REGION( "Storage.DIA.setCSR" )
 
     if ( ia.size() == numRows )
     {

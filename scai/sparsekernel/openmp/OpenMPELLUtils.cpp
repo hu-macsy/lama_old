@@ -318,6 +318,45 @@ IndexType OpenMPELLUtils::getValuePos(
     return vPos;
 }
 
+/* --------------------------------------------------------------------------- */
+
+static inline IndexType atomicInc( IndexType& var )
+{
+    return __sync_fetch_and_add( &var, 1 );
+}
+
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPELLUtils::getValuePosCol( IndexType row[], IndexType pos[],
+                                          const IndexType j,
+                                          const IndexType ellIA[], const IndexType numRows,
+                                          const IndexType ellJA[], const IndexType numValuesPerRow )
+{
+    SCAI_REGION( "OpenMP.ELLUtils.getValuePosCol" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = 0; jj < ellIA[i]; ++jj )
+        {
+            IndexType p = ellindex( i, jj, numRows, numValuesPerRow );
+
+            if ( ellJA[p] == j )
+            {
+                IndexType k = atomicInc( cnt );
+                row[k] = i;
+                pos[k] = p;
+                break;
+            }
+        }
+    }
+
+    return cnt;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ELLValueType, typename CSRValueType>
@@ -1223,6 +1262,7 @@ void OpenMPELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<ELLKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );

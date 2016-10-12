@@ -1311,6 +1311,88 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_numeric_test_types
     }
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( getValuePosColTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    kregistry::KernelTraitContextFunction<ELLKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = Context::getContextPtr( getValuePosCol.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    //    1.0   -   2.0      
+    //    0.5  0.3   -       
+    //     -    -   3.0      
+
+    const IndexType ia[] = { 2, 2, 1 };
+    //  not this way: const IndexType ja[] = { 0, 2, 0, 1, 2, nIndex };
+    const IndexType ja[] = { 0, 0, 2, 2, 1, nIndex };
+
+    const IndexType numRows = 3;
+    const IndexType numValuesPerRow = 2;
+
+    HArray<IndexType> ellIA( numRows, ia, testContext );
+    HArray<IndexType> ellJA( numRows * numValuesPerRow, ja, testContext );
+
+    HArray<IndexType> row;   // result for rowIndexes 
+    HArray<IndexType> pos;   // result for positions
+
+    IndexType cnt;
+
+    IndexType columnIndex = 1;   // has 1 entry
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( ellIA, loc );
+        ReadAccess<IndexType> rJA( ellJA, loc );
+        WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
+        WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
+        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValuesPerRow );
+    }
+
+    BOOST_REQUIRE_EQUAL( cnt, 1 );   //  only one entry for column 1
+
+    {
+        ReadAccess<IndexType> rPos( pos );
+        ReadAccess<IndexType> rRow( row );
+
+        BOOST_CHECK_EQUAL( 1, rRow[0] );   // is in entry row
+        BOOST_CHECK_EQUAL( 4, rPos[0] );   // value of for (1,1) is at pos 4
+    }
+
+    columnIndex = 2;
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( ellIA, loc );
+        ReadAccess<IndexType> rJA( ellJA, loc );
+        WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
+        WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
+        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValuesPerRow );
+    }
+
+    BOOST_REQUIRE_EQUAL( cnt, 2 );   //  two entries for column 2, order might be arbitrary
+
+    {
+        ReadAccess<IndexType> rPos( pos );
+        ReadAccess<IndexType> rRow( row );
+        ReadAccess<IndexType> rJA( ellJA );
+        ReadAccess<IndexType> rIA( ellIA );
+
+        for ( IndexType k = 0; k < cnt; ++k )
+        {
+            IndexType p = rPos[k];
+            IndexType i = rRow[k];
+            BOOST_CHECK_EQUAL( rJA[ p ], columnIndex );
+            BOOST_CHECK_EQUAL( p % numRows, i );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END()

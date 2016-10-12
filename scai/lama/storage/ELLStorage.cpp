@@ -580,16 +580,40 @@ template<typename ValueType>
 template<typename OtherType>
 void ELLStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_REGION( "Storage.ELL.getCol" )
 
-    // ToDo write more efficient kernel routine for getting a column
+    static LAMAKernel<ELLKernelTrait::getValuePosCol> getValuePosCol;
 
-    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+    ContextPtr loc = this->getContextPtr();
 
-    for ( IndexType i = 0; i < mNumRows; ++i )
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
     {
-        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIA( mIA, loc );
+        ReadAccess<IndexType> rJA( mJA, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
+                                             rIA.get(), mNumRows, rJA.get(), mNumValuesPerRow );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
     }
+
+    column.init( ValueType( 0 ), mNumRows );
+
+    // column[ row ] = mValues[ pos ];
+
+    HArrayUtils::gather( colValues, mValues, valuePos, loc );
+    HArrayUtils::scatter( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */

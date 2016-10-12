@@ -69,6 +69,7 @@ RUN 1 bench/conversion.exe
 RUN 1 bench/matadd.exe
 RUN 1 bench/matmul.exe
 RUN 1 bench/maxnorm.exe
+RUN 1 bench/rowcol.exe
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/bench/*.exe | wc -l`

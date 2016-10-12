@@ -316,6 +316,8 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::getRowImpl( HArray<OtherValueType>& row, const IndexType i ) const
 {
+    SCAI_REGION( "Storage.JDS.getRow" )
+
     SCAI_LOG_INFO( logger, "getRowImpl with i = " << i )
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     static LAMAKernel<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
@@ -339,14 +341,42 @@ void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
-    // ToDo write more efficient kernel routine for getting a column
+    SCAI_REGION( "Storage.JDS.getCol" )
 
-    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+    static LAMAKernel<JDSKernelTrait::getValuePosCol> getValuePosCol;
 
-    for ( IndexType i = 0; i < mNumRows; ++i )
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
     {
-        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIlg( mIlg, loc );
+        ReadAccess<IndexType> rDlg( mDlg, loc ); 
+        ReadAccess<IndexType> rPerm( mPerm, loc );
+        ReadAccess<IndexType> rJa( mJa, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j, mNumRows,
+                                             rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
     }
+
+    column.init( ValueType( 0 ), mNumRows );
+
+    // column[ row ] = mValues[ pos ];
+
+    HArrayUtils::gather( colValues, mValues, valuePos, loc );
+    HArrayUtils::scatter( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -356,6 +386,8 @@ template<typename OtherType>
 void JDSStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
                                         const utilskernel::reduction::ReductionOp op )
 {
+    SCAI_REGION( "Storage.JDS.setRow" )
+
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
 
@@ -384,19 +416,41 @@ void JDSStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
     SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
 
-    // ToDo write more efficient kernel routine for setting a column
+    SCAI_REGION( "Storage.JDS.setCol" )
 
-    ReadAccess<OtherType> rColumn( column );
+    static LAMAKernel<JDSKernelTrait::getValuePosCol> getValuePosCol;
 
-    for ( IndexType i = 0; i < mNumRows; ++i )
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
     {
-        if ( rColumn[i] == common::constants::ZERO )
-        {
-            continue;
-        }
+        SCAI_CONTEXT_ACCESS( loc )
 
-        setValue( i, j, static_cast<ValueType>( rColumn[i] ), op );
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIlg( mIlg, loc );
+        ReadAccess<IndexType> rDlg( mDlg, loc );
+        ReadAccess<IndexType> rPerm( mPerm, loc );
+        ReadAccess<IndexType> rJa( mJa, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j, mNumRows,
+                                             rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
     }
+
+
+    //  mValues[ pos ] op= column[row]
+
+    HArrayUtils::gather( colValues, column, rowIndexes, loc );
+    HArrayUtils::scatter( mValues, valuePos, colValues, op, loc );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

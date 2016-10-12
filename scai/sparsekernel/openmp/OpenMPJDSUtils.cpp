@@ -163,6 +163,56 @@ IndexType OpenMPJDSUtils::getValuePos(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+/* --------------------------------------------------------------------------- */
+
+static inline IndexType atomicInc( IndexType& var )
+{
+    return __sync_fetch_and_add( &var, 1 );
+}
+
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPJDSUtils::getValuePosCol( 
+    IndexType row[], 
+    IndexType pos[],
+    const IndexType j, 
+    const IndexType numRows,
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType perm[],
+    const IndexType ja[] )
+{
+    SCAI_REGION( "OpenMP.JDSUtils.getValuePosCol" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    #pragma omp parallel for
+
+    for ( IndexType ii = 0; ii < numRows; ++ii )
+    {
+        IndexType k = 0;
+
+        for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
+        {
+            IndexType p = ii + k;
+
+            if ( ja[p] == j )
+            {
+                IndexType n = atomicInc( cnt );
+                row[n] = perm[ii];
+                pos[n] = p;
+                break;    
+            }
+  
+            k += dlg[jj];
+        }
+    }
+
+    return cnt;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType, typename OtherValueType>
 void OpenMPJDSUtils::scaleValue(
     const IndexType numRows,
@@ -830,6 +880,7 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
 }
 
 template<typename ValueType>
