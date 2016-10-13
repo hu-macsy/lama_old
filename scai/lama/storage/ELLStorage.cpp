@@ -309,7 +309,7 @@ void ELLStorage<ValueType>::buildCSR(
     HArray<OtherValueType>* values,
     const ContextPtr context ) const
 {
-    SCAI_REGION( "Storage.ELL->CSR" )
+    SCAI_REGION( "Storage.ELL.buildCSR" )
     SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">"
                    << " from ELL<" << common::getScalarType<ValueType>() << ">"
@@ -354,7 +354,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     const HArray<OtherValueType>& values,
     const ContextPtr context )
 {
-    SCAI_REGION( "Storage.ELL<-CSR" )
+    SCAI_REGION( "Storage.ELL.setCSR" )
     SCAI_LOG_INFO( logger,
                    "set CSR data on " << *context << ": numRows = " << numRows << ", numColumns = " << numColumns
                    << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )

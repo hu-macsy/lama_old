@@ -47,9 +47,11 @@ using namespace lama;
 
 int main( int argc, const char* argv[] )
 {
-    SCAI_REGION( "Main.BenchGetSet" )
-
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    SCAI_REGION( "Main.BenchGetSet" )
 
     IndexType size = 1000;
 
@@ -63,8 +65,6 @@ int main( int argc, const char* argv[] )
         SCAI_REGION( "Main.fillRandom" )
         MatrixCreator::fillRandom( mat, 0.1f );
     }
-
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( size, comm ) );
     dmemo::DistributionPtr rep( new dmemo::NoDistribution( size ) );

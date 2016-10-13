@@ -813,6 +813,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
         return;
     }
 
+    SCAI_REGION( "Storage.COO.buildCSR" )
+
     SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
@@ -1191,6 +1193,8 @@ void COOStorage<ValueType>::buildCSR(
     hmemo::HArray<OtherValueType>* csrValues,
     const hmemo::ContextPtr preferredLoc ) const
 {
+    SCAI_REGION( "Storage.COO.buildCSR" )
+
     if ( csrJA == NULL || csrValues == NULL )
     {
         // number of entries per row, count with buckets for each row

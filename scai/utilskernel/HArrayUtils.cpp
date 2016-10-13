@@ -210,6 +210,10 @@ void HArrayUtils::gather(
     const ContextPtr prefLoc )
 {
     SCAI_REGION( "HArray.gather" )
+
+    SCAI_LOG_INFO( logger, "target[ " << target.size() << " ] = source [ indexes [ " 
+                            << indexes.size() << " ] : " << source.size() << " ]" )
+
     // choose location for the operation where source array is currently valid
     static LAMAKernel<UtilKernelTrait::setGather<TargetValueType, SourceValueType> > setGather;
     ContextPtr loc = prefLoc;
@@ -240,6 +244,9 @@ void HArrayUtils::scatter(
     const ContextPtr prefLoc )
 {
     SCAI_REGION( "HArray.scatter" )
+
+    SCAI_LOG_INFO( logger, "target[ indexes[ " << indexes.size() << " ] : " << target.size() 
+                            << " ] = source[ " << source.size() << " ]" )
 
     SCAI_ASSERT(      ( op == reduction::COPY ) 
                    || ( op == reduction::ADD )

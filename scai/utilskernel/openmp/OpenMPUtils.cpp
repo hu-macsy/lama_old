@@ -351,7 +351,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             }
             else if ( val == common::constants::ZERO )
             {
-                COMMON_THROWEXCEPTION( "DIVIDE by ZEROR, val = " << val )
+                COMMON_THROWEXCEPTION( "DIVIDE by ZERO, val = " << val )
             }
             else
             {
@@ -881,7 +881,7 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
         atomicAdd( invalid, tInvalid );
     }
 
-    SCAI_LOG_INFO( logger, "#invalid indexes = " << invalid )
+    SCAI_LOG_INFO( logger, "#invalid indexes = " << invalid << " of " << n )
 
     return invalid == 0;
 }

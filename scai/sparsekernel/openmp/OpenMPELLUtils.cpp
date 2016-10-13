@@ -375,7 +375,7 @@ void OpenMPELLUtils::getCSRValues(
     // parallelization possible as offset array csrIA is available
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.ELL->CSR_values" )
+        SCAI_REGION( "OpenMP.ELL.getCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -413,7 +413,7 @@ void OpenMPELLUtils::setCSRValues(
     // parallelization possible as offset array csrIA is available
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.ELL<-CSR_values" )
+        SCAI_REGION( "OpenMP.ELL.setCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )

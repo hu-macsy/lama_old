@@ -276,6 +276,8 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     const HArray<OtherValueType>& values,
     const ContextPtr /* loc */ )
 {
+    SCAI_REGION( "Storage.CSR.setCSR" )
+
     ContextPtr loc = this->getContextPtr();
 
     if ( ia.size() == numRows )
@@ -1216,6 +1218,8 @@ void CSRStorage<ValueType>::buildCSR(
         offsets2sizes[ loc ]( csrIA.get(), inIA.get(), mNumRows );
         return;
     }
+
+    SCAI_REGION( "Storage.CSR.setCSR" )
 
     // copy the offset array ia and ja
     {

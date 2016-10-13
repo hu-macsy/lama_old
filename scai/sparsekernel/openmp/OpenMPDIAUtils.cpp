@@ -195,7 +195,7 @@ void OpenMPDIAUtils::getCSRValues(
     // go through the DIA the same way again and copy the non-zeros
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.DIA->CSR_values" )
+        SCAI_REGION( "OpenMP.DIA.getCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )

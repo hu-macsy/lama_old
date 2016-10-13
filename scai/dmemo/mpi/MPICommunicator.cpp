@@ -251,13 +251,18 @@ void MPICommunicator::initialize( int& argc, char**& argv )
         mRank = static_cast<PartitionId>( mpiRank );
     }
 
-    setNodeData(); // determine mNodeRank, mNodeSize
     // set rank, output string in an environment variable
     // so it might be used by logging, tracing, etc.
+
     std::ostringstream commVal;
     commVal << *this;
+
     common::Settings::putEnvironment( "SCAI_COMM", commVal.str().c_str() );
     common::Settings::putEnvironment( "SCAI_RANK", mRank );
+
+    // tracing of MPI calls for getting node data can already be traced
+
+    setNodeData(); // determine mNodeRank, mNodeSize
 }
 
 #ifdef SCAI_COMPLEX_SUPPORTED

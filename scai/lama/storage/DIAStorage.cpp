@@ -549,7 +549,7 @@ void DIAStorage<ValueType>::buildCSR(
     HArray<CSRValueType>* values,
     const ContextPtr prefLoc ) const
 {
-    SCAI_REGION( "Storage.DIA->CSR" )
+    SCAI_REGION( "Storage.DIA.buildCSR" )
     static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
     static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
     static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, CSRValueType> > getCSRValues;

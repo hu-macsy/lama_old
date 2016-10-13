@@ -717,7 +717,7 @@ void JDSStorage<ValueType>::buildCSR(
     HArray<OtherValueType>* values,
     const ContextPtr context ) const
 {
-    SCAI_REGION( "Storage.JDS->CSR" )
+    SCAI_REGION( "Storage.JDS.buildCSR" )
     SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">"
                    << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *context )
@@ -783,7 +783,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
         return;
     }
 
-    SCAI_REGION( "Storage.JDS<-CSR" )
+    SCAI_REGION( "Storage.JDS.setCSR" )
     SCAI_LOG_INFO( logger,
                    "setCSRDataImpl<" << common::getScalarType<ValueType>() << "," << common::getScalarType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
     static LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;

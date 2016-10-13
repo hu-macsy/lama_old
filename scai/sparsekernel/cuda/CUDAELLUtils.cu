@@ -532,11 +532,14 @@ void CUDAELLUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
-    SCAI_REGION( "CUDA.ELL<-CSR_values" )
+    SCAI_REGION( "CUDA.ELL.setCSR" )
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+                   "set CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" 
+                    << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+
     SCAI_LOG_DEBUG( logger,
-                    "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
+                    "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes 
+                     << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
 
     if ( numRows == 0 )
     {
