@@ -326,6 +326,26 @@ struct JDSKernelTrait
         }
     };
 
+    template<typename ValueType, typename OtherValueType>
+    struct setRow
+    {
+        typedef void ( *FuncType ) ( ValueType values[],
+                                     const IndexType i,
+                                     const IndexType numColumns,
+                                     const IndexType numRows,
+                                     const IndexType perm[],
+                                     const IndexType ilg[],
+                                     const IndexType dlg[],
+                                     const IndexType ja[],
+                                     const OtherValueType row[],
+                                     const utilskernel::reduction::ReductionOp op );
+
+        static const char* getId()
+        {
+            return "JDS.setRow";
+        }
+    };
+
     struct getValuePos
     {
         typedef IndexType ( *FuncType ) ( const IndexType i,

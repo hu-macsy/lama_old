@@ -82,12 +82,13 @@ void OpenMPJDSUtils::getRow(
     const IndexType ja[],
     const ValueType values[] )
 {
+    SCAI_REGION( "OpenMP.JDS.getRow" )
+
     SCAI_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
-    //TODO: use OpenMP
     for ( IndexType j = 0; j < numColumns; ++j )
     {
-        row[j] = static_cast<OtherValueType>( 0.0 );
+        row[j] = static_cast<OtherValueType>( 0 );
     }
 
     IndexType ii;
@@ -107,6 +108,46 @@ void OpenMPJDSUtils::getRow(
     for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
     {
         row[ja[ii + k]] = static_cast<OtherValueType>( values[ii + k] );
+        k += dlg[jj];
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType, typename OtherValueType>
+void OpenMPJDSUtils::setRow(
+    ValueType values[],
+    const IndexType i,
+    const IndexType numColumns,
+    const IndexType numRows,
+    const IndexType perm[],
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType ja[],
+    const OtherValueType row[],
+    const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_REGION( "OpenMP.JDS.setRow" )
+
+    SCAI_LOG_INFO( logger, "setRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
+
+    IndexType ii;
+
+    // check the permutation of row i
+
+    for ( ii = 0; ii < numRows; ii++ )
+    {
+        if ( perm[ii] == i )
+        {
+            break;
+        }
+    }
+
+    IndexType k = 0;
+
+    for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
+    {
+        utilskernel::OpenMPUtils::setVal( &values[ii + k], 1, static_cast<ValueType>( row[ja[ii + k]] ), op );
         k += dlg[jj];
     }
 }
@@ -906,6 +947,7 @@ void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( 
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setRow<ValueType, OtherValueType> >( setRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );

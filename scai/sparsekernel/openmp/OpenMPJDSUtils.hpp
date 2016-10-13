@@ -43,6 +43,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 #include <utility>
 
@@ -82,6 +83,19 @@ public:
         const IndexType dlg[],
         const IndexType ja[],
         const ValueType values[] );
+
+    template<typename ValueType, typename OtherValueType>
+    static void setRow(
+        ValueType values[],
+        const IndexType i,
+        const IndexType numColumns,
+        const IndexType numRows,
+        const IndexType perm[],
+        const IndexType ilg[],
+        const IndexType dlg[],
+        const IndexType ja[],
+        const OtherValueType row[],
+        const utilskernel::reduction::ReductionOp op );
 
     static IndexType getValuePos(
         const IndexType i,
