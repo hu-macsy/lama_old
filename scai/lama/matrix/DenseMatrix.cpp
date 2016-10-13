@@ -1214,32 +1214,38 @@ void DenseMatrix<ValueType>::setLocalRow(
 
     // do a bucket sort of row, buckets are determined by the owners
 
-    HArray<ValueType> ownedRow;
+    utilskernel::LArray<IndexType> offsets;
+    utilskernel::LArray<IndexType> perm;
 
-    // reset row by owned parts
+    utilskernel::HArrayUtils::bucketSort( offsets, perm, mOwners, numColPartitions );
+
+    SCAI_LOG_DEBUG( logger, "bucketSort, offsets = " << offsets )
+
+    HArray<ValueType> rowResorted;   // row resorted according to the owners
+
+    utilskernel::HArrayUtils::gather( rowResorted, row, perm );
+
+    ReadAccess<IndexType> rOffsets( offsets );
+
+    // now sort in the different parts
 
     for ( PartitionId ip = 0; ip < numColPartitions; ++ip )
     {
-        ReadAccess<ValueType> rRow( row );
+        // tricky workaround for: HArraySection<ValueType>( rowResorted, offset = .., inc = 1, n = ... )
 
-        IndexType k = 0;
+        const ValueType* ptrRowPart;
+
+        IndexType nRowPart = rOffsets[ ip + 1 ] - rOffsets[ip];
+
         {
-            WriteOnlyAccess<ValueType> wOwnedRow( ownedRow, mNumColumns );
-
-            // rowPart is the chunk is the resorted local part for this partition
-
-            for ( IndexType j = 0; j < mNumColumns; ++j )
-            {
-                if ( mOwners[j] == ip ) 
-                {
-                    wOwnedRow[k++] = rRow[j];
-                }
-            }
+            ReadAccess<ValueType> rRow( rowResorted );
+            ptrRowPart = rRow.get() + rOffsets[ip];
+            nRowPart   = rOffsets[ ip + 1 ] - rOffsets[ ip ];
         }
 
-        ownedRow.resize( k );
+        HArrayRef<ValueType> rowPartition( nRowPart, ptrRowPart );
 
-        mData[ip]->setRowImpl( ownedRow, localRowIndex, op );
+        mData[ip]->setRowImpl( rowPartition, localRowIndex, op );
     }
 }
 
