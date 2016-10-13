@@ -35,6 +35,9 @@
 #include <scai/lama.hpp>
 
 #include <scai/tracing.hpp>
+#include <scai/dmemo.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
@@ -61,6 +64,13 @@ int main( int argc, const char* argv[] )
         MatrixCreator::fillRandom( mat, 0.1f );
     }
 
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( size, comm ) );
+    dmemo::DistributionPtr rep( new dmemo::NoDistribution( size ) );
+
+    mat.redistribute( dist, dist );
+
     DenseVector<double> row( ctx );
 
     double tstart = common::Walltime::get();
@@ -77,12 +87,16 @@ int main( int argc, const char* argv[] )
 
     SCAI_ASSERT_LT( mat.maxNorm(), 0.001, "set/get row does not work correctly" );
 
+    mat.allocate( size, size );
+
     {
         SCAI_REGION( "Main.fillRandom" )
         MatrixCreator::fillRandom( mat, 0.1f );
     }
 
     DenseVector<double> col( ctx );
+
+    mat.redistribute( dist, dist );
 
     tstart = common::Walltime::get();
 

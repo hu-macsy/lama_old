@@ -339,6 +339,8 @@ template<typename ValueType>
 template<typename OtherType>
 void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
 {
+    SCAI_LOG_INFO( logger, "getColumn( " << j << " ) of : " << *this )
+
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
     SCAI_REGION( "Storage.JDS.getCol" )
@@ -371,6 +373,8 @@ void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
         wValuePos.resize( cnt );
     }
 
+    SCAI_LOG_INFO( logger, "getColumn( " << j << " ) with " << valuePos.size() << " non-zero entries" )
+
     column.init( ValueType( 0 ), mNumRows );
 
     // column[ row ] = mValues[ pos ];
@@ -391,19 +395,21 @@ void JDSStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
 
-    // ToDo write more efficient kernel routine for setting a row
+    SCAI_LOG_INFO( logger, "setRowImpl( i = " << i << " )" )
 
-    ReadAccess<OtherType> rRow( row );
+    static LAMAKernel<JDSKernelTrait::setRow<ValueType, OtherType> > setRow;
 
-    for ( IndexType j = 0; j < mNumColumns; ++j )
-    {
-        if ( rRow[j] == common::constants::ZERO )
-        {
-            continue;
-        }
+    ContextPtr loc = this->getContextPtr();
+    setRow.getSupportedContext( loc );
 
-        setValue( i, j, static_cast<ValueType>( rRow[j] ), op );
-    }
+    ReadAccess<IndexType> dlg( mDlg, loc );
+    ReadAccess<IndexType> ilg( mIlg, loc );
+    ReadAccess<IndexType> perm( mPerm, loc );
+    ReadAccess<IndexType> ja( mJa, loc );
+    WriteAccess<ValueType> values( mValues, loc );
+    ReadAccess<OtherType> rRow( row, loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    setRow[loc]( values.get(), i, mNumColumns, mNumRows, perm.get(), ilg.get(), dlg.get(), ja.get(), rRow.get(), op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -413,6 +419,8 @@ template<typename OtherType>
 void JDSStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
                                            const utilskernel::reduction::ReductionOp op )
 {
+    SCAI_LOG_INFO( logger, "setColumn( " << j << " ) of : " << *this << " with column " << column )
+
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
     SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
 
@@ -446,6 +454,7 @@ void JDSStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
         wValuePos.resize( cnt );
     }
 
+    SCAI_LOG_INFO( logger, "setColumn( " << j << " ) updates " << rowIndexes.size() << " entries" )
 
     //  mValues[ pos ] op= column[row]
 

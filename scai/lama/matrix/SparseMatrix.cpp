@@ -708,39 +708,22 @@ void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTy
         return;
     }
 
-    WriteOnlyAccess<ValueType> wRow( row, getNumColumns() );
+    row.init( ValueType( 0 ), mNumColumns );
 
-    // Owner of row fills the row by data from local and halo data
+    HArray<ValueType> tmpRow;  // used for row of local, halo data
 
-    for ( IndexType j = 0; j < getNumColumns(); ++j )
-    {
-        IndexType jLocal = distributionCol.global2local( j );
+    // get local part, might be optimized if local part is blocked
 
-        if ( nIndex != jLocal )
-        {
-            SCAI_LOG_TRACE( logger, "global column " << j << " of " << getNumColumns() << " is local " << jLocal )
-            wRow[j] = mLocalData->getValue( localRowIndex, jLocal );
-        }
-        else
-        {
-            const IndexType jHalo = mHalo.global2halo( j );
+    HArray<IndexType> localIndexes;
+    distributionCol.getOwnedIndexes( localIndexes );
+    mLocalData->getRow( tmpRow, localRowIndex );
+    HArrayUtils::scatter( row, localIndexes, tmpRow, utilskernel::reduction::COPY );
 
-            if ( nIndex != jHalo )
-            {
-                SCAI_LOG_TRACE( logger, "global column " << j << " of " << getNumColumns() << " is halo " << jHalo )
+    // get halo part
 
-                wRow[j] = mHaloData->getValue( localRowIndex, jHalo );
-            }
-            else
-            {
-                SCAI_LOG_TRACE( logger, "global column " << j << " neither in local or halo" )
-
-                wRow[j] = ValueType( 0 );   // column not available at all
-            }
-        }
-
-        SCAI_LOG_TRACE( logger, "row[" << j << "] = " << wRow[j] )
-    }
+    mHaloData->getRow( tmpRow, localRowIndex );
+    const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
+    HArrayUtils::scatter( row, haloIndexes, tmpRow, utilskernel::reduction::COPY );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -760,45 +743,20 @@ void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row,
         return;
     }
 
-    // ToDo: 
-    //   - build (local) row for mLocalData to set
-    //      * gather regarding the local indexes    
-    //   - build (halo) row for mHaloData to set
-    //      * gather regarding the halo indexes    
+    HArray<ValueType> tmpRow;  // used for row of local, halo data
 
-    ReadAccess<ValueType> rRow( row );
+    // set local part
 
-    // Owner of row fills the row by data from local and halo data
+    HArray<IndexType> localIndexes;
+    distributionCol.getOwnedIndexes( localIndexes );
+    HArrayUtils::gather( tmpRow, row, localIndexes );
+    mLocalData->setRow( tmpRow, localRowIndex, op );
 
-    for ( IndexType j = 0; j < getNumColumns(); ++j )
-    {
-        if ( rRow[j] == common::constants::ZERO )
-        {
-            continue;    // zero elements are not set, but be careful about MULT
-        }
+    // set halo part
 
-        IndexType jLocal = distributionCol.global2local( j );
-
-        SCAI_LOG_TRACE( logger, "global column " << j << " of " << getNumColumns() << " is local " << jLocal )
-
-        if ( nIndex != jLocal )
-        {
-            mLocalData->setValue( localRowIndex, jLocal, rRow[j], op );
-        }
-        else
-        {
-            const IndexType jHalo = mHalo.global2halo( j );
-            
-            if ( nIndex != jHalo )
-            {
-                mHaloData->setValue( localRowIndex, jHalo, rRow[j], op );
-            }
-            else
-            {
-                COMMON_THROWEXCEPTION( "( " << localRowIndex << ", " << j << " ) not in sparse pattern" )
-            }
-        }
-    }
+    const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
+    HArrayUtils::gather( tmpRow, row, haloIndexes );
+    mHaloData->setRow( tmpRow, localRowIndex, op );
 }
 
 /* -------------------------------------------------------------------------- */
