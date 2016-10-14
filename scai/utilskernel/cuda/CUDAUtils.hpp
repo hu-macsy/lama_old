@@ -148,7 +148,7 @@ public:
     template<typename ValueType>
     static void pow( ValueType array1[], const ValueType array2[], const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::powBasw */
+    /** CUDA implementation for UtilKernelTrait::powBase */
 
     template<typename ValueType>
     static void powBase( ValueType array[], const ValueType base, const IndexType n );

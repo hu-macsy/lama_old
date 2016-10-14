@@ -235,6 +235,54 @@ void ceilKernel( ValueType* array, const IndexType n )
     }
 }
 
+/* ----------------------------------------------------------------------------------------------------------------- */
+/*                                            pow                                                                    */
+/* ----------------------------------------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void powKernel( ValueType* array1, const ValueType* array2, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array1[i] = pow( array1[i], array2[i] );
+    }
+}
+
+/* ----------------------------------------------------------------------------------------------------------------- */
+/*                                            powBase                                                                */
+/* ----------------------------------------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void powBaseKernel( ValueType* array, const ValueType base, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = pow( base, array[i] );
+    }
+}
+
+/* ----------------------------------------------------------------------------------------------------------------- */
+/*                                            powExp                                                                 */
+/* ----------------------------------------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void powExpKernel( ValueType* array, const ValueType exp, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = pow( array[i], exp );
+    }
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                            copysign                                                                */
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1149,6 +1197,75 @@ void CUDAUtils::execElementwise( ValueType array[], const IndexType n, const ele
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void CUDAUtils::pow( ValueType array1[], const ValueType array2[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "execElementwise<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_DEBUG( logger, "array = " << array )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    powKernel <<< dimGrid, dimBlock>>>( array1, array2, n );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CHECK_CUDA_ERROR
+
+}
+
+template<typename ValueType>
+void CUDAUtils::powBase( ValueType array1[], const ValueType base, const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "execElementwise<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_DEBUG( logger, "array = " << array )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    powBaseKernel <<< dimGrid, dimBlock>>>( array1, base, n );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CHECK_CUDA_ERROR
+}
+
+template<typename ValueType>
+void CUDAUtils::powExp( ValueType array1[], const ValueType exp, const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "execElementwise<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_DEBUG( logger, "array = " << array )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    powExpKernel <<< dimGrid, dimBlock>>>( array1, exp, n );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CHECK_CUDA_ERROR
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType, typename OtherValueType>
 void CUDAUtils::setScale( ValueType out[],
                           const ValueType beta,
@@ -1257,9 +1374,9 @@ void CUDAUtils::RegNumericKernels<ValueType>::registerKernels( kregistry::Kernel
                    << "] --> ValueType = " << common::getScalarType<ValueType>() )
 
     KernelRegistry::set<UtilKernelTrait::execElementwise<ValueType> >( execElementwise, ctx, flag );
-    //KernelRegistry::set<UtilKernelTrait::pow<ValueType> >( pow, ctx, flag );
-    //KernelRegistry::set<UtilKernelTrait::powBase<ValueType> >( powBase, ctx, flag );
-    //KernelRegistry::set<UtilKernelTrait::powExp<ValueType> >( powExp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::pow<ValueType> >( pow, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::powBase<ValueType> >( powBase, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::powExp<ValueType> >( powExp, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
