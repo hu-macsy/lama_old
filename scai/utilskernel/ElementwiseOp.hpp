@@ -65,24 +65,37 @@ struct elementwise
     {
         INVERT,  // for inverse/reciprocal of a vector
         CONJ,    // for conjugate of a vector
-        EXP,
+
+        EXP,     // call exp on each vector element
         SQRT,    // call sqrt on each vector element
         SIN,     // call sin on each vector element
         COS,     // call cos on each vector element
         TAN,     // call tan on each vector element
         ATAN,    // call atan on each vector element
         LOG,     // call log on each vector element
+        FLOOR,   // call floor on each vector element
+        CEIL,    // call ceil on each vector element
 
-        MAX_ELEMENTWISE_OP // only for tests, leave this at the end
-    } ElementwiseOp;
+        MAX_ELEMENTWISE_OP_NO_ARG // only for tests, leave this at the end
+    } ElementwiseOpNoArg;
+
+    typedef enum name
+    {
+        POWBASE,
+        POWEXP,
+        ADDSCALAR,
+        SUBSCALAR,
+
+        MAX_ELEMENTWISE_OP_ONE_ARG
+    } ElementwiseOpOneArg;
 
 };
 
 /*
- * Output of ElementwiseOp in stream by writing strings instead of numbers
+ * Output of ElementwiseOpNoArg in stream by writing strings instead of numbers
  */
 
-inline std::ostream& operator<<( std::ostream& stream, const elementwise::ElementwiseOp& op )
+inline std::ostream& operator<<( std::ostream& stream, const elementwise::ElementwiseOpNoArg& op )
 {
     switch ( op )
     {
@@ -122,12 +135,56 @@ inline std::ostream& operator<<( std::ostream& stream, const elementwise::Elemen
             stream << "LOG";
             break;
 
-        case elementwise::MAX_ELEMENTWISE_OP:
-            stream << "MAX_ELEMENTWISE_OP-only for tests";
+        case elementwise::FLOOR:
+            stream << "FLOOR";
+            break;
+
+        case elementwise::CEIL:
+            stream << "CEIL";
+            break;
+
+        case elementwise::MAX_ELEMENTWISE_OP_NO_ARG:
+            stream << "MAX_ELEMENTWISE_OP_NO_ARG-only for tests";
             break;
 
         default:
-            stream << "<unknown_elementwise_op>";
+            stream << "<unknown_elementwise_op_no_arg>";
+            break;
+    }
+
+    return stream;
+}
+
+/*
+ * Output of ElementwiseOpNoArg in stream by writing strings instead of numbers
+ */
+
+inline std::ostream& operator<<( std::ostream& stream, const elementwise::ElementwiseOpOneArg& op )
+{
+    switch ( op )
+    {
+        case elementwise::POWBASE:
+            stream << "POWBASE";
+            break;
+
+        case elementwise::POWEXP:
+            stream << "POWEXP";
+            break;
+
+        case elementwise::ADDSCALAR:
+            stream << "ADDSCALAR";
+            break;
+
+        case elementwise::SUBSCALAR:
+            stream << "SUBSCALAR";
+            break;
+
+        case elementwise::MAX_ELEMENTWISE_OP_ONE_ARG:
+            stream << "MAX_ELEMENTWISE_OP_ONE_ARG-only for tests";
+            break;
+
+        default:
+            stream << "<unknown_elementwise_op_one_arg>";
             break;
     }
 

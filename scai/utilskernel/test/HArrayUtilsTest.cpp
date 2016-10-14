@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::execElementwise( array, elementwise::EXP, ctx );
+    HArrayUtils::execElementwiseNoArg( array, elementwise::EXP, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
@@ -208,12 +208,42 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::execElementwise( array, elementwise::LOG, ctx );
+    HArrayUtils::execElementwiseNoArg( array, elementwise::LOG, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
         {
             ValueType x = read[i] - common::Math::log(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( floorCeilTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
+    HArray<ValueType> arrayF( ctx );
+    HArray<ValueType> arrayC( ctx );
+    arrayF.init( values, n );
+    arrayC.init( values, n );
+    HArrayUtils::execElementwiseNoArg( arrayF, elementwise::FLOOR, ctx );
+    HArrayUtils::execElementwiseNoArg( arrayC, elementwise::CEIL,  ctx );
+    {
+        ReadAccess<ValueType> readF( arrayF, host );
+        ReadAccess<ValueType> readC( arrayC, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = readF[i] - common::Math::floor(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+
+            x = readC[i] - common::Math::ceil(values[i]);
             BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
             BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
@@ -236,10 +266,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( trigonomicTest, ValueType, scai_numeric_test_type
     cosArray.init( values, n );
     tanArray.init( values, n );
     atanArray.init( values, n );
-    HArrayUtils::execElementwise( sinArray,  elementwise::SIN,  ctx );
-    HArrayUtils::execElementwise( cosArray,  elementwise::COS,  ctx );
-    HArrayUtils::execElementwise( tanArray,  elementwise::TAN,  ctx );
-    HArrayUtils::execElementwise( atanArray, elementwise::ATAN, ctx );
+    HArrayUtils::execElementwiseNoArg( sinArray,  elementwise::SIN,  ctx );
+    HArrayUtils::execElementwiseNoArg( cosArray,  elementwise::COS,  ctx );
+    HArrayUtils::execElementwiseNoArg( tanArray,  elementwise::TAN,  ctx );
+    HArrayUtils::execElementwiseNoArg( atanArray, elementwise::ATAN, ctx );
     {
         ReadAccess<ValueType> sinRead( sinArray, host );
         for ( IndexType i = 0; i < n; ++i )
@@ -282,7 +312,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::execElementwise( array, elementwise::SQRT, ctx );
+    HArrayUtils::execElementwiseNoArg( array, elementwise::SQRT, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )

@@ -440,6 +440,12 @@ public:
 
     virtual void exp();
 
+    virtual void log();
+
+    virtual void floor();
+
+    virtual void ceil();
+
     virtual void sqrt();
 
     virtual void sin();

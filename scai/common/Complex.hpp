@@ -1110,6 +1110,38 @@
         return Complex<long double>( Math::log( Math::abs(x) ), Math::arg(x) );
     }
 
+// ------------------ Math::floor --------------------------------
+    Complex<float> Math::floor( const Complex<float>& x )
+    {
+        return Complex<float>( Math::floor( x.real() ), Math::floor( x.imag() ) );
+    }
+
+    Complex<double> Math::floor( const Complex<double>& x )
+    {
+        return Complex<double>( Math::floor( x.real() ), Math::floor( x.imag() ) );
+    }
+
+    Complex<long double> Math::floor( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::floor( x.real() ), Math::floor( x.imag() ) );
+    }
+
+// ------------------ Math::ceil --------------------------------
+    Complex<float> Math::ceil( const Complex<float>& x )
+    {
+        return Complex<float>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
+    }
+
+    Complex<double> Math::ceil( const Complex<double>& x )
+    {
+        return Complex<double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
+    }
+
+    Complex<long double> Math::ceil( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
+    }
+
 // ------------------ Math::sin --------------------------------
     Complex<float> Math::sin( const Complex<float>& x )
     {

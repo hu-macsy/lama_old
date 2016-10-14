@@ -498,7 +498,7 @@ void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void JDSStorage<ValueType>::conj()
 {
-    HArrayUtils::execElementwise( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
+    HArrayUtils::execElementwiseNoArg( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

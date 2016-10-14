@@ -675,11 +675,11 @@ void OpenMPUtils::setSection( ValueType1 out[], const IndexType inc1,
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op )
+void OpenMPUtils::execElementwiseNoArg( ValueType array[], const IndexType n, const elementwise::ElementwiseOpNoArg op )
 {
-    SCAI_REGION( "OpenMP.Utils.execElementwise" )
+    SCAI_REGION( "OpenMP.Utils.execElementwiseNoArg" )
     SCAI_LOG_DEBUG( logger,
-                    "execElementwise: array<" << TypeTraits<ValueType>::id() << "[" << n << "]"
+                    "execElementwiseNoArg: array<" << TypeTraits<ValueType>::id() << "[" << n << "]"
                     << ", op = " << op )
 
 
@@ -799,6 +799,97 @@ void OpenMPUtils::execElementwise( ValueType array[], const IndexType n, const e
             break;
         }
 
+        case elementwise::FLOOR :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::floor( array[i] );
+            }
+
+            break;
+        }
+
+        case elementwise::CEIL :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::ceil( array[i] );
+            }
+
+            break;
+        }
+
+        default:
+        {
+            COMMON_THROWEXCEPTION( "unsupported reduction op in set: " << op )
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::execElementwiseOneArg( ValueType array[], const ValueType arg, const IndexType n,
+                                         const elementwise::ElementwiseOpOneArg op )
+{
+    SCAI_REGION( "OpenMP.Utils.execElementwiseOneArg" )
+    SCAI_LOG_DEBUG( logger,
+                    "execElementwiseOneArg: array<" << TypeTraits<ValueType>::id() << "[" << n << "]"
+                    << "arg = " << arg << " , op = " << op )
+
+    if ( n <= 0 )
+        return;
+
+    switch ( op )
+    {
+        case elementwise::POWBASE :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::pow( arg, array[i] );
+            }
+
+            break;
+        }
+
+        case elementwise::POWEXP :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::pow( array[i], arg);
+            }
+
+            break;
+        }
+
+        case elementwise::ADDSCALAR :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] += arg;
+            }
+            
+            break;
+        }
+
+        case elementwise::SUBSCALAR :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] -= arg;
+            }
+            
+            break;
+        }
+
         default:
         {
             COMMON_THROWEXCEPTION( "unsupported reduction op in set: " << op )
@@ -819,38 +910,6 @@ void OpenMPUtils::pow( ValueType array1[], const ValueType array2[], const Index
     for ( IndexType i = 0; i < n; i++ )
     {
         array1[i] = common::Math::pow( array1[i], array2[i] );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPUtils::powBase( ValueType array[], const ValueType base, const IndexType n )
-{
-    SCAI_REGION( "OpenMP.Utils.powBase" )
-    SCAI_LOG_DEBUG( logger, "powBase<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
-
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        array[i] = common::Math::pow( base, array[i] );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPUtils::powExp( ValueType array[], const ValueType exp, const IndexType n )
-{
-    SCAI_REGION( "OpenMP.Utils.powExp" )
-    SCAI_LOG_DEBUG( logger, "powExp<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
-
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        array[i] = common::Math::pow( array[i], exp);
     }
 }
 
@@ -1373,11 +1432,10 @@ void OpenMPUtils::NumericKernels<ValueType>::registerKernels( kregistry::KernelR
     SCAI_LOG_DEBUG( logger, "register arithmetic UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<UtilKernelTrait::execElementwise<ValueType> >( execElementwise, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::execElementwiseNoArg<ValueType> >( execElementwiseNoArg, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::execElementwiseOneArg<ValueType> >( execElementwiseOneArg, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::copysign<ValueType> >( copysign, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::pow<ValueType> >( pow, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::powBase<ValueType> >( powBase, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::powExp<ValueType> >( powExp, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

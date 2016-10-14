@@ -1083,7 +1083,7 @@ void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void CSRStorage<ValueType>::conj()
 {
-    HArrayUtils::execElementwise( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
+    HArrayUtils::execElementwiseNoArg( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

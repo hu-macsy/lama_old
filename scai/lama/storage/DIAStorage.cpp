@@ -398,7 +398,7 @@ void DIAStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DIAStorage<ValueType>::conj()
 {
-    HArrayUtils::execElementwise( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
+    HArrayUtils::execElementwiseNoArg( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

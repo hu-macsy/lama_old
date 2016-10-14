@@ -43,10 +43,10 @@ using namespace utilskernel;
 BOOST_AUTO_TEST_CASE( ElementwiseOpTest )
 {
     int count = 0;
-    for ( int type = 0; type < elementwise::MAX_ELEMENTWISE_OP; ++type )
+    for ( int type = 0; type < elementwise::MAX_ELEMENTWISE_OP_NO_ARG; ++type )
     {
         std::ostringstream s;
-        s << elementwise::ElementwiseOp( type );
+        s << elementwise::ElementwiseOpNoArg( type );
         BOOST_CHECK( s.str().length() > 0 );
 
         // check if all strings are correct
@@ -96,8 +96,19 @@ BOOST_AUTO_TEST_CASE( ElementwiseOpTest )
             BOOST_CHECK_EQUAL( s.str(), "LOG" );
             count++;
         }
+        if ( type == elementwise::FLOOR )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "FLOOR" );
+            count++;
+        }
+        if ( type == elementwise::CEIL )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "CEIL" );
+            count++;
+        }
+
     }
 
     // check if all types are tested
-    BOOST_CHECK_EQUAL( count, elementwise::MAX_ELEMENTWISE_OP );
+    BOOST_CHECK_EQUAL( count, elementwise::MAX_ELEMENTWISE_OP_NO_ARG );
 }

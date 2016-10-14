@@ -327,9 +327,16 @@ public:
     /** execute elementwise functions */
 
     template<typename ValueType>
-    static void execElementwise(
+    static void execElementwiseNoArg(
         hmemo::HArray<ValueType>& array,
-        const elementwise::ElementwiseOp op,
+        const elementwise::ElementwiseOpNoArg op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static void execElementwiseOneArg(
+        hmemo::HArray<ValueType>& array,
+        const ValueType arg,
+        const elementwise::ElementwiseOpOneArg op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** execute elementwise pow with base and exponent array */
@@ -338,20 +345,6 @@ public:
     static void pow( 
         hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-    /** execute elementwise pow with base array and */
-
-    template<typename ValueType>
-    static void powBase( 
-        hmemo::HArray<ValueType>& array,
-        const ValueType base,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-    template<typename ValueType>
-    static void powExp( 
-        hmemo::HArray<ValueType>& array,
-        const ValueType exp,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Check for an index array whether all values are smaller than n */

@@ -787,6 +787,24 @@ void DenseVector<ValueType>::exp()
 }
 
 template<typename ValueType>
+void DenseVector<ValueType>::log()
+{
+    mLocalValues.log();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::floor()
+{
+    mLocalValues.floor();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::ceil()
+{
+    mLocalValues.ceil();
+}
+
+template<typename ValueType>
 void DenseVector<ValueType>::sqrt()
 {
     mLocalValues.sqrt();

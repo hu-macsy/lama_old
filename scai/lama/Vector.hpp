@@ -656,6 +656,21 @@ public:
     virtual void exp() = 0;
 
     /**
+     *  Calculates the logarithm of the vector elements in place.
+     */
+    virtual void log() = 0;
+
+    /**
+     *  Calculates the floor function of the vector elements in place.
+     */
+    virtual void floor() = 0;
+
+    /**
+     *  Calculates the ceil function of the vector elements in place.
+     */
+    virtual void ceil() = 0;
+
+    /**
      *  Calculates the square root of the vector elements.
      */
     virtual void sqrt() = 0;

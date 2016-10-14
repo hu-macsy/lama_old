@@ -77,7 +77,7 @@ namespace utilskernel
 SCAI_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
 
 /* --------------------------------------------------------------------------- */
-/*                                 elementwise kernel                          */
+/*                                 elementwise kernel (no arg)                 */
 /* --------------------------------------------------------------------------- */
 
 /* invert / reciprocal */
@@ -204,6 +204,96 @@ void logKernel( ValueType* array, const IndexType n )
     if ( i < n )
     {
         array[i] = Math::log( array[i] );
+    }
+}
+
+/* floor */
+
+template<typename ValueType>
+__global__
+void floorKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::floor( array[i] );
+    }
+}
+
+/* ceil */
+
+template<typename ValueType>
+__global__
+void ceilKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::ceil( array[i] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+/*                                 elementwise kernel (one arg)                */
+/* --------------------------------------------------------------------------- */
+
+/* powBase */
+
+template<typename ValueType>
+__global__
+void powBaseKernel( ValueType* array, const ValueType base, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::pow( base, array[i] );
+    }
+}
+
+/* powExp */
+
+template<typename ValueType>
+__global__
+void powExpKernel( ValueType* array, const ValueType exp, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::pow( array[i], exp );
+    }
+}
+
+/* addScalar */
+
+template<typename ValueType>
+__global__
+void addScalarKernel( ValueType* array, const ValueType val, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] += val;
+    }
+}
+
+/* ----------------------------------------------------------------------------------------------------------------- */
+/*                                            pow                                                                    */
+/* ----------------------------------------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void powKernel( ValueType* array1, const ValueType* array2, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array1[i] = Math::pow( array1[i], array2[i] );
     }
 }
 
@@ -1099,9 +1189,9 @@ void CUDAUtils::setSection( ValueType out[], const IndexType inc1,
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDAUtils::execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op )
+void CUDAUtils::execElementwiseNoArg( ValueType array[], const IndexType n, const elementwise::ElementwiseOpNoArg op )
 {
-    SCAI_LOG_INFO( logger, "execElementwise<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_INFO( logger, "execElementwiseNoArg<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
     SCAI_LOG_DEBUG( logger, "array = " << array )
 
     if ( n <= 0 )
@@ -1179,12 +1269,109 @@ void CUDAUtils::execElementwise( ValueType array[], const IndexType n, const ele
             break;
         }
 
+        case elementwise::FLOOR :
+        {
+            floorKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::CEIL :
+        {
+            ceilKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
         default:
             COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_CHECK_CUDA_ERROR
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDAUtils::execElementwiseOneArg( ValueType array[], const ValueType arg, const IndexType n,
+                                       const elementwise::ElementwiseOpOneArg op )
+{
+    SCAI_LOG_INFO( logger, "execElementwiseOneArg<" << TypeTraits<ValueType>::id() << ">( ..., arg = "
+                            << arg << " n = " << n << ")" )
+    SCAI_LOG_DEBUG( logger, "array = " << array )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    switch ( op )
+    {
+        case elementwise::POWBASE :
+        {
+            powBaseKernel <<< dimGrid, dimBlock>>>( array, arg, n );
+
+            break;
+        }
+
+        case elementwise::POWEXP :
+        {
+            powExpKernel <<< dimGrid, dimBlock>>>( array, arg, n );
+
+            break;
+        }
+
+        case elementwise::ADDSCALAR :
+        {
+            addScalarKernel <<< dimGrid, dimBlock>>>( array, arg, n );
+
+            break;
+        }
+
+        case elementwise::SUBSCALAR :
+        {
+            addScalarKernel <<< dimGrid, dimBlock>>>( array, -arg, n );
+
+            break;
+        }
+
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
+    }
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CHECK_CUDA_ERROR
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDAUtils::pow( ValueType array1[], const ValueType array2[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "execElementwise<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_DEBUG( logger, "array1 = " << array1 <<  " array2 = " << array2)
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    powKernel <<< dimGrid, dimBlock>>>( array1, array2, n );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CHECK_CUDA_ERROR
+
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1427,10 +1614,9 @@ void CUDAUtils::RegNumericKernels<ValueType>::registerKernels( kregistry::Kernel
     SCAI_LOG_DEBUG( logger, "registerV numeric UtilsKernel CUDA [" << flag
                    << "] --> ValueType = " << common::getScalarType<ValueType>() )
 
-    KernelRegistry::set<UtilKernelTrait::execElementwise<ValueType> >( execElementwise, ctx, flag );
-    //KernelRegistry::set<UtilKernelTrait::pow<ValueType> >( pow, ctx, flag );
-    //KernelRegistry::set<UtilKernelTrait::powBase<ValueType> >( powBase, ctx, flag );
-    //KernelRegistry::set<UtilKernelTrait::powExp<ValueType> >( powExp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::execElementwiseNoArg<ValueType> >( execElementwiseNoArg, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::execElementwiseOneArg<ValueType> >( execElementwiseOneArg, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::pow<ValueType> >( pow, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

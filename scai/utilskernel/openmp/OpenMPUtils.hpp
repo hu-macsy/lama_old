@@ -130,7 +130,11 @@ public:
     /** OpenMP implementation for UtilKernelTrait::execElementwise */
 
     template<typename ValueType>
-    static void execElementwise( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op );
+    static void execElementwiseNoArg( ValueType array[], const IndexType n, const elementwise::ElementwiseOpNoArg op );
+
+    template<typename ValueType>
+    static void execElementwiseOneArg( ValueType array[], const ValueType arg, const IndexType n,
+                                       const elementwise::ElementwiseOpOneArg op );
 
    /** OpenMP implementation for UtilKernelTrait::pow */
 
