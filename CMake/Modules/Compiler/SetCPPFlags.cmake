@@ -72,9 +72,9 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
     set ( MIC_NO_OFFLOAD_FLAG "-no-offload" )
 
-    if    ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
+    if    ( CXX_COMPILER_VERSION VERSION_GREATER 14 )
         set ( MIC_NO_OFFLOAD_FLAG "-qno-offload" )
-    endif ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
+    endif ( CXX_COMPILER_VERSION VERSION_GREATER 14 )
 
     # -fPIC should always be enabled so static libraries can be linked with shared libraries
 
