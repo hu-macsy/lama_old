@@ -222,6 +222,36 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( floorCeilTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
+    HArray<ValueType> arrayF( ctx );
+    HArray<ValueType> arrayC( ctx );
+    arrayF.init( values, n );
+    arrayC.init( values, n );
+    HArrayUtils::execElementwise( arrayF, elementwise::FLOOR, ctx );
+    HArrayUtils::execElementwise( arrayC, elementwise::CEIL,  ctx );
+    {
+        ReadAccess<ValueType> readF( arrayF, host );
+        ReadAccess<ValueType> readC( arrayC, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = readF[i] - common::Math::floor(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+
+            x = readC[i] - common::Math::ceil(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( trigonomicTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr ctx  = Context::getContextPtr();
