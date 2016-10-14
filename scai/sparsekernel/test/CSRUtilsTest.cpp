@@ -181,6 +181,93 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( sortRowTest )
+{
+    typedef double ValueType;
+
+    ContextPtr testContext = Context::getContextPtr();
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
+
+    ContextPtr loc = Context::getContextPtr( sortRowElements.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    //    1.0   -   2.0  1.1 
+    //    0.5  0.3   -    -
+    //     -    -   3.0   -
+    //     -    -   4.0   1.5
+
+    const IndexType ia[] = { 0, 3, 5, 6, 8 };
+
+    const IndexType ja_unsorted[] = { 3, 2, 0, 0, 1, 2, 3, 2 };
+    const ValueType values_unsorted[] = { 1.1, 2.0, 1.0, 0.5, 0.3 , 3.0, 1.5, 4.0 };
+
+    const IndexType ja_sorted[] = { 0, 2, 3, 0, 1, 2, 2, 3 };
+    const ValueType values_sorted[] = { 1.0, 2.0, 1.1, 0.5, 0.3, 3.0, 4.0, 1.5 };
+
+    const IndexType ja_dia_sorted[] = { 0, 2, 3, 1, 0, 2, 3, 2 };
+    const ValueType values_dia_sorted[] = { 1.0, 2.0, 1.1, 0.3, 0.5, 3.0, 1.5, 4.0 };
+
+    const IndexType numRows = 4;
+    const IndexType numValues = 8;
+
+    HArray<IndexType> csrIA( numRows + 1, ia, testContext );
+    HArray<IndexType> csrJA( numValues, ja_unsorted, testContext );
+    HArray<double> csrValues( numValues, values_unsorted, testContext );
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        WriteAccess<IndexType> wJA( csrJA, loc );
+        WriteAccess<ValueType> wValues( csrValues, loc );
+
+        bool diagonalFlag = false;
+
+        sortRowElements[loc->getType()]( wJA.get(), wValues.get(), rIA.get(), numRows, diagonalFlag );
+    }
+
+    // now check that values are sorted
+    {
+        ReadAccess<IndexType> rJA( csrJA );
+        ReadAccess<ValueType> rValues( csrValues );
+
+        for ( IndexType k = 0; k < numValues; ++k )
+        {
+            BOOST_CHECK_EQUAL( rJA[k], ja_sorted[k] );
+            BOOST_CHECK_EQUAL( rValues[k], values_sorted[k] );
+        }
+    }
+
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        WriteAccess<IndexType> wJA( csrJA, loc );
+        WriteAccess<ValueType> wValues( csrValues, loc );
+
+        bool diagonalFlag = true;
+
+        sortRowElements[loc->getType()]( wJA.get(), wValues.get(), rIA.get(), numRows, diagonalFlag );
+    }
+
+    // now check that values are sorted
+    {
+        ReadAccess<IndexType> rJA( csrJA );
+        ReadAccess<ValueType> rValues( csrValues );
+
+        for ( IndexType k = 0; k < numValues; ++k )
+        {
+            BOOST_CHECK_EQUAL( rJA[k], ja_dia_sorted[k] );
+            BOOST_CHECK_EQUAL( rValues[k], values_dia_sorted[k] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( getValuePosColTest )
 {
     ContextPtr testContext = Context::getContextPtr();
@@ -270,32 +357,48 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
     ContextPtr loc = Context::getContextPtr( convertCSR2CSC.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
     SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
-    //  input array           transpose
-    //    1.0   -   2.0       1.0  0.5   -    4.0
-    //    0.5  0.3   -         -   0.3   -    1.5
-    //     -    -   3.0       2.0   -   3.0    -
-    //    4.0  1.5   -
-    const IndexType ia1[] =
-    { 0, 2, 4, 5, 7 };
-    const IndexType ja1[] =
-    { 0, 2, 0, 1, 2, 0, 1 };
-    const IndexType ia2[] =
-    { 0, 3, 5, 7 };
-    const IndexType ja2[] =
-    { 0, 1, 3, 1, 3, 0, 2 };
-    const ValueType values1[] =
-    { 1.0, 2.0, 0.5, 0.3, 3.0, 4.0, 1.5 };
-    const ValueType values2[] =
-    { 1.0, 0.5, 4.0, 0.3, 1.5, 2.0, 3.0 };
+
+    //      input array           transpose
+    //  0     1.0   -   2.0       1.0  0.5   -    4.0
+    //  1     0.5  0.3   -         -   0.3   -    1.5
+    //  2      -    -   3.0       2.0   -   3.0    -
+    //  3     4.0  1.5   -
+
+    const IndexType ia1[] = { 0, 2, 4, 5, 7 };
+    const IndexType ja1[] = { 0, 2, 0, 1, 2, 0, 1 };
+
+    const IndexType ia2[] = { 0, 3, 5, 7 };
+    const IndexType ja2[] = { 0, 1, 3, 1, 3, 0, 2 };
+
+    const ValueType values1[] =  { 1.0, 2.0, 0.5, 0.3, 3.0, 4.0, 1.5 };
+    const ValueType values2[] =  { 1.0, 0.5, 4.0, 0.3, 1.5, 2.0, 3.0 };
+
     const IndexType numRows = 4;
     const IndexType numColumns = 3;
     const IndexType numValues = 7;
+
+    const IndexType ia1_size = sizeof( ia1 ) / sizeof( IndexType );
+    const IndexType ia2_size = sizeof( ia2 ) / sizeof( IndexType );
+
+    BOOST_CHECK_EQUAL( numRows + 1, ia1_size );
+    BOOST_CHECK_EQUAL( numColumns + 1, ia2_size );
+
+    const size_t sizeArray = numValues;
+
+    BOOST_CHECK_EQUAL( sizeArray, sizeof( ja1 ) / sizeof( IndexType ) );
+    BOOST_CHECK_EQUAL( sizeArray, sizeof( ja2 ) / sizeof( IndexType ) );
+
+    BOOST_CHECK_EQUAL( sizeArray, sizeof( values1 ) / sizeof( ValueType ) );
+    BOOST_CHECK_EQUAL( sizeArray, sizeof( values2 ) / sizeof( ValueType ) );
+
     HArray<IndexType> csrIA( numRows + 1, ia1, testContext );
     HArray<IndexType> csrJA( numValues, ja1, testContext );
     HArray<ValueType> csrValues( numValues, values1, testContext );
+
     HArray<IndexType> cscIA;
     HArray<IndexType> cscJA;
     HArray<ValueType> cscValues;
+
     // CSC <- transpose CSR
     {
         ReadAccess<IndexType> rCSRIA( csrIA, loc );
@@ -305,48 +408,65 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
         WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
         WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc );
-        convertCSR2CSC[loc->getType()]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+        convertCSR2CSC[loc->getType()]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), 
+                                        rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
                                         numColumns, numValues );
     }
+
+    BOOST_REQUIRE_EQUAL( numColumns + 1, cscIA.size() );
+    {
+        ContextPtr host = Context::getHostPtr();
+
+        ReadAccess<IndexType> rCSCIA( cscIA, host );
+
+        for ( IndexType j = 0; j <= numColumns; ++j )
+        {
+            BOOST_REQUIRE_EQUAL( rCSCIA[j], ia2[j] );
+        }
+    }
+
+    BOOST_REQUIRE_EQUAL( numValues, cscJA.size() );
+    BOOST_REQUIRE_EQUAL( numValues, cscValues.size() );
+
     //  For comparison later we sort cscJA and cscValue
+
     kregistry::KernelTraitContextFunction<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
+
     loc = Context::getContextPtr( sortRowElements.validContext( testContext->getType() ) );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
     SCAI_LOG_INFO( logger, "sortRowElements< " << TypeTraits<ValueType>::id() << "> for " << *testContext << " on " << *loc )
+
     {
         ReadAccess<IndexType> rCSCIA( cscIA, loc );
         WriteAccess<IndexType> wCSCJA( cscJA, loc );
         WriteAccess<ValueType> wCSCValues( cscValues, loc );
 
-        for ( IndexType j = 0; j <= numColumns; ++j )
-        {
-            BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
-        }
+        SCAI_CONTEXT_ACCESS( loc );
 
         bool diagonalFlag = false;
+
         // For comparison of cscJA and cscValue we need to sort it
+
         sortRowElements[loc->getType()]( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
     }
+
     // check CSC for correctness, done on host
     {
         ContextPtr host = Context::getHostPtr();
-        ReadAccess<IndexType> rCSCIA( cscIA, host );
-        ReadAccess<IndexType> wCSCJA( cscJA, host );
-        ReadAccess<ValueType> wCSCValues( cscValues, host );
 
-        for ( IndexType j = 0; j <= numColumns; ++j )
+        ReadAccess<IndexType> rCSCJA( cscJA, host );
+        ReadAccess<ValueType> rCSCValues( cscValues, host );
+
+        for ( IndexType j = 0; j < numValues; ++j )
         {
-            BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
+            BOOST_CHECK_EQUAL( rCSCJA[j], ja2[j] );
         }
 
         for ( IndexType j = 0; j < numValues; ++j )
         {
-            BOOST_CHECK_EQUAL( wCSCJA[j], ja2[j] );
-        }
-
-        for ( IndexType j = 0; j < numValues; ++j )
-        {
-            BOOST_CHECK_EQUAL( wCSCValues[j], values2[j] );
+            BOOST_CHECK_EQUAL( rCSCValues[j], values2[j] );
         }
     }
 }

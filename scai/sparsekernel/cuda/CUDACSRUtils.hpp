@@ -265,6 +265,16 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
+    /** CUDA implementation for CSRKernelTrait::sortRowElements */
+
+    template<typename ValueType>
+    static void sortRowElements(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const bool diagonalFlag );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

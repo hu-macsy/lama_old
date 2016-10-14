@@ -136,11 +136,7 @@ public:
 
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] );
 
-    /** This function sorts the column indexes of each row in ascending order.
-     *
-     *  If the diagonal flag is set, the first entry in the row will be the
-     *  diagonal element ( if available ).
-     */
+    /** Host implementation for CSRKernelTrait::sortRowElements using OpenMP parallelization. */
 
     template<typename ValueType>
     static void sortRowElements(
@@ -150,7 +146,7 @@ public:
         const IndexType numRows,
         const bool diagonalFlag );
 
-    /** Implementation for CSRKernelTrait::Transpose::convertCSR2CSC  */
+    /** Implementation for CSRKernelTrait::convertCSR2CSC  */
 
     template<typename ValueType>
     static void convertCSR2CSC(
@@ -164,7 +160,7 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::Mult::scaleRows  */
+    /** Implementation for CSRKernelTrait::scaleRows  */
 
     template<typename ValueType1, typename ValueType2>
     static void scaleRows(
@@ -173,7 +169,7 @@ public:
         const IndexType numRows,
         const ValueType2 values[] );
 
-    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
