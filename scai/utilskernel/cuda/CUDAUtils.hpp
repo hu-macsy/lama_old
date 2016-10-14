@@ -165,7 +165,12 @@ public:
     /** CUDA implementation for UtilKernelTrait::setGather, out[i]] = in[ indexes[i] ] */
 
     template<typename ValueType, typename otherValueType>
-    static void setGather( ValueType out[], const otherValueType in[], const IndexType indexes[], const IndexType n );
+    static void setGather( 
+        ValueType out[], 
+        const otherValueType in[], 
+        const IndexType indexes[], 
+        const utilskernel::reduction::ReductionOp op,
+        const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::setScatter, out[ indexes[i] ] op= in [i] */
 

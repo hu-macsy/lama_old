@@ -272,7 +272,10 @@ void OpenMPCSRUtils::sortRowElements(
     const IndexType numRows,
     const bool diagonalFlag )
 {
+    SCAI_REGION( "OpenMP.CSR.sortRow" )
+
     SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
+
     #pragma omp parallel for
 
     for ( IndexType i = 0; i < numRows; ++i )
@@ -425,7 +428,7 @@ void OpenMPCSRUtils::compress(
     const ValueType eps,
     const bool diagonalFlag )
 {
-    SCAI_REGION( "OpenMP.CSRUtils.compress" )
+    SCAI_REGION( "OpenMP.CSR.compress" )
     SCAI_LOG_INFO( logger, "compress of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
                    << "), eps = " << eps << ", diagonal = " << diagonalFlag )
     #pragma omp parallel for

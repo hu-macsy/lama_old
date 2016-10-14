@@ -954,7 +954,7 @@ void CSRStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
         const ReadAccess<IndexType> ja( mJa, loc );
         const ReadAccess<OtherType> rRow( row, loc );
 
-        setGather[loc]( wRow.get(), rRow.get(), ja.get() + n1, nrow );
+        setGather[loc]( wRow.get(), rRow.get(), ja.get() + n1, utilskernel::reduction::COPY, nrow );
     }
 
     HArrayUtils::setArraySection( mValues, n1, 1, gatheredRow, 0, 1, nrow, op, loc );
@@ -1000,8 +1000,8 @@ void CSRStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
 
     // column[ row ] = mValues[ pos ];
 
-    HArrayUtils::gather( colValues, mValues, valuePos, loc );
-    HArrayUtils::scatter( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
+    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1044,8 +1044,8 @@ void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
 
     //  mValues[ pos ] op= column[row]
     
-    HArrayUtils::gather( colValues, column, rowIndexes, loc );
-    HArrayUtils::scatter( mValues, valuePos, colValues, op, loc );
+    HArrayUtils::gatherImpl( colValues, column, rowIndexes, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, colValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1055,6 +1055,10 @@ template<typename OtherValueType>
 void CSRStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) const
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+
+    //  diagonal[0:numDiagonalElements] = mValues[ mIa[ 0:numDiagonalElements] ]
+    //  cannot use HArrayUtils::gather as we do not use full array, neither diagonal nor mIA
+
     static LAMAKernel<UtilKernelTrait::setGather<OtherValueType, ValueType> > setGather;
     ContextPtr loc = this->getContextPtr();
     setGather.getSupportedContext( loc );
@@ -1062,7 +1066,7 @@ void CSRStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) 
     WriteOnlyAccess<OtherValueType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<ValueType> rValues( mValues, loc );
-    setGather[loc]( wDiagonal.get(), rValues.get(), csrIA.get(), numDiagonalElements );
+    setGather[loc]( wDiagonal.get(), rValues.get(), csrIA.get(), utilskernel::reduction::COPY, numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1263,7 +1267,7 @@ void CSRStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& col
     SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<IndexType> ja( mJa, loc );
     ReadAccess<IndexType> ia( mIa, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), mNumRows );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), utilskernel::reduction::COPY, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */

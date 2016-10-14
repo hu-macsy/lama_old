@@ -300,12 +300,13 @@ struct UtilKernelTrait
     template<typename ValueType1, typename ValueType2>
     struct setGather
     {
-        /** Set out[i] = in[ indexes[i] ],  \f$0 \le i < n\f$ */
+        /** Set out[i] <op>= in[ indexes[i] ],  \f$0 \le i < n\f$ */
 
         typedef void ( *FuncType ) (
             ValueType1 out[],
             const ValueType2 in[],
             const IndexType indexes[],
+            const reduction::ReductionOp op,
             const IndexType n );
 
         static const char* getId()

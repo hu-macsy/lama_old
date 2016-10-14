@@ -85,22 +85,24 @@ public:
     /**
      *  @brief Gathering (unstructured read) of values with heterogeneous arrays.
      *
-     *  target[i] = source[index[i]]
+     *  target[i] <op> = source[indexes[i]]
      */
-    static void assignGather(
+    static void gather(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& index,
+        const reduction::ReductionOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
      *  @brief Gathering (unstructured read of values) with HArrays, template typed version
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void gather(
+    static void gatherImpl(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
-        const hmemo::HArray<IndexType>& index,
+        const hmemo::HArray<IndexType>& indexes,
+        const reduction::ReductionOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -108,7 +110,7 @@ public:
      *
      *  target[index[i]] = source[i]
      */
-    static void assignScatter(
+    static void scatter(
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::_HArray& source,
@@ -121,7 +123,7 @@ public:
      *  target[index[i]] = source[i]
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void scatter(
+    static void scatterImpl(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::HArray<SourceValueType>& source,

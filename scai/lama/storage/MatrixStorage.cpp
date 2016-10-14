@@ -489,7 +489,7 @@ void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& 
     SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<IndexType> ja( csrJA, loc );
     ReadAccess<IndexType> ia( csrIA, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), mNumRows );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), utilskernel::reduction::COPY, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */

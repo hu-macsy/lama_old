@@ -165,37 +165,37 @@ void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], 
 /*     getValuePosCol                                                          */
 /* --------------------------------------------------------------------------- */
 
-  struct notEqual
-  {
+struct notEqual
+{
     const IndexType mOutOfRange;
 
-    notEqual( const IndexType val ) : mOutOfRange( val ) 
+    notEqual( const IndexType val ) : mOutOfRange( val )
     {
     }
 
     __host__ __device__
-    bool operator()(const IndexType x)
+    bool operator()( const IndexType x )
     {
-      return x != mOutOfRange;
+        return x != mOutOfRange;
     }
-  };
+};
 
 __global__
-static void get_col_pos_kernel( IndexType row[], IndexType pos[], const IndexType j, 
+static void get_col_pos_kernel( IndexType row[], IndexType pos[], const IndexType j,
                                 const IndexType csrIA[], const IndexType numRows,
                                 const IndexType csrJA[], const IndexType numValues )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    
+
     if ( i < numRows )
     {
         row[i] = numRows;     // out of range value indicates not found
         pos[i] = numValues;   // out of range value indicates not found
 
-        for ( IndexType k = csrIA[i]; k < csrIA[i+1]; ++k )
-        {   
+        for ( IndexType k = csrIA[i]; k < csrIA[i + 1]; ++k )
+        {
             if ( csrJA[k] == j )
-            {   
+            {
                 row[i] = i;
                 pos[i] = k;
             }
@@ -205,8 +205,8 @@ static void get_col_pos_kernel( IndexType row[], IndexType pos[], const IndexTyp
 
 /* --------------------------------------------------------------------------- */
 
-IndexType CUDACSRUtils::getValuePosCol( IndexType row[], IndexType pos[], const IndexType j, 
-                                        const IndexType csrIA[], const IndexType numRows, 
+IndexType CUDACSRUtils::getValuePosCol( IndexType row[], IndexType pos[], const IndexType j,
+                                        const IndexType csrIA[], const IndexType numRows,
                                         const IndexType csrJA[], const IndexType numValues )
 {
     SCAI_REGION( "CUDA.CSRUtils.getValuePosCol" )
@@ -215,13 +215,13 @@ IndexType CUDACSRUtils::getValuePosCol( IndexType row[], IndexType pos[], const 
 
     SCAI_CHECK_CUDA_ACCESS
 
-    // compute 'full' row, pos arrays 
+    // compute 'full' row, pos arrays
 
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    get_col_pos_kernel<<< dimGrid, dimBlock>>>( row, pos, j, csrIA, numRows, csrJA, numValues );
+    get_col_pos_kernel <<< dimGrid, dimBlock>>>( row, pos, j, csrIA, numRows, csrJA, numValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "get_row_kernel" )
 
@@ -235,7 +235,7 @@ IndexType CUDACSRUtils::getValuePosCol( IndexType row[], IndexType pos[], const 
 
     IndexType cnt2 = thrust::copy_if( d_row,
                                       d_row + numRows,
-                                      d_row, 
+                                      d_row,
                                       notEqual( numRows ) ) - d_row;
 
     SCAI_ASSERT_EQ_ERROR( cnt1, cnt2, "serious size mismatch of row/pos arrays" )
@@ -1385,8 +1385,11 @@ void CUDACSRUtils::sparseGEMV(
     }
 
     const int blockSize = CUDASettings::getBlockSize( numNonZeroRows );
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
+
     bool useTexture = CUDASettings::useTexture();
 
     if ( useTexture )
@@ -1467,8 +1470,11 @@ void CUDACSRUtils::sparseGEVM(
     }
 
     const int blockSize = CUDASettings::getBlockSize( numNonZeroRows );
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
+
     bool useTexture = CUDASettings::useTexture();
 
     if ( useTexture )
@@ -1674,8 +1680,11 @@ void CUDACSRUtils::jacobi(
     }
 
     const int blockSize = CUDASettings::getBlockSize();
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
     SCAI_LOG_INFO( logger, "Start csr_jacobi_kernel<" << TypeTraits<ValueType>::id()
                    << ", useTexture = " << useTexture << ">" );
 
@@ -1745,6 +1754,7 @@ void csr_jacobiHalo_kernel(
         }
 
         const ValueType diag = localValues[localIA[i]];
+
         solution[i] -= temp * ( omega / diag );
     }
 }
@@ -1835,6 +1845,7 @@ void csr_jacobiHaloWithDiag_kernel(
         }
 
         const ValueType diag = localDiagValues[i];
+
         solution[i] -= temp * ( omega / diag );
     }
 }
@@ -3107,6 +3118,97 @@ void CUDACSRUtils::matrixMultiply(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+namespace gpu
+{
+    template <class T> 
+    __device__ void swap ( T& a, T& b )
+    { 
+        T c(a); 
+        a = b; 
+        b = c;
+    }
+}
+
+template<typename ValueType>
+__global__
+void sortRowKernel(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType numRows,
+    const bool diagonalFlag )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+
+    {
+        // use serial bubble sort as sort algorithm for one row
+
+        const IndexType start = csrIA[i];
+        IndexType end = csrIA[i + 1] - 1;
+
+        bool sorted = false;
+
+        while ( !sorted )
+        {
+            sorted = true; // will be reset if any wrong order appears
+
+            for ( IndexType jj = start; jj < end; ++jj )
+            {
+                bool swapIt = false;
+
+                // if diagonalFlag is set, column i is the smallest one
+
+                if ( diagonalFlag && ( csrJA[jj + 1] == i ) && ( csrJA[jj] != i ) )
+                {
+                    swapIt = true;
+                }
+                else if ( diagonalFlag && ( csrJA[jj] == i ) )
+                {
+                    swapIt = false;
+                }
+                else
+                {
+                    swapIt = csrJA[jj] > csrJA[jj + 1];
+                }
+
+                if ( swapIt )
+                {
+                    sorted = false;
+                    gpu::swap( csrJA[jj], csrJA[jj + 1] );
+                    gpu::swap( csrValues[jj], csrValues[jj + 1] );
+                }
+            }
+
+            --end;
+        }
+    }
+}
+
+template<typename ValueType>
+void CUDACSRUtils::sortRowElements(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType numRows,
+    const bool diagonalFlag )
+{
+    SCAI_REGION( "CUDA.CSR.sortRow" )
+
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    sortRowKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows, diagonalFlag );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sortRowElements" )
+}
+
 /* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
@@ -3130,12 +3232,13 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
-                     << " --> " << common::getScalarType<ValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
@@ -3149,7 +3252,7 @@ void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 

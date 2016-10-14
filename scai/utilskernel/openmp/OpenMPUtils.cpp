@@ -948,17 +948,80 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType1, typename ValueType2>
-void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
+void OpenMPUtils::setGather( 
+    ValueType1 out[], 
+    const ValueType2 in[], 
+    const IndexType indexes[], 
+    const utilskernel::reduction::ReductionOp op,
+    const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.setGather" )
-    SCAI_LOG_DEBUG( logger,
-                    "setGather: out<" << TypeTraits<ValueType1>::id() << ">[" << n << "]"
-                    << " = in<" << TypeTraits<ValueType2>::id() << ">[ indexes[" << n << "] ]" )
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
-    for ( IndexType i = 0; i < n; i++ )
+    SCAI_LOG_DEBUG( logger,
+                    "setGather: out<" << TypeTraits<ValueType1>::id() << ">[" << n << "] "
+                    << op << " = in<" << TypeTraits<ValueType2>::id() << ">[ indexes[" << n << "] ]" )
+
+    switch ( op )
     {
-        out[i] = static_cast<ValueType1>( in[indexes[i]] );
+        case reduction::COPY :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] = static_cast<ValueType1>( in[indexes[i]] );
+            }
+            break;
+        }
+
+        case reduction::ADD :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] += static_cast<ValueType1>( in[indexes[i]] );
+            }
+            break;
+        }
+
+        case reduction::SUB :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] -= static_cast<ValueType1>( in[indexes[i]] );
+            }
+            break;
+        }
+
+        case reduction::MULT :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] *= static_cast<ValueType1>( in[indexes[i]] );
+            }
+            break;
+        }
+
+        case reduction::DIVIDE :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] /= static_cast<ValueType1>( in[indexes[i]] );
+            }
+            break;
+        }
+
+        default:
+        {
+            COMMON_THROWEXCEPTION( "Unsupported reduction op : " << op )
+        }
     }
 }
 

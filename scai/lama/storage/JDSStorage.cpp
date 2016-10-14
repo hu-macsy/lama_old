@@ -306,7 +306,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
     WriteAccess<ValueType> wValues( mValues, loc );
     // diagonal is first column in JDS data
     // values[i] = diagonal[ ja[ i ] ]
-    setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), numDiagonal );
+    setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), utilskernel::reduction::COPY, numDiagonal );
     // Still problem to use HArrayUtils::gather, as only part of the array is used
 }
 
@@ -379,8 +379,8 @@ void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
 
     // column[ row ] = mValues[ pos ];
 
-    HArrayUtils::gather( colValues, mValues, valuePos, loc );
-    HArrayUtils::scatter( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
+    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -458,8 +458,8 @@ void JDSStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
 
     //  mValues[ pos ] op= column[row]
 
-    HArrayUtils::gather( colValues, column, rowIndexes, loc );
-    HArrayUtils::scatter( mValues, valuePos, colValues, op, loc );
+    HArrayUtils::gatherImpl( colValues, column, rowIndexes, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, colValues, op, loc );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -746,12 +746,13 @@ bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascen
 }
 
 /* --------------------------------------------------------------------------- */
+/*    gather + gather kernels                                                  */
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType1, typename ValueType2>
 __global__
-void gatherKernel( ValueType1* out, const ValueType2* in, const IndexType* indexes, const IndexType n )
+void gatherCopyKernel( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
-    // Kernel also supports implicit type conversions
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
@@ -761,18 +762,99 @@ void gatherKernel( ValueType1* out, const ValueType2* in, const IndexType* index
 }
 
 template<typename ValueType1, typename ValueType2>
-void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
+__global__
+void gatherAddKernel( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] += static_cast<ValueType1>( in[indexes[i]] );
+    }
+}
+
+template<typename ValueType1, typename ValueType2>
+__global__
+void gatherSubKernel( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] -= static_cast<ValueType1>( in[indexes[i]] );
+    }
+}
+
+template<typename ValueType1, typename ValueType2>
+__global__
+void gatherMultKernel( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] *= static_cast<ValueType1>( in[indexes[i]] );
+    }
+}
+
+template<typename ValueType1, typename ValueType2>
+__global__
+void gatherDivideKernel( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] /= static_cast<ValueType1>( in[indexes[i]] );
+    }
+}
+
+template<typename ValueType1, typename ValueType2>
+void CUDAUtils::setGather( 
+    ValueType1 out[], 
+    const ValueType2 in[], 
+    const IndexType indexes[], 
+    const utilskernel::reduction::ReductionOp op,
+    const IndexType n )
 {
     SCAI_REGION( "CUDA.Utils.setGather" )
 
     SCAI_LOG_INFO( logger,
                    "setGather<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
+
     SCAI_CHECK_CUDA_ACCESS
+
     const int blockSize = 256;
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
-    gatherKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+
+    switch ( op )
+    {
+        case reduction::COPY :
+            gatherCopyKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
+            break;
+
+        case reduction::ADD :
+            gatherAddKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
+            break;
+
+        case reduction::SUB :
+            gatherSubKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
+            break;
+
+        case reduction::MULT :
+            gatherMultKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
+            break;
+
+        case reduction::DIVIDE :
+            gatherDivideKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
+            break;
+
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
+    }
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setGather::kernel" );
 }
 
 /* --------------------------------------------------------------------------- */

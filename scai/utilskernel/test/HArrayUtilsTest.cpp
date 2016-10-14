@@ -104,10 +104,10 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
             // create array with same type, context
             common::unique_ptr<_HArray> tmp( array2.copy() );
             // array2 = array1[ perm ], tmp[ perm ] = array1
-            HArrayUtils::assignGather( array2, array1, perm, ctx );
+            HArrayUtils::gather( array2, array1, perm, reduction::COPY, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
             tmp->resize( n ); // no init required as all values are set
-            HArrayUtils::assignScatter( *tmp, perm, array1, reduction::COPY, ctx );
+            HArrayUtils::scatter( *tmp, perm, array1, reduction::COPY, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same
 
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_numeric_test_types )
     LArray<ValueType> target;
     BOOST_CHECK( HArrayUtils::validIndexes( indexes, M ) );
     BOOST_CHECK( !HArrayUtils::validIndexes( indexes, 1 ) );
-    HArrayUtils::gather( target, source, indexes );
+    HArrayUtils::gatherImpl( target, source, indexes, reduction::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -406,11 +406,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
     BOOST_CHECK_THROW (
     {
         LArray<ValueType> target;
-        HArrayUtils::scatter( target, indexes, source, reduction::COPY );
+        HArrayUtils::scatterImpl( target, indexes, source, reduction::COPY );
 
     }, Exception );
     LArray<ValueType> target( M );
-    HArrayUtils::scatter( target, indexes, source, reduction::COPY );
+    HArrayUtils::scatterImpl( target, indexes, source, reduction::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -514,7 +514,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
     BOOST_CHECK_EQUAL( perm.size(), n );
     LArray<ValueType> origArray( n, vals, loc );
     LArray<ValueType> array1;
-    HArrayUtils::gather( array1, origArray, perm );
+    HArrayUtils::gatherImpl( array1, origArray, perm, reduction::COPY );
     BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), ValueType( 0 ) );
 }
 
@@ -547,7 +547,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
     BOOST_CHECK_EQUAL( perm.size(), n );
 
     LArray<IndexType> sortedArray;
-    HArrayUtils::gather( sortedArray, array, perm );
+    HArrayUtils::gatherImpl( sortedArray, array, perm, reduction::COPY );
     BOOST_CHECK( HArrayUtils::isSorted( sortedArray, true, loc ) );
 
     // number of buckets = 1, so only two values array[i] == 0 are taken
