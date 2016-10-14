@@ -1223,7 +1223,7 @@ void DenseMatrix<ValueType>::setLocalRow(
 
     HArray<ValueType> rowResorted;   // row resorted according to the owners
 
-    utilskernel::HArrayUtils::gather( rowResorted, row, perm );
+    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, utilskernel::reduction::COPY );
 
     ReadAccess<IndexType> rOffsets( offsets );
 

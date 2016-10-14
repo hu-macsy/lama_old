@@ -150,7 +150,12 @@ public:
     /** OpenMP implementation for UtilKernelTrait::setGather */
 
     template<typename ValueType1, typename ValueType2>
-    static void setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n );
+    static void setGather( 
+        ValueType1 out[], 
+        const ValueType2 in[], 
+        const IndexType indexes[], 
+        const reduction::ReductionOp op,
+        const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::scatterVal */
 

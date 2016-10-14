@@ -961,8 +961,8 @@ void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const Ind
 
     // row[ colIndexes ] = mValues[ pos ];
 
-    HArrayUtils::gather( rowValues, mValues, valuePos, loc );
-    HArrayUtils::scatter( row, colIndexes, rowValues, utilskernel::reduction::COPY, loc );
+    HArrayUtils::gatherImpl( rowValues, mValues, valuePos, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( row, colIndexes, rowValues, utilskernel::reduction::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1007,8 +1007,8 @@ void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 
     // mValues[pos] = row[ colIndexes ] 
 
-    HArrayUtils::gather( rowValues, row, colIndexes, loc );
-    HArrayUtils::scatter( mValues, valuePos, rowValues, op, loc );
+    HArrayUtils::gatherImpl( rowValues, row, colIndexes, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, rowValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1051,8 +1051,8 @@ void COOStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
 
     // column[ row ] = mValues[ pos ];
 
-    HArrayUtils::gather( colValues, mValues, valuePos, loc );
-    HArrayUtils::scatter( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
+    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1095,8 +1095,8 @@ void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
 
     //  mValues[ pos ] op= column[ rowIndexes ]
 
-    HArrayUtils::gather( colValues, column, rowIndexes, loc );
-    HArrayUtils::scatter( mValues, valuePos, colValues, op, loc );
+    HArrayUtils::gatherImpl( colValues, column, rowIndexes, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, colValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1216,8 +1216,8 @@ void COOStorage<ValueType>::buildCSR(
 
     // CSR array ja, values are the COO arrays resorted
 
-    utilskernel::HArrayUtils::gather( *csrJA, mJA, perm, preferredLoc );
-    utilskernel::HArrayUtils::gather( *csrValues, mValues, perm, preferredLoc );
+    utilskernel::HArrayUtils::gatherImpl( *csrJA, mJA, perm, utilskernel::reduction::COPY, preferredLoc );
+    utilskernel::HArrayUtils::gatherImpl( *csrValues, mValues, perm, utilskernel::reduction::COPY, preferredLoc );
 
     // Note: sort is stable, so diagonal values remain first in each row
 }

@@ -57,7 +57,7 @@ int main( int argc, const char* argv[] )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    JDSSparseMatrix<double> mat( size, size );
+    DenseMatrix<double> mat( size, size );
 
     mat.setContextPtr( ctx );
 

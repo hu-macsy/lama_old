@@ -181,10 +181,11 @@ void HArrayUtils::assignGather(
     _HArray& target,
     const _HArray& source,
     const HArray<IndexType>& indexes,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the gather version with the correct value types for target and source
-    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::gather( target, source, indexes, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::gather( target, source, indexes, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -203,15 +204,16 @@ void HArrayUtils::assignScatter(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void HArrayUtils::gather(
+void HArrayUtils::gatherImpl(
     HArray<TargetValueType>& target,
     const HArray<SourceValueType>& source,
     const HArray<IndexType>& indexes,
+    const reduction::ReductionOp op,
     const ContextPtr prefLoc )
 {
     SCAI_REGION( "HArray.gather" )
 
-    SCAI_LOG_INFO( logger, "target[ " << target.size() << " ] = source [ indexes [ " 
+    SCAI_LOG_INFO( logger, "target[ " << target.size() << " ] " << op << " = source [ indexes [ " 
                             << indexes.size() << " ] : " << source.size() << " ]" )
 
     // choose location for the operation where source array is currently valid
@@ -230,13 +232,13 @@ void HArrayUtils::gather(
     ReadAccess<SourceValueType> rSource( source, loc );
     ReadAccess<IndexType> rIndexes( indexes, loc );
     //  target[i] = source[ indexes[i] ]
-    setGather[loc] ( wTarget.get(), rSource.get(), rIndexes.get(), n );
+    setGather[loc] ( wTarget.get(), rSource.get(), rIndexes.get(), op, n );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void HArrayUtils::scatter(
+void HArrayUtils::scatterImpl(
     HArray<TargetValueType>& target,
     const HArray<IndexType>& indexes,
     const HArray<SourceValueType>& source,
@@ -1199,15 +1201,17 @@ void HArrayUtils::buildDenseArray(
     denseArray.clear();
     denseArray.resize( denseN );
     HArrayUtils::setScalar( denseArray, ValueType( 0 ), reduction::COPY, prefLoc );
-    HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, reduction::COPY, prefLoc );
+    HArrayUtils::scatterImpl( denseArray, sparseIndexes, sparseArray, reduction::COPY, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 #define HARRAUTILS_SPECIFIER_LVL2( ValueType, OtherValueType )                                                          \
-    template void HArrayUtils::gather<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                            \
+    template void HArrayUtils::gatherImpl<ValueType, OtherValueType>(                                                   \
+            hmemo::HArray<ValueType>&,                                                                                  \
             const hmemo::HArray<OtherValueType>&,                                                                       \
             const hmemo::HArray<IndexType>&,                                                                            \
+            const reduction::ReductionOp,                                                                               \
             const hmemo::ContextPtr );                                                                                  \
     template void HArrayUtils::setArray<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                          \
             const hmemo::HArray<OtherValueType>&,                                                                       \
@@ -1219,7 +1223,8 @@ void HArrayUtils::buildDenseArray(
             const IndexType,                                                                                            \
             const reduction::ReductionOp,                                                                               \
             hmemo::ContextPtr );                                                                                        \
-    template void HArrayUtils::scatter<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                           \
+    template void HArrayUtils::scatterImpl<ValueType, OtherValueType>(                                                  \
+            hmemo::HArray<ValueType>&,                                                                                  \
             const hmemo::HArray<IndexType>&,                                                                            \
             const hmemo::HArray<OtherValueType>&,                                                                       \
             const reduction::ReductionOp,                                                                               \

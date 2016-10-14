@@ -612,8 +612,8 @@ void ELLStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
 
     // column[ row ] = mValues[ pos ];
 
-    HArrayUtils::gather( colValues, mValues, valuePos, loc );
-    HArrayUtils::scatter( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
+    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
