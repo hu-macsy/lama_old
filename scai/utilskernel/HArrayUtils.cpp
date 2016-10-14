@@ -728,13 +728,13 @@ void HArrayUtils::arrayTimesArray(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::execElementwise(
+void HArrayUtils::execElementwiseNoArg(
     hmemo::HArray<ValueType>& array,
-    const elementwise::ElementwiseOp op,
+    const elementwise::ElementwiseOpNoArg op,
     ContextPtr prefLoc )
 {
     const IndexType size = array.size();
-    static LAMAKernel<UtilKernelTrait::execElementwise<ValueType> > execElementwise;
+    static LAMAKernel<UtilKernelTrait::execElementwiseNoArg<ValueType> > execElementwiseNoArg;
     ContextPtr loc = prefLoc;
 
     // default location for check: where we have valid entries
@@ -744,11 +744,38 @@ void HArrayUtils::execElementwise(
         loc = array.getValidContext();
     }
 
-    execElementwise.getSupportedContext( loc );
+    execElementwiseNoArg.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
 
     WriteAccess<ValueType> wValues( array, loc );
-    execElementwise[loc]( wValues.get(), size, op );
+    execElementwiseNoArg[loc]( wValues.get(), size, op );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::execElementwiseOneArg(
+    hmemo::HArray<ValueType>& array,
+    const ValueType arg,
+    const elementwise::ElementwiseOpOneArg op,
+    ContextPtr prefLoc )
+{
+    const IndexType size = array.size();
+    static LAMAKernel<UtilKernelTrait::execElementwiseOneArg<ValueType> > execElementwiseOneArg;
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    execElementwiseOneArg.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<ValueType> wValues( array, loc );
+    execElementwiseOneArg[loc]( wValues.get(), arg, size, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -776,50 +803,6 @@ void HArrayUtils::pow(
     WriteAccess<ValueType> wValues1( array1, loc );
     ReadAccess<ValueType> rValues2( array2, loc );
     pow[loc]( wValues1.get(), rValues2.get(), size );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void HArrayUtils::powBase(
-    hmemo::HArray<ValueType>& array,
-    ValueType base,
-    ContextPtr prefLoc )
-{
-    const IndexType size = array.size();
-    static LAMAKernel<UtilKernelTrait::powBase<ValueType> > powBase;
-    ContextPtr loc = prefLoc;
-
-    // default location for check: where we have valid entries
-
-    if ( loc == ContextPtr() )
-    {
-        loc = array.getValidContext();
-    }
-
-    powBase.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-
-    WriteAccess<ValueType> wValues( array, loc );
-    powBase[loc]( wValues.get(), base, size );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void HArrayUtils::powExp(
-    hmemo::HArray<ValueType>& array,
-    ValueType exp,
-    ContextPtr prefLoc )
-{
-    const IndexType size = array.size();
-    static LAMAKernel<UtilKernelTrait::powExp<ValueType> > powExp;
-    ContextPtr loc = prefLoc;
-    powExp.getSupportedContext( loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-    WriteAccess<ValueType> wValues( array, loc );
-    powExp[loc]( wValues.get(), exp, size );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1238,13 +1221,13 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::assignScaled<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                               \
             const hmemo::HArray<ValueType>&, hmemo::ContextPtr);                                                                  \
     template void HArrayUtils::scale<ValueType>( hmemo::HArray<ValueType>&, const ValueType, hmemo::ContextPtr );                 \
-    template void HArrayUtils::execElementwise<ValueType>( hmemo::HArray<ValueType>&, const elementwise::ElementwiseOp,           \
+    template void HArrayUtils::execElementwiseNoArg<ValueType>( hmemo::HArray<ValueType>&, const elementwise::ElementwiseOpNoArg, \
                                                            hmemo::ContextPtr);                                                    \
+    template void HArrayUtils::execElementwiseOneArg<ValueType>( hmemo::HArray<ValueType>&, const ValueType arg,                  \
+                                                           const elementwise::ElementwiseOpOneArg, hmemo::ContextPtr);            \
     template void HArrayUtils::copysign<ValueType>( hmemo::HArray<ValueType>&, const hmemo::HArray<ValueType>&,                   \
                                                     const hmemo::HArray<ValueType>&, hmemo::ContextPtr);                          \
     template void HArrayUtils::pow<ValueType>( hmemo::HArray<ValueType>&, const hmemo::HArray<ValueType>&, hmemo::ContextPtr);    \
-    template void HArrayUtils::powBase<ValueType>( hmemo::HArray<ValueType>&, ValueType, hmemo::ContextPtr);                      \
-    template void HArrayUtils::powExp<ValueType>( hmemo::HArray<ValueType>&, ValueType, hmemo::ContextPtr);                       \
     template ValueType HArrayUtils::reduce<ValueType>( const hmemo::HArray<ValueType>&,                                           \
             const reduction::ReductionOp, hmemo::ContextPtr );                                                                    \
     template ValueType HArrayUtils::absMaxDiffVal<ValueType>( const hmemo::HArray<ValueType>&,                                    \

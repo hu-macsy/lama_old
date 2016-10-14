@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::execElementwise( array, elementwise::EXP, ctx );
+    HArrayUtils::execElementwiseNoArg( array, elementwise::EXP, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::execElementwise( array, elementwise::LOG, ctx );
+    HArrayUtils::execElementwiseNoArg( array, elementwise::LOG, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
@@ -232,8 +232,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( floorCeilTest, ValueType, scai_numeric_test_types
     HArray<ValueType> arrayC( ctx );
     arrayF.init( values, n );
     arrayC.init( values, n );
-    HArrayUtils::execElementwise( arrayF, elementwise::FLOOR, ctx );
-    HArrayUtils::execElementwise( arrayC, elementwise::CEIL,  ctx );
+    HArrayUtils::execElementwiseNoArg( arrayF, elementwise::FLOOR, ctx );
+    HArrayUtils::execElementwiseNoArg( arrayC, elementwise::CEIL,  ctx );
     {
         ReadAccess<ValueType> readF( arrayF, host );
         ReadAccess<ValueType> readC( arrayC, host );
@@ -266,10 +266,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( trigonomicTest, ValueType, scai_numeric_test_type
     cosArray.init( values, n );
     tanArray.init( values, n );
     atanArray.init( values, n );
-    HArrayUtils::execElementwise( sinArray,  elementwise::SIN,  ctx );
-    HArrayUtils::execElementwise( cosArray,  elementwise::COS,  ctx );
-    HArrayUtils::execElementwise( tanArray,  elementwise::TAN,  ctx );
-    HArrayUtils::execElementwise( atanArray, elementwise::ATAN, ctx );
+    HArrayUtils::execElementwiseNoArg( sinArray,  elementwise::SIN,  ctx );
+    HArrayUtils::execElementwiseNoArg( cosArray,  elementwise::COS,  ctx );
+    HArrayUtils::execElementwiseNoArg( tanArray,  elementwise::TAN,  ctx );
+    HArrayUtils::execElementwiseNoArg( atanArray, elementwise::ATAN, ctx );
     {
         ReadAccess<ValueType> sinRead( sinArray, host );
         for ( IndexType i = 0; i < n; ++i )
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::execElementwise( array, elementwise::SQRT, ctx );
+    HArrayUtils::execElementwiseNoArg( array, elementwise::SQRT, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )

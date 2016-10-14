@@ -228,14 +228,27 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
-    struct execElementwise
+    struct execElementwiseNoArg
     {
         /** Execute sin/cos/sqrt/... function elementwise on vector */
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const elementwise::ElementwiseOp op );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const elementwise::ElementwiseOpNoArg op );
         static const char* getId()
         {
-            return "Util.execElementwise";
+            return "Util.execElementwiseNoArg";
+        }
+    };
+
+    template<typename ValueType>
+    struct execElementwiseOneArg
+    {
+        /** Execute sin/cos/sqrt/... function elementwise on vector */
+
+        typedef void ( *FuncType ) ( ValueType array[], const ValueType arg, const IndexType n, 
+                                     const elementwise::ElementwiseOpOneArg op );
+        static const char* getId()
+        {
+            return "Util.execElementwiseOneArg";
         }
     };
 

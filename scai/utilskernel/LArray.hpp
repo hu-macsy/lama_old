@@ -386,69 +386,69 @@ public:
 
     void invert()
     {
-        HArrayUtils::execElementwise( *this, elementwise::INVERT );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::INVERT );
     }
 
     /** Compute the conj in-place */
 
     void conj()
     {
-        HArrayUtils::execElementwise( *this, elementwise::CONJ );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::CONJ );
     }
 
     void exp()
     {
-        HArrayUtils::execElementwise( *this, elementwise::EXP );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::EXP );
     }
 
     void log()
     {
-        HArrayUtils::execElementwise( *this, elementwise::LOG );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::LOG );
     }
 
     void floor()
     {
-        HArrayUtils::execElementwise( *this, elementwise::FLOOR );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::FLOOR );
     }
 
     void ceil()
     {
-        HArrayUtils::execElementwise( *this, elementwise::CEIL );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::CEIL );
     }
 
     void sqrt()
     {
-        HArrayUtils::execElementwise( *this, elementwise::SQRT );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::SQRT );
     }
 
     void sin()
     {
-        HArrayUtils::execElementwise( *this, elementwise::SIN );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::SIN );
     }
 
     void cos()
     {
-        HArrayUtils::execElementwise( *this, elementwise::COS );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::COS );
     }
 
     void tan()
     {
-        HArrayUtils::execElementwise( *this, elementwise::TAN );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::TAN );
     }
 
     void atan()
     {
-        HArrayUtils::execElementwise( *this, elementwise::ATAN );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::ATAN );
     }
 
     void powBase( ValueType base )
     {
-        HArrayUtils::powBase( *this, base );
+        HArrayUtils::execElementwiseOneArg( *this, base, elementwise::POWBASE );
     }
 
     void powExp( ValueType exp )
     {
-        HArrayUtils::powExp( *this, exp );
+        HArrayUtils::execElementwiseOneArg( *this, exp, elementwise::POWEXP );
     }
 
     void pow( const hmemo::HArray<ValueType>& other )
