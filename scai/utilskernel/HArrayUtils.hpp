@@ -87,7 +87,7 @@ public:
      *
      *  target[i] <op> = source[indexes[i]]
      */
-    static void assignGather(
+    static void gather(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& index,
@@ -110,7 +110,7 @@ public:
      *
      *  target[index[i]] = source[i]
      */
-    static void assignScatter(
+    static void scatter(
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::_HArray& source,

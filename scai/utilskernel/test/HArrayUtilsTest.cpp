@@ -104,10 +104,10 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
             // create array with same type, context
             common::unique_ptr<_HArray> tmp( array2.copy() );
             // array2 = array1[ perm ], tmp[ perm ] = array1
-            HArrayUtils::assignGather( array2, array1, perm, reduction::COPY, ctx );
+            HArrayUtils::gather( array2, array1, perm, reduction::COPY, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
             tmp->resize( n ); // no init required as all values are set
-            HArrayUtils::assignScatter( *tmp, perm, array1, reduction::COPY, ctx );
+            HArrayUtils::scatter( *tmp, perm, array1, reduction::COPY, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same
 

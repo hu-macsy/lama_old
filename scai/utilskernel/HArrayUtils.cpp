@@ -177,7 +177,7 @@ void HArrayUtils::setArraySection(
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::assignGather(
+void HArrayUtils::gather(
     _HArray& target,
     const _HArray& source,
     const HArray<IndexType>& indexes,
@@ -190,7 +190,7 @@ void HArrayUtils::assignGather(
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::assignScatter(
+void HArrayUtils::scatter(
     _HArray& target,
     const HArray<IndexType>& indexes,
     const _HArray& source,
