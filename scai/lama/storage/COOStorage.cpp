@@ -466,7 +466,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::conj()
 {
-    HArrayUtils::execElementwise( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
+    HArrayUtils::execElementwiseNoArg( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -319,7 +319,7 @@ void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DenseStorageView<ValueType>::conj()
 {
-    HArrayUtils::execElementwise( mData, utilskernel::elementwise::CONJ, this->getContextPtr() );
+    HArrayUtils::execElementwiseNoArg( mData, utilskernel::elementwise::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
