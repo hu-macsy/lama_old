@@ -207,6 +207,34 @@ void logKernel( ValueType* array, const IndexType n )
     }
 }
 
+/* floor */
+
+template<typename ValueType>
+__global__
+void floorKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::floor( array[i] );
+    }
+}
+
+/* ceil */
+
+template<typename ValueType>
+__global__
+void ceilKernel( ValueType* array, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array[i] = Math::ceil( array[i] );
+    }
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                            copysign                                                                */
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1093,6 +1121,20 @@ void CUDAUtils::execElementwise( ValueType array[], const IndexType n, const ele
         case elementwise::LOG :
         {
             logKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::FLOOR :
+        {
+            floorKernel <<< dimGrid, dimBlock>>>( array, n );
+        
+            break;
+        }
+
+        case elementwise::CEIL :
+        {
+            ceilKernel <<< dimGrid, dimBlock>>>( array, n );
         
             break;
         }

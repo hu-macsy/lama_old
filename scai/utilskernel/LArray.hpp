@@ -401,6 +401,21 @@ public:
         HArrayUtils::execElementwise( *this, elementwise::EXP );
     }
 
+    void log()
+    {
+        HArrayUtils::execElementwise( *this, elementwise::LOG );
+    }
+
+    void floor()
+    {
+        HArrayUtils::execElementwise( *this, elementwise::FLOOR );
+    }
+
+    void ceil()
+    {
+        HArrayUtils::execElementwise( *this, elementwise::CEIL );
+    }
+
     void sqrt()
     {
         HArrayUtils::execElementwise( *this, elementwise::SQRT );

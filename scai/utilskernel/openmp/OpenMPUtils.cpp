@@ -799,6 +799,30 @@ void OpenMPUtils::execElementwise( ValueType array[], const IndexType n, const e
             break;
         }
 
+        case elementwise::FLOOR :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::floor( array[i] );
+            }
+
+            break;
+        }
+
+        case elementwise::CEIL :
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = common::Math::ceil( array[i] );
+            }
+
+            break;
+        }
+
         default:
         {
             COMMON_THROWEXCEPTION( "unsupported reduction op in set: " << op )

@@ -178,6 +178,40 @@ struct Math
 #endif
 
     /*
+     * floor-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float floor( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double floor( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double floor( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> floor( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> floor( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> floor( const Complex<long double>& x );
+#endif
+
+    /*
+     * ceil-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float ceil( const float& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double ceil( const double& x );
+
+    static inline MIC_CALLABLE_MEMBER long double ceil( const long double& x );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> ceil( const Complex<float>& x );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> ceil( const Complex<double>& x );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> ceil( const Complex<long double>& x );
+#endif
+
+    /*
      * arg-function for ValueType
      */
 #ifdef SCAI_COMPLEX_SUPPORTED
@@ -559,6 +593,40 @@ double Math::log( const double& x )
 long double Math::log( const long double& x )
 {
     return logl( x );
+}
+
+// -------------------------------- floor -----------------------------
+
+float Math::floor( const float& x )
+{
+    return floorf( x );
+}
+
+double Math::floor( const double& x )
+{
+    return ::floor( x );
+}
+
+long double Math::floor( const long double& x )
+{
+    return floorl( x );
+}
+
+// -------------------------------- ceil -----------------------------
+
+float Math::ceil( const float& x )
+{
+    return ceilf( x );
+}
+
+double Math::ceil( const double& x )
+{
+    return ::ceil( x );
+}
+
+long double Math::ceil( const long double& x )
+{
+    return ceill( x );
 }
 
 // -------------------------------- sin -----------------------------
