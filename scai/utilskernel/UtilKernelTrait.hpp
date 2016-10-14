@@ -287,7 +287,7 @@ struct UtilKernelTrait
     template<typename ValueType1, typename ValueType2>
     struct setGather
     {
-        /** Set out[i] <op>= in[ indexes[i] ],  \f$0 \le i < n\f$ */
+        /** Set out[i] op = in[ indexes[i] ],  \f$0 \le i < n\f$ */
 
         typedef void ( *FuncType ) (
             ValueType1 out[],
@@ -393,9 +393,9 @@ struct UtilKernelTrait
     {
         /** This method computes differences of values, array[i] = array[i+1] - array[i]
          *
-         *  @param[in,out]array contains  values and later the differences
-         *  @param[in]    n is the number of values, array must contain at least this number of vales
-         *  @returns      0
+         *  @param[in,out] array contains  values and later the differences
+         *  @param[in]     n is the number of values, array must contain at least this number of vales
+         *  @returns       0
          *
          *  \code
          *    array  :    0   3  10  18  22  24  

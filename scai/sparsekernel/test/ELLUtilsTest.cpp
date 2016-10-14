@@ -63,63 +63,6 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" )
 
 // BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_types )
 
-BOOST_AUTO_TEST_CASE( countNonEmptyRowsBySizesTest )
-{
-    ContextPtr testContext = Context::getContextPtr();
-    KernelTraitContextFunction<ELLKernelTrait::countNonEmptyRowsBySizes> countNonEmptyRowsBySizes;
-    ContextPtr loc = Context::getContextPtr( countNonEmptyRowsBySizes.validContext( testContext->getType() ) );
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    SCAI_LOG_INFO( logger, "countNonEmptyRowsBySizes for " << *testContext << " on " << *loc )
-    // count valid array
-    {
-        const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4 };
-        const IndexType n = sizeof( values ) / sizeof( IndexType );
-        HArray<IndexType> sizes( n, values, testContext );
-        ReadAccess<IndexType> rSizes( sizes, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        IndexType count = countNonEmptyRowsBySizes[loc->getType()]( rSizes.get(), n );
-        BOOST_CHECK_EQUAL( IndexType( 4 ), count );
-    }
-    // count empty array
-    {
-        HArray<IndexType> sizes;
-        ReadAccess<IndexType> rSizes( sizes, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        IndexType count = countNonEmptyRowsBySizes[loc->getType()]( rSizes.get(), sizes.size() );
-        BOOST_CHECK_EQUAL( IndexType( 0 ), count );
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE( setNonEmptyRowsBySizesTest )
-{
-    ContextPtr testContext = Context::getContextPtr();
-    KernelTraitContextFunction<ELLKernelTrait::setNonEmptyRowsBySizes> setNonEmptyRowsBySizes;
-    ContextPtr loc = Context::getContextPtr( setNonEmptyRowsBySizes.validContext( testContext->getType() ) );
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4, 3, 0 };
-    const IndexType valuesResult[] = { 0, 2, 5, 7, 8 };
-    const IndexType n = 10;
-    const IndexType numNonEmptyRows = 5;
-    HArray<IndexType> sizes( n, values, testContext );
-    HArray<IndexType> rowIndexes( numNonEmptyRows, IndexType( 0 ), testContext );
-    {
-        ReadAccess<IndexType> rSizes( sizes, loc );
-        WriteAccess<IndexType> wRowIndexes( rowIndexes, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        setNonEmptyRowsBySizes[loc->getType()]( wRowIndexes.get(), numNonEmptyRows, rSizes.get(), n );
-    }
-    {
-        ReadAccess<IndexType> rRowIndexes( rowIndexes );
-
-        for ( IndexType i = 0; i < numNonEmptyRows; ++i )
-        {
-            BOOST_CHECK_EQUAL( valuesResult[i], rRowIndexes[i] );
-        }
-    }
-}
-
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )

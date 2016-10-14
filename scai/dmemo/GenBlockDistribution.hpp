@@ -87,6 +87,7 @@ public:
      *  @param[in] globalSize is the number of elements to distribute
      *  @param[in] firstGlobalIdx is the smallest global index in partition
      *  @param[in] lastGlobalIdx is the largest global index in partition
+     *  @param[in] dummy bool value 
      *  @param[in] communicator specifies the communicator used for this distribution
      *
      */
@@ -95,7 +96,7 @@ public:
         const IndexType globalSize,
         const IndexType firstGlobalIdx,
         const IndexType lastGlobalIdx,
-        bool dummy,
+        bool  dummy,
         const CommunicatorPtr communicator );
 
     /** Construct a general block distribution by individual localSize

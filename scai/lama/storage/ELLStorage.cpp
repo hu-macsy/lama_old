@@ -908,15 +908,28 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
         return;
     }
 
+    // Note: compress functionality in HArrayUtils available but we
+    // reimplement it here in the same way as compress is optionally done
+    // depending on the threshold value
+
     // Get function pointers for needed kernel routines
-    static LAMAKernel<ELLKernelTrait::countNonEmptyRowsBySizes> countNonEmptyRowsBySizes;
-    static LAMAKernel<ELLKernelTrait::setNonEmptyRowsBySizes> setNonEmptyRowsBySizes;
+
+    static LAMAKernel<UtilKernelTrait::countNonZeros<IndexType> > countNonZeros;
+    static LAMAKernel<UtilKernelTrait::compress<IndexType> > compress;
+
     // choose location where both routines are available
+
     ContextPtr loc = context;
-    countNonEmptyRowsBySizes.getSupportedContext( loc, setNonEmptyRowsBySizes );
+    countNonZeros.getSupportedContext( loc, compress );
+
     ReadAccess<IndexType> ellIA( mIA, loc );
+
     SCAI_CONTEXT_ACCESS( loc )
-    IndexType nonZeroRows = countNonEmptyRowsBySizes[loc]( ellIA.get(), mNumRows );
+
+    // count the number of non-zero rows to have a good value for allocation of rowIndexes
+
+    IndexType nonZeroRows = countNonZeros[loc]( ellIA.get(), mNumRows, 0 );
+
     float usage = float( nonZeroRows ) / float( mNumRows );
 
     if ( usage >= mCompressThreshold )
@@ -927,7 +940,10 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
     }
 
     WriteOnlyAccess<IndexType> rowIndexes( mRowIndexes, loc, nonZeroRows );
-    setNonEmptyRowsBySizes[loc]( rowIndexes.get(), nonZeroRows, ellIA.get(), mNumRows );
+
+    IndexType cnt = compress[loc]( NULL, rowIndexes.get(), ellIA.get(), mNumRows, 0 );
+
+    SCAI_ASSERT_EQ_ERROR( cnt, nonZeroRows, "serious mismatch" );
 }
 
 /* --------------------------------------------------------------------------- */

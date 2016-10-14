@@ -62,18 +62,6 @@ class COMMON_DLL_IMPORTEXPORT OpenMPELLUtils
 {
 private:
 
-    /** This method computes the total number of non-zero rows by the size array  */
-
-    static IndexType countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows );
-
-    /** Build a vector of indexes for non-empty rows. */
-
-    static void setNonEmptyRowsBySizes(
-        IndexType rowIndexes[],
-        const IndexType numNonEmptyRows,
-        const IndexType sizes[],
-        const IndexType numRows );
-
     /** Addressing function for the arrays ellJA[numRows*numValuesPerRow] and ellValues: column-major order */
 
     static inline IndexType ellindex(

@@ -165,58 +165,6 @@ struct DenseKernelTrait
         }
     };
 
-    template<typename RowValueType, typename DenseValueType>
-    struct getRow
-    {
-        /** Get diagonal of a dense matrix, type conversion is supported. */
-
-        typedef void ( *FuncType ) (
-            RowValueType rowValues[],
-            const DenseValueType denseValues[],
-            const IndexType irow,
-            const IndexType numRows,
-            const IndexType numColumns );
-
-        static const char* getId()
-        {
-            return "Dense.getRow";
-        }
-    };
-
-    template<typename DenseValueType1, typename DenseValueType2>
-    struct getDiagonal
-    {
-        /** Get diagonal of a dense matrix, type conversion is supported. */
-
-        typedef void ( *FuncType ) ( DenseValueType1 diagonalValues[],
-                                     const IndexType numDiagonalValues,
-                                     const DenseValueType2 denseValues[],
-                                     const IndexType numRows,
-                                     const IndexType numColumns );
-
-        static const char* getId()
-        {
-            return "Dense.getDiagonal";
-        }
-    };
-
-    template<typename DenseValueType1, typename DenseValueType2>
-    struct setDiagonal
-    {
-        /** Set diagonal of a dense matrix, type conversion is supported. */
-
-        typedef void ( *FuncType ) ( DenseValueType1 denseValues[],
-                                     const IndexType numRows,
-                                     const IndexType numColumns,
-                                     const DenseValueType2 diagonalValues[],
-                                     const IndexType numDiagonalValues );
-
-        static const char* getId()
-        {
-            return "Dense.setDiagonal";
-        }
-    };
-
     template<typename DenseValueType>
     struct setValue
     {

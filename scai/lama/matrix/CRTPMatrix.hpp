@@ -275,7 +275,7 @@ public:
 
     /** @brief Common implementation for of Matrix::getColumn for all matrix types
      *
-     *  @param[out] col will contain the values of the queried col of this matrix
+     *  @param[out] column will contain the values of the queried col of this matrix
      *  @param[in]  globalColIndex is the (global) index of the row to access
      */
 

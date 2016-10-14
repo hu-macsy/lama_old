@@ -1154,6 +1154,36 @@ void HArrayUtils::bucketCount(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void HArrayUtils::buildSparseIndexes(
+    hmemo::HArray<IndexType>& sparseIndexes,
+    const hmemo::HArray<ValueType>& denseArray,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = denseArray.size();
+    static LAMAKernel<UtilKernelTrait::countNonZeros<ValueType> > countNonZeros;
+    static LAMAKernel<UtilKernelTrait::compress<ValueType> > compress;
+    ContextPtr loc = prefLoc;
+
+    // default location for conversion: where we have the dense values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = denseArray.getValidContext();
+    }
+
+    compress.getSupportedContext( loc, countNonZeros );
+    SCAI_CONTEXT_ACCESS( loc )
+    ValueType eps = common::TypeTraits<ValueType>::eps1();
+    ReadAccess<ValueType> rDenseArray( denseArray, loc );
+    // we count the non-zeros at first to have sizes for sparse data
+    IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, eps );
+    WriteOnlyAccess<IndexType> wSparseIndexes( sparseIndexes, loc, sparseN );
+    sparseN = compress[loc]( NULL, wSparseIndexes.get(), rDenseArray.get(), n, eps );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void HArrayUtils::buildSparseArray(
     hmemo::HArray<ValueType>& sparseArray,
     hmemo::HArray<IndexType>& sparseIndexes,

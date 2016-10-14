@@ -83,13 +83,6 @@ IndexType OpenMPCOOUtils::getValuePos( const IndexType i, const IndexType j,
 
 /* --------------------------------------------------------------------------- */
 
-static inline IndexType atomicInc( IndexType& var )
-{
-    return __sync_fetch_and_add( &var, 1 );
-}
-
-/* --------------------------------------------------------------------------- */
-
 IndexType OpenMPCOOUtils::getValuePosCol( IndexType row[], IndexType pos[],
                                           const IndexType j,
                                           const IndexType cooIA[], const IndexType,

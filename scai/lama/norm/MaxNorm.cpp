@@ -35,11 +35,12 @@
 // hpp
 #include <scai/lama/norm/MaxNorm.hpp>
 
-template scai::lama::Norm::Register<scai::lama::MaxNorm>::RegisterGuard
-scai::lama::Norm::Register<scai::lama::MaxNorm>::registerGuard;
 
 namespace scai
 {
+
+template lama::Norm::Register<lama::MaxNorm>::RegisterGuard
+lama::Norm::Register<lama::MaxNorm>::registerGuard;
 
 namespace lama
 {

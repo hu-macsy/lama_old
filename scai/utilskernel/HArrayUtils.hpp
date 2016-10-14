@@ -85,7 +85,7 @@ public:
     /**
      *  @brief Gathering (unstructured read) of values with heterogeneous arrays.
      *
-     *  target[i] <op> = source[indexes[i]]
+     *  target[i] op= source[indexes[i]]
      */
     static void gather(
         hmemo::_HArray& target,
@@ -490,6 +490,14 @@ public:
     template<typename ValueType>
     static void buildSparseArray(
         hmemo::HArray<ValueType>& sparseArray,
+        hmemo::HArray<IndexType>& sparseIndexes,
+        const hmemo::HArray<ValueType>& denseArray,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Build sparse indexes only, useful if sparseArray is not really needed */
+
+    template<typename ValueType>
+    static void buildSparseIndexes(
         hmemo::HArray<IndexType>& sparseIndexes,
         const hmemo::HArray<ValueType>& denseArray,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );

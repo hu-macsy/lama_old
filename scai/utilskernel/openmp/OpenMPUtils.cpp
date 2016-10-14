@@ -1189,7 +1189,11 @@ void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
 template<typename ValueType>
 IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps )
 {
+    SCAI_REGION( "OpenMP.Utils.countNZ" )
+
     IndexType nonZeros = 0;
+
+    #pragma omp parallel for reduction( +:nonZeros )
 
     for ( IndexType i = 0; i < n; ++i )
     {
@@ -1199,9 +1203,10 @@ IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexT
         }
     }
 
+    SCAI_LOG_INFO( logger, "countNonZeros<" << TypeTraits<ValueType>::id() << "> of array[" << n << "] -> " << nonZeros )
+
     return nonZeros;
 }
-
 
 /* --------------------------------------------------------------------------- */
 
@@ -1213,15 +1218,26 @@ IndexType OpenMPUtils::compress(
     const IndexType n,
     const ValueType eps )
 {
+    SCAI_REGION( "OpenMP.Utils.compress" )
+
     IndexType nonZeros = 0;
+
+    // use of parallel for + atomicInc might be possible but would give an arbitrary order
 
     for ( IndexType i = 0; i < n; ++i )
     {
         if ( common::Math::abs( denseArray[i] ) > eps )
         {
-            sparseArray[nonZeros] = denseArray[i];
-            sparseIndexes[nonZeros] = i;
-            nonZeros++;
+            IndexType k = nonZeros++;  // parallel: atomicInc( nonZeros );
+
+            if ( sparseArray )
+            {
+                sparseArray[k] = denseArray[i];
+            }
+            if ( sparseIndexes )
+            {
+                sparseIndexes[k] = i;
+            }
         }
     }
 

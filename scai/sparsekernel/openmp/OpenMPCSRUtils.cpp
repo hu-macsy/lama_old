@@ -498,13 +498,6 @@ IndexType OpenMPCSRUtils::getValuePos( const IndexType i, const IndexType j, con
 
 /* --------------------------------------------------------------------------- */
 
-static inline IndexType atomicInc( IndexType& var )
-{
-    return __sync_fetch_and_add( &var, 1 );
-}
-
-/* --------------------------------------------------------------------------- */
-
 IndexType OpenMPCSRUtils::getValuePosCol( IndexType row[], IndexType pos[], 
                                           const IndexType j, 
                                           const IndexType csrIA[], const IndexType numRows,

@@ -266,15 +266,6 @@ IndexType OpenMPJDSUtils::getValuePos(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-/* --------------------------------------------------------------------------- */
-
-static inline IndexType atomicInc( IndexType& var )
-{
-    return __sync_fetch_and_add( &var, 1 );
-}
-
-/* --------------------------------------------------------------------------- */
-
 IndexType OpenMPJDSUtils::getValuePosCol( 
     IndexType row[], 
     IndexType pos[],
@@ -288,8 +279,6 @@ IndexType OpenMPJDSUtils::getValuePosCol(
     SCAI_REGION( "OpenMP.JDSUtils.getValuePosCol" )
 
     IndexType cnt  = 0;   // counts number of available row entries in column j
-
-    // parallel with atomicInc( cnt ) gives indeed some benefit
 
     #pragma omp parallel for
 

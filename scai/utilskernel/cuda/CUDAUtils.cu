@@ -1250,6 +1250,135 @@ void CUDAUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
     }
 }
 
+/* ---------------------------------------------------------------------------- */
+
+template<typename ValueType>
+struct nonZero
+{
+    const ValueType mEps;
+
+    nonZero( ValueType eps ) : mEps( eps )
+    {
+    }
+
+    __host__ __device__
+    bool operator()( ValueType x )
+    {
+        return Math::abs( x ) > mEps;
+    }
+};
+
+template<typename ValueType>
+IndexType CUDAUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps )
+{
+    SCAI_REGION( "CUDA.Utils.countNZ" )
+
+    SCAI_LOG_INFO( logger, "countNonZeros of array[ " << n << " ]" )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( denseArray ) );
+
+    IndexType nonZeros = thrust::transform_reduce( array_ptr, 
+                                                   array_ptr + n,
+                                                   nonZero<ValueType>( eps ), 
+                                                   0, 
+                                                   thrust::plus<IndexType>() );
+    return nonZeros;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*     compress                                                                                                       */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+struct changeIndexWithZeroSize
+{
+    const ValueType mEps;
+    const IndexType mZeroIndex;
+
+    changeIndexWithZeroSize( ValueType eps, IndexType zeroIndex ) : 
+
+        mEps( eps ),
+        mZeroIndex( zeroIndex )
+    {
+    }
+
+    __host__ __device__
+    IndexType operator()( const ValueType& value, const IndexType& index )
+    {
+        if ( common::Math::abs( value ) > mEps )
+        {
+            return index;
+        }
+        else
+        {
+            return mZeroIndex;
+        }
+    }
+};
+
+struct notEqual
+{
+    const IndexType mOutOfRange;
+
+    notEqual( const IndexType val ) : mOutOfRange( val )
+    {
+    }
+
+    __host__ __device__
+    bool operator()( const IndexType x )
+    {
+        return x != mOutOfRange;
+    }
+};
+
+template<typename ValueType>
+IndexType CUDAUtils::compress(
+    ValueType sparseArray[],
+    IndexType sparseIndexes[],
+    const ValueType denseArray[],
+    const IndexType n,
+    const ValueType eps )
+{
+    SCAI_REGION( "CUDA.Utils.compress" )
+
+    SCAI_LOG_INFO( logger, "compress<" << TypeTraits<ValueType>::id() << "> array[ " << n << " ]" )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> dense_ptr( const_cast<ValueType*>( denseArray ) );
+    thrust::counting_iterator<IndexType> sequence( IndexType( 0 ) );
+    thrust::device_vector<IndexType> tmp( n );
+
+    // Create device ptr and help variables
+
+    thrust::transform( dense_ptr, dense_ptr + n, sequence, tmp.begin(), changeIndexWithZeroSize<ValueType>( eps, nIndex ) );
+
+    // transform array, replace in sequence all non-zero entries with -1
+    // e.g. sizes = [ 0, 2, 0, 1, 3 ], sequence = [ 0, 1, 2, 3, 4 ] -> [ nIndex, 1, nIndex, 3, 4 ]
+
+    thrust::device_ptr<IndexType> sparseIndexes_ptr( sparseIndexes );
+
+    // now compact all indexes with values not equal nIndex
+
+    IndexType cnt = thrust::copy_if( tmp.begin(), 
+                                     tmp.end(), 
+                                     sparseIndexes_ptr, 
+                                     notEqual( nIndex ) ) - sparseIndexes_ptr;
+
+    if ( sparseArray )
+    {
+        const int blockSize = 256;
+        dim3 dimBlock( blockSize, 1, 1 );
+        dim3 dimGrid = makeGrid( cnt, dimBlock.x );
+
+        gatherCopyKernel <<< dimGrid, dimBlock>>>( sparseArray, denseArray, sparseIndexes, cnt );
+    }
+
+    return cnt;
+}
+
 /* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
@@ -1285,6 +1414,8 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::vectorScale<ValueType> >( vectorScale, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::compress<ValueType> >( compress, ctx, flag );
 }
 
 template<typename ValueType>
