@@ -70,6 +70,17 @@ public:
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
+    /** Implementation for CSRKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType csrJA[],
+        const IndexType numValues );
+
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] );
 
     /** Matrix transpose for CSR matrices on CUDA device. */
@@ -259,6 +270,16 @@ public:
         const IndexType bIA[],
         const IndexType bJA[],
         const ValueType bValues[] );
+
+    /** CUDA implementation for CSRKernelTrait::sortRowElements */
+
+    template<typename ValueType>
+    static void sortRowElements(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const bool diagonalFlag );
 
 private:
 

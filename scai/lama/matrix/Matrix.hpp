@@ -44,13 +44,15 @@
 #include <scai/lama/Vector.hpp>
 #include <scai/lama/io/FileIO.hpp>
 
-#include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/NoDistribution.hpp>
-
 #include <scai/lama/expression/Expression.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 
 // internal scai libraries
+
+#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+
 #include <scai/hmemo.hpp>
 
 #include <scai/logging.hpp>
@@ -452,6 +454,47 @@ public:
      * - the output vector will always be replicated
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
+
+    /** @brief This method returns one column of the matrix.
+     *
+     * @param[out] col              is a distributed vector with all values of the col
+     * @param[in]  globalColIndex   global column index of the col that should be extracted
+     *
+     * - the vector col might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - the distribution of col will be the same as the row distribution of the matrix
+     */
+    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const = 0;
+
+    /** @brief This method sets one row of the matrix.
+     *
+     * @param[in]  row              is a non-distributed vector
+     * @param[in]  globalRowIndex   global row index of the row that should be set
+     * @param[in]  op               specifies the binary op how to combine old and new element
+     *
+     * - the vector row might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - this method throws an exception for a sparse matrix if the pattern must be changed
+     */
+    virtual void setRow( const Vector& row, 
+                         const IndexType globalRowIndex,
+                         const utilskernel::reduction::ReductionOp op ) = 0;
+
+    /** @brief Pure method to set one column of the matrix.
+     *
+     * @param[in]  col              is a distributed vector with all values of the col
+     * @param[in]  globalColIndex   global column index of the col that should be set
+     * @param[in]  op               specifies the binary op how to combine old and new element
+     *
+     * - the vector col might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - the distribution of col must be the same as the row distribution of the matrix
+     * - this method does not change the pattern of a sparse matrix, so throws an exception if it is insufficient
+     */
+    virtual void setColumn( 
+        const Vector& column, 
+        const IndexType globalColIndex,
+        const utilskernel::reduction::ReductionOp op ) = 0;
 
     /** @brief This method returns the diagonal.
      *

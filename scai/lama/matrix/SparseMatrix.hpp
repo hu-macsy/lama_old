@@ -563,9 +563,25 @@ public:
         return Matrix::SPARSE;
     }
 
-    /** Get a complete row of local part only. */
+    /** Get a complete row of this matrix from its local part. */
 
-    void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
+    void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType localRowIndex ) const;
+
+    /** Set a complete row of this matrix in its local part. */
+
+    void setLocalRow( const hmemo::HArray<ValueType>& row, 
+                      const IndexType localRowIndex, 
+                      const utilskernel::reduction::ReductionOp op  );
+
+    /** Get the local part of a col of this matrix */
+
+    void getLocalColumn( hmemo::HArray<ValueType>& col, const IndexType colIndex ) const;
+
+    /** Set the local col of this matrix */
+
+    void setLocalColumn( const hmemo::HArray<ValueType>& column, 
+                         const IndexType colIndex,
+                         const utilskernel::reduction::ReductionOp op  );
 
 protected:
 

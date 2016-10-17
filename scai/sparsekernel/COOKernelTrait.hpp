@@ -46,6 +46,90 @@ namespace sparsekernel
 
 struct COOKernelTrait
 {
+    struct getValuePos
+    {
+        /** Returns position of element (i,j) in ja/values array
+         *
+         *  @param[in] i is the row of the element
+         *  @param[in] j is the column of the element
+         *  @param[in] cooIA is the COO ia array
+         *  @param[in] cooJA is the COO ja array
+         *  @returns  offset of element in values array, nIndex if not found
+         */
+
+        typedef IndexType ( *FuncType ) (
+            const IndexType i,
+            const IndexType j,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "COO.getValuePos";
+        }
+    };
+
+    struct getValuePosRow
+    {
+        /** This method returns for a certain row of the COO matrix all
+         *  col indexes for which elements exist and the corresponding positions
+         *  in the cooIA/cooJA/cooValues array
+         *
+         *  @param[out] col indexes of cols that have an entry for row i
+         *  @param[out] pos positions of entries with row = i in cooXXX array
+         *  @param[in] i is the row of which positions are required
+         *  @param[in] cooIA is the COO array with row indexes
+         *  @param[in] numColumns is the number of columns
+         *  @param[in] cooJA is the COO array with col indexes
+         *  @param[in] numValues is the number of non-zero values
+         *  @returns  number of entries with row index = i
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType col[],
+            IndexType pos[],
+            const IndexType i,
+            const IndexType cooIA[],
+            const IndexType numColumns,
+            const IndexType cooJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "COO.getValuePosRow";
+        }
+    };
+
+    struct getValuePosCol
+    {
+        /** This method returns for a certain column of the COO matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the cooIA/cooJA/cooValues array
+         *
+         *  @param[out] row indexes of rows that have an entry for column j
+         *  @param[out] pos positions of entries with col = j in cooJA, 
+         *  @param[in] j is the column of which positions are required
+         *  @param[in] cooIA is the COO array with row indexes
+         *  @param[in] numRows is the number of rows
+         *  @param[in] cooJA is the COO array with col indexes
+         *  @param[in] numValues is the number of non-zero values
+         *  @returns  number of entries with col index = j
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType row[],
+            IndexType pos[],
+            const IndexType j,
+            const IndexType cooIA[],
+            const IndexType numRows,
+            const IndexType cooJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "COO.getValuePosCol";
+        }
+    };
+
     struct hasDiagonalProperty
     {
         /** Routine checks for diagonal property, first n entries are the diagonal elements.

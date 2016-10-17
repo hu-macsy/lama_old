@@ -41,6 +41,7 @@
 
 #include <scai/logging.hpp>
 #include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/ElementwiseOp.hpp>
 
 namespace scai
 {
@@ -84,22 +85,24 @@ public:
     /**
      *  @brief Gathering (unstructured read) of values with heterogeneous arrays.
      *
-     *  target[i] = source[index[i]]
+     *  target[i] op= source[indexes[i]]
      */
-    static void assignGather(
+    static void gather(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& index,
+        const reduction::ReductionOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
      *  @brief Gathering (unstructured read of values) with HArrays, template typed version
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void gather(
+    static void gatherImpl(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
-        const hmemo::HArray<IndexType>& index,
+        const hmemo::HArray<IndexType>& indexes,
+        const reduction::ReductionOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -107,7 +110,7 @@ public:
      *
      *  target[index[i]] = source[i]
      */
-    static void assignScatter(
+    static void scatter(
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::_HArray& source,
@@ -120,7 +123,7 @@ public:
      *  target[index[i]] = source[i]
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void scatter(
+    static void scatterImpl(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::HArray<SourceValueType>& source,
@@ -232,17 +235,6 @@ public:
     template<typename ValueType>
     static void scale( hmemo::HArray<ValueType>& array, const ValueType beta, hmemo::ContextPtr prefLoc );
 
-    /** Replace in a complex array its values with the conjugate values */
-
-    template<typename ValueType>
-    static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-
-    /** Calculates the exponentional function of the vector elements in place. */
-
-    template<typename ValueType>
-    static void exp( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
     /*
      * Implementation of functions
      */
@@ -250,6 +242,30 @@ public:
     static void setArray(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
+        const reduction::ReductionOp op,
+        hmemo::ContextPtr context );
+
+    /** General version for setting sectioned arrays. 
+     *
+     *  @param target is the target array
+     *  @param targetOffset is the offset in the target array
+     *  @param targetStride is the stride used in target array
+     *  @param source is the source array
+     *  @param sourceOffset is the offset in the source array
+     *  @param sourceStride is the stride used in source array
+     *  @param n is the number of elements to set
+     *  @param op specifies how to combine old and new value
+     */
+
+    template<typename TargetValueType, typename SourceValueType>
+    static void setArraySection(
+        hmemo::HArray<TargetValueType>& target,
+        const IndexType targetOffset,
+        const IndexType targetStride,
+        const hmemo::HArray<SourceValueType>& source,
+        const IndexType sourceOffset,
+        const IndexType sourceStride,
+        const IndexType n,
         const reduction::ReductionOp op,
         hmemo::ContextPtr context );
 
@@ -265,7 +281,8 @@ public:
     static void setValImpl(
         hmemo::HArray<ValueType>& target,
         const IndexType index,
-        const ValueType val );
+        const ValueType val,
+        const reduction::ReductionOp op );
 
     template<typename ValueType>
     static ValueType getValImpl(
@@ -295,15 +312,40 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
+    static void copysign(
+        hmemo::HArray<ValueType>& result,
+        const hmemo::HArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& y,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
     static ValueType dotProduct(
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** array = 1.0 / array elementwise */
+    /** execute elementwise functions */
 
     template<typename ValueType>
-    static void invert( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void execElementwiseNoArg(
+        hmemo::HArray<ValueType>& array,
+        const elementwise::ElementwiseOpNoArg op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static void execElementwiseOneArg(
+        hmemo::HArray<ValueType>& array,
+        const ValueType arg,
+        const elementwise::ElementwiseOpOneArg op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** execute elementwise pow with base and exponent array */
+
+    template<typename ValueType>
+    static void pow( 
+        hmemo::HArray<ValueType>& array1,
+        const hmemo::HArray<ValueType>& array2,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Check for an index array whether all values are smaller than n */
 
@@ -441,6 +483,14 @@ public:
     template<typename ValueType>
     static void buildSparseArray(
         hmemo::HArray<ValueType>& sparseArray,
+        hmemo::HArray<IndexType>& sparseIndexes,
+        const hmemo::HArray<ValueType>& denseArray,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Build sparse indexes only, useful if sparseArray is not really needed */
+
+    template<typename ValueType>
+    static void buildSparseIndexes(
         hmemo::HArray<IndexType>& sparseIndexes,
         const hmemo::HArray<ValueType>& denseArray,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );

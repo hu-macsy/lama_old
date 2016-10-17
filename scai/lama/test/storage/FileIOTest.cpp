@@ -391,7 +391,7 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
         {
             BOOST_CHECK_EQUAL( firstColIndexes1[i], firstColIndexes2[i] );
 
-            for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
+            for ( IndexType j = 0; j < readStorage.getNumColumns(); ++j )
             {
                 BOOST_CHECK_EQUAL( csrStorage.getValue( i, j ), readStorage.getValue( i, j ) );
             }
@@ -707,9 +707,11 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumValues(), csrStorage.getNumValues() );
 
-        for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
+        for ( IndexType i = 0; i < readStorage.getNumRows(); ++i )
         {   
-            for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
+            // be careful: readStorage.getNumColumns() <= csrStorage.getnumColumns() 
+
+            for ( IndexType j = 0; j < readStorage.getNumColumns(); ++j )
             {   
                 if ( csrStorage.getValue( i, j ) != 0 )
                 {

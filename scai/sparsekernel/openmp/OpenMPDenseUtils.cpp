@@ -238,63 +238,6 @@ void OpenMPDenseUtils::copyDenseValues(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename RowValueType, typename DenseValueType>
-void OpenMPDenseUtils::getRow(
-    RowValueType rowValues[],
-    const DenseValueType denseValues[],
-    const IndexType irow,
-    const IndexType numRows,
-    const IndexType numColumns )
-{
-    SCAI_ASSERT_LT( irow, numRows, "illegal row index" )
-    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
-
-    for ( IndexType j = 0; j < numColumns; ++j )
-    {
-        rowValues[j] = static_cast<RowValueType>( denseValues[irow * numColumns + j] );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename DiagonalValueType, typename DenseValueType>
-void OpenMPDenseUtils::getDiagonal(
-    DiagonalValueType diagonalValues[],
-    const IndexType numDiagonalValues,
-    const DenseValueType denseValues[],
-    const IndexType numRows,
-    const IndexType numColumns )
-{
-    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
-
-    for ( IndexType i = 0; i < numDiagonalValues; ++i )
-    {
-        const DenseValueType& elem = denseValues[denseindex( i, i, numRows, numColumns )];
-        diagonalValues[i] = static_cast<DiagonalValueType>( elem );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename DenseValueType, typename DiagonalValueType>
-void OpenMPDenseUtils::setDiagonal(
-    DenseValueType denseValues[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const DiagonalValueType diagonalValues[],
-    const IndexType numDiagonalValues )
-{
-    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
-
-    for ( IndexType i = 0; i < numDiagonalValues; ++i )
-    {
-        DenseValueType& elem = denseValues[denseindex( i, i, numRows, numColumns )];
-        elem = static_cast<DenseValueType>( diagonalValues[i] );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename DenseValueType>
 void OpenMPDenseUtils::setDiagonalValue(
     DenseValueType denseValues[],
@@ -413,9 +356,6 @@ void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels
     KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::copyDenseValues<ValueType, OtherValueType> >( copyDenseValues, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::getDiagonal<ValueType, OtherValueType> >( getDiagonal, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::setDiagonal<ValueType, OtherValueType> >( setDiagonal, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 

@@ -82,12 +82,13 @@ void OpenMPJDSUtils::getRow(
     const IndexType ja[],
     const ValueType values[] )
 {
+    SCAI_REGION( "OpenMP.JDS.getRow" )
+
     SCAI_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
-    //TODO: use OpenMP
     for ( IndexType j = 0; j < numColumns; ++j )
     {
-        row[j] = static_cast<OtherValueType>( 0.0 );
+        row[j] = static_cast<OtherValueType>( 0 );
     }
 
     IndexType ii;
@@ -113,16 +114,116 @@ void OpenMPJDSUtils::getRow(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-ValueType OpenMPJDSUtils::getValue(
+template<typename ValueType, typename OtherValueType>
+void OpenMPJDSUtils::setRow(
+    ValueType values[],
+    const IndexType i,
+    const IndexType numColumns,
+    const IndexType numRows,
+    const IndexType perm[],
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType ja[],
+    const OtherValueType row[],
+    const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_REGION( "OpenMP.JDS.setRow" )
+
+    SCAI_LOG_INFO( logger, "setRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
+
+    IndexType ii;
+
+    // check the permutation of row i
+
+    for ( ii = 0; ii < numRows; ii++ )
+    {
+        if ( perm[ii] == i )
+        {
+            break;
+        }
+    }
+
+    IndexType k = 0;
+
+    // ToDo: solution with own loop for each reduction op is so much more efficient
+    //       than calling reduction op elementwise, at least if not inlined, check
+    //
+    //      for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
+    //      {
+    //          applyReduction( values[ii + k], static_cast<ValueType>( row[ja[ii + k] ] ), op )
+    //          k += dlg[jj];
+    //      }
+    //      break;
+   
+    switch ( op )
+    {
+        case utilskernel::reduction::COPY :
+        {
+            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
+            {
+                values[ii + k] = static_cast<ValueType>( row[ja[ii + k] ] );
+                k += dlg[jj];
+            }
+            break;
+        }
+
+        case utilskernel::reduction::ADD :
+        {
+            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
+            {
+                values[ii + k] += static_cast<ValueType>( row[ja[ii + k] ] );
+                k += dlg[jj];
+            }
+            break;
+        }
+
+        case utilskernel::reduction::SUB :
+        {
+            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
+            {
+                values[ii + k] -= static_cast<ValueType>( row[ja[ii + k] ] );
+                k += dlg[jj];
+            }
+            break;
+        }
+
+        case utilskernel::reduction::MULT :
+        {
+            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
+            {
+                values[ii + k] *= static_cast<ValueType>( row[ja[ii + k] ] );
+                k += dlg[jj];
+            }
+            break;
+        }
+
+        case utilskernel::reduction::DIVIDE :
+        {
+            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
+            {
+                values[ii + k] /= static_cast<ValueType>( row[ja[ii + k] ] );
+                k += dlg[jj];
+            }
+            break;
+        }
+
+        default:
+        {
+            COMMON_THROWEXCEPTION( "unsupported reduction op in setRow: " << op )
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPJDSUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
-    const IndexType* dlg,
-    const IndexType* ilg,
-    const IndexType* perm,
-    const IndexType* ja,
-    const ValueType* values )
+    const IndexType dlg[],
+    const IndexType ilg[],
+    const IndexType perm[],
+    const IndexType ja[] )
 {
     IndexType ii;
 
@@ -136,21 +237,72 @@ ValueType OpenMPJDSUtils::getValue(
         }
     }
 
+    if ( ii == numRows )
+    {
+        COMMON_THROWEXCEPTION( "row index " << i << " not found in perm array" )
+    }
+
     SCAI_LOG_TRACE( logger, "row " << i << " is now " << ii << ", has " << ilg[ii] << " elements" )
+
     // search in the found row
+
     IndexType k = 0;
+
+    IndexType pos = nIndex;
 
     for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
     {
         if ( ja[ii + k] == j )
         {
-            return values[ii + k];
+            pos = ii + k;
+            break;
         }
 
         k += dlg[jj];
     }
 
-    return static_cast<ValueType>( 0.0 );
+    return pos;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPJDSUtils::getValuePosCol( 
+    IndexType row[], 
+    IndexType pos[],
+    const IndexType j, 
+    const IndexType numRows,
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType perm[],
+    const IndexType ja[] )
+{
+    SCAI_REGION( "OpenMP.JDSUtils.getValuePosCol" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    #pragma omp parallel for
+
+    for ( IndexType ii = 0; ii < numRows; ++ii )
+    {
+        IndexType k = 0;
+
+        for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
+        {
+            IndexType p = ii + k;
+
+            if ( ja[p] == j )
+            {
+                IndexType n = atomicInc( cnt );
+                row[n] = perm[ii];
+                pos[n] = p;
+                break;    
+            }
+  
+            k += dlg[jj];
+        }
+    }
+
+    return cnt;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -406,7 +558,7 @@ void OpenMPJDSUtils::getCSRValues(
                    "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.JDS->CSR_values" )
+        SCAI_REGION( "OpenMP.JDS.getCSR" )
         #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -446,7 +598,7 @@ void OpenMPJDSUtils::setCSRValues(
     // parallelization possible as offset array csrIA is available
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.JDS<-CSR_values" )
+        SCAI_REGION( "OpenMP.JDS.setCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType ii = 0; ii < numRows; ii++ )
@@ -821,6 +973,8 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
 }
 
 template<typename ValueType>
@@ -830,7 +984,6 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
@@ -847,6 +1000,7 @@ void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( 
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setRow<ValueType, OtherValueType> >( setRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );

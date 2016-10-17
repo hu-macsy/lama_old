@@ -598,11 +598,6 @@ public:
     virtual void wait() const = 0;
 
     /**
-     * @brief This method inverts all elements of the vector and is completely local.
-     */
-    virtual void invert() = 0;
-
-    /**
      * @brief Sets the 'preferred' context where data resides and computations are done.
      */
     void setContextPtr( hmemo::ContextPtr context );
@@ -646,6 +641,11 @@ public:
     virtual void redistribute( dmemo::DistributionPtr distribution ) = 0;
 
     /**
+     * @brief This method inverts all elements of the vector and is completely local.
+     */
+    virtual void invert() = 0;
+
+    /**
      *  Build the conjugate vector in place.
      */
     virtual void conj() = 0;
@@ -654,6 +654,61 @@ public:
      *  Calculates the exponentional function of the vector elements in place.
      */
     virtual void exp() = 0;
+
+    /**
+     *  Calculates the logarithm of the vector elements in place.
+     */
+    virtual void log() = 0;
+
+    /**
+     *  Calculates the floor function of the vector elements in place.
+     */
+    virtual void floor() = 0;
+
+    /**
+     *  Calculates the ceil function of the vector elements in place.
+     */
+    virtual void ceil() = 0;
+
+    /**
+     *  Calculates the square root of the vector elements.
+     */
+    virtual void sqrt() = 0;
+
+    /**
+     *  Calculates the sinus of the vector elements.
+     */
+    virtual void sin() = 0;
+
+    /**
+     *  Calculates the cosinus of the vector elements.
+     */
+    virtual void cos() = 0;
+
+    /**
+     *  Calculates the tangens of the vector elements.
+     */
+    virtual void tan() = 0;
+
+    /**
+     *  Calculates the arcus tangens of the vector elements.
+     */
+    virtual void atan() = 0;
+
+    /**
+     *  Calculates the pow function for the vector elements with the elements of another vector.
+     */
+    virtual void pow( const Vector& other ) = 0;
+
+    /**
+     *  Calculates the pow function for a base the vector elements as exponents.
+     */
+    virtual void powBase( const Scalar base ) = 0;
+
+    /**
+     *  Calculates the pow function for the vector elements as base and an exponent.
+     */
+    virtual void powExp( const Scalar exp ) = 0;
 
 protected:
 

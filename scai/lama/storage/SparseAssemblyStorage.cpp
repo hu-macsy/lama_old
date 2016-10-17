@@ -38,10 +38,12 @@
 // internal scai libraries
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/Constants.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
 namespace scai
@@ -447,17 +449,14 @@ void SparseAssemblyStorage<ValueType>::print( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j, const ValueType value )
+void SparseAssemblyStorage<ValueType>::setValue( 
+    const IndexType i,
+    const IndexType j,
+    const ValueType val,
+    const utilskernel::reduction::ReductionOp op )
 {
-    if ( i >= mNumRows )
-    {
-        COMMON_THROWEXCEPTION( "Passed row Index " << i << " exceeds row count " << mNumRows << "." )
-    }
-
-    if ( j >= mNumColumns )
-    {
-        COMMON_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." )
-    }
+    SCAI_ASSERT_VALID_INDEX( i, mNumRows, "illegal row index" )
+    SCAI_ASSERT_VALID_INDEX( j, mNumColumns, "illegal col index" )
 
     {
         const std::vector<IndexType>& rJA = mRows[i].ja;
@@ -467,18 +466,21 @@ void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j
             if ( j == rJA[k] )
             {
                 std::vector<ValueType>& wValues = mRows[i].values;
-                SCAI_LOG_TRACE( logger,
-                                "set( " << i << ", " << j << ", " << value << ") : override existing value " << wValues[k] )
-                wValues[k] = value;
+                ValueType* opnd = &wValues[k];
+                utilskernel::OpenMPUtils::setVal( opnd, 1, val, op );
                 return;
             }
         }
     }
 
-    SCAI_LOG_TRACE( logger, "set( " << i << ", " << j << ", " << value << ") : new entry " )
+    ValueType newValue = 0;
+
+    utilskernel::OpenMPUtils::setVal( &newValue, 1, val, op );
+
+    SCAI_LOG_TRACE( logger, "set( " << i << ", " << j << ", " << val << ") : new entry " )
     std::vector<IndexType>& wJA = mRows[i].ja;
     std::vector<ValueType>& wValues = mRows[i].values;
-    wValues.push_back( value );
+    wValues.push_back( newValue );
     wJA.push_back( j );
     ++mNumValues;
 
@@ -491,6 +493,12 @@ void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j
         std::swap( wValues[0], wValues[wValues.size() - 1] );
         std::swap( wJA[0], wJA[wJA.size() - 1] );
     }
+}
+
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j, const ValueType value )
+{
+    setValue( i, j, value );
 }
 
 template<typename ValueType>
@@ -519,7 +527,7 @@ IndexType SparseAssemblyStorage<ValueType>::getNumValues() const
 }
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::setRow(
+void SparseAssemblyStorage<ValueType>::setSparseRow(
     const IndexType i,
     const HArray<IndexType>& ja,
     const HArray<ValueType>& values )
@@ -792,6 +800,74 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const
 
         SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "illegal col index at row " << i << ", ja[" << k << "]" )
         wRow[j] = static_cast<OtherType>( values[k] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void SparseAssemblyStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    // ToDo write more efficient kernel routine for getting a column
+
+    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void SparseAssemblyStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
+                                                   const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
+
+    // ToDo write more efficient kernel routine for setting a row
+
+    ReadAccess<OtherType> rRow( row );
+
+    for ( IndexType j = 0; j < mNumColumns; ++j )
+    {   
+        if ( rRow[j] == common::constants::ZERO )
+        {
+            continue;
+        }
+
+        setValue( i, j, static_cast<ValueType>( rRow[j] ), op );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void SparseAssemblyStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
+                                                      const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
+
+    // ToDo write more efficient kernel routine for setting a column
+
+    ReadAccess<OtherType> rColumn( column );
+
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        if ( rColumn[i] == common::constants::ZERO )
+        {
+            continue;
+        }
+
+        setValue( i, j, static_cast<ValueType>( rColumn[i] ), op );
     }
 }
 

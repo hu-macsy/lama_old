@@ -37,8 +37,9 @@
 include_directories( "${CMAKE_CURRENT_BINARY_DIR}/../include" )
 
 add_subdirectory ( bench )
-add_subdirectory ( mandelbrot )
 add_subdirectory ( labelrank )
+add_subdirectory ( mandelbrot )
+add_subdirectory ( nbody )
 add_subdirectory ( tutorial )
 add_subdirectory ( io )
 

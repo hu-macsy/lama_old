@@ -243,9 +243,9 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
 {
-    static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
+    static LAMAKernel<UtilKernelTrait::execElementwiseNoArg<ValueType> > execElementwiseNoArg;
     ContextPtr loc = testContext;
-    invert.getSupportedContext( loc );
+    execElementwiseNoArg.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     SCAI_LOG_INFO( logger, "invertTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
     {
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            invert[loc]( wValues.get(), nValues );
+            execElementwiseNoArg[loc]( wValues.get(), nValues, elementwise::INVERT );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -272,7 +272,82 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            invert[loc]( wValues.get(), n );
+            execElementwiseNoArg[loc]( wValues.get(), n, elementwise::INVERT );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( countNonZerosTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    static LAMAKernel<UtilKernelTrait::countNonZeros<IndexType> > countNonZeros;
+
+    ContextPtr loc = Context::getContextPtr( countNonZeros.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "countNonZeros for " << *testContext << " on " << *loc )
+
+    // count valid array
+    {
+        const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4 };
+        const IndexType n = sizeof( values ) / sizeof( IndexType );
+        HArray<IndexType> sizes( n, values, testContext );
+        ReadAccess<IndexType> rSizes( sizes, loc );
+        SCAI_CONTEXT_ACCESS( loc );
+        IndexType count = countNonZeros[loc]( rSizes.get(), n, 0 );
+        BOOST_CHECK_EQUAL( IndexType( 4 ), count );
+    }
+
+    // count empty array
+    {
+        HArray<IndexType> sizes;
+        ReadAccess<IndexType> rSizes( sizes, loc );
+        SCAI_CONTEXT_ACCESS( loc );
+        IndexType count = countNonZeros[loc]( rSizes.get(), sizes.size(), 0 );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), count );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( compressTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    static LAMAKernel<UtilKernelTrait::compress<IndexType> > compress;
+
+    ContextPtr loc = Context::getContextPtr( compress.validContext( testContext->getType() ) );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    const IndexType theValues[] = { 3, 0, 1, 0, 0, 1, 0, 4, 3, 0 };
+    const IndexType theSparseIndexes[] = { 0, 2, 5, 7, 8 };
+    const IndexType nDense = 10;
+    const IndexType nSparse = 5;
+
+    HArray<IndexType> denseArray( nDense, theValues, testContext );
+    HArray<IndexType> sparseIndexes( nDense, IndexType( 0 ), testContext );  
+
+    {
+        ReadAccess<IndexType> rArray( denseArray, loc );
+        WriteAccess<IndexType> wSparseIndexes( sparseIndexes, loc );
+        SCAI_CONTEXT_ACCESS( loc );
+        IndexType cnt = compress[loc]( NULL, wSparseIndexes.get(), rArray.get(), nDense, 0 );
+   
+        BOOST_REQUIRE_EQUAL( nSparse, cnt );
+    }
+  
+    // sparseIndexes are sorted
+
+    {
+        ReadAccess<IndexType> rSparseIndexes( sparseIndexes );
+
+        for ( IndexType i = 0; i < nSparse; ++i )
+        {
+            BOOST_CHECK_EQUAL( theSparseIndexes[i], rSparseIndexes[i] );
         }
     }
 }

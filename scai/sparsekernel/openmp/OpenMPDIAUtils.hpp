@@ -58,6 +58,15 @@ class COMMON_DLL_IMPORTEXPORT OpenMPDIAUtils
 {
 public:
 
+    /** OpenMP implementation for DIAKernelTrait::getValuePos */
+
+    static IndexType getValuePos( 
+        const IndexType i,
+        const IndexType j,
+        const IndexType numRows,
+        const IndexType diaOffsets[],
+        const IndexType numDiagonals );
+
     /** OpenMP implementation for DIAKernelTrait::getCSRSizes */
 
     template<typename ValueType>
@@ -165,6 +174,15 @@ private:
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
+
+private:
+
+    /** Struct for registration of methods without template arguments */
+
+    struct Registrator
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Struct for registration of methods with one template argument.
      *

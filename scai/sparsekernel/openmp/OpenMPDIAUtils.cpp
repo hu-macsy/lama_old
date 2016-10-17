@@ -69,6 +69,28 @@ SCAI_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
 
+IndexType OpenMPDIAUtils::getValuePos( const IndexType i, 
+                                       const IndexType j,
+                                       const IndexType numRows,
+                                       const IndexType diaOffsets[],
+                                       const IndexType numDiagonals )
+{
+    IndexType pos = nIndex;
+
+    for ( IndexType d = 0; d < numDiagonals; ++d )
+    {
+        if ( i + diaOffsets[d] == j )
+        {
+            pos = i + d * numRows;
+            break;
+        }
+    }
+
+    return pos;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 ValueType OpenMPDIAUtils::absMaxVal(
     const IndexType numRows,
@@ -173,7 +195,7 @@ void OpenMPDIAUtils::getCSRValues(
     // go through the DIA the same way again and copy the non-zeros
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.DIA->CSR_values" )
+        SCAI_REGION( "OpenMP.DIA.getCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -508,6 +530,18 @@ void OpenMPDIAUtils::jacobi(
 }
 
 /* --------------------------------------------------------------------------- */
+/* Registrator classes, method registerKernels                                 */
+/* --------------------------------------------------------------------------- */
+
+void OpenMPDIAUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+    common::context::ContextType ctx = common::context::Host;
+    SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    KernelRegistry::set<DIAKernelTrait::getValuePos>( getValuePos, ctx, flag );
+}
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void OpenMPDIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
@@ -522,6 +556,8 @@ void OpenMPDIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType, typename OtherValueType>
 void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
@@ -542,6 +578,8 @@ OpenMPDIAUtils::OpenMPDIAUtils()
     SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+
+    Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
@@ -551,6 +589,8 @@ OpenMPDIAUtils::~OpenMPDIAUtils()
     SCAI_LOG_INFO( logger, "unregister DIAUtils OpenMP-routines for Host at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }

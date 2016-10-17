@@ -58,6 +58,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/unsupported.hpp>
+#include <scai/common/macros/unused.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
@@ -547,13 +548,16 @@ void DenseMatrix<ValueType>::allocate( DistributionPtr rowDistribution, Distribu
         {
             computeOwners();
         }
+
+        Matrix::setDistributedMatrix( rowDistribution, colDistribution );
     }
     else
     {
-        COMMON_THROWEXCEPTION( "coldistribution not handled here" )
+        Matrix::setDistributedMatrix( rowDistribution, colDistribution );
+        computeOwners();
+        allocateData();
     }
 
-    Matrix::setDistributedMatrix( rowDistribution, colDistribution );
     SCAI_LOG_DEBUG( logger, *this << ": now allocated" )
 }
 
@@ -818,6 +822,8 @@ void DenseMatrix<ValueType>::joinColumnData(
     const IndexType firstRow,
     const IndexType nRows ) const
 {
+    SCAI_REGION( "Mat.Dense.joinColumnData" )
+
     SCAI_LOG_DEBUG( logger, "join column data, firstRow = " << firstRow << ", nRows = " << nRows << ", result = " << result )
     const IndexType ncol = getNumColumns();
     // make sure that the array mOwners is set correctly
@@ -898,7 +904,7 @@ void DenseMatrix<ValueType>::allocateData()
         return;
     }
 
-    utilskernel::LArray<IndexType> numColsPartition;
+    utilskernel::LArray<IndexType> numColsPartition;  // for counting elements per partition
  
     utilskernel::HArrayUtils::bucketCount( numColsPartition, mOwners, numChunks );
 
@@ -1161,26 +1167,168 @@ void DenseMatrix<ValueType>::setContextPtr( const ContextPtr context )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const
+void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexType localRowIndex ) const
 {
-    SCAI_LOG_INFO( logger, "get local row " << iLocal << " into " << row << " from this matrix: " << *this )
-    SCAI_ASSERT_ERROR( row.getDistribution().isReplicated(), "row vector must be replicated" )
+    SCAI_REGION( "Mat.Dense.getLocalRow" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( localRowIndex, getRowDistribution().getLocalSize(), "illegal local row index" );
+
+    SCAI_LOG_INFO( logger, "get local row " << localRowIndex << " from this matrix: " << *this )
+
     const Distribution& distributionCol = getColDistribution();
 
     if ( distributionCol.isReplicated() )
     {
         // in this case we just can take the values from the local storage
-        getLocalStorage().getRowImpl( row.getLocalValues(), iLocal );
+        getLocalStorage().getRowImpl( row, localRowIndex );
         return;
     }
 
     // with column distribution: join the corresponding column data
-    joinColumnData( row.getLocalValues(), iLocal, 1 );
-    SCAI_LOG_INFO( logger, "joined ready" )
-    SCAI_LOG_INFO( logger, "joined row value array = " << row.getLocalValues() )
-    // just make sure that there is no mismatch of sizes
-    SCAI_ASSERT_EQUAL_ERROR( row.getLocalValues().size(), row.size() );
+
+    joinColumnData( row, localRowIndex, 1 );
+
+    SCAI_LOG_INFO( logger, "local row with joined column data: " << row )
 }
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setLocalRow( 
+    const hmemo::HArray<ValueType>& row, 
+    const IndexType localRowIndex,
+    const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_REGION( "Mat.Dense.setLocalRow" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( localRowIndex, getRowDistribution().getLocalSize(), "illegal local row index" )
+    SCAI_ASSERT_EQ_DEBUG( row.size(), mNumColumns, "size of row illegal" )
+
+    const PartitionId numColPartitions = static_cast<PartitionId>( mData.size() );
+
+    if ( numColPartitions == 1 )
+    {
+        // in this case we just can take the values from the local storage
+
+        mData[0]->setRowImpl( row, localRowIndex, op );
+        return;
+    }
+
+    // do a bucket sort of row, buckets are determined by the owners
+
+    utilskernel::LArray<IndexType> offsets;
+    utilskernel::LArray<IndexType> perm;
+
+    utilskernel::HArrayUtils::bucketSort( offsets, perm, mOwners, numColPartitions );
+
+    SCAI_LOG_DEBUG( logger, "bucketSort, offsets = " << offsets )
+
+    HArray<ValueType> rowResorted;   // row resorted according to the owners
+
+    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, utilskernel::reduction::COPY );
+
+    ReadAccess<IndexType> rOffsets( offsets );
+
+    // now sort in the different parts
+
+    for ( PartitionId ip = 0; ip < numColPartitions; ++ip )
+    {
+        // tricky workaround for: HArraySection<ValueType>( rowResorted, offset = .., inc = 1, n = ... )
+
+        const ValueType* ptrRowPart;
+
+        IndexType nRowPart = rOffsets[ ip + 1 ] - rOffsets[ip];
+
+        {
+            ReadAccess<ValueType> rRow( rowResorted );
+            ptrRowPart = rRow.get() + rOffsets[ip];
+            nRowPart   = rOffsets[ ip + 1 ] - rOffsets[ ip ];
+        }
+
+        HArrayRef<ValueType> rowPartition( nRowPart, ptrRowPart );
+
+        mData[ip]->setRowImpl( rowPartition, localRowIndex, op );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+static IndexType getLocalIndex( const IndexType globalIndex, const Distribution& dist, const PartitionId owners[] )
+{
+    if ( dist.getNumPartitions() == 1 )
+    {
+        return globalIndex;
+    }
+
+    if ( dist.isLocal( globalIndex ) )
+    {
+        return dist.global2local( globalIndex );
+    }
+
+    // up to know no efficient way to get local index
+
+    IndexType localIndex = 0;
+    PartitionId owner = owners[globalIndex];
+
+    for ( PartitionId k = 0; k < globalIndex; ++k )
+    {
+        if ( owner == owners[k] )
+        {
+            ++localIndex;
+        }
+    }
+
+    return localIndex;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::getLocalColumn( hmemo::HArray<ValueType>& column, const IndexType colIndex ) const
+{
+    SCAI_REGION( "Mat.Dense.getLocalColumn" )
+
+    // find the owner and local column index of col
+
+    const Distribution& colDist = getColDistribution();
+
+    ReadAccess<IndexType> rOwners( mOwners );
+
+    PartitionId owner = rOwners[ colIndex ];
+
+    IndexType localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
+
+    SCAI_LOG_INFO( logger, "getLocalColumn( " << colIndex << " ) : owner = " << owner 
+                           << ", local col = " << localColIndex  << ", mData = " << *mData[owner] )
+
+    mData[owner]->getColumnImpl( column, localColIndex );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setLocalColumn( 
+    const hmemo::HArray<ValueType>& column, 
+    const IndexType colIndex,
+    const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_REGION( "Mat.Dense.setLocalColumn" )
+
+    // find the owner and local column index of col
+    
+    const Distribution& colDist = getColDistribution();
+    
+    ReadAccess<IndexType> rOwners( mOwners );
+
+    PartitionId owner = rOwners[ colIndex ];
+
+    IndexType localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
+
+    SCAI_LOG_INFO( logger, "setLocalColumn( " << colIndex << " ) : owner = " << owner 
+                           << ", local col = " << localColIndex  << ", mData = " << *mData[owner] )
+
+    mData[owner]->setColumnImpl( column, localColIndex, op );
+}
+
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 template<typename OtherValueType>

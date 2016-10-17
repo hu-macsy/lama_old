@@ -62,18 +62,6 @@ class COMMON_DLL_IMPORTEXPORT OpenMPELLUtils
 {
 private:
 
-    /** This method computes the total number of non-zero rows by the size array  */
-
-    static IndexType countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows );
-
-    /** Build a vector of indexes for non-empty rows. */
-
-    static void setNonEmptyRowsBySizes(
-        IndexType rowIndexes[],
-        const IndexType numNonEmptyRows,
-        const IndexType sizes[],
-        const IndexType numRows );
-
     /** Addressing function for the arrays ellJA[numRows*numValuesPerRow] and ellValues: column-major order */
 
     static inline IndexType ellindex(
@@ -116,17 +104,26 @@ private:
         const IndexType ellJA[],
         const ValueType ellValues[] );
 
-    /** Returns one value of the matrix */
+    /** Host implementation for ELLKernelTrait::getValuePos */
 
-    template<typename ValueType>
-    static ValueType getValue(
+    static IndexType getValuePos(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
+        const IndexType ellJA[] );
+
+    /** Implementation for ELLKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType ellIA[],
+        const IndexType numRows,
         const IndexType ellJA[],
-        const ValueType ellValues[] );
+        const IndexType numValuesPerRow );
 
     /** check diagonal property */
 

@@ -194,9 +194,13 @@ public:
     void getRow( Vector& row, const IndexType globalRowIndex ) const
     {
         using namespace scai::hmemo;
-        SCAI_ASSERT_LT_ERROR( globalRowIndex, getNumRows(), "illegal index" )
+
+        SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, getNumRows(), "illegal row index" )
+
         // row should be a DenseVector of same type, otherwise use a temporary
+
         common::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
+
         DenseVector<ValueType>* typedRow = dynamic_cast<DenseVector<ValueType>*>( &row );
 
         if ( !typedRow )
@@ -221,7 +225,8 @@ public:
         if ( getRowDistribution().isReplicated() )
         {
             SCAI_LOG_INFO( logger, "get local row " << globalRowIndex )
-            static_cast<const Derived*>( this )->getLocalRow( *typedRow, globalRowIndex );
+            static_cast<const Derived*>( this )->getLocalRow( typedRow->getLocalValues(), globalRowIndex );
+            SCAI_ASSERT_EQ_ERROR( typedRow->size(), typedRow->getLocalValues().size(), "serious mismatch" )
         }
         else
         {
@@ -235,7 +240,8 @@ public:
 
             if ( localRowIndex != nIndex )
             {
-                static_cast<const Derived*>( this )->getLocalRow( *typedRow, localRowIndex );
+                static_cast<const Derived*>( this )->getLocalRow( typedRow->getLocalValues(), localRowIndex );
+                SCAI_ASSERT_EQ_ERROR( typedRow->size(), typedRow->getLocalValues().size(), "serious mismatch" )
                 owner = comm.getRank() + 1;
                 SCAI_LOG_INFO( logger,
                                comm << ": owner of row " << globalRowIndex << ", local index = " << localRowIndex )
@@ -265,6 +271,116 @@ public:
             row = *tmpVector;   // implicit conversion
             SCAI_LOG_INFO( logger, "copy from tmp vector to result vector done" )
         }
+    }
+
+    /** @brief Common implementation for of Matrix::getColumn for all matrix types
+     *
+     *  @param[out] column will contain the values of the queried col of this matrix
+     *  @param[in]  globalColIndex is the (global) index of the row to access
+     */
+
+    void getColumn( Vector& column, const IndexType globalColIndex ) const
+    {
+        using namespace scai::hmemo;
+
+        SCAI_ASSERT_VALID_INDEX_ERROR( globalColIndex, getNumColumns(), "illegal column index" )
+
+        common::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
+
+        DenseVector<ValueType>* typedCol = dynamic_cast<DenseVector<ValueType>*>( &column );
+
+        if ( !typedCol )
+        {
+            // so we create a temporaray DenseVector of same type, has already correct size
+            tmpVector.reset( new DenseVector<ValueType>() );
+            typedCol = tmpVector.get();
+        }
+
+        // allocate column with the row distribution of this matrix
+
+        typedCol->allocate( this->getRowDistributionPtr() );
+
+        // each partition fills up its local part
+
+        utilskernel::LArray<ValueType>& localValues = const_cast<utilskernel::LArray<ValueType>&>( typedCol->getLocalValues() );
+
+        static_cast<const Derived*>( this )->getLocalColumn( localValues, globalColIndex );
+
+        if ( tmpVector.get() )
+        {
+            column = *tmpVector;   // implicit conversion
+        }
+    }
+
+    /** Implementation of Matrix::setRow for all typed matrices 
+     *
+     *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )
+     */
+    void setRow( const Vector& row, const IndexType globalRowIndex,
+                 const utilskernel::reduction::ReductionOp op ) 
+    {
+        using namespace scai::hmemo;
+
+        SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, getNumRows(), "illegal row index" )
+
+        // row should be a DenseVector of same type, otherwise use a temporary
+
+        common::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
+
+        const DenseVector<ValueType>* typedRow = dynamic_cast<const DenseVector<ValueType>*>( &row );
+
+        if ( !typedRow )
+        {
+            // so we create a temporaray DenseVector of same type, has already correct size
+
+            tmpVector.reset( new DenseVector<ValueType>( row ) );
+
+            typedRow = tmpVector.get();
+        }
+
+        SCAI_ASSERT_ERROR( typedRow->getDistribution().isReplicated(), "cannot set distributed row" )
+
+        SCAI_ASSERT_EQ_ERROR( typedRow->size(), this->getNumColumns(), "row to set has wrong size" )
+  
+        // owner sets the row, maybe each processor for replicated row distribution
+
+        IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+
+        if ( localRowIndex != nIndex )
+        {
+             static_cast<Derived*>( this )->setLocalRow( typedRow->getLocalValues(), localRowIndex, op );
+        }
+    }
+
+    /** Implementation of Matrix::setColumn for all typed matrices 
+     *
+     *  The method is implemented by setting the local part of the column on each partition.
+     *  All derived classes must provide setLocalColum( colArray, colIndex, op )
+     */
+    void setColumn( const Vector& column, 
+                    const IndexType colIndex,
+                    const utilskernel::reduction::ReductionOp op ) 
+    {
+        using namespace scai::hmemo;
+
+        SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, getNumColumns(), "illegal col index" )
+
+        // col should be a DenseVector of same type, otherwise use a temporary
+
+        common::shared_ptr<const DenseVector<ValueType> > tmpVector;  // only allocated if needed
+
+        const DenseVector<ValueType>* typedColumn = dynamic_cast<const DenseVector<ValueType>*>( &column );
+
+        if ( !typedColumn )
+        {
+            // so we create a temporaray DenseVector of same type, has already correct size
+            tmpVector.reset( new DenseVector<ValueType>( column ) );
+            typedColumn = tmpVector.get();
+        }
+
+        SCAI_ASSERT_EQ_ERROR( typedColumn->getDistribution(), this->getRowDistribution(), "distribution mismatch" )
+
+        static_cast<Derived*>( this )->setLocalColumn( typedColumn->getLocalValues(), colIndex, op );
     }
 
     /** This method is the same for dense/sparse matrices as column distribution is replicated */

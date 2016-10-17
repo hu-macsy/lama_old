@@ -104,10 +104,10 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
             // create array with same type, context
             common::unique_ptr<_HArray> tmp( array2.copy() );
             // array2 = array1[ perm ], tmp[ perm ] = array1
-            HArrayUtils::assignGather( array2, array1, perm, ctx );
+            HArrayUtils::gather( array2, array1, perm, reduction::COPY, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
             tmp->resize( n ); // no init required as all values are set
-            HArrayUtils::assignScatter( *tmp, perm, array1, reduction::COPY, ctx );
+            HArrayUtils::scatter( *tmp, perm, array1, reduction::COPY, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same
 
@@ -186,12 +186,168 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::exp( array, ctx );
+    HArrayUtils::execElementwiseNoArg( array, elementwise::EXP, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
         {
             ValueType x = read[i] - common::Math::exp(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
+    HArray<ValueType> array( ctx );
+    array.init( values, n );
+    HArrayUtils::execElementwiseNoArg( array, elementwise::LOG, ctx );
+    {
+        ReadAccess<ValueType> read( array, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = read[i] - common::Math::log(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( floorCeilTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
+    HArray<ValueType> arrayF( ctx );
+    HArray<ValueType> arrayC( ctx );
+    arrayF.init( values, n );
+    arrayC.init( values, n );
+    HArrayUtils::execElementwiseNoArg( arrayF, elementwise::FLOOR, ctx );
+    HArrayUtils::execElementwiseNoArg( arrayC, elementwise::CEIL,  ctx );
+    {
+        ReadAccess<ValueType> readF( arrayF, host );
+        ReadAccess<ValueType> readC( arrayC, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = readF[i] - common::Math::floor(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+
+            x = readC[i] - common::Math::ceil(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( trigonomicTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
+    HArray<ValueType> sinArray( ctx );
+    HArray<ValueType> cosArray( ctx );
+    HArray<ValueType> tanArray( ctx );
+    HArray<ValueType> atanArray( ctx );
+    sinArray.init( values, n );
+    cosArray.init( values, n );
+    tanArray.init( values, n );
+    atanArray.init( values, n );
+    HArrayUtils::execElementwiseNoArg( sinArray,  elementwise::SIN,  ctx );
+    HArrayUtils::execElementwiseNoArg( cosArray,  elementwise::COS,  ctx );
+    HArrayUtils::execElementwiseNoArg( tanArray,  elementwise::TAN,  ctx );
+    HArrayUtils::execElementwiseNoArg( atanArray, elementwise::ATAN, ctx );
+    {
+        ReadAccess<ValueType> sinRead( sinArray, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = sinRead[i] - common::Math::sin(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+        ReadAccess<ValueType> cosRead( cosArray, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = cosRead[i] - common::Math::cos(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+        ReadAccess<ValueType> tanRead( tanArray, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = tanRead[i] - common::Math::tan(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+        ReadAccess<ValueType> atanRead( atanArray, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = atanRead[i] - common::Math::atan(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
+    HArray<ValueType> array( ctx );
+    array.init( values, n );
+    HArrayUtils::execElementwiseNoArg( array, elementwise::SQRT, ctx );
+    {
+        ReadAccess<ValueType> read( array, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = read[i] - common::Math::sqrt(values[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( copysignTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+    const ValueType magnitude[] = {  1.0, 1.2,  1.3, 1.0 };
+    const ValueType sign[]      = { -1.0, 1.0, -2.0, 2.0 };
+    const ValueType result[]    = { -1.0, 1.2, -1.3, 1.0 };
+    const IndexType n = sizeof( magnitude ) / sizeof( ValueType );
+    HArray<ValueType> magArray( ctx );
+    HArray<ValueType> signArray( ctx );
+    HArray<ValueType> resultArray( ctx );
+    magArray.init( magnitude, n );
+    signArray.init( sign, n );
+    resultArray.init( result, n );
+    HArrayUtils::copysign( resultArray, magArray, signArray, ctx );
+    {
+        ReadAccess<ValueType> readMag( magArray, host );
+        ReadAccess<ValueType> readSign( signArray, host );
+        ReadAccess<ValueType> readResult( resultArray, host );
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType x = readResult[i] - common::Math::copysign(readMag[i], readSign[i]);
             BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
             BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
@@ -218,7 +374,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_numeric_test_types )
     LArray<ValueType> target;
     BOOST_CHECK( HArrayUtils::validIndexes( indexes, M ) );
     BOOST_CHECK( !HArrayUtils::validIndexes( indexes, 1 ) );
-    HArrayUtils::gather( target, source, indexes );
+    HArrayUtils::gatherImpl( target, source, indexes, reduction::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -250,11 +406,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
     BOOST_CHECK_THROW (
     {
         LArray<ValueType> target;
-        HArrayUtils::scatter( target, indexes, source, reduction::COPY );
+        HArrayUtils::scatterImpl( target, indexes, source, reduction::COPY );
 
     }, Exception );
     LArray<ValueType> target( M );
-    HArrayUtils::scatter( target, indexes, source, reduction::COPY );
+    HArrayUtils::scatterImpl( target, indexes, source, reduction::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -358,7 +514,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
     BOOST_CHECK_EQUAL( perm.size(), n );
     LArray<ValueType> origArray( n, vals, loc );
     LArray<ValueType> array1;
-    HArrayUtils::gather( array1, origArray, perm );
+    HArrayUtils::gatherImpl( array1, origArray, perm, reduction::COPY );
     BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), ValueType( 0 ) );
 }
 
@@ -391,7 +547,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
     BOOST_CHECK_EQUAL( perm.size(), n );
 
     LArray<IndexType> sortedArray;
-    HArrayUtils::gather( sortedArray, array, perm );
+    HArrayUtils::gatherImpl( sortedArray, array, perm, reduction::COPY );
     BOOST_CHECK( HArrayUtils::isSorted( sortedArray, true, loc ) );
 
     // number of buckets = 1, so only two values array[i] == 0 are taken

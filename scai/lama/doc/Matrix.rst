@@ -199,7 +199,7 @@ For accessing single values of a matrix you can use ``getValue`` or ``()`` with 
 File I/O
 --------
 
-Except from a constructor with a passed string, you can use ``readFromFile`` and ``writeToFile``. The generally excepted format in LAMA for vector and matrices is defined :doc:`here<IO>`.
+Except from a constructor with a passed string, you can use ``readFromFile`` and ``writeToFile``. The generally excepted format in LAMA for vector and matrices is defined :doc:`here<_lama_IO>`.
 
 .. code-block:: c++
  

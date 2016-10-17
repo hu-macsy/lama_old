@@ -61,6 +61,37 @@ class COMMON_DLL_IMPORTEXPORT OpenMPCOOUtils
 {
 public:
 
+    /** OpenMP implementation for COOKernelTrait::getValuePos */
+
+    static IndexType getValuePos( 
+        const IndexType i, 
+        const IndexType j,
+        const IndexType cooIA[], 
+        const IndexType cooJA[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType cooIA[],
+        const IndexType numRows,
+        const IndexType cooJA[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::getValuePosRow */
+
+    static IndexType getValuePosRow(
+        IndexType col[],
+        IndexType pos[],
+        const IndexType i,
+        const IndexType cooIA[],
+        const IndexType numColumns,
+        const IndexType cooJA[],
+        const IndexType numValues );
+
     /** OpenMP implementation for COOKernelTrait::hasDiagonalProperty */
 
     static bool hasDiagonalProperty (

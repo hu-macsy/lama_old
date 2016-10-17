@@ -42,6 +42,7 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/ElementwiseOp.hpp>
 
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
@@ -221,14 +222,17 @@ void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
 
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
+
     const ReadAccess<IndexType> offset( mOffset );
     const ReadAccess<ValueType> values( mValues );
 
+    #pragma omp parallel for
     for ( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = static_cast<OtherType>( 0.0 );
+        wRow[j] = static_cast<OtherType>( 0 );
     }
 
+    #pragma omp parallel for
     for ( IndexType d = 0; d < mNumDiagonals; ++d )
     {
         IndexType j = i + offset[d];
@@ -236,6 +240,113 @@ void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
         if ( common::Utils::validIndex( j, mNumColumns ) )
         {
             wRow[j] = static_cast<OtherType>( values[diaindex( i, d, mNumRows, mNumDiagonals )] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void DIAStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
+                                        const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
+
+    ReadAccess<OtherType> rRow( row );
+
+    ReadAccess<IndexType> offset( mOffset );
+    WriteAccess<ValueType> values( mValues );
+
+    #pragma omp parallel for
+    for ( IndexType d = 0; d < mNumDiagonals; ++d )
+    {
+        IndexType j = i + offset[d];
+
+        if ( common::Utils::validIndex( j, mNumColumns ) )
+        {
+            ValueType val = static_cast<ValueType>( rRow[j] );
+            ValueType& loc = values[diaindex( i, d, mNumRows, mNumDiagonals )];
+
+            switch ( op ) 
+            {
+               case utilskernel::reduction::COPY : loc = val; break;
+               case utilskernel::reduction::ADD  : loc += val; break;
+               case utilskernel::reduction::SUB  : loc -= val; break;
+               case utilskernel::reduction::MULT : loc *= val; break;
+               case utilskernel::reduction::DIVIDE : loc /= val; break;
+               default:  break;
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void DIAStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+
+    const ReadAccess<IndexType> offset( mOffset );
+    const ReadAccess<ValueType> values( mValues );
+
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        wColumn[i] = static_cast<OtherType>( 0 );
+    }
+
+    #pragma omp parallel for
+    for ( IndexType d = 0; d < mNumDiagonals; ++d )
+    {
+        IndexType i = j - offset[d];
+
+        if ( common::Utils::validIndex( i, mNumRows ) )
+        {
+            wColumn[i] = static_cast<OtherType>( values[diaindex( i, d, mNumRows, mNumDiagonals )] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void DIAStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
+                                           const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
+
+    ReadAccess<OtherType> rColumn( column );
+
+    ReadAccess<IndexType> offset( mOffset );
+    WriteAccess<ValueType> values( mValues );
+
+    #pragma omp parallel for
+    for ( IndexType d = 0; d < mNumDiagonals; ++d )
+    {
+        IndexType i = j - offset[d];
+
+        if ( common::Utils::validIndex( i, mNumRows ) )
+        {
+            ValueType val = static_cast<ValueType>( rColumn[i] );
+            ValueType& loc = values[diaindex( i, d, mNumRows, mNumDiagonals )];
+
+            switch ( op ) 
+            {
+               case utilskernel::reduction::COPY : loc = val; break;
+               case utilskernel::reduction::ADD  : loc += val; break;
+               case utilskernel::reduction::SUB  : loc -= val; break;
+               case utilskernel::reduction::MULT : loc *= val; break;
+               case utilskernel::reduction::DIVIDE : loc /= val; break;
+               default:  break;
+            }
         }
     }
 }
@@ -287,7 +398,7 @@ void DIAStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DIAStorage<ValueType>::conj()
 {
-    HArrayUtils::conj( mValues, this->getContextPtr() );
+    HArrayUtils::execElementwiseNoArg( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -438,7 +549,7 @@ void DIAStorage<ValueType>::buildCSR(
     HArray<CSRValueType>* values,
     const ContextPtr prefLoc ) const
 {
-    SCAI_REGION( "Storage.DIA->CSR" )
+    SCAI_REGION( "Storage.DIA.buildCSR" )
     static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
     static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
     static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, CSRValueType> > getCSRValues;
@@ -491,7 +602,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     const HArray<OtherValueType>& values,
     ContextPtr prefLoc )
 {
-    SCAI_REGION( "Storage.DIA<-CSR" )
+    SCAI_REGION( "Storage.DIA.setCSR" )
 
     if ( ia.size() == numRows )
     {
@@ -749,26 +860,64 @@ ValueType DIAStorage<ValueType>::maxNorm() const
 template<typename ValueType>
 ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    SCAI_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
-    const ReadAccess<IndexType> offset( mOffset );
-    ValueType myValue = 0;
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
-    // check for a matching diagonal element in the row i
+    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
 
-    for ( IndexType d = 0; d < mNumDiagonals; ++d )
+    static LAMAKernel<DIAKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rOffset( mOffset, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, rOffset.get(), mNumDiagonals );
+
+    ValueType val = 0;
+
+    if ( pos != nIndex )
     {
-        if ( i + offset[d] == j )
-        {
-            const ReadAccess<ValueType> values( mValues );
-            SCAI_LOG_DEBUG( logger,
-                            "get value (" << i << ", " << j << ") is diag = " << d << ", offset = " << offset[d]
-                            << ", index = " << diaindex( i, d, mNumRows, mNumDiagonals ) )
-            myValue = values[diaindex( i, d, mNumRows, mNumDiagonals )];
-            break;
-        }
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumRows * mNumDiagonals, "illegal value position for ( " << i << ", " << j << " )" );
+
+        val = utilskernel::HArrayUtils::getVal<ValueType>( mValues, pos );
     }
 
-    return myValue;
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::setValue( const IndexType i,
+                                      const IndexType j,
+                                      const ValueType val,
+                                      const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_TRACE( logger, "set value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<DIAKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rOffset( mOffset, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, rOffset.get(), mNumDiagonals );
+
+    if ( pos == nIndex )
+    {
+        COMMON_THROWEXCEPTION( "DIA storage has no entry ( " << i << ", " << j << " ) " )
+    }
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumRows * mNumDiagonals, "illegal value position for ( " << i << ", " << j << " )" );
+
+    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1141,6 +1290,11 @@ SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void DIAStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void DIAStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
+                                                     const utilskernel::reduction::ReductionOp );                          \
+    template void DIAStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
+    template void DIAStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
+                                                        const utilskernel::reduction::ReductionOp );                       \
     template void DIAStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void DIAStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void DIAStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \

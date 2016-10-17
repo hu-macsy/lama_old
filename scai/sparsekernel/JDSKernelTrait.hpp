@@ -36,6 +36,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 namespace scai
 {
@@ -325,21 +326,71 @@ struct JDSKernelTrait
         }
     };
 
-    template<typename ValueType>
-    struct getValue
+    template<typename ValueType, typename OtherValueType>
+    struct setRow
     {
-        typedef ValueType ( *FuncType ) ( const IndexType i,
-                                          const IndexType j,
-                                          const IndexType numRows,
-                                          const IndexType* dlg,
-                                          const IndexType* ilg,
-                                          const IndexType* perm,
-                                          const IndexType* ja,
-                                          const ValueType* values );
+        typedef void ( *FuncType ) ( ValueType values[],
+                                     const IndexType i,
+                                     const IndexType numColumns,
+                                     const IndexType numRows,
+                                     const IndexType perm[],
+                                     const IndexType ilg[],
+                                     const IndexType dlg[],
+                                     const IndexType ja[],
+                                     const OtherValueType row[],
+                                     const utilskernel::reduction::ReductionOp op );
 
         static const char* getId()
         {
-            return "JDS.getValue";
+            return "JDS.setRow";
+        }
+    };
+
+    struct getValuePos
+    {
+        typedef IndexType ( *FuncType ) ( const IndexType i,
+                                          const IndexType j,
+                                          const IndexType numRows,
+                                          const IndexType ilg[],
+                                          const IndexType dlg[],
+                                          const IndexType perm[],
+                                          const IndexType ja[] );
+
+        static const char* getId()
+        {
+            return "JDS.getValuePos";
+        }
+    };
+
+    struct getValuePosCol
+    {
+        /** This method returns for a certain column of the JDS matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the jdsJA/jdsValues array
+         *
+         *  @param[out] row indexes of rows that have an entry for column j
+         *  @param[out] pos positions of entries with col = j in csrJA, 
+         *  @param[in] j is the column of which positions are required
+         *  @param[in] numRows is the number of rows
+         *  @param[in] ilg
+         *  @param[in] dlg
+         *  @param[in] perm
+         *  @param[in] ja
+         *  @returns  number of entries with col index = j
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType row[],
+            IndexType pos[],
+            const IndexType j,
+            const IndexType numRows,
+            const IndexType ilg[],
+            const IndexType dlg[],
+            const IndexType perm[],
+            const IndexType ja[] );
+
+        static const char* getId()
+        {
+            return "JDS.getValuePosCol";
         }
     };
 

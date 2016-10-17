@@ -13,6 +13,8 @@ Context
 Here is the class hierarchy of the class Context:
 
 .. image:: _images/ContextClass.png
+    :align: center
+    :width: 800px
 
 In nearly all operations where a context appears as an argument a shared pointer for this context is used.
 This guarantees that the device will be freed only if it is no more used for any heterogeneous array.

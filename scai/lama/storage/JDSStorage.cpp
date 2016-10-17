@@ -42,6 +42,7 @@
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/ElementwiseOp.hpp>
 
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
@@ -305,7 +306,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
     WriteAccess<ValueType> wValues( mValues, loc );
     // diagonal is first column in JDS data
     // values[i] = diagonal[ ja[ i ] ]
-    setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), numDiagonal );
+    setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), utilskernel::reduction::COPY, numDiagonal );
     // Still problem to use HArrayUtils::gather, as only part of the array is used
 }
 
@@ -315,6 +316,8 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::getRowImpl( HArray<OtherValueType>& row, const IndexType i ) const
 {
+    SCAI_REGION( "Storage.JDS.getRow" )
+
     SCAI_LOG_INFO( logger, "getRowImpl with i = " << i )
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     static LAMAKernel<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
@@ -328,6 +331,135 @@ void JDSStorage<ValueType>::getRowImpl( HArray<OtherValueType>& row, const Index
     WriteOnlyAccess<OtherValueType> wRow( row, loc, mNumColumns );
     SCAI_CONTEXT_ACCESS( loc )
     getRow[loc]( wRow.get(), i, mNumColumns, mNumRows, perm.get(), ilg.get(), dlg.get(), ja.get(), values.get() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+{
+    SCAI_LOG_INFO( logger, "getColumn( " << j << " ) of : " << *this )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_REGION( "Storage.JDS.getCol" )
+
+    static LAMAKernel<JDSKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIlg( mIlg, loc );
+        ReadAccess<IndexType> rDlg( mDlg, loc ); 
+        ReadAccess<IndexType> rPerm( mPerm, loc );
+        ReadAccess<IndexType> rJa( mJa, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j, mNumRows,
+                                             rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    SCAI_LOG_INFO( logger, "getColumn( " << j << " ) with " << valuePos.size() << " non-zero entries" )
+
+    column.init( ValueType( 0 ), mNumRows );
+
+    // column[ row ] = mValues[ pos ];
+
+    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::reduction::COPY, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void JDSStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
+                                        const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_REGION( "Storage.JDS.setRow" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
+
+    SCAI_LOG_INFO( logger, "setRowImpl( i = " << i << " )" )
+
+    static LAMAKernel<JDSKernelTrait::setRow<ValueType, OtherType> > setRow;
+
+    ContextPtr loc = this->getContextPtr();
+    setRow.getSupportedContext( loc );
+
+    ReadAccess<IndexType> dlg( mDlg, loc );
+    ReadAccess<IndexType> ilg( mIlg, loc );
+    ReadAccess<IndexType> perm( mPerm, loc );
+    ReadAccess<IndexType> ja( mJa, loc );
+    WriteAccess<ValueType> values( mValues, loc );
+    ReadAccess<OtherType> rRow( row, loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    setRow[loc]( values.get(), i, mNumColumns, mNumRows, perm.get(), ilg.get(), dlg.get(), ja.get(), rRow.get(), op );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void JDSStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
+                                           const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_LOG_INFO( logger, "setColumn( " << j << " ) of : " << *this << " with column " << column )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
+
+    SCAI_REGION( "Storage.JDS.setCol" )
+
+    static LAMAKernel<JDSKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIlg( mIlg, loc );
+        ReadAccess<IndexType> rDlg( mDlg, loc );
+        ReadAccess<IndexType> rPerm( mPerm, loc );
+        ReadAccess<IndexType> rJa( mJa, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j, mNumRows,
+                                             rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    SCAI_LOG_INFO( logger, "setColumn( " << j << " ) updates " << rowIndexes.size() << " entries" )
+
+    //  mValues[ pos ] op= column[row]
+
+    HArrayUtils::gatherImpl( colValues, column, rowIndexes, utilskernel::reduction::COPY, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, colValues, op, loc );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -366,7 +498,7 @@ void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void JDSStorage<ValueType>::conj()
 {
-    HArrayUtils::conj( mValues, this->getContextPtr() );
+    HArrayUtils::execElementwiseNoArg( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -585,7 +717,7 @@ void JDSStorage<ValueType>::buildCSR(
     HArray<OtherValueType>* values,
     const ContextPtr context ) const
 {
-    SCAI_REGION( "Storage.JDS->CSR" )
+    SCAI_REGION( "Storage.JDS.buildCSR" )
     SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">"
                    << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *context )
@@ -651,7 +783,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
         return;
     }
 
-    SCAI_REGION( "Storage.JDS<-CSR" )
+    SCAI_REGION( "Storage.JDS.setCSR" )
     SCAI_LOG_INFO( logger,
                    "setCSRDataImpl<" << common::getScalarType<ValueType>() << "," << common::getScalarType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
     static LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
@@ -777,17 +909,70 @@ void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ") from " << *this )
-    static LAMAKernel<JDSKernelTrait::getValue<ValueType> > getValue;
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<JDSKernelTrait::getValuePos> getValuePos;
+
     ContextPtr loc = this->getContextPtr();
-    getValue.getSupportedContext( loc );
+    getValuePos.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
+
     ReadAccess<IndexType> dlg( mDlg, loc );
     ReadAccess<IndexType> ilg( mIlg, loc );
     ReadAccess<IndexType> perm( mPerm, loc );
     ReadAccess<IndexType> ja( mJa, loc );
-    ReadAccess<ValueType> values( mValues, loc );
-    return getValue[loc]( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get(), values.get() );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get() );
+
+    ValueType val = 0;
+
+    if ( pos != nIndex )
+    {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+
+        val = utilskernel::HArrayUtils::getVal<ValueType>( mValues, pos );
+    }
+
+    return val;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void JDSStorage<ValueType>::setValue( const IndexType i,
+                                      const IndexType j,
+                                      const ValueType val,
+                                      const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_DEBUG( logger, "set value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<JDSKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> dlg( mDlg, loc );
+    ReadAccess<IndexType> ilg( mIlg, loc );
+    ReadAccess<IndexType> perm( mPerm, loc );
+    ReadAccess<IndexType> ja( mJa, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get() );
+
+    if ( pos == nIndex )
+    {
+        COMMON_THROWEXCEPTION( "ELL storage has no entry ( " << i << ", " << j << " ) " )
+    }
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+
+    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1410,6 +1595,11 @@ SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void JDSStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
+                                                     const utilskernel::reduction::ReductionOp );                          \
+    template void JDSStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
+    template void JDSStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
+                                                        const utilskernel::reduction::ReductionOp );                       \
     template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void JDSStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void JDSStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \

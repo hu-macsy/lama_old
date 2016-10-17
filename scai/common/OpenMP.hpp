@@ -99,6 +99,34 @@ inline void atomicAdd( double& sharedResult, const double& threadResult )
     sharedResult += threadResult;
 }
 
+template<>
+inline void atomicAdd( int& sharedResult, const int& threadResult )
+{
+    #pragma omp atomic
+    sharedResult += threadResult;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline ValueType atomicInc( ValueType& var )
+{
+    ValueType val;
+
+    #pragma omp critical
+    {
+        val = var++;
+    }
+
+    return val;
+}
+
+template<>
+inline int atomicInc( int& var )
+{
+    return __sync_fetch_and_add( &var, 1 );
+}
+
 /** This routine computes within a parallel region a contiguous block for each thread
  *
  *  @param[in] n the range 0 <= i < n is distributed 

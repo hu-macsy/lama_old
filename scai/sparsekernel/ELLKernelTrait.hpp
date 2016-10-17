@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 namespace scai
 {
@@ -268,70 +269,59 @@ struct ELLKernelTrait
         }
     };
 
-    template<typename ValueType>
-    struct getValue
+    struct getValuePos
     {
         /** Returns one element of the matrix
          *
          *  @param[in] i is the row of the returned element
          *  @param[in] j is the column of the returned element
          *  @param[in] numRows is the number of rows of the matrix
+         *  @param[in] numValuesPerRow is the maximal number of entries in one row
          *  @param[in] ellSizes is the ELL sizes array
          *  @param[in] ellJA is the ELL ja array
-         *  @param[in] ellValues is the ELL values array
          */
 
-        typedef ValueType ( *FuncType ) (
+        typedef IndexType ( *FuncType ) (
             const IndexType i,
             const IndexType j,
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
-            const IndexType ellJA[],
-            const ValueType ellValues[] );
+            const IndexType ellJA[] );
 
         static const char* getId()
         {
-            return "ELL.getValue";
+            return "ELL.getValuePos";
         }
     };
 
-    struct countNonEmptyRowsBySizes
+    struct getValuePosCol
     {
-        /** Returns the number of non-empty rows 
-         * 
-         *  @param[in] ellSizes is the ELL sizes array
-         *  @param[in] numRows is the number of rows, size of ellSizes
-         *  @return the number of values > 0 in ellSizes
+        /** This method returns for a certain column of the CSR matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the ellJA/ellValues array
+         *
+         *  @param[out] row indexes of rows that have an entry for column j
+         *  @param[out] pos positions of entries with col = j in csrJA, 
+         *  @param[in] j is the column of which positions are required
+         *  @param[in] ellIA is the ELL sizes array
+         *  @param[in] numRows is the number of rows
+         *  @param[in] csrJA is the CSR ja array
+         *  @param[in] numValuesPerRow is maximal size of one row
+         *  @returns  number of entries with col index = j
          */
         typedef IndexType ( *FuncType ) (
-            const IndexType ellSizes[],
-            const IndexType numRows );
+            IndexType row[],
+            IndexType pos[],
+            const IndexType j,
+            const IndexType ellIA[],
+            const IndexType numRows,
+            const IndexType ellJA[],
+            const IndexType numValuesPerRow );
 
         static const char* getId()
         {
-            return "ELL.countNonEmptyRowsBySizes";
-        }
-    };
-
-    struct setNonEmptyRowsBySizes
-    {
-        /** This method returns all row indexes of non-empty rows
-         *
-         *  @param[out] rowIndexes will contain the indexes of the non-zero rows
-         *  @param[in] numNonEmptyRows number of  non-zero rows, is countNonEmptyRowsBySizes( ellSizes, numRows )
-         *  @param[in] ellSizes is the size of each row, #non-zero values must be numNonEmptyRows
-         *  @param[in] numRows is the mumbe of rows, size of ellSizes
-         */
-        typedef void ( *FuncType ) (
-            IndexType rowIndexes[],
-            const IndexType numNonEmptyRows,
-            const IndexType ellSizes[],
-            const IndexType numRows );
-
-        static const char* getId()
-        {
-            return "ELL.setNonEmptyRowsBySizes";
+            return "ELL.getValuePosCol";
         }
     };
 

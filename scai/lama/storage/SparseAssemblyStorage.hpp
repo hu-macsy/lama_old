@@ -178,6 +178,11 @@ public:
         return ( *this )( i, j );
     }
 
+    /** Implementation of pure method MatrixStorage<ValueType>::setValue for ELL storage */
+
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
+                   const utilskernel::reduction::ReductionOp op = utilskernel::reduction::COPY );
+
     /** Getter routine for the enum value that stands for this format. */
 
     virtual Format::MatrixStorageFormat getFormat() const;
@@ -250,7 +255,7 @@ public:
      * @param[in] ja    the column vector of row i.
      * @param[in] a     the values of row i.
      */
-    void setRow( const IndexType i, const hmemo::HArray<IndexType>& ja, const hmemo::HArray<ValueType>& a );
+    void setSparseRow( const IndexType i, const hmemo::HArray<IndexType>& ja, const hmemo::HArray<ValueType>& a );
 
     /**
      * @brief fixDiagonalProperty fixes the diagonal property of row.
@@ -272,10 +277,27 @@ public:
      */
     void setNumColumns( const IndexType i );
 
-    /** Template method for getting row. */
+    /** Template version of getRow */
 
     template<typename OtherType>
     void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
+
+    /** Template version of setRow */
+
+    template<typename OtherType>
+    void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
+                     const utilskernel::reduction::ReductionOp op );
+
+    /** Template version of getColumn */
+
+    template<typename OtherType>
+    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
+
+    /** Template version of setColumn */
+
+    template<typename OtherType>
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
+                        const utilskernel::reduction::ReductionOp op );
 
     /** Typed version of getDiagonal
      *

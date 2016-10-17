@@ -40,6 +40,7 @@
 #include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/ReductionOp.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/common/Factory.hpp>
@@ -273,8 +274,20 @@ public:
      * @param[in] i is the row index
      *
      */
-
     virtual void getRow( hmemo::_HArray& row, const IndexType i ) const = 0;
+
+    virtual void setRow( const hmemo::_HArray& row, const IndexType i, utilskernel::reduction::ReductionOp op ) = 0;
+
+    virtual void setColumn( const hmemo::_HArray& column, const IndexType j, 
+                            utilskernel::reduction::ReductionOp op            ) = 0;
+
+    /** This method returns the j-th column of the matrix
+     *
+     * @param[out] column is the destination array that will contain the column
+     * @param[in] j is the row index
+     *
+     */
+    virtual void getColumn( hmemo::_HArray& column, const IndexType j ) const = 0;
 
     /** This method returns the diagonal of the matrix.
      *
@@ -530,11 +543,11 @@ public:
     /**
      * @brief write the matrix storage to an output file
      *
-     * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] type format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
-     * @param[in] dataType representation type for output values, default is same type as matrix values
+     * @param[in] fileName  is the name of the output file (suffix must be added according to the file type)
+     * @param[in] type      format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
+     * @param[in] dataType  representation type for output values, default is same type as matrix values
      * @param[in] indexType representation type for row/col index values (default is settings of FileIO)
-     * @param[in] fileMode, use BINARY or FORMATTED to force a certain mode
+     * @param[in] fileMode  use BINARY or FORMATTED to force a certain mode, otherwise DEFAULT
      *
      * If one of the arguments dataType, indexType or fileMode is set, it will overwrite
      * any setting specified by the corresponding environment variables SCAI_IO_TYPE_DATA, SCAI_IO_TYPE_INDEX
@@ -779,11 +792,25 @@ public:
     /** Get a value of the matrix.
      *
      * @param[in] i is the row index, 0 <= i < mNumRows
-     * @param[in] j is the colum index, 0 <= j < mNumRows
+     * @param[in] j is the colum index, 0 <= j < mNumColumns
      * @throw Exception out-of-range is enabled for ASSERT_LEVEL=DEBUG.
      */
 
     virtual ValueType getValue( const IndexType i, const IndexType j ) const = 0;
+
+    /** Set/update an existing value of the matrix. 
+     *
+     *  @param[in] i is the row index, 0 <= i < mNumRows 
+     *  @param[in] j is the col index, 0 <= j < mNumColumns
+     *  @param[in] val is the value to be set
+     *  @param[in] op specifies how to combine old and new value
+     *
+     *  @throw Exception if value is non-zero and sparse pattern does not contain element
+     */
+    virtual void setValue( const IndexType i, 
+        const IndexType j, 
+        const ValueType val, 
+        const utilskernel::reduction::ReductionOp op = utilskernel::reduction::COPY ) = 0;
 
     /**
      *  This method builds CSC sparse data (column sizes, row indexes and data values) for a matrix storage.

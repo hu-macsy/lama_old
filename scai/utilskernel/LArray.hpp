@@ -386,16 +386,75 @@ public:
 
     void invert()
     {
-        HArrayUtils::invert( *this );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::INVERT );
     }
 
     /** Compute the conj in-place */
 
     void conj()
     {
-        HArrayUtils::conj( *this );
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::CONJ );
     }
 
+    void exp()
+    {
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::EXP );
+    }
+
+    void log()
+    {
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::LOG );
+    }
+
+    void floor()
+    {
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::FLOOR );
+    }
+
+    void ceil()
+    {
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::CEIL );
+    }
+
+    void sqrt()
+    {
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::SQRT );
+    }
+
+    void sin()
+    {
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::SIN );
+    }
+
+    void cos()
+    {
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::COS );
+    }
+
+    void tan()
+    {
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::TAN );
+    }
+
+    void atan()
+    {
+        HArrayUtils::execElementwiseNoArg( *this, elementwise::ATAN );
+    }
+
+    void powBase( ValueType base )
+    {
+        HArrayUtils::execElementwiseOneArg( *this, base, elementwise::POWBASE );
+    }
+
+    void powExp( ValueType exp )
+    {
+        HArrayUtils::execElementwiseOneArg( *this, exp, elementwise::POWEXP );
+    }
+
+    void pow( const hmemo::HArray<ValueType>& other )
+    {
+        return HArrayUtils::pow( *this, other );
+    }
 };
 
 } /* end namespace utilskernel */

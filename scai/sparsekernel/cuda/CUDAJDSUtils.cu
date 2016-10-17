@@ -437,7 +437,7 @@ IndexType CUDAJDSUtils::ilg2dlg(
     const IndexType ilg[],
     const IndexType numRows )
 {
-    SCAI_REGION( "CUDA.JDS:dlg<-ilg" )
+    SCAI_REGION( "CUDA.JDS.ilg2dlg" )
     SCAI_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
     SCAI_CHECK_CUDA_ACCESS
 
@@ -551,7 +551,7 @@ void CUDAJDSUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     // convert CSR data to JDS, ja and values
-    SCAI_REGION( "CUDA.JDS<-CSR_values" )
+    SCAI_REGION( "CUDA.JDS.setCSR" )
     SCAI_LOG_INFO( logger, "convert CSR to JDS, #rows = " << numRows )
     SCAI_CHECK_CUDA_ACCESS
     bool useSharedMem = CUDASettings::useSharedMem();
@@ -652,7 +652,7 @@ void CUDAJDSUtils::getCSRValues(
     const IndexType jdsJA[],
     const JDSValueType jdsValues[] )
 {
-    SCAI_REGION( "CUDA.JDS->CSR_values" )
+    SCAI_REGION( "CUDA.JDS.getCSR" )
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
 
@@ -2741,7 +2741,6 @@ void CUDAJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
                      << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );

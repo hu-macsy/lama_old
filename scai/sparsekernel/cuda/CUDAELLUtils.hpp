@@ -66,21 +66,9 @@ public:
         return jj * numRows + i;
     }
 
-    /** This method computes the total number of non-zero rows by the size array  */
-
-    static IndexType countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows );
-
-    /** check diagonal property. ELL format with diagonal property: diagonal is just the first column in mValues */
+    /** CUDA Implementation for ELLUtils::hasDiagonalProperty */
 
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] );
-
-    /** Build a vector of indexes for non-empty rows. */
-
-    static void setNonEmptyRowsBySizes(
-        IndexType rowIndexes[],
-        const IndexType numNonEmptyRows,
-        const IndexType sizes[],
-        const IndexType numRows );
 
     static void check(
         const IndexType mNumRows,

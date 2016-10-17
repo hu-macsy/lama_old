@@ -694,33 +694,131 @@ SparseMatrix<ValueType>::~SparseMatrix()
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const
+void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexType localRowIndex ) const
 {
-    SCAI_ASSERT_DEBUG( row.getDistribution().isReplicated(), "row vector must be replicated" )
+    SCAI_REGION( "Mat.Sp.getLocalRow" )
+
+    SCAI_LOG_INFO( logger, "getLocalRow( " << localRowIndex << " ) of this matrix: " << *this )
+
     const Distribution& distributionCol = getColDistribution();
-    WriteOnlyAccess<ValueType> rowAccess( row.getLocalValues(), getNumColumns() );
 
-    // Owner of row fills the row by data from local and halo data
-
-    for ( IndexType j = 0; j < getNumColumns(); ++j )
+    if ( distributionCol.isReplicated() )
     {
-        IndexType jLocal = distributionCol.global2local( j );
-        SCAI_LOG_TRACE( logger, "global column " << j << " of " << getNumColumns() << " is local " << jLocal )
+        mLocalData->getRow( row, localRowIndex );
+        return;
+    }
 
-        if ( nIndex != jLocal )
+    row.init( ValueType( 0 ), mNumColumns );
+
+    HArray<ValueType> tmpRow;  // used for row of local, halo data
+
+    // get local part, might be optimized if local part is blocked
+
+    HArray<IndexType> localIndexes;
+    distributionCol.getOwnedIndexes( localIndexes );
+    mLocalData->getRow( tmpRow, localRowIndex );
+    HArrayUtils::scatterImpl( row, localIndexes, tmpRow, utilskernel::reduction::COPY );
+
+    // get halo part
+
+    mHaloData->getRow( tmpRow, localRowIndex );
+    const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
+    HArrayUtils::scatterImpl( row, haloIndexes, tmpRow, utilskernel::reduction::COPY );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row, 
+                                           const IndexType localRowIndex,
+                                           const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_REGION( "Mat.Sp.setLocalRow" )
+
+    const Distribution& distributionCol = getColDistribution();
+
+    if ( distributionCol.isReplicated() )
+    {
+        mLocalData->setRow( row, localRowIndex, op );
+        return;
+    }
+
+    HArray<ValueType> tmpRow;  // used for row of local, halo data
+
+    // set local part
+
+    HArray<IndexType> localIndexes;
+    distributionCol.getOwnedIndexes( localIndexes );
+    HArrayUtils::gatherImpl( tmpRow, row, localIndexes, utilskernel::reduction::COPY );
+    mLocalData->setRow( tmpRow, localRowIndex, op );
+
+    // set halo part
+
+    const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
+    HArrayUtils::gatherImpl( tmpRow, row, haloIndexes, utilskernel::reduction::COPY );
+    mHaloData->setRow( tmpRow, localRowIndex, op );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const IndexType globalColIndex ) const
+{
+    SCAI_REGION( "Mat.Sp.getLocalCol" )
+
+    IndexType jLocal = getColDistribution().global2local( globalColIndex );
+
+    const IndexType localRowSize = getRowDistribution().getLocalSize();
+
+    if ( nIndex != jLocal )
+    {
+        mLocalData->getColumn( column, jLocal );
+    }
+    else
+    {
+        IndexType jHalo = mHalo.global2halo( globalColIndex );
+
+        if ( nIndex != jHalo )
         {
-            rowAccess[j] = mLocalData->getValue( iLocal, jLocal );
+            mHaloData->getColumn( column, jHalo );
         }
         else
         {
-            // const IndexType jHalo = mHalo.global2halo( j );
-            rowAccess[j] = mHaloData->getValue( iLocal, mHalo.global2halo( j ) );
+            column.init( ValueType( 0 ), localRowSize );
         }
-
-        SCAI_LOG_TRACE( logger, "row[" << j << "] = " << rowAccess[j] )
     }
+}
 
-    // TODO: for optimization make an own loop if distributionCol.isReplicated()
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column, 
+                                              const IndexType colIndex,
+                                              const utilskernel::reduction::ReductionOp op )
+{
+    SCAI_REGION( "Mat.Sp.setLocalCol" )
+
+    const IndexType localRowSize = getRowDistribution().getLocalSize();
+
+    SCAI_ASSERT_EQ_ERROR( column.size(), localRowSize, "serious size mismatch of local column" )
+
+    IndexType jLocal = getColDistribution().global2local( colIndex );
+
+    ReadAccess<ValueType> colAccess( column );
+
+    if ( nIndex != jLocal )
+    {
+        mLocalData->setColumn( column, jLocal, op );
+    }
+    else
+    {
+        IndexType jHalo = mHalo.global2halo( colIndex );
+
+        if ( nIndex != jHalo )
+        {
+            mHaloData->setColumn( column, jHalo,  op );
+        }
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -992,7 +1090,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
             SCAI_REGION( "Mat.Sp.syncGatherHalo" )
             SCAI_LOG_INFO( logger,
                            comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-            HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
+            HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), utilskernel::reduction::COPY );
             // Note: send values might be fetched to the host by halo exchange
         }
 
@@ -1097,7 +1195,7 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
 
     if ( haloResult.size() > 0 )
     {
-        HArrayUtils::scatter( localResult, mHalo.getProvidesIndexes(), haloResult, utilskernel::reduction::ADD );
+        HArrayUtils::scatterImpl( localResult, mHalo.getProvidesIndexes(), haloResult, utilskernel::reduction::ADD );
     }
 
     SCAI_LOG_DEBUG( logger, "invHaloOpSync done" )
@@ -1132,7 +1230,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         // Note: gather will be done where denseX is available
         SCAI_LOG_INFO( logger,
                        comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-        HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
+        HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), utilskernel::reduction::COPY );
         // prefetch needed otherwise sending will block until local computation has finished
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
@@ -1494,8 +1592,11 @@ Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
     const Distribution& distributionRow = getRowDistribution();
     const Distribution& distributionCol = getColDistribution();
+
     SCAI_LOG_TRACE( logger, "this(" << i << "," << j << ")" )
-    ValueType myValue = static_cast<ValueType>( 0.0 );
+
+    ValueType myValue = static_cast<ValueType>( 0 );
+
     const IndexType iLocal = distributionRow.global2local( i );
 
     if ( iLocal != nIndex )
@@ -1512,9 +1613,13 @@ Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
         else
         {
             jLocal = mHalo.global2halo( j );
-            SCAI_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is halo(" << iLocal << "," << jLocal << ")" )
-            myValue = mHaloData->getValue( iLocal, jLocal );
-            SCAI_LOG_TRACE( logger, "found halo value " << myValue )
+
+            if ( nIndex != jLocal )
+            {
+                SCAI_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is halo(" << iLocal << "," << jLocal << ")" )
+                myValue = mHaloData->getValue( iLocal, jLocal );
+                SCAI_LOG_TRACE( logger, "found halo value " << myValue )
+            }
         }
     }
 

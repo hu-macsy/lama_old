@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -71,50 +72,6 @@ namespace sparsekernel
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 SCAI_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-IndexType OpenMPELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows )
-{
-    IndexType counter = 0;
-    #pragma omp parallel for reduction( +:counter )
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        if ( sizes[i] > 0 )
-        {
-            counter++;
-        }
-    }
-
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
-    return counter;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void OpenMPELLUtils::setNonEmptyRowsBySizes(
-    IndexType rowIndexes[],
-    const IndexType numNonEmptyRows,
-    const IndexType sizes[],
-    const IndexType numRows )
-{
-    IndexType counter = 0;
-
-    // Note: this routine is not easy to parallelize, no offsets for rowIndexes available
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        if ( sizes[i] > 0 )
-        {
-            rowIndexes[counter] = i;
-            counter++;
-        }
-    }
-
-    SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
-}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -291,18 +248,17 @@ void OpenMPELLUtils::getRow(
     }
 }
 
-template<typename ValueType>
-ValueType OpenMPELLUtils::getValue(
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPELLUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const IndexType ellSizes[],
-    const IndexType ellJA[],
-    const ValueType ellValues[] )
+    const IndexType ellJA[] )
 {
-    SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
-    ValueType val = 0.0;
+    IndexType vPos = nIndex;
 
     for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
@@ -310,12 +266,44 @@ ValueType OpenMPELLUtils::getValue(
 
         if ( ellJA[pos] == j )
         {
-            val = ellValues[pos];
+            vPos = pos;
             break;
         }
     }
+  
+    return vPos;
+}
 
-    return val;
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPELLUtils::getValuePosCol( IndexType row[], IndexType pos[],
+                                          const IndexType j,
+                                          const IndexType ellIA[], const IndexType numRows,
+                                          const IndexType ellJA[], const IndexType numValuesPerRow )
+{
+    SCAI_REGION( "OpenMP.ELLUtils.getValuePosCol" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = 0; jj < ellIA[i]; ++jj )
+        {
+            IndexType p = ellindex( i, jj, numRows, numValuesPerRow );
+
+            if ( ellJA[p] == j )
+            {
+                IndexType k = atomicInc( cnt );
+                row[k] = i;
+                pos[k] = p;
+                break;
+            }
+        }
+    }
+
+    return cnt;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -336,7 +324,7 @@ void OpenMPELLUtils::getCSRValues(
     // parallelization possible as offset array csrIA is available
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.ELL->CSR_values" )
+        SCAI_REGION( "OpenMP.ELL.getCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -374,7 +362,7 @@ void OpenMPELLUtils::setCSRValues(
     // parallelization possible as offset array csrIA is available
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.ELL<-CSR_values" )
+        SCAI_REGION( "OpenMP.ELL.setCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -1222,8 +1210,8 @@ void OpenMPELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
@@ -1248,7 +1236,6 @@ void OpenMPELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
 }
 

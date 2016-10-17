@@ -39,8 +39,8 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
-
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
@@ -272,7 +272,10 @@ void OpenMPCSRUtils::sortRowElements(
     const IndexType numRows,
     const bool diagonalFlag )
 {
+    SCAI_REGION( "OpenMP.CSR.sortRow" )
+
     SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
+
     #pragma omp parallel for
 
     for ( IndexType i = 0; i < numRows; ++i )
@@ -425,7 +428,7 @@ void OpenMPCSRUtils::compress(
     const ValueType eps,
     const bool diagonalFlag )
 {
-    SCAI_REGION( "OpenMP.CSRUtils.compress" )
+    SCAI_REGION( "OpenMP.CSR.compress" )
     SCAI_LOG_INFO( logger, "compress of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
                    << "), eps = " << eps << ", diagonal = " << diagonalFlag )
     #pragma omp parallel for
@@ -477,10 +480,52 @@ void OpenMPCSRUtils::scaleRows(
 
 /* --------------------------------------------------------------------------- */
 
-static inline IndexType atomicInc( IndexType& var )
+IndexType OpenMPCSRUtils::getValuePos( const IndexType i, const IndexType j, const IndexType csrIA[], const IndexType csrJA[] )
 {
-    return __sync_fetch_and_add( &var, 1 );
+    IndexType pos = nIndex;
+
+    for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+    {
+        if ( csrJA[jj] == j )
+        {
+            pos = jj;
+            break;
+        }
+    }
+
+    return pos;
 }
+
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPCSRUtils::getValuePosCol( IndexType row[], IndexType pos[], 
+                                          const IndexType j, 
+                                          const IndexType csrIA[], const IndexType numRows,
+                                          const IndexType csrJA[], const IndexType )
+{
+    SCAI_REGION( "OpenMP.CSRUtils.getValuePosCol" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        {
+            if ( csrJA[jj] == j )
+            {
+                IndexType k = atomicInc( cnt );
+                row[k] = i;
+                pos[k] = jj;
+                break;
+            }
+        }
+    }
+
+    return cnt;
+}
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void OpenMPCSRUtils::convertCSR2CSC(
@@ -1954,6 +1999,8 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    KernelRegistry::set<CSRKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );

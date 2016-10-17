@@ -1110,6 +1110,180 @@
         return Complex<long double>( Math::log( Math::abs(x) ), Math::arg(x) );
     }
 
+// ------------------ Math::floor --------------------------------
+    Complex<float> Math::floor( const Complex<float>& x )
+    {
+        return Complex<float>( Math::floor( x.real() ), Math::floor( x.imag() ) );
+    }
+
+    Complex<double> Math::floor( const Complex<double>& x )
+    {
+        return Complex<double>( Math::floor( x.real() ), Math::floor( x.imag() ) );
+    }
+
+    Complex<long double> Math::floor( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::floor( x.real() ), Math::floor( x.imag() ) );
+    }
+
+// ------------------ Math::ceil --------------------------------
+    Complex<float> Math::ceil( const Complex<float>& x )
+    {
+        return Complex<float>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
+    }
+
+    Complex<double> Math::ceil( const Complex<double>& x )
+    {
+        return Complex<double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
+    }
+
+    Complex<long double> Math::ceil( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
+    }
+
+// ------------------ Math::sin --------------------------------
+    Complex<float> Math::sin( const Complex<float>& x )
+    {
+        return Complex<float>( Math::sin( x.real() ) * Math::cosh( x.imag() ), Math::cos( x.real() ) * Math::sinh( x.imag() ) );
+    }
+
+    Complex<double> Math::sin( const Complex<double>& x )
+    {
+        return Complex<double>( Math::sin( x.real() ) * Math::cosh( x.imag() ), Math::cos( x.real() ) * Math::sinh( x.imag() ) );
+    }
+
+    Complex<long double> Math::sin( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::sin( x.real() ) * Math::cosh( x.imag() ), Math::cos( x.real() ) * Math::sinh( x.imag() ) );
+    }
+
+    // ------------------ Math::sinh --------------------------------
+    Complex<float> Math::sinh( const Complex<float>& x )
+    {
+        return Complex<float>( Math::sinh( x.real() ) * Math::cos( x.imag() ), Math::cosh( x.real() ) * Math::sin( x.imag() ) );
+    }
+
+    Complex<double> Math::sinh( const Complex<double>& x )
+    {
+        return Complex<double>( Math::sinh( x.real() ) * Math::cos( x.imag() ), Math::cosh( x.real() ) * Math::sin( x.imag() ) );
+    }
+
+    Complex<long double> Math::sinh( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::sinh( x.real() ) * Math::cos( x.imag() ), Math::cosh( x.real() ) * Math::sin( x.imag() ) );
+    }
+
+// ------------------ Math::cos --------------------------------
+    Complex<float> Math::cos( const Complex<float>& x )
+    {
+        return Complex<float>( Math::cos( x.real() ) * Math::cosh( x.imag() ) , -Math::sin( x.real() ) * Math::sinh( x.imag() ) );
+    }
+
+    Complex<double> Math::cos( const Complex<double>& x )
+    {
+        return Complex<double>( Math::cos( x.real() ) * Math::cosh( x.imag() ) , -Math::sin( x.real() ) * Math::sinh( x.imag() ) );
+    }
+
+    Complex<long double> Math::cos( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::cos( x.real() ) * Math::cosh( x.imag() ) , -Math::sin( x.real() ) * Math::sinh( x.imag() ) );
+    }
+
+// ------------------ Math::cosh --------------------------------
+    Complex<float> Math::cosh( const Complex<float>& x )
+    {
+        return Complex<float>( Math::cosh( x.real() ) * Math::cos( x.imag() ) , Math::sinh( x.real() ) * Math::sin( x.imag() ) );
+    }
+
+    Complex<double> Math::cosh( const Complex<double>& x )
+    {
+        return Complex<double>( Math::cosh( x.real() ) * Math::cos( x.imag() ) , Math::sinh( x.real() ) * Math::sin( x.imag() ) );
+    }
+
+    Complex<long double> Math::cosh( const Complex<long double>& x )
+    {
+        return Complex<long double>( Math::cosh( x.real() ) * Math::cos( x.imag() ) , Math::sinh( x.real() ) * Math::sin( x.imag() ) );
+    }
+
+// ------------------ Math::tan --------------------------------
+    Complex<float> Math::tan( const Complex<float>& x )
+    {
+        return Math::sin(x) / Math::cos(x);
+    }
+
+    Complex<double> Math::tan( const Complex<double>& x )
+    {
+        return Math::sin(x) / Math::cos(x);
+    }
+
+    Complex<long double> Math::tan( const Complex<long double>& x )
+    {
+        return Math::sin(x) / Math::cos(x);
+    }
+
+// ------------------ Math::atan --------------------------------
+    Complex<float> Math::atan( const Complex<float>& x )
+    {
+        const float r2 = x.real() * x.real();
+        const float r1 = float( 1.0 ) - r2 - x.imag() * x.imag();
+
+        float num = x.imag() + float( 1.0 );
+        float den = x.imag() - float( 1.0 );
+
+        num = r2 + num * num;
+        den = r2 + den * den;
+
+        return Complex<float>( float( 0.5 )  * atan2( float( 2.0 ) * x.real(), r1),
+                               float( 0.25 ) * log( num / den) );
+    }
+
+    Complex<double> Math::atan( const Complex<double>& x )
+    {
+        const double r2 = x.real() * x.real();
+        const double r1 = double( 1.0 ) - r2 - x.imag() * x.imag();
+
+        double num = x.imag() + double( 1.0 );
+        double den = x.imag() - double( 1.0 );
+
+        num = r2 + num * num;
+        den = r2 + den * den;
+
+        return Complex<double>( double( 0.5 )  * atan2( double( 2.0 ) * x.real(), r1),
+                               double( 0.25 ) * log( num / den) );
+    }
+
+    Complex<long double> Math::atan( const Complex<long double>& x )
+    {
+        const long double r2 = x.real() * x.real();
+        const long double r1 = static_cast<long double>( 1.0 ) - r2 - x.imag() * x.imag();
+
+        long double num = x.imag() + static_cast<long double>( 1.0 );
+        long double den = x.imag() - static_cast<long double>( 1.0 );
+
+        num = r2 + num * num;
+        den = r2 + den * den;
+
+        return Complex<long double>( static_cast<long double>( 0.5 )  * atan2( static_cast<long double>( 2.0 ) * x.real(), r1),
+                               static_cast<long double>( 0.25 ) * log( num / den) );
+    }
+
+// ------------------ Math::copysign --------------------------------
+    Complex<float> Math::copysign( const Complex<float>& x, const Complex<float>& y )
+    {
+        return Complex<float>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
+    }
+
+    Complex<double> Math::copysign( const Complex<double>& x, const Complex<double>& y )
+    {
+        return Complex<double>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
+    }
+
+    Complex<long double> Math::copysign( const Complex<long double>& x, const Complex<long double>& y )
+    {
+        return Complex<long double>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
+    }
+
 // ------------------ Math::arg --------------------------------
     float Math::arg( const Complex<float>& x )
     {

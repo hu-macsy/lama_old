@@ -35,7 +35,9 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/ReductionOp.hpp>
 
 namespace scai
 {
@@ -49,6 +51,59 @@ namespace sparsekernel
 
 struct CSRKernelTrait
 {
+    struct getValuePos
+    {
+        /** Returns position of element (i,j) in ja/values array
+         *
+         *  @param[in] i is the row of the element
+         *  @param[in] j is the column of the element
+         *  @param[in] csrIA is the CSR offset array
+         *  @param[in] csrJA is the CSR ja array
+         *  @returns  offset of element in values array, nIndex if not found
+         */
+
+        typedef IndexType ( *FuncType ) (
+            const IndexType i,
+            const IndexType j,
+            const IndexType csrIA[],
+            const IndexType csrJA[] );
+
+        static const char* getId()
+        {
+            return "CSR.getValuePos";
+        }
+    };
+
+    struct getValuePosCol
+    {
+        /** This method returns for a certain column of the CSR matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the csrJA/csrValues array
+         *
+         *  @param[out] row indexes of rows that have an entry for column j
+         *  @param[out] pos positions of entries with col = j in csrJA, 
+         *  @param[in] j is the column of which positions are required
+         *  @param[in] csrIA is the CSR offset array
+         *  @param[in] numRows is the number of rows
+         *  @param[in] csrJA is the CSR ja array
+         *  @param[in] numValues is the number of non-zero values
+         *  @returns  number of entries with col index = j
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType row[],
+            IndexType pos[],
+            const IndexType j,
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const IndexType csrJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "CSR.getValuePosCol";
+        }
+    };
+
     /** Structure defining function types for operations on CSR data
      *
      *  @tparam ValueType is the value type of the matrix element, e.g. float, double
