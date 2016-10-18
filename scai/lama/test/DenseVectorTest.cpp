@@ -350,6 +350,33 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
+{
+    typedef RealType ValueType;
+
+    IndexType n = 5;
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        dmemo::DistributionPtr dist = dists[i];
+
+        DenseVector<ValueType> x( dist, 3 );
+        SCAI_LOG_INFO( logger, "linear algebra expression: alpha + Vector" );
+        DenseVector<ValueType> y( 2 + x );
+        DenseVector<ValueType> z( x + 2 );
+        DenseVector<ValueType> r( dist, 5 );
+            
+        // prove same distribution, same values of r and y/z
+
+        BOOST_CHECK( r.getLocalValues().maxDiffNorm( y.getLocalValues() ) == 0 );
+        BOOST_CHECK( r.getLocalValues().maxDiffNorm( z.getLocalValues() ) == 0 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( swapTest )
 {
     typedef RealType ValueType;

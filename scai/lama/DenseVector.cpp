@@ -256,6 +256,16 @@ DenseVector<ValueType>::DenseVector( const Expression_SV& expression )
     Vector::operator=( expression );
 }
 
+// linear algebra expression: a+x/x+a
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Expression_SV_S& expression )
+
+    : Vector( expression.getArg1().getArg2() )
+{
+    SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta)" )
+    Vector::operator=( expression );
+}
+
 // linear algebra expression: x*y
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_VV& expression )
@@ -641,6 +651,46 @@ void DenseVector<ValueType>::assign( const Expression_SVV& expression )
     {
         COMMON_THROWEXCEPTION(
             "Can not calculate  z = x * y, z = " << *this << ", x = " << x << ", y = " << y << " because of type mismatch." );
+    }
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::assign( const Expression_SV_S& expression )
+{
+    const Expression_SV& exp = expression.getArg1();
+    const ValueType alpha = exp.getArg1().getValue<ValueType>();
+    const Vector& x = exp.getArg2();
+    const ValueType beta = expression.getArg2().getValueType<ValueType>();
+
+    SCAI_LOG_INFO( logger, "z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha 
+                           << " , x = " << x << " , beta = " << beta )
+    SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
+
+    if ( x.getDistribution() != getDistribution() || x.size() != size() )
+    {
+        allocate( x.getDistributionPtr() );
+    }
+
+    if ( typeid( *this ) == typeid( x ) )
+    {
+        const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
+
+        if ( mLocalValues.size() != denseX.mLocalValues.size() )
+        {
+            SCAI_LOG_DEBUG( logger, "resize local values of z = this" )
+            mLocalValues.clear();
+            WriteAccess<ValueType> localAccess( mLocalValues, mContext );
+            localAccess.resize( denseX.mLocalValues.size() );
+        }
+
+        SCAI_LOG_DEBUG( logger, "call assignArrayPlusScalar" )
+        utilskernel::HArrayUtils::assignArrayPlusScalar( mLocalValues, alpha, denseX.mLocalValues, denseY.mLocalValues, mContext );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION(
+            "Can not calculate  z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha 
+                << ", x = " << x << ", y = " << y << " because of type mismatch." );
     }
 }
 

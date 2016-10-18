@@ -192,13 +192,17 @@ public:
 
     Vector& operator=( const Expression_SV& expression );
 
+    /** this = alpha * x + beta */
+
+    Vector& operator=( const Expression_SV_S );
+
     /** this = x * y */
 
-    Vector& operator=( const Expression_VV );
+    Vector& operator=( const Expression_VV& );
 
     /** this = alpha * x * y */
 
-    Vector& operator=( const Expression_SVV );
+    Vector& operator=( const Expression_SVV& );
 
     /** this +=  alpha * A * x */
 
