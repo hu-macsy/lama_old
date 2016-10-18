@@ -36,6 +36,16 @@
 
 #include <cuda.h>
 
+extern "C"
+{
+extern __device__ __device_builtin__ int          __iAtomicAdd(int *address, int val);
+extern __device__ __device_builtin__ unsigned int __uAtomicAdd(unsigned int *address, unsigned int val);
+extern __device__ __device_builtin__ unsigned long long __ullAtomicAdd(unsigned long long *address, unsigned long long val);
+extern __device__ __device_builtin__ int          __iAtomicCAS(int *address, int compare, int val);
+extern __device__ __device_builtin__ unsigned int __uAtomicCAS(unsigned int *address, unsigned int compare, unsigned int val);
+extern __device__ __device_builtin__ unsigned long long __ullAtomicCAS(unsigned long long *address, unsigned long long compare, unsigned long long val);
+}
+
 namespace scai
 {
 

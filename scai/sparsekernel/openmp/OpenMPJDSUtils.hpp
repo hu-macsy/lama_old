@@ -97,6 +97,8 @@ public:
         const OtherValueType row[],
         const utilskernel::binary::BinaryOp op );
 
+    /** Implementation for JDSKernelTrait::getValuePos */
+
     static IndexType getValuePos(
         const IndexType i,
         const IndexType j,
