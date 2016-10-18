@@ -88,26 +88,29 @@ void MICJDSUtils::getRow(
     const ValueType values[] )
 {
     SCAI_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
+
     int device = MICContext::getCurrentDevice();
+
     void* rowPtr = row;
     const void* permPtr = perm;
     const void* ilgPtr = ilg;
     const void* dlgPtr = dlg;
     const void* jaPtr = ja;
     const void* valuesPtr = values;
-#pragma offload target( mic : device ) in( rowPtr, permPtr, ilgPtr, dlgPtr, jaPtr, valuesPtr, \
-                                               i, numColumns, numRows )
+
+#pragma offload target( mic : device ) \
+    in( rowPtr, permPtr, ilgPtr, dlgPtr, jaPtr, valuesPtr, i, numColumns, numRows )
     {
-        OtherValueType* row = static_cast<OtherValueType*>( rowPtr );
-        const IndexType* perm = static_cast<const IndexType*>( permPtr );
-        const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
-        const IndexType* dlg = static_cast<const IndexType*>( dlgPtr );
-        const IndexType* ja = static_cast<const IndexType*>( jaPtr );
-        const ValueType* values = static_cast<const ValueType*>( valuesPtr );
+        OtherValueType* row = reinterpret_cast<OtherValueType*>( rowPtr );
+        const IndexType* perm = reinterpret_cast<const IndexType*>( permPtr );
+        const IndexType* ilg = reinterpret_cast<const IndexType*>( ilgPtr );
+        const IndexType* dlg = reinterpret_cast<const IndexType*>( dlgPtr );
+        const IndexType* ja = reinterpret_cast<const IndexType*>( jaPtr );
+        const ValueType* values = reinterpret_cast<const ValueType*>( valuesPtr );
 
         for ( IndexType j = 0; j < numColumns; ++j )
         {
-            row[j] = static_cast<OtherValueType>( 0.0 );
+            row[j] = static_cast<OtherValueType>( 0 );
         }
 
         // one thread will set the row, but every thread searches
@@ -151,10 +154,10 @@ IndexType MICJDSUtils::getValuePos(
 
 #pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, i, j, numRows )
     {
-        const IndexType* perm = static_cast<const IndexType*>( permPtr );
-        const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
-        const IndexType* dlg = static_cast<const IndexType*>( dlgPtr );
-        const IndexType* ja = static_cast<const IndexType*>( jaPtr );
+        const IndexType* perm = reinterpret_cast<const IndexType*>( permPtr );
+        const IndexType* ilg = reinterpret_cast<const IndexType*>( ilgPtr );
+        const IndexType* dlg = reinterpret_cast<const IndexType*>( dlgPtr );
+        const IndexType* ja = reinterpret_cast<const IndexType*>( jaPtr );
 
         #pragma omp parallel for
         for ( IndexType ii = 0; ii < numRows; ii++ )
@@ -205,12 +208,12 @@ IndexType MICJDSUtils::getValuePosCol(
 
     IndexType cnt = 0;
 
-#pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, i, numRows, rowPtr, posPtr )
+#pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, j, numRows, rowPtr, posPtr )
     {
-        const IndexType* perm = static_cast<const IndexType*>( permPtr );
-        const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
-        const IndexType* dlg = static_cast<const IndexType*>( dlgPtr );
-        const IndexType* ja = static_cast<const IndexType*>( jaPtr );
+        const IndexType* perm = reinterpret_cast<const IndexType*>( permPtr );
+        const IndexType* ilg = reinterpret_cast<const IndexType*>( ilgPtr );
+        const IndexType* dlg = reinterpret_cast<const IndexType*>( dlgPtr );
+        const IndexType* ja = reinterpret_cast<const IndexType*>( jaPtr );
 
         IndexType* row = reinterpret_cast<IndexType*>( rowPtr );
         IndexType* pos = reinterpret_cast<IndexType*>( posPtr );
@@ -268,11 +271,11 @@ void MICJDSUtils::scaleValue(
 #pragma offload target( mic : device ) in( jdsPermPtr, ilgPtr, dlgPtr, jdsValuesPtr, \
                                                valuesPtr, numRows ),
     {
-        const IndexType* jdsPerm = static_cast<const IndexType*>( jdsPermPtr );
-        const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
-        const IndexType* dlg = static_cast<const IndexType*>( dlgPtr );
-        ValueType* jdsValues = static_cast<ValueType*>( jdsValuesPtr );
-        const OtherValueType* values = static_cast<const OtherValueType*>( valuesPtr );
+        const IndexType* jdsPerm = reinterpret_cast<const IndexType*>( jdsPermPtr );
+        const IndexType* ilg = reinterpret_cast<const IndexType*>( ilgPtr );
+        const IndexType* dlg = reinterpret_cast<const IndexType*>( dlgPtr );
+        ValueType* jdsValues = reinterpret_cast<ValueType*>( jdsValuesPtr );
+        const OtherValueType* values = reinterpret_cast<const OtherValueType*>( valuesPtr );
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -302,57 +305,61 @@ bool MICJDSUtils::checkDiagonalProperty(
     SCAI_LOG_INFO( logger,
                    "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
-    if ( numRows > 0 )
+    if ( numRows <= 0 )
     {
-        // offload dlg[0]
-        IndexType dlg0 = MICUtils::getValue( dlg, 0 );
-
-        if ( dlg0 < std::min( numDiagonals, numColumns ) )
-        {
-            // not even one entry for each row / column
-            return false;
-        }
-
-        bool diagonalProperty = true;
-        void* jdsPermPtr = ( void* ) jdsPerm;
-        void* jaPtr = ( void* ) ja;
-        int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device ), in( jdsPermPtr, jaPtr, numRows, numColumns, dlg0 ), out( diagonalProperty )
-        {
-            const IndexType* ja = static_cast<const IndexType*>( jaPtr );
-            const IndexType* jdsPerm = static_cast<const IndexType*>( jdsPermPtr );
-            diagonalProperty = true;
-            #pragma omp parallel for
-
-            for ( IndexType ii = 0; ii < numRows; ++ii )
-            {
-                if ( !diagonalProperty )
-                {
-                    continue;
-                }
-
-                const IndexType i = jdsPerm[ii];
-
-                if ( i >= numColumns )
-                {
-                    continue;
-                }
-
-                if ( ii >= dlg0 )
-                {
-                    // ilg[ii] = 0, empty row
-                    diagonalProperty = false;
-                }
-                else if ( ja[ii] != i )
-                {
-                    diagonalProperty = false;
-                }
-            }
-        }
-        return diagonalProperty;
+        return false;
     }
 
-    return false;
+    // offload dlg[0]
+
+    IndexType dlg0 = MICUtils::getValue( dlg, 0 );
+
+    if ( dlg0 < std::min( numDiagonals, numColumns ) )
+    {
+         // not even one entry for each row / column
+            return false;
+    }
+
+    bool diagonalProperty = true;
+    void* jdsPermPtr = ( void* ) jdsPerm;
+    void* jaPtr = ( void* ) ja;
+
+    int device = MICContext::getCurrentDevice();
+
+     #pragma offload target( mic : device ), in( jdsPermPtr, jaPtr, numRows, numColumns, dlg0 ), out( diagonalProperty )
+    {
+        const IndexType* ja = reinterpret_cast<const IndexType*>( jaPtr );
+        const IndexType* jdsPerm = reinterpret_cast<const IndexType*>( jdsPermPtr );
+        diagonalProperty = true;
+        #pragma omp parallel for
+
+        for ( IndexType ii = 0; ii < numRows; ++ii )
+        {
+            if ( !diagonalProperty )
+            {
+                continue;
+            }
+
+            const IndexType i = jdsPerm[ii];
+
+            if ( i >= numColumns )
+            {
+                continue;
+            }
+
+            if ( ii >= dlg0 )
+            {
+                // ilg[ii] = 0, empty row
+                diagonalProperty = false;
+            }
+            else if ( ja[ii] != i )
+            {
+                diagonalProperty = false;
+            }
+        }
+    }
+
+    return diagonalProperty;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -366,10 +373,10 @@ void MICJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[
     int device = MICContext::getCurrentDevice();
 #pragma offload target( mic : device ) in( permPtr, inversePermPtr, n )
     {
-        IndexType* inversePerm = static_cast<IndexType*>( inversePermPtr );
-        const IndexType* perm = static_cast<const IndexType*>( permPtr );
-        #pragma omp parallel for
+        IndexType* inversePerm = reinterpret_cast<IndexType*>( inversePermPtr );
+        const IndexType* perm = reinterpret_cast<const IndexType*>( permPtr );
 
+        #pragma omp parallel for
         for ( IndexType ii = 0; ii < n; ii++ )
         {
             IndexType i = perm[ii];
@@ -387,8 +394,8 @@ void MICJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexType n
     int device = MICContext::getCurrentDevice();
 #pragma offload target( mic : device ) in( ilgPtr, permPtr, n )
     {
-        IndexType* ilg = static_cast<IndexType*>( ilgPtr );
-        IndexType* perm = static_cast<IndexType*>( permPtr );
+        IndexType* ilg = reinterpret_cast<IndexType*>( ilgPtr );
+        IndexType* perm = reinterpret_cast<IndexType*>( permPtr );
         // Help array needed, because bucket sort cannot be done in-place
         IndexType* input = new IndexType[n];
         // Open: can this routine be called where perm is a valid permutation as input
@@ -508,8 +515,8 @@ IndexType MICJDSUtils::ilg2dlg(
     int device = MICContext::getCurrentDevice();
 #pragma offload target( mic : device ), in( ilgPtr, dlgPtr, numRows ), out( numTotal )
     {
-        IndexType* dlg = static_cast<IndexType*>( dlgPtr );
-        const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
+        IndexType* dlg = reinterpret_cast<IndexType*>( dlgPtr );
+        const IndexType* ilg = reinterpret_cast<const IndexType*>( ilgPtr );
         numTotal = 0;
         #pragma omp parallel for reduction( +:numTotal )
 
@@ -567,14 +574,14 @@ void MICJDSUtils::getCSRValues(
                 in( numRows, jdsJAPtr, jdsValuesPtr, jdsInversePermPtr, jdsILGPtr, jdsDLGPtr, \
                     csrIAPtr, csrJAPtr, csrValuesPtr )
     {
-        const JDSValueType* jdsValues = static_cast<const JDSValueType*>( jdsValuesPtr );
-        const IndexType* jdsJA = static_cast<const IndexType*>( jdsJAPtr );
-        const IndexType* jdsInversePerm = static_cast<const IndexType*>( jdsInversePermPtr );
-        const IndexType* jdsILG = static_cast<const IndexType*>( jdsILGPtr );
-        const IndexType* jdsDLG = static_cast<const IndexType*>( jdsDLGPtr );
-        const IndexType* csrIA = static_cast<const IndexType*>( csrIAPtr );
-        IndexType* csrJA = static_cast<IndexType*>( csrJAPtr );
-        CSRValueType* csrValues = static_cast<CSRValueType*>( csrValuesPtr );
+        const JDSValueType* jdsValues = reinterpret_cast<const JDSValueType*>( jdsValuesPtr );
+        const IndexType* jdsJA = reinterpret_cast<const IndexType*>( jdsJAPtr );
+        const IndexType* jdsInversePerm = reinterpret_cast<const IndexType*>( jdsInversePermPtr );
+        const IndexType* jdsILG = reinterpret_cast<const IndexType*>( jdsILGPtr );
+        const IndexType* jdsDLG = reinterpret_cast<const IndexType*>( jdsDLGPtr );
+        const IndexType* csrIA = reinterpret_cast<const IndexType*>( csrIAPtr );
+        IndexType* csrJA = reinterpret_cast<IndexType*>( csrJAPtr );
+        CSRValueType* csrValues = reinterpret_cast<CSRValueType*>( csrValuesPtr );
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -625,14 +632,14 @@ void MICJDSUtils::setCSRValues(
 #pragma offload target( mic : device ) in( numRows, jdsJAPtr, jdsValuesPtr, jdsPermPtr, jdsILGPtr, jdsDLGPtr, \
                                            csrIAPtr, csrJAPtr, csrValuesPtr )
     {
-        JDSValueType* jdsValues = static_cast<JDSValueType*>( jdsValuesPtr );
-        IndexType* jdsJA = static_cast<IndexType*>( jdsJAPtr );
-        const IndexType* jdsPerm = static_cast<const IndexType*>( jdsPermPtr );
-        const IndexType* jdsILG = static_cast<const IndexType*>( jdsILGPtr );
-        const IndexType* jdsDLG = static_cast<const IndexType*>( jdsDLGPtr );
-        const IndexType* csrIA = static_cast<const IndexType*>( csrIAPtr );
-        const IndexType* csrJA = static_cast<const IndexType*>( csrJAPtr );
-        const CSRValueType* csrValues = static_cast<const CSRValueType*>( csrValuesPtr );
+        JDSValueType* jdsValues = reinterpret_cast<JDSValueType*>( jdsValuesPtr );
+        IndexType* jdsJA = reinterpret_cast<IndexType*>( jdsJAPtr );
+        const IndexType* jdsPerm = reinterpret_cast<const IndexType*>( jdsPermPtr );
+        const IndexType* jdsILG = reinterpret_cast<const IndexType*>( jdsILGPtr );
+        const IndexType* jdsDLG = reinterpret_cast<const IndexType*>( jdsDLGPtr );
+        const IndexType* csrIA = reinterpret_cast<const IndexType*>( csrIAPtr );
+        const IndexType* csrJA = reinterpret_cast<const IndexType*>( csrJAPtr );
+        const CSRValueType* csrValues = reinterpret_cast<const CSRValueType*>( csrValuesPtr );
         #pragma omp parallel for
 
         for ( IndexType ii = 0; ii < numRows; ii++ )
@@ -715,13 +722,13 @@ void MICJDSUtils::normalGEMV(
     int device = MICContext::getCurrentDevice();
 #pragma offload target( mic : device ), in( resultPtr, xPtr, jdsDLGPtr, jdsILGPtr, jdsJAPtr, jdsValuesPtr, alphaPtr[0:1] )
     {
-        ValueType* result = static_cast<ValueType*>( resultPtr );
-        const ValueType* x = static_cast<const ValueType*>( xPtr );
-        const IndexType* perm = static_cast<const IndexType*>( permPtr );
-        const IndexType* jdsILG = static_cast<const IndexType*>( jdsILGPtr );
-        const IndexType* jdsDLG = static_cast<const IndexType*>( jdsDLGPtr );
-        const IndexType* jdsJA = static_cast<const IndexType*>( jdsJAPtr );
-        const ValueType* jdsValues = static_cast<const ValueType*>( jdsValuesPtr );
+        ValueType* result = reinterpret_cast<ValueType*>( resultPtr );
+        const ValueType* x = reinterpret_cast<const ValueType*>( xPtr );
+        const IndexType* perm = reinterpret_cast<const IndexType*>( permPtr );
+        const IndexType* jdsILG = reinterpret_cast<const IndexType*>( jdsILGPtr );
+        const IndexType* jdsDLG = reinterpret_cast<const IndexType*>( jdsDLGPtr );
+        const IndexType* jdsJA = reinterpret_cast<const IndexType*>( jdsJAPtr );
+        const ValueType* jdsValues = reinterpret_cast<const ValueType*>( jdsValuesPtr );
         const ValueType& alphaRef = *alphaPtr;
         // dlg[0] stands exactly for number of non-empty rows
         IndexType nonEmptyRows = jdsDLG[0];
@@ -729,7 +736,8 @@ void MICJDSUtils::normalGEMV(
 
         for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
-            ValueType value = static_cast<ValueType>( 0.0 ); // sums up final value
+            ValueType value = 0; // sums up final value
+
             IndexType offset = ii;
 
             for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
@@ -786,16 +794,16 @@ void MICJDSUtils::jacobi(
 #pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, omegaPtr[0:1], numRows, \
                                        jdsPermPtr, jdsJAPtr, jdsDLGPtr, jdsValuesPtr )
     {
-        ValueType* solution = static_cast<ValueType*>( solutionPtr );
-        const ValueType* oldSolution = static_cast<const ValueType*>( oldSolutionPtr );
-        const ValueType* rhs = static_cast<const ValueType*>( rhsPtr );
-        const IndexType* jdsPerm = static_cast<const IndexType*>( jdsPermPtr );
-        const IndexType* jdsJA = static_cast<const IndexType*>( jdsJAPtr );
-        const IndexType* jdsDLG = static_cast<const IndexType*>( jdsDLGPtr );
-        const IndexType* jdsILG = static_cast<const IndexType*>( jdsILGPtr );
-        const ValueType* jdsValues = static_cast<const ValueType*>( jdsValuesPtr );
+        ValueType* solution = reinterpret_cast<ValueType*>( solutionPtr );
+        const ValueType* oldSolution = reinterpret_cast<const ValueType*>( oldSolutionPtr );
+        const ValueType* rhs = reinterpret_cast<const ValueType*>( rhsPtr );
+        const IndexType* jdsPerm = reinterpret_cast<const IndexType*>( jdsPermPtr );
+        const IndexType* jdsJA = reinterpret_cast<const IndexType*>( jdsJAPtr );
+        const IndexType* jdsDLG = reinterpret_cast<const IndexType*>( jdsDLGPtr );
+        const IndexType* jdsILG = reinterpret_cast<const IndexType*>( jdsILGPtr );
+        const ValueType* jdsValues = reinterpret_cast<const ValueType*>( jdsValuesPtr );
         const ValueType& omegaRef = *omegaPtr;
-        const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omegaRef;
+        const ValueType oneMinusOmega = static_cast<ValueType>( 1 ) - omegaRef;
         #pragma omp parallel for
 
         for ( IndexType ii = 0; ii < numRows; ii++ )
@@ -811,11 +819,11 @@ void MICJDSUtils::jacobi(
                 pos += jdsDLG[j];
             }
 
-            if ( omegaRef == static_cast<ValueType>( 1.0 ) )
+            if ( omegaRef == static_cast<ValueType>( 1 ) )
             {
                 solution[i] = temp / diag;
             }
-            else if ( 0.5 == omegaRef )
+            else if ( static_cast<ValueType>( 0.5 ) == omegaRef )
             {
                 solution[i] = omegaRef * ( temp / diag + oldSolution[i] );
             }
@@ -877,14 +885,14 @@ void MICJDSUtils::jacobiHalo(
                                                jdsHaloDLGPtr, jdsHaloJAPtr, jdsHaloValuesPtr, \
                                                solutionPtr, oldSolutionPtr, omegaPtr[0:1] )
     {
-        ValueType* solution = static_cast<ValueType*>( solutionPtr );
-        const ValueType* oldSolution = static_cast<const ValueType*>( oldSolutionPtr );
-        const ValueType* localDiagonal = static_cast<const ValueType*>( localDiagonalPtr );
-        const IndexType* jdsHaloPerm = static_cast<const IndexType*>( jdsHaloPermPtr );
-        const IndexType* jdsHaloJA = static_cast<const IndexType*>( jdsHaloJAPtr );
-        const IndexType* jdsHaloDLG = static_cast<const IndexType*>( jdsHaloDLGPtr );
-        const IndexType* jdsHaloILG = static_cast<const IndexType*>( jdsHaloILGPtr );
-        const ValueType* jdsHaloValues = static_cast<const ValueType*>( jdsHaloValuesPtr );
+        ValueType* solution = reinterpret_cast<ValueType*>( solutionPtr );
+        const ValueType* oldSolution = reinterpret_cast<const ValueType*>( oldSolutionPtr );
+        const ValueType* localDiagonal = reinterpret_cast<const ValueType*>( localDiagonalPtr );
+        const IndexType* jdsHaloPerm = reinterpret_cast<const IndexType*>( jdsHaloPermPtr );
+        const IndexType* jdsHaloJA = reinterpret_cast<const IndexType*>( jdsHaloJAPtr );
+        const IndexType* jdsHaloDLG = reinterpret_cast<const IndexType*>( jdsHaloDLGPtr );
+        const IndexType* jdsHaloILG = reinterpret_cast<const IndexType*>( jdsHaloILGPtr );
+        const ValueType* jdsHaloValues = reinterpret_cast<const ValueType*>( jdsHaloValuesPtr );
         const ValueType& omegaRef = *omegaPtr;
         // JDS has no row indexes, but number of non-zero rows is known
         const IndexType numNonEmptyRows = jdsHaloDLG[0];
@@ -892,7 +900,7 @@ void MICJDSUtils::jacobiHalo(
 
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
-            ValueType temp = static_cast<ValueType>( 0.0 );
+            ValueType temp = 0;
             const IndexType i = jdsHaloPerm[ii];
             const ValueType diag = localDiagonal[i];
             IndexType pos = ii;
