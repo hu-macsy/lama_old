@@ -164,12 +164,16 @@ public:
     template<typename ValueType>
     static void sort( ValueType array[], IndexType perm[], const IndexType n );
 
-    /** OpenMP implementation of UtilsKernelTrait::countNonZeros */
+    /** CUDA implementation for UtilKernelTrait::setInversePerm */
+
+    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
+
+    /** CUDA implementation of UtilKernelTrait::countNonZeros */
 
     template<typename ValueType>
     static IndexType countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps );
 
-    /** OpenMP implementation of UtilsKernelTrait::compress */
+    /** CUDA implementation of UtilKernelTrait::compress */
 
     template<typename ValueType>
     static IndexType compress(

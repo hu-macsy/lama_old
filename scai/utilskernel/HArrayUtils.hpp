@@ -231,6 +231,7 @@ public:
      *  @param sourceStride is the stride used in source array
      *  @param n is the number of elements to set
      *  @param op specifies how to combine old and new value
+     *  @param context is the preferred context where option is done
      */
 
     template<typename TargetValueType, typename SourceValueType>
@@ -303,8 +304,8 @@ public:
 
     template<typename ValueType>
     static void unaryOp(
-        hmemo::HArray<ValueType>& out,
-        const hmemo::HArray<ValueType>& in,
+        hmemo::HArray<ValueType>& result,
+        const hmemo::HArray<ValueType>& x,
         const unary::UnaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -348,7 +349,7 @@ public:
      *  @param[in]  op      specifies operation to apply on input values
      *  @param[in]  prefLoc location where operation should be done if possible
      *
-     *  Note: this operation is different to binaryOpScalar1( y, x) if op is not commutative
+     *  Note: this operation is different to binaryOpScalar1( result, y, x, loc ) if op is not commutative
      */
     template<typename ValueType>
     static void binaryOpScalar2(

@@ -59,7 +59,7 @@ class COMMON_DLL_IMPORTEXPORT OpenMPUtils
 {
 public:
 
-    /*  This method is an implementation of UtilKernelTrait::validIndexes */
+    /** OpenMP implementation of UtilKernelTrait::validIndexes */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
@@ -68,17 +68,17 @@ public:
     template<typename ValueType>
     static ValueType reduce( const ValueType array[], const IndexType n, const binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::Setter::setVal */
+    /** OpenMP implementation for UtilKernelTrait::setVal */
 
     template<typename ValueType>
     static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::Setter::setOrder */
+    /** OpenMP implementation for UtilKernelTrait::setOrder */
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::Setter::setSequence */
+    /** OpenMP implementation for UtilKernelTrait::setSequence */
 
     template<typename ValueType>
     static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
@@ -104,9 +104,13 @@ public:
     /** OpenMP implementation for UtilKernelTrait::setSection */
 
     template<typename ValueType1, typename ValueType2>
-    static void setSection( ValueType1 out[], const IndexType inc1,
-                            const ValueType2 in[], const IndexType inc2,
-                            const IndexType n, const binary::BinaryOp op );
+    static void setSection( 
+        ValueType1 out[], 
+        const IndexType inc1,
+        const ValueType2 in[], 
+        const IndexType inc2,
+        const IndexType n,
+        const binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::applyUnaryOp */
 

@@ -587,25 +587,6 @@ void CUDAJDSUtils::setCSRValues(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  setInversePerm                                                    */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void CUDAJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
-    SCAI_CHECK_CUDA_ACCESS
-
-    if ( n > 0 )
-    {
-        thrust::device_ptr<IndexType> inversePermPtr( const_cast<IndexType*>( inversePerm ) );
-        thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
-        thrust::counting_iterator<IndexType> sequence( 0 );
-        thrust::scatter( sequence, sequence + n, permPtr, inversePermPtr );
-        SCAI_CHECK_CUDA_ERROR
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  getCSRValues                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 

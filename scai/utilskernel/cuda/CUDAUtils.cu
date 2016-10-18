@@ -1394,6 +1394,25 @@ void CUDAUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                  setInversePerm                                                    */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void CUDAUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
+    SCAI_CHECK_CUDA_ACCESS
+
+    if ( n > 0 )
+    {
+        thrust::device_ptr<IndexType> inversePermPtr( const_cast<IndexType*>( inversePerm ) );
+        thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
+        thrust::counting_iterator<IndexType> sequence( 0 );
+        thrust::scatter( sequence, sequence + n, permPtr, inversePermPtr );
+        SCAI_CHECK_CUDA_ERROR
+    }
+}
+
 /* ---------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -1534,6 +1553,7 @@ void CUDAUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelR
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
 }
 
 template<typename ValueType>

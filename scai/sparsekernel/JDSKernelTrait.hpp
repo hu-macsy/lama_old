@@ -127,32 +127,6 @@ struct JDSKernelTrait
         }
     };
 
-    struct setInversePerm
-    {
-        /** Compute the inverse permutation for a given permutation.
-         *
-         *  inversePerm [ perm [i] ] == i , 0 <= i < n
-         *
-         *  @param[out] inversePerm, size = n, will contain the inverse permutation
-         *  @param[in] perm, size = n, is input permuation of 0, ..., n-1
-         *  @param[in] n specifies the size of perm and inversePerm
-         *
-         *  /code
-         *       perm      2  5  1  4  6  3  0
-         *     inperm      6  2  0  5  3  1  4
-         *  /endcode
-         */
-
-        typedef void ( *FuncType ) ( IndexType inversePerm[],
-                                     const IndexType perm[],
-                                     const IndexType n );
-
-        static const char* getId()
-        {
-            return "JDS.setInversePerm";
-        }
-    };
-
     struct ilg2dlg
     {
 

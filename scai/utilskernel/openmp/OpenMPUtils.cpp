@@ -395,6 +395,26 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
     return val;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void OpenMPUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.inversePerm" )
+
+    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
+
+    // Parallel execution is safe as perm does not contain a value twice
+
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+    for ( IndexType ii = 0; ii < n; ii++ )
+    {
+        IndexType i = perm[ii];
+        SCAI_ASSERT_VALID_INDEX_DEBUG( i, n, "permutation value out of range, perm[" << ii << "]" )
+        inversePerm[i] = ii;
+    }
+}
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -1242,16 +1262,16 @@ void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n )
     }
 
     // sort using a custom function object
-    struct compare
+    struct less_key
     {
-        static bool f( IndexType a, IndexType b )
+        static bool f ( const IndexType a, const IndexType b )
         {
             ValueType* arr = reinterpret_cast<ValueType*>( ptr );
             return arr[a] < arr[b];
         }
     };
     ptr = array;
-    std::sort( perm, perm + n, compare::f );
+    std::sort( perm, perm + n, less_key::f );
     common::scoped_array<ValueType> tmp( new ValueType[n] );
 
     for ( IndexType i = 0; i < n; ++i )
@@ -1420,6 +1440,7 @@ void OpenMPUtils::BaseKernels::registerKernels( kregistry::KernelRegistry::Kerne
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::countBuckets<IndexType> >( countBuckets, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sortInBuckets<IndexType> >( sortInBuckets, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
 }
 
 template<typename ValueType>

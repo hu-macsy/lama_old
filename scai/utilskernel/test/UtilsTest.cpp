@@ -57,11 +57,11 @@ extern ContextPtr testContext;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( HArrayTest )
+BOOST_AUTO_TEST_SUITE( UtilsTest )
 
 /* --------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -340,6 +340,51 @@ BOOST_AUTO_TEST_CASE( compressTest )
         for ( IndexType i = 0; i < nSparse; ++i )
         {
             BOOST_CHECK_EQUAL( theSparseIndexes[i], rSparseIndexes[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( setInversePermTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    static LAMAKernel<UtilKernelTrait::setInversePerm> setInversePerm;
+
+    ContextPtr loc = Context::getContextPtr( setInversePerm.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    {
+        IndexType valuesPerm[] = { 5, 0, 2, 3, 1, 4 };
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
+        IndexType expectedPerm[] = { 1, 4, 2, 3, 5, 0 };
+        const IndexType numRows = 6;
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+        HArray<IndexType> inversePerm;  // will be allocated/used on loc
+        {
+            ReadAccess<IndexType> rPerm( perm, loc );
+            WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
+            SCAI_CONTEXT_ACCESS( loc );
+            setInversePerm[loc]( wInversePerm.get(), rPerm.get(), numRows );
+        }
+        ReadAccess<IndexType> rInversePerm( inversePerm );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedPerm[i], rInversePerm.get()[i] );
+        }
+    }
+    {
+        const IndexType numRows = 0;
+        HArray<IndexType> perm( numRows );
+        HArray<IndexType> inversePerm( numRows );
+        {
+            ReadAccess<IndexType> rPerm( perm, loc );
+            WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
+            SCAI_CONTEXT_ACCESS( loc );
+            setInversePerm[loc]( wInversePerm.get(), rPerm.get(), numRows );
         }
     }
 }
