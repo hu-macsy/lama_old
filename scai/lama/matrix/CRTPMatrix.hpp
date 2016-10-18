@@ -275,7 +275,7 @@ public:
 
     /** @brief Common implementation for of Matrix::getColumn for all matrix types
      *
-     *  @param[out] col will contain the values of the queried col of this matrix
+     *  @param[out] column will contain the values of the queried col of this matrix
      *  @param[in]  globalColIndex is the (global) index of the row to access
      */
 
@@ -317,7 +317,7 @@ public:
      *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )
      */
     void setRow( const Vector& row, const IndexType globalRowIndex,
-                 const utilskernel::reduction::ReductionOp op ) 
+                 const utilskernel::binary::BinaryOp op ) 
     {
         using namespace scai::hmemo;
 
@@ -359,7 +359,7 @@ public:
      */
     void setColumn( const Vector& column, 
                     const IndexType colIndex,
-                    const utilskernel::reduction::ReductionOp op ) 
+                    const utilskernel::binary::BinaryOp op ) 
     {
         using namespace scai::hmemo;
 

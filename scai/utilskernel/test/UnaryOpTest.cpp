@@ -1,5 +1,5 @@
 /**
- * @file elementwiseOpTest.cpp
+ * @file unary.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,81 +27,76 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Test enum for ElementwiseOp
+ * @brief Test enum for UnaryOp
  * @author Lauretta Schubert
  * @date 06.10.2016
  */
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/utilskernel/ElementwiseOp.hpp>
+#include <scai/utilskernel/UnaryOp.hpp>
 #include <sstream>
 
 using namespace scai;
 using namespace utilskernel;
 
-BOOST_AUTO_TEST_CASE( ElementwiseOpTest )
+BOOST_AUTO_TEST_CASE( UnaryOpTest )
 {
     int count = 0;
-    for ( int type = 0; type < elementwise::MAX_ELEMENTWISE_OP_NO_ARG; ++type )
+    for ( int type = 0; type < unary::MAX_UNARY_OP; ++type )
     {
         std::ostringstream s;
-        s << elementwise::ElementwiseOpNoArg( type );
+        s << unary::UnaryOp( type );
         BOOST_CHECK( s.str().length() > 0 );
 
         // check if all strings are correct
 
-        if ( type == elementwise::INVERT )
-        {
-            BOOST_CHECK_EQUAL( s.str(), "INVERT" );
-            count++;
-        }
-        if ( type == elementwise::CONJ )
+        if ( type == unary::CONJ )
         {
             BOOST_CHECK_EQUAL( s.str(), "CONJ" );
             count++;
         }
-        if ( type == elementwise::EXP )
+        if ( type == unary::EXP )
         {
             BOOST_CHECK_EQUAL( s.str(), "EXP" );
             count++;
         }
-        if ( type == elementwise::SQRT )
+        if ( type == unary::SQRT )
         {
             BOOST_CHECK_EQUAL( s.str(), "SQRT" );
             count++;
         }
-        if ( type == elementwise::SIN )
+        if ( type == unary::SIN )
         {
             BOOST_CHECK_EQUAL( s.str(), "SIN" );
             count++;
         }
-        if ( type == elementwise::COS )
+        if ( type == unary::COS )
         {
             BOOST_CHECK_EQUAL( s.str(), "COS" );
             count++;
         }
-        if ( type == elementwise::TAN )
+        if ( type == unary::TAN )
         {
             BOOST_CHECK_EQUAL( s.str(), "TAN" );
             count++;
         }
-        if ( type == elementwise::ATAN )
+        if ( type == unary::ATAN )
         {
             BOOST_CHECK_EQUAL( s.str(), "ATAN" );
             count++;
         }
-        if ( type == elementwise::LOG )
+        if ( type == unary::LOG )
         {
             BOOST_CHECK_EQUAL( s.str(), "LOG" );
             count++;
         }
-        if ( type == elementwise::FLOOR )
+        if ( type == unary::FLOOR )
         {
             BOOST_CHECK_EQUAL( s.str(), "FLOOR" );
             count++;
         }
-        if ( type == elementwise::CEIL )
+        if ( type == unary::CEIL )
         {
             BOOST_CHECK_EQUAL( s.str(), "CEIL" );
             count++;
@@ -110,5 +105,5 @@ BOOST_AUTO_TEST_CASE( ElementwiseOpTest )
     }
 
     // check if all types are tested
-    BOOST_CHECK_EQUAL( count, elementwise::MAX_ELEMENTWISE_OP_NO_ARG );
+    BOOST_CHECK_EQUAL( count, unary::MAX_UNARY_OP );
 }

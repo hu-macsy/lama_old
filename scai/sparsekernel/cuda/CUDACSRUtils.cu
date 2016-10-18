@@ -337,8 +337,8 @@ void CUDACSRUtils::convertCSR2CSC(
     const IndexType numDiagonals = 0;// not supported yet
     CUDACOOUtils::offsets2ia( cscJA, numValues, csrIA, numRows, numDiagonals );
     // switch cooIA and cooJA, copy values and resort
-    CUDAUtils::set( cooIA, csrJA, numValues, utilskernel::reduction::COPY );
-    CUDAUtils::set( cscValues, csrValues, numValues, utilskernel::reduction::COPY );
+    CUDAUtils::set( cooIA, csrJA, numValues, utilskernel::binary::COPY );
+    CUDAUtils::set( cscValues, csrValues, numValues, utilskernel::binary::COPY );
     thrust::device_ptr<IndexType> ja_d( cooIA );
     thrust::device_ptr<ValueType> values_d( cscValues );
     thrust::device_ptr<IndexType> ia_d( cscJA );

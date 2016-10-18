@@ -1,5 +1,5 @@
 /**
- * @file ReductionOpTest.cpp
+ * @file BinaryOpTest.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,28 +27,28 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Test enum for ReductionOp
+ * @brief Test enum for BinaryOp
  * @author Thomas Brandes
  * @date 30.03.2016
  */
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 #include <sstream>
 
 using namespace scai;
 using namespace utilskernel;
 
-BOOST_AUTO_TEST_CASE( ReductionOpTest )
+BOOST_AUTO_TEST_CASE( BinaryOpTest )
 {
-    for ( int type = reduction::COPY; type <= reduction::ABS_MAX + 1; ++type )
+    for ( int type = binary::COPY; type < binary::MAX_BINARY_OP; ++type )
     {
         std::ostringstream s;
-        s << reduction::ReductionOp( type );
+        s << binary::BinaryOp( type );
         BOOST_CHECK( s.str().length() > 0 );
 
-        if ( type == reduction::COPY )
+        if ( type == binary::COPY )
         {
             BOOST_CHECK_EQUAL( s.str(), "COPY" );
         }

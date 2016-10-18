@@ -347,8 +347,11 @@ void OpenMPDIAUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
-    utilskernel::OpenMPUtils::setScale( result, beta, y, numRows );
+
+    utilskernel::OpenMPUtils::applyBinaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.normalGEMV" )
@@ -437,7 +440,9 @@ void OpenMPDIAUtils::normalGEVM(
     }
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
-    utilskernel::OpenMPUtils::setScale( result, beta, y, numColumns );
+
+    utilskernel::OpenMPUtils::applyBinaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.normalGEVM" )

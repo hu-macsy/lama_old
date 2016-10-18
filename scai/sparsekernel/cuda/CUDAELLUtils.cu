@@ -153,45 +153,6 @@ struct multiply
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  countNonEmptyRowsBySizes                                          */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-IndexType CUDAELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows )
-{
-    SCAI_LOG_INFO( logger, "countNonEmptyRowsBySizes #sizes = " << sizes << " #numRows = " << numRows )
-    SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<IndexType> sizes_ptr( const_cast<IndexType*>( sizes ) );
-    IndexType counter = thrust::transform_reduce( sizes_ptr, sizes_ptr + numRows,
-                        greaterThan<IndexType>( 0 ), 0, thrust::plus<IndexType>() );
-    return counter;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  setNonEmptyRowsBySizes                                            */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void CUDAELLUtils::setNonEmptyRowsBySizes(
-    IndexType rowIndexes[],
-    const IndexType numNonEmptyRows,
-    const IndexType sizes[],
-    const IndexType numRows )
-{
-    SCAI_LOG_INFO( logger,
-                   "setNonEmptyRowsBySizes" << " #rowIndexes = " << rowIndexes << ", #numNonEmptyRows = " << numNonEmptyRows << ", #sizes = " << sizes << ", #numRows = " << numRows )
-    SCAI_CHECK_CUDA_ACCESS
-    // Create device ptr and help variables
-    thrust::device_ptr<IndexType> rowIndexes_ptr( const_cast<IndexType*>( rowIndexes ) );
-    thrust::device_ptr<IndexType> sizes_ptr( const_cast<IndexType*>( sizes ) );
-    thrust::counting_iterator<IndexType> sequence( 0 );
-    thrust::device_vector<IndexType> tmp( numRows );
-    // transform array, replace in sequence all non-zero entries with -1
-    // e.g. sizes = [ 0, 2, 0, 1, 3 ], sequence = [ 0, 1, 2, 3, 4 ] -> [ -1, 1, -1, 3, 4 ]
-    thrust::transform( sizes_ptr, sizes_ptr + numRows, sequence, tmp.begin(), changeIndexWithZeroSize<IndexType>() );
-    // now compact all row indexes with positive sizes
-    thrust::copy_if( tmp.begin(), tmp.end(), rowIndexes_ptr, isOkay<IndexType>() );
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  hasDiagonalProperty                                               */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -407,7 +368,7 @@ void CUDAELLUtils::scaleValue(
     thrust::device_ptr<IndexType> ia_ptr( const_cast<IndexType*>( ia ) );
     thrust::device_ptr<ValueType> ellValues_ptr( const_cast<ValueType*>( ellValues ) );
     thrust::device_ptr<OtherValueType> values_ptr( const_cast<OtherValueType*>( values ) );
-    IndexType maxCols = CUDAUtils::reduce( ia, numRows, utilskernel::reduction::MAX );
+    IndexType maxCols = CUDAUtils::reduce( ia, numRows, utilskernel::binary::MAX );
 
     //TODO: maybe find better implementation
     for ( IndexType i = 0; i < maxCols; i++ )
@@ -1983,8 +1944,6 @@ void CUDAELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
     // KernelRegistry::set<ELLKernelTrait::getValuePos >( getValuePos, ctx, flag );

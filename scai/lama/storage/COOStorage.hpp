@@ -275,7 +275,7 @@ public:
 
     template<typename OtherType>
     void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
-                     const utilskernel::reduction::ReductionOp op );
+                     const utilskernel::binary::BinaryOp op );
 
     /** Template version of getColumn */
 
@@ -286,7 +286,7 @@ public:
 
     template<typename OtherType>
     void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
-                        const utilskernel::reduction::ReductionOp op );
+                        const utilskernel::binary::BinaryOp op );
 
     /** This method returns the diagonal
      *
@@ -406,7 +406,7 @@ public:
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for ELL storage */
 
     void setValue( const IndexType i, const IndexType j, const ValueType val,
-                   const utilskernel::reduction::ReductionOp op = utilskernel::reduction::COPY );
+                   const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
 
     /** Initiate an asynchronous data transfer to a specified location. */
 

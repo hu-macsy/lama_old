@@ -1,5 +1,5 @@
 /**
- * @file CUDAUtils.hpp
+ * @file common/cuda/CUDAUtils.hpp
  *
  * @license
  * Copyright (c) 2009-2016

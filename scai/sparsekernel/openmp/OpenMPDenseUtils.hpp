@@ -114,36 +114,6 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** OpenMP implementation for DenseKernelTrait::getRow */
-
-    template<typename RowValueType, typename DenseValueType>
-    static void getRow(
-        RowValueType rowValues[],
-        const DenseValueType denseValues[],
-        const IndexType irow,
-        const IndexType numRows,
-        const IndexType numColumns );
-
-    /** OpenMP implementation for DenseKernelTrait::getDiagonal */
-
-    template<typename DiagonalValueType, typename DenseValueType>
-    static void getDiagonal(
-        DiagonalValueType diagonalValues[],
-        const IndexType numDiagonalValues,
-        const DenseValueType denseValues[],
-        const IndexType numRows,
-        const IndexType numColumns );
-
-    /** OpenMP implementation for DenseKernelTrait::setDiagonal */
-
-    template<typename DenseValueType, typename DiagonalValueType>
-    static void setDiagonal(
-        DenseValueType denseValues[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const DiagonalValueType diagonalValues[],
-        const IndexType numDiagonalValues );
-
     /** OpenMP implementation for DenseKernelTrait::setValue */
 
     template<typename DenseValueType>

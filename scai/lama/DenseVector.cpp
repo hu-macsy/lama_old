@@ -153,8 +153,8 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
     // localValues[] =  indexes[] * inc + startValue
 
     HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc, utilskernel::reduction::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue, utilskernel::reduction::ADD, context );
+    HArrayUtils::assignScalar( mLocalValues, inc, utilskernel::binary::MULT, context );
+    HArrayUtils::assignScalar( mLocalValues, startValue, utilskernel::binary::ADD, context );
 }
 
 template <typename ValueType>
@@ -191,8 +191,8 @@ void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar 
     // localValues[] =  indexes[] * inc + startValue
 
     HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc.getValue<ValueType>(), utilskernel::reduction::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue.getValue<ValueType>(), utilskernel::reduction::ADD, context );
+    HArrayUtils::assignScalar( mLocalValues, inc.getValue<ValueType>(), utilskernel::binary::MULT, context );
+    HArrayUtils::assignScalar( mLocalValues, startValue.getValue<ValueType>(), utilskernel::binary::ADD, context );
 }
 
 template<typename ValueType>
@@ -736,7 +736,7 @@ DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
         COMMON_THROWEXCEPTION( "distribution do not match for this * other, this = " << *this << " , other = " << other )
     }
 
-    HArrayUtils::assignOp( mLocalValues, other.getLocalValues(), utilskernel::reduction::MULT, mContext );
+    HArrayUtils::assignOp( mLocalValues, other.getLocalValues(), utilskernel::binary::MULT, mContext );
     return *this;
 }
 
@@ -772,7 +772,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
     // assign the scalar value on the home of this dense vector.
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::reduction::COPY, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::binary::COPY, mContext );
 }
 
 template<typename ValueType>
@@ -780,7 +780,7 @@ void DenseVector<ValueType>::add( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": add " << value )
     // assign the scalar value on the home of this dense vector.
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::reduction::ADD, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::binary::ADD, mContext );
 }
 
 template<typename ValueType>
@@ -885,10 +885,17 @@ void DenseVector<ValueType>::atan()
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::pow( const Vector& other )
+void DenseVector<ValueType>::powExp( const Vector& other )
 {
     const DenseVector<ValueType>& denseOther = dynamic_cast<const DenseVector<ValueType>&>( other );
-    mLocalValues.pow( denseOther.mLocalValues );
+    mLocalValues.powExp( denseOther.mLocalValues );
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::powBase( const Vector& other )
+{
+    const DenseVector<ValueType>& denseOther = dynamic_cast<const DenseVector<ValueType>&>( other );
+    mLocalValues.powBase( denseOther.mLocalValues );
 }
 
 template<typename ValueType>

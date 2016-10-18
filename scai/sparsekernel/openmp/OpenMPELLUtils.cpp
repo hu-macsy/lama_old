@@ -75,50 +75,6 @@ SCAI_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-IndexType OpenMPELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows )
-{
-    IndexType counter = 0;
-    #pragma omp parallel for reduction( +:counter )
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        if ( sizes[i] > 0 )
-        {
-            counter++;
-        }
-    }
-
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
-    return counter;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void OpenMPELLUtils::setNonEmptyRowsBySizes(
-    IndexType rowIndexes[],
-    const IndexType numNonEmptyRows,
-    const IndexType sizes[],
-    const IndexType numRows )
-{
-    IndexType counter = 0;
-
-    // Note: this routine is not easy to parallelize, no offsets for rowIndexes available
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        if ( sizes[i] > 0 )
-        {
-            rowIndexes[counter] = i;
-            counter++;
-        }
-    }
-
-    SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 bool OpenMPELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] )
 {
     SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
@@ -316,13 +272,6 @@ IndexType OpenMPELLUtils::getValuePos(
     }
   
     return vPos;
-}
-
-/* --------------------------------------------------------------------------- */
-
-static inline IndexType atomicInc( IndexType& var )
-{
-    return __sync_fetch_and_add( &var, 1 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1263,8 +1212,6 @@ void OpenMPELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     SCAI_LOG_DEBUG( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<ELLKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );

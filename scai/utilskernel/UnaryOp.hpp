@@ -1,5 +1,5 @@
 /**
- * @file ElementwiseOp.hpp
+ * @file UnaryOp.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -48,22 +48,20 @@ namespace utilskernel
 
 /** Own struct for enum type of elementwise functions */
 
-struct elementwise
+struct unary
 {
-    /** Enumeration type for elementwise operators used in set/scatter ops
+    /** Enumeration type for unary operators used in elemental array operation
      *
-     *  The elementwise operator specifies for typical elementwises what kind
-     *  of operator is applied to combine two elements.
+     *  The unary operator specifies the function to be applied for each (array) element
      *
      *  \code
-     *  A[i] = A[i] elementwise_op B[i]
+     *  A[i] = unary( A[i] )
      *  \endcode
      *
      */
 
     typedef enum
     {
-        INVERT,  // for inverse/reciprocal of a vector
         CONJ,    // for conjugate of a vector
 
         EXP,     // call exp on each vector element
@@ -76,115 +74,66 @@ struct elementwise
         FLOOR,   // call floor on each vector element
         CEIL,    // call ceil on each vector element
 
-        MAX_ELEMENTWISE_OP_NO_ARG // only for tests, leave this at the end
-    } ElementwiseOpNoArg;
 
-    typedef enum name
-    {
-        POWBASE,
-        POWEXP,
-        ADDSCALAR,
-        SUBSCALAR,
+        MAX_UNARY_OP // only for tests, leave this at the end
 
-        MAX_ELEMENTWISE_OP_ONE_ARG
-    } ElementwiseOpOneArg;
-
+    } UnaryOp;
 };
 
 /*
- * Output of ElementwiseOpNoArg in stream by writing strings instead of numbers
+ * Output of UnaryOp in stream by writing strings instead of numbers
  */
 
-inline std::ostream& operator<<( std::ostream& stream, const elementwise::ElementwiseOpNoArg& op )
+inline std::ostream& operator<<( std::ostream& stream, const unary::UnaryOp& op )
 {
     switch ( op )
     {
-        case elementwise::INVERT:
-            stream << "INVERT";
-            break;
-
-        case elementwise::CONJ:
+        case unary::CONJ:
             stream << "CONJ";
             break;
 
-        case elementwise::EXP:
+        case unary::EXP:
             stream << "EXP";
             break;
 
-        case elementwise::SQRT:
+        case unary::SQRT:
             stream << "SQRT";
             break;
 
-        case elementwise::SIN:
+        case unary::SIN:
             stream << "SIN";
             break;
 
-        case elementwise::COS:
+        case unary::COS:
             stream << "COS";
             break;
 
-        case elementwise::TAN:
+        case unary::TAN:
             stream << "TAN";
             break;
 
-        case elementwise::ATAN:
+        case unary::ATAN:
             stream << "ATAN";
             break;
 
-        case elementwise::LOG:
+        case unary::LOG:
             stream << "LOG";
             break;
 
-        case elementwise::FLOOR:
+        case unary::FLOOR:
             stream << "FLOOR";
             break;
 
-        case elementwise::CEIL:
+        case unary::CEIL:
             stream << "CEIL";
             break;
 
-        case elementwise::MAX_ELEMENTWISE_OP_NO_ARG:
-            stream << "MAX_ELEMENTWISE_OP_NO_ARG-only for tests";
+        case unary::MAX_UNARY_OP:
+            stream << "MAX_UNARY_OP for tests";
             break;
 
         default:
-            stream << "<unknown_elementwise_op_no_arg>";
-            break;
-    }
-
-    return stream;
-}
-
-/*
- * Output of ElementwiseOpNoArg in stream by writing strings instead of numbers
- */
-
-inline std::ostream& operator<<( std::ostream& stream, const elementwise::ElementwiseOpOneArg& op )
-{
-    switch ( op )
-    {
-        case elementwise::POWBASE:
-            stream << "POWBASE";
-            break;
-
-        case elementwise::POWEXP:
-            stream << "POWEXP";
-            break;
-
-        case elementwise::ADDSCALAR:
-            stream << "ADDSCALAR";
-            break;
-
-        case elementwise::SUBSCALAR:
-            stream << "SUBSCALAR";
-            break;
-
-        case elementwise::MAX_ELEMENTWISE_OP_ONE_ARG:
-            stream << "MAX_ELEMENTWISE_OP_ONE_ARG-only for tests";
-            break;
-
-        default:
-            stream << "<unknown_elementwise_op_one_arg>";
+            stream << "<unknown_unary_op>";
             break;
     }
 

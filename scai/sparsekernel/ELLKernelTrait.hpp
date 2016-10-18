@@ -325,45 +325,6 @@ struct ELLKernelTrait
         }
     };
 
-    struct countNonEmptyRowsBySizes
-    {
-        /** Returns the number of non-empty rows 
-         * 
-         *  @param[in] ellSizes is the ELL sizes array
-         *  @param[in] numRows is the number of rows, size of ellSizes
-         *  @return the number of values > 0 in ellSizes
-         */
-        typedef IndexType ( *FuncType ) (
-            const IndexType ellSizes[],
-            const IndexType numRows );
-
-        static const char* getId()
-        {
-            return "ELL.countNonEmptyRowsBySizes";
-        }
-    };
-
-    struct setNonEmptyRowsBySizes
-    {
-        /** This method returns all row indexes of non-empty rows
-         *
-         *  @param[out] rowIndexes will contain the indexes of the non-zero rows
-         *  @param[in] numNonEmptyRows number of  non-zero rows, is countNonEmptyRowsBySizes( ellSizes, numRows )
-         *  @param[in] ellSizes is the size of each row, #non-zero values must be numNonEmptyRows
-         *  @param[in] numRows is the mumbe of rows, size of ellSizes
-         */
-        typedef void ( *FuncType ) (
-            IndexType rowIndexes[],
-            const IndexType numNonEmptyRows,
-            const IndexType ellSizes[],
-            const IndexType numRows );
-
-        static const char* getId()
-        {
-            return "ELL.setNonEmptyRowsBySizes";
-        }
-    };
-
     struct hasDiagonalProperty
     {
         typedef bool ( *FuncType ) (

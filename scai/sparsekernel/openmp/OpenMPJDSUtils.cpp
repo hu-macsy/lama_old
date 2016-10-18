@@ -125,7 +125,7 @@ void OpenMPJDSUtils::setRow(
     const IndexType dlg[],
     const IndexType ja[],
     const OtherValueType row[],
-    const utilskernel::reduction::ReductionOp op )
+    const utilskernel::binary::BinaryOp op )
 {
     SCAI_REGION( "OpenMP.JDS.setRow" )
 
@@ -145,8 +145,8 @@ void OpenMPJDSUtils::setRow(
 
     IndexType k = 0;
 
-    // ToDo: solution with own loop for each reduction op is so much more efficient
-    //       than calling reduction op elementwise, at least if not inlined, check
+    // ToDo: solution with own loop for each binary op is so much more efficient
+    //       than calling binary op elementwise, at least if not inlined, check
     //
     //      for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
     //      {
@@ -157,7 +157,7 @@ void OpenMPJDSUtils::setRow(
    
     switch ( op )
     {
-        case utilskernel::reduction::COPY :
+        case utilskernel::binary::COPY :
         {
             for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
             {
@@ -167,7 +167,7 @@ void OpenMPJDSUtils::setRow(
             break;
         }
 
-        case utilskernel::reduction::ADD :
+        case utilskernel::binary::ADD :
         {
             for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
             {
@@ -177,7 +177,7 @@ void OpenMPJDSUtils::setRow(
             break;
         }
 
-        case utilskernel::reduction::SUB :
+        case utilskernel::binary::SUB :
         {
             for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
             {
@@ -187,7 +187,7 @@ void OpenMPJDSUtils::setRow(
             break;
         }
 
-        case utilskernel::reduction::MULT :
+        case utilskernel::binary::MULT :
         {
             for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
             {
@@ -197,7 +197,7 @@ void OpenMPJDSUtils::setRow(
             break;
         }
 
-        case utilskernel::reduction::DIVIDE :
+        case utilskernel::binary::DIVIDE :
         {
             for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
             {
@@ -209,7 +209,7 @@ void OpenMPJDSUtils::setRow(
 
         default:
         {
-            COMMON_THROWEXCEPTION( "unsupported reduction op in setRow: " << op )
+            COMMON_THROWEXCEPTION( "unsupported binary op in setRow: " << op )
         }
     }
 }
@@ -266,15 +266,6 @@ IndexType OpenMPJDSUtils::getValuePos(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-/* --------------------------------------------------------------------------- */
-
-static inline IndexType atomicInc( IndexType& var )
-{
-    return __sync_fetch_and_add( &var, 1 );
-}
-
-/* --------------------------------------------------------------------------- */
-
 IndexType OpenMPJDSUtils::getValuePosCol( 
     IndexType row[], 
     IndexType pos[],
@@ -288,8 +279,6 @@ IndexType OpenMPJDSUtils::getValuePosCol(
     SCAI_REGION( "OpenMP.JDSUtils.getValuePosCol" )
 
     IndexType cnt  = 0;   // counts number of available row entries in column j
-
-    // parallel with atomicInc( cnt ) gives indeed some benefit
 
     #pragma omp parallel for
 
@@ -437,7 +426,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     }
 
     // The number of buckets is determined by the max value of ilg
-    const IndexType maxBucket = utilskernel::OpenMPUtils::reduce( ilg, n, utilskernel::reduction::MAX );
+    const IndexType maxBucket = utilskernel::OpenMPUtils::reduce( ilg, n, utilskernel::binary::MAX );
     SCAI_LOG_INFO( logger, "sort " << n << " values, number of buckets = " << maxBucket )
     // longest row = maxBucket, but rows with length 0 is possible too!
     scoped_array<IndexType> bucket( new IndexType[maxBucket + 1] );
@@ -680,7 +669,10 @@ void OpenMPJDSUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
-    utilskernel::OpenMPUtils::setScale( result, beta, y, numRows );  // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
+
+    // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
+
+    utilskernel::OpenMPUtils::applyBinaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );  
 
     if ( ndlg == 0 )
     {
