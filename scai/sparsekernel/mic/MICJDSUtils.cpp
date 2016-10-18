@@ -40,7 +40,7 @@
 
 // other scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tasking/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -131,49 +131,45 @@ void MICJDSUtils::getRow(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-ValueType MICJDSUtils::getValue(
+IndexType MICJDSUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
-    const IndexType* dlg,
-    const IndexType* ilg,
-    const IndexType* perm,
-    const IndexType* ja,
-    const ValueType* values )
+    const IndexType dlg[],
+    const IndexType ilg[],
+    const IndexType perm[],
+    const IndexType ja[] )
 {
     int device = MICContext::getCurrentDevice();
+
     const void* permPtr = perm;
     const void* ilgPtr = ilg;
     const void* dlgPtr = dlg;
     const void* jaPtr = ja;
-    const void* valuesPtr = values;
-    ValueType val = 0;
-    ValueType* valPtr = &val;
-#pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, valuesPtr, \
-                                               i, j, numRows ), out( valPtr[0:1] )
+
+    IndexType pos = nIndex;
+
+#pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, i, j, numRows )
     {
         const IndexType* perm = static_cast<const IndexType*>( permPtr );
         const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
         const IndexType* dlg = static_cast<const IndexType*>( dlgPtr );
         const IndexType* ja = static_cast<const IndexType*>( jaPtr );
-        const ValueType* values = static_cast<const ValueType*>( valuesPtr );
-        ValueType& valRef = *valPtr;
-        valRef = 0;
-        #pragma omp parallel for
 
+        #pragma omp parallel for
         for ( IndexType ii = 0; ii < numRows; ii++ )
         {
             if ( perm[ii] == i )
             {
                 // thread founds the row and now searches the column
+
                 IndexType k = 0;
 
                 for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
                 {
                     if ( ja[ii + k] == j )
                     {
-                        valRef = values[ii + k];
+                        pos = ii + k;
                     }
 
                     k += dlg[jj];
@@ -181,7 +177,74 @@ ValueType MICJDSUtils::getValue(
             }
         }
     }
-    return val;
+
+    return pos;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType MICJDSUtils::getValuePosCol(
+    IndexType row[],
+    IndexType pos[],
+    const IndexType j,
+    const IndexType numRows,
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType perm[],
+    const IndexType ja[] )
+{
+    int device = MICContext::getCurrentDevice();
+
+    const void* permPtr = perm;
+    const void* ilgPtr = ilg;
+    const void* dlgPtr = dlg;
+    const void* jaPtr = ja;
+
+    void* rowPtr = row;
+    void* posPtr = pos;
+
+    IndexType cnt = 0;
+
+#pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, i, numRows, rowPtr, posPtr )
+    {
+        const IndexType* perm = static_cast<const IndexType*>( permPtr );
+        const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
+        const IndexType* dlg = static_cast<const IndexType*>( dlgPtr );
+        const IndexType* ja = static_cast<const IndexType*>( jaPtr );
+
+        IndexType* row = reinterpret_cast<IndexType*>( rowPtr );
+        IndexType* pos = reinterpret_cast<IndexType*>( posPtr );
+
+        #pragma omp parallel for
+        for ( IndexType ii = 0; ii < numRows; ii++ )
+        {
+            IndexType k = 0;
+
+            for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
+            {
+                IndexType p = ii + k;
+    
+                if ( ja[p] == j )
+                {
+                    IndexType n;
+
+                    #pragma omp critical
+                    {
+                        n = cnt++;
+                    }
+
+                    row[n] = perm[ii];
+                    pos[n] = p;
+
+                    break;
+                }
+
+                k += dlg[jj];
+            }
+        }
+    }
+
+    return cnt;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -615,7 +678,7 @@ void MICJDSUtils::normalGEMV(
 
     if ( beta == common::constants::ZERO )
     {
-        MICUtils::setVal( result, numRows, ValueType( 0 ), utilskernel::reduction::COPY );
+        MICUtils::setVal( result, numRows, ValueType( 0 ), utilskernel::binary::COPY );
     }
     else if ( result == y )
     {
@@ -626,13 +689,13 @@ void MICJDSUtils::normalGEMV(
         }
         else
         {
-            MICUtils::setVal( result, numRows, beta, utilskernel::reduction::MULT );
+            MICUtils::setVal( result, numRows, beta, utilskernel::binary::MULT );
         }
     }
     else
     {
         // result = beta * y
-        MICUtils::setScale( result, beta, y, numRows );
+        MICUtils::applyBinaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
     }
 
     if ( ndlg == 0 )
@@ -861,6 +924,8 @@ void MICJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kerne
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
 }
 
 template<typename ValueType>
@@ -871,7 +936,6 @@ void MICJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelReg
 
     SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: T = " << common::TypeTraits<ValueType>::id() )
 
-    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );

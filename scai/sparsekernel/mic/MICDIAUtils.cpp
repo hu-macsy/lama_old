@@ -313,7 +313,9 @@ void MICDIAUtils::normalGEMV(
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
     // SCAI_REGION( "MIC.DIA.normalGEMV" )
-    MICUtils::setScale( result, beta, y, numRows );
+
+    MICUtils::applyBinaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
+
     void* resultPtr = result;
     const void* xPtr = x;
     const void* diaOffsetsPtr = diaOffsets;
