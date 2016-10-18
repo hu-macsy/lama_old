@@ -457,10 +457,10 @@ public:
 
     /** @brief This method returns one column of the matrix.
      *
-     * @param[out] col              is a distributed vector with all values of the col
+     * @param[out] column           is a distributed vector with all values of the col
      * @param[in]  globalColIndex   global column index of the col that should be extracted
      *
-     * - the vector col might be of any type but for efficiency it should have the same type as the matrix
+     * - the vector column might be of any type but for efficiency it should have the same type as the matrix
      *   (otherwise conversion)
      * - the distribution of col will be the same as the row distribution of the matrix
      */
@@ -482,7 +482,7 @@ public:
 
     /** @brief Pure method to set one column of the matrix.
      *
-     * @param[in]  col              is a distributed vector with all values of the col
+     * @param[in]  column           is a distributed vector with all values of the col
      * @param[in]  globalColIndex   global column index of the col that should be set
      * @param[in]  op               specifies the binary op how to combine old and new element
      *
