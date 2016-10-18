@@ -42,7 +42,7 @@
 
 // internal scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tracing.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>

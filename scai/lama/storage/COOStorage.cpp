@@ -42,7 +42,6 @@
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/utilskernel/ElementwiseOp.hpp>
 
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 

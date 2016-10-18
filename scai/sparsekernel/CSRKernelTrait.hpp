@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 namespace scai
 {

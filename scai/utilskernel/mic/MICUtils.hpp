@@ -40,7 +40,7 @@
 // others
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 // logging
 #include <scai/logging.hpp>
@@ -99,12 +99,12 @@ public:
     /** MIC implementation for UtilKernelTrait::Reductions::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( const ValueType array[], const IndexType n, const reduction::ReductionOp op );
+    static ValueType reduce( const ValueType array[], const IndexType n, const reduction::BinaryOp op );
 
     /** MIC implementation for UtilKernelTrait::Setter::setVal */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::BinaryOp op );
 
     /** MIC implementation for UtilKernelTrait::Setter::setOrder */
 
@@ -132,7 +132,7 @@ public:
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
     template<typename ValueType1, typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::BinaryOp op );
 
     /** Set out[i] = in[ indexes[i] ],  0 <= i < n */
 
@@ -142,7 +142,7 @@ public:
     /** Set out[ indexes[i] ] = in [i] */
 
     template<typename ValueType1, typename ValueType2>
-    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const reduction::ReductionOp op, const IndexType n );
+    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const reduction::BinaryOp op, const IndexType n );
 
     template<typename ValueType>
     static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );

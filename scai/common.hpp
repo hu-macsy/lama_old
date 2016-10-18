@@ -53,7 +53,6 @@
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/Printable.hpp>
-#include <scai/common/ReductionOp.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Settings.hpp>
