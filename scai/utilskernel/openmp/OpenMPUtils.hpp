@@ -42,8 +42,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
-#include <scai/utilskernel/ElementwiseOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/utilskernel/UnaryOp.hpp>
 
 #include <scai/kregistry/mepr/Registrator.hpp>
 
@@ -59,20 +59,6 @@ class COMMON_DLL_IMPORTEXPORT OpenMPUtils
 {
 public:
 
-    /** OpenMP implementation for UtilKernelTrait::vectorScale */
-
-    template<typename ValueType>
-    static void vectorScale( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
-
-    /** OpenMP implementation for UtilKernelTrait::setScale */
-
-    template<typename ValueType, typename OtherValueType>
-    static void setScale(
-        ValueType outValues[],
-        const ValueType value,
-        const OtherValueType inValues[],
-        const IndexType n );
-
     /*  This method is an implementation of UtilKernelTrait::validIndexes */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
@@ -80,12 +66,12 @@ public:
     /** OpenMP implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( const ValueType array[], const IndexType n, const reduction::ReductionOp op );
+    static ValueType reduce( const ValueType array[], const IndexType n, const binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::Setter::setVal */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::Setter::setOrder */
 
@@ -105,11 +91,6 @@ public:
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::copysign */
-
-    template<typename ValueType>
-    static void copysign( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
-
     /** OpenMP implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>
@@ -118,38 +99,34 @@ public:
     /** OpenMP implementation for UtilKernelTrait::set */
 
     template<typename ValueType1, typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::setSection */
 
     template<typename ValueType1, typename ValueType2>
     static void setSection( ValueType1 out[], const IndexType inc1,
                             const ValueType2 in[], const IndexType inc2,
-                            const IndexType n, const reduction::ReductionOp op );
+                            const IndexType n, const binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::execElementwise */
-
-    template<typename ValueType>
-    static void execElementwiseNoArg( ValueType array[], const IndexType n, const elementwise::ElementwiseOpNoArg op );
+    /** OpenMP implementation for UtilKernelTrait::applyUnaryOp */
 
     template<typename ValueType>
-    static void execElementwiseOneArg( ValueType array[], const ValueType arg, const IndexType n,
-                                       const elementwise::ElementwiseOpOneArg op );
+    static void applyUnaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
 
-   /** OpenMP implementation for UtilKernelTrait::pow */
-
-    template<typename ValueType>
-    static void pow( ValueType array1[], const ValueType array2[], const IndexType n );
-
-    /** OpenMP implementation for UtilKernelTrait::powBasw */
+    /** OpenMP implementation for UtilKernelTrait::applyBinaryOp */
 
     template<typename ValueType>
-    static void powBase( ValueType array[], const ValueType base, const IndexType n );
+    static void applyBinaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::powExp */
+    /** OpenMP implementation for UtilKernelTrait::applyBinaryOpScalar1 */
 
     template<typename ValueType>
-    static void powExp( ValueType array[], const ValueType exp, const IndexType n );
+    static void applyBinaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::applyBinaryOpScalar2 */
+
+    template<typename ValueType>
+    static void applyBinaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::setGather */
 
@@ -158,7 +135,7 @@ public:
         ValueType1 out[], 
         const ValueType2 in[], 
         const IndexType indexes[], 
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::scatterVal */
@@ -172,7 +149,7 @@ public:
     static void setScatter( ValueType1 out[], 
                             const IndexType indexes[], 
                             const ValueType2 in[], 
-                            const reduction::ReductionOp op, 
+                            const binary::BinaryOp op, 
                             const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::scan */

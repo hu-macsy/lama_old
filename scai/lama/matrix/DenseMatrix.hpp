@@ -587,13 +587,13 @@ public:
 
     void setLocalRow( const hmemo::HArray<ValueType>& row, 
                       const IndexType localRowIndex,
-                      const utilskernel::reduction::ReductionOp op  );
+                      const utilskernel::binary::BinaryOp op  );
 
     void getLocalColumn( hmemo::HArray<ValueType>& col, const IndexType colIndex ) const;
 
     void setLocalColumn( const hmemo::HArray<ValueType>& column, 
                          const IndexType colIndex,
-                         const utilskernel::reduction::ReductionOp op  );
+                         const utilskernel::binary::BinaryOp op  );
 
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 

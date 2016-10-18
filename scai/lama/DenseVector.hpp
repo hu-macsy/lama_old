@@ -456,7 +456,9 @@ public:
 
     virtual void atan();
 
-    virtual void pow( const Vector& other );
+    virtual void powBase( const Vector& other );
+
+    virtual void powExp( const Vector& other );
 
     virtual void powBase( const Scalar base );
 

@@ -40,8 +40,8 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/logging.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
-#include <scai/utilskernel/ElementwiseOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/utilskernel/UnaryOp.hpp>
 
 namespace scai
 {
@@ -79,7 +79,7 @@ public:
     static void assignOp(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -91,7 +91,7 @@ public:
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& index,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -102,7 +102,7 @@ public:
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
         const hmemo::HArray<IndexType>& indexes,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -114,7 +114,7 @@ public:
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::_HArray& source,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -127,7 +127,7 @@ public:
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<IndexType>& index,
         const hmemo::HArray<SourceValueType>& source,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -139,7 +139,7 @@ public:
     static void assignScalar(
         hmemo::_HArray& target,
         const ValueType value,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         hmemo::ContextPtr prefLoc  = hmemo::ContextPtr() )
     __attribute__( ( noinline ) );
 
@@ -157,21 +157,6 @@ public:
 
     template<typename ValueType>
     static ValueType getVal( const hmemo::_HArray& array, const IndexType index );
-
-    /** Scaled assignment: result = beta * y
-     *
-     *  @param[out] result  output array
-     *  @param[in]  beta    scaling factor
-     *  @param[in]  y       source array
-     *  @param[in]  prefLoc location where operation should be done if possible
-     */
-
-    template<typename ValueType>
-    static void assignScaled(
-        hmemo::HArray<ValueType>& result,
-        const ValueType beta,
-        const hmemo::HArray<ValueType>& y,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Axpy: result += beta * y
      *
@@ -226,15 +211,6 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** scale array in place : array *= beta
-     *
-     *  Note: scale will be done where array has currently valid values. The preferred
-     *        location is not taken if the array is not valid there.
-     */
-
-    template<typename ValueType>
-    static void scale( hmemo::HArray<ValueType>& array, const ValueType beta, hmemo::ContextPtr prefLoc );
-
     /*
      * Implementation of functions
      */
@@ -242,7 +218,7 @@ public:
     static void setArray(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         hmemo::ContextPtr context );
 
     /** General version for setting sectioned arrays. 
@@ -266,14 +242,14 @@ public:
         const IndexType sourceOffset,
         const IndexType sourceStride,
         const IndexType n,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         hmemo::ContextPtr context );
 
     template<typename ValueType>
     static void setScalar(
         hmemo::HArray<ValueType>& target,
         const ValueType value,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
     __attribute__( ( noinline ) );
 
@@ -282,7 +258,7 @@ public:
         hmemo::HArray<ValueType>& target,
         const IndexType index,
         const ValueType val,
-        const reduction::ReductionOp op );
+        const binary::BinaryOp op );
 
     template<typename ValueType>
     static ValueType getValImpl(
@@ -292,7 +268,7 @@ public:
     template<typename ValueType>
     static ValueType reduce(
         const hmemo::HArray<ValueType>& array,
-        const reduction::ReductionOp redOp,
+        const binary::BinaryOp redOp,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
@@ -312,39 +288,74 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static void copysign(
-        hmemo::HArray<ValueType>& result,
-        const hmemo::HArray<ValueType>& x,
-        const hmemo::HArray<ValueType>& y,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-    template<typename ValueType>
     static ValueType dotProduct(
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** execute elementwise functions */
+    /** Elementwise unary operation on array: result[i] = op( x[i] )
+     *
+     *  @param[out] result  output array
+     *  @param[in]  x       input array
+     *  @param[in]  op      specifies operation to apply on input values
+     *  @param[in]  prefLoc location where operation should be done if possible
+     */
 
     template<typename ValueType>
-    static void execElementwiseNoArg(
-        hmemo::HArray<ValueType>& array,
-        const elementwise::ElementwiseOpNoArg op,
+    static void unaryOp(
+        hmemo::HArray<ValueType>& out,
+        const hmemo::HArray<ValueType>& in,
+        const unary::UnaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Elementwise binary operation on array: result[i] = op( x[i], y[i] )
+     *
+     *  @param[out] result  output array
+     *  @param[in]  x       input array
+     *  @param[in]  y       input array
+     *  @param[in]  op      specifies operation to apply on input values
+     *  @param[in]  prefLoc location where operation should be done if possible
+     */
     template<typename ValueType>
-    static void execElementwiseOneArg(
-        hmemo::HArray<ValueType>& array,
-        const ValueType arg,
-        const elementwise::ElementwiseOpOneArg op,
+    static void binaryOp(
+        hmemo::HArray<ValueType>& result,
+        const hmemo::HArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& y,
+        const binary::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** execute elementwise pow with base and exponent array */
-
+    /** Elementwise binary operation on array: result[i] = op( x, y[i] ), first arg is scalar
+     *
+     *  @param[out] result  output array
+     *  @param[in]  x       input value
+     *  @param[in]  y       input array
+     *  @param[in]  op      specifies operation to apply on input values
+     *  @param[in]  prefLoc location where operation should be done if possible
+     */
     template<typename ValueType>
-    static void pow( 
-        hmemo::HArray<ValueType>& array1,
-        const hmemo::HArray<ValueType>& array2,
+    static void binaryOpScalar1(
+        hmemo::HArray<ValueType>& result,
+        const ValueType x,
+        const hmemo::HArray<ValueType>& y,
+        const binary::BinaryOp op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Elementwise binary operation on array: result[i] = op( x[i], y ), second arg is scalar
+     *
+     *  @param[out] result  output array
+     *  @param[in]  x       input array
+     *  @param[in]  y       input value
+     *  @param[in]  op      specifies operation to apply on input values
+     *  @param[in]  prefLoc location where operation should be done if possible
+     *
+     *  Note: this operation is different to binaryOpScalar1( y, x) if op is not commutative
+     */
+    template<typename ValueType>
+    static void binaryOpScalar2(
+        hmemo::HArray<ValueType>& result,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType y,
+        const binary::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Check for an index array whether all values are smaller than n */

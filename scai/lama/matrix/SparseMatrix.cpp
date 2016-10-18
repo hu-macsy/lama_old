@@ -717,13 +717,13 @@ void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTy
     HArray<IndexType> localIndexes;
     distributionCol.getOwnedIndexes( localIndexes );
     mLocalData->getRow( tmpRow, localRowIndex );
-    HArrayUtils::scatterImpl( row, localIndexes, tmpRow, utilskernel::reduction::COPY );
+    HArrayUtils::scatterImpl( row, localIndexes, tmpRow, utilskernel::binary::COPY );
 
     // get halo part
 
     mHaloData->getRow( tmpRow, localRowIndex );
     const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
-    HArrayUtils::scatterImpl( row, haloIndexes, tmpRow, utilskernel::reduction::COPY );
+    HArrayUtils::scatterImpl( row, haloIndexes, tmpRow, utilskernel::binary::COPY );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -731,7 +731,7 @@ void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTy
 template<typename ValueType>
 void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row, 
                                            const IndexType localRowIndex,
-                                           const utilskernel::reduction::ReductionOp op )
+                                           const utilskernel::binary::BinaryOp op )
 {
     SCAI_REGION( "Mat.Sp.setLocalRow" )
 
@@ -749,13 +749,13 @@ void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row,
 
     HArray<IndexType> localIndexes;
     distributionCol.getOwnedIndexes( localIndexes );
-    HArrayUtils::gatherImpl( tmpRow, row, localIndexes, utilskernel::reduction::COPY );
+    HArrayUtils::gatherImpl( tmpRow, row, localIndexes, utilskernel::binary::COPY );
     mLocalData->setRow( tmpRow, localRowIndex, op );
 
     // set halo part
 
     const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
-    HArrayUtils::gatherImpl( tmpRow, row, haloIndexes, utilskernel::reduction::COPY );
+    HArrayUtils::gatherImpl( tmpRow, row, haloIndexes, utilskernel::binary::COPY );
     mHaloData->setRow( tmpRow, localRowIndex, op );
 }
 
@@ -794,7 +794,7 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
 template<typename ValueType>
 void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column, 
                                               const IndexType colIndex,
-                                              const utilskernel::reduction::ReductionOp op )
+                                              const utilskernel::binary::BinaryOp op )
 {
     SCAI_REGION( "Mat.Sp.setLocalCol" )
 
@@ -1090,7 +1090,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
             SCAI_REGION( "Mat.Sp.syncGatherHalo" )
             SCAI_LOG_INFO( logger,
                            comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-            HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), utilskernel::reduction::COPY );
+            HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), utilskernel::binary::COPY );
             // Note: send values might be fetched to the host by halo exchange
         }
 
@@ -1195,7 +1195,7 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
 
     if ( haloResult.size() > 0 )
     {
-        HArrayUtils::scatterImpl( localResult, mHalo.getProvidesIndexes(), haloResult, utilskernel::reduction::ADD );
+        HArrayUtils::scatterImpl( localResult, mHalo.getProvidesIndexes(), haloResult, utilskernel::binary::ADD );
     }
 
     SCAI_LOG_DEBUG( logger, "invHaloOpSync done" )
@@ -1230,7 +1230,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         // Note: gather will be done where denseX is available
         SCAI_LOG_INFO( logger,
                        comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-        HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), utilskernel::reduction::COPY );
+        HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), utilskernel::binary::COPY );
         // prefetch needed otherwise sending will block until local computation has finished
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }

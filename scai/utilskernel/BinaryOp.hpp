@@ -1,5 +1,5 @@
 /**
- * @file ReductionOp.hpp
+ * @file BinaryOp.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Enum typ for the different reduction operator.s
+ * @brief Enumeration type for the different binary operators 
  * @author Thomas Brandes
  * @date 15.01.2016
  */
@@ -46,77 +46,91 @@ namespace scai
 namespace utilskernel
 {
 
-/** Own struct for enum type of reduction operators */
+/** Own struct for enum type of binary operators */
 
-struct reduction
+struct binary
 {
-    /** Enumeration type for reduction operators used in set/scatter ops
+    /** Enumeration type for binary operators used in set/scatter ops
      *
-     *  The reduction operator specifies for typical reductions what kind
+     *  The binary operator specifies different kernel routines what kind
      *  of operator is applied to combine two elements.
      *
      *  \code
-     *  A[i] = A[i] reduction_op B[i]
+     *  A[i] = A[i] binary_op B[i]
+     *  A[i] = A[i] binary_op val
      *  \endcode
      *
+     *  The associative binary operations (MIN, MAX, ADD, MULT) can also be used in
+     *  redcution operations.
      */
 
     typedef enum
     {
-        COPY,     // for assign   x = y
-        ADD,      // for operator x += y
-        SUB,      // for operator x -= y
-        MULT,     // for operator x *= y
-        DIVIDE,   // for operator x /= y
-        MIN,      // for operator x = min( x, y )
-        MAX,      // for operator x = max( x, y )
-        ABS_MAX   // for operator x = max( x, abs(y) )
-    } ReductionOp;
+        COPY,         // for assign   x = y
+        ADD,          // for operator x += y
+        SUB,          // for operator x -= y
+        MULT,         // for operator x *= y
+        DIVIDE,       // for operator x /= y
+        MIN,          // for operator x = min( x, y )
+        MAX,          // for operator x = max( x, y )
+        ABS_MAX,      // for operator x = max( x, abs(y) )
+        POW,          // for operator x = pow( x, y )
+        COPY_SIGN,    // for operator x = magnitude(x), sign(y)
+        MAX_BINARY_OP // for internal use only
+    } BinaryOp;
 
 };
 
 /*
- * Output of ReductionOp in stream by writing strings instead of numbers
+ * Output of BinaryOp in stream by writing strings instead of numbers
  */
 
-inline std::ostream& operator<<( std::ostream& stream, const reduction::ReductionOp& op )
+inline std::ostream& operator<<( std::ostream& stream, const binary::BinaryOp& op )
 {
     switch ( op )
     {
-        case reduction::COPY:
+        case binary::COPY:
             stream << "COPY";
             break;
 
-        case reduction::ADD:
+        case binary::ADD:
             stream << "ADD";
             break;
 
-        case reduction::SUB:
+        case binary::SUB:
             stream << "SUB";
             break;
 
-        case reduction::MULT:
+        case binary::MULT:
             stream << "MULT";
             break;
 
-        case reduction::DIVIDE:
+        case binary::DIVIDE:
             stream << "DIVIDE";
             break;
 
-        case reduction::MIN:
+        case binary::MIN:
             stream << "MIN";
             break;
 
-        case reduction::MAX:
+        case binary::MAX:
             stream << "MAX";
             break;
 
-        case reduction::ABS_MAX:
+        case binary::ABS_MAX:
             stream << "ABS_MAX";
             break;
 
+        case binary::POW:
+            stream << "POW";
+            break;
+
+        case binary::COPY_SIGN:
+            stream << "COPY_SIGN";
+            break;
+
         default:
-            stream << "<unknown_reduction_op>";
+            stream << "<unknown_binary_op>";
             break;
     }
 

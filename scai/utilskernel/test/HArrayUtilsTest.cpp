@@ -37,7 +37,7 @@
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LArray.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/utilskernel/test/HArrays.hpp>
@@ -104,10 +104,10 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
             // create array with same type, context
             common::unique_ptr<_HArray> tmp( array2.copy() );
             // array2 = array1[ perm ], tmp[ perm ] = array1
-            HArrayUtils::gather( array2, array1, perm, reduction::COPY, ctx );
+            HArrayUtils::gather( array2, array1, perm, binary::COPY, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
             tmp->resize( n ); // no init required as all values are set
-            HArrayUtils::scatter( *tmp, perm, array1, reduction::COPY, ctx );
+            HArrayUtils::scatter( *tmp, perm, array1, binary::COPY, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same
 
@@ -132,9 +132,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_numeric_test_types
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
     HArray<ValueType> array( N );
-    HArrayUtils::setScalar( array, a, reduction::COPY, ctx );  // array = a
-    HArrayUtils::setScalar( array, b, reduction::ADD, ctx  );  // array += b
-    HArrayUtils::setScalar( array, c, reduction::MULT, ctx  ); // array *= c
+    HArrayUtils::setScalar( array, a, binary::COPY, ctx );  // array = a
+    HArrayUtils::setScalar( array, b, binary::ADD, ctx  );  // array += b
+    HArrayUtils::setScalar( array, c, binary::MULT, ctx  ); // array *= c
     ValueType expectedValue = ( a + b ) * c;
     {
         ReadAccess<ValueType> read( array, host );
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_numeric_test_types 
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
     HArray<ValueType> array( N );
-    HArrayUtils::setScalar( array, a, reduction::COPY, ctx );  // array = a
+    HArrayUtils::setScalar( array, a, binary::COPY, ctx );  // array = a
     HArrayUtils::setVal( array, k, b );  // array[k] = b
     {
         ReadAccess<ValueType> read( array, host );
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::execElementwiseNoArg( array, elementwise::EXP, ctx );
+    HArrayUtils::unaryOp( array, array, unary::EXP, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::execElementwiseNoArg( array, elementwise::LOG, ctx );
+    HArrayUtils::unaryOp( array, array, unary::LOG, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
@@ -232,8 +232,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( floorCeilTest, ValueType, scai_numeric_test_types
     HArray<ValueType> arrayC( ctx );
     arrayF.init( values, n );
     arrayC.init( values, n );
-    HArrayUtils::execElementwiseNoArg( arrayF, elementwise::FLOOR, ctx );
-    HArrayUtils::execElementwiseNoArg( arrayC, elementwise::CEIL,  ctx );
+    HArrayUtils::unaryOp( arrayF, arrayF, unary::FLOOR, ctx );
+    HArrayUtils::unaryOp( arrayC, arrayC, unary::CEIL,  ctx );
     {
         ReadAccess<ValueType> readF( arrayF, host );
         ReadAccess<ValueType> readC( arrayC, host );
@@ -266,10 +266,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( trigonomicTest, ValueType, scai_numeric_test_type
     cosArray.init( values, n );
     tanArray.init( values, n );
     atanArray.init( values, n );
-    HArrayUtils::execElementwiseNoArg( sinArray,  elementwise::SIN,  ctx );
-    HArrayUtils::execElementwiseNoArg( cosArray,  elementwise::COS,  ctx );
-    HArrayUtils::execElementwiseNoArg( tanArray,  elementwise::TAN,  ctx );
-    HArrayUtils::execElementwiseNoArg( atanArray, elementwise::ATAN, ctx );
+    HArrayUtils::unaryOp( sinArray, sinArray, unary::SIN,  ctx );
+    HArrayUtils::unaryOp( cosArray, cosArray, unary::COS,  ctx );
+    HArrayUtils::unaryOp( tanArray, tanArray, unary::TAN,  ctx );
+    HArrayUtils::unaryOp( atanArray, atanArray, unary::ATAN, ctx );
     {
         ReadAccess<ValueType> sinRead( sinArray, host );
         for ( IndexType i = 0; i < n; ++i )
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_numeric_test_types )
     const IndexType n = sizeof( values ) / sizeof( ValueType );
     HArray<ValueType> array( ctx );
     array.init( values, n );
-    HArrayUtils::execElementwiseNoArg( array, elementwise::SQRT, ctx );
+    HArrayUtils::unaryOp( array, array, unary::SQRT, ctx );
     {
         ReadAccess<ValueType> read( array, host );
         for ( IndexType i = 0; i < n; ++i )
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copysignTest, ValueType, scai_numeric_test_types 
     magArray.init( magnitude, n );
     signArray.init( sign, n );
     resultArray.init( result, n );
-    HArrayUtils::copysign( resultArray, magArray, signArray, ctx );
+    HArrayUtils::binaryOp( resultArray, magArray, signArray, binary::COPY_SIGN, ctx );
     {
         ReadAccess<ValueType> readMag( magArray, host );
         ReadAccess<ValueType> readSign( signArray, host );
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_numeric_test_types )
     LArray<ValueType> target;
     BOOST_CHECK( HArrayUtils::validIndexes( indexes, M ) );
     BOOST_CHECK( !HArrayUtils::validIndexes( indexes, 1 ) );
-    HArrayUtils::gatherImpl( target, source, indexes, reduction::COPY );
+    HArrayUtils::gatherImpl( target, source, indexes, binary::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -406,11 +406,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
     BOOST_CHECK_THROW (
     {
         LArray<ValueType> target;
-        HArrayUtils::scatterImpl( target, indexes, source, reduction::COPY );
+        HArrayUtils::scatterImpl( target, indexes, source, binary::COPY );
 
     }, Exception );
     LArray<ValueType> target( M );
-    HArrayUtils::scatterImpl( target, indexes, source, reduction::COPY );
+    HArrayUtils::scatterImpl( target, indexes, source, binary::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -514,7 +514,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
     BOOST_CHECK_EQUAL( perm.size(), n );
     LArray<ValueType> origArray( n, vals, loc );
     LArray<ValueType> array1;
-    HArrayUtils::gatherImpl( array1, origArray, perm, reduction::COPY );
+    HArrayUtils::gatherImpl( array1, origArray, perm, binary::COPY );
     BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), ValueType( 0 ) );
 }
 
@@ -547,7 +547,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
     BOOST_CHECK_EQUAL( perm.size(), n );
 
     LArray<IndexType> sortedArray;
-    HArrayUtils::gatherImpl( sortedArray, array, perm, reduction::COPY );
+    HArrayUtils::gatherImpl( sortedArray, array, perm, binary::COPY );
     BOOST_CHECK( HArrayUtils::isSorted( sortedArray, true, loc ) );
 
     // number of buckets = 1, so only two values array[i] == 0 are taken
@@ -767,8 +767,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_numeric_test
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_numeric_test_types )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_numeric_test_types )
+
+BOOST_AUTO_TEST_CASE( arrayPlusArrayAliasTest )
 {
+    typedef float ValueType;
     ContextPtr loc = Context::getContextPtr();
     ValueType sourceVals1[] = { 3, 1, 4, 2 };
     ValueType sourceVals2[] = { 2, -1, -1, -5 };

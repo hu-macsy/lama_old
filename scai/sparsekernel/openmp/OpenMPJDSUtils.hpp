@@ -43,7 +43,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 #include <utility>
 
@@ -95,7 +95,7 @@ public:
         const IndexType dlg[],
         const IndexType ja[],
         const OtherValueType row[],
-        const utilskernel::reduction::ReductionOp op );
+        const utilskernel::binary::BinaryOp op );
 
     static IndexType getValuePos(
         const IndexType i,

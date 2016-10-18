@@ -49,7 +49,7 @@
 
 // internal scai libraries
 
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 
@@ -478,7 +478,7 @@ public:
      */
     virtual void setRow( const Vector& row, 
                          const IndexType globalRowIndex,
-                         const utilskernel::reduction::ReductionOp op ) = 0;
+                         const utilskernel::binary::BinaryOp op ) = 0;
 
     /** @brief Pure method to set one column of the matrix.
      *
@@ -494,7 +494,7 @@ public:
     virtual void setColumn( 
         const Vector& column, 
         const IndexType globalColIndex,
-        const utilskernel::reduction::ReductionOp op ) = 0;
+        const utilskernel::binary::BinaryOp op ) = 0;
 
     /** @brief This method returns the diagonal.
      *

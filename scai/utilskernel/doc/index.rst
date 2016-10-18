@@ -28,7 +28,7 @@ Contents
    
    LArray
    LAMAKernel
-   ReductionOp
+   BinaryOp
 
 *******
 Example
