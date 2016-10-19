@@ -381,26 +381,6 @@ IndexType CUDAJDSUtils::ilg2dlg(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  sortRows                                                          */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexType n )
-{
-    SCAI_REGION( "CUDA.JDS:sortRows" )
-    SCAI_LOG_INFO( logger, "sort " << n << " rows by sizes" )
-
-    if ( n > 1 )
-    {
-        SCAI_CHECK_CUDA_ACCESS
-        thrust::device_ptr<IndexType> array_d( array );
-        thrust::device_ptr<IndexType> perm_d( perm );
-        // stable sort, descending order, so override default comparison
-        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: synchronize for sortRows FAILED" )
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  setCSRValues                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 

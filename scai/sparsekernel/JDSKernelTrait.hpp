@@ -100,33 +100,6 @@ struct JDSKernelTrait
         }
     };
 
-    struct sortRows
-    {
-        /** Stable sorting of values in array in descending order.
-         *
-         *  @param[in,out] array are the values to be sorted
-         *  @param[in,out] perm, where perm[i] has the value of the original position
-         *  @param[in]    n is the number of values to be sorted
-         *
-         *  \code
-         *           array =   1  4   1  8  5  7
-         *           perm  =   0  1   2  3  4  5
-         +
-         *           array =   8  7   5  4  1  1
-         *           perm  =   3  5   4  1  0  2
-         *  \endcode
-         */
-
-        typedef void ( *FuncType ) ( IndexType array[],
-                                     IndexType perm[],
-                                     const IndexType n );
-
-        static const char* getId()
-        {
-            return "JDS.sortRows";
-        }
-    };
-
     struct ilg2dlg
     {
 

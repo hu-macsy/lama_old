@@ -693,7 +693,7 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
 {
     SCAI_LOG_INFO( logger, *this << "sortRows, #rows = " << mNumRows )
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-    static LAMAKernel<JDSKernelTrait::sortRows> sortRows;
+    static LAMAKernel<UtilKernelTrait::sort<IndexType> > sortRows;
     ContextPtr loc = context;
     reduce.getSupportedContext( loc, sortRows );
     // sort the rows according to the array ilg, take sorting over in perm
@@ -703,7 +703,8 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
     // reduce with ABS_MAX returns 0 ( instead of -max ) for mNumRows == 0
     mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, utilskernel::binary::ABS_MAX );
     SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc << ", #jagged diagonals = " << mNumDiagonals )
-    sortRows[loc]( ilg.get(), perm.get(), mNumRows );
+    bool descending = false;
+    sortRows[loc]( ilg.get(), perm.get(), mNumRows, descending );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

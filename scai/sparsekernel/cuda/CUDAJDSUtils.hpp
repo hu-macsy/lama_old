@@ -116,10 +116,6 @@ public:
         const IndexType ja[],
         const IndexType dlg[] );
 
-    /** Implementation for function type JDSKernelTrait::sortRows  */
-
-    static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
-
     /** Compute dlg array from ilg array as specified in JDSKernelTrait::ilg2dlg */
 
     static IndexType ilg2dlg(
@@ -127,10 +123,6 @@ public:
         const IndexType numDiagonals,
         const IndexType ilg[],
         const IndexType numRows );
-
-    /** Compute the inverse permutation as specified in JDSKernelTrait::setInversePerm */
-
-    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
     /** Conversion of JDS to CSR as specified in JDSKernelTrait::getCSRValues  */
 

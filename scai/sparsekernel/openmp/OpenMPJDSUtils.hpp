@@ -59,7 +59,7 @@ class COMMON_DLL_IMPORTEXPORT OpenMPJDSUtils
 {
 public:
 
-    /** This method scales the matrix using an value vector */
+    /** Implementation for JDSKernelTrait::scaleValue */
 
     template<typename ValueType, typename OtherValueType>
     static void scaleValue(
@@ -130,14 +130,6 @@ public:
         const IndexType ja[],
         const IndexType dlg[] );
 
-    /** Bucket sort for row sorting */
-
-    static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
-
-    /** Compute the inverse permutation as specified in JDSUtilKernelTrait::Sort::setInversePerm */
-
-    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
-
     /** Compute dlg array from ilg array as specified in JDSUtilKernelTrait::Conversions::ilg2dlg */
 
     static IndexType ilg2dlg(
@@ -175,7 +167,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for JDSUtilKernelTrait::Mult:normalGEMV with OpenMP on Host */
+    /** Implementation for JDSUtilKernelTrait::normalGEMV with OpenMP on Host */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -192,7 +184,7 @@ public:
         const IndexType jdsJA[],
         const ValueType jdsValues[] );
 
-    /** Implementation for JDSUtilKernelTrait::Mult:normalGEVM with OpenMP on Host */
+    /** Implementation for JDSUtilKernelTrait::normalGEVM with OpenMP on Host */
 
     template<typename ValueType>
     static void normalGEVM(

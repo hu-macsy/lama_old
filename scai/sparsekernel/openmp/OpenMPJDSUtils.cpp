@@ -389,104 +389,6 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
     return false;
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
-    // Parallel execution is safe as perm does not contain a value twice
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-    for ( IndexType ii = 0; ii < n; ii++ )
-    {
-        IndexType i = perm[ii];
-        SCAI_ASSERT_VALID_INDEX_DEBUG( i, n, "permutation value out of range, perm[" << ii << "]" )
-        inversePerm[i] = ii;
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexType n )
-{
-    if ( n <= 0 )
-    {
-        // just stop here, max reduction delivers illegal value
-        return;
-    }
-
-    // Help array needed, because bucket sort cannot be done in-place
-    scoped_array<IndexType> input( new IndexType[n] );
-    // Open: can this routine be called where perm is a valid permutation as input
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        input[i] = perm[i];
-    }
-
-    // The number of buckets is determined by the max value of ilg
-    const IndexType maxBucket = utilskernel::OpenMPUtils::reduce( ilg, n, utilskernel::binary::MAX );
-    SCAI_LOG_INFO( logger, "sort " << n << " values, number of buckets = " << maxBucket )
-    // longest row = maxBucket, but rows with length 0 is possible too!
-    scoped_array<IndexType> bucket( new IndexType[maxBucket + 1] );
-
-    for ( IndexType i = 0; i <= maxBucket; i++ )
-    {
-        bucket[i] = 0;
-    }
-
-    // counts how many diagonals exist for each possible length
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        bucket[ilg[i]]++;
-    }
-
-    for ( IndexType i = 0; i <= maxBucket; i++ )
-    {
-        SCAI_LOG_DEBUG( logger, "bucket " << i << " has " << bucket[i] << " entries" )
-    }
-
-    // use now bucket array for finding right offsets
-    // diag length:                 0   1   2   3   4   5
-    // number of (now in bucket):   3   4   3   5   1   5
-    // becomes (end of first for): 18  14  11   6   5   0
-    // later (end of second for):  21  18  14  11   6   5
-    IndexType total = 0;
-
-    for ( IndexType i = maxBucket + 1; i-- > 0; )
-    {
-        IndexType cnt = bucket[i];
-        bucket[i] = total;
-        total += cnt;
-        SCAI_LOG_TRACE( logger, "bucket " << i << " offset = " << bucket[i] << ", total = " << total )
-    }
-
-    // now we can build the new perm array
-    // diagonals with same lengths are moved to position bucket[b] upwards
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        IndexType b = ilg[i];
-        SCAI_LOG_TRACE( logger, "perm[" << bucket[b] << "]= " << input[i] )
-        perm[bucket[b]++] = input[i];
-    }
-
-    // reorganize of ilg has to wait until after filling of perm array is finished
-    total = 0;
-
-    for ( IndexType i = maxBucket + 1; i-- > 0; )
-    {
-        SCAI_LOG_DEBUG( logger, "set ilg[" << total << ":" << ( bucket[i] - 1 ) << "] = " << i )
-
-        for ( IndexType k = total; k < bucket[i]; k++ )
-        {
-            ilg[k] = i;
-        }
-
-        total = bucket[i];
-    }
-}
-
 /* --------------------------------------------------------------------------- */
 
 IndexType OpenMPJDSUtils::ilg2dlg(
@@ -976,7 +878,6 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
 }
 
 template<typename ValueType>
