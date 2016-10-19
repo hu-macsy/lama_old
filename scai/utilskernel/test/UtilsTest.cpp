@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpScalar1Test, ValueType, scai_numeric_test_types )
 {
-    static LAMAKernel<UtilKernelTrait::applyBinaryOpScalar1<ValueType> > binop;
+    static LAMAKernel<UtilKernelTrait::binaryOpScalar1<ValueType> > binop;
     ContextPtr loc = testContext;
     binop.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
@@ -390,6 +390,120 @@ BOOST_AUTO_TEST_CASE( setInversePermTest )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+ 
+BOOST_AUTO_TEST_CASE( sortIndexesTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+    static LAMAKernel<UtilKernelTrait::sort<IndexType> > sort;
+    ContextPtr loc = Context::getContextPtr( sort.validContext( testContext->getType() ) );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    {
+        IndexType valuesArr[]    = { 5, 2, 4, 4, 2, 7 };
+        IndexType valuesPerm[]   = { 0, 1, 2, 3, 4, 5 };
+        IndexType expectedArr[]  = { 7, 5, 4, 4, 2, 2 };
+        IndexType expectedPerm[] = { 5, 0, 2, 3, 1, 4 };
+
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
+        const IndexType nArr = sizeof( valuesArr ) / sizeof( IndexType );
+        const IndexType numRows = 6;
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+        HArray<IndexType> ilg( nArr, valuesArr, testContext );
+        {
+            WriteAccess<IndexType> wPerm( perm, loc );
+            WriteAccess<IndexType> wArr( ilg, loc );
+            SCAI_CONTEXT_ACCESS( loc );
+            sort[loc]( wArr.get(), wPerm.get(), numRows, false );
+        }
+        ReadAccess<IndexType> rArr( ilg );
+        ReadAccess<IndexType> rPerm( perm );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedArr[i], rArr.get()[i] );
+            BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
+        }
+    }
+    {
+        IndexType valuesArr[]    = { 5, 2, 4, 4, 2, 7 };
+        IndexType valuesPerm[]   = { 0, 1, 2, 3, 4, 5 };
+        IndexType expectedArr[]  = { 2, 2, 4, 4, 5, 7 };
+        IndexType expectedPerm[] = { 1, 4, 2, 3, 0, 5 };
+
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
+        const IndexType nArr = sizeof( valuesArr ) / sizeof( IndexType );
+        const IndexType numRows = 6;
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+        HArray<IndexType> ilg( nArr, valuesArr, testContext );
+        {
+            WriteAccess<IndexType> wPerm( perm, loc );
+            WriteAccess<IndexType> wArr( ilg, loc );
+            SCAI_CONTEXT_ACCESS( loc );
+            sort[loc]( wArr.get(), wPerm.get(), numRows, true );
+        }
+        ReadAccess<IndexType> rArr( ilg );
+        ReadAccess<IndexType> rPerm( perm );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedArr[i], rArr.get()[i] );
+            BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
+        }
+    }
+    {
+        const IndexType numRows = 0;
+        HArray<IndexType> perm( numRows );
+        HArray<IndexType> ilg( numRows );
+        {
+            WriteOnlyAccess<IndexType> wPerm( perm, loc, numRows );
+            WriteOnlyAccess<IndexType> wArr( ilg, loc, numRows );
+            SCAI_CONTEXT_ACCESS( loc );
+            sort[loc]( wArr.get(), wPerm.get(), numRows, false );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    static LAMAKernel<UtilKernelTrait::sort<ValueType> > sort;
+    static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
+
+    ContextPtr loc = testContext;
+    sort.getSupportedContext( loc, isSorted );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    const IndexType n = 1000;
+    const bool ascending = true;
+
+    HArray<ValueType> values( loc );
+    {
+        ContextPtr host = Context::getHostPtr();   // currently only available on host
+
+        WriteOnlyAccess<ValueType> wValues( values, host, n );
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            common::Math::random( wValues[i] );
+        }
+    }
+
+    HArray<IndexType> perm;
+
+    WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
+    WriteAccess<ValueType> wValues( values, loc );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    sort[loc]( wValues.get(), wPerm.get(), n, ascending );
+    bool valuesSorted = isSorted[loc]( wValues.get(), n, ascending );
+
+    BOOST_CHECK( valuesSorted );
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

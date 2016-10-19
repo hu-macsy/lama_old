@@ -672,7 +672,7 @@ void OpenMPJDSUtils::normalGEMV(
 
     // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
 
-    utilskernel::OpenMPUtils::applyBinaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );  
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );  
 
     if ( ndlg == 0 )
     {
@@ -972,12 +972,11 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
 }
 
 template<typename ValueType>

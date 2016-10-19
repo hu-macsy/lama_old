@@ -755,16 +755,16 @@ void MICUtils::scatterVal( ValueType out[], const IndexType indexes[], const Val
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICUtils::applyUnaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op )
+void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op )
 {
-    SCAI_LOG_INFO( logger, "applyUnaryOp<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
+    SCAI_LOG_INFO( logger, "unaryOp<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
 
     if ( n <= 0 )
     {
         return;
     }
 
-    bool done;   //!< indicates whether op is supported and has been done
+    bool done;  //!< indicates whether op is supported and has been done
 
     void* out_ptr = out;
     const void* in_ptr = in;
@@ -906,7 +906,7 @@ void MICUtils::applyUnaryOp( ValueType out[], const ValueType in[], const IndexT
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICUtils::applyBinaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op )
+void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op )
 {
     SCAI_LOG_INFO( logger, "applyBiaryOp<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
 
@@ -1015,14 +1015,14 @@ void MICUtils::applyBinaryOp( ValueType out[], const ValueType in1[], const Valu
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICUtils::applyBinaryOpScalar1( 
+void MICUtils::binaryOpScalar1( 
     ValueType out[], 
     const ValueType value, 
     const ValueType in[], 
     const IndexType n, 
     const binary::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger, "applyBinaryOpScalar1<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
+    SCAI_LOG_INFO( logger, "binaryOpScalar1<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
 
     if ( n <= 0 )
     {
@@ -1096,14 +1096,14 @@ void MICUtils::applyBinaryOpScalar1(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICUtils::applyBinaryOpScalar2( 
+void MICUtils::binaryOpScalar2( 
     ValueType out[], 
     const ValueType in[], 
     const ValueType value, 
     const IndexType n, 
     const binary::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger, "applyBinaryOpScalar2<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
+    SCAI_LOG_INFO( logger, "binaryOpScalar2<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
 
     if ( n <= 0 )
     {
@@ -1190,10 +1190,10 @@ void MICUtils::RegNumericKernels<ValueType>::registerKernels( kregistry::KernelR
     const common::context::ContextType ctx = common::context::MIC;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
                             << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<UtilKernelTrait::applyUnaryOp<ValueType> >( applyUnaryOp, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::applyBinaryOp<ValueType> >( applyBinaryOp, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::applyBinaryOpScalar1<ValueType> >( applyBinaryOpScalar1, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::applyBinaryOpScalar2<ValueType> >( applyBinaryOpScalar2, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::binaryOpScalar1<ValueType> >( binaryOpScalar1, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::binaryOpScalar2<ValueType> >( binaryOpScalar2, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

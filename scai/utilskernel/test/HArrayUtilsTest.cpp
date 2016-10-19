@@ -65,7 +65,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayUtilsTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( FactoryTest )
+BOOST_AUTO_TEST_CASE( factoryTest )
 {
     HArrays allArrays;    // is created by factory
     size_t nTypes = SCAI_COMMON_COUNT_NARG( SCAI_ARRAY_TYPES_HOST );
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE( FactoryTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( UntypedTest )
+BOOST_AUTO_TEST_CASE( untypedTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
     ContextPtr ctx  = Context::getContextPtr();
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( UntypedTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setScalarTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 10;
     const ValueType a = 1;
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetScalarTest, ValueType, scai_numeric_test_types
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 10;
     const IndexType k = 3;    // one value in range 0 .. N-1
@@ -178,20 +178,50 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetValueTest, ValueType, scai_numeric_test_types 
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_numeric_test_types )
 {
+    // check of all unary array operations
+
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
+
     const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
     const IndexType n = sizeof( values ) / sizeof( ValueType );
-    HArray<ValueType> array( ctx );
-    array.init( values, n );
-    HArrayUtils::unaryOp( array, array, unary::EXP, ctx );
+
+    for ( IndexType i = 0; i < unary::MAX_UNARY_OP; ++i )
     {
+        HArray<ValueType> array( ctx );
+        array.init( values, n );
+
+        unary::UnaryOp op = unary::UnaryOp( i );
+
+        HArrayUtils::unaryOp( array, array, op, ctx );
+
         ReadAccess<ValueType> read( array, host );
+
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType x = read[i] - common::Math::exp(values[i]);
+            ValueType res = 0;
+
+            switch ( op ) 
+            {
+                case unary::CONJ  : res = common::Math::conj( values[i] ); break;
+                case unary::MINUS : res = -values[i]; break;
+                case unary::EXP   : res = common::Math::exp( values[i] ); break;
+                case unary::LOG   : res = common::Math::log( values[i] ); break;
+                case unary::FLOOR : res = common::Math::floor( values[i] ); break;
+                case unary::CEIL  : res = common::Math::ceil( values[i] ); break;
+                case unary::SQRT  : res = common::Math::sqrt( values[i] ); break;
+                case unary::SIN   : res = common::Math::sin( values[i] ); break;
+                case unary::COS   : res = common::Math::cos( values[i] ); break;
+                case unary::TAN   : res = common::Math::tan( values[i] ); break;
+                case unary::ATAN  : res = common::Math::atan( values[i] ); break;
+
+                default: res = read[i];   // give correct result for all other ops
+            }
+
+            ValueType x = read[i] - res;
+
             BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
             BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
@@ -200,20 +230,70 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types )
 {
+    // check of all unary array operations
+
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
-    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
-    const IndexType n = sizeof( values ) / sizeof( ValueType );
-    HArray<ValueType> array( ctx );
-    array.init( values, n );
-    HArrayUtils::unaryOp( array, array, unary::LOG, ctx );
+
+    const ValueType values1[] = { 1.0, 1.2, -1.3, -1.0 };
+    const ValueType values2[] = { 0.5, -0.7, 0.3, -1.3 };
+
+    const IndexType n = sizeof( values1 ) / sizeof( ValueType );
+
+    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
     {
-        ReadAccess<ValueType> read( array, host );
+        binary::BinaryOp op = binary::BinaryOp( i );
+
+        if ( op == binary::COPY )
+        {
+            continue;    // not implemented
+        }
+
+        HArray<ValueType> array1( ctx );
+        HArray<ValueType> array2( ctx );
+        HArray<ValueType> array3( ctx );
+
+        array1.init( values1, n );
+        array2.init( values2, n );
+
+        if ( op == binary::POW )
+        {
+            // first argument must not be negative, build ABS
+
+            HArrayUtils::unaryOp( array1, array1, unary::ABS, ctx );
+        }
+
+        HArrayUtils::binaryOp( array3, array1, array2, op, ctx );
+
+        BOOST_REQUIRE_EQUAL( n, array3.size() );
+
+        ReadAccess<ValueType> read( array3, host );  // read result array
+
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType x = read[i] - common::Math::log(values[i]);
+            ValueType res = 0;
+
+            switch ( op ) 
+            {
+                case binary::ADD       : res = values1[i] + values2[i]; break;
+                case binary::SUB       : res = values1[i] - values2[i]; break;
+                case binary::MULT      : res = values1[i] * values2[i]; break;
+                case binary::DIVIDE    : res = values1[i] / values2[i]; break;
+                case binary::COPY_SIGN : res = common::Math::copysign( values1[i], values2[i] ); break;
+                case binary::MIN       : res = common::Math::min( values1[i], values2[i] ); break;
+                case binary::MAX       : res = common::Math::max( values1[i], values2[i] ); break;
+                case binary::POW       : {
+                                             ValueType tmp = common::Math::abs( values1[i] );
+                                             res = common::Math::pow( tmp, values2[i] ); break;
+                                         }
+
+                default: res = read[i];   // give correct result for all other ops
+            }
+
+            ValueType x = read[i] - res;
+
             BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
             BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
@@ -222,102 +302,58 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( floorCeilTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test_types )
 {
+    // check of all unary array operations
+
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
-    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
+
+    const ValueType scalar = 3.5;
+    const ValueType values[] = { 1.0, 1.2, -1.3, -1.0 };
+
     const IndexType n = sizeof( values ) / sizeof( ValueType );
-    HArray<ValueType> arrayF( ctx );
-    HArray<ValueType> arrayC( ctx );
-    arrayF.init( values, n );
-    arrayC.init( values, n );
-    HArrayUtils::unaryOp( arrayF, arrayF, unary::FLOOR, ctx );
-    HArrayUtils::unaryOp( arrayC, arrayC, unary::CEIL,  ctx );
+
+    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
     {
-        ReadAccess<ValueType> readF( arrayF, host );
-        ReadAccess<ValueType> readC( arrayC, host );
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            ValueType x = readF[i] - common::Math::floor(values[i]);
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        binary::BinaryOp op = binary::BinaryOp( i );
 
-            x = readC[i] - common::Math::ceil(values[i]);
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        if ( op == binary::COPY || op == binary::COPY_SIGN || op == binary::ABS_MAX )
+        {
+            continue;    // not implemented
         }
-    }
-}
 
-/* --------------------------------------------------------------------- */
+        HArray<ValueType> array1( ctx );
+        HArray<ValueType> array2( ctx );
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( trigonomicTest, ValueType, scai_numeric_test_types )
-{
-    ContextPtr ctx  = Context::getContextPtr();
-    ContextPtr host = Context::getHostPtr();
-    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
-    const IndexType n = sizeof( values ) / sizeof( ValueType );
-    HArray<ValueType> sinArray( ctx );
-    HArray<ValueType> cosArray( ctx );
-    HArray<ValueType> tanArray( ctx );
-    HArray<ValueType> atanArray( ctx );
-    sinArray.init( values, n );
-    cosArray.init( values, n );
-    tanArray.init( values, n );
-    atanArray.init( values, n );
-    HArrayUtils::unaryOp( sinArray, sinArray, unary::SIN,  ctx );
-    HArrayUtils::unaryOp( cosArray, cosArray, unary::COS,  ctx );
-    HArrayUtils::unaryOp( tanArray, tanArray, unary::TAN,  ctx );
-    HArrayUtils::unaryOp( atanArray, atanArray, unary::ATAN, ctx );
-    {
-        ReadAccess<ValueType> sinRead( sinArray, host );
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            ValueType x = sinRead[i] - common::Math::sin(values[i]);
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
-        }
-        ReadAccess<ValueType> cosRead( cosArray, host );
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            ValueType x = cosRead[i] - common::Math::cos(values[i]);
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
-        }
-        ReadAccess<ValueType> tanRead( tanArray, host );
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            ValueType x = tanRead[i] - common::Math::tan(values[i]);
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
-        }
-        ReadAccess<ValueType> atanRead( atanArray, host );
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            ValueType x = atanRead[i] - common::Math::atan(values[i]);
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
-        }
-    }
-}
+        array1.init( values, n );
 
-/* --------------------------------------------------------------------- */
+        HArrayUtils::binaryOpScalar1( array2, scalar, array1, op, ctx );
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_numeric_test_types )
-{
-    ContextPtr ctx  = Context::getContextPtr();
-    ContextPtr host = Context::getHostPtr();
-    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
-    const IndexType n = sizeof( values ) / sizeof( ValueType );
-    HArray<ValueType> array( ctx );
-    array.init( values, n );
-    HArrayUtils::unaryOp( array, array, unary::SQRT, ctx );
-    {
-        ReadAccess<ValueType> read( array, host );
+        BOOST_REQUIRE_EQUAL( n, array2.size() );
+
+        ReadAccess<ValueType> read( array2, host );  // read result array
+
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType x = read[i] - common::Math::sqrt(values[i]);
+            ValueType res = 0;
+
+            switch ( op ) 
+            {
+                case binary::ADD       : res = scalar + values[i]; break;
+                case binary::SUB       : res = scalar - values[i]; break;
+                case binary::MULT      : res = scalar * values[i]; break;
+                case binary::DIVIDE    : res = scalar / values[i]; break;
+                case binary::COPY_SIGN : res = common::Math::copysign( scalar, values[i] ); break;
+                case binary::MIN       : res = common::Math::min( scalar, values[i] ); break;
+                case binary::MAX       : res = common::Math::max( scalar, values[i] ); break;
+                case binary::POW       : res = common::Math::pow( scalar, values[i] ); break;
+
+                default: res = read[i];   // give correct result for all other ops
+            }
+
+            ValueType x = read[i] - res;
+
             BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
             BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
@@ -510,7 +546,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
     const IndexType n = sizeof( vals ) / sizeof( ValueType );
     LArray<ValueType> array( n, vals, loc );
     LArray<IndexType> perm;
-    HArrayUtils::sort( array, perm );
+    HArrayUtils::sort( array, perm, true );
     BOOST_CHECK_EQUAL( perm.size(), n );
     LArray<ValueType> origArray( n, vals, loc );
     LArray<ValueType> array1;

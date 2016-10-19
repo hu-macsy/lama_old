@@ -625,7 +625,7 @@ void HArrayUtils::arrayTimesArray(
         return;
     }
 
-    static LAMAKernel<UtilKernelTrait::applyBinaryOp<ValueType> > applyBinaryOp;
+    static LAMAKernel<UtilKernelTrait::binaryOp<ValueType> > binaryOp;
 
     ContextPtr loc = prefLoc;
 
@@ -634,14 +634,14 @@ void HArrayUtils::arrayTimesArray(
         loc = x.getValidContext();
     }
 
-    applyBinaryOp.getSupportedContext( loc );
+    binaryOp.getSupportedContext( loc );
     // no alias checks are done here
     {
         ReadAccess<ValueType> xAccess( x, loc );
         ReadAccess<ValueType> yAccess( y, loc );
         WriteOnlyAccess<ValueType> resultAccess( result, loc, x.size() );
         SCAI_CONTEXT_ACCESS( loc )
-        applyBinaryOp[loc]( resultAccess.get(), xAccess.get(), yAccess.get(), n, binary::MULT );
+        binaryOp[loc]( resultAccess.get(), xAccess.get(), yAccess.get(), n, binary::MULT );
     }
 
     if ( alpha != common::constants::ONE )
@@ -661,7 +661,7 @@ void HArrayUtils::unaryOp(
 {
     const IndexType n = x.size();
 
-    static LAMAKernel<UtilKernelTrait::applyUnaryOp<ValueType> > applyUnaryOp;
+    static LAMAKernel<UtilKernelTrait::unaryOp<ValueType> > unaryOpKernel;
 
     ContextPtr loc = prefLoc;
 
@@ -672,7 +672,7 @@ void HArrayUtils::unaryOp(
         loc = x.getValidContext();
     }
 
-    applyUnaryOp.getSupportedContext( loc );
+    unaryOpKernel.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -681,7 +681,7 @@ void HArrayUtils::unaryOp(
     ReadAccess<ValueType> rX( x, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
-    applyUnaryOp[loc]( wResult.get(), rX.get(), n, op );
+    unaryOpKernel[loc]( wResult.get(), rX.get(), n, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -696,7 +696,7 @@ void HArrayUtils::binaryOp(
 {
     const IndexType n = x.size();
 
-    static LAMAKernel<UtilKernelTrait::applyBinaryOp<ValueType> > applyBinaryOp;
+    static LAMAKernel<UtilKernelTrait::binaryOp<ValueType> > binaryOp;
 
     ContextPtr loc = prefLoc;
 
@@ -707,7 +707,7 @@ void HArrayUtils::binaryOp(
         loc = x.getValidContext();
     }
 
-    applyBinaryOp.getSupportedContext( loc );
+    binaryOp.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -717,7 +717,7 @@ void HArrayUtils::binaryOp(
     ReadAccess<ValueType> rY( y, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
-    applyBinaryOp[loc]( wResult.get(), rX.get(), rY.get(), n, op );
+    binaryOp[loc]( wResult.get(), rX.get(), rY.get(), n, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -732,7 +732,7 @@ void HArrayUtils::binaryOpScalar1(
 {
     const IndexType n = y.size();
 
-    static LAMAKernel<UtilKernelTrait::applyBinaryOpScalar1<ValueType> > applyBinaryOpScalar1;
+    static LAMAKernel<UtilKernelTrait::binaryOpScalar1<ValueType> > binaryOpScalar1;
 
     ContextPtr loc = prefLoc;
     
@@ -743,7 +743,7 @@ void HArrayUtils::binaryOpScalar1(
         loc = y.getValidContext();
     }
 
-    applyBinaryOpScalar1.getSupportedContext( loc );
+    binaryOpScalar1.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -752,7 +752,7 @@ void HArrayUtils::binaryOpScalar1(
     ReadAccess<ValueType> rY( y, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
-    applyBinaryOpScalar1[loc]( wResult.get(), x, rY.get(), n, op );
+    binaryOpScalar1[loc]( wResult.get(), x, rY.get(), n, op );
 }   
 
 /* --------------------------------------------------------------------------- */
@@ -767,7 +767,7 @@ void HArrayUtils::binaryOpScalar2(
 {
     const IndexType n = x.size();
 
-    static LAMAKernel<UtilKernelTrait::applyBinaryOpScalar2<ValueType> > applyBinaryOpScalar2;
+    static LAMAKernel<UtilKernelTrait::binaryOpScalar2<ValueType> > binaryOpScalar2;
 
     ContextPtr loc = prefLoc;
 
@@ -778,7 +778,7 @@ void HArrayUtils::binaryOpScalar2(
         loc = x.getValidContext();
     }
 
-    applyBinaryOpScalar2.getSupportedContext( loc );
+    binaryOpScalar2.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -787,7 +787,7 @@ void HArrayUtils::binaryOpScalar2(
     ReadAccess<ValueType> rX( x, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
-    applyBinaryOpScalar2[loc]( wResult.get(), rX.get(), y, n, op );
+    binaryOpScalar2[loc]( wResult.get(), rX.get(), y, n, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -999,6 +999,7 @@ template<typename ValueType>
 void HArrayUtils::sort(
     hmemo::HArray<ValueType>& array,
     hmemo::HArray<IndexType>& perm,
+    const bool ascending,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
@@ -1023,7 +1024,7 @@ void HArrayUtils::sort(
     SCAI_CONTEXT_ACCESS( loc )
     WriteAccess<ValueType> wValues( array, loc );
     WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
-    sort[loc]( wValues.get(), wPerm.get(), n );
+    sort[loc]( wValues.get(), wPerm.get(), n, ascending );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1268,7 +1269,8 @@ void HArrayUtils::buildDenseArray(
     template bool HArrayUtils::isSorted<ValueType>( const hmemo::HArray<ValueType>&, const bool, hmemo::ContextPtr );        \
     template ValueType HArrayUtils::scan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                         \
     template ValueType HArrayUtils::unscan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                       \
-    template void HArrayUtils::sort<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&, hmemo::ContextPtr );   \
+    template void HArrayUtils::sort<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,                        \
+                                                const bool, hmemo::ContextPtr );                                             \
     template void HArrayUtils::setSequence<ValueType>( hmemo::HArray<ValueType>&, ValueType, ValueType, IndexType,           \
             hmemo::ContextPtr );                                                                                             \
     template void HArrayUtils::setRandomImpl<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );   \

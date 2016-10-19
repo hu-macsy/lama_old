@@ -399,17 +399,20 @@ public:
 
     /** Sort an array of values
      *
-     *  @param[in,out] array is the array of values to be sorted
-     *  @param[out] perm is the permutation that gives the sorted array
-     *  @param[in] prefLoc is the preferred context where computation should be done
+     *  @param[in,out] array      is the array of values to be sorted
+     *  @param[out]    perm       is the permutation that gives the sorted array
+     *  @param[in]     ascending  sort ascending (true) or descending (false)
+     *  @param[in]     prefLoc    is the preferred context where computation should be done
      * 
      *  Note: array_out = array_in[ perm ]
-     *
-     *  ToDo: ascending or descending, why no choice
      */
 
     template<typename ValueType>
-    static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void sort( 
+        hmemo::HArray<ValueType>& array, 
+        hmemo::HArray<IndexType>& perm, 
+        const bool ascending,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Bucket sort of an array with integer values
      *

@@ -62,20 +62,21 @@ struct unary
 
     typedef enum
     {
-        CONJ,    // for conjugate of a vector
+        CONJ,    //!< for conjugate of a vector
+        ABS,     //!< for absolute value
+        MINUS,   //!< for negative value
+        EXP,     //!< call exp on each vector element
+        SQRT,    //!< call sqrt on each vector element
+        SIN,     //!< call sin on each vector element
+        COS,     //!< trigonometric function cos for each vector element
+        TAN,     //!< trigonometric function tan on each vector element
+        ATAN,    //!< call atan on each vector element
+        LOG,     //!< call log on each vector element
+        FLOOR,   //!< rounds downward
+        CEIL,    //!< rounds upward
 
-        EXP,     // call exp on each vector element
-        SQRT,    // call sqrt on each vector element
-        SIN,     // call sin on each vector element
-        COS,     // call cos on each vector element
-        TAN,     // call tan on each vector element
-        ATAN,    // call atan on each vector element
-        LOG,     // call log on each vector element
-        FLOOR,   // call floor on each vector element
-        CEIL,    // call ceil on each vector element
 
-
-        MAX_UNARY_OP // only for tests, leave this at the end
+        MAX_UNARY_OP //!< internal use only
 
     } UnaryOp;
 };
@@ -90,6 +91,14 @@ inline std::ostream& operator<<( std::ostream& stream, const unary::UnaryOp& op 
     {
         case unary::CONJ:
             stream << "CONJ";
+            break;
+
+        case unary::ABS:
+            stream << "ABS";
+            break;
+
+        case unary::MINUS:
+            stream << "MINUS";
             break;
 
         case unary::EXP:

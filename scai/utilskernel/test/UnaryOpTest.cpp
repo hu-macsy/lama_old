@@ -56,6 +56,16 @@ BOOST_AUTO_TEST_CASE( UnaryOpTest )
             BOOST_CHECK_EQUAL( s.str(), "CONJ" );
             count++;
         }
+        if ( type == unary::MINUS )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "MINUS" );
+            count++;
+        }
+        if ( type == unary::ABS )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "ABS" );
+            count++;
+        }
         if ( type == unary::EXP )
         {
             BOOST_CHECK_EQUAL( s.str(), "EXP" );

@@ -622,7 +622,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ContextPtr loc = getContextPtr();
         // temporary array for inverse permutation, initialize with mNumRows
         HArray<IndexType> invPermArray( mNumRows, mNumRows );
-        static LAMAKernel<JDSKernelTrait::setInversePerm> setInversePerm;
+        static LAMAKernel<UtilKernelTrait::setInversePerm> setInversePerm;
         static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
         ReadAccess<IndexType> rPerm( mPerm, loc );
         WriteAccess<IndexType> wInversePerm( invPermArray, loc );
@@ -693,9 +693,9 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
 {
     SCAI_LOG_INFO( logger, *this << "sortRows, #rows = " << mNumRows )
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-    static LAMAKernel<UtilKernelTrait::sort<IndexType> > sort;
+    static LAMAKernel<JDSKernelTrait::sortRows> sortRows;
     ContextPtr loc = context;
-    reduce.getSupportedContext( loc, sort );
+    reduce.getSupportedContext( loc, sortRows );
     // sort the rows according to the array ilg, take sorting over in perm
     WriteAccess<IndexType> ilg( mIlg, loc );
     WriteAccess<IndexType> perm( mPerm, loc );
@@ -703,7 +703,7 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
     // reduce with ABS_MAX returns 0 ( instead of -max ) for mNumRows == 0
     mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, utilskernel::binary::ABS_MAX );
     SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc << ", #jagged diagonals = " << mNumDiagonals )
-    sort[loc]( ilg.get(), perm.get(), mNumRows );
+    sortRows[loc]( ilg.get(), perm.get(), mNumRows );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -723,7 +723,7 @@ void JDSStorage<ValueType>::buildCSR(
     static LAMAKernel<UtilKernelTrait::setScatter<IndexType, IndexType> > setScatter;
     static LAMAKernel<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
     static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-    static LAMAKernel<JDSKernelTrait::setInversePerm> setInversePerm;
+    static LAMAKernel<UtilKernelTrait::setInversePerm> setInversePerm;
     ContextPtr loc = context;
     setScatter.getSupportedContext( loc );
     getCSRValues.getSupportedContext( loc, sizes2offsets, setInversePerm );
