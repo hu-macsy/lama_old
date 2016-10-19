@@ -69,6 +69,8 @@ namespace dmemo
 const int MPICommunicator::defaultTag = 1;
 
 #ifdef SCAI_COMPLEX_SUPPORTED
+MPI_Datatype MPICommunicator::mComplexLongDoubleType = 0;
+
 MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
 MPI_Op MPICommunicator::mMaxComplexFloat = 0;
@@ -229,6 +231,12 @@ void MPICommunicator::initialize( int& argc, char**& argv )
     {
         MPI_Op_create( &min_operator<ComplexLongDouble>, true, &mMinComplexLongDouble );
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex long double" )
+    }
+
+    if( mComplexLongDoubleType == 0 )
+    {
+        MPI_Type_contiguous( 2, MPI_LONG_DOUBLE, &mComplexLongDoubleType );
+        MPI_Type_commit( &mComplexLongDoubleType );
     }
 
 #endif

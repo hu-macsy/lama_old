@@ -254,6 +254,8 @@ protected:
     static void sum_complex_long_double( void* in, void* out, int* count,
                                          MPI_Datatype* dtype );
 
+    static MPI_Datatype mComplexLongDoubleType;
+
     static MPI_Op mMaxComplexFloat;
     static MPI_Op mMaxComplexDouble;
     static MPI_Op mMaxComplexLongDouble;
@@ -314,7 +316,7 @@ inline MPI_Datatype MPICommunicator::getMPIType( common::scalar::ScalarType styp
         case common::scalar::LONG_DOUBLE         : return MPI_LONG_DOUBLE;
         case common::scalar::COMPLEX             : return MPI_COMPLEX;
         case common::scalar::DOUBLE_COMPLEX      : return MPI_DOUBLE_COMPLEX;
-        case common::scalar::LONG_DOUBLE_COMPLEX : return MPI::LONG_DOUBLE_COMPLEX;
+        case common::scalar::LONG_DOUBLE_COMPLEX : return mComplexLongDoubleType;
         case common::scalar::CHAR                : return MPI_CHAR;
         case common::scalar::UNSIGNED_INT        : return MPI_UNSIGNED;
         case common::scalar::UNSIGNED_LONG       : return MPI_UNSIGNED_LONG;
