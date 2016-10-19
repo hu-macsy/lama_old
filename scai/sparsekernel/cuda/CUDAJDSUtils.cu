@@ -183,45 +183,45 @@ void CUDAJDSUtils::getRow(
 
 template<typename ValueType, typename OtherValueType>
 __global__
-void scaleValueKernel(
+void scaleRowsKernel(
+    ValueType* jdsValues,
     const IndexType numRows,
     const IndexType* perm,
     const IndexType* ilg,
     const IndexType* dlg,
-    ValueType* mValues,
-    const OtherValueType* values )
+    const OtherValueType* rowValues )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
         IndexType offset = i;
-        OtherValueType value = values[perm[i]];
+        ValueType rowScale = static_cast<ValueType>( rowValues[perm[i]] );
 
         for ( IndexType j = 0; j < ilg[i]; j++ )
         {
-            mValues[offset] *= static_cast<ValueType>( value );
+            jdsValues[offset] *= rowScale;
             offset += dlg[j];
         }
     }
 }
 
 template<typename ValueType, typename OtherValueType>
-void CUDAJDSUtils::scaleValue(
+void CUDAJDSUtils::scaleRows(
+    ValueType jdsValues[],
     const IndexType numRows,
     const IndexType perm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    ValueType mValues[],
-    const OtherValueType values[] )
+    const OtherValueType rowValues[] )
 {
     SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
     SCAI_CHECK_CUDA_ACCESS
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    scaleValueKernel <<< dimGrid, dimBlock>>>( numRows, perm, ilg, dlg, mValues, values );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleValueKernel FAILED" )
+    scaleRowsKernel <<< dimGrid, dimBlock>>>( jdsValues, numRows, perm, ilg, dlg, rowValues );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleRowsKernel FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -2637,7 +2637,7 @@ void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
     SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
                      << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }

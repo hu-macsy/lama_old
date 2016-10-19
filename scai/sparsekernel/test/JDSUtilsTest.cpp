@@ -180,12 +180,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
 {
     typedef float OtherValueType;
     ContextPtr testContext = Context::getContextPtr();
-    KernelTraitContextFunction<JDSKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
-    ContextPtr loc = Context::getContextPtr( scaleValue.validContext( testContext->getType() ) );
+    KernelTraitContextFunction<JDSKernelTrait::scaleRows<ValueType, OtherValueType> > scaleRows;
+    ContextPtr loc = Context::getContextPtr( scaleRows.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     ValueType valuesValues[] = { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
     IndexType valuesDlg[]    = { 3, 3, 3, 3, 2, 1 };
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_numeric_test_type
         ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        scaleValue[loc->getType()]( numRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
+        scaleRows[loc->getType()]( wValues.get(), numRows, rPerm.get(), rIlg.get(), rDlg.get(), rDiagonal.get() );
     }
     {
         ReadAccess<ValueType> rValues( values );

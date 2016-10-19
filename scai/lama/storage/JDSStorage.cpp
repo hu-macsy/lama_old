@@ -507,16 +507,16 @@ template<typename OtherValueType>
 void JDSStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& diagonal )
 {
     SCAI_LOG_INFO( logger, "scaleImpl" )
-    static LAMAKernel<JDSKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
+    static LAMAKernel<JDSKernelTrait::scaleRows<ValueType, OtherValueType> > scaleRows;
     ContextPtr loc = this->getContextPtr();
-    scaleValue.getSupportedContext( loc );
+    scaleRows.getSupportedContext( loc );
     ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
     ReadAccess<IndexType> rPerm( mPerm, loc );
     ReadAccess<IndexType> rIlg( mIlg, loc );
     ReadAccess<IndexType> rDlg( mDlg, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    scaleValue[loc]( mNumRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
+    scaleRows[loc]( wValues.get(), mNumRows, rPerm.get(), rIlg.get(), rDlg.get(), rDiagonal.get() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

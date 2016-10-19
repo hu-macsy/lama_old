@@ -308,25 +308,27 @@ IndexType OpenMPJDSUtils::getValuePosCol(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType, typename OtherValueType>
-void OpenMPJDSUtils::scaleValue(
+void OpenMPJDSUtils::scaleRows(
+    ValueType jdsValues[],
     const IndexType numRows,
     const IndexType perm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    ValueType mValues[],
-    const OtherValueType values[] )
+    const OtherValueType rowValues[] )
 {
-    SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "scaleRows with numRows = " << numRows )
 
-    //TODO: use OpenMP
+    // Due to false sharing, use of OpenMP is not recommended here
+
     for ( IndexType i = 0; i < numRows; i++ )
     {
         IndexType offset = i;
-        OtherValueType scalar = values[perm[i]];
+
+        ValueType rowScale = static_cast<ValueType>( rowValues[perm[i]] );
 
         for ( IndexType jj = 0; jj < ilg[i]; jj++ )
         {
-            mValues[offset] *= static_cast<ValueType>( scalar );
+            jdsValues[offset] *= rowScale;
             offset += dlg[jj];
         }
     }
@@ -904,7 +906,7 @@ void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( 
 
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setRow<ValueType, OtherValueType> >( setRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }
