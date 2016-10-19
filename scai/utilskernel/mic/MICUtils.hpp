@@ -99,6 +99,10 @@ public:
     template<typename ValueType>
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
+    /** MIC implementation for UtilKernelTrait::setInversePerm */
+
+    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
+
     /** MIC implementation for UtilKernelTrait::set */
 
     template<typename ValueType1, typename ValueType2>

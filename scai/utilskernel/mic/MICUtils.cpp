@@ -553,6 +553,31 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
 
 /* --------------------------------------------------------------------------- */
 
+void MICUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
+
+    void* inversePermPtr = inversePerm;
+    const void* permPtr = perm;
+    // Parallel execution is safe as perm does not contain a value twice
+    int device = MICContext::getCurrentDevice();
+
+    #pragma offload target( mic : device ) in( permPtr, inversePermPtr, n )
+    {
+        IndexType* inversePerm = reinterpret_cast<IndexType*>( inversePermPtr );
+        const IndexType* perm = reinterpret_cast<const IndexType*>( permPtr );
+
+        #pragma omp parallel for
+        for ( IndexType ii = 0; ii < n; ii++ )
+        {
+            IndexType i = perm[ii];
+            inversePerm[i] = ii;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType1, typename ValueType2>
 void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op )
 {
@@ -791,6 +816,31 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 break;
             }
 
+            case unary::MINUS :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = -in[i];
+                }
+                
+
+                break;
+            }
+
+            case unary::ABS :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+   
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = common::Math::abs( in[i] );
+                }
+    
+                break;
+            }
+
             case unary::EXP :
             {
                 #pragma omp parallel for
@@ -999,6 +1049,43 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
                 break;
             }
 
+            case binary::MIN :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    
+                for ( IndexType i = 0; i < n; i++ )
+                {   
+                    out[i] = common::Math::min( in1[i], in2[i] );
+                }
+
+                break;
+            }
+
+            case binary::MAX :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = common::Math::max( in1[i], in2[i] );
+                }
+
+                break;
+            }
+
+            case binary::ABS_MAX :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = common::Math::max( common::Math::abs( in1[i] ),
+                                                common::Math::abs( in2[i] ) );
+                }
+
+                break;
+            }
+
             default:
             {
                 done = false;
@@ -1047,6 +1134,30 @@ void MICUtils::binaryOpScalar1(
 
         switch ( op )
         {
+            case binary::ADD :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = value + in[i];
+                }
+
+                break;
+            }
+
+            case binary::SUB :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = value - in[i];
+                }
+    
+                break;
+            }
+
             case binary::MULT:
             {
                 #pragma omp parallel for
@@ -1077,6 +1188,30 @@ void MICUtils::binaryOpScalar1(
                 {
                     out[i] = common::Math::pow( value, in[i] );
                 }
+                break;
+            }
+
+            case binary::MIN :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = common::Math::min( value, in[i] );
+                }
+    
+                break;
+            }
+
+            case binary::MAX :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = common::Math::max( value, in[i] );
+                }
+
                 break;
             }
 
@@ -1128,6 +1263,30 @@ void MICUtils::binaryOpScalar2(
 
         switch ( op )
         {
+            case binary::ADD :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = in[i] + value;
+                }
+
+                break;
+            }
+
+            case binary::SUB :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = in[i] - value;
+                }
+    
+                break;
+            }
+
             case binary::MULT:
             {
                 #pragma omp parallel for
@@ -1136,6 +1295,53 @@ void MICUtils::binaryOpScalar2(
                 {
                     out[i] = in[i] * value;
                 }
+                break;
+            }
+
+            case binary::DIVIDE :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+                for ( IndexType i = 0; i < n; i++ )
+                {   
+                    out[i] = in[i] / value;
+                }
+
+                break;
+            }
+
+            case binary::POW :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = common::Math::pow( in[i], value );
+                }
+
+                break;
+            }
+
+            case binary::MIN :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = common::Math::min( in[i], value );
+                }
+
+                break;
+            }
+
+            case binary::MAX :
+            {
+                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = common::Math::max( in[i], value );
+                }
+
                 break;
             }
 
@@ -1163,6 +1369,7 @@ void MICUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRe
     SCAI_LOG_INFO( logger, "register[flag=" << flag << "] UtilsKernel OpenMP-routines for MIC at kernel registry" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
 }
 
 template<typename ValueType>
