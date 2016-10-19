@@ -59,13 +59,13 @@ public:
     /** This method scales the matrix using an value vector */
 
     template<typename ValueType, typename OtherValueType>
-    static void scaleValue(
+    static void scaleRows(
+        ValueType jdsValues[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType ilg[],
         const IndexType dlg[],
-        ValueType mValues[],
-        const OtherValueType values[] );
+        const OtherValueType rowValues[] );
 
     /** This method sets row as dens vector of the i'th row of the matrix */
 

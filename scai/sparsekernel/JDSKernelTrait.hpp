@@ -75,7 +75,8 @@ struct JDSKernelTrait
         }
     };
 
-    /** Structure with type definitions for solver routines */
+    /** Structure with trait for jacobi iterate on halo for JDS storage */
+
     template<typename ValueType>
     struct jacobiHalo
     {

@@ -253,15 +253,16 @@ IndexType MICJDSUtils::getValuePosCol(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType, typename OtherValueType>
-void MICJDSUtils::scaleValue(
+void MICJDSUtils::scaleRows(
+    ValueType jdsValues[],
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    ValueType jdsValues[],
     const OtherValueType values[] )
 {
-    SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "scaleRows, #rows = " << numRows )
+
     int device = MICContext::getCurrentDevice();
     const void* jdsPermPtr = jdsPerm;
     const void* ilgPtr = ilg;
@@ -281,11 +282,11 @@ void MICJDSUtils::scaleValue(
         for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType offset = i;
-            OtherValueType scalar = values[jdsPerm[i]];
+            ValueType scaleRow = static_cast<ValueType>( values[jdsPerm[i]] );
 
             for ( IndexType jj = 0; jj < ilg[i]; jj++ )
             {
-                jdsValues[offset] *= static_cast<ValueType>( scalar );
+                jdsValues[offset] *= scaleRow;
                 offset += dlg[jj];
             }
         }
