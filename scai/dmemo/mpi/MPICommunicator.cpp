@@ -69,6 +69,8 @@ namespace dmemo
 const int MPICommunicator::defaultTag = 1;
 
 #ifdef SCAI_COMPLEX_SUPPORTED
+MPI_Datatype MPICommunicator::mComplexLongDoubleType = 0;
+
 MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
 MPI_Op MPICommunicator::mMaxComplexFloat = 0;
@@ -191,44 +193,51 @@ void MPICommunicator::initialize( int& argc, char**& argv )
 
     if ( mSumComplexLongDouble == 0 )
     {
-        MPI_Op_create( &sum_complex_long_double, true, &mSumComplexLongDouble );
+        SCAI_MPICALL( logger, MPI_Op_create( &sum_complex_long_double, true, &mSumComplexLongDouble ), "Create MPI_Op sum for ComplexLongDouble" )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for sum complex long double" )
     }
 
     if ( mMaxComplexFloat == 0 )
     {
-        MPI_Op_create( &max_operator<ComplexFloat>, true, &mMaxComplexFloat );
+        SCAI_MPICALL( logger, MPI_Op_create( &max_operator<ComplexFloat>, true, &mMaxComplexFloat ), "Create MPI_Op max for ComplexFloat" )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for max complex float" )
     }
 
     if ( mMaxComplexDouble == 0 )
     {
-        MPI_Op_create( &max_operator<ComplexDouble>, true, &mMaxComplexDouble );
+        SCAI_MPICALL( logger, MPI_Op_create( &max_operator<ComplexDouble>, true, &mMaxComplexDouble ), "Create MPI_Op max for ComplexDouble" )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for max complex double" )
     }
 
     if ( mMaxComplexLongDouble == 0 )
     {
-        MPI_Op_create( &max_operator<ComplexLongDouble>, true, &mMaxComplexLongDouble );
+        SCAI_MPICALL( logger, MPI_Op_create( &max_operator<ComplexLongDouble>, true, &mMaxComplexLongDouble ), "Create MPI_Op max for ComplexLongDouble" )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for max complex long double" )
     }
 
     if ( mMinComplexFloat == 0 )
     {
-        MPI_Op_create( &min_operator<ComplexFloat>, true, &mMinComplexFloat );
+        SCAI_MPICALL( logger, MPI_Op_create( &min_operator<ComplexFloat>, true, &mMinComplexFloat ), "Create MPI_Op min for ComplexFloat" )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex float" )
     }
 
     if ( mMinComplexDouble == 0 )
     {
-        MPI_Op_create( &min_operator<ComplexDouble>, true, &mMinComplexDouble );
+        SCAI_MPICALL( logger, MPI_Op_create( &min_operator<ComplexDouble>, true, &mMinComplexDouble ), "Create MPI_Op min for ComplexDouble" )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex double" )
     }
 
     if ( mMinComplexLongDouble == 0 )
     {
-        MPI_Op_create( &min_operator<ComplexLongDouble>, true, &mMinComplexLongDouble );
+        SCAI_MPICALL( logger, MPI_Op_create( &min_operator<ComplexLongDouble>, true, &mMinComplexLongDouble ), "Create MPI_Op min for ComplexLongDouble" )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex long double" )
+    }
+
+    if( mComplexLongDoubleType == 0 )
+    {
+        SCAI_MPICALL( logger, MPI_Type_contiguous( 2, MPI_LONG_DOUBLE, &mComplexLongDoubleType ), "Call init of MPI_Datatype for ComplexLongDouble" )
+        SCAI_MPICALL( logger, MPI_Type_commit( &mComplexLongDoubleType ), "Register ComplexLongDouble MPI_Datatype" )
+        SCAI_LOG_DEBUG( logger, "register MPI_Datatype for ComplexLongDouble" )
     }
 
 #endif
@@ -340,6 +349,9 @@ MPICommunicator::~MPICommunicator()
     {
         if ( !mExternInitialization )
         {
+            SCAI_MPICALL( logger, MPI_Type_free( &mComplexLongDoubleType ), "free MPI_Datatype for ComplexLongDouble" )
+            mComplexLongDoubleType = 0;
+
             SCAI_LOG_INFO( logger, "call MPI_Finalize" )
             SCAI_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" )
         }
